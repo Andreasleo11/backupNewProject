@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Report extends Model
+{
+    use HasFactory;
+    protected $table = 'reports';
+
+    protected $fillable = [
+        'Rec_Date',
+        'Verify_Date',
+        'Customer',
+        'Invoice_No',
+        'autograph_box1',
+        'autograph_box2',
+        'autograph_box3',
+        // Add other fields as needed
+    ];
+
+    // Define relationships if needed
+    public function details()
+    {
+        return $this->hasMany(Detail::class);
+    }
+
+    public function updateAutograph($section, $signaturePath)
+    {
+        switch ($section) {
+            case 1:
+                $this->update(['autograph_box1' => $signaturePath]);
+                break;
+            case 2:
+                $this->update(['autograph_box2' => $signaturePath]);
+                break;
+            case 3:
+                $this->update(['autograph_box3' => $signaturePath]);
+                break;
+            default:
+                // Handle other cases if needed
+                break;
+        }
+    }
+}
