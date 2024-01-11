@@ -15,9 +15,9 @@ class Report extends Model
         'Verify_Date',
         'Customer',
         'Invoice_No',
-        'autograph_box1',
-        'autograph_box2',
-        'autograph_box3',
+        'autograph_1',
+        'autograph_2',
+        'autograph_3',
         // Add other fields as needed
     ];
 
@@ -31,13 +31,13 @@ class Report extends Model
     {
         switch ($section) {
             case 1:
-                $this->update(['autograph_box1' => $signaturePath]);
+                $this->update(['autograph_1' => $signaturePath]);
                 break;
             case 2:
-                $this->update(['autograph_box2' => $signaturePath]);
+                $this->update(['autograph_2' => $signaturePath]);
                 break;
             case 3:
-                $this->update(['autograph_box3' => $signaturePath]);
+                $this->update(['autograph_3' => $signaturePath]);
                 break;
             default:
                 // Handle other cases if needed
