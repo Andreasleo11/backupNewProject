@@ -59,3 +59,6 @@ Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail']
 
 Route::post('/report/{reportId}/autograph/{section}', [ReportViewController::class, 'storeSignature'])
     ->name('report.autograph.store');
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
