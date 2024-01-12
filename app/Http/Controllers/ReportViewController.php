@@ -52,7 +52,7 @@ class ReportViewController extends Controller
 
         // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
         // Misalnya, simpan ke penyimpanan dengan nama file yang unik
-        $path = $file->storeAs('autographs', "tandatangan{$section}.png");
+        $path = 'tandatangan_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
         $file->move($directory, $path);
 

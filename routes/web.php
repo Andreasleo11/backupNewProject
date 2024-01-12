@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\SuperAdminHomeController;
+use App\Http\Controllers\StaffHomeController;
 
 use App\Http\Controllers\ReportHeaderController;
 use App\Http\Controllers\ReportDetailController;
@@ -45,6 +46,11 @@ Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
     
+});
+
+Route::middleware(['checkUserRole:2'])->group(function () {
+    Route::get('/staff/home', [StaffHomeController::class, 'index'])->name('staff.home');
+    Route::get('/userStaff/home', [UserHomeController::class, 'index']);
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
