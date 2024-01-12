@@ -3,15 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
+use App\Models\User;
 
 class ReportViewController extends Controller
 {
     public function index()
     {
         $reports = Report::get();
+        
         // dd($reports);
         return view('reports.report-view',compact('reports'));
     }
@@ -21,7 +24,8 @@ class ReportViewController extends Controller
     {
         
         $report = Report::with('details')->find($id);
-      
+        // $user = Auth::user();
+        $user = User::get();
         foreach($report->details as $pd){
                     $data1 = json_decode($pd->daijo_defect_detail);
                     $data2 = json_decode($pd->customer_defect_detail);
@@ -34,7 +38,7 @@ class ReportViewController extends Controller
                     
                 }
         // dd($report);
-        return view('reports.report-view-detail', compact('report'));
+        return view('reports.report-view-detail', compact('report','user'));
     }
 
     public function uploadAutograph(Request $request, $reportId, $section)

@@ -12,8 +12,4 @@ class StaffHomeController extends Controller
         return view('staff_home');
     }
 
-    public function indexhome()
-    {
-        return view('user_home');
-    }
 }

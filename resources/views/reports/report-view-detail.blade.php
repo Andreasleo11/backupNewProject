@@ -28,16 +28,38 @@
     <!-- Autograph Button 1 -->
     <button onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
 
+      <!-- Dropdown for QA Inspector -->
+      <select id="inspectorDropdown">
+        <!-- Iterate over users with role_id = 2 and populate dropdown options -->
+        @foreach($user as $users)
+            @if($users->role_id == 2 && $users->department == 'QA')
+                <option value="{{ $users->role_id }}">{{ $users->name }}</option>
+            @endif
+        @endforeach
+    </select>
+
     <!-- Autograph File Input 1 -->
     <input type="file" id="autographInput1" name="autograph" style="display: none;" accept="image/*">
 
     <!-- Autograph Textbox 1 -->
     <div class="autograph-box" id="autographBox1"></div>
+    <input type="text" id="inspectorTextBox" readonly>
+    
 </div>
 
 <div class="autograph-container">
     <!-- Autograph Button 2 -->
     <button onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
+
+    <!-- Dropdown for QA Inspector -->
+    <select id="LeaderDropdown">
+        <!-- Iterate over users with role_id = 2 and populate dropdown options -->
+        @foreach($user as $users)
+            @if($users->role_id == 2 && $users->department == 'QA')
+                <option value="{{ $users->role_id }}">{{ $users->name }}</option>
+            @endif
+        @endforeach
+    </select>
 
     <input type="file" id="autographInput2" name="autograph" style="display: none;" accept="image/*">
 
@@ -48,6 +70,16 @@
 <div class="autograph-container">
     <!-- Autograph Button 3 -->
     <button onclick="addAutograph(3, {{ $report->id }})">Acc QC Head</button>
+
+    <!-- Dropdown for QA Inspector -->
+    <select id="HeadDropdown">
+        <!-- Iterate over users with role_id = 2 and populate dropdown options -->
+        @foreach($user as $users)
+            @if($users->role_id == 2 && $users->department == 'QC')
+                <option value="{{ $users->role_id }}">{{ $users->name }}</option>
+            @endif
+        @endforeach
+    </select>
 
     <input type="file" id="autographInput3" name="autograph" style="display: none;" accept="image/*">
 
@@ -216,6 +248,10 @@
         autographInput.addEventListener('change', function (event) {
             var selectedFile = event.target.files[0];
 
+            var selectedInspector = document.getElementById('inspectorDropdown');
+            var inspectorName = selectedInspector.options[selectedInspector.selectedIndex].text;
+
+
             if (selectedFile) {
                 // Read the selected file as a data URL
                 var reader = new FileReader();
@@ -229,6 +265,8 @@
             // Make the div visible
             autographBox.style.display = "block";     
 
+            var inspectorTextBox = document.getElementById('inspectorTextBox');
+            inspectorTextBox.value = inspectorName;
             // Pass the selected file path to the controller using AJAX
             // Send the selected file path to the controller using AJAX
         var formData = new FormData();

@@ -36,7 +36,10 @@ Route::get('/home', function () {
 
     if ($user->role_id == 1) {
         return redirect()->route('superadmin.home');
-    } else {
+    }else if ($user->role_id == 2){
+        return redirect()->route('staff.home');
+    } 
+    else {
         return redirect()->route('user.home');
     }
 })->name('home');
@@ -51,11 +54,13 @@ Route::middleware(['checkUserRole:1'])->group(function () {
 Route::middleware(['checkUserRole:2'])->group(function () {
     Route::get('/staff/home', [StaffHomeController::class, 'index'])->name('staff.home');
     Route::get('/userStaff/home', [UserHomeController::class, 'index']);
+    Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']); // SINGLEROUTES susah diduplikat sementara ini
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
 });
+
 
 Route::get('/reports/create/header', [ReportHeaderController::class, 'create'])->name('header.create');
 Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('header.store');
@@ -63,4 +68,4 @@ Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('he
 Route::get('/reports/view', [ReportViewController::class, 'index'])->name('report.view');
 Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
 
-Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
+// Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
