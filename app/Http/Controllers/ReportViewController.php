@@ -33,10 +33,34 @@ class ReportViewController extends Controller
                     $pd->remark_daijo = $data4;
                     
                 }
-        
         // dd($report);
         return view('reports.report-view-detail', compact('report'));
     }
 
-       
+    public function uploadAutograph(Request $request, $reportId, $section)
+{
+    try {
+        // Ambil file gambar dari request
+        $file = $request->file('autograph');
+        
+        // Validate file upload
+        $request->validate([
+            'autograph' => 'required|image|mimes:png,jpg,jpeg',
+        ]);
+
+        // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
+        // Misalnya, simpan ke penyimpanan dengan nama file yang unik
+        $path = $file->storeAs('autographs', "tandatangan{$section}.png");
+
+        // Update kolom autograph di database
+        $report = Report::find($reportId);
+        $report->update(["autograph_{$section}" => $path]);
+
+        return response()->json(['message' => 'Autograph uploaded successfully']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+        
+
 }

@@ -9,7 +9,9 @@
 
     <title>{{ config('app.name', 'DISS | Daijo Industrial Support') }}</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
@@ -23,193 +25,94 @@
 </head>
 <body data-bs-theme="dark">
     <div class="wrapper">
-        {{-- <aside id="sidebar" class="js-sidebar">
-            <div class="h-100">
+        <aside id="sidebar">
+            <div class="d-flex">
+                <button class="toggle-btn" type="button">
+                    <i class="lni lni-grid-alt"></i>
+                </button>
                 <div class="sidebar-logo">
-                    <a href="#">
-                        <img src="image/daijo-logo.png" alt="LOGO">
-                    </a>
+                    <a href="#">Daijo Industrial Support System</a>
                 </div>
-                <ul class="sidebar-nav">
-                    <hr>
-                    <li class="sidebar-item">
-                        <a href="/" class="sidebar-link">
-                            <i class="fa-solid fa-list pe-2"></i>
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="#" class="sidebar-link collapsed" data-bs-target="#admin" data-bs-toggle="collapse"
-                            aria-expanded="false"><i class="fa-regular fa-user pe-2"></i>
-                            Admin
-                        </a>
-                        <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item">
-                                <a href="/list-user" class="sidebar-link">List User</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Permission</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="#" class="sidebar-link collapsed" data-bs-target="#business" data-bs-toggle="collapse"
-                            aria-expanded="false"><i class="fa-solid fa-file-lines pe-2"></i>
-                            Business
-                        </a>
-                        <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 1</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 2</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="#" class="sidebar-link collapsed" data-bs-target="#computer" data-bs-toggle="collapse"
-                            aria-expanded="false"><i class="fa-solid fa-sliders pe-2"></i>
-                            Computer
-                        </a>
-                        <ul id="computer" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 1</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 2</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 3</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="#" class="sidebar-link collapsed" data-bs-target="#production" data-bs-toggle="collapse"
-                            aria-expanded="false"><i class="fa-solid fa-sliders pe-2"></i>
-                            Production
-                        </a>
-                        <ul id="production" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 1</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 2</a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link">Link 3</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
             </div>
-        </aside> --}}
-        
-        <button class="btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
-            <i class="fa-solid fa-caret-right"></i>
-        </button>
-          
-          <div class="offcanvas offcanvas-start" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel" >
-            <div class="offcanvas-header">
-              <h5 class="offcanvas-title" id="sidebarLabel"></h5>
-              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body">
-              
-                    <div class="h-100">
-                        <div class="sidebar-logo">
-                            <a href="#">
-                                <img src="image/daijo-logo.png" alt="LOGO">
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <i class="lni lni-user"></i>
+                        <span>Admin</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <i class="lni lni-agenda"></i>
+                        <span>Production</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#business" aria-expanded="false" aria-controls="business">
+                        <i class="lni lni-protection"></i>
+                        <span>Business</span>
+                    </a>
+                    <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link">Link 1</a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link">Link 2</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#multi" aria-expanded="false" aria-controls="multi">
+                        <i class="lni lni-layout"></i>
+                        <span>Multi Level</span>
+                    </a>
+                    <ul id="multi" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                                data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                                Two Links
                             </a>
-                        </div>
-                        <ul class="sidebar-nav">
-                            <hr>
-                            <li class="sidebar-item">
-                                <a href="/" class="sidebar-link">
-                                    <i class="fa-solid fa-list pe-2"></i>
-                                    Dashboard
-                                </a>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link collapsed" data-bs-target="#admin" data-bs-toggle="collapse"
-                                    aria-expanded="false"><i class="fa-regular fa-user pe-2"></i>
-                                    Admin
-                                </a>
-                                <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                                    <li class="sidebar-item">
-                                        <a href="/list-user" class="sidebar-link">List User</a>
-                                    </li>
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Permission</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link collapsed" data-bs-target="#business" data-bs-toggle="collapse"
-                                    aria-expanded="false"><i class="fa-solid fa-file-lines pe-2"></i>
-                                    Business
-                                </a>
-                                <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 1</a>
-                                    </li>
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 2</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link collapsed" data-bs-target="#computer" data-bs-toggle="collapse"
-                                    aria-expanded="false"><i class="fa-solid fa-sliders pe-2"></i>
-                                    Computer
-                                </a>
-                                <ul id="computer" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 1</a>
-                                    </li>
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 2</a>
-                                    </li>
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 3</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="sidebar-item">
-                                <a href="#" class="sidebar-link collapsed" data-bs-target="#production" data-bs-toggle="collapse"
-                                    aria-expanded="false"><i class="fa-solid fa-sliders pe-2"></i>
-                                    Production
-                                </a>
-                                <ul id="production" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 1</a>
-                                    </li>
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 2</a>
-                                    </li>
-                                    <li class="sidebar-item">
-                                        <a href="#" class="sidebar-link">Link 3</a>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-            
+                            <ul id="multi-two" class="sidebar-dropdown list-unstyled collapse">
+                                <li class="sidebar-item">
+                                    <a href="#" class="sidebar-link">Link 1</a>
+                                </li>
+                                <li class="sidebar-item">
+                                    <a href="#" class="sidebar-link">Link 2</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <i class="lni lni-cog"></i>
+                        <span>Setting</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" class="sidebar-link">
+                    <i class="lni lni-exit"></i>
+                    <span>Logout</span>
+                </a>
             </div>
-          </div>
-          
-        <div class="main px-3">
+        </aside>
+        
+        <div class="main p-3">
             <nav class="navbar navbar-expand ">
-                {{-- <button class="btn" id="sidebar-toggle" type="button">
+                <button class="btn" id="sidebar-toggle" type="button">
                     <span class="navbar-toggler-icon"></span>
-                </button> --}}
+                </button>
                 <h3>DISS</h3>
                 <div class="navbar-collapse navbar">
                     <ul class="navbar-nav">
                         <li>
-                            {{-- <a href="#" class="theme-toggle">
+                            <a href="#" class="theme-toggle">
                                 <i class="fa-regular fa-moon"></i>
                                 <i class="fa-regular fa-sun"></i>
-                            </a> --}}
+                            </a>
                         </li>
                         <li class="nav-item dropdown">
                             <a href="#" data-bs-toggle="dropdown" class="nav-icon pe-md-0" type="button">
@@ -240,9 +143,7 @@
                     </div>
                 </div>
             </footer>
-        </div> 
-        
-        
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/app.js"></script>
