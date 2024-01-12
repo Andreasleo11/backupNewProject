@@ -22,13 +22,15 @@
   
 </div>
 
-<div class="container">
-    <div class="row justify-content-center">
-        <a href="{{ route('header.create') }}" class="btn btn-primary">Verification Report</a>
+<div class="container mt-5 col-3 ">
+    <div class="row justify-content-center w-100">
+            <a href="{{ route('header.create') }}" class="btn btn-primary">Verification Report</a>
     </div>   
+    
 </div>
 
-<div class="container">
+
+<div class="container mt-5 col-3">
     <div class="row justify-content-center">
         <a href="{{ route('report.view') }}" class="btn btn-primary">View Report</a>
     </div>   

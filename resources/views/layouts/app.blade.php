@@ -9,32 +9,39 @@
 
     <title>{{ config('app.name', 'DISS | Daijo Industrial Support') }}</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+    
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
     
-
+    
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/app.css">
 </head>
-<body data-bs-theme="dark">
+<body>
     <div class="wrapper">
         <aside id="sidebar">
             <div class="d-flex">
-                <button class="toggle-btn" type="button">
+                <button class="sidebar-toggle-btn" type="button">
                     <i class="lni lni-grid-alt"></i>
                 </button>
                 <div class="sidebar-logo">
-                    <a href="#">Daijo Industrial Support System</a>
+                    <a href="#">Menu</a>
                 </div>
             </div>
             <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link">
+                        <i class="lni lni-graph"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
                 <li class="sidebar-item">
                     <a href="#" class="sidebar-link">
                         <i class="lni lni-user"></i>
@@ -63,29 +70,6 @@
                     </ul>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#multi" aria-expanded="false" aria-controls="multi">
-                        <i class="lni lni-layout"></i>
-                        <span>Multi Level</span>
-                    </a>
-                    <ul id="multi" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
-                                data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
-                                Two Links
-                            </a>
-                            <ul id="multi-two" class="sidebar-dropdown list-unstyled collapse">
-                                <li class="sidebar-item">
-                                    <a href="#" class="sidebar-link">Link 1</a>
-                                </li>
-                                <li class="sidebar-item">
-                                    <a href="#" class="sidebar-link">Link 2</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </li>
-                <li class="sidebar-item">
                     <a href="#" class="sidebar-link">
                         <i class="lni lni-cog"></i>
                         <span>Setting</span>
@@ -100,37 +84,44 @@
             </div>
         </aside>
         
-        <div class="main p-3">
-            <nav class="navbar navbar-expand ">
-                <button class="btn" id="sidebar-toggle" type="button">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <h3>DISS</h3>
-                <div class="navbar-collapse navbar">
-                    <ul class="navbar-nav">
-                        <li>
-                            <a href="#" class="theme-toggle">
-                                <i class="fa-regular fa-moon"></i>
-                                <i class="fa-regular fa-sun"></i>
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a href="#" data-bs-toggle="dropdown" class="nav-icon pe-md-0" type="button">
-                                <img src="image/profile.jpg" class="avatar img-fluid rounded-circle" alt="">
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end">
-                                <a href="#" class="dropdown-item">Profile</a>
-                                <a href="#" class="dropdown-item">Setting</a>
-                                <a href="#" class="dropdown-item">Logout</a>
-                            </div>
-                        </li>
-                    </ul>
+        <div class="main">
+            <nav class="navbar navbar-expand px-3 py-3 border d-flex">                
+                <!--Header-->
+                <div class="flex-grow-1">
+                    <h4 class="pt-1 ps-3">Daijo Industrial Support System</h4>
+                </div>
+
+                <!--Notification-->
+                <div class="me-3">
+                    <button type="button" class="btn btn-outline-primary position-relative rounded-circle">
+                        <i class="lni lni-popup"></i>   
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                            +99 <span class="visually-hidden">unread messages</span>
+                        </span>
+                    </button>
+                </div>
+
+                
+
+                <!-- Profile Icon -->
+                <div class="me-2">
+                    <div class="navbar navbar-collapse">
+                        <a href="#" data-bs-toggle="dropdown" class="nav-icon pe-md-0" type="button">
+                            <img src="{{ asset('image/profile.jpg') }}" class="avatar img-fluid rounded-circle " alt="profilePicture">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="#" class="dropdown-item">Profile</a>
+                            <a href="#" class="dropdown-item">Setting</a>
+                            <a href="#" class="dropdown-item">Logout</a>
+                        </div>
+                    </div>
                 </div>
             </nav>
-            <main class="content px-3 py-2">
+            <main class="content px-5 py-5 height-vh-100">
                 @yield('content')
             </main>
-            <footer class="footer">
+
+            {{-- <footer class="footer">
                 <div class="container-fluid">
                     <div class="row text-muted">
                         <div class="text-end">
@@ -142,11 +133,12 @@
                         </div>
                     </div>
                 </div>
-            </footer>
+            </footer> 
+             --}}
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/app.js"></script>
-    <script src="js/modal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('js/modal.js') }}"></script>
 </body>
 </html>

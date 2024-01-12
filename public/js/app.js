@@ -1,37 +1,21 @@
-const hamBurger = document.querySelector(".toggle-btn");
+const sidebar = document.querySelector(".sidebar-toggle-btn");
+const sidebarNav = document.querySelector(".sidebar-nav");
+let isExpand = false
 
-hamBurger.addEventListener("click", function () {
-  document.querySelector("#sidebar").classList.toggle("expand");
+function toggleSidebar(){
+    isExpand = !isExpand
+    document.querySelector("#sidebar").classList.toggle("expand")
+}
+
+sidebar.addEventListener("click", toggleSidebar);
+
+sidebarNav.addEventListener("mouseover",function () {
+    if (isExpand === false) {
+        document.querySelector("#sidebar").classList.toggle("expand")
+    } 
 });
-
-// const sidebarToggle = document.querySelector("#sidebar-toggle");
-// sidebarToggle.addEventListener("click",function(){
-//     document.querySelector("#sidebar").classList.toggle("collapsed");
-// });
-
-document.querySelector(".theme-toggle").addEventListener("click",() => {
-    toggleLocalStorage();
-    toggleRootClass();
+sidebarNav.addEventListener("mouseout",function () {
+    if (isExpand === false) {
+        document.querySelector("#sidebar").classList.toggle("expand")
+    } 
 });
-
-function toggleRootClass(){
-    const current = document.documentElement.getAttribute('data-bs-theme');
-    const inverted = current == 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-bs-theme',inverted);
-}
-
-function toggleLocalStorage(){
-    if(isLight()){
-        localStorage.removeItem("light");
-    }else{
-        localStorage.setItem("light","set");
-    }
-}
-
-function isLight(){
-    return localStorage.getItem("light");
-}
-
-if(isLight()){
-    toggleRootClass();
-}
