@@ -48,9 +48,13 @@ class ReportViewController extends Controller
             'autograph' => 'required|image|mimes:png,jpg,jpeg',
         ]);
 
+        $directory = public_path('autographs');
+
         // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
         // Misalnya, simpan ke penyimpanan dengan nama file yang unik
         $path = $file->storeAs('autographs', "tandatangan{$section}.png");
+
+        $file->move($directory, $path);
 
         // Update kolom autograph di database
         $report = Report::find($reportId);
