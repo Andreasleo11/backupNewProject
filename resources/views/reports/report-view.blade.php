@@ -38,6 +38,7 @@
                                 <th>Rec Date</th>
                                 <th>Verify Date</th>
                                 <th>Action</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -50,6 +51,13 @@
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
                                         <a href="{{ route('report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
+                                    </td>
+                                    <td>
+                                        @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
+                                            <span style="color: green;">DONE</span>
+                                        @else
+                                            <span style="color: red;">NOT DONE</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

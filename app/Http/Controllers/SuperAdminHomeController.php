@@ -11,8 +11,5 @@ class SuperAdminHomeController extends Controller
     {
         return view('superadmin_home');
     }
-    public function indexhome()
-    {
-        return view('user_home');
-    }
+
 }

@@ -91,6 +91,7 @@
                     <!-- <td class="spacer"></td> -->
                     <th>Invoice No : </th>
                     <td>{{ $report->invoice_no }}</td> <br>
+                    
                   </tr>
           </table>
   </div>
@@ -271,11 +272,11 @@
         if (autographs['autograph_' + i]) {
             autographBox.style.display = 'block';
 
-            // Construct absolute URL based on the current location
-            var absoluteUrl = window.location.origin + '/' + autographs['autograph_' + i];
+           // Construct URL based on the current location
+           var url = '/autographs/' + autographs['autograph_' + i];
 
-            // Update the background image using the absolute URL
-            autographBox.style.backgroundImage = "url('" + absoluteUrl + "')";
+            // Update the background image using the URL
+            autographBox.style.backgroundImage = "url('" + url + "')";
 
             autographInput.style.display = 'none';
         }
