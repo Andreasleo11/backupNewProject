@@ -32,7 +32,7 @@
     <!-- Autograph File Input 1 -->
     <input type="file" id="autographInput1" name="autograph" style="display: none;" accept="image/*">
     @endif
-
+    <h2>QA Inspector</h2>
     <div class="autograph-box" id="autographBox1"></div>
     <div class="autograph-textbox" id="autographuser1"></div>
 </div>
@@ -45,6 +45,7 @@
     <button onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
     <input type="file" id="autographInput2" name="autograph" style="display: none;" accept="image/*">
     @endif
+    <h2>QA Leader</h2>
     <div class="autograph-box" id="autographBox2"></div>
     <div class="autograph-textbox" id="autographuser2"></div>
 </div>
@@ -58,6 +59,7 @@
     <input type="file" id="autographInput3" name="autograph" style="display: none;" accept="image/*">
     @endif
     <!-- Autograph Textbox 3 -->
+    <h2>QC Head</h2>
     <div class="autograph-box" id="autographBox3"></div>
     <div class="autograph-textbox" id="autographuser3"></div>
 </div>
@@ -186,6 +188,7 @@
 
 
 <style>
+    
     .autograph-container {
         display: flex;
         align-items: center;
