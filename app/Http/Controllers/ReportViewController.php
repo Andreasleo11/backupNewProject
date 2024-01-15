@@ -11,6 +11,12 @@ use App\Models\User;
 
 class ReportViewController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $reports = Report::get();
@@ -25,7 +31,7 @@ class ReportViewController extends Controller
         
         $report = Report::with('details')->find($id);
         // $user = Auth::user();
-        $user = User::get();
+        $user =  Auth::user();
         foreach($report->details as $pd){
                     $data1 = json_decode($pd->daijo_defect_detail);
                     $data2 = json_decode($pd->customer_defect_detail);
@@ -38,7 +44,14 @@ class ReportViewController extends Controller
                     
                 }
         // dd($report);
-        return view('reports.report-view-detail', compact('report','user'));
+        // dd($user);
+
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
+        return view('reports.report-view-detail', compact('report','user','autographNames'));
     }
 
     public function uploadAutograph(Request $request, $reportId, $section)
@@ -46,6 +59,7 @@ class ReportViewController extends Controller
     try {
         // Ambil file gambar dari request
         $file = $request->file('autograph');
+        $user = Auth::user()->name;
         
         // Validate file upload
         $request->validate([
@@ -62,7 +76,12 @@ class ReportViewController extends Controller
 
         // Update kolom autograph di database
         $report = Report::find($reportId);
-        $report->update(["autograph_{$section}" => $path]);
+        $report->update([
+            "autograph_{$section}" => $path
+        ]);
+        $report->update([
+            "autograph_user_{$section}" => $user
+        ]);
 
         return response()->json(['message' => 'Autograph uploaded successfully']);
     } catch (\Exception $e) {

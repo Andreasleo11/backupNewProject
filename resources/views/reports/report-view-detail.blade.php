@@ -23,68 +23,43 @@
       </div><!-- /.container-fluid -->
     </div>
 
+
     <!-- Autograph input boxes -->
 <div class="autograph-container">
     <!-- Autograph Button 1 -->
+    @if(Auth::check() && Auth::user()->department == 'QA')
     <button onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
-
-      <!-- Dropdown for QA Inspector -->
-      <select id="inspectorDropdown">
-        <!-- Iterate over users with role_id = 2 and populate dropdown options -->
-        @foreach($user as $users)
-            @if($users->role_id == 2 && $users->department == 'QA')
-                <option value="{{ $users->role_id }}">{{ $users->name }}</option>
-            @endif
-        @endforeach
-    </select>
-
     <!-- Autograph File Input 1 -->
     <input type="file" id="autographInput1" name="autograph" style="display: none;" accept="image/*">
+    @endif
 
-    <!-- Autograph Textbox 1 -->
     <div class="autograph-box" id="autographBox1"></div>
-    <input type="text" id="inspectorTextBox" readonly>
-    
+    <div class="autograph-textbox" id="autographuser1"></div>
 </div>
+
+
 
 <div class="autograph-container">
     <!-- Autograph Button 2 -->
+    @if(Auth::check() && Auth::user()->department == 'QA')
     <button onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
-
-    <!-- Dropdown for QA Inspector -->
-    <select id="LeaderDropdown">
-        <!-- Iterate over users with role_id = 2 and populate dropdown options -->
-        @foreach($user as $users)
-            @if($users->role_id == 2 && $users->department == 'QA')
-                <option value="{{ $users->role_id }}">{{ $users->name }}</option>
-            @endif
-        @endforeach
-    </select>
-
     <input type="file" id="autographInput2" name="autograph" style="display: none;" accept="image/*">
-
-    <!-- Autograph Textbox 2 -->
+    @endif
     <div class="autograph-box" id="autographBox2"></div>
+    <div class="autograph-textbox" id="autographuser2"></div>
 </div>
+
+
 
 <div class="autograph-container">
     <!-- Autograph Button 3 -->
-    <button onclick="addAutograph(3, {{ $report->id }})">Acc QC Head</button>
-
-    <!-- Dropdown for QA Inspector -->
-    <select id="HeadDropdown">
-        <!-- Iterate over users with role_id = 2 and populate dropdown options -->
-        @foreach($user as $users)
-            @if($users->role_id == 2 && $users->department == 'QC')
-                <option value="{{ $users->role_id }}">{{ $users->name }}</option>
-            @endif
-        @endforeach
-    </select>
-
+    @if(Auth::check() && Auth::user()->department == 'QC')
+    <button onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
     <input type="file" id="autographInput3" name="autograph" style="display: none;" accept="image/*">
-
+    @endif
     <!-- Autograph Textbox 3 -->
     <div class="autograph-box" id="autographBox3"></div>
+    <div class="autograph-textbox" id="autographuser3"></div>
 </div>
 
     <style>
@@ -229,6 +204,14 @@
         display: none;
         border: 1px solid #ccc; /* Add border for better visibility */
     }
+    .autograph-textbox {
+    position: relative;
+    width: 200px; /* Set the width based on your preference */
+    margin-top: 10px; /* Adjust the margin based on your layout */
+    text-align: center;
+    border: 1px solid black;
+    display: none; /* Hide initially */
+    }
 </style>
 
 <script>
@@ -248,9 +231,6 @@
         autographInput.addEventListener('change', function (event) {
             var selectedFile = event.target.files[0];
 
-            var selectedInspector = document.getElementById('inspectorDropdown');
-            var inspectorName = selectedInspector.options[selectedInspector.selectedIndex].text;
-
 
             if (selectedFile) {
                 // Read the selected file as a data URL
@@ -266,11 +246,12 @@
             autographBox.style.display = "block";     
 
             var inspectorTextBox = document.getElementById('inspectorTextBox');
-            inspectorTextBox.value = inspectorName;
+            
             // Pass the selected file path to the controller using AJAX
             // Send the selected file path to the controller using AJAX
         var formData = new FormData();
         formData.append('autograph', selectedFile);
+        
 
         
         var headers = new Headers();
@@ -301,10 +282,17 @@
         autograph_3: '{{ $report->autograph_3 ?? null }}',
     };
 
+    var autographNames = {
+        autograph_name_1: '{{ $autographNames['autograph_name_1'] ?? null }}',
+        autograph_name_2: '{{ $autographNames['autograph_name_2'] ?? null }}',
+        autograph_name_3: '{{ $autographNames['autograph_name_3'] ?? null }}',
+    };
+
     // Loop through each autograph status and update the UI accordingly
     for (var i = 1; i <= 3; i++) {
         var autographBox = document.getElementById('autographBox' + i);
         var autographInput = document.getElementById('autographInput' + i);
+        var autographNameBox = document.getElementById('autographuser' + i);
 
         // Check if autograph status is present in the database
         if (autographs['autograph_' + i]) {
@@ -316,10 +304,14 @@
             // Update the background image using the URL
             autographBox.style.backgroundImage = "url('" + url + "')";
 
-            autographInput.style.display = 'none';
+            var autographName = autographNames['autograph_name_' + i];
+            autographNameBox.textContent = autographName;
+            autographNameBox.style.display = 'block';
+
         }
     }
 }
+
 
 // Call the function to check autograph status on page load
 window.onload = function () {
