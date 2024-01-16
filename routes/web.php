@@ -78,3 +78,5 @@ Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail']
 Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
 
 Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
+Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
+Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');

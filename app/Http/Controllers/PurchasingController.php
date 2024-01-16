@@ -11,4 +11,5 @@ class PurchasingController extends Controller
     {
         return view('purchasing.purchasing_landing');
     }
+    
 }
