@@ -22,7 +22,7 @@ use App\Http\Controllers\ReportViewController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Auth::routes();
@@ -45,6 +45,34 @@ Route::get('/home', function () {
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
+
+    Route::prefix('superadmin')->group(function () {
+        Route::name('superadmin.')->group(function () {
+            Route::get('/users', function () {
+                return view('admin.users');
+            })->name('users');
+    
+            Route::get('/permission', function () {
+                return view('admin.permission');
+            })->name('permission');
+
+            Route::get('/business_reports', function () {
+                return view('admin.business_reports');
+            })->name('business_reports');
+            
+            Route::get('/qaqc', function () {
+                return view('admin.quality_assurance_control');
+            })->name('qaqc');
+
+            Route::get('/production', function () {
+                return view('admin.production');
+            })->name('production');
+
+            Route::get('/settings', function () {
+                return view('admin.settings');
+            })->name('settings');
+        });
+    });
     
 });
 

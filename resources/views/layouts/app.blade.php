@@ -37,22 +37,43 @@
             </div>
             <ul class="sidebar-nav">
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="{{ route('superadmin.home') }}" class="sidebar-link">
                         <i class="lni lni-graph"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                        <i class="lni lni-user"></i>
+                     <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
+                        <i class="lni lni-protection"></i>
                         <span>Admin</span>
                     </a>
+                    <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.users') }}" class="sidebar-link">Users</a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.permission') }}" class="sidebar-link">Permission</a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="{{ route('superadmin.production') }}" class="sidebar-link">
                         <i class="lni lni-agenda"></i>
                         <span>Production</span>
                     </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
+                        <i class="lni lni-protection"></i>
+                        <span>Quality Assurance & Control</span>
+                    </a>
+                    <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.qaqc') }}" class="sidebar-link">Reports</a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="sidebar-item">
                     <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
@@ -62,25 +83,27 @@
                     </a>
                     <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                         <li class="sidebar-item">
-                            <a href="#" class="sidebar-link">Link 1</a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="#" class="sidebar-link">Link 2</a>
+                            <a href="{{ route('superadmin.business_reports') }}" class="sidebar-link">Reports</a>
                         </li>
                     </ul>
                 </li>
                 <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
+                    <a href="{{ route('superadmin.settings') }}" class="sidebar-link">
                         <i class="lni lni-cog"></i>
                         <span>Setting</span>
                     </a>
                 </li>
             </ul>
             <div class="sidebar-footer">
-                <a href="#" class="sidebar-link">
+                <a href="#" class="sidebar-link" href="{{ route('logout') }}"
+                onclick="event.preventDefault();
+                              document.getElementById('logout-form').submit();">
                     <i class="lni lni-exit"></i>
                     <span>Logout</span>
                 </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
             </div>
         </aside>
         
@@ -93,15 +116,13 @@
 
                 <!--Notification-->
                 <div class="me-3">
-                    <button type="button" class="btn btn-outline-primary position-relative rounded-circle">
+                    <button type="button" class="btn btn-success position-relative rounded-circle me-3">
                         <i class="lni lni-popup"></i>   
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
                             +99 <span class="visually-hidden">unread messages</span>
                         </span>
                     </button>
                 </div>
-
-                
 
                 <!-- Profile Icon -->
                 <div class="me-2">
