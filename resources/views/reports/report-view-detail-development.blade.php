@@ -30,7 +30,6 @@
     @if(Auth::check() && Auth::user()->department == 'QA')
     <button onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
     <!-- Autograph File Input 1 -->
-    <input type="file" id="autographInput1" name="autograph" style="display: none;" accept="image/*">
     @endif
     <h2>QA Inspector</h2>
     <div class="autograph-box" id="autographBox1"></div>
@@ -43,7 +42,6 @@
     <!-- Autograph Button 2 -->
     @if(Auth::check() && Auth::user()->department == 'QA')
     <button onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
-    <input type="file" id="autographInput2" name="autograph" style="display: none;" accept="image/*">
     @endif
     <h2>QA Leader</h2>
     <div class="autograph-box" id="autographBox2"></div>
@@ -56,7 +54,6 @@
     <!-- Autograph Button 3 -->
     @if(Auth::check() && Auth::user()->department == 'QC')
     <button onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
-    <input type="file" id="autographInput3" name="autograph" style="display: none;" accept="image/*">
     @endif
     <!-- Autograph Textbox 3 -->
     <h2>QC HEAD</h2>
@@ -203,7 +200,6 @@
         height: 100px; /* Adjust the height as needed */
         background-size: contain;
         background-repeat: no-repeat;
-        display: none;
         border: 1px solid #ccc; /* Add border for better visibility */
     }
     .autograph-textbox {
@@ -221,59 +217,38 @@
     function addAutograph(section, reportId) {
         // Get the div element
         var autographBox = document.getElementById('autographBox' + section);
-        var autographInput = document.getElementById('autographInput' + section);
         
         console.log('Section:', section);
         console.log('Report ID:', reportId);
         var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
         console.log('username :', username);
-        var imageUrl = '/public/' + username + '.png';
+        var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
         console.log('image path :', imageUrl);
         
-        
-        // Set the background image based on the selected file
-        autographInput.addEventListener('DOMContentLoaded', function (event) {
-            var selectedFile = event.target.files[0];
+        autographBox.style.backgroundImage = "url('" +imageUrl + "')";
 
-            if (selectedFile) {
-                // Read the selected file as a data URL
-                var reader = new FileReader();
-                reader.onload = function (e) {
-                    autographBox.style.backgroundImage = "url('" + e.target.result + "')";
-                };
-                reader.readAsDataURL(selectedFile);
-                console.log('image Path:', selectedFile);
-            }
-
-            // Make the div visible
-            autographBox.style.display = "block";     
-            
-            // Pass the selected file path to the controller using AJAX
-            // Send the selected file path to the controller using AJAX
-        var formData = new FormData();
-        formData.append('autograph', selectedFile);
-        
-
-        
-        var headers = new Headers();
-        headers.append('X-CSRF-TOKEN', '{{ csrf_token() }}');
-
-        fetch('/upload-autograph/' + reportId + '/' + section, {
+         // Make an AJAX request to save the image path
+        fetch('/save-image-path/' + reportId + '/' + section, {
             method: 'POST',
-            body: formData,
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({
+                imagePath: imageUrl,
+            }),
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.message);
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
-        autographInput.click();
     }
+   
+        
+    
 
     function checkAutographStatus(reportId) {
     // Assume you have a variable from the server side indicating the autograph status
@@ -300,7 +275,7 @@
             autographBox.style.display = 'block';
 
            // Construct URL based on the current location
-           var url = '/autographs/' + autographs['autograph_' + i];
+           var url = '/' + autographs['autograph_' + i];
 
             // Update the background image using the URL
             autographBox.style.backgroundImage = "url('" + url + "')";

@@ -55,6 +55,7 @@ Route::middleware(['auth','checkUserRole:2'])->group(function () {
     Route::get('/staff/home', [StaffHomeController::class, 'index'])->name('staff.home');
     Route::get('/userStaff/home', [UserHomeController::class, 'index']);
     Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']); // SINGLEROUTES susah diduplikat sementara ini
+    Route::post('/save-image-path/{reportId}/{section}', [ReportViewController::class,'saveImagePath']);
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
