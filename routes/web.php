@@ -10,6 +10,10 @@ use App\Http\Controllers\ReportHeaderController;
 use App\Http\Controllers\ReportDetailController;
 use App\Http\Controllers\ReportViewController;
 
+use App\Http\Controllers\PEController;
+
+use App\Http\Controllers\PurchasingController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -70,3 +74,7 @@ Route::get('/reports/view', [ReportViewController::class, 'index'])->name('repor
 Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
 
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
+
+Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
+
+Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
