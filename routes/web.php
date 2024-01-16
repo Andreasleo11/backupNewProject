@@ -80,3 +80,7 @@ Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchas
 Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
 Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
 Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
+
+Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
+
+Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');

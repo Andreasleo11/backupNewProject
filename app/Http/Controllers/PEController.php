@@ -76,4 +76,20 @@ class PEController extends Controller
 
         return redirect()->route('pe.landing');
     }
+
+
+    public function view(){
+        $trial = trial::get();
+
+        return view('PE.pe_trial_list', compact('trial'));
+    }
+
+
+    public function detail($id)
+    {
+        $trial = trial::find($id);
+        
+
+        return view('PE.pe_trial_detail', compact('trial'));
+    }
 }
