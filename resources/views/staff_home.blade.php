@@ -35,4 +35,10 @@
     </div>   
 </div>
 
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('pe.landing') }}" class="btn btn-primary">PE Project</a>
+    </div>   
+</div>
+
 @endsection

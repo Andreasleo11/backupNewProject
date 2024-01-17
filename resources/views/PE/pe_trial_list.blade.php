@@ -31,7 +31,7 @@
                                         <a href="{{ route('trial.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
                                     </td>
                                     <td>
-                                        @if($report->requested_by && $report->verify_by && $report->confirmed_by_1 && $report->confirmed_by_2 && $report->confirmed_by_3 && $report->approved_by)
+                                        @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->autograph_4 && $report->autograph_6)
                                             <span style="color: green;">DONE</span>
                                         @else
                                             <span style="color: red;">NOT DONE</span>

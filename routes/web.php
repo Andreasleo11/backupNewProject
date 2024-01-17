@@ -60,6 +60,7 @@ Route::middleware(['auth','checkUserRole:2'])->group(function () {
     Route::get('/userStaff/home', [UserHomeController::class, 'index']);
     Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']); // SINGLEROUTES susah diduplikat sementara ini
     Route::post('/save-image-path/{reportId}/{section}', [ReportViewController::class,'saveImagePath']);
+    Route::post('/save-signature/{trialId}/{section}', [PEController::class,'saveSignature']);
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
@@ -84,3 +85,6 @@ Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input')
 Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
 
 Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
+
+Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
+

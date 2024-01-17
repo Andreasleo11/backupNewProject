@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\trial;
+use App\Models\User;
 
 class PEController extends Controller
 {
@@ -87,9 +89,44 @@ class PEController extends Controller
 
     public function detail($id)
     {
-        $trial = trial::find($id);
-        
+        $trial = Trial::find($id);
+        $user =  Auth::user();
 
-        return view('PE.pe_trial_detail', compact('trial'));
+
+        return view('PE.pe_trial_detail', compact('trial','user'));
+    }
+
+    public function updateTonage(Request $request, $id)
+    {
+        $request->validate([
+            'tonage' => 'required|string',
+        ]);
+
+        $trial = Trial::find($id);
+
+        if (Auth::user()->department === 'PI') {
+            // Update the tonage
+            $trial->tonage = $request->input('tonage');
+            $trial->save();
+        }
+
+        return redirect()->route('trial.detail', ['id' => $trial->id]); // Redirect back to the landing page
+    }
+
+    public function saveSignature(Request $request, $trialId, $section){
+
+        $username = Auth::check() ? Auth::user()->name : '';
+        $imagePath = $username . '.png';
+    
+        // Save $imagePath to the database for the specified $reportId and $section
+        $trial = Trial::find($trialId);
+            $trial->update([
+                "autograph_{$section}" => $imagePath
+            ]);
+            $trial->update([
+                "autograph_user_{$section}" => $username
+            ]);
+    
+        return response()->json(['message' => 'Image path saved successfully']);
     }
 }
