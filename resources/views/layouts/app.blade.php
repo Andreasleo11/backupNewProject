@@ -7,74 +7,157 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'DISS | Daijo Industrial Support') }}</title>
 
+    
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-
+    
+    
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    
+    <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
+    <div class="wrapper">
+        <aside id="sidebar">
+            <div class="d-flex">
+                <button class="sidebar-toggle-btn" type="button">
+                    <i class="lni lni-grid-alt"></i>
                 </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
-
-                    </ul>
-
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }}
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
+                <div class="sidebar-logo">
+                    <a href="#">Menu</a>
                 </div>
             </div>
-        </nav>
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="{{ route('superadmin.home') }}" class="sidebar-link">
+                        <i class="lni lni-graph"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                     <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
+                        <i class="lni lni-protection"></i>
+                        <span>Admin</span>
+                    </a>
+                    <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.users') }}" class="sidebar-link">Users</a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.permission') }}" class="sidebar-link">Permission</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('superadmin.production') }}" class="sidebar-link">
+                        <i class="lni lni-agenda"></i>
+                        <span>Production</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
+                        <i class="lni lni-protection"></i>
+                        <span>QA/QC</span>
+                    </a>
+                    <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.qaqc.report.view') }}" class="sidebar-link">Reports</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#business" aria-expanded="false" aria-controls="business">
+                        <i class="lni lni-protection"></i>
+                        <span>Business</span>
+                    </a>
+                    <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.business') }}" class="sidebar-link">Reports</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('superadmin.settings') }}" class="sidebar-link">
+                        <i class="lni lni-cog"></i>
+                        <span>Setting</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <a href="#" class="sidebar-link" href="{{ route('logout') }}"
+                onclick="event.preventDefault();
+                              document.getElementById('logout-form').submit();">
+                    <i class="lni lni-exit"></i>
+                    <span>Logout</span>
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
+            </div>
+        </aside>
+        
+        <div class="main">
+            <nav class="navbar navbar-expand px-3 py-3 border d-flex">                
+                <!--Header-->
+                <div class="flex-grow-1">
+                    <h4 class="pt-1 ps-3">Daijo Industrial Support System</h4>
+                </div>
 
-        <main class="py-4">
-            @yield('content')
-        </main>
+                <!--Notification-->
+                <div class="me-3">
+                    <button type="button" class="btn btn-success position-relative rounded-circle me-3">
+                        <i class="lni lni-popup"></i>   
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                            +99 <span class="visually-hidden">unread messages</span>
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Profile Icon -->
+                <div class="me-2">
+                    <div class="navbar navbar-collapse">
+                        <a href="#" data-bs-toggle="dropdown" class="nav-icon pe-md-0" type="button">
+                            <img src="{{ asset('image/profile.jpg') }}" class="avatar img-fluid rounded-circle " alt="profilePicture">
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="#" class="dropdown-item">Profile</a>
+                            <a href="#" class="dropdown-item">Setting</a>
+                            <a href="#" class="dropdown-item">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <main class="content px-5 py-5 height-vh-100">
+                @yield('content')
+            </main>
+
+            {{-- <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row text-muted">
+                        <div class="text-end">
+                            <p class="m-2">
+                                <a href="#" class="text-muted">
+                                    <strong>Daijo Industrial Support System (DS)</strong>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </footer> 
+             --}}
+        </div>
     </div>
+    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('js/modal.js') }}"></script>
 </body>
 </html>

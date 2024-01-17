@@ -22,13 +22,11 @@ class ReportViewController extends Controller
         $reports = Report::get();
         
         // dd($reports);
-        return view('reports.report-view',compact('reports'));
+        return view('qaqc.reports.reports',compact('reports'));
     }
-
 
     public function detail($id)
     {
-        
         $report = Report::with('details')->find($id);
         // $user = Auth::user();
         $user =  Auth::user();
@@ -44,6 +42,7 @@ class ReportViewController extends Controller
                     
                 }
         // dd($report);
+        return view('qaqc.reports.report_view_detail', compact('report'));
         // dd($user);
 
         $autographNames = [
@@ -51,7 +50,7 @@ class ReportViewController extends Controller
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('reports.report-view-detail-development', compact('report','user','autographNames'));
+        return view('qaqc.reports.report_view_detail', compact('report','user','autographNames'));
     }
 
     public function uploadAutograph(Request $request, $reportId, $section)
@@ -66,13 +65,13 @@ class ReportViewController extends Controller
             'autograph' => 'required|image|mimes:png,jpg,jpeg',
         ]);
 
-        $directory = public_path('autographs');
+            $directory = public_path('autographs');
 
-        // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
-        // Misalnya, simpan ke penyimpanan dengan nama file yang unik
-        $path = 'tandatangan_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
+            // Misalnya, simpan ke penyimpanan dengan nama file yang unik
+            $path = 'tandatangan_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-        $file->move($directory, $path);
+            $file->move($directory, $path);
 
         // Update kolom autograph di database
         $report = Report::find($reportId);

@@ -1,32 +1,39 @@
 @extends('layouts.app')
-<!-- Content Wrapper. Contains page content -->
 
 @section('content')
+
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <div class="content-header">
-        <div class="container-fluid">
+        <!--
             <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="m-0 text-dark">Verification Reports</h1>
-                </div><!-- /.col -->
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
                         <li class="breadcrumb-item"><a href="#">Reminder</a></li>
                         <li class="breadcrumb-item active">Detail</li>
                     </ol>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+                </div>
+            </div> 
+        -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col me-auto">
+                    <div class="m-0 text-dark mb-4 h3">Verification Reports</div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <a href="{{ route('superadmin.qaqc.header.create') }}" class="btn btn-primary">
+                    <i class="lni lni-plus"></i>
+                    Add Report
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Main content -->
-    <div class="container">
+    <div class="container-fluid">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Reports List</h3>
-            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
@@ -50,7 +57,7 @@
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-                                        <a href="{{ route('report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
+                                        <a href="{{ route('superadmin.qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
@@ -68,4 +75,12 @@
         </div><!-- /.card -->
     </div><!-- /.container -->
 </div><!-- /.content-wrapper -->
+
+<!-- 
+    <div class="container mt-5 col-3">
+        <div class="row justify-content-center">
+            <a href="{{ route('report.view') }}" class="btn btn-primary">View Report</a>
+        </div>   
+    </div>
+-->
 @endsection

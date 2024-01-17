@@ -11,7 +11,7 @@ class ReportHeaderController extends Controller
 {
     public function create()
     {
-        return view('reports.create-header');
+        return view('qaqc.reports.create_header');
     }
 
     public function store(Request $request)

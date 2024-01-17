@@ -22,7 +22,7 @@ use App\Http\Controllers\ReportViewController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 Auth::routes();
@@ -48,7 +48,37 @@ Route::get('/home', function () {
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
+    Route::prefix('superadmin')->group(function () {
+        Route::name('superadmin.')->group(function () {
+            Route::get('/users', function () {
+                return view('admin.users');
+            })->name('users');
     
+            Route::get('/permission', function () {
+                return view('admin.permission');
+            })->name('permission');
+            
+            Route::get('/settings', function () {
+                return view('admin.settings');
+            })->name('settings');
+
+            Route::get('/qaqc/reports/create', [ReportHeaderController::class, 'create'])->name('qaqc.header.create');
+            Route::post('/qaqc/reports/store', [ReportHeaderController::class, 'store'])->name('qaqc.header.store');
+            Route::get('/qaqc/reports/view', [ReportViewController::class, 'index'])->name('qaqc.report.view');
+            Route::get('/qaqc/report/view/detail/{id}', [ReportViewController::class, 'detail'])->name('qaqc.report.detail');
+            Route::post('/qaqc/report/{reportId}/autograph/{section}', [ReportViewController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+            
+            Route::get('/business', function () {
+                return view('business.business');
+            })->name('business');
+            
+
+            Route::get('/production', function () {
+                return view('production.production');
+            })->name('production');
+
+        });
+    });
 });
 
 Route::middleware(['auth','checkUserRole:2'])->group(function () {
@@ -69,4 +99,3 @@ Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('he
 Route::get('/reports/view', [ReportViewController::class, 'index'])->name('report.view');
 Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
 
-// Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
