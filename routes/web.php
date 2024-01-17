@@ -55,22 +55,26 @@ Route::middleware(['checkUserRole:1'])->group(function () {
             Route::get('/permission', function () {
                 return view('admin.permission');
             })->name('permission');
-
-            Route::get('/business_reports', function () {
-                return view('admin.business_reports');
-            })->name('business_reports');
             
-            Route::get('/qaqc', function () {
-                return view('admin.quality_assurance_control');
-            })->name('qaqc');
-
-            Route::get('/production', function () {
-                return view('admin.production');
-            })->name('production');
-
             Route::get('/settings', function () {
                 return view('admin.settings');
             })->name('settings');
+
+            Route::get('/qaqc/reports/create', [ReportHeaderController::class, 'create'])->name('qaqc.header.create');
+            Route::post('/qaqc/reports/store', [ReportHeaderController::class, 'store'])->name('qaqc.header.store');
+            Route::get('/qaqc/reports/view', [ReportViewController::class, 'index'])->name('qaqc.report.view');
+            Route::get('/qaqc/report/view/detail/{id}', [ReportViewController::class, 'detail'])->name('qaqc.report.detail');
+            Route::post('/qaqc/report/{reportId}/autograph/{section}', [ReportViewController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+            
+            Route::get('/business', function () {
+                return view('business.business');
+            })->name('business');
+            
+
+            Route::get('/production', function () {
+                return view('production.production');
+            })->name('production');
+
         });
     });
     

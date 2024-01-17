@@ -23,9 +23,9 @@
                 </div>
             </div>
             <div class="mb-4">
-                <a href="{{ route('header.create') }}" class="btn btn-primary">
+                <a href="{{ route('superadmin.qaqc.header.create') }}" class="btn btn-primary">
                     <i class="lni lni-plus"></i>
-                    Add report
+                    Add Report
                 </a>
             </div>
         </div>
@@ -49,7 +49,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- @foreach ($reports as $report)
+                            @foreach ($reports as $report)
                                 <tr>
                                     <td>{{ $report->id }}</td>
                                     <td>{{ $report->invoice_no }}</td>
@@ -57,7 +57,7 @@
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-                                        <a href="{{ route('report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
+                                        <a href="{{ route('superadmin.qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
@@ -67,7 +67,7 @@
                                         @endif
                                     </td>
                                 </tr>
-                            @endforeach --}}
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

@@ -13,13 +13,11 @@ class ReportViewController extends Controller
     {
         $reports = Report::get();
         // dd($reports);
-        return view('reports.report-view',compact('reports'));
+        return view('qaqc.reports.reports',compact('reports'));
     }
-
 
     public function detail($id)
     {
-        
         $report = Report::with('details')->find($id);
       
         foreach($report->details as $pd){
@@ -34,37 +32,35 @@ class ReportViewController extends Controller
                     
                 }
         // dd($report);
-        return view('reports.report-view-detail', compact('report'));
+        return view('qaqc.reports.report_view_detail', compact('report'));
     }
 
     public function uploadAutograph(Request $request, $reportId, $section)
-{
-    try {
-        // Ambil file gambar dari request
-        $file = $request->file('autograph');
-        
-        // Validate file upload
-        $request->validate([
-            'autograph' => 'required|image|mimes:png,jpg,jpeg',
-        ]);
+    {
+        try {
+            // Ambil file gambar dari request
+            $file = $request->file('autograph');
+            
+            // Validate file upload
+            $request->validate([
+                'autograph' => 'required|image|mimes:png,jpg,jpeg',
+            ]);
 
-        $directory = public_path('autographs');
+            $directory = public_path('autographs');
 
-        // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
-        // Misalnya, simpan ke penyimpanan dengan nama file yang unik
-        $path = 'tandatangan_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            // Simpan gambar ke penyimpanan atau database sesuai kebutuhan
+            // Misalnya, simpan ke penyimpanan dengan nama file yang unik
+            $path = 'tandatangan_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-        $file->move($directory, $path);
+            $file->move($directory, $path);
 
-        // Update kolom autograph di database
-        $report = Report::find($reportId);
-        $report->update(["autograph_{$section}" => $path]);
+            // Update kolom autograph di database
+            $report = Report::find($reportId);
+            $report->update(["autograph_{$section}" => $path]);
 
-        return response()->json(['message' => 'Autograph uploaded successfully']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Autograph uploaded successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
-}
-        
-
 }
