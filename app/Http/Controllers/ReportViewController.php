@@ -20,9 +20,9 @@ class ReportViewController extends Controller
     public function index()
     {
         $reports = Report::get();
-        
+
         // dd($reports);
-        return view('qaqc.reports.reports',compact('reports'));
+        return view('qaqc.reports.report_view',compact('reports'));
     }
 
     public function detail($id)
@@ -39,10 +39,10 @@ class ReportViewController extends Controller
                     $pd->customer_defect_detail = $data2;
                     $pd->remark_customer = $data3;
                     $pd->remark_daijo = $data4;
-                    
+
                 }
         // dd($report);
-        return view('qaqc.reports.report_view_detail', compact('report'));
+        return view('qaqc.reports.report-view-detail-development',compact('report'));
         // dd($user);
 
         $autographNames = [
@@ -50,7 +50,7 @@ class ReportViewController extends Controller
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('qaqc.reports.report_view_detail', compact('report','user','autographNames'));
+        return view('qaqc.reports.report-view-detail-development', compact('report','user','autographNames'));
     }
 
     public function uploadAutograph(Request $request, $reportId, $section)
@@ -59,7 +59,7 @@ class ReportViewController extends Controller
         // Ambil file gambar dari request
         $file = $request->file('autograph');
         $user = Auth::user()->name;
-        
+
         // Validate file upload
         $request->validate([
             'autograph' => 'required|image|mimes:png,jpg,jpeg',
@@ -104,6 +104,6 @@ public function saveImagePath(Request $request, $reportId, $section)
 
     return response()->json(['message' => 'Image path saved successfully']);
 }
-        
+
 
 }

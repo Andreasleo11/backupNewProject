@@ -6,31 +6,29 @@
     <!-- Content Header (Page header) -->
     <div class="content-header">
         <div class="container-fluid">
-        <!--
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Reminder</a></li>
-                        <li class="breadcrumb-item active">Detail</li>
+                        <li class="breadcrumb-item"><a href="/home">Home</a></li>
+                        <li class="breadcrumb-item active">Report</li>
                     </ol>
                 </div>
-            </div> 
-        -->
+            </div>
             <div>
-                <div class="col-sm-6">
-                    <h1 class="m-0 text-dark mb-5">Verification Reports</h1>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
+                <div class="d-flex mb-3 row-flex">
+                    {{-- <h1 class="m-0 text-dark mb-5">Verification Reports List</h1> --}}
+                    <div class="h2 p-2 me-auto">Verification Report List</div>
+                    <div>
+                        <div class="btn btn-primary" type="submit"><a href="#" class=""></a>+ Add Report</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main content -->
     <div class="container-fluid">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Reports List</h3>
-            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover">
@@ -54,13 +52,13 @@
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-                                        <a href="{{ route('report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
+                                        <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-primary btn-sm">View Details</a>
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
-                                            <span style="color: green;">DONE</span>
+                                            <span class="badge text-bg-success">DONE</span>
                                         @else
-                                            <span style="color: red;">NOT DONE</span>
+                                            <span class="badge text-bg-danger">NOT DONE</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -68,8 +66,8 @@
                         </tbody>
                     </table>
                 </div>
-            </div><!-- /.card-body -->
-        </div><!-- /.card -->
-    </div><!-- /.container -->
-</div><!-- /.content-wrapper -->
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

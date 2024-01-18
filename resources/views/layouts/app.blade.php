@@ -9,18 +9,21 @@
 
     <title>{{ config('app.name', 'DISS | Daijo Industrial Support') }}</title>
 
-    
+
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-    
-    
+
+
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    
+
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-    
+
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+    @stack('extraCss')
+
     <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -35,13 +38,61 @@
                 </div>
             </div>
             <ul class="sidebar-nav">
-                <li class="sidebar-item">
+                <li class="sidebar-item" id="sidebar-item-dashboard">
                     <a href="{{ route('superadmin.home') }}" class="sidebar-link">
                         <i class="lni lni-graph"></i>
                         <span>Dashboard</span>
                     </a>
                 </li>
-                <li class="sidebar-item">
+
+                @if (Auth::user()->department === "Production")
+                <li class="sidebar-item" id="sidebar-item-production">
+                    <a href="{{ route('superadmin.production') }}" class="sidebar-link">
+                        <i class="lni lni-agenda"></i>
+                        <span>Production</span>
+                    </a>
+                </li>
+                @elseif (Auth::user()->department === "QA" || Auth::user()->department === "QC")
+                <li class="sidebar-item" id="sidebar-item-qaqc">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
+                        <i class="lni lni-protection"></i>
+                        <span>QA/QC</span>
+                    </a>
+                    <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('qaqc.report.view') }}" class="sidebar-link">Reports</a>
+                        </li>
+                    </ul>
+                </li>
+                @elseif (Auth::user()->department === "Business")
+                <li class="sidebar-item" id="sidebar-item-business">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#business" aria-expanded="false" aria-controls="business">
+                        <i class="lni lni-protection"></i>
+                        <span>Business</span>
+                    </a>
+                    <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('superadmin.business') }}" class="sidebar-link">Reports</a>
+                        </li>
+                    </ul>
+                </li>
+                @elseif (Auth::user()->department === "HRD")
+                <li class="sidebar-item" id="sidebar-item-hrd">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#hrd" aria-expanded="false" aria-controls="hrd">
+                        <i class="lni lni-protection"></i>
+                        <span>HRD</span>
+                    </a>
+                    <ul id="hrd" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('hrd.importantDocs') }}" class="sidebar-link">Important Documents</a>
+                        </li>
+                    </ul>
+                </li>
+                @else
+                <li class="sidebar-item" id="sidebar-item-admin">
                      <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                         data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
                         <i class="lni lni-protection"></i>
@@ -56,37 +107,9 @@
                         </li>
                     </ul>
                 </li>
-                <li class="sidebar-item">
-                    <a href="{{ route('superadmin.production') }}" class="sidebar-link">
-                        <i class="lni lni-agenda"></i>
-                        <span>Production</span>
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
-                        <i class="lni lni-protection"></i>
-                        <span>QA/QC</span>
-                    </a>
-                    <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('superadmin.qaqc.report.view') }}" class="sidebar-link">Reports</a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#business" aria-expanded="false" aria-controls="business">
-                        <i class="lni lni-protection"></i>
-                        <span>Business</span>
-                    </a>
-                    <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('superadmin.business') }}" class="sidebar-link">Reports</a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="sidebar-item">
+                @endif
+
+                <li class="sidebar-item" id="sidebar-item-setting">
                     <a href="{{ route('superadmin.settings') }}" class="sidebar-link">
                         <i class="lni lni-cog"></i>
                         <span>Setting</span>
@@ -105,9 +128,9 @@
                 </form>
             </div>
         </aside>
-        
+
         <div class="main">
-            <nav class="navbar navbar-expand px-3 py-3 border d-flex">                
+            <nav class="navbar navbar-expand px-3 py-3 border d-flex">
                 <!--Header-->
                 <div class="flex-grow-1">
                     <h4 class="pt-1 ps-3">Daijo Industrial Support System</h4>
@@ -116,7 +139,7 @@
                 <!--Notification-->
                 <div class="me-3">
                     <button type="button" class="btn btn-success position-relative rounded-circle me-3">
-                        <i class="lni lni-popup"></i>   
+                        <i class="lni lni-popup"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
                             +99 <span class="visually-hidden">unread messages</span>
                         </span>
@@ -141,6 +164,8 @@
                 @yield('content')
             </main>
 
+
+
             {{-- <footer class="footer">
                 <div class="container-fluid">
                     <div class="row text-muted">
@@ -153,7 +178,7 @@
                         </div>
                     </div>
                 </div>
-            </footer> 
+            </footer>
              --}}
         </div>
     </div>

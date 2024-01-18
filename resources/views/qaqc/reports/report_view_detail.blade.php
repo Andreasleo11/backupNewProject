@@ -55,7 +55,7 @@
 <div class="autograph-container">
     <!-- Autograph Button 3 -->
     @if(Auth::check() && Auth::user()->department == 'QC')
-    <button onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
+    <button onclick="addAutograph(3, {{ $report->id }})">Acc QC Head</button>
     <input type="file" id="autographInput3" name="autograph" style="display: none;" accept="image/*">
     @endif
     <!-- Autograph Textbox 3 -->
