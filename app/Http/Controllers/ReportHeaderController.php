@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
+use App\Models\User;
+
 
 class ReportHeaderController extends Controller
 {
     public function create()
     {
+    
         return view('reports.create-header');
     }
 
@@ -28,6 +31,7 @@ class ReportHeaderController extends Controller
                 'Verify_Date' => $data['Verify_Date'],
                 'Customer' => $data['Customer'],
                 'Invoice_No' => $data['Invoice_No'],
+                'created_by' => auth()->user()->name,
             ];
 
             // Create the VerificationReportHeader and get its doc_num
