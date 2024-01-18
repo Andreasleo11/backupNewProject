@@ -34,7 +34,11 @@
     </div>   
 </div>
 
-
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('purchasing.landing') }}" class="btn btn-primary">Purchasing</a>
+    </div>   
+</div>
 
 
 @endsection
