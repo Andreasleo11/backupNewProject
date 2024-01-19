@@ -90,6 +90,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
 
     Route::get('hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
     Route::get('hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
+    Route::post('hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {

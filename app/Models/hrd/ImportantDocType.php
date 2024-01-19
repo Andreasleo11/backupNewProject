@@ -5,18 +5,15 @@ namespace App\Models\hrd;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ImportantDoc extends Model
+class ImportantDocType extends Model
 {
-
     protected $fillable = [
-        'name',
-        'type_id',
-        'expired_date'
+        'name'
     ];
 
-    public function type()
+    public function importantDocs()
     {
-        return $this->belongsTo(ImportantDocType::class, 'type_id', 'id');
+        return $this->hasMany(ImportantDoc::class, 'type_id', 'id');
     }
 
     use HasFactory;

@@ -10,8 +10,17 @@ class ImportantDocController extends Controller
 {
     public function index()
     {
-        $important_doc = ImportantDoc::get();
-        return view('hrd.important_docs', compact('important_doc'));
+        $important_docs = ImportantDoc::get();
+        return view('hrd.important_docs', compact('important_docs'));
+    }
+
+    /**
+     * Return a create view
+     */
+
+    public function create()
+    {
+        return view('hrd.important_docs_create');
     }
 
     /**
@@ -19,22 +28,20 @@ class ImportantDocController extends Controller
      */
     public function store(Request $request)
     {
-        $important_doc = new ImportantDoc;
+        // Validate form
+        $this->validate($request, [
+            'name'=>'required|max:255',
+            'type'=>'required|max:255',
+            'expired_date'=>'required',
+        ]);
 
-        $important_doc->id = $request->id;
-        $important_doc->name = $request->name;
-        $important_doc->type = $request->type;
-        $important_doc->expired_date = $request->expired_date;
+        ImportantDoc::create([
+            'name'     => $request->name,
+            'type'     => $request->type,
+            'expired_date'   => $request->expired_date
+        ]);
 
-        // $id = $request->input('id');
-        // $name = $request->input('name');
-        // $type = $request->input('type');
-        // $expired_date = $request->input('expired_date');
-
-        $important_doc->save();
-
-        return redirect()->route('hrd.important_docs');
-
+        return redirect()->route('hrd.importantDocs', with(['success' => 'Data berhasil disimpan']));
     }
 
 

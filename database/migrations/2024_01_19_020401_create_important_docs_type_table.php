@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('important_docs', function (Blueprint $table) {
+        Schema::create('important_docs_type', function (Blueprint $table) {
             $table->id();
+
             $table->string('name');
-            $table->integer('type_id')->default(0);
-            $table->date('expired_date');
 
             $table->timestamps();
         });
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('important_docs');
+        Schema::dropIfExists('important_docs_type');
     }
 };
