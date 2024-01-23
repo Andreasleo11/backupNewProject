@@ -83,6 +83,7 @@
       <div class="card">
       <div class="card-header">
         <h1>Verification Reports</h1>
+        <h2>Created By : {{ $report->created_by }}<h2>
         </div>
         <table class="report-table">
                   <tr>
