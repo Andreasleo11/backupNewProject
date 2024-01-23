@@ -35,12 +35,11 @@ class ReportViewController extends Controller
         foreach($report->details as $pd){
                     $data1 = json_decode($pd->daijo_defect_detail);
                     $data2 = json_decode($pd->customer_defect_detail);
-                    $data3 = json_decode($pd->remark_customer);
-                    $data4 = json_decode($pd->remark_daijo);
+                    $data3 = json_decode($pd->remark);
+                   
                     $pd->daijo_defect_detail = $data1;
                     $pd->customer_defect_detail = $data2;
-                    $pd->remark_customer = $data3;
-                    $pd->remark_daijo = $data4;
+                    $pd->remark = $data3;
                     
                 }
         // dd($report);

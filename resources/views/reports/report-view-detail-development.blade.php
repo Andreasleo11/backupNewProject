@@ -114,12 +114,10 @@
                     <th>Production Date</th>
                     <th>Shift</th>
                     <th>Can Use</th>
-                    <th>Cust Defect</th>
-                    <th>Daijo Defect</th>
+                    <th>Cant Use</th>
                     <th>Customer Defect Detail</th>
-                    <th>Remark Customer</th>
                     <th>Daijo Defect Detail</th>
-                    <th>Remark Daijo</th>
+                    <th>Remark</th>
                    
             
                     <!-- Add more headers as needed -->
@@ -135,8 +133,7 @@
                     <td>{{ $detail->prod_date}}</td> 
                     <td>{{ $detail->shift}}</td> 
                     <td>{{ $detail->can_use}}</td> 
-                    <td>{{ $detail->customer_defect}}</td> 
-                    <td>{{ $detail->daijo_defect}}</td> 
+                    <td>{{ $detail->cant_use}}</td> 
                     <!-- Display customer_defect_detail if available and not null -->
                 <td>
                     @foreach ($detail->customer_defect_detail as $key => $value)
@@ -146,14 +143,6 @@
                     @endforeach
                 </td>
 
-                <!-- Display remark_customer if available and not null -->
-                <td>
-                    @foreach ($detail->remark_customer as $key => $value)
-                        @if (!is_null($value))
-                            {{ $key }}: {{ $value }}<br>
-                        @endif
-                    @endforeach
-                </td>
 
                 <!-- Display daijo_defect_detail if available and not null -->
                 <td>
@@ -166,7 +155,7 @@
 
                 <!-- Display remark_daijo if available and not null -->
                 <td>
-                    @foreach ($detail->remark_daijo as $key => $value)
+                    @foreach ($detail->remark as $key => $value)
                         @if (!is_null($value))
                             {{ $key }}: {{ $value }}<br>
                         @endif
