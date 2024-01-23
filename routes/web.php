@@ -88,9 +88,14 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     Route::post('/qaqc/reports/store', [ReportHeaderController::class, 'store'])->name('qaqc.header.store');
     Route::post('/qaqc/report/{reportId}/autograph/{section}', [ReportViewController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
-    Route::get('hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
-    Route::get('hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
-    Route::post('hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
+    Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
+    Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
+    Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
+    Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
+    Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
+    Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
+    Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
+
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {

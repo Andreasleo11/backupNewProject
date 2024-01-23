@@ -16,6 +16,12 @@
     </div>
 </section>
 
+@if ($message = Session::get('success'))
+    <div class="alert alert-success">
+        <p>{{ $message }}</p>
+    </div>
+@endif
+
 <section class="content">
     <div class="card">
         <div class="card-body p-0">
@@ -32,16 +38,21 @@
                   <tbody>
                     @foreach ($important_docs as $important_doc)
                         <tr>
-                            <td>{{ $important_doc->id }}</td>
+                            <td>{{ $loop->iteration }}</td>
                             <td>{{ $important_doc->name }}</td>
-                            @if ($important_doc->type_id === 0)
+                            {{-- @if ($important_doc->type_id === 0)
                                 <td>Other</td>
-                            @endif
-                            {{-- <td>{{ $important_doc->type->name }}</td> --}} <!-- unsolved using orm laravel -->
+                            @endif --}}
+                            <td>{{ $important_doc->type->name }}</td> <!-- unsolved using orm laravel -->
                             <td>{{ $important_doc->expired_date }}</td>
                             <td>
-                                <a href="#" class="btn btn-success">Edit</a>
-                                <a href="#" class="btn btn-danger">Delete</a>
+                                <form action="{{route('hrd.importantDocs.delete',$important_doc->id)}}" method="POST">
+                                    <a href="{{route('hrd.importantDocs.detail', $important_doc->id)}}" class="btn btn-info me-1">Detail</a>
+                                    <a href="{{route('hrd.importantDocs.edit', $important_doc->id)}}" class="btn btn-primary me-1">Edit</a>
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     @endforeach

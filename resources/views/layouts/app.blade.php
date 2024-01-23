@@ -184,5 +184,7 @@
     </div>
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/modal.js') }}"></script>
+
+    @stack('extraJS')
 </body>
 </html>

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('important_docs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('type_id')->default(0);
+            $table->integer('type_id')->default(1);
             $table->date('expired_date');
 
             $table->timestamps();

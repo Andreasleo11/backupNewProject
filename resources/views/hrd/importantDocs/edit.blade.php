@@ -5,14 +5,16 @@
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="{{route('hrd.importantDocs')}}">Important Documents</a></li>
-      <li class="breadcrumb-item active">Create</li>
+      <li class="breadcrumb-item active">Edit</li>
     </ol>
 </nav>
 
 
+<h2 class="mb-5">Edit Important Document</h2>
+
 <div class="row">
     <div class="col text-center">
-        <div class="h3 mt-4 mb-4 fw-medium">
+        <div class="h3 mt-4 mb-4 fw-lighter">
             Important Document Form
         </div>
         <div class="container text-start col col-lg-7 col-md-10">
@@ -21,13 +23,13 @@
                     <div class="col">
                         <div class="card border-0 shadow-sm rounded">
                             <div class="card-body">
-                                <form action="{{ route('hrd.importantDocs.store') }}" method="POST" enctype="multipart/form-data">
-
+                                <form action="{{ route('hrd.importantDocs.update',  ['id' => $importantDoc->id]) }}" method="POST" enctype="multipart/form-data">
                                     @csrf
+                                    @method('PUT')
 
                                     <div class="form-group">
                                         <label class="fw-medium fs-5 mb-2">Name</label>
-                                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="Insert name of the document">
+                                        <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ $importantDoc->name }}" placeholder="Insert name of the document">
 
                                         <!-- error message for title -->
                                         @error('name')
@@ -40,18 +42,16 @@
                                     <div class="form-group mt-4">
                                         <label class="fw-medium fs-5 mb-2">Type</label>
 
-                                        <select class="form-control @error('type') is-invalid @enderror" name="type" aria-label="Default select example" value="{{ old('type') }}">
-                                            <option selected>Select document type</option>
+                                        <select class="form-control @error('type_id') is-invalid @enderror" name="type_id" >
+                                            <option value = "{{$importantDoc->type_id}}" selected>{{ $importantDoc->type->name }}</option>
 
-                                            <!-- TODO: Should be dynamic -->
-
-                                            <option value="0">Zero</option>
-                                            <option value="1">One</option>
-                                            <option value="2">Two</option>
+                                            @foreach ($types as $type)
+                                                <option value="{{$type->id}}">{{$type->name}}</option>
+                                            @endforeach
                                         </select>
 
                                         <!-- error message for type -->
-                                        @error('type')
+                                        @error('type_id')
                                             <div class="alert alert-danger mt-2">
                                                 {{ $message }}
                                             </div>
@@ -60,7 +60,7 @@
 
                                     <div class="form-group mt-4">
                                         <label class="fw-medium fs-5 mb-2">Expired Date</label>
-                                        <input type="date" class= "form-control" name="expired_date" value="{{ old('expired_date') }}" >
+                                        <input type="date" class= "form-control" name="expired_date" value="{{ $importantDoc->expired_date }}" >
 
                                         <!-- error message for expired_date -->
                                         @error('expired_date')
@@ -73,8 +73,7 @@
                                     <hr class="mt-5 "/>
 
                                     <div class="mt-2 d-flex flex-row-reverse">
-                                        <button type="submit" class="btn btn-md btn-primary">Simpan</button>
-                                        <button type="reset" class="btn btn-md btn-warning me-3">Clear</button>
+                                        <button type="submit" class="btn btn-md btn-primary">Save Changes</button>
                                     </div>
 
                                 </form>
@@ -86,6 +85,4 @@
         </div>
     </div>
 </div>
-
-
 @endsection

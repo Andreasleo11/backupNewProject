@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('important_docs_type', function (Blueprint $table) {
+        Schema::create('important_doc_types', function (Blueprint $table) {
             $table->id();
 
             $table->string('name');
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('important_docs_type');
+        Schema::dropIfExists('important_doc_types');
     }
 };
