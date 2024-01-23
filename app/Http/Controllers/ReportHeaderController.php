@@ -54,6 +54,7 @@ class ReportHeaderController extends Controller
                 'Verify_Date' => $data['Verify_Date'],
                 'Customer' => $data['Customer'],
                 'Invoice_No' => $data['Invoice_No'],
+                'created_by' => auth()->user()->name,
             ];
 
             // Create the VerificationReportHeader and get its doc_num
