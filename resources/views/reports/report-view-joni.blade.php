@@ -39,11 +39,11 @@
                                 <th>Verify Date</th>
                                 <th>Action</th>
                                 <th>Status</th>
-                                <th>Description</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($reports as $report)
+                            @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
                                 <tr>
                                     <td>{{ $report->id }}</td>
                                     <td>{{ $report->invoice_no }}</td>
@@ -51,7 +51,7 @@
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-                                        <a href="{{ route('report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
+                                        <a href="{{ route('report.detailjoni', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
                                         @if($report->attachment)
                                         @php
                                             $filename = basename($report->attachment);
@@ -60,21 +60,18 @@
                                             <!-- Download {{ $filename }} --> Download Support Doc 
                                         </a>
                                         @endif
-                                        <a href="{{ route('report.edit', $report->id) }}" class="btn btn-warning">Edit</a>
                                     </td>
                                     <td>
-                                        @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
-                                            <span style="color: green;">APPROVED</span>
-                                        @elseif($report->is_approve === 0)
-                                            <span style="color: red;">REJECTED</span>
-                                        @elseif($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
-                                            <span style="color: orange;">WAITING APPROVAL</span>
-                                        @else
-                                            <span style="color: orange;">WAITING SIGNATURE</span>
-                                        @endif
+                                    @if($report->is_approve === 1)
+                                        <span style="color: green;">APPROVED</span>
+                                    @elseif($report->is_approve === 0)
+                                        <span style="color: red;">REJECTED</span>
+                                    @else
+                                        <span style="color: orange;">WAITING</span>
+                                    @endif
                                     </td>
-                                    <td>{{ $report->description }}</td>
                                 </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

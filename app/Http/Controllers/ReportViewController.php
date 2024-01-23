@@ -25,6 +25,14 @@ class ReportViewController extends Controller
         return view('reports.report-view',compact('reports'));
     }
 
+    public function indexjoni()
+    {
+        $reports = Report::get();
+        
+        // dd($reports);
+        return view('reports.report-view-joni',compact('reports'));
+    }
+
 
     public function detail($id)
     {
@@ -54,10 +62,67 @@ class ReportViewController extends Controller
     }
 
 
+    public function detailjoni($id)
+    {
+        
+        $report = Report::with('details')->find($id);
+        // $user = Auth::user();
+        $user =  Auth::user();
+        foreach($report->details as $pd){
+                    $data1 = json_decode($pd->daijo_defect_detail);
+                    $data2 = json_decode($pd->customer_defect_detail);
+                    $data3 = json_decode($pd->remark);
+                   
+                    $pd->daijo_defect_detail = $data1;
+                    $pd->customer_defect_detail = $data2;
+                    $pd->remark = $data3;
+                    
+                }
+        // dd($report);
+        // dd($user);
+
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
+        return view('reports.report-view-detail-development-joni', compact('report','user','autographNames'));
+    }
+
+
+    public function approvaljoni(Request $request, $id)
+{
+    
+    $report = Report::find($id);
+
+    // dd($request->all(), $id);
+
+    if ($request->has('approve')) {
+        // Approve the report
+        $report->update(['is_approve' => true]);
+        return redirect()->back()->with('success', 'Report approved successfully.');
+    }
+
+    if ($request->has('reject')) {
+        // Reject the report
+        $request->validate([
+            'description' => 'required',
+        ]);
+
+        $report->update([
+            'is_approve' => false,
+            'description' => $request->input('description'),
+        ]);
+
+        return redirect()->back()->with('success', 'Report rejected successfully.');
+    }
+}
+
+
 
     public function uploadAtt(Request $request){
         $request->validate([
-            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls|max:2048', // Adjust allowed file types and size
+            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls|max:5120', // Adjust allowed file types and size
             'reportId' => 'required|exists:reports,id',
         ]);
     
@@ -134,5 +199,13 @@ public function saveImagePath(Request $request, $reportId, $section)
     return response()->json(['message' => 'Image path saved successfully']);
 }
         
+
+public function editview($id)
+{
+    $report = Report::find($id);
+    $details = $report->details;
+
+    return view('reports.report-view-edit', compact('report','details'));
+}
 
 }

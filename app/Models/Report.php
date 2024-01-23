@@ -23,6 +23,9 @@ class Report extends Model
         'autograph_user_3',
         'created_by',
         'attachment',
+        'is_approve',
+        'description',
+        'num_of_parts',
         // Add other fields as needed
     ];
 

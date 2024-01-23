@@ -3,89 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification Form</title>
+    <title>Edit Verification Form</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 
- <!-- Content Wrapper. Contains page content -->
- <div class="content-wrapper">
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <div class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-          </div><!-- /.col -->
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item">Reminder</li>
-			  <li class="breadcrumb-item active">Detail</li>				  
-            </ol>
-          </div><!-- /.col -->
-        </div><!-- /.row -->
-      </div><!-- /.container-fluid -->
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">Home</li>
+                        <li class="breadcrumb-item">Reminder</li>
+                        <li class="breadcrumb-item active">Detail</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
     </div>
 
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="mb-4">Edit Verification Form</h2>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h2 class="mb-4">Verification Form</h2>
+                <form action="/report/update/{{ $report->id }}" method="post">
+                    @csrf
+                    @method('PUT')
 
-            <form action="/report/store" method="post">
-                @csrf
+                    <div class="mb-3">
+                        <label for="rec_date" class="form-label">Rec'D Date:</label>
+                        <input type="date" id="rec_Date" name="rec_Date" class="form-control" value="{{ $report->rec_date }}" required>
+                    </div>
 
-                {{-- Rec'D Date --}}
-                <div class="mb-3">
-                    <label for="Rec_Date" class="form-label">Rec'D Date:</label>
-                    <input type="date" id="Rec_Date" name="Rec_Date" class="form-control" required>
-                </div>
+                    {{-- Verify Date --}}
+                    <div class="mb-3">
+                        <label for="verify_date" class="form-label">Verify Date:</label>
+                        <input type="date" id="verify_date" name="verify_date" class="form-control" value="{{ $report->verify_date }}" required>
+                    </div>
 
-                {{-- Verify Date --}}
-                <div class="mb-3">
-                    <label for="Verify_Date" class="form-label">Verify Date:</label>
-                    <input type="date" id="Verify_Date" name="Verify_Date" class="form-control" required>
-                </div>
+                    {{-- Customer --}}
+                    <div class="mb-3">
+                        <label for="customer" class="form-label">Customer:</label>
+                        <input type="text" id="customer" name="customer" class="form-control" value="{{ $report->customer }}" required>
+                    </div>
 
-                {{-- Customer --}}
-                <div class="mb-3">
-                    <label for="Customer" class="form-label">Customer:</label>
-                    <input type="text" id="Customer" name="Customer" class="form-control" required>
-                </div>
+                    {{-- Invoice No --}}
+                    <div class="mb-3">
+                        <label for="invoice_no" class="form-label">Invoice No:</label>
+                        <input type="text" id="invoice_no" name="invoice_no" class="form-control" value="{{ $report->invoice_no }}" required>
+                    </div>
 
-                {{-- Invoice No --}}
-                <div class="mb-3">
-                    <label for="Invoice_No" class="form-label">Invoice No:</label>
-                    <input type="text" id="Invoice_No" name="Invoice_No" class="form-control" required>
-                </div>
+                    {{-- Number of Parts --}}
+                    <div class="mb-3">
+                        <label for="num_of_parts" class="form-label">Number of Parts:</label>
+                        <input type="number" id="num_of_parts" name="num_of_parts" class="form-control" min="1" value="{{ $report->num_of_parts }}" required>
+                    </div>
 
-                {{-- Number of Parts --}}
-                <div class="mb-3">
-                    <label for="num_of_parts" class="form-label">Number of Parts:</label>
-                    <input type="number" id="num_of_parts" name="num_of_parts" class="form-control" min="1" required>
-                </div>
+                    {{-- Part Details --}}
+                    <div id="partDetails" class="mb-3 row bg-primary">
+                        <!-- Add other part details fields here, populating them with data from the $report variable -->
+                    </div>
 
-                {{-- Part Details --}}
-                <div id="partDetails" class="mb-3 row bg-primary">
-                </div>
-
-                <button type="submit" class="btn btn-primary mt-3">Submit</button>
-            </form>
+                    <button type="submit" class="btn btn-primary mt-3">Update</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Bootstrap JS (optional, if you need JavaScript features) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS (optional, if you need JavaScript features) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('num_of_parts').addEventListener('input', updatePartDetails);
-        // document.getElementById('customer_defect_details').addEventListener('input', updateDefectDetailFields);
-        // document.getElementById('daijo_defect_details').addEventListener('input', updateDefectDetailFields);
     });
 
     function updatePartDetails() {
@@ -140,9 +140,56 @@
         createButton(buttonContainer, partNumber);
 
         // Append the button container to the main container
-        partDetailContainer.appendChild(buttonContainer);    
+        partDetailContainer.appendChild(buttonContainer);   
+        
+        const detailsData = {!! json_encode($details) !!};
+
+        console.log(detailsData);
+        populatePartDetails(partDetailContainer, partNumber, detailsData[partNumber - 1]);
     }
 
+    function populatePartDetails(container, partNumber, data) {
+        // Populate part name
+        container.querySelector(`[name="part_names[${partNumber}]"]`).value = data.part_name;
+
+        // Populate other details based on your data structure
+        container.querySelector(`[name="rec_quantity[${partNumber}]"]`).value = data.rec_quantity;
+        container.querySelector(`[name="verify_quantity[${partNumber}]"]`).value = data.verify_quantity;
+        container.querySelector(`[name="prod_date[${partNumber}]"]`).value = data.prod_date;
+        container.querySelector(`[name="shift[${partNumber}]"]`).value = data.shift;
+        container.querySelector(`[name="can_use[${partNumber}]"]`).value = data.can_use;
+        container.querySelector(`[name="cant_use[${partNumber}]"]`).value = data.cant_use;
+        const customerDefectDetailInput = container.querySelector(`[name="customer_defect_detail[${partNumber}][]"]`);
+        if (customerDefectDetailInput) {
+            if (Array.isArray(data.customer_defect_detail)) {
+                customerDefectDetailInput.value = data.customer_defect_detail.join(', ');
+            } else {
+                customerDefectDetailInput.value = data.customer_defect_detail;
+            }
+        }
+
+        const daijoDefectDetailInput = container.querySelector(`[name="daijo_defect_detail[${partNumber}][]"]`);
+        if (daijoDefectDetailInput) {
+            if (Array.isArray(data.daijo_defect_detail)) {
+                daijoDefectDetailInput.value = data.daijo_defect_detail.join(', ');
+            } else {
+                daijoDefectDetailInput.value = data.daijo_defect_detail;
+            }
+        }
+        const remarkSelect = container.querySelector(`[name="remark[${partNumber}][]"`);
+        if (remarkSelect) {
+            remarkSelect.value = data.remark[0]; // Assuming remark is an array with a single value
+            remarkSelect.dispatchEvent(new Event('change')); // Trigger change event to handle showing/hiding the explanation input
+        }
+
+        const remarkExplanationInput = container.querySelector(`[name="remark[${partNumber}][]_explanation"]`);
+        if (remarkExplanationInput) {
+            remarkExplanationInput.value = data.remark_explanation;
+        }
+    }
+
+
+    
     function createButton(container, partNumber) {
         
             const button = document.createElement('button');

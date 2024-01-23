@@ -67,7 +67,12 @@ Route::get('/reports/create/header', [ReportHeaderController::class, 'create'])-
 Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('header.store');
 
 Route::get('/reports/view', [ReportViewController::class, 'index'])->name('report.view');
+Route::get('/reports/view/pakjoni', [ReportViewController::class, 'indexjoni'])->name('report.viewjoni');
 Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
+Route::get('/reports/view/detailspakjoni/{id}', [ReportViewController::class, 'detailjoni'])->name('report.detailjoni');
+Route::post('/approvalpakdjoni/{id}', [ReportViewController::class, 'approvaljoni'])->name('approval.joni');
 Route::post('/upload-attachment', [ReportViewController::class, 'uploadAtt'])->name('uploadAttachment');
+
+Route::get('/report/edit/{id}',[ReportViewController::class, 'editview'])->name('report.edit');
 
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);

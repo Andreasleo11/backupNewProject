@@ -45,7 +45,8 @@ class ReportHeaderController extends Controller
             
             // Remove the reference to $values
             unset($values);
-            
+
+            dd($data);            
             
 
             // Extract common attributes
@@ -55,6 +56,7 @@ class ReportHeaderController extends Controller
                 'Customer' => $data['Customer'],
                 'Invoice_No' => $data['Invoice_No'],
                 'created_by' => auth()->user()->name,
+                'num_of_parts' => $data['num_of_parts'],
             ];
 
             // Create the VerificationReportHeader and get its doc_num
