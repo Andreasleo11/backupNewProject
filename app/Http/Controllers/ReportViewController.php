@@ -53,6 +53,35 @@ class ReportViewController extends Controller
         return view('reports.report-view-detail-development', compact('report','user','autographNames'));
     }
 
+
+
+    public function uploadAtt(Request $request){
+        $request->validate([
+            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls|max:2048', // Adjust allowed file types and size
+            'reportId' => 'required|exists:reports,id',
+        ]);
+    
+        $reportId = $request->input('reportId');
+    
+        // Handle file upload
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+    
+            // Generate a unique filename
+            $filename = time() . '_' . $file->getClientOriginalName();
+    
+            // Move the uploaded file to a storage location (you can customize the storage path)
+            $file->storeAs('public/attachments', $filename);
+    
+            // Update the reports table with the attachment filename
+            Report::where('id', $reportId)->update(['attachment' => $filename]);
+    
+            return redirect()->back()->with('success', 'Attachment uploaded and saved successfully.');
+        }
+    
+        return redirect()->back()->with('error', 'Failed to upload and save attachment.');
+    }
+
     public function uploadAutograph(Request $request, $reportId, $section)
 {
     try {

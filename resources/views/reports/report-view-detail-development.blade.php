@@ -167,6 +167,32 @@
                 @endforeach
             </tbody>
 
+ <!-- File Upload Form -->
+ <form action="{{ route('uploadAttachment', ['Id' => $report->id]) }}" method="post" enctype="multipart/form-data">
+    @csrf
+
+    <h4>Upload File</h4>
+    <div class="mb-3">
+        <input type="file" name="attachment" class="form-control">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+
+    <!-- Hidden input to include the report ID in the form data -->
+    <input type="hidden" name="reportId" value="{{ $report->id }}">
+</form>
+
+
+
+
+    @if($report->attachment)
+    @php
+        $filename = basename($report->attachment);
+    @endphp
+        <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}">
+            Download {{ $filename }}
+        </a>
+    @endif
 
             
 @endsection

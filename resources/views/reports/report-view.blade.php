@@ -51,6 +51,14 @@
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
                                         <a href="{{ route('report.detail', ['id' => $report->id]) }}" class="btn btn-info btn-sm">View Details</a>
+                                        @if($report->attachment)
+                                        @php
+                                            $filename = basename($report->attachment);
+                                        @endphp
+                                        <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}">
+                                            Download {{ $filename }}
+                                        </a>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3)

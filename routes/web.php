@@ -68,5 +68,6 @@ Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('he
 
 Route::get('/reports/view', [ReportViewController::class, 'index'])->name('report.view');
 Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
+Route::post('/upload-attachment', [ReportViewController::class, 'uploadAtt'])->name('uploadAttachment');
 
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
