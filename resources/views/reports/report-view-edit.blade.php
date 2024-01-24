@@ -161,31 +161,59 @@
         container.querySelector(`[name="cant_use[${partNumber}]"]`).value = data.cant_use;
         const customerDefectDetailInput = container.querySelector(`[name="customer_defect_detail[${partNumber}][]"]`);
         if (customerDefectDetailInput) {
-            if (Array.isArray(data.customer_defect_detail)) {
-                customerDefectDetailInput.value = data.customer_defect_detail.join(', ');
-            } else {
-                customerDefectDetailInput.value = data.customer_defect_detail;
+            if (data.customer_defect_detail) {
+                const customerDefectDetailArray = JSON.parse(data.customer_defect_detail);
+                
+                // Clear existing customer defect detail inputs
+                customerDefectDetailInput.innerHTML = '';
+
+                // Add input fields for each value in the array
+                customerDefectDetailArray.forEach((value, index) => {
+                    createInput(container, `Customer Defect Detail ${index + 1}:`, `customer_defect_detail[${partNumber}][]`, 'text', value);
+                });
             }
         }
 
         const daijoDefectDetailInput = container.querySelector(`[name="daijo_defect_detail[${partNumber}][]"]`);
         if (daijoDefectDetailInput) {
-            if (Array.isArray(data.daijo_defect_detail)) {
-                daijoDefectDetailInput.value = data.daijo_defect_detail.join(', ');
-            } else {
-                daijoDefectDetailInput.value = data.daijo_defect_detail;
+            if (data.daijo_defect_detail) {
+                const daijoDefectDetailArray = JSON.parse(data.daijo_defect_detail);
+                
+                // Clear existing daijo defect detail inputs
+                daijoDefectDetailInput.innerHTML = '';
+
+                // Add input fields for each value in the array
+                daijoDefectDetailArray.forEach((value, index) => {
+                    createInput(container, `Daijo Defect Detail ${index + 1}:`, `daijo_defect_detail[${partNumber}][]`, 'text', value);
+                });
             }
         }
-        const remarkSelect = container.querySelector(`[name="remark[${partNumber}][]"`);
-        if (remarkSelect) {
-            remarkSelect.value = data.remark[0]; // Assuming remark is an array with a single value
-            remarkSelect.dispatchEvent(new Event('change')); // Trigger change event to handle showing/hiding the explanation input
+
+        const remarkInput = container.querySelector(`[name="remark[${partNumber}][]"`);
+        if (remarkInput) {
+            if (data.remark) {
+                const remarkArray = JSON.parse(data.remark);
+                
+                // Clear existing remark inputs
+                remarkInput.innerHTML = '';
+
+                // Add input fields for each value in the array
+                remarkArray.forEach((value, index) => {
+                    if (["bisarepair", "tidakbisarepair"].includes(value)) {
+                        // If the value is valid, create the dropdown option
+                        createInputDrop(container, `Remark ${index + 1}:`, `remark[${partNumber}][]`, 'text', [value]);
+                    } else {
+                        // If the value is not valid, default to "other" and show the explanation input
+                        createInputDrop(container, `Remark ${index + 1}:`, `remark[${partNumber}][]`, 'text', ['other']);
+                    }
+                });
+            }
         }
 
-        const remarkExplanationInput = container.querySelector(`[name="remark[${partNumber}][]_explanation"]`);
-        if (remarkExplanationInput) {
-            remarkExplanationInput.value = data.remark_explanation;
-        }
+            const remarkExplanationInput = container.querySelector(`[name="remark[${partNumber}][]_explanation"]`);
+            if (remarkExplanationInput) {
+                remarkExplanationInput.value = data.remark_explanation;
+            }
     }
 
 
@@ -218,7 +246,7 @@
 
 
     
-    function createInputDrop(container, labelText, name, type) {
+    function createInputDrop(container, labelText, name, type,selectedValues) {
     const div = document.createElement('div');
     div.classList.add('mb-3');
 
@@ -237,6 +265,25 @@
         option.value = option.textContent = optionValue;
         select.appendChild(option);
     });
+
+    // Set the selected value(s)
+    if (selectedValues) {
+        selectedValues.forEach((value, index) => {
+            if (index === 0) {
+                select.value = value;
+                select.dispatchEvent(new Event('change')); // Trigger change event to handle showing/hiding the explanation input
+            } else if (index === 1 && select.value === 'other') {
+                const explanationInput = document.createElement('input');
+                explanationInput.type = 'text';
+                explanationInput.name = `${name}_explanation`;
+                explanationInput.classList.add('form-control', 'mt-2');
+                explanationInput.placeholder = 'Please specify';
+                explanationInput.value = value;
+                explanationInput.style.display = 'block'; // Show the input for 'other'
+                div.appendChild(explanationInput);
+            }
+        });
+    }
 
     // Create input for explanation
     const explanationInput = document.createElement('input');
@@ -275,7 +322,7 @@
     }
 
 
-    function createInput(container, labelText, name, type) {
+    function createInput(container, labelText, name, type,  value = '') {
         const div = document.createElement('div');
         div.classList.add('mb-3');
 
@@ -286,6 +333,7 @@
         const input = document.createElement('input');
         input.type = type;
         input.name = name;
+        input.value = value;
         input.classList.add('form-control');
 
         div.appendChild(label);
