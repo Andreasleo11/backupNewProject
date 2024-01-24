@@ -137,17 +137,42 @@
                 </div>
 
                 <!--Notification-->
-                <div class="me-3">
-                    <button type="button" class="btn btn-success position-relative rounded-circle me-3">
+                <div class="me-4">
+                    <li class="nav-item dropdown">
+                        <a href="#" id="navbarDropdown" class="nav-link" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div class="btn bg-primary rounded-3">
+                                <i class="lni lni-popup"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success ">
+                                    {{auth()->user()->unreadNotifications->count()}}
+                                </span>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu">
+                            @if (auth()->user()->unreadNotifications)
+                                <li class="d-flex justify-content-end mx-1 my-2">
+                                    <a href="{{route('mark-as-read')}}" class="btn btn-success btn-sm">Mark All as Read</a>
+                                </li>
+                            @endif
+
+                            @foreach (auth()->user()->unreadNotifications as $notification)
+                                <a href="#" class="text-success"><li class="p-1 text-success"> {{$notification->data['data']}}</li></a>
+                            @endforeach
+                            @foreach (auth()->user()->readNotifications as $notification)
+                                <a href="#" class="text-secondary"><li class="p-1 text-secondary"> {{$notification->data['data']}}</li></a>
+                            @endforeach
+                        </ul>
+                    </li>
+
+                    {{-- <button type="button" class="btn btn-primary position-relative rounded-circle me-3">
                         <i class="lni lni-popup"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-white text-black">
                             +99 <span class="visually-hidden">unread messages</span>
                         </span>
-                    </button>
+                    </button> --}}
                 </div>
 
                 <!-- Profile Icon -->
-                <div class="me-2">
+                <div class="me-5">
                     <div class="navbar navbar-collapse">
                         <a href="#" data-bs-toggle="dropdown" class="nav-icon pe-md-0" type="button">
                             <img src="{{ asset('image/profile.jpg') }}" class="avatar img-fluid rounded-circle " alt="profilePicture">

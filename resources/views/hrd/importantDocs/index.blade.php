@@ -40,19 +40,31 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $important_doc->name }}</td>
-                            {{-- @if ($important_doc->type_id === 0)
-                                <td>Other</td>
-                            @endif --}}
-                            <td>{{ $important_doc->type->name }}</td> <!-- unsolved using orm laravel -->
+                            <td>{{ $important_doc->type->name }}</td>
                             <td>{{ $important_doc->expired_date }}</td>
                             <td>
-                                <form action="{{route('hrd.importantDocs.delete',$important_doc->id)}}" method="POST">
-                                    <a href="{{route('hrd.importantDocs.detail', $important_doc->id)}}" class="btn btn-info me-1">Detail</a>
-                                    <a href="{{route('hrd.importantDocs.edit', $important_doc->id)}}" class="btn btn-primary me-1">Edit</a>
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger">Delete</button>
-                                </form>
+                                <div class="row justify-content-center">
+                                    <div class="col-auto">
+                                        <form action="{{route('expired', $important_doc->id)}}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success">Notify</button>
+                                        </form>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="{{route('hrd.importantDocs.detail', $important_doc->id)}}" class="btn btn-info me-1">Detail</a>
+                                    </div>
+                                    <div class="col-auto">
+                                        <a href="{{route('hrd.importantDocs.edit', $important_doc->id)}}" class="btn btn-primary me-1">Edit</a>
+                                    </div>
+                                    <div class="col-auto">
+                                        <form action="{{route('hrd.importantDocs.delete',$important_doc->id)}}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+
                             </td>
                         </tr>
                     @endforeach

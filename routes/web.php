@@ -12,6 +12,8 @@ use App\Http\Controllers\ReportViewController;
 
 use App\Http\Controllers\hrd\ImportantDocController;
 
+use App\Http\Controllers\ExpiredDocController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -96,6 +98,8 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
     Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
 
+    Route::post('/expired/{id}', [ExpiredDocController::class, 'expired'])->name('expired');
+    Route::get('/mark-as-read', [ExpiredDocController::class,'markAsRead'])->name('mark-as-read');
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
@@ -104,7 +108,6 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 
 Route::get('/qaqc/reports/view', [ReportViewController::class, 'index'])->name('qaqc.report.view');
 Route::get('/qaqc/report/view/detail/{id}', [ReportViewController::class, 'detail'])->name('qaqc.report.detail');
-
 
 
 // Route::get('/reports/create/header', [ReportHeaderController::class, 'create'])->name('header.create');
