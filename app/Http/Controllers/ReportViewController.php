@@ -127,6 +127,11 @@ class ReportViewController extends Controller
         ]);
     
         $reportId = $request->input('reportId');
+
+        Report::where('id', $reportId)->update([
+            'is_approve' => null,
+            'description' => null,
+        ]);
     
         // Handle file upload
         if ($request->hasFile('attachment')) {

@@ -278,9 +278,16 @@
                 explanationInput.name = `${name}_explanation`;
                 explanationInput.classList.add('form-control', 'mt-2');
                 explanationInput.placeholder = 'Please specify';
-                explanationInput.value = value;
-                explanationInput.style.display = 'block'; // Show the input for 'other'
-                div.appendChild(explanationInput);
+                
+                if (options.includes(value)) {
+                    // If the value is 'bisarepair' or 'tidakbisarepair', show it as the selected value
+                    select.value = value;
+                } else {
+                    // If the value is neither 'bisarepair' nor 'tidakbisarepair', categorize it as 'other'
+                    explanationInput.value = value;
+                    explanationInput.style.display = 'block'; // Show the input for 'other'
+                    div.appendChild(explanationInput);
+                }
             }
         });
     }
@@ -298,24 +305,29 @@
         div.appendChild(select);
         container.appendChild(div);
 
-    // Add event listener to show/hide explanation input based on dropdown selection
         select.addEventListener('change', function () {
-            if (this.value === 'other') {
-                // If 'other' is selected, create and show the explanation input
-                if (!explanationInput.parentNode) {
-                    // If the explanation input is not already added, add it
-                    div.appendChild(explanationInput);
-                    
-                }
-                explanationInput.style.display = 'block';
-                 
+        const explanationInput = div.querySelector(`[name="${name}_explanation"]`);
+        if (this.value === 'other') {
+            // If 'other' is selected, show the explanation input
+            if (!explanationInput) {
+                // If the explanation input is not already added, add it
+                const newExplanationInput = document.createElement('input');
+                newExplanationInput.type = 'text';
+                newExplanationInput.name = `${name}_explanation`;
+                newExplanationInput.classList.add('form-control', 'mt-2');
+                newExplanationInput.placeholder = 'Please specify';
+                div.appendChild(newExplanationInput);
             } else {
-                // If 'other' is not selected, remove the explanation input (if it exists)
-                if (explanationInput.parentNode) {
-                    div.removeChild(explanationInput);
-                }
+                // If the explanation input exists, show it
+                explanationInput.style.display = 'block';
             }
-        });
+        } else {
+            // If 'other' is not selected, remove the explanation input (if it exists)
+            if (explanationInput) {
+                div.removeChild(explanationInput);
+            }
+        }
+    });
 
         console.log(`Created dropdown for ${name}`);
         return select;
