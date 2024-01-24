@@ -204,7 +204,8 @@
                         createInputDrop(container, `Remark ${index + 1}:`, `remark[${partNumber}][]`, 'text', [value]);
                     } else {
                         // If the value is not valid, default to "other" and show the explanation input
-                        createInputDrop(container, `Remark ${index + 1}:`, `remark[${partNumber}][]`, 'text', ['other']);
+                        console.log(`Invalid value detected: ${value}`);
+                        createInputDrop(container, `Remark ${index + 1}:`, `remark[${partNumber}][]`, 'text', ['other'], value);
                     }
                 });
             }
@@ -246,89 +247,58 @@
 
 
     
-    function createInputDrop(container, labelText, name, type,selectedValues) {
-    const div = document.createElement('div');
-    div.classList.add('mb-3');
+        function createInputDrop(container, labelText, name, type, selectedValues, explanationValue) {
+            console.log(`createInputDrop - Name: ${name}, Selected Values: ${selectedValues}, Explanation Value: ${explanationValue}`);
+        const div = document.createElement('div');
+        div.classList.add('mb-3');
 
-    const label = document.createElement('label');
-    label.textContent = labelText;
-    label.classList.add('form-label');
+        const label = document.createElement('label');
+        label.textContent = labelText;
+        label.classList.add('form-label');
 
-    const select = document.createElement('select');
-    select.name = name;
-    select.classList.add('form-select');
+        const select = document.createElement('select');
+        select.name = name;
+        select.classList.add('form-select');
 
-    // Create and add specific options
-    const options = ["bisarepair", "tidakbisarepair", "other"];
-    options.forEach(optionValue => {
-        const option = document.createElement('option');
-        option.value = option.textContent = optionValue;
-        select.appendChild(option);
-    });
-
-    // Set the selected value(s)
-    if (selectedValues) {
-        selectedValues.forEach((value, index) => {
-            if (index === 0) {
-                select.value = value;
-                select.dispatchEvent(new Event('change')); // Trigger change event to handle showing/hiding the explanation input
-            } else if (index === 1 && select.value === 'other') {
-                const explanationInput = document.createElement('input');
-                explanationInput.type = 'text';
-                explanationInput.name = `${name}_explanation`;
-                explanationInput.classList.add('form-control', 'mt-2');
-                explanationInput.placeholder = 'Please specify';
-                
-                if (options.includes(value)) {
-                    // If the value is 'bisarepair' or 'tidakbisarepair', show it as the selected value
-                    select.value = value;
-                } else {
-                    // If the value is neither 'bisarepair' nor 'tidakbisarepair', categorize it as 'other'
-                    explanationInput.value = value;
-                    explanationInput.style.display = 'block'; // Show the input for 'other'
-                    div.appendChild(explanationInput);
-                }
-            }
+        // Create and add specific options
+        const options = ["bisarepair", "tidakbisarepair", "other"];
+        options.forEach(optionValue => {
+            const option = document.createElement('option');
+            option.value = option.textContent = optionValue;
+            select.appendChild(option);
         });
-    }
 
-    // Create input for explanation
-    const explanationInput = document.createElement('input');
-    explanationInput.type = 'text';
-    explanationInput.name = `${name}_explanation`;
-    explanationInput.classList.add('form-control', 'mt-2');
-    explanationInput.placeholder = 'Please specify';
-    explanationInput.style.display = 'none'; // Initially hide the input
+        // Set the selected value(s)
+        if (selectedValues) {
+            selectedValues.forEach((value, index) => {
+                if (index === 0) {
+                    select.value = value;
+                    select.dispatchEvent(new Event('change')); // Trigger change event to handle showing/hiding the explanation input
+                    
+                }
+            });
+        }
+
+        // Create input for explanation
+        const explanationInput = document.createElement('input');
+        explanationInput.type = 'text';
+        explanationInput.name = `${name}_explanation`;
+        explanationInput.value = explanationValue;
+        explanationInput.classList.add('form-control', 'mt-2');
+        explanationInput.placeholder = 'Please specify';
+        explanationInput.style.display = select.value === 'other' ? 'block' : 'none'; // Initially hide the input if not 'other'
 
         // Append elements to the container
         div.appendChild(label);
         div.appendChild(select);
+        div.appendChild(explanationInput); // Always append the explanation input
         container.appendChild(div);
 
         select.addEventListener('change', function () {
-        const explanationInput = div.querySelector(`[name="${name}_explanation"]`);
-        if (this.value === 'other') {
-            // If 'other' is selected, show the explanation input
-            if (!explanationInput) {
-                // If the explanation input is not already added, add it
-                const newExplanationInput = document.createElement('input');
-                newExplanationInput.type = 'text';
-                newExplanationInput.name = `${name}_explanation`;
-                newExplanationInput.classList.add('form-control', 'mt-2');
-                newExplanationInput.placeholder = 'Please specify';
-                div.appendChild(newExplanationInput);
-            } else {
-                // If the explanation input exists, show it
-                explanationInput.style.display = 'block';
-            }
-        } else {
-            // If 'other' is not selected, remove the explanation input (if it exists)
-            if (explanationInput) {
-                div.removeChild(explanationInput);
-            }
-        }
-    });
-
+            explanationInput.style.display = this.value === 'other' ? 'block' : 'none';
+            console.log(`Value for explanationInput: ${explanationValue}`);
+        });
+        
         console.log(`Created dropdown for ${name}`);
         return select;
     }
