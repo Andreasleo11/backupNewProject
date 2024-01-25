@@ -12,6 +12,13 @@ use App\Http\Controllers\ReportViewController;
 
 use App\Http\Controllers\PurchasingController;
 
+
+use App\Http\Controllers\PurchasingMaterialController;
+use App\Http\Controllers\materialPredictionController;
+use App\Http\Controllers\PurchasingDetailController;
+
+
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -74,3 +81,16 @@ Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail']
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
 
 Route::get('/purchasinglanding', [PurchasingController::class, 'index'])->name('purchasing.landing');
+
+
+
+
+
+
+
+// PURCHASING SECTION 
+Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
+Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
+Route::get('/foremind-detail', [PurchasingController::class, 'indexhome']);
+Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
+Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class,'indexcustomer']);
