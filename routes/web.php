@@ -74,5 +74,6 @@ Route::post('/approvalpakdjoni/{id}', [ReportViewController::class, 'approvaljon
 Route::post('/upload-attachment', [ReportViewController::class, 'uploadAtt'])->name('uploadAttachment');
 
 Route::get('/report/edit/{id}',[ReportViewController::class, 'editview'])->name('report.edit');
+Route::put('/report/update/{id}', [ReportViewController::class, 'updateedit' ])->name('report.update');
 
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);

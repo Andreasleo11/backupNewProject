@@ -213,4 +213,68 @@ public function editview($id)
     return view('reports.report-view-edit', compact('report','details'));
 }
 
+
+public function updateedit(Request $request, $id)
+{
+    $data = $request->all();
+
+    foreach ($data['remark'] as $key => &$values) {
+        $modifiedValues = [];
+    
+        $index = 0;
+        while ($index < count($values)) {
+            // Check if the value is "other"
+            if ($values[$index] === 'other') {
+                // Check if there is a next index and a next value
+                if (isset($values[$index + 1])) {
+                    // Replace "other" with the value from the next index
+                    $modifiedValues[] = $values[$index + 1];
+                    // Skip the next value
+                    $index += 2;
+                }
+            } else {
+                // Keep non-"other" values
+                $modifiedValues[] = $values[$index];
+                $index++;
+            }
+        }
+    
+        // Update the original array with the modified values
+        $data['remark'][$key] = $modifiedValues;
+    }
+    
+    // Remove the reference to $values
+    unset($values);
+
+
+    if (isset($data['customer_defect_detail'])) {
+        $data['customer_defect_detail'] = array_map(function ($array) {
+            $foundNull = false;
+            return array_filter($array, function ($value) use (&$foundNull) {
+                if ($value === null && !$foundNull) {
+                    $foundNull = true;
+                    return false;
+                }
+                return true;
+            });
+        }, $data['customer_defect_detail']);
+    }
+    
+    // Remove only the first null value from daijo_defect_detail
+    if (isset($data['daijo_defect_detail'])) {
+        $data['daijo_defect_detail'] = array_map(function ($array) {
+            $foundNull = false;
+            return array_filter($array, function ($value) use (&$foundNull) {
+                if ($value === null && !$foundNull) {
+                    $foundNull = true;
+                    return false;
+                }
+                return true;
+            });
+        }, $data['daijo_defect_detail']);
+    }
+
+    dd($data);          
+}
+
 }
