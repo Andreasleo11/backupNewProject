@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\direktur\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserHomeController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ReportDetailController;
 use App\Http\Controllers\ReportViewController;
 
 use App\Http\Controllers\hrd\ImportantDocController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,6 +97,10 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
     Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
     Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
+
+    Route::get('/direktur/qaqc/index', [ReportController::class, 'index'])->name('direktur.qaqc.index');
+    Route::get('/direktur/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('direktur.qaqc.detail');
+    Route::get('/direktur/qaqc/approve', [ReportController::class, 'approve'])->name('direktur.qaqc.approve');
 
 });
 

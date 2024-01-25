@@ -19,6 +19,7 @@
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
 
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
@@ -46,67 +47,74 @@
                 </li>
 
                 @if (Auth::user()->department === "Production")
-                <li class="sidebar-item" id="sidebar-item-production">
-                    <a href="{{ route('superadmin.production') }}" class="sidebar-link">
-                        <i class="lni lni-agenda"></i>
-                        <span>Production</span>
-                    </a>
-                </li>
+                    <li class="sidebar-item" id="sidebar-item-production">
+                        <a href="{{ route('superadmin.production') }}" class="sidebar-link">
+                            <i class="lni lni-agenda"></i>
+                            <span>Production</span>
+                        </a>
+                    </li>
                 @elseif (Auth::user()->department === "QA" || Auth::user()->department === "QC")
-                <li class="sidebar-item" id="sidebar-item-qaqc">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
-                        <i class="lni lni-protection"></i>
-                        <span>QA/QC</span>
-                    </a>
-                    <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('qaqc.report.view') }}" class="sidebar-link">Reports</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="sidebar-item" id="sidebar-item-qaqc">
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                            data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
+                            <i class="lni lni-protection"></i>
+                            <span>QA/QC</span>
+                        </a>
+                        <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item">
+                                <a href="{{ route('qaqc.report.view') }}" class="sidebar-link">Reports</a>
+                            </li>
+                        </ul>
+                    </li>
                 @elseif (Auth::user()->department === "Business")
-                <li class="sidebar-item" id="sidebar-item-business">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#business" aria-expanded="false" aria-controls="business">
-                        <i class="lni lni-protection"></i>
-                        <span>Business</span>
-                    </a>
-                    <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('superadmin.business') }}" class="sidebar-link">Reports</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="sidebar-item" id="sidebar-item-business">
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                            data-bs-target="#business" aria-expanded="false" aria-controls="business">
+                            <i class="lni lni-protection"></i>
+                            <span>Business</span>
+                        </a>
+                        <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item">
+                                <a href="{{ route('superadmin.business') }}" class="sidebar-link">Reports</a>
+                            </li>
+                        </ul>
+                    </li>
                 @elseif (Auth::user()->department === "HRD")
-                <li class="sidebar-item" id="sidebar-item-hrd">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#hrd" aria-expanded="false" aria-controls="hrd">
-                        <i class="lni lni-protection"></i>
-                        <span>HRD</span>
-                    </a>
-                    <ul id="hrd" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('hrd.importantDocs') }}" class="sidebar-link">Important Documents</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="sidebar-item" id="sidebar-item-hrd">
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                            data-bs-target="#hrd" aria-expanded="false" aria-controls="hrd">
+                            <i class="lni lni-protection"></i>
+                            <span>HRD</span>
+                        </a>
+                        <ul id="hrd" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item">
+                                <a href="{{ route('hrd.importantDocs') }}" class="sidebar-link">Important Documents</a>
+                            </li>
+                        </ul>
+                    </li>
+                @elseif (Auth::user()->department === "DIREKTUR")
+                    <li class="sidebar-item" id="sidebar-item-setting">
+                        <a href="{{ route('direktur.qaqc.index') }}" class="sidebar-link">
+                            <i class='bx bxs-report'></i>
+                            <span>QA/QC Reports</span>
+                        </a>
+                    </li>
                 @else
-                <li class="sidebar-item" id="sidebar-item-admin">
-                     <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
-                        <i class="lni lni-protection"></i>
-                        <span>Admin</span>
-                    </a>
-                    <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('superadmin.users') }}" class="sidebar-link">Users</a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('superadmin.permission') }}" class="sidebar-link">Permission</a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="sidebar-item" id="sidebar-item-admin">
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                            data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
+                            <i class="lni lni-protection"></i>
+                            <span>Admin</span>
+                        </a>
+                        <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item">
+                                <a href="{{ route('superadmin.users') }}" class="sidebar-link">Users</a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('superadmin.permission') }}" class="sidebar-link">Permission</a>
+                            </li>
+                        </ul>
+                     </li>
                 @endif
 
                 <li class="sidebar-item" id="sidebar-item-setting">
@@ -138,7 +146,7 @@
 
                 <!--Notification-->
                 <div class="me-3">
-                    <button type="button" class="btn btn-success position-relative rounded-circle me-3">
+                    <button type="button" class="btn btn-success position-relative rounded-circle me-2">
                         <i class="lni lni-popup"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
                             +99 <span class="visually-hidden">unread messages</span>
@@ -146,11 +154,16 @@
                     </button>
                 </div>
 
+                <span class="mx-2 d-lg-inline text-gray-600">
+                    {{Auth::user()->name}}
+                </span>
+
                 <!-- Profile Icon -->
                 <div class="me-2">
                     <div class="navbar navbar-collapse">
                         <a href="#" data-bs-toggle="dropdown" class="nav-icon pe-md-0" type="button">
-                            <img src="{{ asset('image/profile.jpg') }}" class="avatar img-fluid rounded-circle " alt="profilePicture">
+
+                            <img src="{{ asset('image/profile.jpg') }}" class="avatar img-fluid rounded-circle" alt="profilePicture">
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
                             <a href="#" class="dropdown-item">Profile</a>
@@ -159,6 +172,7 @@
                         </div>
                     </div>
                 </div>
+
             </nav>
             <main class="content px-5 py-5 height-vh-100">
                 @yield('content')
