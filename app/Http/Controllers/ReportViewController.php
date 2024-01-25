@@ -274,7 +274,52 @@ public function updateedit(Request $request, $id)
         }, $data['daijo_defect_detail']);
     }
 
-    dd($data);          
+    // dd($data);  
+
+      // Update the existing record
+      $report = Report::findOrFail($id);
+
+      // Update common attributes
+      $report->update([
+          'Rec_Date' => $data['rec_Date'],
+          'Verify_Date' => $data['verify_date'],
+          'Customer' => $data['customer'],
+          'Invoice_No' => $data['invoice_no'],
+          'num_of_parts' => $data['num_of_parts'],
+          // Add other attributes as needed
+      ]);
+  
+      // Update details
+      foreach ($data['part_names'] as $key => $partName) {
+          $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];  
+          $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
+          $Remarks = $data['remark'][$key] ?? [];
+  
+          $detail = Detail::where('Report_Id', $id)->where('Part_Name', $partName)->first();
+  
+          // Update detail attributes
+          $detail->update([
+              'Part_Name' => $partName,
+              'Rec_Quantity' => $data['rec_quantity'][$key],
+              'Verify_Quantity' => $data['verify_quantity'][$key],
+              'Prod_Date' => $data['prod_date'][$key],
+              'Shift' => $data['shift'][$key],
+              'Can_Use' => $data['can_use'][$key],
+              'Cant_use' => $data['cant_use'][$key],
+              // Extract defect details and remarks
+              // Add other attributes as needed
+              'Customer_Defect_Detail' => json_encode($customerDefectDetails),
+              'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
+              'Remark' => json_encode($Remarks),
+          ]);
+      }
+  
+      // Redirect to a view or route after the update
+      return redirect()->route('report.view')
+          ->with('success', 'Data updated successfully');
+    
+    
+
 }
 
 }
