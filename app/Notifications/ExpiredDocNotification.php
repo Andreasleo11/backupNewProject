@@ -14,10 +14,10 @@ class ExpiredDocNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    protected $doc_id;
-    public function __construct($doc_id)
+    protected $doc;
+    public function __construct($doc)
     {
-        $this->doc_id = $doc_id;
+        $this->doc = $doc;
     }
 
     /**
@@ -49,7 +49,7 @@ class ExpiredDocNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'data' => $this->doc_id . ' 2 months until it expires'
+            'data' => $this->doc->name . ', 2 months until it expires'
         ];
     }
 }

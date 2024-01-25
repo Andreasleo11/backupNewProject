@@ -44,12 +44,12 @@ class ExpiredNotificationCommand extends Command
         foreach ($importantDocs as $importantDoc) {
             // Assuming the user_id should be associated with the logged-in user
             // Adjust this part based on your actual relationship
-            // $expiredDoc = ExpiredDoc::create([
-            //     'user_id' => $user->id,
-            //     'doc_id' => $importantDoc->id,
-            // ]);
+            // // $expiredDoc = ExpiredDoc::create([
+            // //     'user_id' => $user->id,
+            // //     'doc_id' => $importantDoc->id,
+            // // ]);
 
-            $user->notify(new ExpiredDocNotification($importantDoc->id));
+            $user->notify(new ExpiredDocNotification($importantDoc));
         }
 
         $this->info('Notification updated!');
