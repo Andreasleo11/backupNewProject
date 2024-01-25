@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('details', function (Blueprint $table) {
-            $table->dropColumn('remark_daijo');
-            $table->dropColumn('remark_customer');
-            $table->dropColumn('customer_defect');
-            $table->dropColumn('daijo_defect');
+        Schema::table('reports', function (Blueprint $table) {
+            $table->string('created_by')->nullable();
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-
+        Schema::table('reports', function (Blueprint $table) {
+            //
+        });
     }
 };

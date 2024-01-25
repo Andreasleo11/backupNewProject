@@ -20,7 +20,7 @@ class ReportHeaderController extends Controller
 
             foreach ($data['remark'] as $key => &$values) {
                 $modifiedValues = [];
-            
+
                 $index = 0;
                 while ($index < count($values)) {
                     // Check if the value is "other"
@@ -38,16 +38,16 @@ class ReportHeaderController extends Controller
                         $index++;
                     }
                 }
-            
+
                 // Update the original array with the modified values
                 $data['remark'][$key] = $modifiedValues;
             }
-            
+
             // Remove the reference to $values
             unset($values);
 
-            dd($data);            
-            
+            // dd($data);
+
 
             // Extract common attributes
             $commonAttributes = [
@@ -62,11 +62,11 @@ class ReportHeaderController extends Controller
             // Create the VerificationReportHeader and get its doc_num
 
             $report = Report::create($commonAttributes);
-            
+
 
             // Save the main data to the database, including defect details
             foreach ($data['part_names'] as $key => $partName) {
-                $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];  
+                $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];
                 $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
                 $Remarks = $data['remark'][$key] ?? [];
 
@@ -86,11 +86,11 @@ class ReportHeaderController extends Controller
                     'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
                     'Remark' => json_encode($Remarks),
                 ];
-            
+
             Detail::create($attributes);
             }
-            
-        
+
+
         return redirect()->back()->with('success', 'Verification report has been stored successfully.');
     }
 }
