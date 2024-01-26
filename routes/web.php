@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\direktur\ReportController;
+use App\Http\Controllers\QaQcReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserHomeController;
@@ -9,7 +10,6 @@ use App\Http\Controllers\StaffHomeController;
 
 use App\Http\Controllers\ReportHeaderController;
 use App\Http\Controllers\ReportDetailController;
-use App\Http\Controllers\ReportViewController;
 
 use App\Http\Controllers\hrd\ImportantDocController;
 use Illuminate\Support\Facades\Auth;
@@ -83,12 +83,17 @@ Route::middleware(['checkUserRole:1'])->group(function () {
 Route::middleware(['checkUserRole:2'])->group(function () {
     Route::get('/staff/home', [StaffHomeController::class, 'index'])->name('staff.home');
     Route::get('/userStaff/home', [UserHomeController::class, 'index']);
-    Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']); // SINGLEROUTES susah diduplikat sementara ini
-    Route::post('/save-image-path/{reportId}/{section}', [ReportViewController::class,'saveImagePath']);
 
-    Route::get('/qaqc/reports/create', [ReportHeaderController::class, 'create'])->name('qaqc.header.create');
-    Route::post('/qaqc/reports/store', [ReportHeaderController::class, 'store'])->name('qaqc.header.store');
-    Route::post('/qaqc/report/{reportId}/autograph/{section}', [ReportViewController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+    Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
+    Route::post('/upload-attachment', [QaQcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
+    Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+
+    Route::get('/qaqc/reports/', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
+    Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
+    Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit');
+    Route::put('/qaqc/report/{id}', [QaQcReportController::class, 'update' ])->name('qaqc.report.update');
+    Route::get('/qaqc/reports/create', [QaQcReportController::class, 'create'])->name('qaqc.report.create');
+    Route::post('/qaqc/reports/', [QaQcReportController::class, 'store'])->name('qaqc.report.store');
 
     Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
     Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
@@ -100,7 +105,8 @@ Route::middleware(['checkUserRole:2'])->group(function () {
 
     Route::get('/direktur/qaqc/index', [ReportController::class, 'index'])->name('direktur.qaqc.index');
     Route::get('/direktur/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('direktur.qaqc.detail');
-    Route::get('/direktur/qaqc/approve', [ReportController::class, 'approve'])->name('direktur.qaqc.approve');
+    Route::put('/direktur/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('direktur.qaqc.approve');
+    Route::put('/direktur/qaqc/reject/{id}', [ReportController::class, 'reject'])->name('direktur.qaqc.reject');
 
 });
 
@@ -108,21 +114,19 @@ Route::middleware(['checkUserRole:3'])->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
 });
 
-Route::get('/qaqc/reports/view', [ReportViewController::class, 'index'])->name('qaqc.report.view');
-Route::get('/qaqc/report/view/detail/{id}', [ReportViewController::class, 'detail'])->name('qaqc.report.detail');
 
 
 
 // Route::get('/reports/create/header', [ReportHeaderController::class, 'create'])->name('header.create');
 // Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('header.store');
 
-Route::get('/reports/view', [ReportViewController::class, 'index'])->name('report.view');
-Route::get('/reports/view/pakjoni', [ReportViewController::class, 'indexjoni'])->name('report.viewjoni');
-Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
-Route::get('/reports/view/detailspakjoni/{id}', [ReportViewController::class, 'detailjoni'])->name('report.detailjoni');
-Route::post('/approvalpakdjoni/{id}', [ReportViewController::class, 'approvaljoni'])->name('approval.joni');
-Route::post('/upload-attachment', [ReportViewController::class, 'uploadAtt'])->name('uploadAttachment');
+// Route::get('/reports/view', [ReportViewController::class, 'index'])->name('report.view');
+// Route::get('/reports/view/pakjoni', [ReportViewController::class, 'indexjoni'])->name('report.viewjoni');
+// Route::get('/reports/view/details/{id}', [ReportViewController::class, 'detail'])->name('report.detail');
+// Route::get('/reports/view/detailspakjoni/{id}', [ReportViewController::class, 'detailjoni'])->name('report.detailjoni');
+// Route::post('/approvalpakdjoni/{id}', [ReportViewController::class, 'approvaljoni'])->name('approval.joni');
+// Route::post('/upload-attachment', [ReportViewController::class, 'uploadAtt'])->name('uploadAttachment');
 
-Route::get('/report/edit/{id}',[ReportViewController::class, 'editview'])->name('report.edit');
-Route::put('/report/update/{id}', [ReportViewController::class, 'updateedit' ])->name('report.update');
+// Route::get('/report/edit/{id}',[ReportViewController::class, 'editview'])->name('report.edit');
+// Route::put('/report/update/{id}', [ReportViewController::class, 'updateedit' ])->name('report.update');
 

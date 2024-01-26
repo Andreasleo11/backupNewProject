@@ -1,18 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Verification Form</title>
+@extends('layouts.app')
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-
-<!-- Content Wrapper. Contains page content -->
-<div class="content-wrapper">
-    <!-- Content Header (Page header) -->
+@section('content')
     <div class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -34,7 +22,7 @@
             <div class="col-md-8">
                 <h2 class="mb-4">Edit Verification Form</h2>
 
-                <form action="{{ route('report.update', ['id' => $report->id]) }}" method="post">
+                <form action="{{ route('qaqc.report.update', ['id' => $report->id]) }}" method="post">
                     @csrf
                     @method('PUT')
 
@@ -77,11 +65,7 @@
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS (optional, if you need JavaScript features) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+@endsection
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -101,9 +85,9 @@
             createPartDetails(i);
         }
     }
-    
 
-    
+
+
 
     function createPartDetails(partNumber) {
         const partDetails = document.getElementById('partDetails');
@@ -111,7 +95,7 @@
 
         // Create container for part details
         const partDetailContainer = document.createElement('div');
-        partDetailContainer.id = `partDetails${partNumber}`; 
+        partDetailContainer.id = `partDetails${partNumber}`;
         partDetailContainer.classList.add('col-md-4', 'mb-3');
 
         // Add part number label
@@ -124,13 +108,13 @@
         createInput(partDetailContainer, `Part ${partNumber} Name:`, `part_names[${partNumber}]`, 'text');
 
         // Add details for the new part
-       
+
         addPartDetails(partDetailContainer, partNumber);
 
 
         // Append to the main container
         partDetails.appendChild(partDetailContainer);
-        
+
 
         // Show the details for the first part by default
         if (partNumber === 1) {
@@ -140,7 +124,7 @@
             // Create container for the button
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('mt-2', 'col-lg-4');
-    
+
 
         console.log(detailsData);
         populatePartDetails(partDetailContainer, partNumber, detailsData[partNumber - 1]);
@@ -149,7 +133,7 @@
          createButton(buttonContainer, partNumber);
 
         // Append the button container to the main container
-        partDetailContainer.appendChild(buttonContainer);   
+        partDetailContainer.appendChild(buttonContainer);
     }
 
     function populatePartDetails(container, partNumber, data) {
@@ -167,7 +151,7 @@
         if (customerDefectDetailInput) {
             if (data.customer_defect_detail) {
                 const customerDefectDetailArray = JSON.parse(data.customer_defect_detail);
-                
+
                 // Clear existing customer defect detail inputs
                 customerDefectDetailInput.innerHTML = '';
 
@@ -182,7 +166,7 @@
         if (daijoDefectDetailInput) {
             if (data.daijo_defect_detail) {
                 const daijoDefectDetailArray = JSON.parse(data.daijo_defect_detail);
-                
+
                 // Clear existing daijo defect detail inputs
                 daijoDefectDetailInput.innerHTML = '';
 
@@ -197,7 +181,7 @@
         if (remarkInput) {
             if (data.remark) {
                 const remarkArray = JSON.parse(data.remark);
-                
+
                 // Clear existing remark inputs
                 remarkInput.innerHTML = '';
 
@@ -222,9 +206,9 @@
     }
 
 
-    
+
     function createButton(container, partNumber) {
-        
+
             const button = document.createElement('button');
             button.type = 'button';
             button.classList.add('btn', 'btn-secondary', 'mt-2');
@@ -250,7 +234,7 @@
     }
 
     function createInputDrop(container, labelText, name, type) {
-        
+
         const div = document.createElement('div');
         div.classList.add('mb-3');
         div.classList.add('d-none');
@@ -291,10 +275,10 @@
                     if (!explanationInput.parentNode) {
                         // If the explanation input is not already added, add it
                         div.appendChild(explanationInput);
-                        
+
                     }
                     explanationInput.style.display = 'block';
-                    
+
                 } else {
                     // If 'other' is not selected, remove the explanation input (if it exists)
                     if (explanationInput.parentNode) {
@@ -309,10 +293,10 @@
 
 
     function createInputDropI(container, labelText, name, type) {
-        
+
         const div = document.createElement('div');
         div.classList.add('mb-3');
-       
+
 
         const label = document.createElement('label');
         label.textContent = labelText;
@@ -350,10 +334,10 @@
                     if (!explanationInput.parentNode) {
                         // If the explanation input is not already added, add it
                         div.appendChild(explanationInput);
-                        
+
                     }
                     explanationInput.style.display = 'block';
-                    
+
                 } else {
                     // If 'other' is not selected, remove the explanation input (if it exists)
                     if (explanationInput.parentNode) {
@@ -366,11 +350,11 @@
             return select;
     }
 
-        
-   
-   
-   
-    function createInputDropA(container, labelText, name, type, selectedValues) {   
+
+
+
+
+    function createInputDropA(container, labelText, name, type, selectedValues) {
         console.log(`createInputDrop - Name: ${name}, Selected Values: ${selectedValues} PAKE METODE `);
         const div = document.createElement('div');
         div.classList.add('mb-3');
@@ -407,12 +391,12 @@
         explanationInput.name = `${name}_explanation`;
         explanationInput.classList.add('form-control', 'mt-2');
         explanationInput.placeholder = 'Please specify';
-        explanationInput.style.display = select.value === 'other' ? 'block' : 'none'; // Initially hide the input if not 'other' 
-        
+        explanationInput.style.display = select.value === 'other' ? 'block' : 'none'; // Initially hide the input if not 'other'
+
         // Append elements to the container
         div.appendChild(label);
         div.appendChild(select);
-       
+
         container.appendChild(div);
 
         select.addEventListener('change', function () {
@@ -421,10 +405,10 @@
                 if (!explanationInput.parentNode) {
                     // If the explanation input is not already added, add it
                     div.appendChild(explanationInput);
-                    
+
                 }
                 explanationInput.style.display = 'block';
-                 
+
             } else {
                 // If 'other' is not selected, remove the explanation input (if it exists)
                 if (explanationInput.parentNode) {
@@ -432,7 +416,7 @@
                 }
             }
         });
-        
+
     }
 
 
@@ -458,7 +442,7 @@
             select.appendChild(option);
         });
 
-        
+
 
         // Create input for explanation
         const explanationInput = document.createElement('input');
@@ -475,7 +459,7 @@
                 if (index === 0) {
                     select.value = value;
                     select.dispatchEvent(new Event('change')); // Trigger change event to handle showing/hiding the explanation input
-                    
+
                 }
             });
         }
@@ -483,7 +467,7 @@
         // Append elements to the container
         div.appendChild(label);
         div.appendChild(select);
-       
+
         container.appendChild(div);
 
         select.addEventListener('change', function () {
@@ -492,10 +476,10 @@
                 if (!explanationInput.parentNode) {
                     // If the explanation input is not already added, add it
                     div.appendChild(explanationInput);
-                    
+
                 }
                 explanationInput.style.display = 'block';
-                 
+
             } else {
                 // If 'other' is not selected, remove the explanation input (if it exists)
                 if (explanationInput.parentNode) {
@@ -503,8 +487,8 @@
                 }
             }
         });
-       
-        
+
+
         // console.log(`Created dropdown for ${name}`);
         // return select;
     }
@@ -555,7 +539,7 @@
     function createInputA(container, labelText, name, type) {
         const div = document.createElement('div');
         div.classList.add('mb-3');
-        
+
 
         const label = document.createElement('label');
         label.textContent = labelText;
@@ -577,9 +561,9 @@
     function addAttributesToPart(partNumber) {
     console.log(`Adding attributes to part ${partNumber}`);
     const partDetailContainer = document.getElementById(`partDetails${partNumber}`);
-    
+
         if (partDetailContainer) {
-            console.log(`Part container found for part ${partNumber}`);     
+            console.log(`Part container found for part ${partNumber}`);
             createInputA(partDetailContainer, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text');
             createInputA(partDetailContainer, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text');
             createInputDropI(partDetailContainer, `Remark:`, `remark[${partNumber}][]`, 'text');
@@ -594,5 +578,3 @@
     }
 </script>
 
-</body>
-</html>

@@ -38,31 +38,28 @@ class ReportController extends Controller
         return view('direktur.qaqc.detail', compact('report','user','autographNames'));
     }
 
-    public function approve(Request $request, $id)
+    public function approve($id)
     {
-        $report = Report::find($id);
+        Report::where('id', $id)->update([
+            'is_approve' => true,
+            'description' => null,
+        ]);
+        Report::find($id)->update(['is_approve' => true]);
+        return redirect()->route('direktur.qaqc.index')->with('success', 'Document approved!');
+    }
 
-        // dd($request->all(), $id);
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'required'
+        ]);
 
-        if ($request->has('approve')) {
-            // Approve the report
-            $report->update(['is_approve' => true]);
-            return redirect()->back()->with('success', 'Report approved successfully.');
-        }
+        Report::find($id)->update([
+            'is_approve' => false,
+            'description' => $request->description
+        ]);
 
-        if ($request->has('reject')) {
-            // Reject the report
-            $request->validate([
-                'description' => 'required',
-            ]);
-
-            $report->update([
-                'is_approve' => false,
-                'description' => $request->input('description'),
-            ]);
-
-            return redirect()->back()->with('success', 'Report rejected successfully.');
-        }
+        return redirect()->route('direktur.qaqc.index')->with('success', 'Document rejected!');
     }
 
 }

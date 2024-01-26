@@ -62,7 +62,7 @@
                         </a>
                         <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                             <li class="sidebar-item">
-                                <a href="{{ route('qaqc.report.view') }}" class="sidebar-link">Reports</a>
+                                <a href="{{ route('qaqc.report.index') }}" class="sidebar-link">Reports</a>
                             </li>
                         </ul>
                     </li>

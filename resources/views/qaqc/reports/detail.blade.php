@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-<meta name="csrf-token" content="{{ csrf_token() }}">
-
 @push('extraCss')
     <style>
         .autograph-box {
@@ -15,36 +13,33 @@
 @endpush
 
 @section('content')
-
     <section aria-label="header" class="container">
         <div class="row text-center">
             <div class="col">
                 <h2>QA Inspector</h2>
-                @if(Auth::check() && Auth::user()->department == 'QA')
-                    <button class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
-                @endif
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
+                @if(Auth::check() && Auth::user()->department == 'QA')
+                    <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
+                @endif
             </div>
 
             <div class="col">
                 <h2>QA Leader</h2>
-                @if(Auth::check() && Auth::user()->department == 'QA')
-                    <button class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
-                @endif
-
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
+                @if(Auth::check() && Auth::user()->department == 'QA')
+                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
+                @endif
             </div>
 
             <div class="col">
                 <h2>QC HEAD</h2>
-                @if(Auth::check() && Auth::user()->department == 'QC')
-                    <button class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
-                @endif
-
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
+                @if(Auth::check() && Auth::user()->department == 'QC')
+                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
+                @endif
             </div>
         </div>
     </section>
@@ -144,71 +139,41 @@
         </div>
     </section>
 
-    <section aria-label="approval" class="container mt-5 mb-8">
-        {{-- @if($report->is_approve === null)
-            <div class="container">
-                <form action="{{ route('approval.joni', ['id' => $report->id]) }}" method="post">
-                    @csrf
+    <section aria-label="upload-file">
+        <div class="container mt-5">
+            <!-- File Upload Form -->
+           <form action="{{ route('uploadAttachment', ['Id' => $report->id]) }}" method="post" enctype="multipart/form-data">
+               @csrf
 
-                    <label>
-                        <input type="checkbox" name="approve" value="1">
-                        Approve
-                    </label>
+               <h4>Upload File</h4>
+               <div class="mb-3">
+                   <input type="file" name="attachment" class="form-control">
+               </div>
 
-                    <label>
-                        <input type="checkbox" name="reject" value="1">
-                        Reject
-                    </label>
+               <button type="submit" class="btn btn-primary">Upload</button>
 
-                    <div>
-                        <label>Description:</label>
-                        <textarea name="description"></textarea>
-                    </div>
+               <!-- Hidden input to include the report ID in the form data -->
+               <input type="hidden" name="reportId" value="{{ $report->id }}">
+           </form>
 
-                    <button type="submit">Submit</button>
-                </form>
-            </div>
-        @endif --}}
-
-
-        @if($report->is_approve === null)
-            <div class="modal fade" id="rejectModal">
-                <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <form action="{{route('direktur.qaqc.reject', ['id' => $report->id])}}" method="post">
-                                @method('PUT')
-                                @csrf
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5">Reject</h1>
-                                </div>
-                                <div class="modal-body">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea name="description" class="form-control"></textarea>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Confirm</button>
-                                </div>
-                            </form>
-                        </div>
-                </div>
-            </div>
-
-            <div class="container text-center">
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal" data-bs-target="#rejectModal">Reject</button>
-                <form action="{{route('direktur.qaqc.approve', ['id' => $report->id])}}" method="post" class="d-inline">
-                    @method('PUT')
-                    @csrf
-                    <button class="btn btn-success btn-lg" type="submit">Approve</button>
-                </form>
-            </div>
-        @endif
+           @if($report->attachment)
+           @php
+               $filename = basename($report->attachment);
+           @endphp
+               <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}">
+                   Download {{ $filename }}
+               </a>
+           @endif
+        </div>
     </section>
 
-        {{-- <a class="btn btn-danger" onclick="return confirm('Are you sure?')" href="#"><i class="fa fa-trash"></i></a> --}}
+    {{-- <a class="btn btn-danger" onclick="return confirm('Are you sure?')" href="#"><i class="fa fa-trash"></i></a> --}}
+@endsection
 
 
-    @endsection
+
+
+
 
 <script>
     // Function to add autograph to the specified box
@@ -239,57 +204,66 @@
         .then(response => response.json())
         .then(data => {
             console.log(data.message);
+            location.reload();
         })
         .catch(error => {
             console.error('Error:', error);
         });
+
+        checkAutographStatus(reportId);
     }
 
 
 
 
-    function checkAutographStatus(reportId) {
-    // Assume you have a variable from the server side indicating the autograph status
-    var autographs = {
-        autograph_1: '{{ $report->autograph_1 ?? null }}',
-        autograph_2: '{{ $report->autograph_2 ?? null }}',
-        autograph_3: '{{ $report->autograph_3 ?? null }}',
-    };
+    function checkAutographStatus(reportId)
+    {
+        // Assume you have a variable from the server side indicating the autograph status
+        var autographs = {
+            autograph_1: '{{ $report->autograph_1 ?? null }}',
+            autograph_2: '{{ $report->autograph_2 ?? null }}',
+            autograph_3: '{{ $report->autograph_3 ?? null }}',
+        };
 
-    var autographNames = {
-        autograph_name_1: '{{ $autographNames['autograph_name_1'] ?? null }}',
-        autograph_name_2: '{{ $autographNames['autograph_name_2'] ?? null }}',
-        autograph_name_3: '{{ $autographNames['autograph_name_3'] ?? null }}',
-    };
+        var autographNames = {
+            autograph_name_1: '{{ $autographNames['autograph_name_1'] ?? null }}',
+            autograph_name_2: '{{ $autographNames['autograph_name_2'] ?? null }}',
+            autograph_name_3: '{{ $autographNames['autograph_name_3'] ?? null }}',
+        };
 
-    // Loop through each autograph status and update the UI accordingly
-    for (var i = 1; i <= 3; i++) {
-        var autographBox = document.getElementById('autographBox' + i);
-        var autographInput = document.getElementById('autographInput' + i);
-        var autographNameBox = document.getElementById('autographuser' + i);
+        // Loop through each autograph status and update the UI accordingly
+        for (var i = 1; i <= 3; i++) {
+            var autographBox = document.getElementById('autographBox' + i);
+            var autographInput = document.getElementById('autographInput' + i);
+            var autographNameBox = document.getElementById('autographuser' + i);
+            var btnId = document.getElementById('btn' + i);
 
-        // Check if autograph status is present in the database
-        if (autographs['autograph_' + i]) {
-            autographBox.style.display = 'block';
 
-           // Construct URL based on the current location
-           var url = '/' + autographs['autograph_' + i];
 
-            // Update the background image using the URL
-            autographBox.style.backgroundImage = "url('" + url + "')";
+            // Check if autograph status is present in the database
+            if (autographs['autograph_' + i]) {
 
-            var autographName = autographNames['autograph_name_' + i];
-            autographNameBox.textContent = autographName;
-            autographNameBox.style.display = 'block';
+                if(btnId){
+                    // console.log(btnId);
+                    btnId.style.display = 'none';
+                }
 
+                // Construct URL based on the current location
+                var url = '/' + autographs['autograph_' + i];
+
+                // Update the background image using the URL
+                autographBox.style.backgroundImage = "url('" + url + "')";
+
+                var autographName = autographNames['autograph_name_' + i];
+                autographNameBox.textContent = autographName;
+                autographNameBox.style.display = 'block';
+            }
         }
     }
-}
 
-// Call the function to check autograph status on page load
-window.onload = function () {
-    checkAutographStatus({{ $report->id }});
-};
+    // Call the function to check autograph status on page load
+    window.onload = function () {
+        checkAutographStatus({{ $report->id }});
+    };
 </script>
-
 
