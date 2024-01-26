@@ -55,7 +55,6 @@
     </div>
     <div class="export-buttons">
     <a href="/foremind-detail/print/customer/excel/{{ $vendorCode }}" class="btn btn-success">Export to Excel</a>
-    <a href="/foremind-detail/print/pdf/{{ $vendorCode }}" class="btn btn-danger">Export to PDF</a>
 </div>
 
                 <style>

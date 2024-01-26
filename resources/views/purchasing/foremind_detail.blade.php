@@ -27,7 +27,7 @@
                 <div class="center-form">
                 <form method="GET" action="/foremind-detail/print" target="_blank">
                         @csrf
-                        <label for="vendor_code">Enter Vendor Code:</label>
+                        <label for="vendor_code">Enter Vendor Code(for Internal):</label>
                         <input type="text" id="vendor_code" name="vendor_code" required>
                         <button type="submit">Submit</button>
                     </form>
@@ -36,14 +36,12 @@
                 <div class="center-form">
                 <form method="GET" action="/foremind-detail/printCustomer" target="_blank">
                         @csrf
-                        <label for="vendor_code">Enter Vendor Code:</label>
+                        <label for="vendor_code">Enter Vendor Code(for Customer):</label>
                         <input type="text" id="vendor_code" name="vendor_code" required>
                         <button type="submit">Submit</button>
                     </form>
 
-                    <div class="export-buttons">
-                    <a href="/foremind-detail/excel" class="btn btn-success">Export to Excel</a>
-                    </div>
+
                 <table class="table">
                 <thead>
     <tr>

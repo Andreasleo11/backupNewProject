@@ -13,7 +13,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PurchasingDetailController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
 
             // Retrieve forecasts from the foremindFinal table
             $forecasts = ForemindFinal::all();
@@ -82,7 +83,8 @@ class PurchasingDetailController extends Controller
                 ])->render();
     }
 
-    public function indexCustomer(Request $request){
+    public function indexCustomer(Request $request)
+    {
 
             // Retrieve forecasts from the foremindFinal table
             $forecasts = ForemindFinal::all();
@@ -231,8 +233,6 @@ class PurchasingDetailController extends Controller
 
         return Excel::download($export,  $fileName);
     }
-
-
 
 
     public function exportExcelcustomer($vendorCode)

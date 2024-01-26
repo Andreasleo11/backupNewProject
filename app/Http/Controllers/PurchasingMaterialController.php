@@ -100,7 +100,7 @@ class PurchasingMaterialController extends Controller
         }
     }
 
-    private function Insert_finalrest($data) // DONE - Material Count not clear 
+    private function Insert_finalrest($data) // DONE 
     {
         
         foreach ($data as $item) {
@@ -149,53 +149,9 @@ class PurchasingMaterialController extends Controller
         }
     }
 
-    // private function Insert_finalrest($data) // masih duplikat atas juga masih duplikat 
-    // {
-    //     foreach ($data as $item) {
-    //         $bomWipItems = $item->bomWip;
+   
 
-    //         foreach ($bomWipItems as $bomWipItem) {
-    //             $bom_quantity = $bomWipItem->bom_quantity;
-    //             $inventoryQu = $bomWipItem->fgRawInventoryMtr;
-
-    //             foreach ($inventoryQu as $inventoryQuantity) {
-    //                 $record = [
-    //                     'forecast_code' => $item->forecast_code,
-    //                     'forecast_name' => $item->forecast_name,
-    //                     'vendor_code' => $inventoryQuantity->vendor_code,
-    //                     'vendor_name' => $inventoryQuantity->vendor_name,
-    //                     'day_forecast' => $item->forecast_date,
-    //                     'Item_no' => $item->item_no,
-    //                     'quantity_forecast' => $item->quantity,
-    //                     'item_group' => $inventoryQuantity->item_group,
-    //                     'material_code' => $inventoryQuantity->material_code,
-    //                     'material_name' => $inventoryQuantity->material_name,
-    //                     'quantity_material' => $inventoryQuantity->material_quantity,
-    //                     'quantity_bomWip' => $bom_quantity,
-    //                     'material_prediction' => $inventoryQuantity->material_quantity * $item->quantity * $bom_quantity,
-    //                     'U/M' => $inventoryQuantity->Measure
-    //                 ];
-
-    //                 // Define the unique columns for checking duplicates
-    //                 $uniqueColumns = [
-    //                     'Item_no',
-    //                     'material_code',
-    //                 ];
-
-    //                 // Use array_intersect_key to get only the keys present in $uniqueColumns
-    //                 $uniqueRecord = array_intersect_key($record, array_flip($uniqueColumns));
-
-    //                 // Use updateOrInsert to handle duplicates
-    //                 foremindFinal::updateOrInsert(
-    //                     $uniqueRecord,
-    //                     $record
-    //                 );
-    //             }
-    //         }
-    //     }
-    // }
-
-    private function Insert_finalrest1($data) // DONE - Material Count not clear 
+    private function Insert_finalrest1($data) // DONE 
     {
         
         foreach ($data as $item) {
@@ -252,7 +208,7 @@ class PurchasingMaterialController extends Controller
         }
     }
 
-    private function Insert_finalrest2($data) // DONE - Material Count not clear 
+    private function Insert_finalrest2($data) // DONE 
     {
         
         foreach ($data as $item) {
@@ -308,15 +264,10 @@ class PurchasingMaterialController extends Controller
     }
 
 
-    private function Insert_finalrest3($data) // DONE - Material Count not clear
+    private function Insert_finalrest3($data) // DONE
     {
         // dd($data->toArray());
         foreach ($data as $item) {
-            // Assuming ForemindFinal model has the same attributes as the foremind_final table
-            // $inventoryMtrArray = json_encode($item['inventory_mtr']);
-            // // return response()->json(is_array($inventoryMtrArray));
-            // dd($inventoryMtrArray);    
-            // dd($item);
 
             $vendor_code = null;
             $vendor_name = null;
