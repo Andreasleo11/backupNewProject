@@ -91,6 +91,9 @@ Route::get('/purchasinglanding', [PurchasingController::class, 'index'])->name('
 // PURCHASING SECTION 
 Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
 Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
-Route::get('/foremind-detail', [PurchasingController::class, 'indexhome']);
+Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
 Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
 Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class,'indexcustomer']);
+
+Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
+Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
