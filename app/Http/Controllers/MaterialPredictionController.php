@@ -106,11 +106,7 @@ class materialPredictionController extends Controller
                    
                 }
                
-            
-
-
-                
-// Loop through transformed data to store it in the forecast_material_prediction table
+                                // Loop through transformed data to store it in the forecast_material_prediction table
                 foreach ($transformedData as $materialCode => $materialData) {
                     foreach ($materialData as $materialName => $unitData) {
                         foreach($unitData as $customer => $nextdata){
