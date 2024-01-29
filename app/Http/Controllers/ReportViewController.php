@@ -148,6 +148,11 @@ class ReportViewController extends Controller
     
             return redirect()->back()->with('success', 'Attachment uploaded and saved successfully.');
         }
+
+
+
+
+        
     
         return redirect()->back()->with('error', 'Failed to upload and save attachment.');
     }
