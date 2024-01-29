@@ -1,70 +1,76 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                </div><!-- /.col -->
-                <div class="col-sm-6">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item">Home</li>
-                        <li class="breadcrumb-item">Reminder</li>
-                        <li class="breadcrumb-item active">Detail</li>
-                    </ol>
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
-    </div>
 
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <h2 class="mb-4">Edit Verification Form</h2>
+<section>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+    </nav>
+</section>
 
-                <form action="{{ route('qaqc.report.update', ['id' => $report->id]) }}" method="post">
-                    @csrf
-                    @method('PUT')
+    <section>
+        @if ($message = Session::get('success'))
+            <div class="alert alert-success">
+                <p>{{ $message }}</p>
+            </div>
+        @endif
+    </section>
 
-                    <div class="mb-3">
-                        <label for="rec_date" class="form-label">Rec'D Date:</label>
-                        <input type="date" id="rec_Date" name="rec_Date" class="form-control" value="{{ $report->rec_date }}" required>
-                    </div>
+    <section aria-label="content">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <h2 class="mb-4">Edit Verification Form</h2>
 
-                    {{-- Verify Date --}}
-                    <div class="mb-3">
-                        <label for="verify_date" class="form-label">Verify Date:</label>
-                        <input type="date" id="verify_date" name="verify_date" class="form-control" value="{{ $report->verify_date }}" required>
-                    </div>
+                    <form action="{{ route('qaqc.report.update', ['id' => $report->id]) }}" method="post">
+                        @csrf
+                        @method('PUT')
 
-                    {{-- Customer --}}
-                    <div class="mb-3">
-                        <label for="customer" class="form-label">Customer:</label>
-                        <input type="text" id="customer" name="customer" class="form-control" value="{{ $report->customer }}" required>
-                    </div>
+                        <div class="mb-3">
+                            <label for="rec_date" class="form-label">Rec'D Date:</label>
+                            <input type="date" id="rec_Date" name="rec_Date" class="form-control" value="{{ $report->rec_date }}" required>
+                        </div>
 
-                    {{-- Invoice No --}}
-                    <div class="mb-3">
-                        <label for="invoice_no" class="form-label">Invoice No:</label>
-                        <input type="text" id="invoice_no" name="invoice_no" class="form-control" value="{{ $report->invoice_no }}" required>
-                    </div>
+                        {{-- Verify Date --}}
+                        <div class="mb-3">
+                            <label for="verify_date" class="form-label">Verify Date:</label>
+                            <input type="date" id="verify_date" name="verify_date" class="form-control" value="{{ $report->verify_date }}" required>
+                        </div>
 
-                    {{-- Number of Parts --}}
-                    <div class="mb-3">
-                        <label for="num_of_parts" class="form-label">Number of Parts:</label>
-                        <input type="number" id="num_of_parts" name="num_of_parts" class="form-control" min="1" value="{{ $report->num_of_parts }}" required>
-                    </div>
+                        {{-- Customer --}}
+                        <div class="mb-3">
+                            <label for="customer" class="form-label">Customer:</label>
+                            <input type="text" id="customer" name="customer" class="form-control" value="{{ $report->customer }}" required>
+                        </div>
 
-                    {{-- Part Details --}}
-                    <div id="partDetails" class="mb-3 row bg-primary">
-                        <!-- Add other part details fields here, populating them with data from the $report variable -->
-                    </div>
+                        {{-- Invoice No --}}
+                        <div class="mb-3">
+                            <label for="invoice_no" class="form-label">Invoice No:</label>
+                            <input type="text" id="invoice_no" name="invoice_no" class="form-control" value="{{ $report->invoice_no }}" required>
+                        </div>
 
-                    <button type="submit" class="btn btn-primary mt-3">Update</button>
-                </form>
+                        {{-- Number of Parts --}}
+                        <div class="mb-3">
+                            <label for="num_of_parts" class="form-label">Number of Parts:</label>
+                            <input type="number" id="num_of_parts" name="num_of_parts" class="form-control" min="1" value="{{ $report->num_of_parts }}" required>
+                        </div>
+
+                        {{-- Part Details --}}
+                        <div id="partDetails" class="mb-3 row bg-primary">
+                            <!-- Add other part details fields here, populating them with data from the $report variable -->
+                        </div>
+
+                        <button type="submit" class="btn btn-primary mt-3">Update</button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
+
 @endsection
 
 <script>

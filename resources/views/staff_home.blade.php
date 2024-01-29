@@ -2,41 +2,13 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
+    @if (Auth::user()->department == "DIREKTUR")
+        @include('partials.dasboard-direktur')
+    @elseif(Auth::user()->department == "QA" || Auth::user()->department == "QC")
+        @include('partials.dashboard-qaqc')
 
-                <div class="card-header">{{ __('Dashboard') }}</div>
-
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    @if(auth()->check())
-                        {{ __('Welcome back, :name', ['name' => auth()->user()->name]) }}
-                    @endif
-
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Add more dashboard per department -->
+    @endif
 </div>
-{{--
-
-<div class="container">
-    <div class="row justify-content-center">
-        <a href="{{ route('header.create') }}" class="btn btn-primary">Verification Report</a>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row justify-content-center">
-        <a href="{{ route('report.view') }}" class="btn btn-primary">View Report</a>
-    </div>
-</div> --}}
 
 @endsection

@@ -2,13 +2,22 @@
 
 @section('content')
 
+<section>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Create</li>
+        </ol>
+    </nav>
+</section>
+
     <section>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Create</li>
-            </ol>
-        </nav>
+        @if ($message = Session::get('success'))
+            <div class="alert alert-success">
+                <p>{{ $message }}</p>
+            </div>
+        @endif
     </section>
 
     <section aria-label="content">
@@ -55,6 +64,21 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary mt-3">Submit</button>
+
+                        <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button>
+
+
+                        {{-- <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="toast-header">
+                                <strong class="me-auto">Bootstrap</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                Hello, world! This is a toast message.
+                            </div>
+                        </div>
+                        </div> --}}
                     </form>
                 </div>
             </div>
@@ -144,14 +168,14 @@
 
     function addPartDetails(container, partNumber) {
         // Add detail inputs
-        createInput(container, `Rec'D Quantity:`, `rec_quantity[${partNumber}]`, 'number');
-        createInput(container, `Verify Quantity:`, `verify_quantity[${partNumber}]`, 'number');
-        createInput(container, `Production Date:`, `prod_date[${partNumber}]`, 'date');
-        createInput(container, `Shift:`, `shift[${partNumber}]`, 'number');
-        createInput(container, `Can Use:`, `can_use[${partNumber}]`, 'number');
-        createInput(container, `Cant Use:`, `cant_use[${partNumber}]`, 'number');
-        createInput(container, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text');
-        createInput(container, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text');
+        createInput(container, `Rec'D Quantity:`, `rec_quantity[${partNumber}]`, 'number', true);
+        createInput(container, `Verify Quantity:`, `verify_quantity[${partNumber}]`, 'number', true);
+        createInput(container, `Production Date:`, `prod_date[${partNumber}]`, 'date', true);
+        createInput(container, `Shift:`, `shift[${partNumber}]`, 'number', true);
+        createInput(container, `Can Use:`, `can_use[${partNumber}]`, 'number', true);
+        createInput(container, `Cant Use:`, `cant_use[${partNumber}]`, 'number', true);
+        createInput(container, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text', false);
+        createInput(container, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text', false);
         createInputDrop(container, `Remark:`, `remark[${partNumber}][]`,'text');
 
     }
@@ -215,7 +239,7 @@
     }
 
 
-    function createInput(container, labelText, name, type) {
+    function createInput(container, labelText, name, type, isRequired) {
         const div = document.createElement('div');
         div.classList.add('mb-3');
 
@@ -227,6 +251,9 @@
         input.type = type;
         input.name = name;
         input.classList.add('form-control');
+        if(isRequired === true){
+            input.setAttribute('required', 'true');
+        }
 
         div.appendChild(label);
         div.appendChild(input);
@@ -242,8 +269,8 @@
 
         if (partDetailContainer) {
             console.log(`Part container found for part ${partNumber}`);
-            createInput(partDetailContainer, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text');
-            createInput(partDetailContainer, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text');
+            createInput(partDetailContainer, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text', false);
+            createInput(partDetailContainer, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text', false);
             createInputDrop(partDetailContainer, `Remark:`, `remark[${partNumber}][]`, 'text');
         } else {
             console.error(`Part container not found for part ${partNumber}`);

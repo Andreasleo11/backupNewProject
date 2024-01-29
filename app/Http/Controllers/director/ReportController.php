@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\direktur;
+namespace App\Http\Controllers\director;
 
 use App\Http\Controllers\Controller;
 use App\Models\Report;

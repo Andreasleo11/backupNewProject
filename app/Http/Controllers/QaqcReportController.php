@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
-use App\Models\User;
 
 class QaQcReportController extends Controller
 {
@@ -75,10 +74,10 @@ class QaQcReportController extends Controller
             // Update the reports table with the attachment filename
             Report::where('id', $reportId)->update(['attachment' => $filename]);
 
-            return redirect()->back()->with('success', 'Attachment uploaded and saved successfully.');
+            return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
         }
 
-        return redirect()->back()->with('error', 'Failed to upload and save attachment.');
+        return redirect()->back()->with('error', 'Failed to upload and save attachment!');
     }
 
     public function saveImagePath(Request $request, $reportId, $section)
@@ -95,7 +94,7 @@ class QaQcReportController extends Controller
                 "autograph_user_{$section}" => $username
             ]);
 
-        return response()->json(['message' => 'Image path saved successfully']);
+        return response()->json(['message' => 'Image path saved successfully!']);
     }
 
     public function edit($id)
@@ -207,8 +206,7 @@ class QaQcReportController extends Controller
         }
 
         // Redirect to a view or route after the update
-        return redirect()->route('qaqc.reports.index')
-            ->with('success', 'Data updated successfully');
+        return redirect()->route('qaqc.report.index')->with('success', 'Report has been updated successfully!');
     }
 
     public function create()
@@ -293,6 +291,16 @@ class QaQcReportController extends Controller
             }
 
 
-        return redirect()->back()->with('success', 'Verification report has been stored successfully.');
+        return redirect()->route('qaqc.report.index')->with('success', 'Report has been stored successfully!');
+    }
+
+    public function destroy($id){
+        $report = Report::findOrFail($id);
+
+        $report->details()->delete();
+        $report->delete();
+
+
+        return redirect()->route('qaqc.report.index')->with('success', 'Report has been deleted successfully!');
     }
 }

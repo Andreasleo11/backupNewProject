@@ -16,6 +16,15 @@
         </div>
     </section>
 
+    <section>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Reports</li>
+            </ol>
+        </nav>
+    </section>
+
     <section class="content">
         <div class="card mt-5">
             <div class="card-body p-0">
@@ -23,7 +32,7 @@
                     <table class="table table-bordered table-hover table-striped text-center">
                         <thead>
                             <tr>
-                                <th class="fw-semibold fs-5">ID</th>
+                                <th class="fw-semibold fs-5">No</th>
                                 <th class="fw-semibold fs-5">Invoice No</th>
                                 <th class="fw-semibold fs-5">Customer</th>
                                 <th class="fw-semibold fs-5">Rec Date</th>
@@ -36,18 +45,27 @@
                         <tbody>
                             @foreach ($reports as $report)
                                 <tr>
-                                    <td>{{ $report->id }}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td class="text-start">
-                                        <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-primary">
+                                        <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
                                             <i class='bx bx-info-circle' ></i> Detail
                                         </a>
                                         <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary">
                                             <i class='bx bx-edit' ></i> Edit
                                         </a>
+
+                                        <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class='bx bx-trash-alt' ></i> Delete
+                                            </button>
+                                        </form>
+
                                         @if($report->attachment)
                                             @php
                                                 $filename = basename($report->attachment);

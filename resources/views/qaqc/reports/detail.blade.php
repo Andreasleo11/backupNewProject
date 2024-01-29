@@ -13,6 +13,17 @@
 @endpush
 
 @section('content')
+
+    <section>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detail</li>
+            </ol>
+        </nav>
+    </section>
+
     <section aria-label="header" class="container">
         <div class="row text-center">
             <div class="col">

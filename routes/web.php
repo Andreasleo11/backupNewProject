@@ -1,6 +1,9 @@
 <?php
 
-use App\Http\Controllers\direktur\ReportController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\DirectorHomeController;
+use App\Http\Controllers\director\ReportController;
+use App\Http\Controllers\HomeControllerQaqc;
 use App\Http\Controllers\QaQcReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
@@ -31,23 +34,9 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
-
-Route::get('/home', function () {
-    $user = auth()->user();
-
-    if ($user->role_id == 1) {
-        return redirect()->route('superadmin.home');
-    }else if ($user->role_id == 2){
-        return redirect()->route('staff.home');
-    }
-    else {
-        return redirect()->route('user.home');
-    }
-})->name('home');
-
 
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
@@ -84,7 +73,10 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     Route::get('/staff/home', [StaffHomeController::class, 'index'])->name('staff.home');
     Route::get('/userStaff/home', [UserHomeController::class, 'index']);
 
-    Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
+    Route::get('/staff/home', [HomeControllerQaqc::class, 'index'])->name('qaqc.home');
+    Route::get('/staff/home', [DirectorHomeController::class, 'index'])->name('director.home');
+
+    Route::post('/save-image-path/{reportId}/{section}', [QaQcReportController::class,'saveImagePath']);
     Route::post('/upload-attachment', [QaQcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
     Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
@@ -94,6 +86,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     Route::put('/qaqc/report/{id}', [QaQcReportController::class, 'update' ])->name('qaqc.report.update');
     Route::get('/qaqc/reports/create', [QaQcReportController::class, 'create'])->name('qaqc.report.create');
     Route::post('/qaqc/reports/', [QaQcReportController::class, 'store'])->name('qaqc.report.store');
+    Route::delete('/qaqc/reports/{id}', [QaQcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
     Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
     Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
