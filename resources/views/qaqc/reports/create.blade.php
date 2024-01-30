@@ -5,7 +5,7 @@
 <section>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
             <li class="breadcrumb-item active" aria-current="page">Create</li>
         </ol>
@@ -64,21 +64,6 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary mt-3">Submit</button>
-
-                        <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button>
-
-
-                        {{-- <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                            <div class="toast-header">
-                                <strong class="me-auto">Bootstrap</strong>
-                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                            <div class="toast-body">
-                                Hello, world! This is a toast message.
-                            </div>
-                        </div>
-                        </div> --}}
                     </form>
                 </div>
             </div>
@@ -111,9 +96,6 @@
             alert("Maksimal 10!");
         }
     }
-
-
-
 
     function createPartDetails(partNumber) {
         const partDetails = document.getElementById('partDetails');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\qaqc;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
 
-class QaQcReportController extends Controller
+class QaqcReportController extends Controller
 {
 
     public function __construct()
@@ -61,23 +61,19 @@ class QaQcReportController extends Controller
             'description' => null,
         ]);
 
-        // Handle file upload
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
 
-            // Generate a unique filename
-            $filename = time() . '_' . $file->getClientOriginalName();
+        $file = $request->file('attachment');
 
-            // Move the uploaded file to a storage location (you can customize the storage path)
-            $file->storeAs('public/attachments', $filename);
+        // Generate a unique filename
+        $filename = time() . '_' . $file->getClientOriginalName();
 
-            // Update the reports table with the attachment filename
-            Report::where('id', $reportId)->update(['attachment' => $filename]);
+        // Move the uploaded file to a storage location (you can customize the storage path)
+        $file->storeAs('public/attachments', $filename);
 
-            return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
-        }
+        // Update the reports table with the attachment filename
+        Report::where('id', $reportId)->update(['attachment' => $filename]);
 
-        return redirect()->back()->with('error', 'Failed to upload and save attachment!');
+        return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
     }
 
     public function saveImagePath(Request $request, $reportId, $section)
@@ -94,7 +90,7 @@ class QaQcReportController extends Controller
                 "autograph_user_{$section}" => $username
             ]);
 
-        return response()->json(['message' => 'Image path saved successfully!']);
+        return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
     public function edit($id)

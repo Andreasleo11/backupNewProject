@@ -12,7 +12,7 @@ class ReportController extends Controller
     public function index()
     {
         $reports = Report::get();
-        return view('direktur.qaqc.index', compact('reports'));
+        return view('director.qaqc.index', compact('reports'));
     }
 
     public function detail($id)
@@ -35,7 +35,7 @@ class ReportController extends Controller
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('direktur.qaqc.detail', compact('report','user','autographNames'));
+        return view('director.qaqc.detail', compact('report','user','autographNames'));
     }
 
     public function approve($id)
@@ -45,7 +45,7 @@ class ReportController extends Controller
             'description' => null,
         ]);
         Report::find($id)->update(['is_approve' => true]);
-        return redirect()->route('direktur.qaqc.index')->with('success', 'Document approved!');
+        return redirect()->route('director.qaqc.index')->with('success', 'Report approved!');
     }
 
     public function reject(Request $request, $id)
@@ -59,7 +59,7 @@ class ReportController extends Controller
             'description' => $request->description
         ]);
 
-        return redirect()->route('direktur.qaqc.index')->with('success', 'Document rejected!');
+        return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
     }
 
 }

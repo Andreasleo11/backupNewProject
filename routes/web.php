@@ -1,18 +1,14 @@
 <?php
 
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\DirectorHomeController;
+use App\Http\Controllers\director\DirectorHomeController;
 use App\Http\Controllers\director\ReportController;
-use App\Http\Controllers\HomeControllerQaqc;
-use App\Http\Controllers\QaQcReportController;
+use App\Http\Controllers\qaqc\QaqcHomeController;
+use App\Http\Controllers\qaqc\QaqcReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\SuperAdminHomeController;
-use App\Http\Controllers\StaffHomeController;
-
-use App\Http\Controllers\ReportHeaderController;
-use App\Http\Controllers\ReportDetailController;
 
 use App\Http\Controllers\hrd\ImportantDocController;
 use Illuminate\Support\Facades\Auth;
@@ -70,23 +66,21 @@ Route::middleware(['checkUserRole:1'])->group(function () {
 });
 
 Route::middleware(['checkUserRole:2'])->group(function () {
-    Route::get('/staff/home', [StaffHomeController::class, 'index'])->name('staff.home');
-    Route::get('/userStaff/home', [UserHomeController::class, 'index']);
 
-    Route::get('/staff/home', [HomeControllerQaqc::class, 'index'])->name('qaqc.home');
-    Route::get('/staff/home', [DirectorHomeController::class, 'index'])->name('director.home');
+    Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
+    Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
-    Route::post('/save-image-path/{reportId}/{section}', [QaQcReportController::class,'saveImagePath']);
-    Route::post('/upload-attachment', [QaQcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
+    Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
+    Route::post('/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
     Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
     Route::get('/qaqc/reports/', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
     Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
-    Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit');
-    Route::put('/qaqc/report/{id}', [QaQcReportController::class, 'update' ])->name('qaqc.report.update');
-    Route::get('/qaqc/reports/create', [QaQcReportController::class, 'create'])->name('qaqc.report.create');
-    Route::post('/qaqc/reports/', [QaQcReportController::class, 'store'])->name('qaqc.report.store');
-    Route::delete('/qaqc/reports/{id}', [QaQcReportController::class, 'destroy'])->name('qaqc.report.delete');
+    Route::get('/qaqc/report/{id}/edit',[qaQcReportController::class, 'edit'])->name('qaqc.report.edit');
+    Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update' ])->name('qaqc.report.update');
+    Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create');
+    Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
+    Route::delete('/qaqc/reports/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
     Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
     Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
@@ -96,19 +90,16 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
     Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
 
-    Route::get('/direktur/qaqc/index', [ReportController::class, 'index'])->name('direktur.qaqc.index');
-    Route::get('/direktur/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('direktur.qaqc.detail');
-    Route::put('/direktur/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('direktur.qaqc.approve');
-    Route::put('/direktur/qaqc/reject/{id}', [ReportController::class, 'reject'])->name('direktur.qaqc.reject');
+    Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index');
+    Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('director.qaqc.detail');
+    Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('director.qaqc.approve');
+    Route::put('/director/qaqc/reject/{id}', [ReportController::class, 'reject'])->name('director.qaqc.reject');
 
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
 });
-
-
-
 
 // Route::get('/reports/create/header', [ReportHeaderController::class, 'create'])->name('header.create');
 // Route::post('/report/store', [ReportHeaderController::class, 'store'])->name('header.store');

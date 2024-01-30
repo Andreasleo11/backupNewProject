@@ -63,7 +63,7 @@
             </li>
         @elseif (Auth::user()->department === "DIREKTUR")
             <li class="sidebar-item" id="sidebar-item-setting">
-                <a href="{{ route('direktur.qaqc.index') }}" class="sidebar-link">
+                <a href="{{ route('director.qaqc.index') }}" class="sidebar-link">
                     <i class='bx bxs-report'></i>
                     <span>QA/QC Reports</span>
                 </a>

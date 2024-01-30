@@ -9,9 +9,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Approved</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $approvedDoc}}</div>
+                            <div class="fs-5 fw-bold text-primary text-uppercase mb-1">Approved</div>
+                            <div class="h4 mb-0 fw-bold text-secondary">{{ $approvedDoc}}</div>
                         </div>
                         <div class="col-auto">
                             <box-icon name='check' color="gray" size="lg"></box-icon>
@@ -26,9 +25,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Waiting</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{$waitingDoc}}</div>
+                            <div class="fs-5 fw-bold text-success text-uppercase mb-1">Waiting</div>
+                            <div class="h4 mb-0 fw-bold text-secondary">{{$waitingDoc}}</div>
                         </div>
                         <div class="col-auto">
                             <box-icon name='time' color="gray" size="lg"></box-icon>
@@ -43,9 +41,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                Rejected</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{$rejectedDoc}}</div>
+                            <div class="fs-5 fw-bold text-danger text-uppercase mb-1">Rejected</div>
+                            <div class="h4 mb-0 fw-bold text-secondary">{{$rejectedDoc}}</div>
                         </div>
                         <div class="col-auto">
                             <box-icon name='x-circle' color="gray" size="lg"></box-icon>

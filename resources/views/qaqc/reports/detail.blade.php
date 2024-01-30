@@ -17,12 +17,19 @@
     <section>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Detail</li>
             </ol>
         </nav>
     </section>
+
+    @if ($message = Session::get('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ $message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <section aria-label="header" class="container">
         <div class="row text-center">
@@ -158,7 +165,7 @@
 
                <h4>Upload File</h4>
                <div class="mb-3">
-                   <input type="file" name="attachment" class="form-control">
+                   <input type="file" name="attachment" class="form-control" required>
                </div>
 
                <button type="submit" class="btn btn-primary">Upload</button>
@@ -166,14 +173,23 @@
                <!-- Hidden input to include the report ID in the form data -->
                <input type="hidden" name="reportId" value="{{ $report->id }}">
            </form>
+        </div>
+    </section>
 
-           @if($report->attachment)
-           @php
-               $filename = basename($report->attachment);
-           @endphp
-               <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}">
-                   Download {{ $filename }}
-               </a>
+    <section aria-label="uploaded">
+        <div class="container mt-5">
+            @if($report->attachment)
+                <h4 class="mb-3">Uploaded</h4>
+                @php
+                    $filename = basename($report->attachment);
+                @endphp
+
+                <div class="btn btn-outline-success disabled me-2">
+                    {{ $filename }}
+                </div>
+                <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}" class="btn btn-success">
+                    <box-icon name='download' type='solid' color='#ffffff' ></box-icon>
+                </a>
            @endif
         </div>
     </section>

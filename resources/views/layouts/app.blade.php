@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    @stack('extraJS')
+    @stack('extraJs')
 
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/modal.js') }}"></script>

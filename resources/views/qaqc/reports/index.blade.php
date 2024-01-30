@@ -19,11 +19,18 @@
     <section>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('staff.home')}}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Reports</li>
             </ol>
         </nav>
     </section>
+
+    @if ($message = Session::get('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ $message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <section class="content">
         <div class="card mt-5">
@@ -50,7 +57,7 @@
                                     <td>{{ $report->customer }}</td>
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
-                                    <td class="text-start">
+                                    <td>
                                         <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
                                             <i class='bx bx-info-circle' ></i> Detail
                                         </a>
@@ -66,25 +73,25 @@
                                             </button>
                                         </form>
 
-                                        @if($report->attachment)
+                                        {{-- @if($report->attachment)
                                             @php
                                                 $filename = basename($report->attachment);
                                             @endphp
-                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" class="btn btn-primary" download="{{ $filename }}">
+                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" class="btn btn-secondary" download="{{ $filename }}">
                                                 <i class='bx bx-download'></i> Download
                                             </a>
-                                        @endif
+                                        @endif --}}
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
-                                            <span class="badge text-bg-success px-3 py-2 fs-6 fw-light">APPROVED</span>
+                                            <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
 
                                         @elseif($report->is_approve === 0)
-                                            <span class="badge text-bg-danger px-3 py-2 fs-6 fw-light">REJECTED</span>
+                                            <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
                                         @elseif($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6 fw-light">WAITING ON APPROVAL</span>
+                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
                                         @else
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6 fw-light">WAITING SIGNATURE</span>
+                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING SIGNATURE</span>
                                         @endif
                                     </td>
                                     <td>{{ $report->description }}</td>
