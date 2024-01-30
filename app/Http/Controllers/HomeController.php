@@ -14,6 +14,7 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        
     }
 
     /**
@@ -24,6 +25,7 @@ class HomeController extends Controller
     public function index()
     {
         $user = auth()->user();
+       
 
         if ($user->role_id == 1) {
             return redirect()->route('superadmin.home');

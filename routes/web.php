@@ -25,9 +25,14 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
+
 Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect('/home'); // Redirect to the home route for authenticated users
+    }
     return view('auth.login');
 });
+
 
 Auth::routes();
 
@@ -35,6 +40,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
+Route::middleware(['checkSessionId'])->group(function () {
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
@@ -108,5 +114,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
 
 Route::middleware(['checkUserRole:3'])->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
+});
+
 });
 
