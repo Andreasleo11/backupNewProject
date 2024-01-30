@@ -164,7 +164,7 @@
                                 </div>
                                 <div class="modal-body">
                                     <label for="description" class="form-label">Description</label>
-                                    <textarea name="description" class="form-control" placeholder="Tell us why you rejecting this report here" required></textarea>
+                                    <textarea name="description" class="form-control" placeholder="Tell us why you rejecting this report..." required></textarea>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

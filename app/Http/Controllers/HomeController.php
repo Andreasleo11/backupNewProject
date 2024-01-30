@@ -39,9 +39,12 @@ class HomeController extends Controller
                 case "DIREKTUR":
                     return redirect()->route('director.home');
                     break;
+                case "HRD":
+                    return redirect()->route('hrd.home');
+                    break;
             }
         } else {
-            return redirect()->route('user.home');
+            return view('welcome');
         }
     }
 }

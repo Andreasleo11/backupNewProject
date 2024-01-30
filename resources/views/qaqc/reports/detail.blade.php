@@ -124,7 +124,7 @@
                             <td>
                                 @foreach ($detail->customer_defect_detail as $key => $value)
                                     @if (!is_null($value))
-                                        {{ $key }}: {{ $value }}<br>
+                                        {{ $value }}<br>
                                     @endif
                                 @endforeach
                             </td>
@@ -134,7 +134,7 @@
                             <td>
                                 @foreach ($detail->daijo_defect_detail as $key => $value)
                                     @if (!is_null($value))
-                                        {{ $key }}: {{ $value }}<br>
+                                        {{ $value }}<br>
                                     @endif
                                 @endforeach
                             </td>
@@ -143,7 +143,7 @@
                             <td>
                                 @foreach ($detail->remark as $key => $value)
                                     @if (!is_null($value))
-                                        {{ $key }}: {{ $value }}<br>
+                                        {{ $value }}<br>
                                     @endif
                                 @endforeach
                             </td>

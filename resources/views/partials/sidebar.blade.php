@@ -86,14 +86,14 @@
              </li>
         @endif
 
-        <li class="sidebar-item" id="sidebar-item-setting">
+        {{-- <li class="sidebar-item" id="sidebar-item-setting">
             <a href="{{ route('superadmin.settings') }}" class="sidebar-link">
                 <i class="lni lni-cog"></i>
                 <span>Setting</span>
             </a>
-        </li>
+        </li> --}}
     </ul>
-    <div class="sidebar-footer">
+    {{-- <div class="sidebar-footer">
         <a href="#" class="sidebar-link" href="{{ route('logout') }}"
         onclick="event.preventDefault();document.getElementById('logout-form').submit();">
             <i class="lni lni-exit"></i>
@@ -102,5 +102,5 @@
         <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
             @csrf
         </form>
-    </div>
+    </div> --}}
 </aside>

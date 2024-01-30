@@ -40,7 +40,7 @@
                   </thead>
                   <tbody>
                     @foreach ($reports as $report)
-                        @if ($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
+                        @if ($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->attachment)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $report->invoice_no }}</td>

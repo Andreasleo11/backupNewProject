@@ -11,6 +11,7 @@ class DirectorHomeController extends Controller
     {
         $approvedDoc = Report::where('is_approve', 1)->count();
         $waitingDoc = Report::whereNull('is_approve')
+            ->whereNotNull('attachment')
             ->whereNotNull('autograph_1')
             ->whereNotNull('autograph_2')
             ->whereNotNull('autograph_3')->count();
