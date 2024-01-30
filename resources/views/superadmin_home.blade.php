@@ -13,28 +13,22 @@
                             {{ session('status') }}
                         </div>
                     @endif
-
+                    
                     {{ __('Hello monseiurs') }}
                 </div>
             </div>
         </div>
-    </div>
-  
-</div>
-
-<div class="container mt-5 col-3 ">
-    <div class="row justify-content-center w-100">
-            <a href="{{ route('header.create') }}" class="btn btn-primary">Verification Report</a>
-    </div>   
-    
+    </div>  
 </div>
 
 
-<div class="container mt-5 col-3">
+<div class="container">
     <div class="row justify-content-center">
-        <a href="{{ route('report.view') }}" class="btn btn-primary">View Report</a>
+        <a href="{{ route('report.viewjoni') }}" class="btn btn-primary">View Report Pak Joni</a>
     </div>   
 </div>
+
+
 
 
 @endsection

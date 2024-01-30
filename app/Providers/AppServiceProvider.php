@@ -19,6 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan 
     }
 }

@@ -19,7 +19,19 @@
             </div>
         </div>
     </div>
-  
+
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('header.create') }}" class="btn btn-primary">Verification Report</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('report.view') }}" class="btn btn-primary">View Report</a>
+    </div>
 </div>
 
 @endsection

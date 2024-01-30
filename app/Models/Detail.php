@@ -17,12 +17,11 @@ class Detail extends Model
         'Prod_Date',
         'Shift',
         'Can_Use',
-        'Customer_Defect',
-        'Daijo_Defect',
+        'Cant_Use',
         'Customer_Defect_Detail',
-        'Remark_Customer',
         'Daijo_Defect_Detail',
-        'Remark_Daijo',
+        'Remark',
+       
         // Add other fields as needed
     ];
 

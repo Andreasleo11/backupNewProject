@@ -68,20 +68,8 @@
                     <input type="number" id="num_of_parts" name="num_of_parts" class="form-control" min="1" required>
                 </div>
 
-                <!-- {{-- Customer Defect Detail --}}
-                <div class="mb-3">
-                    <label for="customer_defect_details" class="form-label">Number of Customer Defect Details:</label>
-                    <input type="number" id="customer_defect_details" name="customer_defect_details" class="form-control" min="0">
-                </div>
-
-                {{-- Daijo Defect Detail --}}
-                <div class="mb-3">
-                    <label for="daijo_defect_details" class="form-label">Number of Daijo Defect Details:</label>
-                    <input type="number" id="daijo_defect_details" name="daijo_defect_details" class="form-control" min="0">
-                </div> -->
-
                 {{-- Part Details --}}
-                <div id="partDetails" class="mb-3 row">
+                <div id="partDetails" class="mb-3 row bg-primary">
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-3">Submit</button>
@@ -112,12 +100,16 @@
             createPartDetails(i);
         }
     }
+    
+
+    
 
     function createPartDetails(partNumber) {
         const partDetails = document.getElementById('partDetails');
 
         // Create container for part details
         const partDetailContainer = document.createElement('div');
+        partDetailContainer.id = `partDetails${partNumber}`; 
         partDetailContainer.classList.add('col-md-4', 'mb-3');
 
         // Add part number label
@@ -139,7 +131,29 @@
         if (partNumber === 1) {
             showDetails(partNumber);
         }
+
+            // Create container for the button
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('mt-2', 'col-lg-4');
+
+        // Add "Add Attributes" button to the button container
+        createButton(buttonContainer, partNumber);
+
+        // Append the button container to the main container
+        partDetailContainer.appendChild(buttonContainer);    
     }
+
+    function createButton(container, partNumber) {
+        
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.classList.add('btn', 'btn-secondary', 'mt-2');
+            button.textContent = 'Add Attributes';
+            button.addEventListener('click', function () {
+                addAttributesToPart(partNumber);
+            });
+            container.appendChild(button);
+        }
 
     function addPartDetails(container, partNumber) {
         // Add detail inputs
@@ -148,64 +162,71 @@
         createInput(container, `Production Date:`, `prod_date[${partNumber}]`, 'date');
         createInput(container, `Shift:`, `shift[${partNumber}]`, 'number');
         createInput(container, `Can Use:`, `can_use[${partNumber}]`, 'number');
-        createInput(container, `Customer Defect:`, `customer_defect[${partNumber}]`, 'number');
-        createInput(container, `Daijo Defect:`, `daijo_defect[${partNumber}]`, 'number');
-        for(i = 1; i<= 10; i++)
-        {
-            createInput(container, `Customer Defect Detail ${i} :`, `customer_defect_detail[${partNumber}][${i}]`, 'text');
-            createInput(container, `Customer Remark ${i} :`, `customer_Remark[${partNumber}][${i}]`, 'text');
-        }
+        createInput(container, `Cant Use:`, `cant_use[${partNumber}]`, 'number');
+        createInput(container, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text');
+        createInput(container, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text');
+        createInputDrop(container, `Remark:`, `remark[${partNumber}][]`,'text');
 
-        for(i = 1; i<= 10; i++)
-        {
-            createInput(container, `Daijo Defect Detail ${i} :`, `daijo_defect_detail[${partNumber}][${i}]`, 'text');
-            createInput(container, `Daijo Remark ${i} :`, `daijo_Remark[${partNumber}][${i}]`, 'text');
-        }
-
-        // // Add defect detail inputs dynamically
-        // const numCustomerDefectDetails = document.getElementById('customer_defect_details').value;
-        // const numDaijoDefectDetails = document.getElementById('daijo_defect_details').value;
-
-        // createDefectDetailFields(container, partNumber, numCustomerDefectDetails, 'Customer Defect Detail');
-        // createDefectDetailFields(container, partNumber, numDaijoDefectDetails, 'Daijo Defect Detail');
     }
 
-    function createDefectDetailFields(container, partNumber, numDefectDetails, label) {
-        for (let i = 1; i <= numDefectDetails; i++) {
-            createInput(container, `${label} ${i}:`, `defect_details[${partNumber}][${label.toLowerCase().replace(/\s+/g, '_')}_${i}]`, 'text');
-            createInput(container, `Action ${i}:`, `defect_details[${partNumber}][action_${label.toLowerCase().replace(/\s+/g, '_')}_${i}]`, 'text');
-        }
-    }
 
-    function updateDefectDetailFields() {
-        const numCustomerDefectDetails = document.getElementById('customer_defect_details').value;
-        const numDaijoDefectDetails = document.getElementById('daijo_defect_details').value;
+    
+    function createInputDrop(container, labelText, name, type) {
+    const div = document.createElement('div');
+    div.classList.add('mb-3');
 
-        // Update defect detail fields for each part
-        const numParts = document.getElementById('num_of_parts').value;
-        for (let i = 1; i <= numParts; i++) {
-            const partDetailContainer = document.getElementById(`partDetails`).children[i - 1];
-            updateDefectDetailFieldsForPart(partDetailContainer, i, numCustomerDefectDetails, 'Customer Defect Detail');
-            updateDefectDetailFieldsForPart(partDetailContainer, i, numDaijoDefectDetails, 'Daijo Defect Detail');
-        }
-    }
+    const label = document.createElement('label');
+    label.textContent = labelText;
+    label.classList.add('form-label');
 
-    function updateDefectDetailFieldsForPart(container, partNumber, numDefectDetails, label) {
-        // Remove existing defect detail fields
-        for (let i = 1; i <= numDefectDetails; i++) {
-            const defectDetailInput = document.querySelector(`[name="defect_details[${partNumber}][${label.toLowerCase().replace(/\s+/g, '_')}_${i}]"]`);
-            const actionInput = document.querySelector(`[name="defect_details[${partNumber}][action_${label.toLowerCase().replace(/\s+/g, '_')}_${i}]"]`);
-            if (defectDetailInput) {
-                container.removeChild(defectDetailInput.parentNode);
+    const select = document.createElement('select');
+    select.name = name;
+    select.classList.add('form-select');
+
+    // Create and add specific options
+    const options = ["bisarepair", "tidakbisarepair", "other"];
+    options.forEach(optionValue => {
+        const option = document.createElement('option');
+        option.value = option.textContent = optionValue;
+        select.appendChild(option);
+    });
+
+    // Create input for explanation
+    const explanationInput = document.createElement('input');
+    explanationInput.type = 'text';
+    explanationInput.name = `${name}_explanation`;
+    explanationInput.classList.add('form-control', 'mt-2');
+    explanationInput.placeholder = 'Please specify';
+    explanationInput.style.display = 'none'; // Initially hide the input
+
+        // Append elements to the container
+        div.appendChild(label);
+        div.appendChild(select);
+        container.appendChild(div);
+
+    // Add event listener to show/hide explanation input based on dropdown selection
+        select.addEventListener('change', function () {
+            if (this.value === 'other') {
+                // If 'other' is selected, create and show the explanation input
+                if (!explanationInput.parentNode) {
+                    // If the explanation input is not already added, add it
+                    div.appendChild(explanationInput);
+                    
+                }
+                explanationInput.style.display = 'block';
+                 
+            } else {
+                // If 'other' is not selected, remove the explanation input (if it exists)
+                if (explanationInput.parentNode) {
+                    div.removeChild(explanationInput);
+                }
             }
-            if (actionInput) {
-                container.removeChild(actionInput.parentNode);
-            }
-        }
+        });
 
-        // Add new defect detail fields
-        createDefectDetailFields(container, partNumber, numDefectDetails, label);
+        console.log(`Created dropdown for ${name}`);
+        return select;
     }
+
 
     function createInput(container, labelText, name, type) {
         const div = document.createElement('div');
@@ -223,8 +244,23 @@
         div.appendChild(label);
         div.appendChild(input);
         container.appendChild(div);
-
+        console.log(`Created input for ${name}`);
         return input;
+    }
+
+
+    function addAttributesToPart(partNumber) {
+    console.log(`Adding attributes to part ${partNumber}`);
+    const partDetailContainer = document.getElementById(`partDetails${partNumber}`);
+    
+        if (partDetailContainer) {
+            console.log(`Part container found for part ${partNumber}`);     
+            createInput(partDetailContainer, `Customer Defect Detail :`, `customer_defect_detail[${partNumber}][]`, 'text');
+            createInput(partDetailContainer, `Daijo Defect Detail :`, `daijo_defect_detail[${partNumber}][]`, 'text');
+            createInputDrop(partDetailContainer, `Remark:`, `remark[${partNumber}][]`, 'text');
+        } else {
+            console.error(`Part container not found for part ${partNumber}`);
+        }
     }
 
     function showDetails(index) {

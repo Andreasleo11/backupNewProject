@@ -23,6 +23,28 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $user = auth()->user();
+
+        if ($user->role_id == 1) {
+            return redirect()->route('superadmin.home');
+        } else if ($user->role_id == 2){
+            $department = $user->department;
+            switch ($department) {
+                case "QA":
+                    return redirect()->route('qaqc.home');
+                    break;
+                case "QC":
+                    return redirect()->route('qaqc.home');
+                    break;
+                case "DIREKTUR":
+                    return redirect()->route('director.home');
+                    break;
+                case "HRD":
+                    return redirect()->route('hrd.home');
+                    break;
+            }
+        } else {
+            return view('welcome');
+        }
     }
 }

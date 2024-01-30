@@ -50,6 +50,7 @@ body {
 }
 
 #sidebar {
+    padding-top: 12px;
     width: 70px;
     min-width: 70px;
     z-index: 1000;
