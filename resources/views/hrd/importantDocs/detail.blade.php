@@ -27,28 +27,28 @@
                     <div class="col">
                         <span class="fw-bold h5">Type</span>
                     </div>
-                    <div class="col">
-                        <span>: {{$importantDoc->type->name}}</span>
+                    <div class="col text-center">
+                        <span class="h5">: {{$importantDoc->type->name}}</span>
                     </div>
                     <div class="col">
                         <span class="fw-bold h5">Date Expired</span>
                     </div>
-                    <div class="col">
-                        <span>: {{$importantDoc->expired_date}}</span>
+                    <div class="col text-center">
+                        <span class="h5">: {{\Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y')}}</span>
                     </div>
                 </div>
             </div>
 
-
+            <hr>
 
             <!--
                 <div class="container">
                     <iframe src="{{ asset('storage/attachments/1706156978_test.pdf')}}" frameborder="0" style="width: 100%; height:500px"></iframe>
                 </div>
             -->
-        </div>
-        <div class="container text-center border">
-            <div id="pdfViewer" style="width: auto; height: auto" class="my-4"></div>
+            <div class="container text-center ">
+                <div id="pdfViewer" style="width: auto; height: auto" class="my-4"></div>
+            </div>
         </div>
     </div>
 </section>

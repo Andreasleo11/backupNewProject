@@ -11,8 +11,8 @@ class ImportantDocController extends Controller
 {
     public function index()
     {
-        $important_docs = ImportantDoc::with('type')->orderBy('expired_date')->get();
-        return view('hrd.importantDocs.index', compact('important_docs'));
+        $importantDocs = ImportantDoc::with('type')->orderBy('expired_date')->get();
+        return view('hrd.importantDocs.index', compact('importantDocs'));
     }
 
     /**
@@ -26,7 +26,7 @@ class ImportantDocController extends Controller
     }
 
     /**
-     * Store a new important_doc in the database.
+     * Store a new importantDoc in the database.
      */
     public function store(Request $request)
     {

@@ -48,7 +48,7 @@
                                             <label class="fw-medium fs-5 mb-2">Type</label>
 
                                             <select class="form-control @error('type_id') is-invalid @enderror" name="type_id" >
-                                                <option value = "{{$importantDoc->type_id}}" selected>{{ $importantDoc->type->name }}</option>
+                                                <option value = "{{$importantDoc->type_id}}" selected disabled>{{ $importantDoc->type->name }}</option>
 
                                                 @foreach ($types as $type)
                                                     <option value="{{$type->id}}">{{$type->name}}</option>

@@ -20,8 +20,9 @@
 </section>
 
 @if ($message = Session::get('success'))
-    <div class="alert alert-success">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
         <p>{{ $message }}</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
@@ -39,21 +40,26 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @foreach ($important_docs as $important_doc)
+                    @foreach ($importantDocs as $importantDoc)
                         <tr>
                             <td class="align-middle">{{ $loop->iteration }}</td>
-                            <td class="align-middle">{{ $important_doc->name }}</td>
-                            <td class="align-middle">{{ $important_doc->type->name }}</td>
-                            <td class="align-middle">{{ $important_doc->expired_date }}</td>
+                            <td class="align-middle">{{ $importantDoc->name }}</td>
+                            <td class="align-middle">{{ $importantDoc->type->name }}</td>
+                            @php
+                                $daysDifference = Carbon\Carbon::now()->diffInDays(Carbon\Carbon::parse($importantDoc->expired_date));
+                            @endphp
+                            <td class="align-middle {{ (Carbon\Carbon::parse($importantDoc->expired_date) < \Carbon\Carbon::now()->addMonths(2)) ? "text-danger": "" }}">
+                                {{ \Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y') }}
+                            </td>
                             <td class="align-middle">
-                                <form action="{{route('hrd.importantDocs.delete',$important_doc->id)}}" method="POST">
-                                    <a href="{{route('hrd.importantDocs.detail', $important_doc->id)}}" class="btn btn-secondary me-1">
+                                <form action="{{route('hrd.importantDocs.delete',$importantDoc->id)}}" method="POST">
+                                    <a href="{{route('hrd.importantDocs.detail', $importantDoc->id)}}" class="btn btn-secondary me-1">
                                         <div class="col d-flex align-middle">
                                             <box-icon name='info-circle' color="white" class="pb-1"></box-icon>
                                             <span class="ms-1">Detail</span>
                                         </div>
                                     </a>
-                                    <a href="{{route('hrd.importantDocs.edit', $important_doc->id)}}" class="btn btn-primary me-1">
+                                    <a href="{{route('hrd.importantDocs.edit', $importantDoc->id)}}" class="btn btn-primary me-1">
                                         <div class="col d-flex">
                                             <box-icon name='edit' color="white" class="pb-1"></box-icon>
                                             <span class="ms-1">Edit</span>
