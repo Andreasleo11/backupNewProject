@@ -4,7 +4,7 @@
         <h4 class="pt-1">Daijo Industrial Support System</h4>
     </div>
 
-    <!--Notification-->
+    {{-- <!--Notification-->
     <div class="me-5">
         <button type="button" class="btn btn-success position-relative rounded-circle me-2">
             <i class='bx bx-bell'></i>
@@ -12,7 +12,7 @@
                 +99 <span class="visually-hidden">unread messages</span>
             </span>
         </button>
-    </div>
+    </div> --}}
 
 
     <!-- Profile Icon -->
@@ -24,7 +24,7 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
                     <div class="text-center">
-                        <span class="fs-5 fw-bold">{{Auth::user()->name}} </span> <br>
+                        <span class="fs-5 fw-bold text-capitalize">{{Auth::user()->name}} </span> <br>
                         <span class="fw-medium text-secondary-emphasis">{{Auth::user()->department}}</span>
                     </div>
                     <hr>
@@ -43,7 +43,7 @@
             </div>
         </div>
         <div class="col">
-            <span class="fw-bold">{{Auth::user()->name}} </span>
+            <span class="fw-bold text-capitalize">{{Auth::user()->name}} </span>
         </div>
     </div>
 

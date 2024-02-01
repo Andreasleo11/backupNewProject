@@ -19,7 +19,7 @@
     <section>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('director.home')}}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{route('director.home')}}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{route('director.qaqc.index')}}">Qa & QC Reports</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Detail</li>
             </ol>

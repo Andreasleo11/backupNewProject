@@ -57,7 +57,7 @@
                 </a>
                 <ul id="hrd" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{ route('hrd.importantDocs') }}" class="sidebar-link">Important Documents</a>
+                        <a href="{{ route('hrd.importantDocs.index') }}" class="sidebar-link">Important Documents</a>
                     </li>
                 </ul>
             </li>

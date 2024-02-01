@@ -36,7 +36,7 @@
         <div class="card mt-5">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped text-center">
+                    <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr>
                                 <th class="fw-semibold fs-5">No</th>
@@ -52,12 +52,12 @@
                         <tbody>
                             @foreach ($reports as $report)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $report->invoice_no }}</td>
-                                    <td>{{ $report->customer }}</td>
-                                    <td>{{ $report->rec_date }}</td>
-                                    <td>{{ $report->verify_date }}</td>
-                                    <td>
+                                    <td class="align-middle">{{ $loop->iteration }}</td>
+                                    <td class="align-middle">{{ $report->invoice_no }}</td>
+                                    <td class="align-middle">{{ $report->customer }}</td>
+                                    <td class="align-middle">{{ $report->rec_date }}</td>
+                                    <td class="align-middle">{{ $report->verify_date }}</td>
+                                    <td class="align-middle">
                                         <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
                                             <i class='bx bx-info-circle' ></i> Detail
                                         </a>
@@ -72,17 +72,8 @@
                                                 <i class='bx bx-trash-alt' ></i> Delete
                                             </button>
                                         </form>
-
-                                        {{-- @if($report->attachment)
-                                            @php
-                                                $filename = basename($report->attachment);
-                                            @endphp
-                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" class="btn btn-secondary" download="{{ $filename }}">
-                                                <i class='bx bx-download'></i> Download
-                                            </a>
-                                        @endif --}}
                                     </td>
-                                    <td>
+                                    <td class="align-middle">
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
                                             <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
 
@@ -96,16 +87,14 @@
                                             <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING SIGNATURE</span>
                                         @endif
                                     </td>
-                                    <td>{{ $report->description }}</td>
+                                    <td class="align-middle">{{ $report->description }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-            </div><!-- /.card-body -->
+            </div>
         </div>
     </section>
-
-
 
 @endsection

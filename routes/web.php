@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Auth;
 */
 
 Route::get('/', function () {
+    if(Auth::check()){
+        return redirect('/home');
+    }
     return view('auth.login');
 });
 
@@ -66,7 +69,7 @@ Route::middleware(['checkUserRole:1'])->group(function () {
     });
 });
 
-Route::middleware(['checkUserRole:2'])->group(function () {
+Route::middleware(['checkUserRole:2', 'checkSession',])->group(function () {
 
     Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
     Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
@@ -80,7 +83,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
 
         Route::get('/qaqc/reports/', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
-        Route::get('/qaqc/report/{id}/edit',[qaQcReportController::class, 'edit'])->name('qaqc.report.edit');
+        Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit');
         Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update' ])->name('qaqc.report.update');
         Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create');
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
@@ -88,7 +91,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
-        Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
+        Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
         Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
         Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
         Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
@@ -97,7 +100,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
         Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
     });
 
-    Route::middleware(['checkDepartment:HRD'])->group(function() {
+    Route::middleware(['checkDepartment:DIREKTUR'])->group(function() {
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index');
         Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('director.qaqc.detail');
         Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('director.qaqc.approve');

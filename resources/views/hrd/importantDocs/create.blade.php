@@ -2,17 +2,22 @@
 
 @section('content')
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><a href="{{route('hrd.importantDocs')}}">Important Documents</a></li>
-      <li class="breadcrumb-item active">Create</li>
-    </ol>
-</nav>
+<section class="header">
+    <h2>Create Important Document</h2>
+</section>
+
+<section class="breadcrumb">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{route('hrd.home')}}">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{route('hrd.importantDocs.index')}}">Important Documents</a></li>
+          <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
+</section>
 
 
-<h2 class="mb-5">Create Important Document</h2>
-
-<div class="row">
+<div class="row mt-5">
     <div class="col text-center">
         <div class="h3 mt-4 mb-4 fw-lighter">
             Important Document Form

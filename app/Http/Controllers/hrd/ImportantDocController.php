@@ -43,7 +43,7 @@ class ImportantDocController extends Controller
             'expired_date'   => $request->expired_date
         ]);
 
-        return redirect()->route('hrd.importantDocs')->with('success', 'Data berhasil dibuat!');
+        return redirect()->route('hrd.importantDocs.index')->with('success', 'Data berhasil dibuat!');
     }
 
     public function detail($id)
@@ -71,16 +71,16 @@ class ImportantDocController extends Controller
 
         if ($importantDoc) {
             $importantDoc->update($request->all());
-            return redirect()->route('hrd.importantDocs')->with('success', 'Data berhasil diupdate!');
+            return redirect()->route('hrd.importantDocs.index')->with('success', 'Data berhasil diupdate!');
         } else {
-            return redirect()->route('hrd.importantDocs')->with('error', 'Data not found!');
+            return redirect()->route('hrd.importantDocs.index')->with('error', 'Data not found!');
         }
     }
 
     public function destroy($id)
     {
-        $importantDoc = ImportantDoc::find($id)->delete();
-        return redirect()->route('hrd.importantDocs')->with('success', 'Data berhasil dihapus!');
+        ImportantDoc::find($id)->delete();
+        return redirect()->route('hrd.importantDocs.index')->with('success', 'Data berhasil dihapus!');
     }
 
 }
