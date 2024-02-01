@@ -32,7 +32,6 @@ class CheckUserRole
                     return redirect('/')->with('error', 'Session expired. Please log in again.');
                 }
             }
-            
             return $next($request);
         }
 
