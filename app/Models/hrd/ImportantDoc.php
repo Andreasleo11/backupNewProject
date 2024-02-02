@@ -12,12 +12,18 @@ class ImportantDoc extends Model
         'name',
         'type_id',
         'expired_date',
-        'document'
+        'document_id',
+        'description'
     ];
 
     public function type()
     {
         return $this->belongsTo(ImportantDocType::class, 'type_id', 'id');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(ImportantDocFile::class);
     }
 
     use HasFactory;

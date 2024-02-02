@@ -32,22 +32,39 @@ class ImportantDocController extends Controller
     {
         // Validate form
         $request->validate([
-            'name'=>'required|max:255',
-            'type_id'=>'required',
-            'expired_date'=>'required',
-            'document'=>'file|max:2048',
+            'name' => 'required|max:255',
+            'type_id' => 'required',
+            'expired_date' => 'required',
+            'files.*' => 'file|max:2048|nullable',
+            'document_id' => 'string|max:255|nullable',
+            'description' => 'string|max:255|nullable',
         ]);
 
-        $data = $request->only(['name', 'type_id', 'expired_date']);
+        // Create a new ImportantDoc instance with additional data
+        $importantDoc = ImportantDoc::create([
+            'name' => $request->name,
+            'type_id' => $request->type_id,
+            'expired_date' => $request->expired_date,
+            'document_id' => $request->document_id,
+            'description' => $request->description,
+        ]);
 
-        if($request->hasFile('document')){
-            $file = $request->file('document');
-            $fileName = time() . '-' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('public/importantDocuments/documents', $fileName);
-            $data['document'] = $filePath;
+        if($request->hasFile('files')){
+            foreach ($request->file('files') as $file) {
+                // Generate a unique filename
+                $fileName = time() . '-' . $file->getClientOriginalName();
+
+                // Read file content
+                $fileData = file_get_contents($file->getRealPath());
+
+                // Store file data in the database
+                $importantDoc->files()->create([
+                    'name' => $fileName,
+                    'mime_type' => $file->getClientMimeType(),
+                    'data' => $fileData,
+                ]);
+            }
         }
-
-        ImportantDoc::create($data);
 
         return redirect()->route('hrd.importantDocs.index')->with('success', 'Data berhasil dibuat!');
     }

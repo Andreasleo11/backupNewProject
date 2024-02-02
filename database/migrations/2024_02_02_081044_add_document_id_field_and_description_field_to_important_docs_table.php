@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('important_docs', function (Blueprint $table) {
-            $table->binary('document')->nullable();
+            $table->string('document_id')->after('expired_date')->nullable();
+            $table->string('description')->after('document_id')->nullable();
         });
     }
 
@@ -22,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('important_docs', function (Blueprint $table) {
-            //
+            $table->dropColumn('document_id');
+            $table->dropColumn('description');
         });
     }
 };
