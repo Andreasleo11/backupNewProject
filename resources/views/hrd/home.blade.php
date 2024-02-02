@@ -26,7 +26,7 @@
                                         <thead>
                                             <tr>
                                                 <th class="fs-5 align-middle py-3" scope="col">No</th>
-                                                <th class="fs-5 align-middle py-3 text-start" scope="col">Name</th>
+                                                <th class="fs-5 align-middle py-3" scope="col">Name</th>
                                                 <th class="fs-5 align-middle py-3" scope="col">Expired Date</th>
                                             </tr>
                                         </thead>
@@ -34,7 +34,7 @@
                                                 @foreach ($importantDocs as $importantDoc)
                                                 <tr>
                                                     <td class="align-middle">{{ $loop->iteration }}</td>
-                                                    <td class="align-middle text-start">{{ $importantDoc->name }}</td>
+                                                    <td class="align-middle">{{ $importantDoc->name }}</td>
                                                     <td class="align-middle">{{ \Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y') }}</td>
                                                 </tr>
                                                 @endforeach

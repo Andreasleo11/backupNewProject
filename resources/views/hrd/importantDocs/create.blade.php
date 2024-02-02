@@ -54,7 +54,7 @@
                                             <option selected disabled>--Select document type--</option>
 
                                             @foreach ($types as $type)
-                                                <option value="{{$type->id}}">{{$type->id }}</option>
+                                                <option value="{{$type->id}}">{{$type->name}}</option>
                                             @endforeach
                                         </select>
 
@@ -78,6 +78,21 @@
 
                                         <!-- error message for expired_date -->
                                         @error('expired_date')
+                                            <div class="alert alert-danger mt-2">
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="form-group mt-4">
+                                        <label class="fw-medium fs-5 mb-2">Upload file <span class="text-secondary h6">(Optional)</span>{{ csrf_field() }}</label>
+                                        <input type="file" class= "form-control" name="document" value="{{ old('document') }}" placeholder="Document (Optional)">
+
+                                        <div class="valid-feedback">Looks good!</div>
+                                        <div class="invalid-feedback">Wrong file extensions</div>
+
+                                        <!-- error message for document -->
+                                        @error('document')
                                             <div class="alert alert-danger mt-2">
                                                 {{ $message }}
                                             </div>

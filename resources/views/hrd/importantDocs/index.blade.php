@@ -46,10 +46,12 @@
                             <td class="align-middle">{{ $importantDoc->name }}</td>
                             <td class="align-middle">{{ $importantDoc->type->name }}</td>
                             @php
+                                $expiryThreshold = Carbon\Carbon::now()->addMonths(2);
+                                $date = Carbon\Carbon::parse($importantDoc->expired_date);
                                 $daysDifference = Carbon\Carbon::now()->diffInDays(Carbon\Carbon::parse($importantDoc->expired_date));
                             @endphp
-                            <td class="align-middle {{ (Carbon\Carbon::parse($importantDoc->expired_date) < \Carbon\Carbon::now()->addMonths(2)) ? "text-danger": "" }}">
-                                {{ \Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y') }}
+                            <td class="align-middle {{ ($date < $expiryThreshold) ? "text-danger": "" }}">
+                                {{ $date->format('d-m-Y') }}
                             </td>
                             <td class="align-middle">
                                 <form action="{{route('hrd.importantDocs.delete',$importantDoc->id)}}" method="POST">

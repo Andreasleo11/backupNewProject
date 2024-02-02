@@ -11,7 +11,8 @@ class ImportantDoc extends Model
     protected $fillable = [
         'name',
         'type_id',
-        'expired_date'
+        'expired_date',
+        'document'
     ];
 
     public function type()

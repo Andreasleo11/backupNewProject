@@ -41,13 +41,12 @@
 
             <hr>
 
-            <!--
-                <div class="container">
-                    <iframe src="{{ asset('storage/attachments/1706156978_test.pdf')}}" frameborder="0" style="width: 100%; height:500px"></iframe>
-                </div>
-            -->
-            <div class="container text-center ">
-                <div id="pdfViewer" style="width: auto; height: auto" class="my-4"></div>
+            <div class="container text-center">
+                @if ($importantDoc->document !== null)
+                    <div id="pdfViewer" style="width: auto; height: auto" class="py-5 mb-3"></div>
+                @else
+                    <h6 class="mb-3">No Document</h6>
+                @endif
             </div>
         </div>
     </div>
@@ -63,8 +62,12 @@
     // PDF.js worker from the 'pdfjs-dist' package
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
-    // Fetch PDF document
-    const pdfUrl = '{{ asset('storage/attachments/1706156978_test.pdf') }}';
+    // Extract filename from the document path (assuming $importantDoc->document contains the full path)
+    const filename = '{{$importantDoc->document}}'.split('/').pop();
+
+    // Construct the PDF URL
+    const pdfUrl = '{{ asset('storage/importantDocuments/documents') }}/' + filename;
+
     fetch(pdfUrl)
         .then(response => response.arrayBuffer())
         .then(data => {

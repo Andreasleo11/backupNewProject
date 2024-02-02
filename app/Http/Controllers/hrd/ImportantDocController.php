@@ -31,17 +31,23 @@ class ImportantDocController extends Controller
     public function store(Request $request)
     {
         // Validate form
-        $this->validate($request, [
+        $request->validate([
             'name'=>'required|max:255',
             'type_id'=>'required',
             'expired_date'=>'required',
+            'document'=>'file|max:2048',
         ]);
 
-        ImportantDoc::create([
-            'name'     => $request->name,
-            'type_id'     => $request->type_id,
-            'expired_date'   => $request->expired_date
-        ]);
+        $data = $request->only(['name', 'type_id', 'expired_date']);
+
+        if($request->hasFile('document')){
+            $file = $request->file('document');
+            $fileName = time() . '-' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('public/importantDocuments/documents', $fileName);
+            $data['document'] = $filePath;
+        }
+
+        ImportantDoc::create($data);
 
         return redirect()->route('hrd.importantDocs.index')->with('success', 'Data berhasil dibuat!');
     }
