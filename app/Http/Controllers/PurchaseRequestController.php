@@ -38,6 +38,9 @@ class PurchaseRequestController extends Controller
             'date_required' => $request->input('date_of_required'),
             'remark' => $request->input('remark'),
             'supplier' => $request->input('supplier'),
+            'autograph_1' => Auth::user()->name . '.png',
+            'autograph_user_1' => Auth::user()->name,
+            'status' => 1,
 
         ]);
 
