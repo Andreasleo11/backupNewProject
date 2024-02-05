@@ -14,6 +14,9 @@ use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\hrd\ImportantDocController;
 use Illuminate\Support\Facades\Auth;
 
+
+use App\Http\Controllers\PurchaseRequestController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -43,6 +46,13 @@ Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'
 Route::middleware(['checkSessionId'])->group(function () {
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
+    //PR SECTION
+    Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
+    Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
+    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
+    Route::get('/purchaserequest/list', [PurchaseRequestController::class, 'viewAll'])->name('purchaserequest.view');
+    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
+    //PR SECTION 
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {

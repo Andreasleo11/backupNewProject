@@ -10,6 +10,7 @@ class Detail extends Model
     use HasFactory;
 
     protected $fillable = [
+        
         'Report_Id',
         'Part_Name',
         'Rec_Quantity',

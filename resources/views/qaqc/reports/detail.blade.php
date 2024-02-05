@@ -111,6 +111,7 @@
 
                         <tbody>
                             @foreach($report->details as $detail)
+                            <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $detail->part_name}}</td>
                                 <td>{{ $detail->rec_quantity}}</td>

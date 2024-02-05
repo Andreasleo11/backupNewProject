@@ -14,7 +14,7 @@
                         </div>
                     @endif
                     
-                    {{ __('Hello monseiurs') }}
+                    {{ __('PR SECTION') }}
                 </div>
             </div>
         </div>
@@ -25,10 +25,15 @@
 
 <div class="container">
     <div class="row justify-content-center">
-        <a href="{{ route('purchaserequest.home') }}" class="btn btn-primary">HOME OF PR</a>
+        <a href="{{ route('purchaserequest.create') }}" class="btn btn-primary">Create PR </a>
     </div>
 </div>
 
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('purchaserequest.view') }}" class="btn btn-primary">LIST PR </a>
+    </div>
+</div>
 
 
 @endsection

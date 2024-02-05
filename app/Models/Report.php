@@ -35,6 +35,7 @@ class Report extends Model
         return $this->hasMany(Detail::class);
     }
 
+
     public function updateAutograph($section, $signaturePath)
     {
         switch ($section) {
