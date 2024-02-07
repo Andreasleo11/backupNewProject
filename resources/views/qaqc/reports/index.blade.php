@@ -10,7 +10,7 @@
             </div>
             <div class="col text-end">
                 <a href="{{route('qaqc.report.create')}}" class="btn btn-primary">
-                    <i class='bx bx-plus' ></i> Add Report
+                    <i class='bx bx-plus' ></i> Add <span class="d-none d-sm-inline">Report</span>
                 </a>
             </div>
         </div>
@@ -38,42 +38,51 @@
                 <div class="table-responsive">
                     <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
-                            <tr>
-                                <th class="fw-semibold fs-5">No</th>
-                                <th class="fw-semibold fs-5">Invoice No</th>
-                                <th class="fw-semibold fs-5">Customer</th>
-                                <th class="fw-semibold fs-5">Rec Date</th>
-                                <th class="fw-semibold fs-5">Verify Date</th>
-                                <th class="fw-semibold fs-5">Action</th>
-                                <th class="fw-semibold fs-5">Status</th>
-                                <th class="fw-semibold fs-5">Description</th>
+                            <tr class="align-middle fw-semibold fs-5">
+                                <th>No</th>
+                                <th>Invoice No</th>
+                                <th>Customer</th>
+                                <th>Rec Date</th>
+                                <th>Verify Date</th>
+                                <th>Action</th>
+                                <th>Status</th>
+                                <th>Description</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($reports as $report)
-                                <tr>
-                                    <td class="align-middle">{{ $loop->iteration }}</td>
-                                    <td class="align-middle">{{ $report->invoice_no }}</td>
-                                    <td class="align-middle">{{ $report->customer }}</td>
-                                    <td class="align-middle">{{ $report->rec_date }}</td>
-                                    <td class="align-middle">{{ $report->verify_date }}</td>
-                                    <td class="align-middle">
-                                        <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
-                                            <i class='bx bx-info-circle' ></i> Detail
+                                <tr class="align-middle">
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $report->invoice_no }}</td>
+                                    <td>{{ $report->customer }}</td>
+                                    <td>{{ $report->rec_date }}</td>
+                                    <td>{{ $report->verify_date }}</td>
+                                    <td>
+                                        <a href="{{ route('qaqc.report.detail', $report->id) }}" class="btn btn-secondary my-1">
+                                            <i class='bx bx-info-circle' ></i> <span class="d-none d-sm-inline ">Detail</span>
                                         </a>
-                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary">
-                                            <i class='bx bx-edit' ></i> Edit
+
+                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1">
+                                            <i class='bx bx-edit' ></i> <span class="d-none d-sm-inline">Edit</span>
+                                        </a>
+
+                                        <a href="{{ route('qaqc.report.download', $report->id) }}" class="btn btn-secondary my-1">
+                                            <i class='bx bx-download' ></i> <span class="d-none d-sm-inline">Download</span>
+                                        </a>
+
+                                        <a href="{{ route('qaqc.report.previewPdf', $report->id) }}" class="btn btn-secondary my-1">
+                                            <span class="d-none d-sm-inline">Preview</span>
                                         </a>
 
                                         <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class='bx bx-trash-alt' ></i> Delete
+                                            <button type="submit" class="btn btn-danger my-1">
+                                                <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
                                             </button>
                                         </form>
                                     </td>
-                                    <td class="align-middle">
+                                    <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
                                             <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
 
@@ -87,7 +96,7 @@
                                             <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING SIGNATURE</span>
                                         @endif
                                     </td>
-                                    <td class="align-middle">{{ $report->description }}</td>
+                                    <td>{{ $report->description }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

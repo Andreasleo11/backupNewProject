@@ -6,12 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\hrd\ImportantDoc;
 use App\Models\hrd\ImportantDocType;
 use App\Http\Controllers\Controller;
+use App\Models\hrd\ImportantDocFile;
 
 class ImportantDocController extends Controller
 {
     public function index()
     {
-        $importantDocs = ImportantDoc::with('type')->orderBy('expired_date')->get();
+        $importantDocs = ImportantDoc::with('type','files')->orderBy('expired_date')->get();
         return view('hrd.importantDocs.index', compact('importantDocs'));
     }
 
@@ -50,12 +51,16 @@ class ImportantDocController extends Controller
         ]);
 
         if($request->hasFile('files')){
+            // dd($request->file('files'));
             foreach ($request->file('files') as $file) {
                 // Generate a unique filename
                 $fileName = time() . '-' . $file->getClientOriginalName();
 
                 // Read file content
                 $fileData = file_get_contents($file->getRealPath());
+
+                // Store the file in the filesystem
+                $file->storeAs('public/importantDocuments', $fileName);
 
                 // Store file data in the database
                 $importantDoc->files()->create([
@@ -104,6 +109,13 @@ class ImportantDocController extends Controller
     {
         ImportantDoc::find($id)->delete();
         return redirect()->route('hrd.importantDocs.index')->with('success', 'Data berhasil dihapus!');
+    }
+
+    public function downloadFile(ImportantDocFile $file)
+    {
+        return response()->streamDownload(function () use ($file) {
+            echo $file->data;
+        }, $file->name);
     }
 
 }

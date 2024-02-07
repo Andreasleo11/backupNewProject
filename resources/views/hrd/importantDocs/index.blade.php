@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+
+{{-- @dd($importantDocs) --}}
 <section class="header">
     <div class="d-flex row-flex">
         <div class="h2 me-auto">Important Documents</div>

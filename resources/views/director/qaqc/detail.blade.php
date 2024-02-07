@@ -107,8 +107,8 @@
                         </thead>
 
                         <tbody>
-                            <tr>
-                                @forelse($report->details as $detail)
+                            @forelse($report->details as $detail)
+                                <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $detail->part_name}}</td>
                                     <td>{{ $detail->rec_quantity}}</td>
@@ -141,8 +141,8 @@
 
                                 @empty
                                     <td colspan="12"> No data</td>
-                                @endforelse
-                            </tr>
+                                </tr>
+                            @endforelse
 
                         </tbody>
                     </table>

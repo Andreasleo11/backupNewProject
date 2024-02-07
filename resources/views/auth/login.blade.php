@@ -82,18 +82,23 @@
                                 </div>
                             </div> --}}
 
-                            <div class="row mb-0">
-                                <div class="col-md-8 offset-md-4">
+                            <div class="row mb-0 mt-4 px-3">
+                                <button type="submit" class="btn btn-primary">
+                                    {{ __('Login') }}
+                                </button>
+                                {{-- <div class="col">
                                     <button type="submit" class="btn btn-primary">
                                         {{ __('Login') }}
                                     </button>
 
-                                    {{-- @if (Route::has('password.request'))
+                                </div>
+                                <div class="col">
+                                    @if (Route::has('password.request'))
                                         <a class="btn btn-link" href="{{ route('password.request') }}">
                                             {{ __('Forgot Your Password?') }}
                                         </a>
-                                    @endif --}}
-                                </div>
+                                    @endif
+                                </div> --}}
                             </div>
                         </form>
                     </div>

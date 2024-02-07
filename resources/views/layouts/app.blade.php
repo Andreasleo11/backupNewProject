@@ -22,7 +22,6 @@
 
     @stack('extraCss')
 
-    <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="wrapper">
@@ -42,8 +41,8 @@
     @stack('extraJs')
 
     <script src="{{ asset('js/app.js') }}"></script>
-    <script src="{{ asset('js/modal.js') }}"></script>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+    <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
 
 </body>
 </html>

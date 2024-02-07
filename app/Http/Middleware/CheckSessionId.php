@@ -21,6 +21,7 @@ class CheckSessionId
             $session_token = session('remember_token');
 
             if($user && $user->remember_token !== $session_token){
+                Auth::user()->update(['remember_token'=>null]);
                 Auth::logout();
                 return redirect('/')->with('error', 'Session expired. Please login again!');
             }

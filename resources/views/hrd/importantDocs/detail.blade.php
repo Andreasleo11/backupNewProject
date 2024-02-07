@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+{{-- @dd($importantDoc) --}}
 
 <section class="header">
     <h2 class="">Detail Important Document</h2>
@@ -42,7 +43,20 @@
             <hr>
 
             <div class="container text-center">
-                @if ($importantDoc->document !== null)
+
+                {{-- <h3>{{ $importantDoc->name }}</h3>
+                <p>Expired Date: {{ $importantDoc->expired_date }}</p> --}}
+
+                    @if ($importantDoc->files->isNotEmpty())
+                        <div id="pdfViewerContainer_{{ $importantDoc->id }}">
+                            <canvas id="pdfViewerCanvas_{{ $importantDoc->id }}"></canvas>
+                        </div>
+
+                    @endif
+            </div>
+
+            <div class="container text-center">
+                @if ($importantDoc->files->first() !== null)
                     <div id="pdfViewer" style="width: auto; height: auto" class="py-5 mb-3"></div>
                 @else
                     <h6 class="mb-3">No Document</h6>
@@ -58,16 +72,15 @@
 @endsection
 
 @push('extraJs')
+
+
 <script>
     // PDF.js worker from the 'pdfjs-dist' package
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 
-    // Extract filename from the document path (assuming $importantDoc->document contains the full path)
-    const filename = '{{$importantDoc->document}}'.split('/').pop();
-
-    // Construct the PDF URL
-    const pdfUrl = '{{ asset('storage/importantDocuments/documents') }}/' + filename;
-
+    // Fetch PDF document (replace 'pdfUrl' with the URL of your PDF file)
+    const pdfUrl = '{{ asset('storage/importantDocuments') }}/{{ $importantDoc->files->first()->name }}';
+    console.log("url: " + pdfUrl);
     fetch(pdfUrl)
         .then(response => response.arrayBuffer())
         .then(data => {
@@ -75,23 +88,21 @@
             pdfjsLib.getDocument({ data: data }).promise.then(pdfDoc => {
                 // Display the first page of the PDF
                 pdfDoc.getPage(1).then(page => {
-                    const scale = 1;
-                    const viewport = page.getViewport({ scale: scale });
-                    const canvas = document.createElement('canvas');
+                    const canvas = document.getElementById('pdfViewerCanvas');
                     const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
+                    const viewport = page.getViewport({ scale: 1 });
                     canvas.width = viewport.width;
+                    canvas.height = viewport.height;
                     const renderContext = {
                         canvasContext: context,
                         viewport: viewport
                     };
                     page.render(renderContext);
-                    document.getElementById('pdfViewer').appendChild(canvas);
                 });
             });
         })
         .catch(error => {
-            console.error('Error fetching PDF: ', error);
+            console.error('Error loading PDF:', error);
         });
 </script>
 

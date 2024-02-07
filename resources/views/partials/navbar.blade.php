@@ -32,6 +32,11 @@
                         <a href="#" class="dropdown-item">Profile</a>
                         <a href="#" class="dropdown-item">Setting</a>
                     -->
+                    {{-- <a href="#" class="dropdown-item" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
+                        <i class='bx bx-exit me-2' ></i>
+                        Reset Password
+                    </a> --}}
+
                     <a href="#" class="dropdown-item" onclick="event.preventDefault();document.getElementById('logout-form').submit();">
                         <i class='bx bx-exit me-2' ></i>
                         Logout

@@ -88,9 +88,12 @@ Route::middleware(['checkUserRole:2', 'checkSession',])->group(function () {
         Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create');
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/reports/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
+        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
+        Route::get('qaqc/{id}/previewPdf', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.previewPdf');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
+        Route::get('/download/{file}', [ImportantDocController::class, 'downloadFile'])->name('downloadFile');
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
         Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
         Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');

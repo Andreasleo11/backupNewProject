@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('important_doc_files', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('important_doc_id');
             $table->string('name');
             $table->string('mime_type')->nullable();
             $table->binary('data');

@@ -102,7 +102,7 @@
                                         <div class="invalid-feedback">You must fill the description of the document</div>
 
                                         <!-- error message for title -->
-                                        @error('desciption')
+                                        @error('description')
                                             <div class="alert alert-danger mt-2">
                                                 {{ $message }}
                                             </div>

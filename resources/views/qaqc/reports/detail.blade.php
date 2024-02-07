@@ -32,7 +32,7 @@
     @endif
 
     <section aria-label="header" class="container">
-        <div class="row text-center">
+        <div class="row text-center mt-5">
             <div class="col">
                 <h2>QA Inspector</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
@@ -100,7 +100,7 @@
                                 <th class="align-middle">Production Date</th>
                                 <th class="align-middle">Shift</th>
                                 <th class="align-middle">Can Use</th>
-                                <th class="align-middle">Cant Use</th>
+                                <th class="align-middle">Can't Use</th>
                                 <th class="align-middle">Customer Defect Detail</th>
                                 <th class="align-middle">Daijo Defect Detail</th>
                                 <th class="align-middle">Remark</th>
@@ -110,8 +110,8 @@
                         </thead>
 
                         <tbody>
-                            <tr>
-                                @forelse($report->details as $detail)
+                            @forelse($report->details as $detail)
+                                <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $detail->part_name}}</td>
                                     <td>{{ $detail->rec_quantity}}</td>
@@ -141,11 +141,10 @@
                                             @endif
                                         @endforeach
                                     </td>
-                                @empty
-                                    <td colspan="11">No data</td>
-                                @endforelse
-                        </tr>
-
+                                </tr>
+                            @empty
+                                <td colspan="11">No data</td>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -165,7 +164,7 @@
                     {{ $filename }}
                 </div>
                 <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}" class="pt-1 pb-0 btn btn-success btn-sm">
-                    <box-icon name='download' type='solid' color='#ffffff' size="sm"></box-icon>
+                    <i class='bx bxs-download bx-sm' ></i>
                 </a>
            @endif
         </div>
