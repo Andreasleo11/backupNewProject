@@ -44,6 +44,9 @@ class HomeController extends Controller
                 case "HRD":
                     return redirect()->route('hrd.home');
                     break;
+                case "ACCOUNTING":
+                    return redirect()->route('director.home');
+                    break;
             }
         } else {
             return view('welcome');

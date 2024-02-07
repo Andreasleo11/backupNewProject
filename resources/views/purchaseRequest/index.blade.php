@@ -36,4 +36,17 @@
 </div>
 
 
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('purchaserequest.monthly') }}" class="btn btn-primary">GENERATE MONTHLY PR </a>
+    </div>
+</div>
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('purchaserequest.monthlyprlist') }}" class="btn btn-primary">MONTHLY PR LIST</a>
+    </div>
+</div>
+
 @endsection

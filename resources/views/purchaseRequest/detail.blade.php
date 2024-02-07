@@ -25,7 +25,7 @@
                 <h2>Dept Head</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
-                @if(Auth::check() && $userCreatedBy->department && Auth::user()->is_head == 1)
+                @if(Auth::check() &&  Auth::user()->department && Auth::user()->is_head == 1 && Auth::user()->department == $userCreatedBy->department)
                     <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $purchaseRequests->id }})">Acc Dept Head</button>
                 @endif
             </div>
@@ -35,7 +35,7 @@
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
                 @if(Auth::check() && Auth::user()->department == "HRD" && Auth::user()->is_head == 1)
-                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $purchaseRequests->id }}, {{$user->id}})">Acc Verificator</button>
+                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $purchaseRequests->id }})">Acc Verificator</button>
                 @endif
             </div>
 
@@ -43,8 +43,8 @@
                 <h2>He Who Remains</h2>
                 <div class="autograph-box container" id="autographBox4"></div>
                 <div class="container mt-2 border-1" id="autographuser4"></div>
-                @if(Auth::check() && Auth::user()->department == 'Direktur')
-                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(4, {{ $purchaseRequests->id }}, {{$user->id}})">Acc He Who Remains</button>
+                @if(Auth::check() && Auth::user()->department == 'DIREKTUR')
+                    <button id="btn4" class="btn btn-primary" onclick="addAutograph(4, {{ $purchaseRequests->id }}, {{$user->id}})">Acc He Who Remains</button>
                 @endif
             </div>
         </div>
@@ -134,9 +134,45 @@
 
 @endsection
 <script>
+    // Function to add autograph to the specified box
+    function addAutograph(section, prId) {
+        // Get the div element
+        var autographBox = document.getElementById('autographBox' + section);
+
+        console.log('Section:', section);
+        console.log('Report ID:', prId);
+        var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
+        console.log('username :', username);
+        var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
+        console.log('image path :', imageUrl);
+
+        autographBox.style.backgroundImage = "url('" +imageUrl + "')";
+
+         // Make an AJAX request to save the image path
+        fetch('/save-signature-path/' + prId + '/' + section, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({
+                imagePath: imageUrl,
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.message);
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+        checkAutographStatus(prId);
+    }
 
 
-function checkAutographStatus(reportId)
+    function checkAutographStatus(reportId)
     {
         // Assume you have a variable from the server side indicating the autograph status
         var autographs = {
@@ -150,11 +186,11 @@ function checkAutographStatus(reportId)
             autograph_name_1: '{{ $purchaseRequests->autograph_user_1 ?? null }}',
             autograph_name_2: '{{ $purchaseRequests->autograph_user_2 ?? null }}',
             autograph_name_3: '{{ $purchaseRequests->autograph_user_3 ?? null }}',
-            autograph_name_3: '{{ $purchaseRequests->autograph_user_4 ?? null }}',
+            autograph_name_4: '{{ $purchaseRequests->autograph_user_4 ?? null }}',
         };
 
         // Loop through each autograph status and update the UI accordingly
-        for (var i = 1; i <= 3; i++) {
+        for (var i = 1; i <= 4; i++) {
             var autographBox = document.getElementById('autographBox' + i);
             var autographInput = document.getElementById('autographInput' + i);
             var autographNameBox = document.getElementById('autographuser' + i);
@@ -187,4 +223,5 @@ function checkAutographStatus(reportId)
     window.onload = function () {
         checkAutographStatus({{ $purchaseRequests->id }});
     };
+    
 </script>

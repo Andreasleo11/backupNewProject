@@ -28,7 +28,19 @@ use App\Http\Controllers\PurchaseRequestController;
 |
 */
 
-
+ //PR SECTION
+ Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
+ Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
+ Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
+ Route::get('/purchaserequest/list', [PurchaseRequestController::class, 'viewAll'])->name('purchaserequest.view');
+ Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
+ Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
+ Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
+ Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
+ Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
+ Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
+ Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
+ //PR SECTION 
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
@@ -46,13 +58,7 @@ Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'
 Route::middleware(['checkSessionId'])->group(function () {
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
-    //PR SECTION
-    Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
-    Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
-    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
-    Route::get('/purchaserequest/list', [PurchaseRequestController::class, 'viewAll'])->name('purchaserequest.view');
-    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
-    //PR SECTION 
+
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {
@@ -82,12 +88,12 @@ Route::middleware(['checkUserRole:1'])->group(function () {
     });
 });
 
-Route::middleware(['checkUserRole:2'])->group(function () {
+Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
 
     Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
     Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
 
-    Route::middleware(['checkDepartment:QA,QC'])->group(function () {
+    Route::middleware(['checkDepartment:QA,QC', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
         Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
@@ -113,7 +119,7 @@ Route::middleware(['checkUserRole:2'])->group(function () {
         Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
     });
 
-    Route::middleware(['checkDepartment:HRD'])->group(function() {
+    Route::middleware(['checkDepartment:DIREKTUR'])->group(function() {
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index');
         Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('director.qaqc.detail');
         Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('director.qaqc.approve');

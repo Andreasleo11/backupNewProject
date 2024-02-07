@@ -30,6 +30,7 @@
                         </thead>
                         <tbody>
                             @foreach ($purchaseRequests as $pr)
+                            <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $pr->date_pr }}</td>
                             <td>{{ $pr->to_department }}</td>
@@ -60,6 +61,7 @@
                                     
                                 @endif
                             </td>
+                            </tr>
                             @endforeach
                         </tbody>
 

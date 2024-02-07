@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\PurchaseRequest; 
 use App\Models\DetailPurchaseRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Models\MonhtlyPR;
 
 class PurchaseRequestController extends Controller
 {
@@ -78,9 +79,131 @@ class PurchaseRequestController extends Controller
         $purchaseRequests = PurchaseRequest::with('itemDetail')->find($id);
         $user =  Auth::user();
         $userCreatedBy = $purchaseRequests->createdBy;  
-        // dd($purchaseRequests);
+        // dd($userCreatedBy);
+
+           // Check if autograph_2 is filled
+        if ($purchaseRequests->autograph_2 !== null) {
+            $purchaseRequests->status = 2;
+        }
+
+        // Check if autograph_3 is also filled
+        if ($purchaseRequests->autograph_3 !== null) {
+            $purchaseRequests->status = 3;
+        }
+
+        // Check if autograph_4 is also filled
+        if ($purchaseRequests->autograph_4 !== null) {
+            $purchaseRequests->status = 4;
+        }
+
+        // Save the updated status
+        $purchaseRequests->save();
 
         return view('purchaseRequest.detail', compact('purchaseRequests', 'user', 'userCreatedBy'));
+    }
+
+    public function saveImagePath(Request $request, $prId, $section)
+    {
+        $username = Auth::check() ? Auth::user()->name : '';
+        $imagePath = $username . '.png';
+
+        // Save $imagePath to the database for the specified $reportId and $section
+        $pr = PurchaseRequest::find($prId);
+            $pr->update([
+                "autograph_{$section}" => $imagePath
+            ]);
+            $pr->update([
+                "autograph_user_{$section}" => $username
+            ]);
+
+        return response()->json(['success' => 'Autograph saved successfully!']);
+    }
+
+
+    public function monthlyview()
+    {
+        $purchaseRequests = PurchaseRequest::with('itemDetail')->get();
+        
+        return view('purchaseRequest.monthly', compact('purchaseRequests'));
+        
+    }
+
+
+        public function monthlyviewmonth(Request $request)
+    {
+       
+        // Get the month inputted by the user
+        $selectedMonth = $request->input('month');
+        
+
+        // Extract year and month from the selected month input
+        $year = date('Y', strtotime($selectedMonth));
+        $month = date('m', strtotime($selectedMonth));
+
+
+        // Save the year and month to the MonhtlyPR model
+        MonhtlyPR::create([
+            'month' => $month,
+            'year' => $year,
+            // Add other fields as needed
+        ]);
+
+        // Fetch purchase requests for the selected month
+        $purchaseRequests = PurchaseRequest::with('itemDetail')
+            ->whereYear('date_pr', $year)
+            ->whereMonth('date_pr', $month)
+            ->get();
+
+        // Pass the filtered data to the view
+        
+        return view('purchaseRequest.monthly', compact('purchaseRequests'));
+    }
+
+
+    public function monthlyprlist()
+    {
+        $monthlist = MonhtlyPR::get();
+
+        return view ('purchaseRequest.monthlylist', compact('monthlist'));
+    }
+
+    public function monthlydetail($id)
+    {
+        $monthdetail = MonhtlyPR::find($id);
+        
+         // Extract year and month from the selected month input
+        // $year = date('Y', strtotime($monthdetail->year));
+        // $month = date('m', strtotime($monthdetail->month));
+
+        $year = $monthdetail->year;
+        $month = $monthdetail->month;
+
+        $purchaseRequests = PurchaseRequest::with('itemDetail')
+        ->whereYear('date_pr', $year)
+        ->whereMonth('date_pr', $month)
+        ->get();
+
+        // dd($monthdetail);
+         return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
+    }
+
+
+    public function saveImagePathMonthly(Request $request, $monthprId, $section)
+    {
+        $username = Auth::check() ? Auth::user()->name : '';
+        $imagePath = $username . '.png';
+
+        // Save $imagePath to the database for the specified $reportId and $section
+        $monthpr = MonhtlyPR::find($monthprId);
+            $monthpr->update([
+                "autograph_{$section}" => $imagePath
+            ]);
+            $monthpr->update([
+                "autograph_user_{$section}" => $username
+            ]);
+
+        return response()->json(['success' => 'Autograph saved successfully!']);
+        
     }
 
 

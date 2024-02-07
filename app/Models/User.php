@@ -24,6 +24,7 @@ class User extends Authenticatable
         'role_id',
         'department',
         'remember_token',
+        'is_head',
     ];
 
     /**
