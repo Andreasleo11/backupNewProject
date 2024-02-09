@@ -60,4 +60,11 @@
         <a href="{{ route('purchaserequest.home') }}" class="btn btn-primary">HOME OF PR</a>
     </div>
 </div>
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('formcuti.home') }}" class="btn btn-primary">HOME FOR FORM CUTI </a>
+    </div>
+</div>
 @endsection

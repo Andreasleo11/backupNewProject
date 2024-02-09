@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\PurchaseRequestController;
 
+use App\Http\Controllers\FormCutiController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,6 +46,16 @@ use App\Http\Controllers\PurchaseRequestController;
 
  Route::get('/purchase-request/chart-data/{year}/{month}', 'PurchaseRequestController@getChartData');
  //PR SECTION 
+
+
+
+
+ // FORM CUTI SESSION
+Route::get('/Form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
+Route::get('/Form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
+Route::get('/Form-cuti/view', [FormCutiController::class, 'view'])->name('formcuti.view');
+
+ // FORM CUTI SESSION
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
