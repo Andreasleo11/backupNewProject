@@ -40,6 +40,9 @@ use App\Http\Controllers\PurchaseRequestController;
  Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
  Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
  Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
+
+
+ Route::get('/purchase-request/chart-data/{year}/{month}', 'PurchaseRequestController@getChartData');
  //PR SECTION 
 Route::get('/', function () {
     if (Auth::check()) {

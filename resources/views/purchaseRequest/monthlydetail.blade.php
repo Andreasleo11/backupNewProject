@@ -122,7 +122,7 @@
                             </tfoot>
                         </table>
                     </div>
-                @endforeach
+            @endforeach
             </div>
         </div>
     </section>

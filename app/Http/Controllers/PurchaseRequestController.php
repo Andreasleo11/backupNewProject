@@ -8,12 +8,35 @@ use App\Models\PurchaseRequest;
 use App\Models\DetailPurchaseRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseRequestController extends Controller
 {
     public function index()
     {
-        return view('purchaseRequest.index');
+        $departments = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
+        ->groupBy('to_department')
+        ->get();
+
+        // Prepare data for the chart
+        $labels = $departments->pluck('to_department');
+        $counts = $departments->pluck('count');
+
+        return view('purchaseRequest.index', compact('labels', 'counts'));
+    }
+
+    public function getChartData(Request $request, $year, $month)
+    {
+        $purchaseRequests = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
+            ->whereYear('date_pr', $year)
+            ->whereMonth('date_pr', $month)
+            ->groupBy('to_department')
+            ->get();
+
+        $labels = $purchaseRequests->pluck('to_department');
+        $counts = $purchaseRequests->pluck('count');
+
+        return response()->json(['labels' => $labels, 'counts' => $counts]);
     }
 
     public function create()
@@ -50,18 +73,18 @@ class PurchaseRequestController extends Controller
         $purchaseRequest->update(['pr_no' => $prNo]);
 
        // Check if 'items' key exists in the request
-    if ($request->has('items') && is_array($request->input('items'))) {
-        // Create detail records for each item
-        foreach ($request->input('items') as $itemData) {
-            DetailPurchaseRequest::create([
-                'purchase_request_id' => $purchaseRequest->id,
-                'item_name' => $itemData['item_name'],
-                'quantity' => $itemData['quantity'],
-                'purpose' => $itemData['purpose'],
-                'unit_price' => $itemData['unit_price'],
-            ]);
+        if ($request->has('items') && is_array($request->input('items'))) {
+            // Create detail records for each item
+            foreach ($request->input('items') as $itemData) {
+                DetailPurchaseRequest::create([
+                    'purchase_request_id' => $purchaseRequest->id,
+                    'item_name' => $itemData['item_name'],
+                    'quantity' => $itemData['quantity'],
+                    'purpose' => $itemData['purpose'],
+                    'unit_price' => $itemData['unit_price'],
+                ]);
+            }
         }
-    }
 
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
@@ -129,7 +152,7 @@ class PurchaseRequestController extends Controller
     }
 
 
-        public function monthlyviewmonth(Request $request)
+    public function monthlyviewmonth(Request $request)
     {
        
         // Get the month inputted by the user
@@ -166,6 +189,7 @@ class PurchaseRequestController extends Controller
 
         return view ('purchaseRequest.monthlylist', compact('monthlist'));
     }
+
 
     public function monthlydetail($id)
     {
@@ -205,6 +229,5 @@ class PurchaseRequestController extends Controller
         return response()->json(['success' => 'Autograph saved successfully!']);
         
     }
-
 
 }
