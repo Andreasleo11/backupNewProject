@@ -19,6 +19,8 @@ use App\Http\Controllers\PurchaseRequestController;
 
 use App\Http\Controllers\FormCutiController;
 
+use App\Http\Controllers\FormKeluarController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -57,8 +59,17 @@ Route::get('/Form-cuti/view', [FormCutiController::class, 'view'])->name('formcu
 Route::post('/Form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
 Route::get('/Form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
 Route::post('/save-aurographed-path/{formId}/{section}', [FormCutiController::class,'saveImagePath']);
-
  // FORM CUTI SESSION
+
+ // FORM KELUAR SESSION
+ Route::get('/Form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar.home');
+ Route::get('/Form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
+ Route::get('/Form-keluar/view', [FormKeluarController::class, 'view'])->name('formkeluar.view');
+ Route::post('/Form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
+ // FORM KELUAR SESSION
+
+
+
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
