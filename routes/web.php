@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\director\DirectorHomeController;
 use App\Http\Controllers\director\ReportController;
@@ -37,6 +38,11 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
+
+// routes/web.php
+
+Route::get('/change-password', [PasswordChangeController::class,'showChangePasswordForm'])->name('change.password.show');
+Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
 
 Route::middleware(['checkUserRole:1'])->group(function () {
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');

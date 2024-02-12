@@ -52,4 +52,26 @@ class Report extends Model
                 break;
         }
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Get the current record's position in the table
+            $position = static::count() + 1;
+
+            // Calculate the increment number
+            $increment = str_pad($position, 4, '0', STR_PAD_LEFT);
+
+            // Get the date portion
+            $date = now()->format('ymd'); // Assuming you want the current date
+
+            // Build the custom ID
+            $customId = "VQC/{$increment}/{$date}";
+
+            // Assign the custom ID to the model
+            $model->doc_num = $customId;
+        });
+    }
 }

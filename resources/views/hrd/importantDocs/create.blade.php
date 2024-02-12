@@ -36,7 +36,7 @@
                                         <label class="fw-medium fs-5 mb-2">Type</label>
 
                                         <select id="typeSelect" class="form-select @error('type_id') is-invalid @enderror" name="type_id" aria-label="Default select example" value="{{ old('type') }}" required>
-                                            <option selected disabled>--Select document type--</option>
+                                            <option selected disabled value="">--Select document type--</option>
 
                                             @foreach ($types as $type)
                                                 <option value="{{$type->id}}">{{$type->name}}</option>
@@ -80,7 +80,7 @@
 
                                     <div class="form-group mt-4">
                                         <label class="fw-medium fs-5 mb-2">Document ID <span class="text-secondary h6">(Optional)</label>
-                                        <input type="text" class="form-control @error('document_id') is-invalid @enderror" name="document_id" value="{{ old('document_id') }}" required>
+                                        <input type="text" class="form-control @error('document_id') is-invalid @enderror" name="document_id" value="{{ old('document_id') }}">
                                         <div class="form-text text-secondary">e.g 90S/A8D.89OU</div>
 
                                         <div class="valid-feedback">Looks good!</div>
@@ -201,6 +201,7 @@
             fileInput.removeAttribute('multiple');
         }
     });
+
 </script>
 
 @endpush

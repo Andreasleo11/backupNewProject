@@ -28,7 +28,7 @@
                         <div class="col">
                             <div class="card border-0 shadow-sm rounded">
                                 <div class="card-body">
-                                    <form action="{{ route('hrd.importantDocs.update',  ['id' => $importantDoc->id]) }}" method="POST" enctype="multipart/form-data">
+                                    <form action="{{ route('hrd.importantDocs.update', $importantDoc->id) }}" method="POST" enctype="multipart/form-data">
                                         @csrf
                                         @method('PUT')
 
@@ -48,7 +48,7 @@
                                             <label class="fw-medium fs-5 mb-2">Type</label>
 
                                             <select class="form-control @error('type_id') is-invalid @enderror" name="type_id" >
-                                                <option value = "{{$importantDoc->type_id}}" selected disabled>{{ $importantDoc->type->name }}</option>
+                                                <option value = "{{$importantDoc->type_id}}" selected>{{ $importantDoc->type->name }}</option>
 
                                                 @foreach ($types as $type)
                                                     <option value="{{$type->id}}">{{$type->name}}</option>

@@ -238,9 +238,8 @@ class QaqcReportController extends Controller
                     'Remark' => json_encode($Remarks),
                 ];
 
-            Detail::create($attributes);
+                Detail::create($attributes);
             }
-
 
         return redirect()->route('qaqc.report.index')->with('success', 'Report has been stored successfully!');
     }

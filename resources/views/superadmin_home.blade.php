@@ -13,22 +13,18 @@
                             {{ session('status') }}
                         </div>
                     @endif
-                    
+
                     {{ __('Hello monseiurs') }}
                 </div>
             </div>
         </div>
-    </div>  
+    </div>
 </div>
 
-
-<div class="container">
+{{-- <div class="container">
     <div class="row justify-content-center">
         <a href="{{ route('report.viewjoni') }}" class="btn btn-primary">View Report Pak Joni</a>
-    </div>   
-</div>
-
-
-
+    </div>
+</div> --}}
 
 @endsection
