@@ -54,6 +54,9 @@ use App\Http\Controllers\FormCutiController;
 Route::get('/Form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
 Route::get('/Form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
 Route::get('/Form-cuti/view', [FormCutiController::class, 'view'])->name('formcuti.view');
+Route::post('/Form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
+Route::get('/Form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
+Route::post('/save-aurographed-path/{formId}/{section}', [FormCutiController::class,'saveImagePath']);
 
  // FORM CUTI SESSION
 Route::get('/', function () {
