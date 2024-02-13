@@ -41,34 +41,41 @@ class UserSeeder extends seeder
         //     'department' => 'QA'
         // ]);
 
+        // DB::table('users')->insert([
+        //     'name' => 'Djoni',
+        //     'email' => 'djoni@daijo.co.id',
+        //     'password' => Hash::make("direktur1234"),
+        //     'role_id' => '2',
+        //     'department' => 'DIRECTOR'
+        // ]);
+        // DB::table('users')->insert([
+        //     'name' => 'Deni',
+        //     'email' => 'deni_qc@daijo.co.id',
+        //     'password' => Hash::make("deni1234"),
+        //     'role_id' => '2',
+        //     'department' => 'QC'
+        // ]);
+        // DB::table('users')->insert([
+        //     'name' => 'Beata',
+        //     'email' => 'beata.qc@daijo.co.id',
+        //     'password' => Hash::make("beata1234"),
+        //     'role_id' => '2',
+        //     'department' => 'QC'
+        // ]);
+        // DB::table('users')->insert([
+        //     'name' => 'Ari',
+        //     'email' => 'iqc@daijo.co.id',
+        //     'password' => Hash::make("ari1234"),
+        //     'role_id' => '2',
+        //     'department' => 'QC'
+        // ]);
 
         DB::table('users')->insert([
-            'name' => 'Djoni',
-            'email' => 'djoni@daijo.co.id',
-            'password' => Hash::make("direktur1234"),
+            'name' => 'Bernadett',
+            'email' => 'bernadett@daijo.co.id',
+            'password' => Hash::make("bernadett1234"),
             'role_id' => '2',
-            'department' => 'DIRECTOR'
-        ]);
-        DB::table('users')->insert([
-            'name' => 'Deni',
-            'email' => 'deni_qc@daijo.co.id',
-            'password' => Hash::make("deni1234"),
-            'role_id' => '2',
-            'department' => 'QC'
-        ]);
-        DB::table('users')->insert([
-            'name' => 'Beata',
-            'email' => 'beata.qc@daijo.co.id',
-            'password' => Hash::make("beata1234"),
-            'role_id' => '2',
-            'department' => 'QC'
-        ]);
-        DB::table('users')->insert([
-            'name' => 'Ari',
-            'email' => 'iqc@daijo.co.id',
-            'password' => Hash::make("ari1234"),
-            'role_id' => '2',
-            'department' => 'QC'
+            'department' => 'HRD'
         ]);
     }
 }

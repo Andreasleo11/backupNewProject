@@ -20,7 +20,7 @@
         <div class="col">
             <div class="navbar navbar-collapse">
                 <a href="#" class="nav-icon pe-md-0">
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}" class="img-fluid rounded-circle" alt="profilePicture">
+                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}" class="img-fluid rounded-circle" alt="profilePicture" style="width: 50px">
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
                     <div class="text-center">

@@ -5,6 +5,7 @@
 <section aria-label="header">
     <h2 class="mb-5">HRD Dashboard</h2>
 </section>
+@if ($importantDocs->isNotEmpty())
 
 <section aria-label="content">
     <div class="container">
@@ -47,14 +48,15 @@
                 </div>
             </div>
         </section>
-
-        <section aria-label="table">
-
-        </section>
-
-
     </div>
 </section>
+@else
+    <div class="text-center h4 text-secondary">
+        No data
+    </div>
+@endif
+
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

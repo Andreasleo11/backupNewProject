@@ -187,13 +187,13 @@
     const fileInput = document.getElementById('fileInput');
 
     typeSelect.addEventListener('change', function() {
-        if(typeSelect.value == 1){
-            otherForm.style.display = 'block';
-            otherInput.setAttribute('required', 'required');
-        } else {
-            otherForm.style.display = 'none';
-            otherInput.removeAttribute('required');
-        }
+        // if(typeSelect.value == 1){
+        //     otherForm.style.display = 'block';
+        //     otherInput.setAttribute('required', 'required');
+        // } else {
+        //     otherForm.style.display = 'none';
+        //     otherInput.removeAttribute('required');
+        // }
 
         if(typeSelect.value == 3){
             fileInput.setAttribute('multiple', 'multiple');

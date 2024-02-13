@@ -7,6 +7,7 @@ use App\Models\hrd\ImportantDoc;
 use App\Models\hrd\ImportantDocType;
 use App\Http\Controllers\Controller;
 use App\Models\hrd\ImportantDocFile;
+use Dompdf\Dompdf;
 
 class ImportantDocController extends Controller
 {
@@ -116,6 +117,29 @@ class ImportantDocController extends Controller
         return response()->streamDownload(function () use ($file) {
             echo $file->data;
         }, $file->name);
+    }
+
+    public function previewPdf($file)
+    {
+        // Retrieve the document from the database
+        $document = $file;
+
+        dd($document);
+
+        // Initialize Dompdf
+        $dompdf = new Dompdf();
+
+        // Load the PDF content
+        $dompdf->loadHtml($document->content);
+
+        // (Optional) Set paper size and orientation
+        $dompdf->setPaper('A4', 'portrait');
+
+        // Render the PDF
+        $dompdf->render();
+
+        // Output the PDF content to the browser
+        return $dompdf->stream($document->name);
     }
 
 }

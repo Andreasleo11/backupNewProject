@@ -28,6 +28,7 @@
     </div>
 @endif
 
+@if($importantDocs->isNotEmpty())
 <section class="content">
     <div class="card mt-5">
         <div class="card-body p-0">
@@ -86,4 +87,11 @@
         </div>
     </div>
 </section>
+@else
+<div class="text-center h4 text-secondary">
+    No data
+</div>
+@endif
+
+
 @endsection

@@ -99,7 +99,6 @@ Route::middleware(['checkUserRole:2', 'checkSession',])->group(function () {
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
-        Route::get('/download/{file}', [ImportantDocController::class, 'downloadFile'])->name('downloadFile');
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
         Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
         Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
@@ -107,6 +106,8 @@ Route::middleware(['checkUserRole:2', 'checkSession',])->group(function () {
         Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
         Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
         Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
+        Route::get('/download/{file}', [ImportantDocController::class, 'downloadFile'])->name('downloadFile');
+        // Route::get('/hrd/importantdocs/{file}', [ImportantDocController::class, 'previewPdf'])->name('hrd.importantDocs.previewPdf');
     });
 
     Route::middleware(['checkDepartment:DIREKTUR'])->group(function() {
