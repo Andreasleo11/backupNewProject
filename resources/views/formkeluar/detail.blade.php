@@ -21,11 +21,42 @@
                 <h2>Dept Head</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2 border-1" id="autographuser1"></div>
-                @if(Auth::check() &&  Auth::user()->department && Auth::user()->is_head == 1 && Auth::user()->department == $formcuti->department)
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(1, {{ $formcuti->id }})">Acc Dept Head</button>
+                @if(Auth::check() &&  Auth::user()->department && Auth::user()->is_head == 1 && Auth::user()->department == $formkeluar->department)
+                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(1, {{ $formkeluar->id }})">Acc Dept Head</button>
                 @endif
             </div>
 
+            
+            <div class="col">
+                @php
+                    $path2 = 'default_image_path.jpg'; // Set a default image path
+                
+                    if ($formkeluar->signature) {
+                        $path = $formkeluar->signature->getSignatureImagePath();
+                        $path2 = str_replace('public/', 'storage/', $path);
+                    }
+                @endphp
+
+                @if ($formkeluar->signature)
+                <h2>Yang Bersangkutan</h2>
+                <div class=" autograph-box container"  id="specialbox">
+                    <img src="{{ asset($path2) }}" style="width:200px; " alt="Signature Image">
+                    <div class="container mt-2 border-1" id="nameuser"></div>
+                   
+                </div>
+                @endif
+                {{ $formkeluar->name }}
+            </div>
+
+            @if (!$formkeluar->hasBeenSigned())
+                <form action="{{ $formkeluar->getSignatureRoute() }}" method="POST">
+                    @csrf
+                    <div style="text-align: center">
+                        <x-creagia-signature-pad />
+                    </div>
+                </form>
+                <script src="{{ asset('vendor/sign-pad/sign-pad.min.js') }}"></script>
+            @endif
 
         </div>
     </section>
@@ -36,10 +67,10 @@
 <section aria-label="table-report" class="container mt-5">
         <div class="card">
             <div class="mx-3 mt-4 mb-5 text-center">
-                <span class="h1 fw-semibold">FORM CUTI</span>
-                <p class="fs-5 mt-2">Doc No : {{ $formcuti->doc_num }}</p>
-                <p class="fs-5 mt-2">No Karyawan : {{ $formcuti->no_karyawan }}</p>
-                <p class="fs-5 mt-2">Dibuat dengan sebenar benarnya oleh : {{ $formcuti->name }}</p>
+                <span class="h1 fw-semibold">FORM KELUAR</span>
+                <p class="fs-5 mt-2">Doc No : {{ $formkeluar->doc_num }}</p>
+                <p class="fs-5 mt-2">No Karyawan : {{ $formkeluar->no_karyawan }}</p>
+                <p class="fs-5 mt-2">Dibuat dengan sebenar benarnya oleh : {{ $formkeluar->name }}</p>
             </div>
 
                 <div class="table-responsive mt-4">
@@ -49,28 +80,26 @@
                                 <th class="align-middle">Name</th>
                                 <th class="align-middle">Jabatan</th>
                                 <th class="align-middle">Departement</th>
-                                <th class="align-middle">Jenis Cuti</th>
                                 <th class="align-middle">Pengganti</th>
-                                <th class="align-middle">Tanggal Masukk</th>
+                                <th class="align-middle">Keperluan</th>
                                 <th class="align-middle">Tanggal Permohonan</th>
-                                <th class="align-middle">Mulai</th>
-                                <th class="align-middle">Selesai</th>
-                                <th class="align-middle">Waktu Cuti</th>
+                                <th class="align-middle">Waktu Keluar</th>
+                                <th class="align-middle">Jam Keluar</th>
+                                <th class="align-middle">Jam Kembali</th>
 
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>{{ $formcuti->name}}</td>
-                                <td>{{ $formcuti->jabatan}}</td>
-                                <td>{{ $formcuti->department}}</td>
-                                <td>{{ $formcuti->jenis_cuti}}</td>
-                                <td>{{$formcuti->pengganti  }}</td>
-                                <td>{{ $formcuti->tanggal_masuk}}</td>
-                                <td>{{ $formcuti->tanggal_permohonan}}</td>
-                                <td>{{ $formcuti->mulai_tanggal}}</td>
-                                <td>{{ $formcuti->sampai_tanggal}}</td>
-                                <td>{{ $formcuti->waktu_cuti}}</td>
+                                <td>{{ $formkeluar->name}}</td>
+                                <td>{{ $formkeluar->jabatan}}</td>
+                                <td>{{ $formkeluar->department}}</td>
+                                <td>{{ $formkeluar->pengganti}}</td>
+                                <td>{{ $formkeluar->keperluan  }}</td>
+                                <td>{{ $formkeluar->tanggal_permohonan}}</td>
+                                <td>{{ $formkeluar->waktu_keluar}}</td>
+                                <td>{{ $formkeluar->jam_keluar}}</td>
+                                <td>{{ $formkeluar->jam_kembali}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -98,7 +127,7 @@
         autographBox.style.backgroundImage = "url('" +imageUrl + "')";
 
          // Make an AJAX request to save the image path
-        fetch('/save-aurographed-path/' + formId + '/' + section, {
+        fetch('/save-autosignature-path/' + formId + '/' + section, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -125,11 +154,11 @@
     {
         // Assume you have a variable from the server side indicating the autograph status
         var autographs = {
-            autograph_1: '{{ $formcuti->autograph_1 ?? null }}',
+            autograph_1: '{{ $formkeluar->autograph_1 ?? null }}',
         };
 
         var autographNames = {
-            autograph_name_1: '{{ $formcuti->autograph_user_1 ?? null }}',
+            autograph_name_1: '{{ $formkeluar->autograph_user_1 ?? null }}',
         };
 
         // Loop through each autograph status and update the UI accordingly
@@ -164,7 +193,7 @@
 
     // Call the function to check autograph status on page load
     window.onload = function () {
-        checkAutographStatus({{ $formcuti->id }});
+        checkAutographStatus({{ $formkeluar->id }});
     };
     
 </script>

@@ -66,6 +66,8 @@ Route::post('/save-aurographed-path/{formId}/{section}', [FormCutiController::cl
  Route::get('/Form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
  Route::get('/Form-keluar/view', [FormKeluarController::class, 'view'])->name('formkeluar.view');
  Route::post('/Form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
+ Route::get('/Form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
+ Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class,'saveImagePath']);
  // FORM KELUAR SESSION
 
 
@@ -75,7 +77,7 @@ Route::get('/', function () {
         return redirect('/home'); // Redirect to the home route for authenticated users
     }
     return view('auth.login');
-});
+})->name('/');
 
 
 Auth::routes();

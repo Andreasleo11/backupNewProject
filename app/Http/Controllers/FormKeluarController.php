@@ -46,6 +46,40 @@ class FormKeluarController extends Controller
             'jam_kembali' =>  $request->input('jam_kembali'),
         ]);
 
-        return redirect()->route('formcuti.home')->with('success', 'form cuti created successfully');
+        return redirect()->route('formkeluar.home')->with('success', 'form keluar created successfully');
    }
+
+   public function view()
+   {
+    $formkeluar = FormKeluar::get();
+
+    return view('formkeluar.view', compact('formkeluar'));
+   }
+
+   public function detail($id)
+   {
+    $formkeluar = FormKeluar::find($id);
+    $user =  Auth::user();
+
+    return view('formkeluar.detail', compact('formkeluar', 'user'));
+   }
+
+   public function saveImagePath(Request $request, $formId, $section)
+    {
+        $username = Auth::check() ? Auth::user()->name : '';
+        $imagePath = $username . '.png';
+
+        // Save $imagePath to the database for the specified $reportId and $section
+        $fc = FormKeluar::find($formId);
+            $fc->update([
+                "autograph_{$section}" => $imagePath
+            ]);
+            $fc->update([
+                "autograph_user_{$section}" => $username,
+                'is_accept' => true
+            ]);
+
+        return response()->json(['success' => 'Autograph saved successfully!']);
+    }
+
 }
