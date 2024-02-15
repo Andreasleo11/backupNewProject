@@ -60,6 +60,7 @@
                             <th class="py-3">Email</th>
                             <th class="py-3">Role</th>
                             <th class="py-3">Department</th>
+                            <th class="py-3">Specification</th>
                             <th class="py-3">Created At</th>
                             <th class="py-3">Action</th>
                         </tr>
@@ -71,7 +72,8 @@
                                 <td>{{$user->name}}</td>
                                 <td>{{$user->email}}</td>
                                 <td>{{$user->role->name}}</td>
-                                <td>{{$user->department}}</td>
+                                <td>{{$user->department->name}}</td>
+                                <td>{{$user->specification->name}}</td>
                                 <td>{{ $user->created_at }}</td>
                                 <td>
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}">Edit</button>

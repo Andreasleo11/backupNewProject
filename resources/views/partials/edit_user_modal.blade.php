@@ -35,7 +35,7 @@
                                 <label for="inputRole" class="form-label">Role</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputRole" name="role_id" class="form-control">
+                                <select id="inputRole" name="role" class="form-control">
                                     @foreach ($roles as $role)
                                         @if ($role->id === $user->role_id)
                                             <option value="{{ $role->id }}" selected>{{ $role->name }}</option>
@@ -53,7 +53,33 @@
                                 <label for="inputDepartment" class="form-label">Department</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="department" class="form-control" id="inputDepartment" value="{{ $user->department }}">
+                                <select id="inputDepartment" name="department" class="form-control">
+                                    @foreach ($departments as $department)
+                                        @if($department->id === $user->department_id)
+                                            <option value="{{ $department->id }}" selected>{{ $department->name }}</option>
+                                        @else
+                                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                        @endif
+                                    @endforeach
+                                 </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="inputSpecification" class="form-label">Specification</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <select id="inputSpecification" name="specification" class="form-control">
+                                   @foreach ($specifications as $specification)
+                                        @if ($specification->id == $user->specification_id)
+                                            <option value="{{ $specification->id }}" selected>{{ $specification->name }}</option>
+                                        @else
+                                            <option value="{{ $specification->id }}">{{ $specification->name }}</option>
+                                        @endif
+                                   @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>

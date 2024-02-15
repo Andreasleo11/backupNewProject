@@ -4,7 +4,7 @@
 
 <h1>Trial Details</h1>
 
-@if (Auth::user()->department === 'PI' && !$trial->tonage)
+@if (Auth::user()->department->name === 'PI' && !$trial->tonage)
     <p>Tonage is not provided. Please input tonage:</p>
     <form method="post" action="{{ route('update.tonage', $trial->id) }}">
         @csrf
@@ -14,18 +14,18 @@
     </form>
 @endif
 
-@if (Auth::user()->department === 'PE')
+@if (Auth::user()->department->name === 'PE')
 <table class="detail-table">
     <tr>
         <th>Field</th>
         <th>Value</th>
     </tr>
-    
+
     <tr>
         <td>Customer:</td>
         <td>{{ $trial->customer }}</td>
     </tr>
-    
+
     <tr>
         <td>Part Name:</td>
         <td>{{ $trial->part_name }}</td>
@@ -134,18 +134,18 @@
 </table>
 @endif
 
-@if (Auth::user()->department === 'PI')
+@if (Auth::user()->department->name === 'PI')
 <table class="detail-table">
     <tr>
         <th>Field</th>
         <th>Value</th>
     </tr>
-    
+
     <tr>
         <td>Customer:</td>
         <td>{{ $trial->customer }}</td>
     </tr>
-    
+
     <tr>
         <td>Part Name:</td>
         <td>{{ $trial->part_name }}</td>
@@ -254,18 +254,18 @@
 </table>
 @endif
 
-@if (Auth::user()->department === 'PI' && !$trial->tonage)
+@if (Auth::user()->department->name === 'PI' && !$trial->tonage)
 <table class="detail-table">
     <tr>
         <th>Field</th>
         <th>Value</th>
     </tr>
-    
+
     <tr>
         <td>Customer:</td>
         <td>{{ $trial->customer }}</td>
     </tr>
-    
+
     <tr>
         <td>Part Name:</td>
         <td>{{ $trial->part_name }}</td>
@@ -375,18 +375,18 @@
 @endif
 
 
-@if (Auth::user()->department !='PE' && Auth::user()->department !='PI')
+@if (Auth::user()->department->name !='PE' && Auth::user()->department->name !='PI')
 <table class="detail-table">
     <tr>
         <th>Field</th>
         <th>Value</th>
     </tr>
-    
+
     <tr>
         <td>Customer:</td>
         <td>{{ $trial->customer }}</td>
     </tr>
-    
+
     <tr>
         <td>Part Name:</td>
         <td>{{ $trial->part_name }}</td>
@@ -498,7 +498,7 @@
 
 <div class="autograph-container">
     <!-- Autograph Button 1 -->
-    @if(Auth::check() && Auth::user()->department == 'PE')
+    @if(Auth::check() && Auth::user()->department->name == 'PE')
     <button onclick="addAutograph(1, {{ $trial->id }})">Requested By </button>
     <!-- Autograph File Input 1 -->
     @endif
@@ -511,7 +511,7 @@
 
 <div class="autograph-container">
     <!-- Autograph Button 2 -->
-    @if(Auth::check() && Auth::user()->department == 'PE')
+    @if(Auth::check() && Auth::user()->department->name == 'PE')
     <button onclick="addAutograph(2, {{ $trial->id }})">Verify By</button>
     @endif
     <h2>Verify By PE</h2>
@@ -523,7 +523,7 @@
 
 <div class="autograph-container">
     <!-- Autograph Button 3 -->
-    @if(Auth::check() && Auth::user()->department == 'PI')
+    @if(Auth::check() && Auth::user()->department->name == 'PI')
     <button onclick="addAutograph(3, {{ $trial->id }})">Confirmed By PI 1 </button>
     @endif
     <!-- Autograph Textbox 3 -->
@@ -534,7 +534,7 @@
 
 <div class="autograph-container">
     <!-- Autograph Button 4 -->
-    @if(Auth::check() && Auth::user()->department == 'PI')
+    @if(Auth::check() && Auth::user()->department->name == 'PI')
     <button onclick="addAutograph(4, {{ $trial->id }})">Confirmed By PI 2</button>
     @endif
     <!-- Autograph Textbox 4 -->
@@ -545,7 +545,7 @@
 
 <div class="autograph-container">
     <!-- Autograph Button 5 -->
-    @if(Auth::check() && Auth::user()->department == 'PI')
+    @if(Auth::check() && Auth::user()->department->name == 'PI')
     <button onclick="addAutograph(5, {{ $trial->id }})">Confirmed By PI 3</button>
     @endif
     <!-- Autograph Textbox 5 -->
@@ -557,7 +557,7 @@
 
 <div class="autograph-container">
     <!-- Autograph Button 6 -->
-    @if(Auth::check() && Auth::user()->department == 'PI')
+    @if(Auth::check() && Auth::user()->department->name == 'PI')
     <button onclick="addAutograph(6, {{ $trial->id }})">Approve</button>
     @endif
     <!-- Autograph Textbox 6 -->
@@ -613,19 +613,19 @@
     }
 </style>
 
-<script>    
+<script>
     // Function to add autograph to the specified box
     function addAutograph(section, trialId) {
         // Get the div element
         var autographBox = document.getElementById('autographBox' + section);
-        
+
         console.log('Section:', section);
         console.log('Report ID:', trialId);
         var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
         console.log('username :', username);
         var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
         console.log('image path :', imageUrl);
-        
+
         autographBox.style.backgroundImage = "url('" +imageUrl + "')";
 
          // Make an AJAX request to save the image path
@@ -647,10 +647,10 @@
             console.error('Error:', error);
         });
     }
-   
-   
-        
-    
+
+
+
+
 
     function checkAutographStatus(trialId) {
     // Assume you have a variable from the server side indicating the autograph status

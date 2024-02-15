@@ -104,7 +104,7 @@ class PEController extends Controller
 
         $trial = Trial::find($id);
 
-        if (Auth::user()->department === 'PI') {
+        if (Auth::user()->department->name === 'PI') {
             // Update the tonage
             $trial->tonage = $request->input('tonage');
             $trial->save();
@@ -117,7 +117,7 @@ class PEController extends Controller
 
         $username = Auth::check() ? Auth::user()->name : '';
         $imagePath = $username . '.png';
-    
+
         // Save $imagePath to the database for the specified $reportId and $section
         $trial = Trial::find($trialId);
             $trial->update([
@@ -126,7 +126,7 @@ class PEController extends Controller
             $trial->update([
                 "autograph_user_{$section}" => $username
             ]);
-    
+
         return response()->json(['message' => 'Image path saved successfully']);
     }
 }

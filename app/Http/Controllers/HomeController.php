@@ -28,7 +28,8 @@ class HomeController extends Controller
         if ($user->role_id == 1) {
             return redirect()->route('superadmin.home');
         } else if ($user->role_id == 2){
-            $department = $user->department;
+            // dd($user->department->name);
+            $department = $user->department->name;
             switch ($department) {
                 case "QA":
                     return redirect()->route('qaqc.home');

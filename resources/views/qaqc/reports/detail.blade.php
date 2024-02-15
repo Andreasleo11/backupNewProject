@@ -31,13 +31,15 @@
         </div>
     @endif
 
+    {{-- @dd(Auth::user()->specification->name) --}}
+
     <section aria-label="header" class="container">
         <div class="row text-center mt-5">
             <div class="col">
                 <h2>QA Inspector</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
-                @if(Auth::check() && Auth::user()->department == 'QA')
+                @if(Auth::check() && Auth::user()->department->name == 'QA' && Auth::user()->specification->name == "INSPECTOR")
                     <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
                 @endif
             </div>
@@ -46,7 +48,7 @@
                 <h2>QA Leader</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
-                @if(Auth::check() && Auth::user()->department == 'QA')
+                @if(Auth::check() && Auth::user()->department->name == 'QA' && Auth::user()->specification->name == 'LEADER')
                     <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
                 @endif
             </div>
@@ -55,7 +57,7 @@
                 <h2>QC HEAD</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
-                @if(Auth::check() && Auth::user()->department == 'QC')
+                @if(Auth::check() && Auth::user()->department->name == 'QC')
                     <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
                 @endif
             </div>

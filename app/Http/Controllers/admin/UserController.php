@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use App\Models\Role;
+use App\Models\Specification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +16,9 @@ class UserController extends Controller
     {
         $users = User::all();
         $roles = Role::all();
-        return view('admin.users.index', compact('users', 'roles'));
+        $departments = Department::all();
+        $specifications = Specification::all();
+        return view('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
     }
 
     public function store(Request $request)
@@ -22,16 +26,18 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required',
-            'role_id' => 'required',
-            'department' => 'nullable'
+            'role' => 'required|int',
+            'department' => 'required|int',
+            'specification' => 'nullable|int',
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->name . '1234'),
-            'role_id' => $request->role_id,
-            'department' => $request->department,
+            'role_id' => $request->role,
+            'department_id' => $request->department,
+            'specification_id' => $request->specification,
         ]);
 
         return redirect()->route('superadmin.users')->with(['success' => 'User added successfully!']);
@@ -44,11 +50,18 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required',
-            'role_id' => 'required',
-            'department' => 'nullable'
+            'role' => 'required|int',
+            'department' => 'required|int',
+            'specification' => 'required|int'
         ]);
 
-        $user->update($request->all());
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role_id' => $request->role,
+            'department_id' => $request->department,
+            'specification_id' => $request->specification,
+        ]);
 
         return redirect()->route('superadmin.users')->with(['success' => 'User updated successfully!']);
 

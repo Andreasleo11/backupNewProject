@@ -15,14 +15,14 @@
             </a>
         </li>
 
-        @if (Auth::user()->department === "Production")
+        @if (Auth::user()->department->name === "Production")
             <li class="sidebar-item" id="sidebar-item-production">
                 <a href="{{ route('superadmin.production') }}" class="sidebar-link">
                     <i class="lni lni-agenda"></i>
                     <span>Production</span>
                 </a>
             </li>
-        @elseif (Auth::user()->department === "Business")
+        @elseif (Auth::user()->department->name === "Business")
             <li class="sidebar-item" id="sidebar-item-business">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#business" aria-expanded="false" aria-controls="business">
@@ -35,21 +35,21 @@
                     </li>
                 </ul>
             </li>
-        @elseif (Auth::user()->department === "QA" || Auth::user()->department === "QC")
+        @elseif (Auth::user()->department->name === "QA" || Auth::user()->department->name === "QC")
             <li class="sidebar-item" id="sidebar-item-hrd">
                 <a href="{{ route('qaqc.report.index') }}" class="sidebar-link">
                     <i class='bx bx-file-blank'></i>
                     <span>Verification Reports</span>
                 </a>
             </li>
-        @elseif (Auth::user()->department === "HRD")
+        @elseif (Auth::user()->department->name === "HRD")
             <li class="sidebar-item" id="sidebar-item-hrd">
                 <a href="{{ route('hrd.importantDocs.index') }}" class="sidebar-link">
                     <i class='bx bx-file-blank'></i>
                     <span>Important Documents</span>
                 </a>
             </li>
-        @elseif (Auth::user()->department === "DIRECTOR")
+        @elseif (Auth::user()->department->name === "DIRECTOR")
             <li class="sidebar-item" id="sidebar-item-director">
                 <a href="{{ route('director.qaqc.index') }}" class="sidebar-link">
                     <i class='bx bxs-report'></i>

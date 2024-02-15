@@ -25,7 +25,7 @@
                 <div class="dropdown-menu dropdown-menu-end">
                     <div class="text-center">
                         <span class="fs-5 fw-bold text-capitalize">{{Auth::user()->name}} </span> <br>
-                        <span class="fw-medium text-secondary-emphasis">{{Auth::user()->department}}</span>
+                        <span class="fw-medium text-secondary-emphasis">{{Auth::user()->department->name}}</span>
                     </div>
                     <hr>
 

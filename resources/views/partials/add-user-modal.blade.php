@@ -34,10 +34,10 @@
                                 <label for="inputRole" class="form-label">Role</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputRole" name="role_id" class="form-control">
-                                    <option value="3">User</option>
-                                    <option value="2">Staff</option>
-                                    <option value="1">Admin</option>
+                                <select id="inputRole" name="role" class="form-control">
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -48,7 +48,25 @@
                                 <label for="inputDepartment" class="form-label">Department</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="department" class="form-control" id="inputDepartment">
+                                <select id="inputDepartment" name="department" class="form-control">
+                                   @foreach ($departments as $department)
+                                       <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                   @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="inputSpecification" class="form-label">Specification</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <select id="inputSpecification" name="specification" class="form-control">
+                                   @foreach ($specifications as $specification)
+                                       <option value="{{ $specification->id }}">{{ $specification->name }}</option>
+                                   @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
