@@ -19,33 +19,32 @@
             </div>
         </div>
     </div>
-  
 </div>
 
-<div class="container">
+{{-- <div class="container">
     <div class="row justify-content-center">
         <a href="{{ route('header.create') }}" class="btn btn-primary">Verification Report</a>
-    </div>   
+    </div>
 </div>
 
 <div class="container">
     <div class="row justify-content-center">
         <a href="{{ route('report.view') }}" class="btn btn-primary">View Report</a>
-    </div>   
+    </div>
 </div>
 
 
 <div class="container">
     <div class="row justify-content-center">
         <a href="{{ route('purchasing.landing') }}" class="btn btn-primary">Purchasing Project</a>
-    </div>   
+    </div>
 </div>
 
 
 <div class="container">
     <div class="row justify-content-center">
         <a href="{{ route('pe.landing') }}" class="btn btn-primary">PE Project</a>
-    </div>   
-</div>
+    </div>
+</div> --}}
 
 @endsection

@@ -115,12 +115,10 @@
                     <th>Production Date</th>
                     <th>Shift</th>
                     <th>Can Use</th>
-                    <th>Cust Defect</th>
-                    <th>Daijo Defect</th>
+                    <th>Cant Use</th>
                     <th>Customer Defect Detail</th>
-                    <th>Remark Customer</th>
                     <th>Daijo Defect Detail</th>
-                    <th>Remark Daijo</th>
+                    <th>Remark</th>
                    
             
                     <!-- Add more headers as needed -->
@@ -136,8 +134,7 @@
                     <td>{{ $detail->prod_date}}</td> 
                     <td>{{ $detail->shift}}</td> 
                     <td>{{ $detail->can_use}}</td> 
-                    <td>{{ $detail->customer_defect}}</td> 
-                    <td>{{ $detail->daijo_defect}}</td> 
+                    <td>{{ $detail->cant_use}}</td> 
                     <!-- Display customer_defect_detail if available and not null -->
                 <td>
                     @foreach ($detail->customer_defect_detail as $key => $value)
@@ -147,14 +144,6 @@
                     @endforeach
                 </td>
 
-                <!-- Display remark_customer if available and not null -->
-                <td>
-                    @foreach ($detail->remark_customer as $key => $value)
-                        @if (!is_null($value))
-                            {{ $key }}: {{ $value }}<br>
-                        @endif
-                    @endforeach
-                </td>
 
                 <!-- Display daijo_defect_detail if available and not null -->
                 <td>
@@ -167,7 +156,7 @@
 
                 <!-- Display remark_daijo if available and not null -->
                 <td>
-                    @foreach ($detail->remark_daijo as $key => $value)
+                    @foreach ($detail->remark as $key => $value)
                         @if (!is_null($value))
                             {{ $key }}: {{ $value }}<br>
                         @endif
@@ -178,6 +167,32 @@
                 @endforeach
             </tbody>
 
+ <!-- File Upload Form -->
+ <form action="{{ route('uploadAttachment', ['Id' => $report->id]) }}" method="post" enctype="multipart/form-data">
+    @csrf
+
+    <h4>Upload File</h4>
+    <div class="mb-3">
+        <input type="file" name="attachment" class="form-control">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Upload</button>
+
+    <!-- Hidden input to include the report ID in the form data -->
+    <input type="hidden" name="reportId" value="{{ $report->id }}">
+</form>
+
+
+
+
+    @if($report->attachment)
+    @php
+        $filename = basename($report->attachment);
+    @endphp
+        <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}">
+            Download {{ $filename }}
+        </a>
+    @endif
 
             
 @endsection
