@@ -81,6 +81,9 @@
 
                                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal{{ $user->id }}">Delete</button>
                                     @include('partials.delete-user-modal')
+
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordConfirmationModal{{ $user->id }}">Reset Password</button>
+                                    @include('partials.reset-user-password-modal')
                                 </td>
                             </tr>
                         @empty

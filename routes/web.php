@@ -59,6 +59,7 @@ Route::middleware(['checkUserRole:1', 'checkSession'])->group(function () {
             Route::post('/users', [UserController::class, 'store'])->name('users.store');
             Route::put('/users/create/{id}', [UserController::class, 'update'])->name('users.update');
             Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
+            Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
             Route::get('/permission', function () {
                 return view('admin.permissions');

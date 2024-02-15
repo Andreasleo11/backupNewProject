@@ -9,6 +9,7 @@ use App\Models\Specification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -72,5 +73,15 @@ class UserController extends Controller
         User::find($id)->delete();
         return redirect()->back()->with(['success' => 'User deleted successfully!']);
 
+    }
+
+    public function resetPassword($id)
+    {
+        $user = User::find($id);
+        $newPassword = Str::lower($user->name) . '1234';
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        return redirect()->back()->with('success', 'Password reset successfully.');
     }
 }
