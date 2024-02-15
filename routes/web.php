@@ -61,8 +61,8 @@ Route::middleware(['checkUserRole:1', 'checkSession'])->group(function () {
             Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
 
             Route::get('/permission', function () {
-                return view('admin.permission');
-            })->name('permission');
+                return view('admin.permissions');
+            })->name('permissions');
 
             Route::get('/settings', function () {
                 return view('admin.settings');
@@ -117,7 +117,7 @@ Route::middleware(['checkUserRole:2', 'checkSession',])->group(function () {
         // Route::get('/hrd/importantdocs/{file}', [ImportantDocController::class, 'previewPdf'])->name('hrd.importantDocs.previewPdf');
     });
 
-    Route::middleware(['checkDepartment:DIREKTUR'])->group(function() {
+    Route::middleware(['checkDepartment:DIRECTOR'])->group(function() {
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index');
         Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('director.qaqc.detail');
         Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('director.qaqc.approve');

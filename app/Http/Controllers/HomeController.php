@@ -36,7 +36,7 @@ class HomeController extends Controller
                 case "QC":
                     return redirect()->route('qaqc.home');
                     break;
-                case "DIREKTUR":
+                case "DIRECTOR":
                     return redirect()->route('director.home');
                     break;
                 case "HRD":

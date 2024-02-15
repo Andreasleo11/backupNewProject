@@ -65,13 +65,25 @@
                 </a>
                 <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{ route('superadmin.users') }}" class="sidebar-link">Users</a>
+                        <a href="#" class="sidebar-link">Users</a>
                     </li>
                     <li class="sidebar-item">
-                        <a href="{{ route('superadmin.permission') }}" class="sidebar-link">Permission</a>
+                        <a href="#" class="sidebar-link">Permission</a>
                     </li>
                 </ul>
              </li>
+             <li class="sidebar-item" id="sidebar-item-admin">
+                <a href="{{ route('superadmin.users') }}" class="sidebar-link">
+                    <i class='bx bx-user'></i>
+                    <span>Users</span>
+                </a>
+            </li>
+             <li class="sidebar-item" id="sidebar-item-admin">
+                <a href="{{ route('superadmin.permissions') }}" class="sidebar-link">
+                    <i class='bx bx-lock-alt'></i>
+                    <span>Permissions</span>
+                </a>
+            </li>
         @endif
 
         {{-- <li class="sidebar-item" id="sidebar-item-setting">
