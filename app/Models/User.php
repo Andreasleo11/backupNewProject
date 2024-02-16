@@ -11,7 +11,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable,HasRoles;
+    use HasApiTokens, HasFactory, Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -22,9 +22,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        'department',
+        'department_id',
+        'specification_id',
         'remember_token',
-        'is_head',
     ];
 
     /**
@@ -53,8 +53,11 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    public function user_request()
-    {
-        return $this->hasMany(PurchaseRequest::class);
+    public function department(){
+        return $this->belongsTo(Department::class);
+    }
+
+    public function specification(){
+        return $this->belongsTo(Specification::class);
     }
 }

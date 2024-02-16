@@ -11,7 +11,11 @@ class ReportController extends Controller
 {
     public function index()
     {
-        $reports = Report::get();
+        $reports = Report::whereNotNull('autograph_1')
+            ->whereNotNull('autograph_2')
+            ->whereNotNull('autograph_3')
+            ->get();
+
         return view('director.qaqc.index', compact('reports'));
     }
 

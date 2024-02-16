@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class QaqcReportController extends Controller
 {
@@ -29,15 +30,14 @@ class QaqcReportController extends Controller
         // $user = Auth::user();
         $user =  Auth::user();
         foreach($report->details as $pd){
-                    $data1 = json_decode($pd->daijo_defect_detail);
-                    $data2 = json_decode($pd->customer_defect_detail);
-                    $data3 = json_decode($pd->remark);
+            $data1 = json_decode($pd->daijo_defect_detail);
+            $data2 = json_decode($pd->customer_defect_detail);
+            $data3 = json_decode($pd->remark);
 
-                    $pd->daijo_defect_detail = $data1;
-                    $pd->customer_defect_detail = $data2;
-                    $pd->remark = $data3;
-
-                }
+            $pd->daijo_defect_detail = $data1;
+            $pd->customer_defect_detail = $data2;
+            $pd->remark = $data3;
+        }
 
         $autographNames = [
             'autograph_name_1' => $report->autograph_user_1 ?? null,
@@ -45,52 +45,6 @@ class QaqcReportController extends Controller
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
         return view('qaqc.reports.detail', compact('report','user','autographNames'));
-    }
-
-    public function uploadAttachment(Request $request)
-    {
-        $request->validate([
-            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls|max:5120', // Adjust allowed file types and size
-            'reportId' => 'required|exists:reports,id',
-        ]);
-
-        $reportId = $request->input('reportId');
-
-        Report::where('id', $reportId)->update([
-            'is_approve' => null,
-            'description' => null,
-        ]);
-
-
-        $file = $request->file('attachment');
-
-        // Generate a unique filename
-        $filename = time() . '_' . $file->getClientOriginalName();
-
-        // Move the uploaded file to a storage location (you can customize the storage path)
-        $file->storeAs('public/attachments', $filename);
-
-        // Update the reports table with the attachment filename
-        Report::where('id', $reportId)->update(['attachment' => $filename]);
-
-        return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
-    }
-
-    public function saveImagePath(Request $request, $reportId, $section)
-    {
-        $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username . '.png';
-
-        // Save $imagePath to the database for the specified $reportId and $section
-        $report = Report::find($reportId);
-            $report->update([
-                "autograph_{$section}" => $imagePath
-            ]);
-            $report->update([
-                "autograph_user_{$section}" => $username
-            ]);
-
-        return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
     public function edit($id)
@@ -173,7 +127,8 @@ class QaqcReportController extends Controller
             'Customer' => $data['customer'],
             'Invoice_No' => $data['invoice_no'],
             'num_of_parts' => $data['num_of_parts'],
-            // Add other attributes as needed
+            'is_approve' => null,
+            'description' => null,
         ]);
 
         // Update details
@@ -283,9 +238,8 @@ class QaqcReportController extends Controller
                     'Remark' => json_encode($Remarks),
                 ];
 
-            Detail::create($attributes);
+                Detail::create($attributes);
             }
-
 
         return redirect()->route('qaqc.report.index')->with('success', 'Report has been stored successfully!');
     }
@@ -298,5 +252,105 @@ class QaqcReportController extends Controller
 
 
         return redirect()->route('qaqc.report.index')->with('success', 'Report has been deleted successfully!');
+    }
+
+    public function uploadAttachment(Request $request)
+    {
+        $request->validate([
+            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls|max:5120', // Adjust allowed file types and size
+            'reportId' => 'required|exists:reports,id',
+        ]);
+
+        $reportId = $request->input('reportId');
+
+        Report::where('id', $reportId)->update([
+            'is_approve' => null,
+            'description' => null,
+        ]);
+
+
+        $file = $request->file('attachment');
+
+        // Generate a unique filename
+        $filename = time() . '_' . $file->getClientOriginalName();
+
+        // Move the uploaded file to a storage location (you can customize the storage path)
+        $file->storeAs('public/attachments', $filename);
+
+        // Update the reports table with the attachment filename
+        Report::where('id', $reportId)->update(['attachment' => $filename]);
+
+        return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
+    }
+
+    public function saveImagePath(Request $request, $reportId, $section)
+    {
+        $username = Auth::check() ? Auth::user()->name : '';
+        $imagePath = $username . '.png';
+
+        // Save $imagePath to the database for the specified $reportId and $section
+        $report = Report::find($reportId);
+            $report->update([
+                "autograph_{$section}" => $imagePath
+            ]);
+            $report->update([
+                "autograph_user_{$section}" => $username
+            ]);
+
+        return response()->json(['success' => 'Autograph saved successfully!']);
+    }
+
+    public function exportToPdf($id)
+    {
+        $report = Report::with('details')->find($id);
+        $user =  Auth::user();
+        foreach($report->details as $pd){
+            $data1 = json_decode($pd->daijo_defect_detail);
+            $data2 = json_decode($pd->customer_defect_detail);
+            $data3 = json_decode($pd->remark);
+
+            $pd->daijo_defect_detail = $data1;
+            $pd->customer_defect_detail = $data2;
+            $pd->remark = $data3;
+        }
+
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
+
+        $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('verification-report-'. $report->id . '.pdf');
+    }
+
+    public function previewPdf($id)
+    {
+        $report = Report::with('details')->find($id);
+        $user =  Auth::user();
+        foreach($report->details as $pd){
+            $data1 = json_decode($pd->daijo_defect_detail);
+            $data2 = json_decode($pd->customer_defect_detail);
+            $data3 = json_decode($pd->remark);
+
+            $pd->daijo_defect_detail = $data1;
+            $pd->customer_defect_detail = $data2;
+            $pd->remark = $data3;
+        }
+
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
+
+        return view('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'));
+
+        // $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
+        // ->setPaper('a4', 'landscape');
+
+        // return $pdf->stream('verification-report-'. $report->id . '.pdf');
     }
 }

@@ -14,7 +14,7 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        
+
     }
 
     /**
@@ -25,12 +25,13 @@ class HomeController extends Controller
     public function index()
     {
         $user = auth()->user();
-       
+
 
         if ($user->role_id == 1) {
             return redirect()->route('superadmin.home');
         } else if ($user->role_id == 2){
-            $department = $user->department;
+            // dd($user->department->name);
+            $department = $user->department->name;
             switch ($department) {
                 case "QA":
                     return redirect()->route('qaqc.home');
@@ -38,7 +39,7 @@ class HomeController extends Controller
                 case "QC":
                     return redirect()->route('qaqc.home');
                     break;
-                case "DIREKTUR":
+                case "DIRECTOR":
                     return redirect()->route('director.home');
                     break;
                 case "HRD":

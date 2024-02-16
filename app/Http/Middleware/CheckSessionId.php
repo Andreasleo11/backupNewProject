@@ -4,8 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckSessionId
 {
@@ -16,19 +16,16 @@ class CheckSessionId
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::check()) {
+        if(Auth::check()){
             $user = Auth::user();
-            dd($user);
-            $sessionToken = session('remember_token');
+            $session_token = session('remember_token');
 
-            if ($user && $user->remember_token !== $sessionToken) {
+            if($user && $user->remember_token !== $session_token){
+                Auth::user()->update(['remember_token'=>null]);
                 Auth::logout();
-
-                return redirect('/')->with('error', 'Session expired. Please log in again.');
+                return redirect('/')->with('error', 'Session expired. Please login again!');
             }
         }
-        
-        // dd('test');
         return $next($request);
     }
 }

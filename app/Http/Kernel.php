@@ -40,7 +40,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-
+            \App\Http\Middleware\CheckSessionId::class,
         ],
 
         'api' => [
@@ -71,6 +71,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'checkUserRole' => \App\Http\Middleware\CheckUserRole::class,
+        'checkSession' => \App\Http\Middleware\CheckSessionId::class,
         'checkDepartment' => \App\Http\Middleware\CheckDepartment::class,
         'cors' => \App\Http\Middleware\CorsMiddleware::class,
     ];

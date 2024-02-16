@@ -19,7 +19,7 @@
     <section>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('director.home')}}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{route('director.home')}}">Dashboard</a></li>
                 <li class="breadcrumb-item"><a href="{{route('director.qaqc.index')}}">Qa & QC Reports</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Detail</li>
             </ol>
@@ -30,7 +30,7 @@
         <div class="row text-center">
             <div class="col">
                 <h2>QA Inspector</h2>
-                @if(Auth::check() && Auth::user()->department == 'QA')
+                @if(Auth::check() && Auth::user()->department->name == 'QA')
                     <button class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
                 @endif
                 <div class="autograph-box container" id="autographBox1"></div>
@@ -39,7 +39,7 @@
 
             <div class="col">
                 <h2>QA Leader</h2>
-                @if(Auth::check() && Auth::user()->department == 'QA')
+                @if(Auth::check() && Auth::user()->department->name == 'QA')
                     <button class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
                 @endif
 
@@ -49,7 +49,7 @@
 
             <div class="col">
                 <h2>QC HEAD</h2>
-                @if(Auth::check() && Auth::user()->department == 'QC')
+                @if(Auth::check() && Auth::user()->department->name == 'QC')
                     <button class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
                 @endif
 
@@ -107,8 +107,8 @@
                         </thead>
 
                         <tbody>
-                            <tr>
-                                @forelse($report->details as $detail)
+                            @forelse($report->details as $detail)
+                                <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $detail->part_name}}</td>
                                     <td>{{ $detail->rec_quantity}}</td>
@@ -141,8 +141,8 @@
 
                                 @empty
                                     <td colspan="12"> No data</td>
-                                @endforelse
-                            </tr>
+                                </tr>
+                            @endforelse
 
                         </tbody>
                     </table>

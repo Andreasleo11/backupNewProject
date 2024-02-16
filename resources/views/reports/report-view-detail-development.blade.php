@@ -28,7 +28,7 @@
 <div class="autograph-container">
     <!-- Autograph Button 1 -->
     @if(Auth::check() && Auth::user()->department == 'QA')
-    <button onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
+    <button id="button1",onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
     <!-- Autograph File Input 1 -->
     @endif
     <h2>QA Inspector</h2>
@@ -41,7 +41,7 @@
 <div class="autograph-container">
     <!-- Autograph Button 2 -->
     @if(Auth::check() && Auth::user()->department == 'QA')
-    <button onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
+    <button id="button2", onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
     @endif
     <h2>QA Leader</h2>
     <div class="autograph-box" id="autographBox2"></div>
@@ -53,7 +53,7 @@
 <div class="autograph-container">
     <!-- Autograph Button 3 -->
     @if(Auth::check() && Auth::user()->department == 'QC')
-    <button onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
+    <button id="button3", onclick="addAutograph(3, {{ $report->id }})">Acc QC Head</button>
     @endif
     <!-- Autograph Textbox 3 -->
     <h2>QC HEAD</h2>
@@ -285,6 +285,9 @@
         var autographBox = document.getElementById('autographBox' + i);
         var autographInput = document.getElementById('autographInput' + i);
         var autographNameBox = document.getElementById('autographuser' + i);
+        var autographButton = document.getElementById('button' + i);
+
+        
 
         // Check if autograph status is present in the database
         if (autographs['autograph_' + i]) {
@@ -296,9 +299,15 @@
             // Update the background image using the URL
             autographBox.style.backgroundImage = "url('" + url + "')";
 
+            if (autographButton) {
+                autographButton.disabled = true;
+            }
+            
             var autographName = autographNames['autograph_name_' + i];
             autographNameBox.textContent = autographName;
             autographNameBox.style.display = 'block';
+
+           
 
         }
     }

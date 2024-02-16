@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
+use App\Models\User;
+
 
 class ReportHeaderController extends Controller
 {

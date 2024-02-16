@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\admin\UserController;
+use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\director\DirectorHomeController;
 use App\Http\Controllers\director\ReportController;
 use App\Http\Controllers\hrd\HrdHomeController;
@@ -15,11 +17,16 @@ use App\Http\Controllers\hrd\ImportantDocController;
 use Illuminate\Support\Facades\Auth;
 
 
+// use App\Http\Controllers\PEController;
+
+use App\Http\Controllers\PurchasingController;
+
 use App\Http\Controllers\PurchaseRequestController;
 
 use App\Http\Controllers\FormCutiController;
 
 use App\Http\Controllers\FormKeluarController;
+use App\Http\Controllers\PEController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,26 +38,6 @@ use App\Http\Controllers\FormKeluarController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
- //PR SECTION
- Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
- Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
- Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
- Route::get('/purchaserequest/list', [PurchaseRequestController::class, 'viewAll'])->name('purchaserequest.view');
- Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
- Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
- Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
- Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
- Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
- Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
- Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
-
-
- Route::get('/purchase-request/chart-data/{year}/{month}', 'PurchaseRequestController@getChartData');
- //PR SECTION 
-
-
-
 
  // FORM CUTI SESSION
 Route::get('/Form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
@@ -86,8 +73,17 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
+Route::get('/change-password', [PasswordChangeController::class,'showChangePasswordForm'])->name('change.password.show');
+Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
+
 Route::middleware(['checkSessionId'])->group(function () {
 Route::middleware(['checkUserRole:1'])->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::put('/users/create/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
+    Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
+
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
 
     Route::get('/userSA/home', [UserHomeController::class, 'index']);
@@ -120,6 +116,21 @@ Route::middleware(['checkUserRole:1'])->group(function () {
 });
 
 Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
+    //PR SECTION
+    Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
+    Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
+    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
+    Route::get('/purchaserequest/list', [PurchaseRequestController::class, 'viewAll'])->name('purchaserequest.view');
+    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
+    Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
+    Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
+    Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
+    Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
+    Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
+    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
+
+    Route::get('/purchase-request/chart-data/{year}/{month}', 'PurchaseRequestController@getChartData');
+    //PR SECTION
 
     Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
     Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
@@ -164,4 +175,18 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 });
 
 });
+
+// Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
+
+Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
+
+Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
+Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
+Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
+
+Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
+
+Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
+
+Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
 

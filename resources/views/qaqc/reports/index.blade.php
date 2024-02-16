@@ -10,7 +10,7 @@
             </div>
             <div class="col text-end">
                 <a href="{{route('qaqc.report.create')}}" class="btn btn-primary">
-                    <i class='bx bx-plus' ></i> Add Report
+                    <i class='bx bx-plus' ></i> Add <span class="d-none d-sm-inline">Report</span>
                 </a>
             </div>
         </div>
@@ -36,64 +36,70 @@
         <div class="card mt-5">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped text-center">
+                    <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
-                            <tr>
-                                <th class="fw-semibold fs-5">No</th>
-                                <th class="fw-semibold fs-5">Invoice No</th>
-                                <th class="fw-semibold fs-5">Customer</th>
-                                <th class="fw-semibold fs-5">Rec Date</th>
-                                <th class="fw-semibold fs-5">Verify Date</th>
-                                <th class="fw-semibold fs-5">Action</th>
-                                <th class="fw-semibold fs-5">Status</th>
-                                <th class="fw-semibold fs-5">Description</th>
+                            <tr class="align-middle fw-semibold fs-5">
+                                <th>No</th>
+                                <th>Doc. Number</th>
+                                <th>Invoice No</th>
+                                <th>Customer</th>
+                                <th>Rec Date</th>
+                                <th>Verify Date</th>
+                                <th>Action</th>
+                                <th>Status</th>
+                                <th>Description</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($reports as $report)
-                                <tr>
+                                <tr class="align-middle">
                                     <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-                                        <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
-                                            <i class='bx bx-info-circle' ></i> Detail
+                                        <a href="{{ route('qaqc.report.detail', $report->id) }}" class="btn btn-secondary my-1">
+                                            <i class='bx bx-info-circle' ></i> <span class="d-none d-sm-inline ">Detail</span>
                                         </a>
-                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary">
-                                            <i class='bx bx-edit' ></i> Edit
+
+                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1">
+                                            <i class='bx bx-edit' ></i> <span class="d-none d-sm-inline">Edit</span>
                                         </a>
 
                                         <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class='bx bx-trash-alt' ></i> Delete
+                                            <button type="submit" class="btn btn-danger my-1">
+                                                <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
                                             </button>
                                         </form>
 
-                                        {{-- @if($report->attachment)
+                                        <a href="{{ route('qaqc.report.download', $report->id) }}" class="btn btn-success my-1">
+                                            <i class='bx bxs-file-pdf' ></i> <span class="d-none d-sm-inline">Export PDF</span>
+                                        </a>
+
+                                        @if($report->attachment)
                                             @php
                                                 $filename = basename($report->attachment);
                                             @endphp
-                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" class="btn btn-secondary" download="{{ $filename }}">
-                                                <i class='bx bx-download'></i> Download
+
+                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}" class="btn border border-success text-success fw-semibold my-1">
+                                                <i class='bx bx-download' ></i> <span class="d-none d-sm-inline">Download Attachment</span>
                                             </a>
-                                        @endif --}}
+                                        @endif
+
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
                                             <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
-
                                         @elseif($report->is_approve === 0)
                                             <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
-                                        @elseif($report->attachment === null)
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ATTACHMENT</span>
                                         @elseif($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
                                             <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
                                         @else
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING SIGNATURE</span>
+                                            <span class="badge text-bg-secondary px-3 py-2 fs-6">WAITING SIGNATURE</span>
                                         @endif
                                     </td>
                                     <td>{{ $report->description }}</td>
@@ -102,10 +108,8 @@
                         </tbody>
                     </table>
                 </div>
-            </div><!-- /.card-body -->
+            </div>
         </div>
     </section>
-
-
 
 @endsection
