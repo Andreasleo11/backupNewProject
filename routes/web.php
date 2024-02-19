@@ -26,6 +26,7 @@ use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\FormCutiController;
 
 use App\Http\Controllers\FormKeluarController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PEController;
 
 /*

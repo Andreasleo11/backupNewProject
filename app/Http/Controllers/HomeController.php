@@ -48,11 +48,11 @@ class HomeController extends Controller
                 case "PLASTIC INJECTION":
                     return redirect()->route('pe.home');
                     break;
-                // default:
-                //     return redirect()->
                 case "ACCOUNTING":
                     return redirect()->route('director.home');
                     break;
+                // default:
+                //     return redirect()->
             }
         } else {
             return view('welcome');
