@@ -35,7 +35,7 @@
                                 <label for="inputRole" class="form-label">Role</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputRole" name="role" class="form-control">
+                                <select id="inputRole" name="role" class="form-select">
                                     @foreach ($roles as $role)
                                         @if ($role->id === $user->role_id)
                                             <option value="{{ $role->id }}" selected>{{ $role->name }}</option>
@@ -53,7 +53,7 @@
                                 <label for="inputDepartment" class="form-label">Department</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputDepartment" name="department" class="form-control">
+                                <select id="inputDepartment" name="department" class="form-select">
                                     @foreach ($departments as $department)
                                         @if($department->id === $user->department_id)
                                             <option value="{{ $department->id }}" selected>{{ $department->name }}</option>
@@ -71,7 +71,7 @@
                                 <label for="inputSpecification" class="form-label">Specification</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputSpecification" name="specification" class="form-control">
+                                <select id="inputSpecification" name="specification" class="form-select">
                                    @foreach ($specifications as $specification)
                                         @if ($specification->id == $user->specification_id)
                                             <option value="{{ $specification->id }}" selected>{{ $specification->name }}</option>

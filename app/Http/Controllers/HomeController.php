@@ -43,6 +43,9 @@ class HomeController extends Controller
                 case "HRD":
                     return redirect()->route('hrd.home');
                     break;
+                case "PLASTIC INJECTION":
+                    return redirect()->route('pe.home');
+                    break;
                 // default:
                 //     return redirect()->
             }

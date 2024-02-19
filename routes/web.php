@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\HomeController;
@@ -56,10 +57,15 @@ Route::middleware(['checkUserRole:1', 'checkSession'])->group(function () {
 
         Route::name('superadmin.')->group(function () {
             Route::get('/users', [UserController::class, 'index'])->name('users');
-            Route::post('/users', [UserController::class, 'store'])->name('users.store');
-            Route::put('/users/create/{id}', [UserController::class, 'update'])->name('users.update');
-            Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
+            Route::post('/users/create', [UserController::class, 'store'])->name('users.store');
+            Route::put('/users/update/{id}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
             Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
+
+            Route::get('/departments', [DepartmentController::class, 'index'])->name('departments');
+            Route::post('/departments/create', [DepartmentController::class, 'store'])->name('departments.store');
+            Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
+            Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
 
             Route::get('/permission', function () {
                 return view('admin.permissions');
@@ -125,6 +131,14 @@ Route::middleware(['checkUserRole:2', 'checkSession',])->group(function () {
         Route::put('/director/qaqc/reject/{id}', [ReportController::class, 'reject'])->name('director.qaqc.reject');
     });
 
+    Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function(){
+        Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
+        Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
+        Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
+        Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
+        Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
+        Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
+    });
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
@@ -135,13 +149,4 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 
 Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
 
-Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
-Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
-Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
-
-Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
-
-Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
-
-Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
 
