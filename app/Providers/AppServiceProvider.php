@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan 
+        // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
+        Blade::directive('currency', function ($expression) {
+            return "<?php echo 'Rp. ' . number_format($expression, 0, ',', '.'); ?>";
+        });
     }
 }

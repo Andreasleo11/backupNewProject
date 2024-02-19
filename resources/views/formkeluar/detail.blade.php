@@ -15,7 +15,7 @@
 
 <section aria-label="header" class="container">
         <div class="row text-center">
-          
+
 
             <div class="col">
                 <h2>Dept Head</h2>
@@ -26,38 +26,34 @@
                 @endif
             </div>
 
-            
+
             <div class="col">
                 @php
                     $path2 = 'default_image_path.jpg'; // Set a default image path
-                
+
                     if ($formkeluar->signature) {
                         $path = $formkeluar->signature->getSignatureImagePath();
                         $path2 = str_replace('public/', 'storage/', $path);
                     }
                 @endphp
 
-                @if ($formkeluar->signature)
                 <h2>Yang Bersangkutan</h2>
-                <div class=" autograph-box container"  id="specialbox">
-                    <img src="{{ asset($path2) }}" style="width:200px; " alt="Signature Image">
-                    <div class="container mt-2 border-1" id="nameuser"></div>
-                   
-                </div>
-                @endif
-                {{ $formkeluar->name }}
-            </div>
-
-            @if (!$formkeluar->hasBeenSigned())
-                <form action="{{ $formkeluar->getSignatureRoute() }}" method="POST">
-                    @csrf
-                    <div style="text-align: center">
-                        <x-creagia-signature-pad />
+                @if(!$formkeluar->hasBeenSigned())
+                    <form action="{{ $formkeluar->getSignatureRoute() }}" method="POST">
+                        @csrf
+                        <div style="text-align: center">
+                            <x-creagia-signature-pad />
+                        </div>
+                    </form>
+                @else
+                    <div class=" autograph-box container"  id="specialbox">
+                        @if ($formkeluar->signature)
+                        <img src="{{ asset($path2) }}" style="width:200px; " alt="Signature Image">
+                        @endif
                     </div>
-                </form>
-                <script src="{{ asset('vendor/sign-pad/sign-pad.min.js') }}"></script>
-            @endif
-
+                    {{ $formkeluar->name }}
+                @endif
+            </div>
         </div>
     </section>
 
@@ -66,15 +62,17 @@
 
 <section aria-label="table-report" class="container mt-5">
         <div class="card">
-            <div class="mx-3 mt-4 mb-5 text-center">
-                <span class="h1 fw-semibold">FORM KELUAR</span>
-                <p class="fs-5 mt-2">Doc No : {{ $formkeluar->doc_num }}</p>
-                <p class="fs-5 mt-2">No Karyawan : {{ $formkeluar->no_karyawan }}</p>
-                <p class="fs-5 mt-2">Dibuat dengan sebenar benarnya oleh : {{ $formkeluar->name }}</p>
-            </div>
-
+            <div class="card-body">
+                <div class="mt-2 text-center">
+                    <span class="h1 fw-semibold">FORM KELUAR</span>
+                    <div class="fs-6 col mt-2">
+                        <span class="text-secondary">Doc No :</span> {{ $formkeluar->doc_num }} <br>
+                        <span class="text-secondary">No Karyawan :</span> {{ $formkeluar->no_karyawan }} <br>
+                        <span class="text-secondary">Dibuat oleh :</span> {{ $formkeluar->name }} <br>
+                    </div>
+                </div>
                 <div class="table-responsive mt-4">
-                    <table class="table table-bordered table-hover text-center table-striped">
+                    <table class="table table-bordered table-hover text-center table-striped mb-0">
                         <thead>
                             <tr>
                                 <th class="align-middle">Name</th>
@@ -90,7 +88,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <tr class="align-middle">
                                 <td>{{ $formkeluar->name}}</td>
                                 <td>{{ $formkeluar->jabatan}}</td>
                                 <td>{{ $formkeluar->department}}</td>
@@ -108,6 +106,7 @@
         </div>
     </section>
 
+    <script src="{{ asset('vendor/sign-pad/sign-pad.min.js') }}"></script>
 
 @endsection
 
@@ -189,11 +188,11 @@
                 autographNameBox.style.display = 'block';
             }
         }
-    
+
 
     // Call the function to check autograph status on page load
     window.onload = function () {
         checkAutographStatus({{ $formkeluar->id }});
     };
-    
+
 </script>

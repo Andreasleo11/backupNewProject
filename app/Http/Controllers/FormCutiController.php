@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\FormCuti;
 use Illuminate\Support\Facades\DB;
@@ -12,13 +13,15 @@ class FormCutiController extends Controller
 {
     public function index()
     {
-        return view('formcuti.index');
+        $formcuti = FormCuti::get();
+        return view('formcuti.index',  compact('formcuti'));
     }
 
     public function create()
-   {
-    return view('formcuti.create');
-   }
+    {
+        $deparments = Department::all();
+        return view('formcuti.create', compact('deparments'));
+    }
 
    public function store(Request $request)
    {
@@ -33,7 +36,7 @@ class FormCutiController extends Controller
         $formcuti = FormCuti::create([
             'name' =>  $request->input('name'),
             'jabatan' => $request->input('jabatan'),
-            'department' =>  $request->input('department'), 
+            'department' =>  $request->input('department'),
             'jenis_cuti' =>  $request->input('jenis_cuti'),
             'pengganti' =>  $request->input('pengganti'),
             'keperluan' =>  $request->input('keperluan'),
@@ -44,25 +47,18 @@ class FormCutiController extends Controller
             'sampai_tanggal' =>  $request->input('sampai_tanggal'),
             'keterangan_user' =>  $request->input('keterangan_user'),
             'waktu_cuti' => $waktuCuti,
+            'is_accept' => false,
         ]);
 
         return redirect()->route('formcuti.home')->with('success', 'form cuti created successfully');
    }
 
-   public function view()
-   {
-    $formcuti = FormCuti::get();
-    // dd($formcuti);
-    
-    return view ('formcuti.view', compact('formcuti'));
-   }
-
    public function detail($id)
    {
-    $formcuti = FormCuti::find($id);
-    $user =  Auth::user();
+        $formcuti = FormCuti::find($id);
+        $user =  Auth::user();
 
-    return view ('formcuti.detail', compact('user', 'formcuti'));
+        return view ('formcuti.detail', compact('user', 'formcuti'));
    }
 
    public function saveImagePath(Request $request, $formId, $section)
@@ -82,5 +78,4 @@ class FormCutiController extends Controller
 
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
-
 }

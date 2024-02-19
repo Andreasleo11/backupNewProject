@@ -1,7 +1,7 @@
 <aside id="sidebar">
     <div class="d-flex">
         <button class="sidebar-toggle-btn" type="button">
-            <i class="lni lni-grid-alt"></i>
+            <i class='bx bx-grid-alt' ></i>
         </button>
         <div class="sidebar-logo">
             <a href="#">Menu</a>
@@ -10,14 +10,8 @@
     <ul class="sidebar-nav">
         <li class="sidebar-item" id="sidebar-item-dashboard">
             <a href="{{ route('home') }}" class="sidebar-link">
-                <i class="lni lni-graph"></i>
+                <i class='bx bx-line-chart' ></i>
                 <span>Dashboard</span>
-            </a>
-        </li>
-        <li class="sidebar-item" id="sidebar-item-dashboard">
-            <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                <span>Purchase Request</span>
             </a>
         </li>
 
@@ -63,7 +57,7 @@
                 </a>
             </li>
         @else
-            <li class="sidebar-item" id="sidebar-item-admin">
+            {{-- <li class="sidebar-item" id="sidebar-item-admin">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
                     <i class="lni lni-protection"></i>
@@ -77,7 +71,7 @@
                         <a href="#" class="sidebar-link">Permission</a>
                     </li>
                 </ul>
-             </li>
+             </li> --}}
              <li class="sidebar-item" id="sidebar-item-admin">
                 <a href="{{ route('superadmin.users') }}" class="sidebar-link">
                     <i class='bx bx-user'></i>
@@ -91,6 +85,40 @@
                 </a>
             </li>
         @endif
+
+        <li class="sidebar-item" id="sidebar-item-purchaseRequest">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
+                    <i class='bx bx-dots-horizontal-rounded' ></i>
+                <span>Other</span>
+            </a>
+            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Purchase Request
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Monthly PR
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('formcuti.home') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Cuti
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Keluar
+                    </a>
+                </li>
+            </ul>
+        </li>
 
         {{-- <li class="sidebar-item" id="sidebar-item-setting">
             <a href="{{ route('superadmin.settings') }}" class="sidebar-link">

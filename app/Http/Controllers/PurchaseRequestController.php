@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\PurchaseRequest; 
+use App\Models\PurchaseRequest;
 use App\Models\DetailPurchaseRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
@@ -22,7 +22,9 @@ class PurchaseRequestController extends Controller
         $labels = $departments->pluck('to_department');
         $counts = $departments->pluck('count');
 
-        return view('purchaseRequest.index', compact('labels', 'counts'));
+        $purchaseRequests = PurchaseRequest::get();
+
+        return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
     }
 
     public function getChartData(Request $request, $year, $month)
@@ -44,7 +46,7 @@ class PurchaseRequestController extends Controller
         return view('purchaseRequest.create');
     }
 
-   
+
 
     public function insert(Request $request)
     {
@@ -91,7 +93,6 @@ class PurchaseRequestController extends Controller
 
     public function viewAll()
     {
-        $purchaseRequests = PurchaseRequest::get();
         // dd($purchaseRequest);
         return view('purchaseRequest.viewAll', compact('purchaseRequests'));
     }
@@ -101,7 +102,7 @@ class PurchaseRequestController extends Controller
     {
         $purchaseRequests = PurchaseRequest::with('itemDetail')->find($id);
         $user =  Auth::user();
-        $userCreatedBy = $purchaseRequests->createdBy;  
+        $userCreatedBy = $purchaseRequests->createdBy;
         // dd($userCreatedBy);
 
            // Check if autograph_2 is filled
@@ -146,18 +147,18 @@ class PurchaseRequestController extends Controller
     public function monthlyview()
     {
         $purchaseRequests = PurchaseRequest::with('itemDetail')->get();
-        
+
         return view('purchaseRequest.monthly', compact('purchaseRequests'));
-        
+
     }
 
 
     public function monthlyviewmonth(Request $request)
     {
-       
+
         // Get the month inputted by the user
         $selectedMonth = $request->input('month');
-        
+
 
         // Extract year and month from the selected month input
         $year = date('Y', strtotime($selectedMonth));
@@ -178,7 +179,7 @@ class PurchaseRequestController extends Controller
             ->get();
 
         // Pass the filtered data to the view
-        
+
         return view('purchaseRequest.monthly', compact('purchaseRequests'));
     }
 
@@ -194,7 +195,7 @@ class PurchaseRequestController extends Controller
     public function monthlydetail($id)
     {
         $monthdetail = MonhtlyPR::find($id);
-        
+
          // Extract year and month from the selected month input
         // $year = date('Y', strtotime($monthdetail->year));
         // $month = date('m', strtotime($monthdetail->month));
@@ -227,7 +228,7 @@ class PurchaseRequestController extends Controller
             ]);
 
         return response()->json(['success' => 'Autograph saved successfully!']);
-        
+
     }
 
 }

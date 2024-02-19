@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\FormKeluar;
 use Illuminate\Support\Facades\DB;
@@ -12,12 +13,14 @@ class FormKeluarController extends Controller
 {
     public function index ()
     {
-        return view ('formkeluar.index');
+        $formkeluar = FormKeluar::get();
+        return view('formkeluar.index', compact('formkeluar'));
     }
 
     public function create()
     {
-        return view('formkeluar.create');
+        $departments = Department::all();
+        return view('formkeluar.create', compact('departments'));
     }
 
     public function store(Request $request)
@@ -33,7 +36,7 @@ class FormKeluarController extends Controller
         $formcuti = FormKeluar::create([
             'name' =>  $request->input('name'),
             'jabatan' => $request->input('jabatan'),
-            'department' =>  $request->input('department'), 
+            'department' =>  $request->input('department'),
             'alasan_izin_keluar' =>  $request->input('alasan_izin_keluar'),
             'pengganti' =>  $request->input('pengganti'),
             'keperluan' =>  $request->input('keperluan'),
@@ -47,13 +50,6 @@ class FormKeluarController extends Controller
         ]);
 
         return redirect()->route('formkeluar.home')->with('success', 'form keluar created successfully');
-   }
-
-   public function view()
-   {
-    $formkeluar = FormKeluar::get();
-
-    return view('formkeluar.view', compact('formkeluar'));
    }
 
    public function detail($id)

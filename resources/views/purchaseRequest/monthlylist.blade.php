@@ -5,7 +5,10 @@
     <section class="header">
             <div class="row">
                 <div class="col">
-                    <h1 class="h1">Purchase Requisition List</h1>
+                    <h1 class="h1">Monthly Purchase Requisition List</h1>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ route('purchaserequest.monthly') }}" class="btn btn-primary">GENERATE MONTHLY PR </a>
                 </div>
             </div>
     </section>
@@ -15,7 +18,7 @@
         <div class="card mt-5">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped text-center">
+                    <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr>
                                 <th class="fw-semibold fs-5">No</th>

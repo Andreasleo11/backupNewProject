@@ -30,7 +30,7 @@
                 <h2>Verificator</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
-                @if(Auth::check() && Auth::user()->department == "HRD" && Auth::user()->is_head == 1)
+                @if(Auth::check() && Auth::user()->department->name == "HRD" && Auth::user()->is_head == 1)
                     <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $monthdetail->id }})">Acc Verificator</button>
                 @endif
             </div>
@@ -39,8 +39,8 @@
                 <h2>He Who Remains</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
-                @if(Auth::check() && Auth::user()->department == 'DIREKTUR')
-                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $monthdetail->id }})">Acc He Who Remains</button>
+                @if(Auth::check() && Auth::user()->department->name == 'DIREKTUR')
+                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $monthdetail->id }})">Acc Director</button>
                 @endif
             </div>
     </div>
@@ -48,16 +48,16 @@
 
 
 
+@foreach($purchaseRequests as $pr)
 <section aria-label="table-report" class="container mt-5">
         <div class="card">
-            <div class="mx-3 mt-4 mb-5 text-center">
+            <div class="mt-4 mb-3 text-center">
                 <span class="h1 fw-semibold">Purchase Requisition</span>
-                <hr>
             </div>
 
-        
+
             <div class="card-body">
-            @foreach($purchaseRequests as $pr)
+
                 <div class="table-responsive">
                     <table class="table table-borderlesss">
                         <tbody>
@@ -83,49 +83,49 @@
                     </table>
                 </div>
 
-                    <div class="table-responsive mt-4">
-                        <table class="table table-bordered table-hover text-center table-striped">
-                            <thead>
-                                <tr>
-                                    <th class="align-middle">No</th>
-                                    <th class="align-middle">Item Name</th>
-                                    <th class="align-middle">Quantity</th>
-                                    <th class="align-middle">Purpose</th>
-                                    <th class="align-middle">Unit Price</th>
-                                    <th class="align-middle">Total</th>
-    
-                                </tr>
-                            </thead>
-                            @php
-                                $totalall = 0; // Initialize the variable
-                            @endphp
-                            <tbody>
-                                @foreach($pr->itemDetail as $detail)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $detail->item_name}}</td>
-                                    <td>{{ $detail->quantity}}</td>
-                                    <td>{{ $detail->purpose}}</td>
-                                    <td>{{ $detail->unit_price}}</td>
-                                    <td>{{$detail->quantity * $detail->unit_price }}</td>
-                                    @php
-                                        $totalall += $detail->quantity * $detail->unit_price; // Update the total
-                                    @endphp
-                                </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="5" class="text-right"><strong>Total:</strong></td>
-                                    <td>{{ $totalall }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-            @endforeach
+                <div class="table-responsive mt-4">
+                    <table class="table table-bordered table-hover text-center table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th class="align-middle">No</th>
+                                <th class="align-middle">Item Name</th>
+                                <th class="align-middle">Quantity</th>
+                                <th class="align-middle">Purpose</th>
+                                <th class="align-middle">Unit Price</th>
+                                <th class="align-middle">Total</th>
+
+                            </tr>
+                        </thead>
+                        @php
+                            $totalall = 0; // Initialize the variable
+                        @endphp
+                        <tbody>
+                            @foreach($pr->itemDetail as $detail)
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $detail->item_name}}</td>
+                                <td>{{ $detail->quantity}}</td>
+                                <td>{{ $detail->purpose}}</td>
+                                <td> @currency($detail->unit_price) </td>
+                                <td> @currency($detail->quantity * $detail->unit_price) </td>
+                                @php
+                                    $totalall += $detail->quantity * $detail->unit_price; // Update the total
+                                @endphp
+                            </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-right"><strong>Total</strong></td>
+                                <td class="table-active fw-semibold "> @currency($totalall) </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
+@endforeach
 
 @endsection
 
@@ -217,5 +217,5 @@
     window.onload = function () {
         checkAutographStatus({{ $monthdetail->id }});
     };
-    
+
 </script>

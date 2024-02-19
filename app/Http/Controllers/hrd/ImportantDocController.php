@@ -42,6 +42,7 @@ class ImportantDocController extends Controller
             'description' => 'string|max:255|nullable',
         ]);
 
+
         // Create a new ImportantDoc instance with additional data
         $importantDoc = ImportantDoc::create([
             'name' => $request->name,

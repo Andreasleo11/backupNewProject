@@ -14,14 +14,13 @@ class CheckUserRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next,$role): Response
+    public function handle(Request $request, Closure $next, ... $roles): Response
     {
         $user = auth()->user();
 
 
         // Check if the user's role matches the provided role
-        if ($user && $user->role_id == $role) {
-
+        if ($user && in_array($user->role_id, $roles)) {
             return $next($request);
         }
 

@@ -39,26 +39,6 @@ use App\Http\Controllers\PEController;
 |
 */
 
- // FORM CUTI SESSION
-Route::get('/Form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
-Route::get('/Form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
-Route::get('/Form-cuti/view', [FormCutiController::class, 'view'])->name('formcuti.view');
-Route::post('/Form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
-Route::get('/Form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
-Route::post('/save-aurographed-path/{formId}/{section}', [FormCutiController::class,'saveImagePath']);
- // FORM CUTI SESSION
-
- // FORM KELUAR SESSION
- Route::get('/Form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar.home');
- Route::get('/Form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
- Route::get('/Form-keluar/view', [FormKeluarController::class, 'view'])->name('formkeluar.view');
- Route::post('/Form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
- Route::get('/Form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
- Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class,'saveImagePath']);
- // FORM KELUAR SESSION
-
-
-
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
@@ -76,8 +56,8 @@ Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'
 Route::get('/change-password', [PasswordChangeController::class,'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
 
-Route::middleware(['checkSessionId'])->group(function () {
-Route::middleware(['checkUserRole:1'])->group(function () {
+
+Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
     Route::get('/users', [UserController::class, 'index'])->name('users');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/create/{id}', [UserController::class, 'update'])->name('users.update');
@@ -86,51 +66,34 @@ Route::middleware(['checkUserRole:1'])->group(function () {
 
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
 
-    Route::get('/userSA/home', [UserHomeController::class, 'index']);
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {
-            Route::get('/users', function () {
-                return view('admin.users');
-            })->name('users');
+            Route::get('/users', [UserController::class, 'index'])->name('users');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::put('/users/create/{id}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
+            Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
             Route::get('/permission', function () {
-                return view('admin.permission');
-            })->name('permission');
+                return view('admin.permissions');
+            })->name('permissions');
 
             Route::get('/settings', function () {
                 return view('admin.settings');
             })->name('settings');
 
-
             Route::get('/business', function () {
                 return view('business.business');
             })->name('business');
 
-
             Route::get('/production', function () {
                 return view('production.production');
             })->name('production');
-
         });
     });
 });
 
 Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
-    //PR SECTION
-    Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
-    Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
-    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
-    Route::get('/purchaserequest/list', [PurchaseRequestController::class, 'viewAll'])->name('purchaserequest.view');
-    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
-    Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
-    Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
-    Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
-    Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
-    Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
-    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
-
-    Route::get('/purchase-request/chart-data/{year}/{month}', 'PurchaseRequestController@getChartData');
-    //PR SECTION
 
     Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
     Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
@@ -149,6 +112,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create');
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/reports/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
+        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
@@ -173,6 +137,36 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
 Route::middleware(['checkUserRole:3'])->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
 });
+
+Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
+    // PR
+    Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
+    Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
+    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
+    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
+
+    // PR MONTHLY
+    Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
+    Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
+    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
+    Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
+    Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
+    Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
+    // Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
+
+    // FORM CUTI
+    Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
+    Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
+    Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
+    Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
+    Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class,'saveImagePath']);
+
+    // FORM KELUAR
+    Route::get('/form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar.home');
+    Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
+    Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
+    Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
+    Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class,'saveImagePath']);
 
 });
 

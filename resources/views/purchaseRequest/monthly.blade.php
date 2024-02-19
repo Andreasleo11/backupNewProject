@@ -17,7 +17,7 @@
                 <hr>
             </div>
 
-        
+
             <div class="card-body">
             @foreach($purchaseRequests as $pr)
                 <div class="table-responsive">
@@ -55,7 +55,7 @@
                                     <th class="align-middle">Purpose</th>
                                     <th class="align-middle">Unit Price</th>
                                     <th class="align-middle">Total</th>
-    
+
                                 </tr>
                             </thead>
                             @php

@@ -34,17 +34,17 @@
                 <h2>Verificator</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
-                @if(Auth::check() && Auth::user()->department == "HRD" && Auth::user()->is_head == 1)
+                @if(Auth::check() && Auth::user()->department->name == "HRD" && Auth::user()->is_head == 1)
                     <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $purchaseRequests->id }})">Acc Verificator</button>
                 @endif
             </div>
 
             <div class="col">
-                <h2>He Who Remains</h2>
+                <h2>Director</h2>
                 <div class="autograph-box container" id="autographBox4"></div>
                 <div class="container mt-2 border-1" id="autographuser4"></div>
-                @if(Auth::check() && Auth::user()->department == 'DIREKTUR')
-                    <button id="btn4" class="btn btn-primary" onclick="addAutograph(4, {{ $purchaseRequests->id }}, {{$user->id}})">Acc He Who Remains</button>
+                @if(Auth::check() && Auth::user()->department->name == 'DIRECTOR')
+                    <button id="btn4" class="btn btn-primary" onclick="addAutograph(4, {{ $purchaseRequests->id }}, {{$user->id}})">Acc Director</button>
                 @endif
             </div>
         </div>
@@ -55,12 +55,14 @@
 
 <section aria-label="table-report" class="container mt-5">
         <div class="card">
-            <div class="mx-3 mt-4 mb-5 text-center">
-                <span class="h1 fw-semibold">Purchase Requisition</span>
-                <p class="fs-5 mt-2">Created By : {{ $userCreatedBy->name }}</p>
-                <p class="fs-5 mt-2">From Department : {{ $userCreatedBy->department }}</p>
-                <hr>
+            <div class="mt-4 text-center">
+                <span class="h1 fw-semibold">Purchase Requisition</span> <br>
+                <div class="fs-6 mt-2">
+                    <span class="fs-6 text-secondary">Created By : </span> {{ $userCreatedBy->name }} <br>
+                    <span class="fs-6 text-secondary">From Department : </span> {{ $userCreatedBy->department->name }}
+                </div>
             </div>
+            <hr>
 
             <div class="card-body">
                 <div class="table-responsive">
@@ -81,7 +83,7 @@
                             <tr>
                             <th>Supplier</th>
                                 <td>: {{ $purchaseRequests->supplier }}</td>
-                            <th>remark</th>
+                            <th>Remark</th>
                                 <td>: {{ $purchaseRequests->remark }}</td>
                             </tr>
                         </tbody>
@@ -89,7 +91,7 @@
                 </div>
 
                 <div class="table-responsive mt-4">
-                    <table class="table table-bordered table-hover text-center table-striped">
+                    <table class="table table-bordered table-hover text-center table-striped mb-0">
                         <thead>
                             <tr>
                                 <th class="align-middle">No</th>
@@ -98,7 +100,7 @@
                                 <th class="align-middle">Purpose</th>
                                 <th class="align-middle">Unit Price</th>
                                 <th class="align-middle">Total</th>
-   
+
                             </tr>
                         </thead>
                         @php
@@ -111,8 +113,8 @@
                                 <td>{{ $detail->item_name}}</td>
                                 <td>{{ $detail->quantity}}</td>
                                 <td>{{ $detail->purpose}}</td>
-                                <td>{{ $detail->unit_price}}</td>
-                                <td>{{$detail->quantity * $detail->unit_price }}</td>
+                                <td> @currency($detail->unit_price) </td>
+                                <td> @currency($detail->quantity * $detail->unit_price) </td>
                                 @php
                                     $totalall += $detail->quantity * $detail->unit_price; // Update the total
                                 @endphp
@@ -121,8 +123,8 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="5" class="text-right"><strong>Total:</strong></td>
-                                <td>{{ $totalall }}</td>
+                                <td colspan="5" class="text-right"><strong>Total</strong></td>
+                                <td class="table-active fw-semibold">@currency($totalall)</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -223,5 +225,5 @@
     window.onload = function () {
         checkAutographStatus({{ $purchaseRequests->id }});
     };
-    
+
 </script>

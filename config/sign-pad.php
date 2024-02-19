@@ -20,13 +20,13 @@ return [
     /**
      * Route name where you want to redirect users after signing.
      */
-    'redirect_route_name' => '/',
+    'redirect_route_name' => 'formkeluar.home',
 
     /**
      * Width and height of the signature rectangle.
      */
-    'width' => 600,
-    'height' => 200,
+    'width' => 300,
+    'height' => 150,
 
     /**
      * Should certify the document signature with certificate

@@ -15,7 +15,7 @@
 
 <section aria-label="header" class="container">
         <div class="row text-center">
-          
+
 
             <div class="col">
                 <h2>Dept Head</h2>
@@ -35,23 +35,25 @@
 
 <section aria-label="table-report" class="container mt-5">
         <div class="card">
-            <div class="mx-3 mt-4 mb-5 text-center">
+            <div class="mt-4 text-center">
                 <span class="h1 fw-semibold">FORM CUTI</span>
-                <p class="fs-5 mt-2">Doc No : {{ $formcuti->doc_num }}</p>
-                <p class="fs-5 mt-2">No Karyawan : {{ $formcuti->no_karyawan }}</p>
-                <p class="fs-5 mt-2">Dibuat dengan sebenar benarnya oleh : {{ $formcuti->name }}</p>
+                <div class="fs-6 mt-2 col">
+                    <span class="text-secondary">Doc No : </span> {{ $formcuti->doc_num }} <br>
+                    <span class="text-secondary">No Karyawan : </span> {{ $formcuti->no_karyawan }} <br>
+                    <span class="text-secondary">Dibuat oleh : </span> {{ $formcuti->name }}
+                </div>
             </div>
-
+            <div class="card-body">
                 <div class="table-responsive mt-4">
-                    <table class="table table-bordered table-hover text-center table-striped">
+                    <table class="table table-bordered table-hover text-center table-striped mb-0">
                         <thead>
                             <tr>
                                 <th class="align-middle">Name</th>
                                 <th class="align-middle">Jabatan</th>
-                                <th class="align-middle">Departement</th>
+                                <th class="align-middle">Departemen</th>
                                 <th class="align-middle">Jenis Cuti</th>
                                 <th class="align-middle">Pengganti</th>
-                                <th class="align-middle">Tanggal Masukk</th>
+                                <th class="align-middle">Tanggal Masuk</th>
                                 <th class="align-middle">Tanggal Permohonan</th>
                                 <th class="align-middle">Mulai</th>
                                 <th class="align-middle">Selesai</th>
@@ -76,6 +78,7 @@
                     </table>
                 </div>
             </div>
+
         </div>
     </section>
 
@@ -160,11 +163,11 @@
                 autographNameBox.style.display = 'block';
             }
         }
-    
+
 
     // Call the function to check autograph status on page load
     window.onload = function () {
         checkAutographStatus({{ $formcuti->id }});
     };
-    
+
 </script>
