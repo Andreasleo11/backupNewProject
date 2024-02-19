@@ -5,12 +5,12 @@
 
 <section aria-label="header">
     <div class="d-flex justify-content-between align-items-center">
-        <span class="fs-1">User List</span>
+        <span class="fs-1">Department List</span>
         <div>
-            @include('partials.add-user-modal')
-            <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-user-modal">
+            @include('partials.add-department-modal')
+            <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-department-modal">
                 <i class="lni lni-plus"></i>
-                Add user
+                Add department
             </button>
         </div>
     </div>
@@ -19,15 +19,15 @@
 <section class="breadcrumb">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{route('superadmin.home')}}">Home</a></li>
-          <li class="breadcrumb-item active">Users</li>
+            <li class="breadcrumb-item"><a href="{{route('superadmin.home')}}">Home</a></li>
+            <li class="breadcrumb-item active">Departments</li>
         </ol>
     </nav>
 </section>
 
 @if ($message = Session::get('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <p>{{ $message }}</p>
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <p>{{ $message }}</p>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @elseif ($errors->any())
@@ -58,34 +58,23 @@
                             <th class="py-3">No</th>
                             <th class="py-3">ID</th>
                             <th class="py-3">Name</th>
-                            <th class="py-3">Email</th>
-                            <th class="py-3">Role</th>
-                            <th class="py-3">Department</th>
-                            <th class="py-3">Specification</th>
                             <th class="py-3">Created At</th>
                             <th class="py-3">Action</th>
                         </tr>
                     </thead>
                     <tbody class="table-group-divider ">
-                        @forelse ($users as $user)
+                        @forelse ($departments as $department)
                             <tr>
-                                <td> {{ $loop->iteration }}</td>
-                                <td>{{ $user->id }}</td>
-                                <td>{{ $user->name }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>{{ $user->role->name }}</td>
-                                <td>{{ $user->department->name }}</td>
-                                <td>{{ $user->specification->name }}</td>
-                                <td>{{ $user->created_at }}</td>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{$department->id}}</td>
+                                <td>{{$department->name}}</td>
+                                <td>{{$department->created_at}}</td>
                                 <td>
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}">Edit</button>
-                                    @include('partials.edit_user_modal')
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#edit-department-modal-{{ $department->id }}">Edit</button>
+                                    @include('partials.edit-department-modal')
 
-                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal{{ $user->id }}">Delete</button>
-                                    @include('partials.delete-user-modal')
-
-                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordConfirmationModal{{ $user->id }}">Reset Password</button>
-                                    @include('partials.reset-user-password-modal')
+                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-department-modal-{{ $department->id }}">Delete</button>
+                                    @include('partials.delete-department-modal')
                                 </td>
                             </tr>
                         @empty

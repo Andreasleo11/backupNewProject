@@ -34,7 +34,8 @@
                                 <label for="inputRole" class="form-label">Role</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputRole" name="role" class="form-control">
+                                <select id="inputRole" name="role" class="form-select">
+                                    <option value="" disabled selected>Select role..</option>
                                     @foreach ($roles as $role)
                                         <option value="{{ $role->id }}">{{ $role->name }}</option>
                                     @endforeach
@@ -48,10 +49,11 @@
                                 <label for="inputDepartment" class="form-label">Department</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputDepartment" name="department" class="form-control">
-                                   @foreach ($departments as $department)
-                                       <option value="{{ $department->id }}">{{ $department->name }}</option>
-                                   @endforeach
+                                <select id="inputDepartment" name="department" class="form-select">
+                                    <option value="" disabled selected>Select department..</option>
+                                    @foreach ($departments as $department)
+                                        <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -62,10 +64,11 @@
                                 <label for="inputSpecification" class="form-label">Specification</label>
                             </div>
                             <div class="col-sm-9">
-                                <select id="inputSpecification" name="specification" class="form-control">
-                                   @foreach ($specifications as $specification)
-                                       <option value="{{ $specification->id }}">{{ $specification->name }}</option>
-                                   @endforeach
+                                <select id="inputSpecification" name="specification" class="form-select">
+                                    <option value="" disabled selected>Select specification..</option>
+                                    @foreach ($specifications as $specification)
+                                        <option value="{{ $specification->id }}">{{ $specification->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

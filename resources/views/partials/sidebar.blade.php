@@ -71,14 +71,20 @@
                         <a href="#" class="sidebar-link">Permission</a>
                     </li>
                 </ul>
-             </li> --}}
-             <li class="sidebar-item" id="sidebar-item-admin">
+             </li>
+             <li class="sidebar-item" id="sidebar-item-users">
                 <a href="{{ route('superadmin.users') }}" class="sidebar-link">
                     <i class='bx bx-user'></i>
                     <span>Users</span>
                 </a>
             </li>
-             <li class="sidebar-item" id="sidebar-item-admin">
+            <li class="sidebar-item" id="sidebar-item-departments">
+                <a href="{{ route('superadmin.departments') }}" class="sidebar-link">
+                    <i class='bx bx-user'></i>
+                    <span>Departments</span>
+                </a>
+            </li>
+             <li class="sidebar-item" id="sidebar-item-permission">
                 <a href="{{ route('superadmin.permissions') }}" class="sidebar-link">
                     <i class='bx bx-lock-alt'></i>
                     <span>Permissions</span>
