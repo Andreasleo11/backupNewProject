@@ -31,4 +31,9 @@ class Detail extends Model
     {
         return $this->belongsTo(Report::class);
     }
+
+    public function defect()
+    {
+        return $this->hasMany(defects::class);
+    }
 }
