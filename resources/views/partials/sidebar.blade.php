@@ -71,7 +71,7 @@
                         <a href="#" class="sidebar-link">Permission</a>
                     </li>
                 </ul>
-             </li>
+             </li> --}}
              <li class="sidebar-item" id="sidebar-item-users">
                 <a href="{{ route('superadmin.users') }}" class="sidebar-link">
                     <i class='bx bx-user'></i>
@@ -133,14 +133,4 @@
             </a>
         </li> --}}
     </ul>
-    {{-- <div class="sidebar-footer">
-        <a href="#" class="sidebar-link" href="{{ route('logout') }}"
-        onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-            <i class="lni lni-exit"></i>
-            <span>Logout</span>
-        </a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-            @csrf
-        </form>
-    </div> --}}
 </aside>

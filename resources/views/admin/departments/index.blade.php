@@ -75,6 +75,8 @@
 
                                     <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-department-modal-{{ $department->id }}">Delete</button>
                                     @include('partials.delete-department-modal')
+
+                                    {{-- <input type="checkbox"></input> --}}
                                 </td>
                             </tr>
                         @empty
@@ -87,6 +89,4 @@
     </div>
 </section>
 
-
-<script src="{{ asset('js/modal.js') }}"></script>
 @endsection

@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('extraCss')
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.0/css/dataTables.dataTables.css" />
+@endpush
+
 @section('content')
 
 
@@ -50,54 +54,15 @@
 <section aria-label="table">
     <div class="card ">
         <!-- Table body -->
-        <div class="card-body p-0">
-            <div class="table-responsive-lg">
-                <table class="table table-striped table-hover align-middle m-0 text-center">
-                    <thead>
-                        <tr class="fs-5">
-                            <th class="py-3">No</th>
-                            <th class="py-3">ID</th>
-                            <th class="py-3">Name</th>
-                            <th class="py-3">Email</th>
-                            <th class="py-3">Role</th>
-                            <th class="py-3">Department</th>
-                            <th class="py-3">Specification</th>
-                            <th class="py-3">Created At</th>
-                            <th class="py-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-group-divider ">
-                        @forelse ($users as $user)
-                            <tr>
-                                <td> {{ $loop->iteration }}</td>
-                                <td>{{ $user->id }}</td>
-                                <td>{{ $user->name }}</td>
-                                <td>{{ $user->email }}</td>
-                                <td>{{ $user->role->name }}</td>
-                                <td>{{ $user->department->name }}</td>
-                                <td>{{ $user->specification->name }}</td>
-                                <td>{{ $user->created_at }}</td>
-                                <td>
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}">Edit</button>
-                                    @include('partials.edit_user_modal')
+        <div class="card-body">
 
-                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal{{ $user->id }}">Delete</button>
-                                    @include('partials.delete-user-modal')
-
-                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordConfirmationModal{{ $user->id }}">Reset Password</button>
-                                    @include('partials.reset-user-password-modal')
-                                </td>
-                            </tr>
-                        @empty
-                        @endforelse
-
-                    </tbody>
-                </table>
-            </div>
+            {{ $dataTable->table() }}
         </div>
     </div>
 </section>
 
-
-<script src="{{ asset('js/modal.js') }}"></script>
 @endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
+@endpush

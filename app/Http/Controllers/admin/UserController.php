@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\admin;
 
+use App\DataTables\UsersDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Role;
@@ -13,13 +14,14 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(UsersDataTable $dataTable)
     {
         $users = User::all();
         $roles = Role::all();
         $departments = Department::all();
         $specifications = Specification::all();
-        return view('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
+        // return view('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
+        return $dataTable->render('admin.users.index', compact('roles', 'departments', 'specifications'));
     }
 
     public function store(Request $request)

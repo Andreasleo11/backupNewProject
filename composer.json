@@ -14,7 +14,8 @@
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.3",
         "spatie/laravel-permission": "^6.3",
-        "twbs/bootstrap": "5.3.2"
+        "twbs/bootstrap": "5.3.2",
+        "yajra/laravel-datatables": "10.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
