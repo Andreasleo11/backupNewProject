@@ -22,7 +22,7 @@ class UsersDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'users.action')
+            ->addColumn('action', '<button type="button">test</button>')
             ->setRowId('id');
     }
 
@@ -44,7 +44,7 @@ class UsersDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    ->orderBy(1)
+                    ->orderBy(0, 'asc')
                     ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
@@ -65,14 +65,14 @@ class UsersDataTable extends DataTable
             Column::make('id'),
             Column::make('name'),
             Column::make('email'),
-            Column::make('role'),
-            Column::make('department'),
-            Column::make('specification'),
+            Column::make('role_id'),
+            Column::make('department_id'),
+            Column::make('specification_id'),
             Column::make('created_at'),
             Column::make('updated_at'),
             Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
+                  ->exportable(true)
+                  ->printable(true)
                   ->width(60)
                   ->addClass('text-center'),
         ];

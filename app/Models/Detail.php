@@ -10,7 +10,7 @@ class Detail extends Model
     use HasFactory;
 
     protected $fillable = [
-        
+
         'Report_Id',
         'Part_Name',
         'Rec_Quantity',
@@ -22,7 +22,7 @@ class Detail extends Model
         'Customer_Defect_Detail',
         'Daijo_Defect_Detail',
         'Remark',
-       
+
         // Add other fields as needed
     ];
 
@@ -30,5 +30,10 @@ class Detail extends Model
     public function report()
     {
         return $this->belongsTo(Report::class);
+    }
+
+    public function defects()
+    {
+        return $this->hasMany(Defect::class);
     }
 }
