@@ -3,7 +3,7 @@
 @section('content')
 
 <style>
-    #itemDropdown {
+    .dropdown-content {
         max-height: 200px; /* Set maximum height for the dropdown */
         overflow-y: auto; /* Enable vertical scrolling */
         border: 1px solid #ccc; /* Optional: Add border for visual clarity */
@@ -11,7 +11,6 @@
         z-index: 999; /* Ensure dropdown is above other elements */
         background-color: #fff; /* Set background color to white */
         opacity: 1; /* Adjust opacity to ensure dropdown is not transparent */
-
     }
 
     .dropdown-item {
@@ -57,7 +56,6 @@
         box-sizing: border-box;
     }
 </style>
-
 <div class="add-data-btn">
     <a class="btn btn-success" id="addDataBtn">Add Data</a>
 </div>
@@ -137,8 +135,8 @@
                 const inputValue = itemNameInput.value.trim();
 
                 // Make an AJAX request to fetch relevant items
-                fetch(`/items?name=${inputValue}`)
-                    .then(response => response.json())
+                fetch(`/items?item_name=${inputValue}`)
+                    .then(response => response.json()) 
                     .then(data => {
                         // Clear previous dropdown options
                         itemDropdown.innerHTML = '';
@@ -164,7 +162,7 @@
             });
 
             // Close dropdown when clicking outside the dropdown or input field
-            document.addEventListener('blur', function(event) {
+            document.addEventListener('click', function(event) {
                 if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
                     itemDropdown.style.display = 'none';
                     console.log(itemNameInput.value);

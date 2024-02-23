@@ -129,8 +129,16 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/reports/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
+        // adding new defect category 
+
+        Route::get('/qaqc/newdefect', [QaqcReportController::class, 'showNewDefect'])->name('qaqc.show.newdefect');
+        Route::post('/qaqc/newdefect/add', [QaqcReportController::class, 'addNewDefect'])->name('qaqc.add.newdefect');
+        // adding new defect category 
+
+
         //REVISI
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
+        Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         //REVISI
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
     });

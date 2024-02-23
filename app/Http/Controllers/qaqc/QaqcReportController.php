@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
-use App\Models\MasterDatafgDaijo;
+use App\Models\MasterDataRog;
 use App\Models\DefectCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -160,6 +160,15 @@ class QaqcReportController extends Controller
         return view('qaqc.reports.create', compact('header'));
     }
 
+    public function getCustomers(Request $request)
+    {
+        $Customername = $request->input('customer_name');
+        $cust = MasterDataRog::where('customer_name', 'like', "%$Customername%")->distinct()->pluck('customer_name')->toArray();
+
+
+        return response()->json($cust);
+    }
+
     public function postCreateHeader(Request $request)
     {
         $validatedData = $request->validate([
@@ -195,12 +204,20 @@ class QaqcReportController extends Controller
     public function createDetail(Request $request)
     {
 
-        $data = MasterDatafgDaijo::pluck('name');
+        $header = $request->session()->get('header');
+    
+        // Extract the customer name from the header
+        $customerName = $header['Customer'] ?? null;
+        
+        // Retrieve item names associated with the same customer name
+        $data = MasterDataRog::where('customer_name', $customerName)->pluck('item_name');
+
+        // $data = MasterDataRog::pluck('item_name');
         $details = $request->session()->get('details');
 
         // $request->session()->forget('detail');
         // dd($detail);
-        // dd( $request->session()->get('details'));
+    
 
         return view('qaqc.reports.createdetail', compact('data', 'details'));
     }
@@ -208,9 +225,14 @@ class QaqcReportController extends Controller
 
     public function getItems(Request $request)
     {
-        $itemName = $request->input('name');
-        $items = MasterDatafgDaijo::where('name', 'like', "%$itemName%")->pluck('name')->toArray();
-
+        $itemName = $request->input('item_name');
+        $header = $request->session()->get('header');
+    
+        // Extract the customer name from the header
+        $customerName = $header['Customer'] ?? null;
+        
+        $items = MasterDataRog::where('item_name', 'like', "%$itemName%")->where('customer_name', $customerName)->pluck('item_name')->toArray();
+    
 
         return response()->json($items);
     }
@@ -327,6 +349,40 @@ class QaqcReportController extends Controller
 
         return redirect()->route('qaqc.report.createdefect')->with(['success' => 'Defect added successfully']);
     }
+
+    public function showNewDefect()
+    {
+        $defectcat = DefectCategory::get();
+        // dd($defectcat);
+        
+        return view('qaqc.reports.create-new-defect', compact('defectcat'));
+    }
+
+    public function addNewDefect(Request $request)
+    {
+        $request->validate(
+            [
+                'category_name' => 'required|string',
+            ]
+        );
+        
+
+        $newdefect = new DefectCategory();
+        $newdefect->name = $request->input('category_name');
+        $newdefect->save();
+
+        return redirect()->route('qaqc.report.index')->with('success', 'Category added successfully!');
+
+    }
+
+
+
+
+
+
+
+
+
 
     public function store(Request $request)
     {
