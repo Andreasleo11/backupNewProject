@@ -108,6 +108,9 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="d-flex justify-content-end mt-3 me-2">
+                    {{ $reports->links() }}
+                </div>
             </div>
         </div>
     </section>

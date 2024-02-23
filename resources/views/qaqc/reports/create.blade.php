@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section>
+{{-- <section>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
@@ -10,7 +10,27 @@
             <li class="breadcrumb-item active" aria-current="page">Create</li>
         </ol>
     </nav>
-</section>
+</section> --}}
+
+<style>
+    .circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #007bff;
+        border: 2px solid #007bff; /* This creates the #007bff outline */
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+    }
+
+    .outline {
+        background-color: transparent;
+        color: #007bff; /* Hide the text inside the circles */
+    }
+</style>
 
     <section>
         @if ($message = Session::get('success'))
@@ -21,14 +41,47 @@
     </section>
 
     <section aria-label="content">
-        <div class="container mt-5">
+        <div class="container mt-3">
             <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <h2 class="mb-4">Verification Form</h2>
+                <div class="col-md-9">
                     <div class="card">
                         <div class="card-body">
-                            <form action="{{route('qaqc.report.createheader')}}" method="post">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-auto">
+                                    <div class="circle">1</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 50%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Circle 2 -->
+                                <div class="col-auto">
+                                    <div class="circle outline">2</div>
+                                </div>
+                                <div class="col">
+                                    <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                                        <div class="progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Circle 3 -->
+                                <div class="col-auto">
+                                    <div class="circle outline">3</div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+
+                            <span class="h3">Create Verification Header</span>
+                            <p class="text-secondary mt-2">You need to fill the verification report header </p>
+
+                            <form action="{{route('qaqc.report.createheader')}}" method="post" class="px-3 pt-3">
                                 @csrf
+
+                                <input type="hidden" value="{{ Auth::user()->name }}" name="created_by">
 
                                 {{-- Rec'D Date --}}
                                 <div class="mb-3">

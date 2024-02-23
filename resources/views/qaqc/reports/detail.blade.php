@@ -93,26 +93,28 @@
                 </div>
                 <div class="table-responsive mt-4">
                     <table class="table table-bordered table-hover text-center table-striped">
-                        <thead>
+                        <thead class="align-middle">
                             <tr>
-                                <th class="align-middle">No</th>
-                                <th class="align-middle">Part Name</th>
-                                <th class="align-middle">Rec Quantity</th>
-                                <th class="align-middle">Verify Quantity</th>
-                                <th class="align-middle">Production Date</th>
-                                <th class="align-middle">Shift</th>
-                                <th class="align-middle">Can Use</th>
-                                <th class="align-middle">Can't Use</th>
-                                <th class="align-middle">Daijo Defect Detail</th>
-                                <th class="align-middle">Remark</th>
-                                <th class="align-middle">Customer Defect Detail</th>
-                                <th class="align-middle">Remark</th>
-
-                                <!-- Add more headers as needed -->
+                                <th rowspan="2">No</th>
+                                <th rowspan="2">Part Name</th>
+                                <th rowspan="2">Rec Quantity</th>
+                                <th rowspan="2">Verify Quantity</th>
+                                <th rowspan="2">Production Date</th>
+                                <th rowspan="2">Shift</th>
+                                <th rowspan="2">Can Use</th>
+                                <th rowspan="2">Can't Use</th>
+                                <th colspan=2>Daijo Defect</th>
+                                <th colspan=2>Customer Defect</th>
+                            </tr>
+                            <tr>
+                                <th>Category</th>
+                                <th>Remark</th>
+                                <th>Category</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
 
-                        <tbody>
+                        <tbody class="align-middle">
                             @forelse($report->details as $detail)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>

@@ -13,80 +13,114 @@
         opacity: 1; /* Adjust opacity to ensure dropdown is not transparent */
 
     }
-
     .dropdown-item {
         padding: 5px;
         cursor: pointer;
     }
-
     .dropdown-item:hover {
         background-color: #f0f0f0;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    .circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #007bff;
+        border: 2px solid #007bff; /* This creates the #007bff outline */
+        color: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
     }
 
-    th, td {
-        border: 1px solid #dddddd;
-        text-align: left;
-        padding: 8px;
+    .outline {
+        background-color: transparent;
+        color: #007bff; /* Hide the text inside the circles */
     }
 
-    th {
-        background-color: #f2f2f2;
-    }
-
-    .add-data-btn {
-        text-align: right;
-        margin-bottom: 10px;
-    }
-
-    .add-data-btn button {
-        padding: 8px 16px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
-     .itemNameInput {
-        width: 100%;
-        box-sizing: border-box;
-    }
 </style>
 
-<div class="add-data-btn">
-    <a class="btn btn-success" id="addDataBtn">Add Data</a>
-</div>
-
-<form action="{{route('qaqc.report.postdetail')}}"  method="post">
+<form action="{{route('qaqc.report.postdetail')}}"  method="post" class="align-middle">
     @csrf
 
-    <div class="table-responsive">
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Name</th>
-                    <th>Rec Quantity</th>
-                    <th>Verify Quantity</th>
-                    <th>Prod Date</th>
-                    <th>Shift</th>
-                    <th>Can Use</th>
-                    <th>Can't Use</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+    <div class="container mt-3">
+        <div class="row justify-content-center">
+            <div class="col-md-9">
+                <div class="card pt-2 py-2">
+                    <div class="card-body">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <div class="circle">1</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Circle 2 -->
+                            <div class="col-auto">
+                                <div class="circle">2</div>
+                            </div>
+                            <div class="col">
+                                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Circle 3 -->
+                            <div class="col-auto">
+                                <div class="circle outline">3</div>
+                            </div>
+                        </div>
+
+                            <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="col-auto">
+                                <span class="h3">Add Part Details</span>
+                                <p class="text-secondary mt-2">You need to add part details for the report header that you have <br>
+                                    been made before. Everytime you add, it will stored in the table <br> below.</p>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <a class="btn btn-outline-primary" id="addDataBtn">+ Add Data</a>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <div class="card">
+                                <div class="card-body">
+                                    <table id="dataTable" class="table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">No</th>
+                                                <th class="text-center">Name</th>
+                                                <th class="text-center">Rec Quantity</th>
+                                                <th class="text-center">Verify Quantity</th>
+                                                <th class="text-center">Prod Date</th>
+                                                <th class="text-center">Shift</th>
+                                                <th class="text-center">Can Use</th>
+                                                <th class="text-center">Can't Use</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <div class="">
+                                <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">Back</a>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">back </a>
-    <button type="submit" class="btn btn-primary mt-3">Submit</button>
 </form>
 
 
@@ -110,7 +144,7 @@
             console.log(details);
             const rowCount = tableBody.children.length + 1; // Get the current row count
             const newRow = document.createElement('tr');
-            newRow.classList.add('added-row');
+            newRow.classList.add('added-row', 'text-center', 'align-middle');
             newRow.innerHTML = `
             <input required type="number" value="${rowCount}" name="rowCount" class="d-none"></input>
                 <td class="rowNum">${rowNumber}</td>
