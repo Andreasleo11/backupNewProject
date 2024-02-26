@@ -9,6 +9,7 @@ use App\Models\DetailPurchaseRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
+use App\Models\MasterDataPr;
 
 class PurchaseRequestController extends Controller
 {
@@ -43,7 +44,9 @@ class PurchaseRequestController extends Controller
 
     public function create()
     {
-        return view('purchaseRequest.create');
+        $master = MasterDataPr::get();
+        // dd($master);
+        return view('purchaseRequest.create', compact('master'));
     }
 
 
@@ -74,19 +77,144 @@ class PurchaseRequestController extends Controller
 
         $purchaseRequest->update(['pr_no' => $prNo]);
 
-       // Check if 'items' key exists in the request
+    //    // Check if 'items' key exists in the request
+    //     if ($request->has('items') && is_array($request->input('items'))) {
+    //         // Create detail records for each item
+    //         foreach ($request->input('items') as $itemData) {
+    //             DetailPurchaseRequest::create([
+    //                 'purchase_request_id' => $purchaseRequest->id,
+    //                 'item_name' => $itemData['item_name'],
+    //                 'quantity' => $itemData['quantity'],
+    //                 'purpose' => $itemData['purpose'],
+    //                 'unit_price' => $itemData['unit_price'],
+    //             ]);
+    //         }
+    //     }
+
+        // update revisi 26 februari 
         if ($request->has('items') && is_array($request->input('items'))) {
-            // Create detail records for each item
             foreach ($request->input('items') as $itemData) {
-                DetailPurchaseRequest::create([
-                    'purchase_request_id' => $purchaseRequest->id,
-                    'item_name' => $itemData['item_name'],
-                    'quantity' => $itemData['quantity'],
-                    'purpose' => $itemData['purpose'],
-                    'unit_price' => $itemData['unit_price'],
-                ]);
+                $itemName = $itemData['item_name'];
+                $quantity = $itemData['quantity'];
+                $purpose = $itemData['purpose'];
+                $unitPrice = $itemData['unit_price'];
+        
+                // Check if the item exists in MasterDataPr
+                $existingItem = MasterDataPr::where('name', $itemName)->first();
+        
+                if (!$existingItem) {
+                    // Case 1: Item not available in MasterDataPr
+                    $newItem = MasterDataPr::create([
+                        'name' => $itemName,
+                        'price' => $unitPrice, // Store the initial price
+                    ]);
+        
+                    // Create the DetailPurchaseRequest record
+                    DetailPurchaseRequest::create([
+                        'purchase_request_id' => $purchaseRequest->id,
+                        'item_name' => $itemName,
+                        'quantity' => $quantity,
+                        'purpose' => $purpose,
+                        'unit_price' => $unitPrice,
+                    ]);
+                } else {
+                    // Case 2: Item available in MasterDataPr
+        
+                    // ngecek harga yang sudah ada di latest price = null 
+                    if ($existingItem->latest_price === null){
+                        // Check if the price is different
+                        if ($existingItem->price != $unitPrice) {
+
+                            if ($existingItem->latest_price === null) {
+                                // Update the latest price if it's null
+                                $existingItem->update(['latest_price' => $unitPrice]);
+
+                                    // Create the DetailPurchaseRequest record
+                                DetailPurchaseRequest::create([
+                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'item_name' => $itemName,
+                                    'quantity' => $quantity,
+                                    'purpose' => $purpose,
+                                    'unit_price' => $unitPrice,
+                                ]);
+                            } else {
+
+                                // Move the latest price to the price column
+                                $existingItem->update(['price' => $existingItem->latest_price]);
+
+                                // Update the latest price
+                                $existingItem->update(['latest_price' => $unitPrice]);
+                        
+                                
+
+                            // Create the DetailPurchaseRequest record
+                            DetailPurchaseRequest::create([
+                                'purchase_request_id' => $purchaseRequest->id,
+                                'item_name' => $itemName,
+                                'quantity' => $quantity,
+                                'purpose' => $purpose,
+                                'unit_price' => $unitPrice,
+                            ]);
+                        }
+                        }else{
+                            DetailPurchaseRequest::create([
+                                'purchase_request_id' => $purchaseRequest->id,
+                                'item_name' => $itemName,
+                                'quantity' => $quantity,
+                                'purpose' => $purpose,
+                                'unit_price' => $unitPrice,
+                            ]);
+                        }
+                    }else{
+                        // ngecek karena sudah ada latest price, maka acuan harga yang dilihat latest_price
+                        if ($existingItem->latest_price != $unitPrice) {
+
+                            if ($existingItem->latest_price === null) {
+                                // Update the latest price if it's null
+                                $existingItem->update(['latest_price' => $unitPrice]);
+
+                                    // Create the DetailPurchaseRequest record
+                                DetailPurchaseRequest::create([
+                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'item_name' => $itemName,
+                                    'quantity' => $quantity,
+                                    'purpose' => $purpose,
+                                    'unit_price' => $unitPrice,
+                                ]);
+                            } else {
+
+                                // Move the latest price to the price column
+                                $existingItem->update(['price' => $existingItem->latest_price]);
+
+                                // Update the latest price
+                                $existingItem->update(['latest_price' => $unitPrice]);
+                        
+                                
+
+                            // Create the DetailPurchaseRequest record
+                            DetailPurchaseRequest::create([
+                                'purchase_request_id' => $purchaseRequest->id,
+                                'item_name' => $itemName,
+                                'quantity' => $quantity,
+                                'purpose' => $purpose,
+                                'unit_price' => $unitPrice,
+                            ]);
+                        }
+                        }else{
+                            DetailPurchaseRequest::create([
+                                'purchase_request_id' => $purchaseRequest->id,
+                                'item_name' => $itemName,
+                                'quantity' => $quantity,
+                                'purpose' => $purpose,
+                                'unit_price' => $unitPrice,
+                            ]);
+                        }
+                    }
+                }
             }
         }
+
+        // update revisi 26 februari 
 
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
@@ -230,5 +358,22 @@ class PurchaseRequestController extends Controller
         return response()->json(['success' => 'Autograph saved successfully!']);
 
     }
+
+
+
+// REVISI PR DROPDOWN ITEM + PRICE
+    public function getItemNames(Request $request)
+    {
+        $itemName = $request->query('itemName');
+        info('AJAX request received for item name: ' . $itemName);
+
+        // Fetch item names and prices from the database based on user input
+        $items = MasterDataPr::where('name', 'like', "%$itemName%")
+            ->select('name', 'price','latest_price')
+            ->get();
+
+        return response()->json($items);
+    }
+    
 
 }

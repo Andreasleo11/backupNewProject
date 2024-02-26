@@ -190,6 +190,17 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
     // Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
 
+    // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
+    Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
+
+
+    // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
+
+
+    
+
+
+
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
     Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
