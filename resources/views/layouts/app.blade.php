@@ -39,9 +39,9 @@
     </div>
 
 
+    @stack('extraJs')
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
-    @stack('extraJs')
     <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
 
 </body>

@@ -1,4 +1,4 @@
-<div class="modal" tabindex="-1" class="modal fade" id="editUserModal{{ $user->id }}" aria-labelledby="editModalLabel" aria-hidden="true">
+<div class="modal" tabindex="-1" class="modal fade" id="edit-user-modal{{ $user->id }}" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="{{route('superadmin.users.update', $user->id)}}">

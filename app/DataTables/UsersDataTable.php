@@ -22,7 +22,12 @@ class UsersDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', '<button type="button">test</button>')
+
+            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-user-modal{{$id}}"><i class="bx bx-edit"></i></button>
+                                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal{{$id}}"><i class="bx bx-trash"></i></button>
+                                    ')
+            ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
+            ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
             ->setRowId('id');
     }
 
@@ -31,7 +36,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model::with(['role', 'department', 'specification'])->newQuery();
     }
 
     /**
@@ -43,9 +48,9 @@ class UsersDataTable extends DataTable
                     ->setTableId('users-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
-                    //->dom('Bfrtip')
+                    ->dom('Bfrtip')
                     ->orderBy(0, 'asc')
-                    ->selectStyleSingle()
+                    // ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -62,18 +67,18 @@ class UsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
+            Column::make('id')
+                ->addClass('text-center'),
             Column::make('name'),
             Column::make('email'),
-            Column::make('role_id'),
-            Column::make('department_id'),
-            Column::make('specification_id'),
+            Column::make('role.name', 'Role'),
+            Column::make('department.name', 'Department'),
+            Column::make('specification.name', 'Specification'),
             Column::make('created_at'),
             Column::make('updated_at'),
             Column::computed('action')
-                  ->exportable(true)
-                  ->printable(true)
-                  ->width(60)
+                  ->exportable(false)
+                  ->printable(false)
                   ->addClass('text-center'),
         ];
     }
