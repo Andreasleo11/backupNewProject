@@ -52,41 +52,14 @@
         <!-- Table body -->
         <div class="card-body p-0">
             <div class="table-responsive-lg">
-                <table class="table table-striped table-hover align-middle m-0 text-center">
-                    <thead>
-                        <tr class="fs-5">
-                            <th class="py-3">No</th>
-                            <th class="py-3">ID</th>
-                            <th class="py-3">Name</th>
-                            <th class="py-3">Created At</th>
-                            <th class="py-3">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody class="table-group-divider ">
-                        @forelse ($departments as $department)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{$department->id}}</td>
-                                <td>{{$department->name}}</td>
-                                <td>{{$department->created_at}}</td>
-                                <td>
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#edit-department-modal-{{ $department->id }}">Edit</button>
-                                    @include('partials.edit-department-modal')
-
-                                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#delete-department-modal-{{ $department->id }}">Delete</button>
-                                    @include('partials.delete-department-modal')
-
-                                    {{-- <input type="checkbox"></input> --}}
-                                </td>
-                            </tr>
-                        @empty
-                        @endforelse
-
-                    </tbody>
-                </table>
+                {{$dataTable->table()}}
             </div>
         </div>
     </div>
 </section>
 
 @endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts() }}
+@endpush

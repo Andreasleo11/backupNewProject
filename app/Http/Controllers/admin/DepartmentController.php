@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\admin;
 
+use App\DataTables\DepartmentsDataTable;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 
 class DepartmentController extends Controller
 {
-    public function index()
+    public function index(DepartmentsDataTable $dataTable)
     {
         $departments = Department::all();
-        return view('admin.departments.index', compact('departments'));
+        // return view('admin.departments.index', compact('departments'));
+        return $dataTable->render('admin.departments.index', compact('departments'));
     }
 
     public function store(Request $request)

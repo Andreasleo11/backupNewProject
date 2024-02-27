@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\director;
 
+use App\DataTables\ReportsDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
@@ -9,14 +10,15 @@ use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function index(ReportsDataTable $dataTable)
     {
         $reports = Report::whereNotNull('autograph_1')
             ->whereNotNull('autograph_2')
             ->whereNotNull('autograph_3')
             ->get();
 
-        return view('director.qaqc.index', compact('reports'));
+        // return view('director.qaqc.index', compact('reports'));
+        return $dataTable->render('director.qaqc.index');
     }
 
     public function detail($id)

@@ -123,6 +123,12 @@
                         Form Keluar
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('qaqc.show.newdefect') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Add New Defect
+                    </a>
+                </li>
             </ul>
         </li>
 

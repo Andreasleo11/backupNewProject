@@ -2,6 +2,62 @@
 
 @section('content')
 
+<style>
+    #itemDropdown {
+        max-height: 200px; /* Set maximum height for the dropdown */
+        overflow-y: auto; /* Enable vertical scrolling */
+        border: 1px solid #ccc; /* Optional: Add border for visual clarity */
+        position: absolute; /* Position the dropdown absolutely */
+        z-index: 999; /* Ensure dropdown is above other elements */
+        background-color: #fff; /* Set background color to white */
+        opacity: 1; /* Adjust opacity to ensure dropdown is not transparent */
+
+    }
+
+    .dropdown-item {
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .add-data-btn {
+        text-align: right;
+        margin-bottom: 10px;
+    }
+
+    .add-data-btn button {
+        padding: 8px 16px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+     .itemNameInput {
+        width: 100%;
+        box-sizing: border-box;
+    }
+</style>
+
 {{-- <section>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -98,7 +154,8 @@
                                 {{-- Customer --}}
                                 <div class="mb-3">
                                     <label for="Customer" class="form-label">Customer:</label>
-                                    <input type="text"  value="{{ $header->Customer ?? '' }}"  id="Customer" name="Customer" class="form-control" required>
+                                    <input type="text"  value="{{ $header->Customer ?? '' }}"  id="itemNameInput" name="Customer" class="form-control" required placeholder="Enter item name" autocomplete="off">
+                                    <div id="itemDropdown" class="dropdown-content"></div></td>
                                 </div>
 
                                 {{-- Invoice No --}}
@@ -129,6 +186,48 @@
     </section>
 
 
+<script>
 
+const itemNameInput = document.getElementById('itemNameInput');
+const itemDropdown = document.getElementById('itemDropdown');
+
+itemNameInput.addEventListener('keyup', function() {
+    const inputValue = itemNameInput.value.trim();
+
+    // Make an AJAX request to fetch relevant items
+    fetch(`/customers?customer_name=${inputValue}`) // Changed to 'customer_name'
+        .then(response => response.json())
+        .then(data => {
+            // Clear previous dropdown options
+            itemDropdown.innerHTML = '';
+
+            // Display dropdown options
+            if (data.length > 0) {
+                data.forEach(item => {
+                    const option = document.createElement('div');
+                    option.classList.add('dropdown-item');
+                    option.textContent = item;
+                    option.addEventListener('click', function() {
+                        itemNameInput.value = item;
+                        itemDropdown.innerHTML = ''; // Hide dropdown after selection
+                    });
+                    itemDropdown.appendChild(option);
+                });
+                itemDropdown.style.display = 'block'; // Show dropdown
+            } else {
+                itemDropdown.style.display = 'none'; // Hide dropdown if no options
+            }
+        })
+        .catch(error => console.error('Error:', error));
+});
+
+// Close dropdown when clicking outside the dropdown or input field
+document.addEventListener('click', function(event) {
+    if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
+        itemDropdown.style.display = 'none';
+        console.log(itemNameInput.value);
+    }
+});
+</script>
 @endsection
 

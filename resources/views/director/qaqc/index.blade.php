@@ -26,8 +26,8 @@
 <section class="content">
     <div class="card">
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0 text-center table-striped">
+            <div class="table-responsive p-4">
+                {{-- <table class="table table-hover table-bordered mb-0 text-center table-striped">
                     <thead>
                         <tr>
                           <th class="fs-5" scope="col">No</th>
@@ -77,9 +77,15 @@
                             </tr>
                         @endforelse
                       </tbody>
-                </table>
+                </table> --}}
+
+                {{ $dataTable->table() }}
             </div>
         </div>
     </div>
 </section>
 @endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts() }}
+@endpush

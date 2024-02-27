@@ -28,7 +28,7 @@
                         </div>
                         <div class="col">
                         <select class="form-select" name="customer_defect_category" id="customerDefectCategory">
-                            <option value="" selected>Select category..</option>
+                            <option value="" selected disabled>Select category..</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
@@ -43,8 +43,8 @@
                             <input name="quantity_daijo" class="form-control" type="number" id="quantityDaijoDefect" placeholder="Quantity">
                         </div>
                         <div class="col">
-                        <select class="form-select" name="daijo_defect_category" id="daijoDefectCategory
-                            <option value="" selected>Select category..</option>
+                        <select class="form-select" name="daijo_defect_category" id="daijoDefectCategory" />
+                            <option value="" selected disabled>Select category..</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach

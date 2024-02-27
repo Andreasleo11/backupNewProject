@@ -21,4 +21,12 @@
     </div>
   
 </div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <a href="{{ route('purchasing_home') }}" class="btn btn-primary">Purchasing Prediction View </a>
+    </div>   
+</div>
+
+
 @endsection

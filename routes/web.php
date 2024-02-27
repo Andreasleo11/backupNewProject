@@ -29,6 +29,19 @@ use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PEController;
 
+
+
+
+//ROUTE SPECIAL PURCHASING
+use App\Http\Controllers\PurchasingMaterialController;
+use App\Http\Controllers\materialPredictionController;
+use App\Http\Controllers\PurchasingDetailController;
+
+//ROUTE SPECIAL PURCHASING
+
+
+use App\Http\Controllers\MailController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -130,9 +143,17 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         //revisi create page
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
+
+        // adding new defect category
+
+        Route::get('/qaqc/newdefect', [QaqcReportController::class, 'showNewDefect'])->name('qaqc.show.newdefect');
+        Route::post('/qaqc/newdefect/add', [QaqcReportController::class, 'addNewDefect'])->name('qaqc.add.newdefect');
+        // adding new defect category
+
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
         //REVISI
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
+        Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         //REVISI
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
     });
@@ -184,6 +205,17 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
     // Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
 
+    // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
+    Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
+
+
+    // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
+
+
+
+
+
+
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
     Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
@@ -202,6 +234,41 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
 
+//ROUTE PURCHASING
+
 Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
 
 
+Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
+Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
+Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
+Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
+Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class,'indexcustomer']);
+
+Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
+Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
+
+// ROUTE PURCHASING
+
+
+
+/////// TESTING FOR EMAILING FEATURE
+
+
+
+Route::get('/send-email', [MailController::class, 'sendEmail']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////// TESTING FOR EMAILING FEATURES

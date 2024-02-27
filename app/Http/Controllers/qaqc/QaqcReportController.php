@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
-use App\Models\MasterDatafgDaijo;
+use App\Models\MasterDataRog;
 use App\Models\DefectCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Session;
@@ -157,6 +157,124 @@ class QaqcReportController extends Controller
     {
         $header = $request->session()->get('header');
         return view('qaqc.reports.create', compact('header'));
+    }
+
+    public function getCustomers(Request $request)
+    {
+        $Customername = $request->input('customer_name');
+        $cust = MasterDataRog::where('customer_name', 'like', "%$Customername%")->distinct()->pluck('customer_name')->toArray();
+
+
+        return response()->json($cust);
+    }
+
+
+
+
+
+
+    public function getItems(Request $request)
+    {
+        $itemName = $request->input('item_name');
+        $header = $request->session()->get('header');
+
+        // Extract the customer name from the header
+        $customerName = $header['Customer'] ?? null;
+
+        $items = MasterDataRog::where('item_name', 'like', "%$itemName%")->where('customer_name', $customerName)->pluck('item_name')->toArray();
+
+
+        return response()->json($items);
+    }
+
+
+    public function postDetail(Request $request)
+    {
+
+        $report = $request->session()->get('header');
+
+        // Check if the report exists in the database
+        if (!$report->exists) {
+            // If the report exists, update its details
+            $report->save();
+        } else {
+            // If the report doesn't exist, save it to get the ID
+            $report->update();
+        }
+
+        // Retrieve the report_id from the saved or updated report
+        $reportId = $report->id;
+
+        $details = [];
+
+        for($i = 1; $i <= $request->input('rowCount'); $i++){
+
+            $request->validate([
+                'itemName' . $i => 'required',
+                'rec_quantity' . $i => 'required',
+                'verify_quantity' . $i => 'required',
+                'prod_date' . $i => 'required',
+                'shift' . $i => 'required',
+                'can_use' . $i => 'required',
+                'cant_use' . $i => 'required',
+            ]);
+
+            $rowData = [
+                'Report_Id' => $reportId,
+                'Part_Name' => $request->input("itemName$i"),
+                'Rec_Quantity' => $request->input("rec_quantity$i"),
+                'Verify_Quantity' => $request->input("verify_quantity$i"),
+                'Prod_Date' => $request->input("prod_date$i"),
+                'Shift' => $request->input("shift$i"),
+                'Can_Use' => $request->input("can_use$i"),
+                'Cant_Use' => $request->input("cant_use$i"),
+            ];
+                $detail = Detail::where('Report_Id', $reportId)
+                ->where('Part_Name', $rowData['Part_Name'])
+                ->first();
+
+                if (!$detail) {
+                // If the detail doesn't exist, create a new one
+                    $detail = new Detail();
+                    $detail->fill($rowData);
+                    $detail->save();
+                } else {
+                // If the detail exists, update its attributes
+                    $detail->update($rowData);
+                }
+
+                $details[] = $detail;
+
+        }
+
+        $request->session()->put('details', $details);
+
+        return redirect()->route('qaqc.report.createdefect');
+    }
+
+    public function showNewDefect()
+    {
+        $defectcat = DefectCategory::get();
+        // dd($defectcat);
+
+        return view('qaqc.reports.create-new-defect', compact('defectcat'));
+    }
+
+    public function addNewDefect(Request $request)
+    {
+        $request->validate(
+            [
+                'category_name' => 'required|string',
+            ]
+        );
+
+
+        $newdefect = new DefectCategory();
+        $newdefect->name = $request->input('category_name');
+        $newdefect->save();
+
+        return redirect()->route('qaqc.report.index')->with('success', 'Category added successfully!');
+
     }
 
     public function store(Request $request)
@@ -350,88 +468,26 @@ class QaqcReportController extends Controller
 
     public function createDetail(Request $request)
     {
-        $data = MasterDatafgDaijo::pluck('name');
+
+        $header = $request->session()->get('header');
+
+        // Extract the customer name from the header
+        $customerName = $header['Customer'] ?? null;
+
+        // Retrieve item names associated with the same customer name
+        $data = MasterDataRog::where('customer_name', $customerName)->pluck('item_name');
+
+        // $data = MasterDataRog::pluck('item_name');
         $details = $request->session()->get('details');
 
         // $request->session()->forget('detail');
         // dd($detail);
-        // dd( $request->session()->get('details'));
+
 
         return view('qaqc.reports.createdetail', compact('data', 'details'));
     }
 
 
-    public function getItems(Request $request)
-    {
-        $itemName = $request->input('name');
-        $items = MasterDatafgDaijo::where('name', 'like', "%$itemName%")->pluck('name')->toArray();
-
-        return response()->json($items);
-    }
-
-
-    public function postDetail(Request $request)
-    {
-        $report = $request->session()->get('header');
-
-        // Check if the report exists in the database
-        if (!$report->exists) {
-            // If the report exists, update its details
-            $report->save();
-        } else {
-            // If the report doesn't exist, save it to get the ID
-            $report->update();
-        }
-
-        // Retrieve the report_id from the saved or updated report
-        $reportId = $report->id;
-
-        $details = [];
-
-        for($i = 1; $i <= $request->input('rowCount'); $i++){
-
-            $request->validate([
-                'itemName' . $i => 'required',
-                'rec_quantity' . $i => 'required',
-                'verify_quantity' . $i => 'required',
-                'prod_date' . $i => 'required',
-                'shift' . $i => 'required',
-                'can_use' . $i => 'required',
-                'cant_use' . $i => 'required',
-            ]);
-
-            $rowData = [
-                'Report_Id' => $reportId,
-                'Part_Name' => $request->input("itemName$i"),
-                'Rec_Quantity' => $request->input("rec_quantity$i"),
-                'Verify_Quantity' => $request->input("verify_quantity$i"),
-                'Prod_Date' => $request->input("prod_date$i"),
-                'Shift' => $request->input("shift$i"),
-                'Can_Use' => $request->input("can_use$i"),
-                'Cant_Use' => $request->input("cant_use$i"),
-            ];
-                $detail = Detail::where('Report_Id', $reportId)
-                ->where('Part_Name', $rowData['Part_Name'])
-                ->first();
-
-                if (!$detail) {
-                // If the detail doesn't exist, create a new one
-                    $detail = new Detail();
-                    $detail->fill($rowData);
-                    $detail->save();
-                } else {
-                // If the detail exists, update its attributes
-                    $detail->update($rowData);
-                }
-
-                $details[] = $detail;
-
-        }
-
-        $request->session()->put('details', $details);
-
-        return redirect()->route('qaqc.report.createdefect');
-    }
     // dd($rowData);
 
     public function createDefect(Request $request)

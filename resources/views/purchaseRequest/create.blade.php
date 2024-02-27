@@ -92,7 +92,37 @@
         itemNameInput.name = `items[${itemIdCounter}][item_name]`;
         itemNameInput.placeholder = 'Item Name';
 
+        const itemNameDropdown = document.createElement('select');
+        itemNameDropdown.classList.add('form-select', 'itemNameDropdown');
+
+        //ajax for dropdown item 
+        itemNameInput.addEventListener('input', function() {
+            // Fetch item names from server based on user input
+            fetch(`/get-item-names?itemName=${itemNameInput.value}`)
+                .then(response => response.json())
+                .then(data => {
+                     // Clear previous dropdown options
+                     itemNameDropdown.innerHTML = '';
+
+                    // Populate dropdown with fetched item names
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.name;
+                        if (item.latest_price === null) {
+                            unitPriceInput.value = item.price;
+                        } else {
+                            unitPriceInput.value = item.latest_price;
+                        }
+                        itemNameDropdown.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+        //ajax for dropdown item 
+
         formGroupName.appendChild(itemNameInput);
+        formGroupName.appendChild(itemNameDropdown);
 
         const formGroupQuantityInput = document.createElement('div')
         formGroupQuantityInput.classList.add('col-md-1');
