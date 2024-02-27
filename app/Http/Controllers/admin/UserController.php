@@ -21,7 +21,7 @@ class UserController extends Controller
         $departments = Department::all();
         $specifications = Specification::all();
         // return view('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
-        return $dataTable->render('admin.users.index', compact('roles', 'departments', 'specifications'));
+        return $dataTable->render('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
     }
 
     public function store(Request $request)
@@ -85,5 +85,30 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->back()->with('success', 'Password reset successfully.');
+    }
+
+    /**
+     * Delete selected users.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteSelected(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json(['message' => 'No records selected for deletion (server).'], 422);
+        }
+
+        try {
+            foreach ($ids as $id) {
+                User::find($id)->delete();
+            }
+            return response()->json(['message' => 'Selected records deleted successfully (server).'], 200);
+        } catch (\Exception $e) {
+            // Handle deletion error
+            return response()->json(['message' => 'Failed to delete selected records (server).'], 500);
+        }
     }
 }

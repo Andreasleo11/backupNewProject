@@ -74,6 +74,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
             Route::put('/users/update/{id}', [UserController::class, 'update'])->name('users.update');
             Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
             Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
+            Route::delete('/users/delete-selected', [UserController::class, 'deleteSelected'])->name('users.deleteSelected');
 
             Route::get('/departments', [DepartmentController::class, 'index'])->name('departments');
             Route::post('/departments/create', [DepartmentController::class, 'store'])->name('departments.store');
