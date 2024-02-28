@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PhpParser\Node\Stmt\Foreach_;
 
 class ReportController extends Controller
 {
@@ -66,6 +67,46 @@ class ReportController extends Controller
         ]);
 
         return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
+    }
+
+    public function approveSelected(Request $request){
+        $ids = $request->input('ids', []);
+
+        if(empty($ids)) {
+            return response()->json(['message' => 'No records selected for approval. (server)']);
+        }
+
+        try {
+            foreach ($ids as $id) {
+                Report::find($id)->update(['is_approve' => true]);
+            }
+            return response()->json(['message'=>'selected records approved successfully. (server)']);
+        } catch (\Throwable $th) {
+            return response()->json(['message'=>'failed to approve selected records. (server)']);
+            throw $th;
+        }
+    }
+
+    public function rejectSelected(Request $request){
+        $ids = $request->input('ids', []);
+        $rejectionReason = $request->input('rejection_reason');
+
+        if(empty($ids)) {
+            return response()->json(['message' => 'No records selected for rejection. (server)']);
+        }
+
+        try {
+            foreach ($ids as $id) {
+                Report::find($id)->update([
+                    'is_approve' => false,
+                    'description' => $rejectionReason
+                ]);
+            }
+            return response()->json(['message'=>'selected records rejected successfully. (server)']);
+        } catch (\Throwable $th) {
+            return response()->json(['message'=>'failed to reject selected records. (server)']);
+            throw $th;
+        }
     }
 
 }

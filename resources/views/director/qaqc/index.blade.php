@@ -27,58 +27,11 @@
     <div class="card">
         <div class="card-body p-0">
             <div class="table-responsive p-4">
-                {{-- <table class="table table-hover table-bordered mb-0 text-center table-striped">
-                    <thead>
-                        <tr>
-                          <th class="fs-5" scope="col">No</th>
-                          <th class="fs-5" scope="col">Invoice No</th>
-                          <th class="fs-5" scope="col">Customer</th>
-                          <th class="fs-5" scope="col">Verify Date</th>
-                          <th class="fs-5" scope="col">Rec Date</th>
-                          <th class="fs-5" scope="col">Action</th>
-                          <th class="fs-5" scope="col">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @forelse ($reports as $report)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $report->invoice_no }}</td>
-                                <td>{{ $report->customer }}</td>
-                                <td>{{ $report->rec_date }}</td>
-                                <td>{{ $report->verify_date }}</td>
-                                <td>
-                                    <a href="{{ route('director.qaqc.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
-                                        <i class='bx bx-info-circle' ></i> Detail
-                                    </a>
-                                    @if($report->attachment)
-                                    @php
-                                        $filename = basename($report->attachment);
-                                        @endphp
-                                    <a href="{{ asset('storage/attachments/' . $report->attachment) }}" class="btn btn-success" download="{{ $filename }}">
-                                        <i class='bx bx-download'></i>
-                                        Attachment
-                                    </a>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($report->is_approve === 1)
-                                    <span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium">APPROVED</span>
-                                    @elseif($report->is_approve === 0)
-                                    <span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">REJECTED</span>
-                                    @else
-                                    <span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7">No Data</td>
-                            </tr>
-                        @endforelse
-                      </tbody>
-                </table> --}}
-
+                <div class="mb-3">
+                    <button id="approve-selected-btn" data-approve-url="{{ route('director.qaqc.approveSelected') }}" class="btn btn-primary">Approve Selected</button>
+                    <button id="reject-selected-btn" data-reject-url="{{ route('director.qaqc.rejectSelected') }}" data-bs-toggle="modal" data-bs-target="#reject-selected-modal" class="btn btn-danger ">Reject Selected</button>
+                    @include('partials.reject-selected-modal')
+                </div>
                 {{ $dataTable->table() }}
             </div>
         </div>
@@ -88,4 +41,109 @@
 
 @push('extraJs')
     {{ $dataTable->scripts() }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            var checkInterval = setInterval(function(){
+                var thElement = document.querySelector('th.check_all');
+                if(thElement){
+                    clearInterval(checkInterval);
+
+                    var input = document.createElement('input');
+                    input.style.marginLeft= '10px';
+                    input.setAttribute('type', 'checkbox');
+                    input.setAttribute('class', 'form-check-input');
+                    thElement.appendChild(input);
+
+                    var isChecked = false;
+
+                    thElement.addEventListener('click', function(){
+                        var checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+
+                        checkboxes.forEach(function(checkbox){
+                            checkbox.checked = !isChecked;
+                        });
+
+                        isChecked = !isChecked;
+                    });
+                }
+            }, 100);
+
+            document.getElementById('approve-selected-btn').addEventListener('click', function(){
+                var checkboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+
+                var ids = [];
+                checkboxes.forEach(function(checkbox){
+                    var userId = checkbox.id.replace('checkbox', '');
+                    ids.push(userId);
+                });
+
+                if(ids.length > 0){
+                    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    var approveRoute = document.getElementById('approve-selected-btn').getAttribute('data-approve-url');
+                    console.log(approveRoute);
+
+                    fetch(approveRoute, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type' : 'application/json',
+                            'X-CSRF-TOKEN' : csrfToken
+                        },
+                        body: JSON.stringify({ ids: ids}),
+                    }).then(response => {
+                        if(response.ok){
+                            console.log('Selected records approved successfully');
+                            location.reload();
+                        } else {
+                            console.error('Failed to approve selected records.');
+                        }
+                    }).catch(error => {
+                        console.error('An error occured:', error);
+                    });
+                } else {
+                    console.warn('No records selected for approval');
+                }
+            });
+            document.getElementById('confirmReject').addEventListener('click', function(){
+                var checkboxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+
+                var ids = [];
+                checkboxes.forEach(function(checkbox){
+                    var userId = checkbox.id.replace('checkbox', '');
+                    ids.push(userId);
+                });
+
+                var rejectionReason = document.getElementById('rejectionReason').value;
+
+                if(ids.length > 0){
+                    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    var rejectRoute = document.getElementById('reject-selected-btn').getAttribute('data-reject-url');
+                    var rejectionReason = document.getElementById('rejectionReason').value;
+
+                    fetch(rejectRoute, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type' : 'application/json',
+                            'X-CSRF-TOKEN' : csrfToken
+                        },
+                        body: JSON.stringify({
+                            ids: ids,
+                            rejection_reason: rejectionReason
+                        }),
+                    }).then(response => {
+                        if(response.ok){
+                            console.log('Selected records rejected successfully');
+                            location.reload();
+                        } else {
+                            console.error('Failed to reject selected records.');
+                        }
+                    }).catch(error => {
+                        console.error('An error occured:', error);
+                    });
+                } else {
+                    console.warn('No records selected for rejection');
+                }
+            });
+        });
+    </script>
 @endpush

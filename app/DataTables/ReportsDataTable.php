@@ -37,13 +37,20 @@ class ReportsDataTable extends DataTable
                                     @endif
                                     ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}" />')
-            ->addColumn('status', ' @if($is_approve === 1)
-                                        <span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium">APPROVED</span>
-                                    @elseif($is_approve === 0)
-                                        <span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">REJECTED</span>
-                                    @else
-                                        <span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING</span>
-                                    @endif')
+            ->addColumn('status', ' <span class="badge rounded-pill
+                                        @if($is_approve === 1) text-bg-success
+                                        @elseif($is_approve === 0) text-bg-danger
+                                        @else text-bg-warning
+                                        @endif
+                                        px-3 py-2 fs-6 fw-medium">
+                                        @if($is_approve === 1)
+                                            APPROVED
+                                        @elseif($is_approve === 0)
+                                            REJECTED
+                                        @else
+                                            WAITING
+                                        @endif
+                                    </span>')
             ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
             ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
             ->setRowId('id');
@@ -91,21 +98,27 @@ class ReportsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::computed('select_all'),
-            Column::make('id'),
-            Column::make('doc_num'),
-            Column::make('invoice_no'),
-            Column::make('customer'),
-            Column::make('rec_date'),
-            Column::make('verify_date'),
-            Column::make('created_at'),
-            Column::make('updated_at'),
-            Column::computed('action')
+            Column::computed('select_all')
+                ->addClass('check_all')
+                ->width(50)
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center')
                 ->addClass('align-middle'),
-            Column::make('status'),
+            Column::make('id')->addClass('align-middle')->addClass('text-center'),
+            Column::make('doc_num')->addClass('align-middle')->addClass('text-center'),
+            Column::make('invoice_no')->addClass('align-middle')->addClass('text-center'),
+            Column::make('customer')->addClass('align-middle')->addClass('text-center'),
+            Column::make('rec_date')->addClass('align-middle')->addClass('text-center'),
+            Column::make('verify_date')->addClass('align-middle')->addClass('text-center'),
+            Column::make('created_at')->addClass('align-middle')->addClass('text-center'),
+            Column::make('updated_at')->addClass('align-middle')->addClass('text-center'),
+            Column::computed('action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center')
+                ->addClass('align-middle')->addClass('text-center'),
+            Column::make('status')->addClass('align-middle')->addClass('text-center'),
         ];
     }
 

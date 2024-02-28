@@ -107,43 +107,48 @@
                         </thead>
 
                         <tbody>
-                            @forelse($report->details as $detail)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $detail->part_name}}</td>
-                                    <td>{{ $detail->rec_quantity}}</td>
-                                    <td>{{ $detail->verify_quantity}}</td>
-                                    <td>{{ $detail->prod_date}}</td>
-                                    <td>{{ $detail->shift}}</td>
-                                    <td>{{ $detail->can_use}}</td>
-                                    <td>{{ $detail->cant_use}}</td>
-                                    <td>
-                                        @foreach ($detail->customer_defect_detail as $key => $value)
-                                            @if (!is_null($value))
-                                                {{ $key }}: {{ $value }}<br>
-                                            @endif
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        @foreach ($detail->daijo_defect_detail as $key => $value)
-                                            @if (!is_null($value))
-                                                {{ $key }}: {{ $value }}<br>
-                                            @endif
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        @foreach ($detail->remark as $key => $value)
-                                            @if (!is_null($value))
-                                                {{ $key }}: {{ $value }}<br>
-                                            @endif
-                                        @endforeach
-                                    </td>
+                            <tr>
+                                @forelse($report->details as $detail)
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $detail->part_name}}</td>
+                                        <td>{{ $detail->rec_quantity}}</td>
+                                        <td>{{ $detail->verify_quantity}}</td>
+                                        <td>{{ $detail->prod_date}}</td>
+                                        <td>{{ $detail->shift}}</td>
+                                        <td>{{ $detail->can_use}}</td>
+                                        <td>{{ $detail->cant_use}}</td>
+                                        <td>
+                                            @isset($detail->customer_defect_detail)
+                                                @foreach ($detail->customer_defect_detail as $key => $value)
+                                                    @if (!is_null($value))
+                                                        {{ $key }}: {{ $value }}<br>
+                                                    @endif
+                                                @endforeach
+                                            @endisset
+                                        </td>
+                                        <td>
+                                            @isset($detail->daijo_defect_detail)
+                                                @foreach ($detail->daijo_defect_detail as $key => $value)
+                                                    @if (!is_null($value))
+                                                        {{ $key }}: {{ $value }}<br>
+                                                    @endif
+                                                @endforeach
+                                            @endisset
+                                        </td>
+                                        <td>
+                                            @isset($detail->remark)
+                                                @foreach ($detail->remark as $key => $value)
+                                                    @if (!is_null($value))
+                                                        {{ $key }}: {{ $value }}<br>
+                                                    @endif
+                                                @endforeach
+                                            @endisset
+                                        </td>
 
                                 @empty
                                     <td colspan="12"> No data</td>
-                                </tr>
-                            @endforelse
-
+                                @endforelse
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -153,27 +158,7 @@
 
     <section aria-label="approval" class="container mt-5 mb-8">
         @if($report->is_approve === null)
-            <div class="modal fade" id="rejectModal">
-                <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <form action="{{route('director.qaqc.reject', ['id' => $report->id])}}" method="post">
-                                @method('PUT')
-                                @csrf
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5">Reason</h1>
-                                </div>
-                                <div class="modal-body">
-                                    <label for="description" class="form-label">Description</label>
-                                    <textarea name="description" class="form-control" placeholder="Tell us why you rejecting this report..." required></textarea>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    <button type="submit" class="btn btn-primary">Confirm</button>
-                                </div>
-                            </form>
-                        </div>
-                </div>
-            </div>
+            @include('partials.reject-modal', ['id' => $report->id])
 
             <div class="container text-center">
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal" data-bs-target="#rejectModal">Reject</button>
@@ -183,6 +168,23 @@
                     <button class="btn btn-success btn-lg" type="submit">Approve</button>
                 </form>
             </div>
+        @elseif(isset($report->is_approve))
+            <span class="badge rounded-pill
+                @if($report->is_approve === 1) text-bg-success
+                @elseif($report->is_approve === 0) text-bg-danger
+                @else text-bg-warning
+                @endif
+                px-3 py-2 fs-6 fw-medium">
+                @if($report->is_approve === 1)
+                    APPROVED
+                @elseif($report->is_approve === 0)
+                    REJECTED
+                @else
+                    WAITING
+                @endif
+            </span>
+        @else
+            <div class="text-center">No attachment, can't proceed to approve or reject this document.</div>
         @endif
     </section>
 
