@@ -5,10 +5,11 @@
 <style>
     .dropdown-content {
         max-height: 200px; /* Set maximum height for the dropdown */
+        width: auto;
         overflow-y: auto; /* Enable vertical scrolling */
         border: 1px solid #ccc; /* Optional: Add border for visual clarity */
         position: absolute; /* Position the dropdown absolutely */
-        z-index: 999; /* Ensure dropdown is above other elements */
+        z-index: 1; /* Ensure dropdown is above other elements */
         background-color: #fff; /* Set background color to white */
         opacity: 1; /* Adjust opacity to ensure dropdown is not transparent */
     }
@@ -45,7 +46,7 @@
 
     <div class="container mt-3">
         <div class="row justify-content-center">
-            <div class="col-md-9">
+            <div class="col-md-12">
                 <div class="card pt-2 py-2">
                     <div class="card-body">
                         <div class="row g-3 align-items-center">
@@ -73,7 +74,6 @@
                                 <div class="circle outline">3</div>
                             </div>
                         </div>
-
                             <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <div class="col-auto">
@@ -85,10 +85,11 @@
                                 <a class="btn btn-outline-primary" id="addDataBtn">+ Add Data</a>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <div class="card">
-                                <div class="card-body">
-                                    <table id="dataTable" class="table mb-0">
+                        <p>Customer name : <strong> {{ Session::get('header')->Customer ?? '-'}} </strong></p>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="dataTable" class="table">
                                         <thead>
                                             <tr>
                                                 <th class="text-center">No</th>
@@ -122,7 +123,9 @@
 
 </form>
 
+@endsection
 
+@push('extraJs')
     <script>
         let rowNumber = 0;
 
@@ -140,14 +143,13 @@
             updateRowNumber();
             const tableBody = document.querySelector('#dataTable tbody');
             const details = @json($details ?? []);
-            console.log(details);
             const rowCount = tableBody.children.length + 1; // Get the current row count
             const newRow = document.createElement('tr');
             newRow.classList.add('added-row', 'text-center', 'align-middle');
             newRow.innerHTML = `
             <input required type="number" value="${rowCount}" name="rowCount" class="d-none"></input>
                 <td class="rowNum">${rowNumber}</td>
-                <td><input class="form-control" required type="text" id="itemNameInput${rowCount}" value="${detail.Part_Name ?? ''}" name="itemName${rowCount}" placeholder="Enter item name" autocomplete="off">
+                <td style="width:20%"><input class="form-control" required type="text" id="itemNameInput${rowCount}" value="${detail.Part_Name ?? ''}" name="itemName${rowCount}" autocomplete="off">
                             <div id="itemDropdown${rowCount}" class="dropdown-content"></div></td>
 
                 <td><input required type="number" value="${detail.Rec_Quantity ?? ''}" name="rec_quantity${rowCount}" class="form-control rec-input"></td>
@@ -239,5 +241,4 @@
 
 
     </script>
-
-@endsection
+@endpush

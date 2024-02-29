@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\director;
 
-use App\DataTables\ReportsDataTable;
+use App\DataTables\DirectorQaqcReportsDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
@@ -11,7 +11,7 @@ use PhpParser\Node\Stmt\Foreach_;
 
 class ReportController extends Controller
 {
-    public function index(ReportsDataTable $dataTable)
+    public function index(DirectorQaqcReportsDataTable $dataTable)
     {
         $reports = Report::whereNotNull('autograph_1')
             ->whereNotNull('autograph_2')
@@ -19,7 +19,7 @@ class ReportController extends Controller
             ->get();
 
         // return view('director.qaqc.index', compact('reports'));
-        return $dataTable->render('director.qaqc.index');
+        return $dataTable->render('director.qaqc.index', compact('reports'));
     }
 
     public function detail($id)

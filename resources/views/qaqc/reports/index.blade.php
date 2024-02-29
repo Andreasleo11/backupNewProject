@@ -39,7 +39,7 @@
                     <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr class="align-middle fw-semibold fs-5">
-                                <th>No</th>
+                                <th>ID</th>
                                 <th>Doc. Number</th>
                                 <th>Invoice No</th>
                                 <th>Customer</th>
@@ -53,43 +53,57 @@
                         <tbody>
                             @foreach ($reports as $report)
                                 <tr class="align-middle">
-                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $report->id }}</td>
                                     <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-                                        <a href="{{ route('qaqc.report.detail', $report->id) }}" class="btn btn-secondary my-1">
+                                        <a href="{{ route('qaqc.report.detail', $report->id) }}" class="btn btn-secondary my-1 me-1">
                                             <i class='bx bx-info-circle' ></i> <span class="d-none d-sm-inline ">Detail</span>
                                         </a>
 
-                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1">
+                                        {{-- <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1">
                                             <i class='bx bx-edit' ></i> <span class="d-none d-sm-inline">Edit</span>
-                                        </a>
+                                        </a> --}}
 
-                                        <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
+                                        @include('partials.delete-report-modal')
+                                        <button class="btn btn-danger my-1 me-1" data-bs-toggle="modal" data-bs-target="#delete-report-modal{{ $report->id }}">
+                                            <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
+                                        </button>
+
+                                        {{-- <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger my-1">
                                                 <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
                                             </button>
-                                        </form>
+                                        </form> --}}
 
-                                        <a href="{{ route('qaqc.report.download', $report->id) }}" class="btn btn-success my-1">
-                                            <i class='bx bxs-file-pdf' ></i> <span class="d-none d-sm-inline">Export PDF</span>
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn text-success border border-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                More
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                              <li>
+                                                <a href="{{ route('qaqc.report.download', $report->id) }}" class="btn btn-success my-1 dropdown-item">
+                                                    <i class='bx bxs-file-pdf' ></i> <span class="d-none d-sm-inline">Export PDF</span>
+                                                </a>
+                                              </li>
+                                              <li>
+                                                @if($report->attachment)
+                                                    @php
+                                                        $filename = basename($report->attachment);
+                                                    @endphp
 
-                                        @if($report->attachment)
-                                            @php
-                                                $filename = basename($report->attachment);
-                                            @endphp
-
-                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}" class="btn border border-success text-success fw-semibold my-1">
-                                                <i class='bx bx-download' ></i> <span class="d-none d-sm-inline">Download Attachment</span>
-                                            </a>
-                                        @endif
-
+                                                    <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}" class="btn btn-success dropdown-item">
+                                                        <i class='bx bx-download' ></i> <span class="d-none d-sm-inline">Download Attachment</span>
+                                                    </a>
+                                                @endif
+                                              </li>
+                                            </ul>
+                                          </div>
                                     </td>
                                     <td>
                                         @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
@@ -108,10 +122,10 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="d-flex justify-content-end mt-3 me-2">
-                    {{ $reports->links() }}
-                </div>
             </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            {{ $reports->links() }}
         </div>
     </section>
 

@@ -76,9 +76,18 @@
             </tr>
         </tbody>
     </table>
-    <div class="mx-3 mt-4 mb-5 text-center">
+    <div class="pt-4 pb-5 text-center">
         <span class="h1 fw-semibold">Verification Reports</span>
-        <p class="fs-5 mt-2">Created By : {{ $report->created_by }}</p>
+        <p class="fs-5 mt-2">Created By : {{ $report->created_by ?? '-'}} </p>
+            @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
+                <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
+            @elseif($report->is_approve === 0)
+                <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
+            @elseif($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
+                <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
+            @else
+                <span class="badge text-bg-secondary px-3 py-2 fs-6">WAITING SIGNATURE</span>
+            @endif
     </div>
     <table class="table table-borderlesss">
         <tbody>
@@ -109,7 +118,6 @@
                 <th class="align-middle">Can't Use</th>
                 <th class="align-middle">Customer Defect Detail</th>
                 <th class="align-middle">Daijo Defect Detail</th>
-                <th class="align-middle">Remark</th>
 
                 <!-- Add more headers as needed -->
             </tr>
@@ -127,23 +135,17 @@
                     <td>{{ $detail->can_use}}</td>
                     <td>{{ $detail->cant_use}}</td>
                     <td>
-                        @foreach ($detail->customer_defect_detail as $key => $value)
-                            @if (!is_null($value))
-                                {{ $value }}<br>
+                        @foreach ($detail->defects as $defect)
+                            @if ($defect->is_daijo)
+                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }} <br>
                             @endif
                         @endforeach
                     </td>
+
                     <td>
-                        @foreach ($detail->daijo_defect_detail as $key => $value)
-                            @if (!is_null($value))
-                                {{ $value }}<br>
-                            @endif
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach ($detail->remark as $key => $value)
-                            @if (!is_null($value))
-                                {{ $value }}<br>
+                        @foreach ($detail->defects as $defect)
+                            @if (!$defect->is_daijo)
+                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }} <br>
                             @endif
                         @endforeach
                     </td>

@@ -40,118 +40,150 @@ class QaqcReportController extends Controller
         return view('qaqc.reports.detail', compact('report','user','autographNames'));
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
-        $report = Report::find($id);
-        $details = $report->details;
+        $header = $request->session()->get('header') ?? Report::find($id);
 
-        return view('qaqc.reports.edit', compact('report','details'));
+        return view('qaqc.reports.edit', compact('header'));
     }
 
-    public function update(Request $request, $id)
+    public function updateHeader($request, $id)
     {
-        $data = $request->all();
-
-        foreach ($data['remark'] as $key => &$values) {
-            $modifiedValues = [];
-
-            $index = 0;
-            while ($index < count($values)) {
-                // Check if the value is "other"
-                if ($values[$index] === 'other') {
-                    // Check if there is a next index and a next value
-                    if (isset($values[$index + 1])) {
-                        // Replace "other" with the value from the next index
-                        $modifiedValues[] = $values[$index + 1];
-                        // Skip the next value
-                        $index += 2;
-                    }
-                } else {
-                    // Keep non-"other" values
-                    $modifiedValues[] = $values[$index];
-                    $index++;
-                }
-            }
-
-            // Update the original array with the modified values
-            $data['remark'][$key] = $modifiedValues;
-        }
-
-        // Remove the reference to $values
-        unset($values);
-
-
-        if (isset($data['customer_defect_detail'])) {
-            $data['customer_defect_detail'] = array_map(function ($array) {
-                $foundNull = false;
-                return array_filter($array, function ($value) use (&$foundNull) {
-                    if ($value === null && !$foundNull) {
-                        $foundNull = true;
-                        return false;
-                    }
-                    return true;
-                });
-            }, $data['customer_defect_detail']);
-        }
-
-        // Remove only the first null value from daijo_defect_detail
-        if (isset($data['daijo_defect_detail'])) {
-            $data['daijo_defect_detail'] = array_map(function ($array) {
-                $foundNull = false;
-                return array_filter($array, function ($value) use (&$foundNull) {
-                    if ($value === null && !$foundNull) {
-                        $foundNull = true;
-                        return false;
-                    }
-                    return true;
-                });
-            }, $data['daijo_defect_detail']);
-        }
-
-        // dd($data);
-
-        // Update the existing record
-        $report = Report::findOrFail($id);
-
-        // Update common attributes
-        $report->update([
-            'Rec_Date' => $data['rec_Date'],
-            'Verify_Date' => $data['verify_date'],
-            'Customer' => $data['customer'],
-            'Invoice_No' => $data['invoice_no'],
-            'num_of_parts' => $data['num_of_parts'],
-            'is_approve' => null,
-            'description' => null,
+        $validated = $request->validate([
+            ''
         ]);
 
-        // Update details
-        foreach ($data['part_names'] as $key => $partName) {
-            $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];
-            $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
-            $Remarks = $data['remark'][$key] ?? [];
+        Report::find($id)->update($validated);
 
-            $detail = Detail::where('Report_Id', $id)->where('Part_Name', $partName)->first();
+        $details = $request->session()->get('details') ?? Detail::where('report_id', 34)->get();
 
-            // Update detail attributes
-            $detail->update([
-                'Part_Name' => $partName,
-                'Rec_Quantity' => $data['rec_quantity'][$key],
-                'Verify_Quantity' => $data['verify_quantity'][$key],
-                'Prod_Date' => $data['prod_date'][$key],
-                'Shift' => $data['shift'][$key],
-                'Can_Use' => $data['can_use'][$key],
-                'Cant_use' => $data['cant_use'][$key],
-                // Extract defect details and remarks
-                // Add other attributes as needed
-                'Customer_Defect_Detail' => json_encode($customerDefectDetails),
-                'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
-                'Remark' => json_encode($Remarks),
-            ]);
-        }
-
-        // Redirect to a view or route after the update
-        return redirect()->route('qaqc.report.index')->with('success', 'Report has been updated successfully!');
+        return view('qaqc.reports.editDetails', compact('details'));
     }
+
+    public function editDetails($request, $id)
+    {
+
+    }
+
+    public function updateDetails($request, $id)
+    {
+
+    }
+
+    public function editDefect($request, $id)
+    {
+
+    }
+
+    public function updateDefect($request, $id)
+    {
+
+    }
+
+    // public function update(Request $request, $id)
+    // {
+    //     $data = $request->all();
+
+    //     foreach ($data['remark'] as $key => &$values) {
+    //         $modifiedValues = [];
+
+    //         $index = 0;
+    //         while ($index < count($values)) {
+    //             // Check if the value is "other"
+    //             if ($values[$index] === 'other') {
+    //                 // Check if there is a next index and a next value
+    //                 if (isset($values[$index + 1])) {
+    //                     // Replace "other" with the value from the next index
+    //                     $modifiedValues[] = $values[$index + 1];
+    //                     // Skip the next value
+    //                     $index += 2;
+    //                 }
+    //             } else {
+    //                 // Keep non-"other" values
+    //                 $modifiedValues[] = $values[$index];
+    //                 $index++;
+    //             }
+    //         }
+
+    //         // Update the original array with the modified values
+    //         $data['remark'][$key] = $modifiedValues;
+    //     }
+
+    //     // Remove the reference to $values
+    //     unset($values);
+
+
+    //     if (isset($data['customer_defect_detail'])) {
+    //         $data['customer_defect_detail'] = array_map(function ($array) {
+    //             $foundNull = false;
+    //             return array_filter($array, function ($value) use (&$foundNull) {
+    //                 if ($value === null && !$foundNull) {
+    //                     $foundNull = true;
+    //                     return false;
+    //                 }
+    //                 return true;
+    //             });
+    //         }, $data['customer_defect_detail']);
+    //     }
+
+    //     // Remove only the first null value from daijo_defect_detail
+    //     if (isset($data['daijo_defect_detail'])) {
+    //         $data['daijo_defect_detail'] = array_map(function ($array) {
+    //             $foundNull = false;
+    //             return array_filter($array, function ($value) use (&$foundNull) {
+    //                 if ($value === null && !$foundNull) {
+    //                     $foundNull = true;
+    //                     return false;
+    //                 }
+    //                 return true;
+    //             });
+    //         }, $data['daijo_defect_detail']);
+    //     }
+
+    //     // dd($data);
+
+    //     // Update the existing record
+    //     $report = Report::findOrFail($id);
+
+    //     // Update common attributes
+    //     $report->update([
+    //         'Rec_Date' => $data['rec_Date'],
+    //         'Verify_Date' => $data['verify_date'],
+    //         'Customer' => $data['customer'],
+    //         'Invoice_No' => $data['invoice_no'],
+    //         'num_of_parts' => $data['num_of_parts'],
+    //         'is_approve' => null,
+    //         'description' => null,
+    //     ]);
+
+    //     // Update details
+    //     foreach ($data['part_names'] as $key => $partName) {
+    //         $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];
+    //         $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
+    //         $Remarks = $data['remark'][$key] ?? [];
+
+    //         $detail = Detail::where('Report_Id', $id)->where('Part_Name', $partName)->first();
+
+    //         // Update detail attributes
+    //         $detail->update([
+    //             'Part_Name' => $partName,
+    //             'Rec_Quantity' => $data['rec_quantity'][$key],
+    //             'Verify_Quantity' => $data['verify_quantity'][$key],
+    //             'Prod_Date' => $data['prod_date'][$key],
+    //             'Shift' => $data['shift'][$key],
+    //             'Can_Use' => $data['can_use'][$key],
+    //             'Cant_use' => $data['cant_use'][$key],
+    //             // Extract defect details and remarks
+    //             // Add other attributes as needed
+    //             'Customer_Defect_Detail' => json_encode($customerDefectDetails),
+    //             'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
+    //             'Remark' => json_encode($Remarks),
+    //         ]);
+    //     }
+
+    //     // Redirect to a view or route after the update
+    //     return redirect()->route('qaqc.report.index')->with('success', 'Report has been updated successfully!');
+    // }
 
     public function create(Request $request)
     {
@@ -167,11 +199,6 @@ class QaqcReportController extends Controller
 
         return response()->json($cust);
     }
-
-
-
-
-
 
     public function getItems(Request $request)
     {
@@ -273,7 +300,7 @@ class QaqcReportController extends Controller
         $newdefect->name = $request->input('category_name');
         $newdefect->save();
 
-        return redirect()->route('qaqc.report.index')->with('success', 'Category added successfully!');
+        return redirect()->route('qaqc.show.newdefect')->with('success', 'Category added successfully!');
 
     }
 

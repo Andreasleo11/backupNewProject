@@ -66,9 +66,22 @@
 
     <section aria-label="table-report" class="container mt-5">
         <div class="card">
-            <div class="mx-3 mt-4 mb-5 text-center">
-                <span class="h1 fw-semibold">Verification Reports</span>
-                <p class="fs-5 mt-2">Created By : {{ $report->created_by }}</p>
+            <div class="pt-4 text-center">
+                <span class="h1 fw-semibold">Verification Reports</span> <br>
+                <div class="mt-1">
+                    <span class="fs-5">{{ $report->doc_num ?? '-'}} </span> <br>
+                    <span class="fs-6 ">Created By : {{ $report->created_by ?? '-'}} </span>
+                </div>
+                @php
+                    $status = $report->is_approve === 1
+                        ? 'APPROVED'
+                        : ($report->is_approve === 0
+                            ? 'REJECTED'
+                            : ($report->autograph_1 && $report->autograph_2 && $report->autograph_3
+                                ? 'WAITING ON APPROVAL'
+                                : 'WAITING SIGNATURE'));
+                @endphp
+                <span class="mt-3 badge {{ $report->is_approve === 1 ? 'text-bg-success' : ($report->is_approve === 0 ? 'text-bg-danger' : 'text-bg-secondary') }} px-3 py-2 fs-6">{{ $status }}</span>
                 <hr>
             </div>
 
@@ -103,18 +116,20 @@
                                 <th rowspan="2">Shift</th>
                                 <th rowspan="2">Can Use</th>
                                 <th rowspan="2">Can't Use</th>
-                                <th colspan=2>Daijo Defect</th>
-                                <th colspan=2>Customer Defect</th>
+                                <th colspan="3">Daijo Defect</th>
+                                <th colspan="3">Customer Defect</th>
                             </tr>
                             <tr>
+                                <th>Quantity</th>
                                 <th>Category</th>
                                 <th>Remark</th>
+                                <th>Quantity</th>
                                 <th>Category</th>
                                 <th>Remark</th>
                             </tr>
                         </thead>
 
-                        <tbody class="align-middle">
+                        <tbody>
                             @forelse($report->details as $detail)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
@@ -125,31 +140,29 @@
                                     <td>{{ $detail->shift}}</td>
                                     <td>{{ $detail->can_use}}</td>
                                     <td>{{ $detail->cant_use}}</td>
-                                    <td>
+                                    <td colspan="3" class="p-0">
                                         @foreach($detail->defects as $defect)
                                             @if ($defect->is_daijo)
-                                                {{ $defect->quantity . " : " . $defect->category->name }} <br>
+                                                <table class="table table-borderless mb-0">
+                                                    <tbody class="text-center" >
+                                                        <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks}}</td>
+                                                    </tbody>
+                                                </table>
                                             @endif
                                         @endforeach
                                     </td>
-                                    <td style="font-size: 14px">
-                                        @foreach($detail->defects as $defect)
-                                            @if ($defect->is_daijo)
-                                                {{ $defect->remarks }} <br>
-                                            @endif
-                                        @endforeach
-                                    </td>
-                                    <td>
-                                        @foreach($detail->defects as $defect)
-                                            @if (!$defect->is_daijo)
-                                                {{ $defect->quantity . " : " . $defect->category->name }} <br>
-                                            @endif
-                                        @endforeach
-                                    </td>
-                                    <td style="font-size: 14px">
+                                    <td colspan="3" class="p-0">
                                         @foreach($detail->defects as $defect)
                                             @if (!$defect->is_daijo)
-                                                {{ $defect->remarks }} <br>
+                                                <table class="table table-borderless mb-0">
+                                                    <tbody class="text-center" >
+                                                        <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks}}</td>
+                                                    </tbody>
+                                                </table>
                                             @endif
                                         @endforeach
                                     </td>

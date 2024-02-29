@@ -164,14 +164,6 @@
                                     <input type="text"  value="{{ $header->Invoice_No ?? '' }}" id="Invoice_No" name="Invoice_No" class="form-control" required>
                                 </div>
 
-                                {{-- Number of Parts --}}
-                                <div class="mb-3">
-                                    <label for="num_of_parts" class="form-label">Number of Parts:</label>
-                                    <input type="number"  value="{{ $header->num_of_parts ?? '' }}" id="num_of_parts" name="num_of_parts" class="form-control" required>
-                                </div>
-
-
-
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" class="btn btn-primary mt-3">Next</button>
                                 </div>

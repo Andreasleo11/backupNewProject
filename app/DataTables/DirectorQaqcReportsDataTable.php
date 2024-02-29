@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class ReportsDataTable extends DataTable
+class DirectorQaqcReportsDataTable extends DataTable
 {
     /**
      * Build DataTable class.
@@ -36,7 +36,7 @@ class ReportsDataTable extends DataTable
                                     </a>
                                     @endif
                                     ')
-            ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}" />')
+            ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$is_approve}}" />')
             ->addColumn('status', ' <span class="badge rounded-pill
                                         @if($is_approve === 1) text-bg-success
                                         @elseif($is_approve === 0) text-bg-danger
@@ -64,6 +64,9 @@ class ReportsDataTable extends DataTable
      */
     public function query(Report $model): QueryBuilder
     {
+        // return $model::whereNotNull('autograph_1')
+        //     ->whereNotNull('autograph_2')
+        //     ->whereNotNull('autograph_3')->newQuery();
         return $model->newQuery();
     }
 

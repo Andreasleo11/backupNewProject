@@ -127,6 +127,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
 
         Route::get('/qaqc/reports/', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
+
         Route::get('/qaqc/report/{id}/edit',[qaQcReportController::class, 'edit'])->name('qaqc.report.edit');
         Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update' ])->name('qaqc.report.update');
         //revisi create page
@@ -156,6 +157,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         //REVISI
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
+        // Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {

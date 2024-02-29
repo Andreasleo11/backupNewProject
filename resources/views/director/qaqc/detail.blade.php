@@ -16,15 +16,6 @@
 
 @section('content')
 
-    <section>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('director.home')}}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{route('director.qaqc.index')}}">Qa & QC Reports</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Detail</li>
-            </ol>
-        </nav>
-    </section>
 
     <section aria-label="header" class="container">
         <div class="row text-center">
@@ -61,9 +52,18 @@
 
     <section aria-label="table-report" class="container mt-5">
         <div class="card">
-            <div class="mx-3 mt-4 mb-5 text-center">
+            <div class="pt-4 pb-5 text-center">
                 <span class="h1 fw-semibold">Verification Reports</span>
                 <p class="fs-5 mt-2">Created By : {{ $report->created_by }}</p>
+                <span class="badge rounded-pill @if($report->is_approve === 1) text-bg-success @elseif($report->is_approve === 0) text-bg-danger @else text-bg-warning @endif px-3 py-2 fs-6 fw-medium">
+                    @if($report->is_approve === 1)
+                        APPROVED
+                    @elseif($report->is_approve === 0)
+                        REJECTED
+                    @else
+                        WAITING
+                    @endif
+                </span>
                 <hr>
             </div>
 
@@ -88,67 +88,70 @@
                 </div>
                 <div class="table-responsive mt-4">
                     <table class="table table-bordered table-hover text-center table-striped">
-                        <thead>
+                        <thead class="align-middle">
                             <tr>
-                                <th class="align-middle">No</th>
-                                <th class="align-middle">Part Name</th>
-                                <th class="align-middle">Rec Quantity</th>
-                                <th class="align-middle">Verify Quantity</th>
-                                <th class="align-middle">Production Date</th>
-                                <th class="align-middle">Shift</th>
-                                <th class="align-middle">Can Use</th>
-                                <th class="align-middle">Cant Use</th>
-                                <th class="align-middle">Customer Defect Detail</th>
-                                <th class="align-middle">Daijo Defect Detail</th>
-                                <th class="align-middle">Remark</th>
-
-                                <!-- Add more headers as needed -->
+                                <th rowspan="2">No</th>
+                                <th rowspan="2">Part Name</th>
+                                <th rowspan="2">Rec Quantity</th>
+                                <th rowspan="2">Verify Quantity</th>
+                                <th rowspan="2">Production Date</th>
+                                <th rowspan="2">Shift</th>
+                                <th rowspan="2">Can Use</th>
+                                <th rowspan="2">Can't Use</th>
+                                <th colspan="3">Daijo Defect</th>
+                                <th colspan="3">Customer Defect</th>
+                            </tr>
+                            <tr>
+                                <th>Quantity</th>
+                                <th>Category</th>
+                                <th>Remark</th>
+                                <th>Quantity</th>
+                                <th>Category</th>
+                                <th>Remark</th>
                             </tr>
                         </thead>
 
                         <tbody>
-                            <tr>
-                                @forelse($report->details as $detail)
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $detail->part_name}}</td>
-                                        <td>{{ $detail->rec_quantity}}</td>
-                                        <td>{{ $detail->verify_quantity}}</td>
-                                        <td>{{ $detail->prod_date}}</td>
-                                        <td>{{ $detail->shift}}</td>
-                                        <td>{{ $detail->can_use}}</td>
-                                        <td>{{ $detail->cant_use}}</td>
-                                        <td>
-                                            @isset($detail->customer_defect_detail)
-                                                @foreach ($detail->customer_defect_detail as $key => $value)
-                                                    @if (!is_null($value))
-                                                        {{ $key }}: {{ $value }}<br>
-                                                    @endif
-                                                @endforeach
-                                            @endisset
-                                        </td>
-                                        <td>
-                                            @isset($detail->daijo_defect_detail)
-                                                @foreach ($detail->daijo_defect_detail as $key => $value)
-                                                    @if (!is_null($value))
-                                                        {{ $key }}: {{ $value }}<br>
-                                                    @endif
-                                                @endforeach
-                                            @endisset
-                                        </td>
-                                        <td>
-                                            @isset($detail->remark)
-                                                @foreach ($detail->remark as $key => $value)
-                                                    @if (!is_null($value))
-                                                        {{ $key }}: {{ $value }}<br>
-                                                    @endif
-                                                @endforeach
-                                            @endisset
-                                        </td>
-
-                                @empty
-                                    <td colspan="12"> No data</td>
-                                @endforelse
-                            </tr>
+                            @forelse($report->details as $detail)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $detail->part_name}}</td>
+                                    <td>{{ $detail->rec_quantity}}</td>
+                                    <td>{{ $detail->verify_quantity}}</td>
+                                    <td>{{ $detail->prod_date}}</td>
+                                    <td>{{ $detail->shift}}</td>
+                                    <td>{{ $detail->can_use}}</td>
+                                    <td>{{ $detail->cant_use}}</td>
+                                    <td colspan="3" class="p-0">
+                                        @foreach($detail->defects as $defect)
+                                            @if ($defect->is_daijo)
+                                                <table class="table table-borderless mb-0">
+                                                    <tbody class="text-center" >
+                                                        <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks}}</td>
+                                                    </tbody>
+                                                </table>
+                                            @endif
+                                        @endforeach
+                                    </td>
+                                    <td colspan="3" class="p-0">
+                                        @foreach($detail->defects as $defect)
+                                            @if (!$defect->is_daijo)
+                                                <table class="table table-borderless mb-0">
+                                                    <tbody class="text-center" >
+                                                        <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks}}</td>
+                                                    </tbody>
+                                                </table>
+                                            @endif
+                                        @endforeach
+                                    </td>
+                                </tr>
+                            @empty
+                                <td colspan="11">No data</td>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -168,22 +171,7 @@
                     <button class="btn btn-success btn-lg" type="submit">Approve</button>
                 </form>
             </div>
-        @elseif(isset($report->is_approve))
-            <span class="badge rounded-pill
-                @if($report->is_approve === 1) text-bg-success
-                @elseif($report->is_approve === 0) text-bg-danger
-                @else text-bg-warning
-                @endif
-                px-3 py-2 fs-6 fw-medium">
-                @if($report->is_approve === 1)
-                    APPROVED
-                @elseif($report->is_approve === 0)
-                    REJECTED
-                @else
-                    WAITING
-                @endif
-            </span>
-        @else
+        @elseif(!isset($report->attachment))
             <div class="text-center">No attachment, can't proceed to approve or reject this document.</div>
         @endif
     </section>
