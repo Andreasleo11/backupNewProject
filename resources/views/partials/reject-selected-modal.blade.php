@@ -1,5 +1,5 @@
 <div class="modal fade" id="reject-selected-modal">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog">
             <div class="modal-content">
                 @method('PUT')
                 @csrf

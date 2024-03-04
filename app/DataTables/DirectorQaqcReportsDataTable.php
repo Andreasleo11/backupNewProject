@@ -36,21 +36,21 @@ class DirectorQaqcReportsDataTable extends DataTable
                                     </a>
                                     @endif
                                     ')
-            ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$is_approve}}" />')
-            ->addColumn('status', ' <span class="badge rounded-pill
-                                        @if($is_approve === 1) text-bg-success
-                                        @elseif($is_approve === 0) text-bg-danger
-                                        @else text-bg-warning
-                                        @endif
-                                        px-3 py-2 fs-6 fw-medium">
-                                        @if($is_approve === 1)
-                                            APPROVED
-                                        @elseif($is_approve === 0)
-                                            REJECTED
-                                        @else
-                                            WAITING
-                                        @endif
-                                    </span>')
+            ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$is_approve}}-{{$doc_num}}" />')
+            // ->editColumn('status', '<span class="badge rounded-pill
+            //                             @if($is_approve === 1) text-bg-success
+            //                             @elseif($is_approve === 0) text-bg-danger
+            //                             @else text-bg-warning
+            //                             @endif
+            //                             px-3 py-2 fs-6 fw-medium">
+            //                             @if($is_approve === 1)
+            //                                 APPROVED
+            //                             @elseif($is_approve === 0)
+            //                                 REJECTED
+            //                             @else
+            //                                 WAITING
+            //                             @endif
+            //                         </span>')
             ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
             ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
             ->setRowId('id');
@@ -82,7 +82,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    ->orderBy(1 ,'asc')
+                    ->orderBy(10 ,'asc')
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -121,7 +121,19 @@ class DirectorQaqcReportsDataTable extends DataTable
                 ->printable(false)
                 ->addClass('text-center')
                 ->addClass('align-middle')->addClass('text-center'),
-            Column::make('status')->addClass('align-middle')->addClass('text-center'),
+            Column::make('is_approve')->title('Status')->data('is_approve')->addClass('align-middle')->addClass('text-center')
+                ->renderRaw('function(data, type, row, meta){
+                    if (type === \'display\') {
+                        if (data === 1) {
+                            return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium">APPROVED</span>\';
+                        } else if (data === 0) {
+                            return \'<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">REJECTED</span>\';
+                        } else {
+                            return \'<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING</span>\';
+                        }
+                    }
+                    return data; // Return the original data for other types
+                }'),
         ];
     }
 
