@@ -1,5 +1,4 @@
 @extends('layouts.app')
-<!-- Content Wrapper. Contains page content -->
 
 @section('content')
 
@@ -74,7 +73,7 @@
                                         </button>
 
                                         {{-- <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
-                                            @csrf
+                                            @csrfqaqc\detail
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-danger my-1">
                                                 <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>

@@ -5,7 +5,6 @@
 <style>
     .dropdown-content {
         max-height: 200px; /* Set maximum height for the dropdown */
-        width: auto;
         overflow-y: auto; /* Enable vertical scrolling */
         border: 1px solid #ccc; /* Optional: Add border for visual clarity */
         position: absolute; /* Position the dropdown absolutely */
@@ -14,7 +13,7 @@
         opacity: 1; /* Adjust opacity to ensure dropdown is not transparent */
     }
     .dropdown-item {
-        padding: 5px;
+        padding: 5px 20px;
         cursor: pointer;
     }
     .dropdown-item:hover {
@@ -96,8 +95,6 @@
                                                 <th class="text-center">Name</th>
                                                 <th class="text-center">Rec Quantity</th>
                                                 <th class="text-center">Verify Quantity</th>
-                                                <th class="text-center">Prod Date</th>
-                                                <th class="text-center">Shift</th>
                                                 <th class="text-center">Can Use</th>
                                                 <th class="text-center">Can't Use</th>
                                                 <th class="text-center">Action</th>
@@ -111,7 +108,7 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-end">
                             <div class="">
-                                <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">Back</a>
+                                <a href="{{ route('qaqc.report.create') }}" class="btn btn-secondary">Back</a>
                             </div>
                             <button type="submit" class="btn btn-primary mt-3">Next</button>
                         </div>
@@ -154,8 +151,6 @@
 
                 <td><input required type="number" value="${detail.Rec_Quantity ?? ''}" name="rec_quantity${rowCount}" class="form-control rec-input"></td>
                 <td><input required type="number" value="${detail.Verify_Quantity ?? ''}" name="verify_quantity${rowCount}" class="form-control verify-input"></td>
-                <td><input required type="date" value="${detail.Prod_Date ?? ''}" name="prod_date${rowCount}" class="form-control prod-input"></td>
-                <td><input required type="number" value="${detail.Shift ?? ''}" name="shift${rowCount}" class="form-control shift-input"></td>
                 <td><input required type="number" value="${detail.Can_Use ?? ''}" name="can_use${rowCount}" class="form-control canuse-input"></td>
                 <td><input required type="number" value="${detail.Cant_Use ?? ''}" name="cant_use${rowCount}" class="form-control cantuse-input"></td>
                 <td><a class="btn btn-danger btn-sm" onclick="removeItem()">Remove </a></td>

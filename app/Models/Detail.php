@@ -15,8 +15,6 @@ class Detail extends Model
         'Part_Name',
         'Rec_Quantity',
         'Verify_Quantity',
-        'Prod_Date',
-        'Shift',
         'Can_Use',
         'Cant_Use',
         'Customer_Defect_Detail',

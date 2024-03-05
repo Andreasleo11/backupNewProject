@@ -106,9 +106,11 @@
                                                 </div>
                                                 <div class="col-auto">
                                                     <a href="" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-defect-modal-{{ $detail->id }}">+ Add Defect</a>
+                                                    <a href="" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#add-defect-category-modal">+ Add Defect Category</a>
                                                 </div>
                                             </div>
                                             @include('partials.add-defect-modal')
+                                            @include('partials.add-defect-category-modal')
                                             <div class="table-responsive">
                                                 <table class="table table-striped table-bordered table-sm">
                                                     <thead class="text-center align-middle">
@@ -156,7 +158,7 @@
                             </div>
                             <div class="d-flex justify-content-between border-top p-3">
                                 <div class="">
-                                    <a href="{{ route('qaqc.report.createdetail') }}" class="btn btn-secondary">back</a>
+                                    <a href="{{ route('qaqc.report.createdetail') }}" class="btn btn-secondary">Back</a>
                                 </div>
 
                                 <div class="d-flex">

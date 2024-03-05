@@ -14,11 +14,16 @@ class DetailPurchaseRequest extends Model
         'item_name',
         'quantity',
         'purpose',
-        'unit_price',
+        'price',
     ];
 
     public function itemDetail()
     {
         return $this->belongsTo(PurchaseRequest::class);
+    }
+
+    public function master()
+    {
+        return $this->hasOne(MasterDataPr::class , 'name', 'item_name');
     }
 }

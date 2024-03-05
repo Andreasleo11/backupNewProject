@@ -37,20 +37,6 @@ class DirectorQaqcReportsDataTable extends DataTable
                                     @endif
                                     ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$is_approve}}-{{$doc_num}}" />')
-            // ->editColumn('status', '<span class="badge rounded-pill
-            //                             @if($is_approve === 1) text-bg-success
-            //                             @elseif($is_approve === 0) text-bg-danger
-            //                             @else text-bg-warning
-            //                             @endif
-            //                             px-3 py-2 fs-6 fw-medium">
-            //                             @if($is_approve === 1)
-            //                                 APPROVED
-            //                             @elseif($is_approve === 0)
-            //                                 REJECTED
-            //                             @else
-            //                                 WAITING
-            //                             @endif
-            //                         </span>')
             ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
             ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
             ->setRowId('id');
@@ -133,7 +119,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                         }
                     }
                     return data; // Return the original data for other types
-                }'),
+                }')->exportable(false),
         ];
     }
 

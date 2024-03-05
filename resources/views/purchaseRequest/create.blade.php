@@ -7,6 +7,26 @@
         .added-item {
             margin-bottom: 10px;
         }
+
+        #itemDropdown {
+        max-height: 200px; /* Set maximum height for the dropdown */
+        overflow-y: auto; /* Enable vertical scrolling */
+        border: 1px solid #ccc; /* Optional: Add border for visual clarity */
+        position: absolute; /* Position the dropdown absolutely */
+        z-index: 999; /* Ensure dropdown is above other elements */
+        background-color: #fff; /* Set background color to white */
+        opacity: 1; /* Adjust opacity to ensure dropdown is not transparent */
+
+    }
+
+    .dropdown-item {
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f0f0f0;
+    }
     </style>
 
 
@@ -23,11 +43,13 @@
                         <div class="form-group mt-5">
                             <label class="form-label" for="to_department">To Department</label>
                             <select class="form-select" name="to_department" id="to_department">
+                                <option value="" selected disabled>Select department..</option>
                                 <option value="Maintenance">Maintenance</option>
                                 <option value="Purchasing">Purchasing</option>
                                 <option value="Personnel">Personnel</option>
                                 <option value="Computer">Computer</option>
                             </select>
+                            <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                         </div>
 
                         <div class="form-group mt-3">
@@ -92,34 +114,54 @@
         itemNameInput.name = `items[${itemIdCounter}][item_name]`;
         itemNameInput.placeholder = 'Item Name';
 
-        const itemNameDropdown = document.createElement('select');
-        itemNameDropdown.classList.add('form-select', 'itemNameDropdown');
+        const itemNameDropdown = document.createElement('div');
+        itemNameDropdown.id = 'itemDropdown';
+        itemNameDropdown.classList.add('dropdown-content');
 
-        //ajax for dropdown item 
-        itemNameInput.addEventListener('input', function() {
+        //ajax for dropdown item
+        itemNameInput.addEventListener('keyup', function() {
+            const inputValue = itemNameInput.value.trim();
             // Fetch item names from server based on user input
-            fetch(`/get-item-names?itemName=${itemNameInput.value}`)
+            fetch(`/get-item-names?itemName=${inputValue}`)
                 .then(response => response.json())
                 .then(data => {
                      // Clear previous dropdown options
                      itemNameDropdown.innerHTML = '';
 
                     // Populate dropdown with fetched item names
-                    data.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = item.name;
-                        if (item.latest_price === null) {
-                            unitPriceInput.value = item.price;
-                        } else {
-                            unitPriceInput.value = item.latest_price;
-                        }
-                        itemNameDropdown.appendChild(option);
-                    });
+                    if(data.length > 0){
+                        console.log(data);
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.classList.add('dropdown-item')
+                            option.value = item.id;
+                            option.textContent = item.name;
+                            option.addEventListener('click', function(){
+                                itemNameInput.value = item.name;
+                                if (item.latest_price === null) {
+                                    unitPriceInput.value = item.price;
+                                } else {
+                                    unitPriceInput.value = item.latest_price;
+                                }
+                                itemDropdown.innerHTML = '';
+                            });
+                            itemNameDropdown.appendChild(option);
+                        });
+                        itemNameDropdown.style.display = 'block';
+                    } else {
+                        itemNameDropdown.style.display = 'none';
+                    }
                 })
                 .catch(error => console.error('Error:', error));
         });
-        //ajax for dropdown item 
+        //ajax for dropdown item
+
+        document.addEventListener('click', function(event){
+            if(!itemNameInput.contains(event.traget) && !itemDropdown.contains(event.target)){
+                itemDropdown.style.display = 'none';
+                console.log(itemNameInput.value);
+            }
+        });
 
         formGroupName.appendChild(itemNameInput);
         formGroupName.appendChild(itemNameDropdown);
@@ -141,7 +183,7 @@
         const unitPriceInput = document.createElement('input');
         unitPriceInput.classList.add('form-control')
         unitPriceInput.type = 'number';
-        unitPriceInput.name = `items[${itemIdCounter}][unit_price]`;
+        unitPriceInput.name = `items[${itemIdCounter}][price]`;
         unitPriceInput.placeholder = 'Unit Price';
 
         formGroupUnitPriceInput.appendChild(unitPriceInput);
@@ -211,6 +253,12 @@
             countGroup.textContent = index + 1; // Add 1 because item ID starts from 0
         });
     }
+
+    // Add event listener for DOMContentLoaded event
+    document.addEventListener('DOMContentLoaded', function() {
+            // Call addNewItem function when the DOM content is loaded
+            addNewItem();
+        });
 </script>
 
 @endsection

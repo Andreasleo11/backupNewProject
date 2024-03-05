@@ -10,20 +10,7 @@
             border: 1px solid #ccc; /* Add border for better visibility */
         }
     </style>
-    <div class="row text-center mt-5">
-        <div class="col">
-
-        </div>
-
-        <div class="col">
-
-        </div>
-
-        <div class="col">
-
-        </div>
-    </div>
-    <table class="table table-borderless">
+    {{-- <table class="table table-borderless">
         <tbody>
             <tr class="text-center">
                 <td>
@@ -75,10 +62,10 @@
                 </td>
             </tr>
         </tbody>
-    </table>
+    </table> --}}
     <div class="pt-4 pb-5 text-center">
-        <span class="h1 fw-semibold">Verification Reports</span>
-        <p class="fs-5 mt-2">Created By : {{ $report->created_by ?? '-'}} </p>
+        <span class="h3 fw-semibold">Verification Reports</span>
+        {{-- <p class="fs-5 mt-2">Created By : {{ $report->created_by ?? '-'}} </p>
             @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
                 <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
             @elseif($report->is_approve === 0)
@@ -87,7 +74,7 @@
                 <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
             @else
                 <span class="badge text-bg-secondary px-3 py-2 fs-6">WAITING SIGNATURE</span>
-            @endif
+            @endif --}}
     </div>
     <table class="table table-borderlesss">
         <tbody>
@@ -112,8 +99,6 @@
                 <th class="align-middle">Part Name</th>
                 <th class="align-middle">Rec Quantity</th>
                 <th class="align-middle">Verify Quantity</th>
-                <th class="align-middle">Production Date</th>
-                <th class="align-middle">Shift</th>
                 <th class="align-middle">Can Use</th>
                 <th class="align-middle">Can't Use</th>
                 <th class="align-middle">Customer Defect Detail</th>
@@ -130,8 +115,6 @@
                     <td>{{ $detail->part_name}}</td>
                     <td>{{ $detail->rec_quantity}}</td>
                     <td>{{ $detail->verify_quantity}}</td>
-                    <td>{{ $detail->prod_date}}</td>
-                    <td>{{ $detail->shift}}</td>
                     <td>{{ $detail->can_use}}</td>
                     <td>{{ $detail->cant_use}}</td>
                     <td>

@@ -155,7 +155,7 @@
                                 <div class="mb-3">
                                     <label for="Customer" class="form-label">Customer:</label>
                                     <input type="text"  value="{{ $header->Customer ?? '' }}"  id="itemNameInput" name="Customer" class="form-control" required placeholder="Enter item name" autocomplete="off">
-                                    <div id="itemDropdown" class="dropdown-content"></div></td>
+                                    <div id="itemDropdown" class="dropdown-content"></div>
                                 </div>
 
                                 {{-- Invoice No --}}
@@ -176,8 +176,6 @@
             </div>
         </div>
     </section>
-
-
 <script>
 
 const itemNameInput = document.getElementById('itemNameInput');

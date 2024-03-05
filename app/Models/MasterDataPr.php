@@ -14,4 +14,8 @@ class MasterDataPr extends Model
         'price',
         'latest_price',
     ];
+
+    public function details(){
+        $this->belongsTo(DetailPurchaseRequest::class, 'name', 'item_name');
+    }
 }

@@ -53,13 +53,9 @@ class PurchaseRequestController extends Controller
 
     public function insert(Request $request)
     {
-        $data = $request->all();
-        // dd($data);
-
         $userIdCreate = Auth::id();
 
-
-
+        // pr header
         $purchaseRequest = PurchaseRequest::create([
             'user_id_create' => $userIdCreate,
             'to_department' => $request->input('to_department'),
@@ -74,60 +70,45 @@ class PurchaseRequestController extends Controller
         ]);
 
         $prNo = substr($request->input('to_department'), 0, 4) . '-' . $purchaseRequest->id;
-
         $purchaseRequest->update(['pr_no' => $prNo]);
 
-    //    // Check if 'items' key exists in the request
-    //     if ($request->has('items') && is_array($request->input('items'))) {
-    //         // Create detail records for each item
-    //         foreach ($request->input('items') as $itemData) {
-    //             DetailPurchaseRequest::create([
-    //                 'purchase_request_id' => $purchaseRequest->id,
-    //                 'item_name' => $itemData['item_name'],
-    //                 'quantity' => $itemData['quantity'],
-    //                 'purpose' => $itemData['purpose'],
-    //                 'unit_price' => $itemData['unit_price'],
-    //             ]);
-    //         }
-    //     }
-
-        // update revisi 26 februari 
+        // update revisi 26 februari
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
-                $unitPrice = $itemData['unit_price'];
-        
+                $price = $itemData['price'];
+
                 // Check if the item exists in MasterDataPr
                 $existingItem = MasterDataPr::where('name', $itemName)->first();
-        
+
                 if (!$existingItem) {
                     // Case 1: Item not available in MasterDataPr
                     $newItem = MasterDataPr::create([
                         'name' => $itemName,
-                        'price' => $unitPrice, // Store the initial price
+                        'price' => $price, // Store the initial price
                     ]);
-        
+
                     // Create the DetailPurchaseRequest record
                     DetailPurchaseRequest::create([
                         'purchase_request_id' => $purchaseRequest->id,
                         'item_name' => $itemName,
                         'quantity' => $quantity,
                         'purpose' => $purpose,
-                        'unit_price' => $unitPrice,
+                        'price' => $price,
                     ]);
                 } else {
                     // Case 2: Item available in MasterDataPr
-        
-                    // ngecek harga yang sudah ada di latest price = null 
+
+                    // ngecek harga yang sudah ada di latest price = null
                     if ($existingItem->latest_price === null){
                         // Check if the price is different
-                        if ($existingItem->price != $unitPrice) {
+                        if ($existingItem->price != $price) {
 
                             if ($existingItem->latest_price === null) {
                                 // Update the latest price if it's null
-                                $existingItem->update(['latest_price' => $unitPrice]);
+                                $existingItem->update(['latest_price' => $price]);
 
                                     // Create the DetailPurchaseRequest record
                                 DetailPurchaseRequest::create([
@@ -135,43 +116,40 @@ class PurchaseRequestController extends Controller
                                     'item_name' => $itemName,
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
-                                    'unit_price' => $unitPrice,
+                                    'price' => $price,
                                 ]);
                             } else {
-
                                 // Move the latest price to the price column
                                 $existingItem->update(['price' => $existingItem->latest_price]);
 
                                 // Update the latest price
-                                $existingItem->update(['latest_price' => $unitPrice]);
-                        
-                                
+                                $existingItem->update(['latest_price' => $price]);
 
-                            // Create the DetailPurchaseRequest record
+                                // Create the DetailPurchaseRequest record
+                                DetailPurchaseRequest::create([
+                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'item_name' => $itemName,
+                                    'quantity' => $quantity,
+                                    'purpose' => $purpose,
+                                    'price' => $price,
+                                ]);
+                            }
+                        } else{
                             DetailPurchaseRequest::create([
                                 'purchase_request_id' => $purchaseRequest->id,
                                 'item_name' => $itemName,
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
-                                'unit_price' => $unitPrice,
-                            ]);
-                        }
-                        }else{
-                            DetailPurchaseRequest::create([
-                                'purchase_request_id' => $purchaseRequest->id,
-                                'item_name' => $itemName,
-                                'quantity' => $quantity,
-                                'purpose' => $purpose,
-                                'unit_price' => $unitPrice,
+                                'price' => $price,
                             ]);
                         }
                     }else{
                         // ngecek karena sudah ada latest price, maka acuan harga yang dilihat latest_price
-                        if ($existingItem->latest_price != $unitPrice) {
+                        if ($existingItem->latest_price != $price) {
 
                             if ($existingItem->latest_price === null) {
                                 // Update the latest price if it's null
-                                $existingItem->update(['latest_price' => $unitPrice]);
+                                $existingItem->update(['latest_price' => $price]);
 
                                     // Create the DetailPurchaseRequest record
                                 DetailPurchaseRequest::create([
@@ -179,7 +157,7 @@ class PurchaseRequestController extends Controller
                                     'item_name' => $itemName,
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
-                                    'unit_price' => $unitPrice,
+                                    'price' => $price,
                                 ]);
                             } else {
 
@@ -187,26 +165,24 @@ class PurchaseRequestController extends Controller
                                 $existingItem->update(['price' => $existingItem->latest_price]);
 
                                 // Update the latest price
-                                $existingItem->update(['latest_price' => $unitPrice]);
-                        
-                                
+                                $existingItem->update(['latest_price' => $price]);
 
-                            // Create the DetailPurchaseRequest record
+                                // Create the DetailPurchaseRequest record
+                                DetailPurchaseRequest::create([
+                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'item_name' => $itemName,
+                                    'quantity' => $quantity,
+                                    'purpose' => $purpose,
+                                    'price' => $price,
+                                ]);
+                            }
+                        } else {
                             DetailPurchaseRequest::create([
                                 'purchase_request_id' => $purchaseRequest->id,
                                 'item_name' => $itemName,
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
-                                'unit_price' => $unitPrice,
-                            ]);
-                        }
-                        }else{
-                            DetailPurchaseRequest::create([
-                                'purchase_request_id' => $purchaseRequest->id,
-                                'item_name' => $itemName,
-                                'quantity' => $quantity,
-                                'purpose' => $purpose,
-                                'unit_price' => $unitPrice,
+                                'price' => $price,
                             ]);
                         }
                     }
@@ -214,7 +190,7 @@ class PurchaseRequestController extends Controller
             }
         }
 
-        // update revisi 26 februari 
+        // update revisi 26 februari
 
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
@@ -228,10 +204,15 @@ class PurchaseRequestController extends Controller
 
     public function detail($id)
     {
-        $purchaseRequests = PurchaseRequest::with('itemDetail')->find($id);
+        $purchaseRequests = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
+        foreach ($purchaseRequests->itemDetail as $detail) {
+            $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price;
+        }
+        // dd($priceBefore);
         $user =  Auth::user();
         $userCreatedBy = $purchaseRequests->createdBy;
-        // dd($userCreatedBy);
+
+        // dd($priceBefore);
 
            // Check if autograph_2 is filled
         if ($purchaseRequests->autograph_2 !== null) {
@@ -374,6 +355,6 @@ class PurchaseRequestController extends Controller
 
         return response()->json($items);
     }
-    
+
 
 }

@@ -15,13 +15,23 @@
 @section('content')
 
     <section>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
-                <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Detail</li>
-            </ol>
-        </nav>
+        <div class="row">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Detail</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-auto">
+                <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-primary btn-sm">
+                    <i class='bx bx-envelope' ></i>
+                    Send mail
+                </a>
+            </div>
+        </div>
     </section>
 
     @if ($message = Session::get('success'))
@@ -36,20 +46,20 @@
     <section aria-label="header" class="container">
         <div class="row text-center mt-5">
             <div class="col">
-                <h2>QA Inspector</h2>
+                <h2>QC Inspector</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
                 @if(Auth::check() && Auth::user()->department->name == 'QA' && Auth::user()->specification->name == "INSPECTOR")
-                    <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
+                    <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QC Inspector</button>
                 @endif
             </div>
 
             <div class="col">
-                <h2>QA Leader</h2>
+                <h2>QC Leader</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
                 @if(Auth::check() && Auth::user()->department->name == 'QA' && Auth::user()->specification->name == 'LEADER')
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
+                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QC Leader</button>
                 @endif
             </div>
 
@@ -112,8 +122,6 @@
                                 <th rowspan="2">Part Name</th>
                                 <th rowspan="2">Rec Quantity</th>
                                 <th rowspan="2">Verify Quantity</th>
-                                <th rowspan="2">Production Date</th>
-                                <th rowspan="2">Shift</th>
                                 <th rowspan="2">Can Use</th>
                                 <th rowspan="2">Can't Use</th>
                                 <th colspan="3">Daijo Defect</th>
@@ -136,8 +144,6 @@
                                     <td>{{ $detail->part_name}}</td>
                                     <td>{{ $detail->rec_quantity}}</td>
                                     <td>{{ $detail->verify_quantity}}</td>
-                                    <td>{{ $detail->prod_date}}</td>
-                                    <td>{{ $detail->shift}}</td>
                                     <td>{{ $detail->can_use}}</td>
                                     <td>{{ $detail->cant_use}}</td>
                                     <td colspan="3" class="p-0">
@@ -146,7 +152,7 @@
                                                 <table class="table table-borderless mb-0">
                                                     <tbody class="text-center" >
                                                         <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
-                                                        <td style="background-color: transparent"> {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent; width:34%;"> {{ $defect->category->name }}</td>
                                                         <td style="background-color: transparent"> {{ $defect->remarks}}</td>
                                                     </tbody>
                                                 </table>
@@ -159,7 +165,7 @@
                                                 <table class="table table-borderless mb-0">
                                                     <tbody class="text-center" >
                                                         <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
-                                                        <td style="background-color: transparent"> {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent; width:34%;"> {{ $defect->category->name }}</td>
                                                         <td style="background-color: transparent"> {{ $defect->remarks}}</td>
                                                     </tbody>
                                                 </table>
@@ -168,7 +174,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <td colspan="11">No data</td>
+                                <td colspan="9">No data</td>
                             @endforelse
                         </tbody>
                     </table>

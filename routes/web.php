@@ -113,6 +113,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
     });
 });
 
+
 Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
 
     Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
@@ -141,6 +142,10 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::post('/qaqc/reports/postdefect', [QaqcReportController::class, 'postDefect'])->name('qaqc.report.postdefect');
         Route::delete('/qaqc/report/{id}/deletedefect', [QaqcReportController::class, 'deleteDefect'])->name('qaqc.report.deletedefect');
         Route::post('/update-active-tab', [QaqcReportController::class, 'updateActiveTab'])->name('update-active-tab');
+
+        Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
+        Route::get('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
+
         //revisi create page
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
@@ -161,7 +166,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
-        Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs');
+        Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
         Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
         Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
         Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
