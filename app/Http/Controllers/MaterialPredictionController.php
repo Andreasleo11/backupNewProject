@@ -39,7 +39,7 @@ class materialPredictionController extends Controller
                     // Extract necessary data
                     $materialCode = $forecast->material_code;
                     $materialName = $forecast->material_name;
-                    $customer = $forecast->forecast_name;
+                    $customer = $forecast->forecast_code;
                     $itemNo = $forecast->Item_no;
                     $unitOfMeasure = $forecast->{'U/M'};
                     $materialquantity = (double) $forecast->quantity_material;

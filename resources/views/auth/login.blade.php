@@ -11,6 +11,8 @@
 </head>
 <body>
 
+<a href="http://116.254.114.93:8080/edp/users/register-complaint.php" > CLICK UNTUK SPK </a>
+
     @if($message = Session::get('error'))
         <div class="container mt-3">
             <div class="alert alert-danger alert-dismissible fade show">

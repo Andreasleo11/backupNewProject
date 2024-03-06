@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoice Export</title>
+
 </head>
 <body>
     @if (!empty($materials))
@@ -11,6 +12,15 @@
         <div class="col-12 table-responsive">
             <table class="table table-striped">
                 <thead>
+                    <tr>
+                        <td colspan="8"  align="center" >Forecast Report</td>
+                        
+                        <td>Nama Vendor: {{$vendorName}}</td>
+                        <td>Date : {{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="10"></td> <!-- Blank cell with colspan="10" -->
+                    </tr>
                     <tr>
                         <th>Material Code</th>
                         <th>Material Name</th>
@@ -46,6 +56,14 @@
                         <strong>{{ array_sum($monthlyTotals) }}</strong>
                     </td>
                     <td class="table-bordered">{{ $currentCustomer }}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" align=right><strong>Total</strong></td>
+                    @foreach ($monthlyTotals as $monthlyTotal)
+                        <td><strong>{{ $monthlyTotal }}</strong></td>
+                    @endforeach
+                    <td><strong>{{ array_sum($monthlyTotals) }}</strong></td>
+                    <td></td> <!-- Empty cell for customer -->
                 </tr>
             @endif
 
@@ -85,12 +103,19 @@
         </td>
         <td class="table-bordered">{{ $currentCustomer }}</td>
     </tr>
+    <tr>
+            <td colspan="3" align=right><strong>Total</strong></td>
+            @foreach ($monthlyTotals as $monthlyTotal)
+                <td><strong>{{ $monthlyTotal }}</strong></td>
+            @endforeach
+            <td><strong>{{ array_sum($monthlyTotals) }}</strong></td>
+            <td></td> <!-- Empty cell for customer -->
+        </tr>
 </tbody>
             </table>
         </div>
     </div>
     @endif
 
-   
 </body>
 </html>

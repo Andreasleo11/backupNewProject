@@ -42,6 +42,11 @@ use App\Http\Controllers\PurchasingDetailController;
 
 use App\Http\Controllers\MailController;
 
+
+
+
+use App\Http\Controllers\EmployeeTrainingController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -258,15 +263,16 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 /////// TESTING FOR EMAILING FEATURES
+
+
+
+/// Employee Training Router 
+
+Route::get('/index-training', [EmployeeTrainingController::class, 'home'])->name('training.index');
+Route::get('/index-training-create', [EmployeeTrainingController::class, 'create'])->name('training.create');
+Route::get('/index-training-list', [EmployeeTrainingController::class, 'list'])->name('training.view');
+Route::post('/post-training-data', [EmployeeTrainingController::class, 'post'])->name('training.post');
+Route::get('/index-training-detail/{id}', [EmployeeTrainingController::class, 'detail'])->name('training.detail');
+
+/// Empoyee Training Router 

@@ -8,8 +8,14 @@ use App\Mail\SampleEmail;
 
 class MailController extends Controller
 {
-    public function sendEmail()
+    public function sendEmail(Request $request)
     {
+
+        // Get the email address from the form input
+        /// harus bikin textbox buat ambil data - diatur di controller 
+        $recipientEmail = $request->input('recipient_email');
+
+
         // Sample email data
         $data = [
             'name' => 'John Doe',
@@ -18,7 +24,7 @@ class MailController extends Controller
         ];
 
         // Send the email
-        Mail::to('andreasleonardo.al@gmail.com')->send(new SampleEmail($data));
+        Mail::to($recipientEmail)->send(new SampleEmail($data));
 
         return "Email sent successfully!";
     }

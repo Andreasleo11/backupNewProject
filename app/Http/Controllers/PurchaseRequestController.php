@@ -214,8 +214,7 @@ class PurchaseRequestController extends Controller
             }
         }
 
-        // update revisi 26 februari 
-
+        // update revisi 26 februari
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
