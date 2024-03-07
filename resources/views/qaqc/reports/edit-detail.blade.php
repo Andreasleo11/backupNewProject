@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('content')
@@ -40,9 +41,8 @@
 
 </style>
 
-<form action="{{route('qaqc.report.postdetail')}}"  method="post" class="align-middle">
+<form action="{{route('qaqc.report.updateDetail', $id)}}"  method="post" class="align-middle">
     @csrf
-
     <div class="container mt-3">
         <div class="row justify-content-center">
             <div class="col-md-12">
@@ -84,7 +84,7 @@
                                 <a class="btn btn-outline-primary" id="addDataBtn">+ Add Data</a>
                             </div>
                         </div>
-                        <p>Customer name : <strong> {{ Session::get('header')->Customer ?? '-'}} </strong></p>
+                        <p>Customer name : <strong> {{ Session::get('header_edit')->customer ?? '-'}} </strong></p>
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -108,7 +108,7 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-end">
                             <div class="">
-                                <a href="{{ route('qaqc.report.create') }}" class="btn btn-secondary">Back</a>
+                                <a href="{{ route('qaqc.report.edit', $id) }}" class="btn btn-secondary">Back</a>
                             </div>
                             <button type="submit" class="btn btn-primary mt-3">Next</button>
                         </div>
@@ -121,13 +121,12 @@
 </form>
 
 @endsection
-
 @push('extraJs')
     <script>
         let rowNumber = 0;
 
-        @if(Session::get('details'))
-            @foreach (Session::get('details') as $detail)
+        @if(Session::get('details_edit'))
+            @foreach (Session::get('details_edit') as $detail)
                 addDataRow({!! json_encode($detail) !!});
             @endforeach
         @else
@@ -153,15 +152,13 @@
                 <td><input required type="number" value="${detail.verify_quantity ?? ''}" name="verify_quantity${rowCount}" class="form-control verify-input"></td>
                 <td><input required type="number" value="${detail.can_use ?? ''}" name="can_use${rowCount}" class="form-control canuse-input"></td>
                 <td><input required type="number" value="${detail.cant_use ?? ''}" name="cant_use${rowCount}" class="form-control cantuse-input"></td>
-                <td><a class="btn btn-danger btn-sm" onclick="removeItem()">Remove </a></td>
+                <td><input required type="number" value="${detail.id ?? ''}" name="id${rowCount}" class="form-control></td>
+                <td><a class="btn btn-danger btn-sm" href="" onclick="removeItem()">Remove</a></td>
             `;
             tableBody.appendChild(newRow);
 
-
             const itemNameInput = document.getElementById('itemNameInput'+ rowCount);
             const itemDropdown = document.getElementById('itemDropdown' + rowCount);
-
-
 
             itemNameInput.addEventListener('keyup', function() {
                 const inputValue = itemNameInput.value.trim();

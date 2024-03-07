@@ -13,11 +13,11 @@
                     <label class="form-label">Defect type</label>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="checkCustomerDefect{{ $detail->id }}" name="check_customer">
-                        <label class="form-check-label" for="checkCustomerDefect">Customer Defect</label>
+                        <label class="form-check-label" for="checkCustomerDefect{{ $detail->id }}">Customer Defect</label>
                     </div>
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="checkDaijoDefect{{ $detail->id }}" name="check_daijo">
-                        <label class="form-check-label" for="checkDaijoDefect">Daijo Defect</label>
+                        <label class="form-check-label" for="checkDaijoDefect{{ $detail->id }}">Daijo Defect</label>
                     </div>
                 </div>
                 <div class="form-group mb-3" id="customerDefectGroup{{ $detail->id }}" style="display: none">

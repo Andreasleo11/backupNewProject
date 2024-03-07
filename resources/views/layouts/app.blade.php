@@ -17,6 +17,7 @@
 
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://kit.fontawesome.com/1cac8eb7b7.js" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
@@ -37,7 +38,6 @@
 
         </div>
     </div>
-
 
     @stack('extraJs')
     <script src="{{ asset('js/app.js') }}"></script>

@@ -11,17 +11,12 @@ class Detail extends Model
 
     protected $fillable = [
 
-        'Report_Id',
-        'Part_Name',
-        'Rec_Quantity',
-        'Verify_Quantity',
-        'Can_Use',
-        'Cant_Use',
-        'Customer_Defect_Detail',
-        'Daijo_Defect_Detail',
-        'Remark',
-
-        // Add other fields as needed
+        'report_id',
+        'part_name',
+        'rec_quantity',
+        'verify_quantity',
+        'can_use',
+        'cant_use',
     ];
 
     // Define relationships if needed

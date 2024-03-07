@@ -158,7 +158,7 @@
                             </div>
                             <div class="d-flex justify-content-between border-top p-3">
                                 <div class="">
-                                    <a href="{{ route('qaqc.report.createdetail') }}" class="btn btn-secondary">Back</a>
+                                    <a href="{{ route('qaqc.report.editDetail', $id) }}" class="btn btn-secondary">Back</a>
                                 </div>
 
                                 <div class="d-flex">

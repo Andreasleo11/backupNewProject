@@ -1,6 +1,12 @@
 @extends('layouts.app')
-
+{{-- @push('extraCss')
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }} ">
+@endpush --}}
 @section('content')
+{{-- <button onclick="showToast(successMsg)">Success</button>
+    <button onclick="showToast(errorMsg)">Error</button>
+    <button onclick="showToast(invalidMsg)">Invalid</button>
+    <div id="toastBox"></div> --}}
 
     <section class="header">
         <div class="row">
@@ -63,9 +69,9 @@
                                             <i class='bx bx-info-circle' ></i> <span class="d-none d-sm-inline ">Detail</span>
                                         </a>
 
-                                        {{-- <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1">
+                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1">
                                             <i class='bx bx-edit' ></i> <span class="d-none d-sm-inline">Edit</span>
-                                        </a> --}}
+                                        </a>
 
                                         @include('partials.delete-report-modal')
                                         <button class="btn btn-danger my-1 me-1" data-bs-toggle="modal" data-bs-target="#delete-report-modal{{ $report->id }}">
@@ -127,5 +133,7 @@
             {{ $reports->links() }}
         </div>
     </section>
-
 @endsection
+
+@push('extraJs')
+@endpush

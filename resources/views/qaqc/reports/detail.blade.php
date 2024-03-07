@@ -26,22 +26,41 @@
                 </nav>
             </div>
             <div class="col-auto">
-                <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-primary btn-sm">
+                <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-primary">
                     <i class='bx bx-envelope' ></i>
                     Send mail
                 </a>
+                <button class="btn btn-outline-primary" data-bs-target="" data-bs-modal>
+                    <i class='bx bx-upload'></i> Upload
+                </button>
             </div>
         </div>
     </section>
 
-    @if ($message = Session::get('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ $message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    {{-- @dd(Auth::user()->specification->name) --}}
+    <div class="mt-4">
+        @if ($message = Session::get('success'))
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <i class='bx bx-check-circle me-2' style="font-size:20px;" ></i>
+                {{ $message }}
+                <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @elseif ($errors->any())
+            <div class="alert alert-danger alert-dismissable fade show" role="alert">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <div>
+                        <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        @endif
+    </div>
 
     <section aria-label="header" class="container">
         <div class="row text-center mt-5">
@@ -64,7 +83,7 @@
             </div>
 
             <div class="col">
-                <h2>QC HEAD</h2>
+                <h2>QC Head</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
                 @if(Auth::check() && Auth::user()->department->name == 'QC')
@@ -197,14 +216,16 @@
                 <a href="{{ asset('storage/attachments/' . $report->attachment) }}" download="{{ $filename }}" class="pt-1 pb-0 btn btn-success btn-sm">
                     <i class='bx bxs-download bx-sm' ></i>
                 </a>
-           @endif
+            @else
+                <p>No Attachment</p>
+            @endif
         </div>
     </section>
 
     <section aria-label="upload-file">
         <div class="container mt-5">
             <!-- File Upload Form -->
-           <form action="{{ route('uploadAttachment', ['Id' => $report->id]) }}" method="post" enctype="multipart/form-data">
+           <form action="{{ route('uploadAttachment', $report->id) }}" method="post" enctype="multipart/form-data">
                @csrf
 
                <h4 class="mb-3">Upload File</h4>
@@ -213,14 +234,9 @@
                </div>
 
                <button type="submit" class="btn btn-primary">Upload</button>
-
-               <!-- Hidden input to include the report ID in the form data -->
-               <input type="hidden" name="reportId" value="{{ $report->id }}">
            </form>
         </div>
     </section>
-
-    {{-- <a class="btn btn-danger" onclick="return confirm('Are you sure?')" href="#"><i class="fa fa-trash"></i></a> --}}
 @endsection
 
 @push('extraJs')
@@ -311,6 +327,15 @@
         window.onload = function () {
             checkAutographStatus({{ $report->id }});
         };
+
+        const closeAlertButton = document.getElementById('closeAlertButton');
+
+        // Function to hide the alert after 3 seconds
+        setTimeout(() => {
+            if(closeAlertButton){
+                closeAlertButton.click();
+            }
+        }, 3000);
     </script>
 @endpush
 
