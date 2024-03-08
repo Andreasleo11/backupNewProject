@@ -114,7 +114,7 @@
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
-                <span>Other</span>
+                <span>Form</span>
             </a>
             <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
