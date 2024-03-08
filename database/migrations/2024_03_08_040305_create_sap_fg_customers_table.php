@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sap_lineproduction', function (Blueprint $table) {
-            $table->string("item_code");
-            $table->string("line_production")->nullable();
-            $table->integer("priority" )->nullable();
+        Schema::create('sap_fg_customers', function (Blueprint $table) {
+            $table->string("customer_code")->nullable();
+            $table->string("customer_name")->nullable();
+            $table->string("item_code")->nullable();
         });
     }
 
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sap_lineproduction');
+        Schema::dropIfExists('sap_fg_customer');
     }
 };

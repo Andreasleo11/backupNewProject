@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sap_delactual', function (Blueprint $table) {
+        Schema::create('sap_forecasts', function (Blueprint $table) {
+            $table->string("forecast_code")->nullable();
+            $table->string("forecast_name")->nullable();
             $table->string("item_no")->nullable();
-            $table->date("delivery_date")->nullable();
-            $table->string("item_name")->nullable();
+            $table->date("forecast_date")->nullable();
             $table->integer("quantity")->nullable();
-            $table->string("so_num")->nullable();
         });
     }
 
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sap_delactual');
+        Schema::dropIfExists('sap_forecasts');
     }
 };

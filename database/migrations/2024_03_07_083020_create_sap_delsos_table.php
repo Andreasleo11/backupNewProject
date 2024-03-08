@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sap_delso', function (Blueprint $table) {
+        Schema::create('sap_delsos', function (Blueprint $table) {
             $table->integer("doc_num")->nullable();
             $table->string("doc_status")->nullable();
             $table->string("item_no")->nullable();
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sap_delso');
+        Schema::dropIfExists('sap_delsos');
     }
 };
