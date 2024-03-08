@@ -12,10 +12,10 @@ class Report extends Model
     protected $table = 'reports';
 
     protected $fillable = [
-        'Rec_Date',
-        'Verify_Date',
-        'Customer',
-        'Invoice_No',
+        'rec_date',
+        'verify_date',
+        'customer',
+        'invoice_no',
         'autograph_1',
         'autograph_2',
         'autograph_3',
@@ -26,7 +26,6 @@ class Report extends Model
         'attachment',
         'is_approve',
         'description',
-        'num_of_parts',
         // Add other fields as needed
     ];
 

@@ -7,6 +7,7 @@ use App\Mail\QaqcMail;
 use App\Models\Defect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\File;
 use App\Models\Report;
 use App\Models\Detail;
 use App\Models\DefectCategory;
@@ -16,6 +17,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+
+use function PHPUnit\Framework\isEmpty;
 
 class QaqcReportController extends Controller
 {
@@ -41,27 +44,121 @@ class QaqcReportController extends Controller
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('qaqc.reports.detail', compact('report','user','autographNames'));
+        $files = File::where('doc_id', $report->doc_num)->get();
+        return view('qaqc.reports.detail', compact('report','user','autographNames', 'files'));
     }
 
     public function edit(Request $request, $id)
     {
-        $header = $request->session()->get('header') ?? Report::find($id);
+        $header = $request->session()->get('header_edit') ?? Report::find($id);
 
-        return view('qaqc.reports.edit', compact('header'));
+        return view('qaqc.reports.edit', compact('header', 'id'));
     }
 
-    public function updateHeader($request, $id)
-    {
-        $validated = $request->validate([
-            ''
+    public function updateHeader(Request $request, $id){
+        $validatedData = $request->validate([
+            'rec_date' => 'date',
+            'verify_date' => 'date',
+            'customer' => 'string',
+            'invoice_no' => 'string',
+            'num_of_parts' => 'integer',
+            'created_by' => 'string',
         ]);
 
-        Report::find($id)->update($validated);
+        // $data = $request->session()->get('header');
 
-        $details = $request->session()->get('details');
+        $report = $request->session()->get('header_edit');
 
-        return view('qaqc.reports.editDetails', compact('details'));
+        // Check if the report exists in the session
+        if ($report) {
+            // If the report exists, update its attributes with the validated data
+            $report->fill($validatedData);
+        } else {
+            // If the report doesn't exist, create a new report instance with the validated data
+            $report = new Report($validatedData);
+        }
+
+        // Store the updated or new report in the session
+        $request->session()->put('header_edit', $report);
+
+        return redirect()->route('qaqc.report.editDetail', $id);
+    }
+
+    public function editDetail(Request $request, $id){
+        $report = $request->session()->get('header_edit');
+
+        // Check if the report exists in the database
+        if ($report->exists) {
+            $report->update();
+        }
+
+        $details_data = Detail::where('report_id', $id)->get();
+        $request->session()->put('details_edit', $details_data);
+        $details = $request->session()->get('details_edit');
+
+        return view('qaqc.reports.edit-detail', compact('details', 'id'));
+
+    }
+
+    public function destroyDetail($id){
+        Detail::where('id', $id)->delete();
+        return response()->json(['message'=>'Detail has been deleted.']);
+    }
+
+    public function updateDetail(Request $request, $id){
+        $details = [];
+
+        for($i = 1; $i <= $request->input('rowCount'); $i++){
+
+            $request->validate([
+                'itemName' . $i => 'required',
+                'rec_quantity' . $i => 'required',
+                'verify_quantity' . $i => 'required',
+                'can_use' . $i => 'required',
+                'cant_use' . $i => 'required',
+            ]);
+
+            $rowData = [
+                'report_id' => $id,
+                'part_name' => $request->input("itemName$i"),
+                'rec_quantity' => $request->input("rec_quantity$i"),
+                'verify_quantity' => $request->input("verify_quantity$i"),
+                'can_use' => $request->input("can_use$i"),
+                'cant_use' => $request->input("cant_use$i"),
+            ];
+                $detail = Detail::where('report_id', $id)
+                ->where('part_name', $rowData['part_name'])
+                ->first();
+
+                if (!$detail) {
+                // If the detail doesn't exist, create a new one
+                    $detail = new Detail();
+                    $detail->fill($rowData);
+                    $detail->save();
+                } else {
+                // If the detail exists, update its attributes
+                    $detail->update($rowData);
+                }
+
+                $details[] = $detail;
+
+        }
+
+        $request->session()->put('details_edit', $details);
+        return redirect()->route('qaqc.report.editDefect', $id);
+    }
+
+    public function editDefect(Request $request, $id){
+        $categories = DefectCategory::get();
+        $defect = $request->session()->get('defects_edit');
+        $details = Detail::where('report_id', $id)->with('defects', 'defects.category')->get();
+        if (!Session::has('active_tab')) {
+            if ($details->isNotEmpty()) {
+                Session::put('active_tab', $details->first()->id);
+            }
+        }
+
+        return view('qaqc.reports.edit-defect', compact('categories', 'details', 'id'));
     }
 
     public function create(Request $request)
@@ -73,8 +170,7 @@ class QaqcReportController extends Controller
     public function getCustomers(Request $request)
     {
         $Customername = $request->input('customer_name');
-        $cust = MasterDataRogCustomerName::where('name', 'like', "%$Customername%")->distinct()->pluck('customer_name')->toArray();
-
+        $cust = MasterDataRogCustomerName::where('name', 'like', "%$Customername%")->distinct()->pluck('name')->toArray();
 
         return response()->json($cust);
     }
@@ -82,13 +178,7 @@ class QaqcReportController extends Controller
     public function getItems(Request $request)
     {
         $itemName = $request->input('item_name');
-        $header = $request->session()->get('header');
-
-        // Extract the customer name from the header
-        $customerName = $header['Customer'] ?? null;
-
-        $items = MasterDataRogPartName::where('name', 'like', "%$itemName%")->pluck('item_name')->toArray();
-
+        $items = MasterDataRogPartName::where('name', 'like', "%$itemName%")->pluck('name')->toArray();
 
         return response()->json($items);
     }
@@ -96,7 +186,6 @@ class QaqcReportController extends Controller
 
     public function postDetail(Request $request)
     {
-
         $report = $request->session()->get('header');
 
         // Check if the report exists in the database
@@ -124,15 +213,15 @@ class QaqcReportController extends Controller
             ]);
 
             $rowData = [
-                'Report_Id' => $reportId,
-                'Part_Name' => $request->input("itemName$i"),
-                'Rec_Quantity' => $request->input("rec_quantity$i"),
-                'Verify_Quantity' => $request->input("verify_quantity$i"),
-                'Can_Use' => $request->input("can_use$i"),
-                'Cant_Use' => $request->input("cant_use$i"),
+                'report_id' => $reportId,
+                'part_name' => $request->input("itemName$i"),
+                'rec_quantity' => $request->input("rec_quantity$i"),
+                'verify_quantity' => $request->input("verify_quantity$i"),
+                'can_use' => $request->input("can_use$i"),
+                'cant_use' => $request->input("cant_use$i"),
             ];
-                $detail = Detail::where('Report_Id', $reportId)
-                ->where('Part_Name', $rowData['Part_Name'])
+                $detail = Detail::where('report_id', $reportId)
+                ->where('part_name', $rowData['part_name'])
                 ->first();
 
                 if (!$detail) {
@@ -152,31 +241,6 @@ class QaqcReportController extends Controller
         $request->session()->put('details', $details);
 
         return redirect()->route('qaqc.report.createdefect');
-    }
-
-    public function showNewDefect()
-    {
-        $defectcat = DefectCategory::get();
-        // dd($defectcat);
-
-        return view('qaqc.reports.create-new-defect', compact('defectcat'));
-    }
-
-    public function addNewDefect(Request $request)
-    {
-        $request->validate(
-            [
-                'name' => 'required|string',
-            ]
-        );
-
-
-        $newdefect = new DefectCategory();
-        $newdefect->name = $request->input('name');
-        $newdefect->save();
-
-        return redirect()->back()->with('success', 'Category added successfully!');
-
     }
 
     public function store(Request $request)
@@ -236,20 +300,16 @@ class QaqcReportController extends Controller
         return redirect()->route('qaqc.report.index')->with('success', 'Report has been deleted successfully!');
     }
 
-    public function uploadAttachment(Request $request)
+    public function uploadAttachment(Request $request, $id)
     {
         $request->validate([
             'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls,png,jpg,jpeg', // Adjust allowed file types and size
-            'reportId' => 'required|exists:reports,id',
         ]);
 
-        $reportId = $request->input('reportId');
-
-        Report::where('id', $reportId)->update([
+        Report::where('id', $id)->update([
             'is_approve' => null,
             'description' => null,
         ]);
-
 
         $file = $request->file('attachment');
 
@@ -260,7 +320,7 @@ class QaqcReportController extends Controller
         $file->storeAs('public/attachments', $filename);
 
         // Update the reports table with the attachment filename
-        Report::where('id', $reportId)->update(['attachment' => $filename]);
+        Report::where('id', $id)->update(['attachment' => $filename]);
 
         return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
     }
@@ -339,11 +399,10 @@ class QaqcReportController extends Controller
     public function postCreateHeader(Request $request)
     {
         $validatedData = $request->validate([
-            'Rec_Date' => 'date',
-            'Verify_Date' => 'date',
-            'Customer' => 'string',
-            'Invoice_No' => 'string',
-            'num_of_parts' => 'integer',
+            'rec_date' => 'date',
+            'verify_date' => 'date',
+            'customer' => 'string',
+            'invoice_no' => 'string',
             'created_by' => 'string',
         ]);
 
@@ -368,11 +427,10 @@ class QaqcReportController extends Controller
 
     public function createDetail(Request $request)
     {
-
         $header = $request->session()->get('header');
 
         // Extract the customer name from the header
-        $customerName = $header['Customer'] ?? null;
+        $customerName = $header['customer'] ?? null;
 
         // Retrieve item names associated with the same customer name
         $data = MasterDataRogCustomerName::get()->pluck('item_name');
@@ -394,7 +452,7 @@ class QaqcReportController extends Controller
     {
         $categories = DefectCategory::get();
         $defect = $request->session()->get('defects');
-        $report = $request->session()->get('header');
+        $report = $request->session()->get('header') ?? $request->session()->get('header_edit');
         $reportId = $report->id;
         $details = Detail::where('Report_Id', $reportId)->with('defects', 'defects.category')->get();
         if (!Session::has('active_tab')) {
@@ -460,13 +518,13 @@ class QaqcReportController extends Controller
             ]));
         }
 
-        return redirect()->route('qaqc.report.createdefect')->with(['success' => 'Defect added successfully!']);
+        return redirect()->back()->with(['success' => 'Defect added successfully!']);
     }
 
     public function deleteDefect($id)
     {
         Defect::find($id)->delete();
-        return redirect()->route('qaqc.report.createdefect')->with(['success' => 'Defect deleted successfully!']);
+        return redirect()->back()->with(['success' => 'Defect deleted successfully!']);
     }
 
     public function updateActiveTab(Request $request)
@@ -479,7 +537,9 @@ class QaqcReportController extends Controller
     public function redirectToIndex()
     {
         session()->forget('header');
+        session()->forget('header_edit');
         session()->forget('details');
+        session()->forget('details_edit');
         session()->forget('active_tab');
         return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully added!']);
     }
@@ -518,7 +578,7 @@ class QaqcReportController extends Controller
         return redirect()->back()->with(['message' => 'PDF saved successfully', 'file_path' => $filePath]);
     }
 
-    public function sendEmail($id)
+    public function sendEmail($id, Request $request)
     {
         $this->savePdf($id);
 
@@ -533,7 +593,7 @@ class QaqcReportController extends Controller
             'file_path' => $filePath
         ];
 
-        // TODO: WORKS BUT USING MINE EMAIL
+        // TODO: WORKS BUT USING MINE
         Mail::to('raymondlay023@gmail.com')->send(new QaqcMail($mailData));
 
 

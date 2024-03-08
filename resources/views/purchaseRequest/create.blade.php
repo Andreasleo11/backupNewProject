@@ -42,7 +42,7 @@
 
                         <div class="form-group mt-5">
                             <label class="form-label" for="to_department">To Department</label>
-                            <select class="form-select" name="to_department" id="to_department">
+                            <select class="form-select" name="to_department" id="to_department" required>
                                 <option value="" selected disabled>Select department..</option>
                                 <option value="Maintenance">Maintenance</option>
                                 <option value="Purchasing">Purchasing</option>
@@ -62,7 +62,7 @@
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label" for="date_of_pr">Date of PR</label>
-                            <input class="form-control" type="date" id="date_of_pr" name="date_of_pr">
+                            <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required>
                         </div>
 
                         <div class="form-group mt-3 col-md-6">
@@ -72,12 +72,12 @@
 
                         <div class="form-group mt-3">
                             <label class="form-label" for="supplier">Supplier</label>
-                            <textarea class="form-control" name="supplier" rows="4" cols="50"></textarea>
+                            <textarea class="form-control" name="supplier" rows="4" cols="50" required></textarea>
                         </div>
 
                         <div class="form-group mt-3">
                             <label class="form-label" for="remark">Remark</label>
-                            <textarea class="form-control" name="remark" rows="4" cols="50"></textarea>
+                            <textarea class="form-control" name="remark" rows="4" cols="50" required></textarea>
                         </div>
 
                         <button class="btn btn-primary mt-3" type="submit">Submit</button>
@@ -109,7 +109,8 @@
         formGroupName.classList.add('col-md-3');
 
         const itemNameInput = document.createElement('input');
-        itemNameInput.classList.add('form-control')
+        itemNameInput.classList.add('form-control');
+        itemNameInput.setAttribute('required', 'required');
         itemNameInput.type = 'text';
         itemNameInput.name = `items[${itemIdCounter}][item_name]`;
         itemNameInput.placeholder = 'Item Name';
@@ -170,7 +171,8 @@
         formGroupQuantityInput.classList.add('col-md-1');
 
         const quantityInput = document.createElement('input');
-        quantityInput.classList.add('form-control')
+        quantityInput.classList.add('form-control');
+        quantityInput.setAttribute('required', 'required');
         quantityInput.type = 'number';
         quantityInput.name = `items[${itemIdCounter}][quantity]`;
         quantityInput.placeholder = 'Qty';
@@ -181,7 +183,8 @@
         formGroupUnitPriceInput.classList.add('col-md-2');
 
         const unitPriceInput = document.createElement('input');
-        unitPriceInput.classList.add('form-control')
+        unitPriceInput.classList.add('form-control');
+        unitPriceInput.setAttribute('required', 'required');
         unitPriceInput.type = 'number';
         unitPriceInput.name = `items[${itemIdCounter}][price]`;
         unitPriceInput.placeholder = 'Unit Price';
@@ -192,7 +195,8 @@
         formGroupPurposeInput.classList.add('col-md-4');
 
         const purposeInput = document.createElement('input');
-        purposeInput.classList.add('form-control')
+        purposeInput.classList.add('form-control');
+        purposeInput.setAttribute('required', 'required');
         purposeInput.type = 'text';
         purposeInput.name = `items[${itemIdCounter}][purpose]`;
         purposeInput.placeholder = 'Purpose';

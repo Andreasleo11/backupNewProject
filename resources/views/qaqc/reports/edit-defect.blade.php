@@ -90,11 +90,21 @@
                             </div>
                             <div class="col-3 p-4 border-end">
                                 <h5 class="pb-2">1. Select Part Detail</h5>
-                                <div class="list-group" id="list-tab" role="tablist">
-                                    @foreach ($details as $detail)
-                                        <a class="list-group-item list-group-item-action @if(session('active_tab') == $detail->id) active @endif" id="list-detail-{{ $detail->id }}-list" data-bs-toggle="list" href="#list-detail{{ $detail->id }}" role="tab" aria-controls="list-detail{{ $detail->id }}">{{ $detail->part_name }}</a>
-                                    @endforeach
-                                </div>
+                                @if($details->isEmpty())
+                                    No data
+                                @else
+                                    <div class="list-group" id="list-tab" role="tablist">
+                                        @if(count($details) == 1)
+                                            @php
+                                                session(['active_tab' => $details[0]->id]);
+                                            @endphp
+                                        @endif
+
+                                        @foreach ($details as $detail)
+                                            <a class="list-group-item list-group-item-action @if(session('active_tab') == $detail->id) active @endif" id="list-detail-{{ $detail->id }}-list" data-bs-toggle="list" href="#list-detail{{ $detail->id }}" role="tab" aria-controls="list-detail{{ $detail->id }}">{{ $detail->part_name }}</a>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                             <div class="col-9 p-4">
                                 @foreach ($details as $index => $detail)
@@ -158,7 +168,7 @@
                             </div>
                             <div class="d-flex justify-content-between border-top p-3">
                                 <div class="">
-                                    <a href="{{ route('qaqc.report.createdetail') }}" class="btn btn-secondary">Back</a>
+                                    <a href="{{ route('qaqc.report.editDetail', $id) }}" class="btn btn-secondary">Back</a>
                                 </div>
 
                                 <div class="d-flex">

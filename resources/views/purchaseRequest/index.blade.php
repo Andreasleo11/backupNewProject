@@ -72,6 +72,7 @@
 
                                 @endif
                             </td>
+                            <td></td>
                         </tr>
                     @empty
                         <tr>

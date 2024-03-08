@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\DetailPurchaseRequest;
+use App\Models\File;
 use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,7 @@ class PurchaseRequestController extends Controller
 
     public function insert(Request $request)
     {
+
         $userIdCreate = Auth::id();
 
         // pr header
@@ -63,7 +65,7 @@ class PurchaseRequestController extends Controller
             'date_required' => $request->input('date_of_required'),
             'remark' => $request->input('remark'),
             'supplier' => $request->input('supplier'),
-            'autograph_1' => Auth::user()->name . '.png',
+            'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
             'status' => 1,
 
@@ -201,38 +203,46 @@ class PurchaseRequestController extends Controller
         return view('purchaseRequest.viewAll', compact('purchaseRequests'));
     }
 
-
     public function detail($id)
     {
-        $purchaseRequests = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
-        foreach ($purchaseRequests->itemDetail as $detail) {
+        $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
+        foreach ($purchaseRequest->itemDetail as $detail) {
             $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price;
         }
         // dd($priceBefore);
         $user =  Auth::user();
-        $userCreatedBy = $purchaseRequests->createdBy;
+        $userCreatedBy = $purchaseRequest->createdBy;
 
         // dd($priceBefore);
 
            // Check if autograph_2 is filled
-        if ($purchaseRequests->autograph_2 !== null) {
-            $purchaseRequests->status = 2;
-        }
+        if($purchaseRequest->status != -1){
+            if ($purchaseRequest->autograph_2 !== null) {
+                $purchaseRequest->status = 2;
+            }
 
-        // Check if autograph_3 is also filled
-        if ($purchaseRequests->autograph_3 !== null) {
-            $purchaseRequests->status = 3;
-        }
+            // Check if autograph_3 is also filled
+            if ($purchaseRequest->autograph_3 !== null) {
+                $purchaseRequest->status = 3;
+            }
 
-        // Check if autograph_4 is also filled
-        if ($purchaseRequests->autograph_4 !== null) {
-            $purchaseRequests->status = 4;
+            // Check if autograph_4 is also filled
+            if ($purchaseRequest->autograph_4 !== null) {
+                $purchaseRequest->status = 4;
+            }
         }
 
         // Save the updated status
-        $purchaseRequests->save();
+        $purchaseRequest->save();
 
-        return view('purchaseRequest.detail', compact('purchaseRequests', 'user', 'userCreatedBy'));
+
+        $timestamp = strtotime($purchaseRequest->created_at);
+        $formattedDate = date("Ymd", $timestamp);
+        $doc_id = 'PR/' . $purchaseRequest->id . '/' .$formattedDate;
+
+        $files = File::where('doc_id', $doc_id)->get();
+
+        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files'));
     }
 
     public function saveImagePath(Request $request, $prId, $section)
@@ -356,5 +366,10 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
+    public function reject($id)
+    {
+        PurchaseRequest::find($id)->update(['status' => -1]);
+        return redirect()->back()->with(['success' => 'Purchase Request rejected']);
+    }
 
 }

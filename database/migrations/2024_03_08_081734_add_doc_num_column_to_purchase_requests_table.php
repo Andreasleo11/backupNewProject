@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('master_data_rog_customer_names', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
+        Schema::table('purchase_requests', function (Blueprint $table) {
+            $table->string('doc_num')->after('id')->nullable();
         });
     }
 
@@ -23,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('master_data_rog_customer_names');
+        Schema::table('purchase_requests', function (Blueprint $table) {
+            $table->dropColumn('doc_num');
+        });
     }
 };

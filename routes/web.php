@@ -3,8 +3,10 @@
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\Auth\PasswordChangeController;
+use App\Http\Controllers\DefectCategoryController;
 use App\Http\Controllers\director\DirectorHomeController;
 use App\Http\Controllers\director\ReportController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\hrd\HrdHomeController;
 use App\Http\Controllers\qaqc\QaqcHomeController;
 use App\Http\Controllers\qaqc\QaqcReportController;
@@ -41,6 +43,10 @@ use App\Http\Controllers\PurchasingDetailController;
 
 
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\ComputerHomeController;
+
+use App\Http\Controllers\InventoryFgController;
+use App\Http\Controllers\InventoryMtrController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,7 +65,6 @@ Route::get('/', function () {
     }
     return view('auth.login');
 })->name('/');
-
 
 Auth::routes();
 
@@ -119,17 +124,26 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
     Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
     Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
 
+    Route::middleware(['checkDepartment:COMPUTER', 'checkSessionId'])->group(function () {
+        Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
+    });
+
     Route::middleware(['checkDepartment:QA,QC', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
         Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
-        Route::post('/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
+        Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
         Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
         Route::get('/qaqc/reports/', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
 
-        Route::get('/qaqc/report/{id}/edit',[qaQcReportController::class, 'edit'])->name('qaqc.report.edit');
+        Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit');
+        Route::post('/qaqc/report/{id}/updateheader',[QaQcReportController::class, 'updateHeader'])->name('qaqc.report.updateHeader');
+        Route::get('/qaqc/report/{id}/editdetail',[QaQcReportController::class, 'editDetail'])->name('qaqc.report.editDetail');
+        Route::delete('/qaqc/report/{id}/deletedetail',[QaQcReportController::class, 'destroyDetail'])->name('qaqc.report.deleteDetail');
+        Route::post('/qaqc/report/{id}/updatedetail',[QaQcReportController::class, 'updateDetail'])->name('qaqc.report.updateDetail');
+        Route::get('/qaqc/report/{id}/editDefect',[QaQcReportController::class, 'editDefect'])->name('qaqc.report.editDefect');
         Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update' ])->name('qaqc.report.update');
         //revisi create page
         Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create');
@@ -152,8 +166,10 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
 
         // adding new defect category
 
-        Route::get('/qaqc/newdefect', [QaqcReportController::class, 'showNewDefect'])->name('qaqc.show.newdefect');
-        Route::post('/qaqc/newdefect/add', [QaqcReportController::class, 'addNewDefect'])->name('qaqc.add.newdefect');
+        Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
+        Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
+        Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
+        Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
         // adding new defect category
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
@@ -163,6 +179,10 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         //REVISI
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
         // Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
+
+        Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
+        Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
+
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
@@ -204,6 +224,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');
     Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert');
     Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
+    Route::get('/purchaserequest/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject');
 
     // PR MONTHLY
     Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
@@ -216,14 +237,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
     Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
-
-
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
-
-
-
-
-
 
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home');
@@ -268,16 +282,9 @@ Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDet
 Route::get('/send-email', [MailController::class, 'sendEmail']);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 /////// TESTING FOR EMAILING FEATURES
+
+
+
+Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg') ;
+Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr') ;

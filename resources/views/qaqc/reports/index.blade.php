@@ -38,8 +38,7 @@
                     <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr class="align-middle fw-semibold fs-5">
-                                <th>ID</th>
-                                <th>Doc. Number</th>
+                                <th class="p-3">Doc. Number</th>
                                 <th>Invoice No</th>
                                 <th>Customer</th>
                                 <th>Rec Date</th>
@@ -52,7 +51,6 @@
                         <tbody>
                             @foreach ($reports as $report)
                                 <tr class="align-middle">
-                                    <td>{{ $report->id }}</td>
                                     <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
@@ -63,9 +61,9 @@
                                             <i class='bx bx-info-circle' ></i> <span class="d-none d-sm-inline ">Detail</span>
                                         </a>
 
-                                        {{-- <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1">
+                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1">
                                             <i class='bx bx-edit' ></i> <span class="d-none d-sm-inline">Edit</span>
-                                        </a> --}}
+                                        </a>
 
                                         @include('partials.delete-report-modal')
                                         <button class="btn btn-danger my-1 me-1" data-bs-toggle="modal" data-bs-target="#delete-report-modal{{ $report->id }}">
@@ -127,5 +125,7 @@
             {{ $reports->links() }}
         </div>
     </section>
-
 @endsection
+
+@push('extraJs')
+@endpush

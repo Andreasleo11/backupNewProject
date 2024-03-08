@@ -40,4 +40,23 @@ class PurchaseRequest extends Model
     {
         return $this->belongsTo(User::class, 'user_id_create');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            // Get the current record's position in the table
+            $position = static::count() + 1;
+
+            // Get the date portion
+            $date = now()->format('Ymd'); // Assuming you want the current date
+
+            // Build the custom ID
+            $customId = "PR/{$position}/{$date}";
+
+            // Assign the custom ID to the model
+            $model->doc_num = $customId;
+        });
+    }
 }

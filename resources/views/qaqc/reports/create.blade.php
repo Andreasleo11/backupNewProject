@@ -130,7 +130,6 @@
 
                             <hr>
 
-
                             <span class="h3">Create Verification Header</span>
                             <p class="text-secondary mt-2">You need to fill the verification report header </p>
 
@@ -141,27 +140,27 @@
 
                                 {{-- Rec'D Date --}}
                                 <div class="mb-3">
-                                    <label for="Rec_Date" class="form-label">Rec'D Date:</label>
-                                    <input type="date"  value="{{ $header->Rec_Date ?? '' }}" id="Rec_Date" name="Rec_Date" class="form-control" required>
+                                    <label for="rec_date" class="form-label">Rec'D Date:</label>
+                                    <input type="date"  value="{{ $header->rec_date ?? '' }}" id="rec_date" name="rec_date" class="form-control" required>
                                 </div>
 
                                 {{-- Verify Date --}}
                                 <div class="mb-3">
-                                    <label for="Verify_Date" class="form-label">Verify Date:</label>
-                                    <input type="date"   value="{{ $header->Verify_Date ?? '' }}"  id="Verify_Date" name="Verify_Date" class="form-control" required>
+                                    <label for="verify_date" class="form-label">Verify Date:</label>
+                                    <input type="date"   value="{{ $header->verify_date ?? '' }}"  id="verify_date" name="verify_date" class="form-control" required>
                                 </div>
 
                                 {{-- Customer --}}
                                 <div class="mb-3">
-                                    <label for="Customer" class="form-label">Customer:</label>
-                                    <input type="text"  value="{{ $header->Customer ?? '' }}"  id="itemNameInput" name="Customer" class="form-control" required placeholder="Enter item name" autocomplete="off">
+                                    <label for="customer" class="form-label">Customer:</label>
+                                    <input type="text"  value="{{ $header->customer ?? '' }}"  id="itemNameInput" name="customer" class="form-control" required placeholder="Enter customer name" autocomplete="off">
                                     <div id="itemDropdown" class="dropdown-content"></div>
                                 </div>
 
                                 {{-- Invoice No --}}
                                 <div class="mb-3">
-                                    <label for="Invoice_No" class="form-label">Invoice No:</label>
-                                    <input type="text"  value="{{ $header->Invoice_No ?? '' }}" id="Invoice_No" name="Invoice_No" class="form-control" required>
+                                    <label for="invoice_no" class="form-label">Invoice No:</label>
+                                    <input type="text"  value="{{ $header->invoice_no ?? '' }}" id="invoice_no" name="invoice_no" class="form-control" required>
                                 </div>
 
                                 <div class="d-flex justify-content-end">
