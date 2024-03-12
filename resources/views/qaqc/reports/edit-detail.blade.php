@@ -76,7 +76,7 @@
                             <hr>
                         <div class="d-flex justify-content-between mb-3">
                             <div class="col-auto">
-                                <span class="h3">Add Part Details</span>
+                                <span class="h3">Add/Remove Part Details</span>
                                 <p class="text-secondary mt-2">You need to add part details for the report header that you have <br>
                                     been made before. Everytime you add, it will stored in the table <br> below.</p>
                             </div>
@@ -152,8 +152,7 @@
                 <td><input required type="number" value="${detail.verify_quantity ?? ''}" name="verify_quantity${rowCount}" class="form-control verify-input"></td>
                 <td><input required type="number" value="${detail.can_use ?? ''}" name="can_use${rowCount}" class="form-control canuse-input"></td>
                 <td><input required type="number" value="${detail.cant_use ?? ''}" name="cant_use${rowCount}" class="form-control cantuse-input"></td>
-                <td><input required type="number" value="${detail.id ?? ''}" name="id${rowCount}" class="form-control></td>
-                <td><a class="btn btn-danger btn-sm" href="" onclick="removeItem()">Remove</a></td>
+                <td><a class="btn btn-danger btn-sm" onclick="removeItem(${detail.id})">Remove</a></td>
             `;
             tableBody.appendChild(newRow);
 
@@ -204,9 +203,10 @@
         // Add event listener to the Add Data button
         document.getElementById('addDataBtn').addEventListener('click', addDataRow);
 
-        function removeItem() {
+        function removeItem($id) {
             // Get the parent container of the remove button (which is the item container)
             const itemContainer = event.target.closest('.added-row');
+            const detailId = $id;
 
             // Remove the item container from the DOM
             itemContainer.remove();
@@ -215,6 +215,24 @@
             rowNumber--;
 
             updateRowNumber();
+
+            var csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+            $.ajax({
+                url: `/qaqc/report/${detailId}/deletedetail`,
+                type: 'DELETE', // Use DELETE method
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken // Include CSRF token in the headers
+                },
+                success: function(response) {
+                    // Handle success response
+                    console.log(response);
+                },
+                error: function(xhr, status, error) {
+                    // Handle error response
+                    console.error(xhr.responseText);
+                }
+            });
         }
 
         function updateRowNumber() {

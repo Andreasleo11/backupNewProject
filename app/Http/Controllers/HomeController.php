@@ -25,7 +25,7 @@ class HomeController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+
 
         if ($user->role_id == 1) {
             return redirect()->route('superadmin.home');
@@ -48,8 +48,8 @@ class HomeController extends Controller
                 case "PLASTIC INJECTION":
                     return redirect()->route('pe.home');
                     break;
-                case "ACCOUNTING":
-                    return redirect()->route('director.home');
+                case "COMPUTER":
+                    return redirect()->route('computer.home');
                     break;
                 // default:
                 //     return redirect()->

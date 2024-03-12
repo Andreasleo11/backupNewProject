@@ -24,10 +24,10 @@
                     <label class="form-label">Customer Defect</label>
                     <div class="row justify-content-center">
                         <div class="col-4">
-                            <input name="quantity_customer" class="form-control" type="number" id="quantityCustomerDefect" placeholder="Quantity">
+                            <input name="quantity_customer" class="form-control" type="number" id="quantityCustomerDefect" placeholder="Quantity" >
                         </div>
                         <div class="col">
-                        <select class="form-select" name="customer_defect_category" id="customerDefectCategory">
+                        <select class="form-select" name="customer_defect_category" id="customerDefectCategory" >
                             <option value="" selected disabled>Select category..</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -40,10 +40,10 @@
                     <div class="row justify-content-center">
                         <label class="form-label">Daijo Defect</label>
                         <div class="col-4">
-                            <input name="quantity_daijo" class="form-control" type="number" id="quantityDaijoDefect" placeholder="Quantity">
+                            <input name="quantity_daijo" class="form-control" type="number" id="quantityDaijoDefect" placeholder="Quantity" >
                         </div>
                         <div class="col">
-                        <select class="form-select" name="daijo_defect_category" id="daijoDefectCategory" />
+                        <select class="form-select" name="daijo_defect_category" id="daijoDefectCategory" >
                             <option value="" selected disabled>Select category..</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -59,7 +59,7 @@
                         <option value="Can't Repair">Can't repair</option>
                         <option value="other">Other</option>
                     </select>
-                    <input type="text" name="other_remark" id="other_remark{{ $detail->id }}" class="form-control mt-2" style="display: none" placeholder="Other remark">
+                    <input type="text" name="other_remark" id="other_remark{{ $detail->id }}" class="form-control mt-2" style="display: none" placeholder="Other remark" >
                 </div>
             </div>
             <div class="modal-footer">

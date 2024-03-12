@@ -7,6 +7,7 @@ use App\Mail\QaqcMail;
 use App\Models\Defect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\File;
 use App\Models\Report;
 use App\Models\Detail;
 use App\Models\DefectCategory;
@@ -43,7 +44,8 @@ class QaqcReportController extends Controller
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('qaqc.reports.detail', compact('report','user','autographNames'));
+        $files = File::where('doc_id', $report->doc_num)->get();
+        return view('qaqc.reports.detail', compact('report','user','autographNames', 'files'));
     }
 
     public function edit(Request $request, $id)
@@ -83,6 +85,13 @@ class QaqcReportController extends Controller
     }
 
     public function editDetail(Request $request, $id){
+        $report = $request->session()->get('header_edit');
+
+        // Check if the report exists in the database
+        if ($report->exists) {
+            $report->update();
+        }
+
         $details_data = Detail::where('report_id', $id)->get();
         $request->session()->put('details_edit', $details_data);
         $details = $request->session()->get('details_edit');
@@ -97,13 +106,6 @@ class QaqcReportController extends Controller
     }
 
     public function updateDetail(Request $request, $id){
-        $report = $request->session()->get('header_edit');
-
-        // Check if the report exists in the database
-        if ($report->exists) {
-            $report->update();
-        }
-
         $details = [];
 
         for($i = 1; $i <= $request->input('rowCount'); $i++){
@@ -143,9 +145,6 @@ class QaqcReportController extends Controller
         }
 
         $request->session()->put('details_edit', $details);
-
-        // dd($request->session()->get('details_edit'));
-
         return redirect()->route('qaqc.report.editDefect', $id);
     }
 
@@ -242,31 +241,6 @@ class QaqcReportController extends Controller
         $request->session()->put('details', $details);
 
         return redirect()->route('qaqc.report.createdefect');
-    }
-
-    public function showNewDefect()
-    {
-        $defectcat = DefectCategory::get();
-        // dd($defectcat);
-
-        return view('qaqc.reports.create-new-defect', compact('defectcat'));
-    }
-
-    public function addNewDefect(Request $request)
-    {
-        $request->validate(
-            [
-                'name' => 'required|string',
-            ]
-        );
-
-
-        $newdefect = new DefectCategory();
-        $newdefect->name = $request->input('name');
-        $newdefect->save();
-
-        return redirect()->back()->with('success', 'Category added successfully!');
-
     }
 
     public function store(Request $request)
@@ -478,7 +452,7 @@ class QaqcReportController extends Controller
     {
         $categories = DefectCategory::get();
         $defect = $request->session()->get('defects');
-        $report = $request->session()->get('header');
+        $report = $request->session()->get('header') ?? $request->session()->get('header_edit');
         $reportId = $report->id;
         $details = Detail::where('Report_Id', $reportId)->with('defects', 'defects.category')->get();
         if (!Session::has('active_tab')) {
@@ -544,13 +518,13 @@ class QaqcReportController extends Controller
             ]));
         }
 
-        return redirect()->route('qaqc.report.createdefect')->with(['success' => 'Defect added successfully!']);
+        return redirect()->back()->with(['success' => 'Defect added successfully!']);
     }
 
     public function deleteDefect($id)
     {
         Defect::find($id)->delete();
-        return redirect()->route('qaqc.report.createdefect')->with(['success' => 'Defect deleted successfully!']);
+        return redirect()->back()->with(['success' => 'Defect deleted successfully!']);
     }
 
     public function updateActiveTab(Request $request)
@@ -563,7 +537,9 @@ class QaqcReportController extends Controller
     public function redirectToIndex()
     {
         session()->forget('header');
+        session()->forget('header_edit');
         session()->forget('details');
+        session()->forget('details_edit');
         session()->forget('active_tab');
         return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully added!']);
     }

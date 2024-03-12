@@ -44,8 +44,7 @@
                     <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr class="align-middle fw-semibold fs-5">
-                                <th>ID</th>
-                                <th>Doc. Number</th>
+                                <th class="p-3">Doc. Number</th>
                                 <th>Invoice No</th>
                                 <th>Customer</th>
                                 <th>Rec Date</th>
@@ -58,7 +57,6 @@
                         <tbody>
                             @foreach ($reports as $report)
                                 <tr class="align-middle">
-                                    <td>{{ $report->id }}</td>
                                     <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>

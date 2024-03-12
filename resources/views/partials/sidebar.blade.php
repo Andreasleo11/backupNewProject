@@ -75,22 +75,28 @@
                 </ul>
             </li>
         @elseif (Auth::user()->department->name === "ADMIN")
-            {{-- <li class="sidebar-item" id="sidebar-item-admin">
+            <li class="sidebar-item" id="sidebar-item-admin">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#admin" aria-expanded="false" aria-controls="admin">
                     <i class="lni lni-protection"></i>
                     <span>Admin</span>
                 </a>
                 <ul id="admin" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="#" class="sidebar-link">Users</a>
+                    <li class="sidebar-item" id="sidebar-item-users">
+                        <a href="{{ route('superadmin.users') }}" class="sidebar-link">
+                            <i class='bx bx-user'></i>
+                            <span>Users</span>
+                        </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a href="#" class="sidebar-link">Permission</a>
+                    <li class="sidebar-item" id="sidebar-item-departments">
+                        <a href="{{ route('superadmin.departments') }}" class="sidebar-link">
+                            <i class='bx bx-user'></i>
+                            <span>Departments</span>
+                        </a>
                     </li>
                 </ul>
-            </li> --}}
-            <li class="sidebar-item" id="sidebar-item-users">
+            </li>
+            {{-- <li class="sidebar-item" id="sidebar-item-users">
                 <a href="{{ route('superadmin.users') }}" class="sidebar-link">
                     <i class='bx bx-user'></i>
                     <span>Users</span>
@@ -101,13 +107,13 @@
                     <i class='bx bx-user'></i>
                     <span>Departments</span>
                 </a>
-            </li>
-            <li class="sidebar-item" id="sidebar-item-permission">
+            </li> --}}
+            {{-- <li class="sidebar-item" id="sidebar-item-permission">
                 <a href="{{ route('superadmin.permissions') }}" class="sidebar-link">
                     <i class='bx bx-lock-alt'></i>
                     <span>Permissions</span>
                 </a>
-            </li>
+            </li> --}}
         @endif
 
         <li class="sidebar-item" id="sidebar-item-purchaseRequest">
@@ -158,7 +164,7 @@
                     </a>
                 </li>
                 <li class="sidebar-item">
-                    <a href="{{ route('qaqc.show.newdefect') }}" class="sidebar-link">
+                    <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Defect Categories
                     </a>
