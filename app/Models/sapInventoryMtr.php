@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class sapInventoryMtr extends Model
 {
     use HasFactory;
+    protected $table = 'sap_inventory_mtr';
 }

@@ -47,6 +47,8 @@ use App\Http\Controllers\ComputerHomeController;
 
 use App\Http\Controllers\InventoryFgController;
 use App\Http\Controllers\InventoryMtrController;
+use App\Http\Controllers\CapacityByForecastController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -286,5 +288,13 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 
 
 
-Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg') ;
-Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr') ;
+Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
+Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
+
+
+Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
+
+Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
+Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1');
+Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
+Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');

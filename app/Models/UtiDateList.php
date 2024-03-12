@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class UtiDateList extends Model
 {
     use HasFactory;
+    protected $table = 'uti_date_list';
 }
