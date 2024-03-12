@@ -179,10 +179,6 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         //REVISI
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
         // Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
-
-        Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
-        Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
-
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
@@ -219,6 +215,10 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 });
 
 Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
+
+    Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
+    Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
+
     // PR
     Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home');
     Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create');

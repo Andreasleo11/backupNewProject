@@ -27,6 +27,7 @@ class PurchaseRequest extends Model
         'status',
         'pr_no',
         'supplier',
+        'description'
         // Add other fields as needed
     ];
 

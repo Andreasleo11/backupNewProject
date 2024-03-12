@@ -366,9 +366,17 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
-        PurchaseRequest::find($id)->update(['status' => -1]);
+        $request->validate([
+            'description' => 'string|max:255'
+        ]);
+
+        PurchaseRequest::find($id)->update([
+            'status' => -1,
+            'description' => $request->description
+        ]);
+
         return redirect()->back()->with(['success' => 'Purchase Request rejected']);
     }
 

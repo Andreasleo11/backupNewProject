@@ -57,6 +57,8 @@
             <div class="container mt-2" id="autographuser1"></div>
         </div>
 
+        @include('partials.reject-pr-confirmation', $purchaseRequest)
+
         <div class="col">
             <h2>Dept Head</h2>
             <div class="autograph-box container" id="autographBox2"></div>
@@ -64,9 +66,9 @@
             @if(Auth::check() &&  Auth::user()->department && Auth::user()->is_head == 1 && Auth::user()->department == $userCreatedBy->department && $purchaseRequest->status == 1)
             <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-3">
-                    <a href="{{ route('purchaserequest.reject', $purchaseRequest->id) }}" class="btn btn-danger">Reject</a></div>
+                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation" class="btn btn-danger">Reject</button></div>
                 <div class="col-auto">
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $purchaseRequest->id }})">Acc Dept Head</button>
+                    <button id="btn2" class="btn btn-success" onclick="addAutograph(2, {{ $purchaseRequest->id }})">Approve</button>
                 </div>
             </div>
             @endif
@@ -81,7 +83,7 @@
                 <div class="col-auto me-3">
                     <a href="{{ route('purchaserequest.reject', $purchaseRequest->id) }}" class="btn btn-danger">Reject</a></div>
                 <div class="col-auto">
-                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $purchaseRequest->id }})">Acc Verificator</button>
+                    <button id="btn3" class="btn btn-success" onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
                 </div>
             </div>
             @endif
