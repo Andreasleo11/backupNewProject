@@ -24,7 +24,7 @@ class PurchaseRequestController extends Controller
         $labels = $departments->pluck('to_department');
         $counts = $departments->pluck('count');
 
-        $purchaseRequests = PurchaseRequest::get();
+        $purchaseRequests = PurchaseRequest::with('files')->paginate(10);
 
         return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
     }

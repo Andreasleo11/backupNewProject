@@ -42,6 +42,10 @@ class PurchaseRequest extends Model
         return $this->belongsTo(User::class, 'user_id_create');
     }
 
+    public function files(){
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
+    }
+
     protected static function boot()
     {
         parent::boot();

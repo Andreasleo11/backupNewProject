@@ -61,7 +61,7 @@
                                     <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT HEAD</span>
                                 @elseif($pr->status === 2)
                                     <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR VERIFICATION</span>
-                                @elseif($pr->attachment === null)
+                                @elseif($pr->files === null)
                                     <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ATTACHMENT</span>
                                 @elseif($pr->status === 3)
                                     <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DIRECTOR</span>
@@ -83,7 +83,9 @@
         </div>
     </div>
 </div>
+<div class="d-flex justify-content-end mt-3">
+    {{ $purchaseRequests->links() }}
+</div>
 </section>
-
 @endsection
 

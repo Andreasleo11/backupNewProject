@@ -19,3 +19,4 @@ sidebarNav.addEventListener("mouseout",function () {
         document.querySelector("#sidebar").classList.toggle("expand")
     }
 });
+
