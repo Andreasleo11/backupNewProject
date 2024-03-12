@@ -12,7 +12,7 @@ class CapacityByForecastController extends Controller
     public function index()
     {
         $data = CapLineSummary::get();
-        $time = UtiDateList::find(8)->get();
+        $time = UtiDateList::get();
 
         return view("production.capacity_forecast.index", compact("data"));
     }
