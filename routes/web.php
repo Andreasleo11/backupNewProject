@@ -50,6 +50,11 @@ use App\Http\Controllers\InventoryMtrController;
 use App\Http\Controllers\CapacityByForecastController;
 
 
+use App\Http\Controllers\pps\PPSGeneralController;
+use App\Http\Controllers\pps\PPSSecondController;
+use App\Http\Controllers\pps\PPSAssemblyController;
+use App\Http\Controllers\pps\PPSInjectionController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -298,3 +303,62 @@ Route::get("/production/capacity-forecast/view-step", [CapacityByForecastControl
 Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1');
 Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
 Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');
+
+//
+
+
+
+//pps section 
+
+Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
+Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
+Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
+
+Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
+Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
+Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
+//jika ada post untuk delivery 
+
+Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");
+// jika ada post untuk items
+
+Route::get("/pps/injection/line", [PPSInjectionController::class, "lineinjection"])->name("lineinjection");
+//jika ada post untuk line 
+
+Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
+
+
+
+
+Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
+//jika ada post untuk start 
+
+Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
+//jika ada post untuk delivery 
+
+Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
+// jika ada post untuk items
+
+Route::get("/pps/second/line", [PPSSecondController::class, "linesecond"])->name("linesecond");
+//jika ada post untuk line 
+
+Route::get("pps/secondfinal",  [PPSSecondController::class, "finalresultsecond"])->name("finalsecondpps");
+
+
+
+
+
+Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
+//jika ada post untuk start 
+
+Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
+//jika ada post untuk delivery 
+
+Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
+// jika ada post untuk items
+
+Route::get("/pps/assembly/line", [PPSAssemblyController::class, "lineassembly"])->name("lineassembly");
+//jika ada post untuk line 
+
+Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
+
