@@ -26,6 +26,8 @@ class Report extends Model
         'attachment',
         'is_approve',
         'description',
+        'first_reject',
+        'rejected_at',
         // Add other fields as needed
     ];
 

@@ -118,6 +118,7 @@ class QaqcReportController extends Controller
                 'cant_use' . $i => 'required',
             ]);
 
+
             $rowData = [
                 'report_id' => $id,
                 'part_name' => $request->input("itemName$i"),
@@ -558,6 +559,20 @@ class QaqcReportController extends Controller
 
 
         return redirect()->back()->with(['success' => 'Email sent successfully!']);
+    }
+
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'required'
+        ]);
+
+        Report::find($id)->update([
+            'is_approve' => false,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with(['success' => 'Report rejected automatically!']);
     }
 
 }

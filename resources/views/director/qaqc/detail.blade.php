@@ -91,8 +91,6 @@
                                 <th rowspan="2">Part Name</th>
                                 <th rowspan="2">Rec Quantity</th>
                                 <th rowspan="2">Verify Quantity</th>
-                                <th rowspan="2">Production Date</th>
-                                <th rowspan="2">Shift</th>
                                 <th rowspan="2">Can Use</th>
                                 <th rowspan="2">Can't Use</th>
                                 <th colspan="3">Daijo Defect</th>
@@ -115,8 +113,6 @@
                                     <td>{{ $detail->part_name}}</td>
                                     <td>{{ $detail->rec_quantity}}</td>
                                     <td>{{ $detail->verify_quantity}}</td>
-                                    <td>{{ $detail->prod_date}}</td>
-                                    <td>{{ $detail->shift}}</td>
                                     <td>{{ $detail->can_use}}</td>
                                     <td>{{ $detail->cant_use}}</td>
                                     <td colspan="3" class="p-0">

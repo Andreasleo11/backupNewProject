@@ -55,6 +55,7 @@
                         </thead>
                         <tbody>
                             @foreach ($reports as $report)
+
                                 <tr class="align-middle">
                                     <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
@@ -62,17 +63,28 @@
                                     <td>{{ $report->rec_date }}</td>
                                     <td>{{ $report->verify_date }}</td>
                                     <td>
-
                                         <a href="{{ route('qaqc.report.detail', $report->id) }}" class="btn btn-secondary my-1 me-1 ">
                                             <i class='bx bx-info-circle' ></i> <span class="d-none d-sm-inline ">Detail</span>
                                         </a>
 
-                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1 @if($report->created_by !== Auth::user()->name) d-none @endif">
+                                        @php
+                                            $hoursDifference = Date::now()->diffInHours($report->rejected_at);
+                                        @endphp
+
+                                        <form class="d-none" action="{{ route('qaqc.report.reject', $report->id) }}" method="get" id="form-reject-report-{{ $report->id }}"><input type="hidden" name="description" value="Automatically rejected after 24 hours"></form>
+
+                                        <script>
+                                            @if ($hoursDifference > 24 && $report->is_approve === null)
+                                                document.getElementById('form-reject-report-{{ $report->id }}').submit();
+                                            @endif
+                                        </script>
+
+                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary my-1 me-1 @if(($report->created_by !== Auth::user()->name) || $hoursDifference>24 || $report->is_approve == 1) d-none @endif">
                                             <i class='bx bx-edit' ></i> <span class="d-none d-sm-inline">Edit</span>
                                         </a>
 
                                         @include('partials.delete-report-modal')
-                                        <button class="btn btn-danger my-1 me-1 @if($report->created_by !== Auth::user()->name) d-none @endif" data-bs-toggle="modal" data-bs-target="#delete-report-modal{{ $report->id }}">
+                                        <button class="btn btn-danger my-1 me-1 @if(($report->created_by !== Auth::user()->name) || $hoursDifference>24 || $report->autograph_3 || $report->is_approve == 1) d-none @endif" data-bs-toggle="modal" data-bs-target="#delete-report-modal{{ $report->id }}">
                                             <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
                                         </button>
 

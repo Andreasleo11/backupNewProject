@@ -18,8 +18,9 @@ class ForExport implements FromView, ShouldAutoSize
     private $uniqueMonths;
     private $vendorCode;
     private $qforecast;
+    private $vendorname;
 
-    public function __construct($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast)
+    public function __construct($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast,$vendorname)
     {
         $this->monthm = $monthm;
         $this->materials = $materials;
@@ -27,6 +28,7 @@ class ForExport implements FromView, ShouldAutoSize
         $this->uniqueMonths = $uniqueMonths;
         $this->vendorCode = $vendorCode;
         $this->qforecast = $qforecast;
+        $this->vendorname = $vendorname;
     }
 
     public function view(): View
@@ -38,6 +40,7 @@ class ForExport implements FromView, ShouldAutoSize
             'mon' => $this->uniqueMonths,
             'vendorCode' => $this->vendorCode,
             'qforecast' => $this->qforecast,
+            'vendorName' => $this->vendorname,
         ]);
     }
 }

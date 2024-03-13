@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use PhpParser\Node\Stmt\Foreach_;
 
 class ReportController extends Controller
@@ -61,16 +62,33 @@ class ReportController extends Controller
             'description' => 'required'
         ]);
 
-        Report::find($id)->update([
-            'autograph_1' => null,
-            'autograph_2' => null,
-            'autograph_3' => null,
-            'autograph_user_1' => null,
-            'autograph_user_2' => null,
-            'autograph_user_3' => null,
-            'is_approve' => false,
-            'description' => $request->description
-        ]);
+        $report = Report::find($id);
+        if(!$report->first_reject){
+            Report::find($id)->update([
+                'autograph_1' => null,
+                'autograph_2' => null,
+                'autograph_3' => null,
+                'autograph_user_1' => null,
+                'autograph_user_2' => null,
+                'autograph_user_3' => null,
+                'is_approve' => false,
+                'description' => $request->description,
+                'first_reject' => true,
+                'rejected_at' => Date::now(),
+            ]);
+        } else {
+            Report::find($id)->update([
+                'autograph_1' => null,
+                'autograph_2' => null,
+                'autograph_3' => null,
+                'autograph_user_1' => null,
+                'autograph_user_2' => null,
+                'autograph_user_3' => null,
+                'is_approve' => false,
+                'description' => $request->description,
+            ]);
+        }
+
 
         return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
     }

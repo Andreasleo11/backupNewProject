@@ -127,14 +127,14 @@
 
         @if(Session::get('details_edit'))
             @foreach (Session::get('details_edit') as $detail)
-                addDataRow({!! json_encode($detail) !!});
+                addDataRow({!! json_encode($detail) !!}, true);
             @endforeach
         @else
             addDataRow();
         @endif
 
 
-        function addDataRow(detail = {}) {
+        function addDataRow(detail = {}, readonlyName = false) {
             rowNumber++;
             updateRowNumber();
             const tableBody = document.querySelector('#dataTable tbody');
@@ -145,7 +145,7 @@
             newRow.innerHTML = `
             <input required type="number" value="${rowCount}" name="rowCount" class="d-none"></input>
                 <td class="rowNum">${rowNumber}</td>
-                <td style="width:20%"><input class="form-control" required type="text" id="itemNameInput${rowCount}" value="${detail.part_name ?? ''}" name="itemName${rowCount}" autocomplete="off">
+                <td style="width:20%"><input class="form-control" required type="text" id="itemNameInput${rowCount}" value="${detail.part_name ?? ''}" name="itemName${rowCount}" autocomplete="off" ${readonlyName ? 'readonly' : ''}>
                             <div id="itemDropdown${rowCount}" class="dropdown-content"></div></td>
 
                 <td><input required type="number" value="${detail.rec_quantity ?? ''}" name="rec_quantity${rowCount}" class="form-control rec-input"></td>

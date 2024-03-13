@@ -34,8 +34,4 @@ class foremindFinal extends Model
         // Add other attributes as needed
     ];
 
-    public function sapFctInventoryFg()
-    {
-        return $this->hasOne(sapFctInventoryFg::class, 'item_code', 'Item_no');
-    }
 }

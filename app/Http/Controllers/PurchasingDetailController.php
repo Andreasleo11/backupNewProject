@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\foremindFinal;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
 use App\Exports\ForExport;
@@ -45,7 +45,7 @@ class PurchasingDetailController extends Controller
             }
 
 
-        
+
 
             $allmonth = [];
             foreach($materials as $material){
@@ -56,7 +56,7 @@ class PurchasingDetailController extends Controller
                 $stringForecast = json_decode($decodedForecast, true);
                 // dd($stringForecast);
                 $truevalue[] = $stringMonths;
-                
+
                 //  if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedMonths)) {
                 //     // Handle JSON decoding error
                 //     dd('JSON Decoding Error:', json_last_error_msg());
@@ -68,7 +68,7 @@ class PurchasingDetailController extends Controller
                 $monthm[] = array_keys($stringMonths);
                 $values[] = array_values($stringMonths);
                 $qforecast[] = array_values($stringForecast);
-        
+
             }
 
             $vendorCode = $request->input('vendor_code');
@@ -79,7 +79,7 @@ class PurchasingDetailController extends Controller
                 'values' => $values,
                 'mon' => $uniqueMonths,
                 'vendorCode' => $vendorCode,
-                'qforecast' => $qforecast, 
+                'qforecast' => $qforecast,
                 ])->render();
     }
 
@@ -114,9 +114,9 @@ class PurchasingDetailController extends Controller
                 $materials = []; // Empty array if no vendor code provided
             }
 
-            
 
-        
+
+
 
         $allmonth = [];
         foreach($materials as $material){
@@ -127,7 +127,7 @@ class PurchasingDetailController extends Controller
                 $stringForecast = json_decode($decodedForecast, true);
                 // dd($stringForecast);
                 $truevalue[] = $stringMonths;
-                
+
                 //  if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedMonths)) {
                 //     // Handle JSON decoding error
                 //     dd('JSON Decoding Error:', json_last_error_msg());
@@ -142,8 +142,8 @@ class PurchasingDetailController extends Controller
 
             }
 
-            
-            
+
+
 
             $vendorCode = $request->input('vendor_code');
 
@@ -159,7 +159,7 @@ class PurchasingDetailController extends Controller
 
     public function exportExcel($vendorCode)
     {
-        
+
         // Function to get vendor information based on vendor code
         $getVendorInfo = function ($vendorCode) {
         return DB::table('forecast_material_predictions') // Replace with your actual table name
@@ -170,12 +170,12 @@ class PurchasingDetailController extends Controller
          // Get vendor information using the getVendorInfo function
             $vendorInfo = $getVendorInfo($vendorCode);
             $vendorName = $vendorInfo->vendor_name;
-            
+
         // // Get data based on vendor code
         $materials = DB::table('forecast_material_predictions')
             ->where('vendor_code', $vendorCode)
             ->get();
-       
+
         $forecasts = ForemindFinal::all();
         $transformedData = [];
 
@@ -209,7 +209,7 @@ class PurchasingDetailController extends Controller
             $stringForecast = json_decode($decodedForecast, true);
             // dd($stringForecast);
             $truevalue[] = $stringMonths;
-            
+
             //  if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedMonths)) {
             //     // Handle JSON decoding error
             //     dd('JSON Decoding Error:', json_last_error_msg());
@@ -223,11 +223,11 @@ class PurchasingDetailController extends Controller
             $qforecast[] = array_values($stringForecast);
             }
 
-        
-     
+
+
         // dd($qforecast);
 
-        $export = new ForExport($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast);
+        $export = new ForExport($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast,$vendorName);
 
         $fileName = $vendorName ? $vendorName . '_exported_data.xlsx' : 'filename.xlsx';
 
@@ -247,16 +247,16 @@ class PurchasingDetailController extends Controller
 
         $vendorInfo = $getVendorInfo($vendorCode);
         $vendorName = $vendorInfo->vendor_name;
-        
+
         // // Get data based on vendor code
         $materials = DB::table('forecast_material_predictions')
             ->where('vendor_code', $vendorCode)
             ->get();
-       
+
         $forecasts = ForemindFinal::all();
         $transformedData = [];
 
-     
+
 
                 // Get unique months from all forecasts
         $allMonths = [];
@@ -288,7 +288,7 @@ class PurchasingDetailController extends Controller
             $stringForecast = json_decode($decodedForecast, true);
             // dd($stringForecast);
             $truevalue[] = $stringMonths;
-            
+
             //  if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedMonths)) {
             //     // Handle JSON decoding error
             //     dd('JSON Decoding Error:', json_last_error_msg());
@@ -302,11 +302,11 @@ class PurchasingDetailController extends Controller
             $qforecast[] = array_values($stringForecast);
             }
 
-        
-     
+
+
         // dd($qforecast);
 
-        $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast);
+        $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName);
 
         $fileName = $vendorName ? $vendorName . '_exported_data.xlsx' : 'filename.xlsx';
 

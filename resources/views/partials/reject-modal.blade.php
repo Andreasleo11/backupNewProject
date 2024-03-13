@@ -5,7 +5,7 @@
                     @method('PUT')
                     @csrf
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5">Reason {{ $id }}</h1>
+                        <h1 class="modal-title fs-5">Reason</h1>
                     </div>
                     <div class="modal-body">
                         <label for="description" class="form-label">Description</label>
