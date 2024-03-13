@@ -81,7 +81,7 @@
             @if(Auth::check() && Auth::user()->department->name == "HRD" && Auth::user()->is_head == 1  && $purchaseRequest->status == 2)
             <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-3">
-                    <a href="{{ route('purchaserequest.reject', $purchaseRequest->id) }}" class="btn btn-danger">Reject</a></div>
+                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation" class="btn btn-danger">Reject</button></div>
                 <div class="col-auto">
                     <button id="btn3" class="btn btn-success" onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
                 </div>
@@ -96,7 +96,7 @@
             @if(Auth::check() && Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3)
             <div class="row px-4 d-flex justify-content-center ">
                 <div class="col-auto me-3">
-                    <a href="{{ route('purchaserequest.reject', $purchaseRequest->id) }}" class="btn btn-danger">Reject</a></div>
+                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation" class="btn btn-danger">Reject</button></div>
                 <div class="col-auto">
                     <button id="btn4" class="btn btn-success" onclick="addAutograph(4, {{ $purchaseRequest->id }}, {{$user->id}})">Approve</button>
                 </div>

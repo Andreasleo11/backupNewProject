@@ -20,18 +20,21 @@
     <section aria-label="header" class="container">
         <div class="row text-center">
             <div class="col">
-                <h2>QA Inspector</h2>
-                @if(Auth::check() && Auth::user()->department->name == 'QA')
-                    <button class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QA Inspector</button>
+                @php
+                    $currentUser = Auth::user();
+                @endphp
+                <h2>QC Inspector</h2>
+                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == "INSPECTOR")
+                    <button class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QC Inspector</button>
                 @endif
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
             </div>
 
             <div class="col">
-                <h2>QA Leader</h2>
-                @if(Auth::check() && Auth::user()->department->name == 'QA')
-                    <button class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QA Leader</button>
+                <h2>QC Leader</h2>
+                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == "LEADER")
+                    <button class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QC Leader</button>
                 @endif
 
                 <div class="autograph-box container" id="autographBox2"></div>
@@ -40,7 +43,7 @@
 
             <div class="col">
                 <h2>QC HEAD</h2>
-                @if(Auth::check() && Auth::user()->department->name == 'QC')
+                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == "HEAD")
                     <button class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
                 @endif
 
@@ -56,13 +59,7 @@
                 <span class="h1 fw-semibold">Verification Reports</span>
                 <p class="fs-5 mt-2">Created By : {{ $report->created_by }}</p>
                 <span class="badge rounded-pill @if($report->is_approve === 1) text-bg-success @elseif($report->is_approve === 0) text-bg-danger @else text-bg-warning @endif px-3 py-2 fs-6 fw-medium">
-                    @if($report->is_approve === 1)
-                        APPROVED
-                    @elseif($report->is_approve === 0)
-                        REJECTED
-                    @else
-                        WAITING
-                    @endif
+                    @if($report->is_approve === 1) APPROVED @elseif($report->is_approve === 0) REJECTED @else WAITING TO BE APPROVED @endif
                 </span>
                 <hr>
             </div>
@@ -184,13 +181,8 @@
         function addAutograph(section, reportId) {
             // Get the div element
             var autographBox = document.getElementById('autographBox' + section);
-
-            console.log('Section:', section);
-            console.log('Report ID:', reportId);
             var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
-            console.log('username :', username);
             var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
-            console.log('image path :', imageUrl);
 
             autographBox.style.backgroundImage = "url('" +imageUrl + "')";
 

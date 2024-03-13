@@ -62,7 +62,7 @@
             <li class="sidebar-item" id="sidebar-item-director">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#director" aria-expanded="false" aria-controls="director">
-                        <i class='bx bx-dots-horizontal-rounded' ></i>
+                    <i class='bx bx-badge-check'></i>
                     <span>Qaqc</span>
                 </a>
                 <ul id="director" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">

@@ -67,19 +67,22 @@
     <section aria-label="header" class="container">
         <div class="row text-center mt-5">
             <div class="col">
+                @php
+                    $currentUser = Auth::user();
+                @endphp
                 <h2>QC Inspector</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
-                @if(Auth::check() && Auth::user()->department->name == 'QA' && Auth::user()->specification->name == "INSPECTOR")
+                {{-- @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == "INSPECTOR")
                     <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QC Inspector</button>
-                @endif
+                @endif --}}
             </div>
 
             <div class="col">
                 <h2>QC Leader</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
-                @if(Auth::check() && Auth::user()->department->name == 'QA' && Auth::user()->specification->name == 'LEADER')
+                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'LEADER')
                     <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QC Leader</button>
                 @endif
             </div>
@@ -88,7 +91,7 @@
                 <h2>QC Head</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
-                @if(Auth::check() && Auth::user()->department->name == 'QC')
+                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'HEAD' && ($report->autograph_1 || $report->autograph_2) != null)
                     <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
                 @endif
             </div>
@@ -103,16 +106,7 @@
                     <span class="fs-5">{{ $report->doc_num ?? '-'}} </span> <br>
                     <span class="fs-6 ">Created By : {{ $report->created_by ?? '-'}} </span>
                 </div>
-                @php
-                    $status = $report->is_approve === 1
-                        ? 'APPROVED'
-                        : ($report->is_approve === 0
-                            ? 'REJECTED'
-                            : ($report->autograph_1 && $report->autograph_2 && $report->autograph_3
-                                ? 'WAITING ON APPROVAL'
-                                : 'WAITING SIGNATURE'));
-                @endphp
-                <span class="mt-3 badge {{ $report->is_approve === 1 ? 'text-bg-success' : ($report->is_approve === 0 ? 'text-bg-danger' : 'text-bg-secondary') }} px-3 py-2 fs-6">{{ $status }}</span>
+                @include('partials.vqc-status-badge')
                 <hr>
             </div>
 

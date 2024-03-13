@@ -13,11 +13,12 @@ class SpecificationSeeder extends Seeder
      */
     public function run(): void
     {
-        Specification::create(['name' => '-']);
-        Specification::create(['name' => 'INSPECTOR']);
-        Specification::create(['name' => 'LEADER']);
-        Specification::create(['name' => 'STAFF']);
-        Specification::create(['name' => 'DIRECTOR']);
-        Specification::create(['name' => 'ADMIN']);
+        Specification::updateOrCreate(['name' => '-']);
+        Specification::updateOrCreate(['name' => 'INSPECTOR']);
+        Specification::updateOrCreate(['name' => 'LEADER']);
+        Specification::updateOrCreate(['name' => 'STAFF']);
+        Specification::updateOrCreate(['name' => 'DIRECTOR']);
+        Specification::updateOrCreate(['name' => 'ADMIN']);
+        Specification::updateOrCreate(['name' => 'HEAD']);
     }
 }

@@ -13,13 +13,13 @@ class ReportController extends Controller
 {
     public function index(DirectorQaqcReportsDataTable $dataTable)
     {
-        $reports = Report::whereNotNull('autograph_1')
-            ->whereNotNull('autograph_2')
-            ->whereNotNull('autograph_3')
-            ->get();
+        // $reports = Report::whereNotNull('autograph_1')
+        //     ->whereNotNull('autograph_2')
+        //     ->whereNotNull('autograph_3')
+        //     ->get();
 
         // return view('director.qaqc.index', compact('reports'));
-        return $dataTable->render('director.qaqc.index', compact('reports'));
+        return $dataTable->render('director.qaqc.index');
     }
 
     public function detail($id)
@@ -62,6 +62,12 @@ class ReportController extends Controller
         ]);
 
         Report::find($id)->update([
+            'autograph_1' => null,
+            'autograph_2' => null,
+            'autograph_3' => null,
+            'autograph_user_1' => null,
+            'autograph_user_2' => null,
+            'autograph_user_3' => null,
             'is_approve' => false,
             'description' => $request->description
         ]);

@@ -24,7 +24,15 @@ class PurchaseRequestController extends Controller
         $labels = $departments->pluck('to_department');
         $counts = $departments->pluck('count');
 
-        $purchaseRequests = PurchaseRequest::with('files')->paginate(10);
+        $userDepartmentName = Auth::user()->department->name;
+
+        $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
+            ->whereHas('createdBy.department', function($query)use ($userDepartmentName) {
+                $query->where('name', '=', $userDepartmentName);
+            })
+            ->paginate(10);
+
+            // TODO: Filter must adjusted for verificator and director to view all
 
         return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
     }

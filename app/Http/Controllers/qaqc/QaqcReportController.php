@@ -30,7 +30,8 @@ class QaqcReportController extends Controller
 
     public function index()
     {
-        $reports = Report::orderBy('created_at', 'desc')->paginate(10);
+        $this->resetEditSessions();
+        $reports = Report::orderBy('created_at', 'desc')->paginate(9);
 
         return view('qaqc.reports.index',compact('reports'));
     }
@@ -50,7 +51,11 @@ class QaqcReportController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $header = $request->session()->get('header_edit') ?? Report::find($id);
+        $header = $request->session()->get('header_edit');
+        if($header == null){
+            $request->session()->put('header_edit', Report::find($id));
+            $header = $request->session()->get('header_edit');
+        }
 
         return view('qaqc.reports.edit', compact('header', 'id'));
     }
@@ -65,32 +70,27 @@ class QaqcReportController extends Controller
             'created_by' => 'string',
         ]);
 
-        // $data = $request->session()->get('header');
+        $validatedData['autograph_1'] = strtoupper(auth()->user()->name) . '.png';
+        $validatedData['autograph_user_1'] = auth()->user()->name;
+        $validatedData['autograph_3'] = null;
+        $validatedData['autograph_user_3'] = null;
+        $validatedData['is_approve'] = null;
 
         $report = $request->session()->get('header_edit');
 
-        // Check if the report exists in the session
-        if ($report) {
-            // If the report exists, update its attributes with the validated data
-            $report->fill($validatedData);
-        } else {
-            // If the report doesn't exist, create a new report instance with the validated data
-            $report = new Report($validatedData);
-        }
+        $report->fill($validatedData);
 
-        // Store the updated or new report in the session
         $request->session()->put('header_edit', $report);
 
         return redirect()->route('qaqc.report.editDetail', $id);
     }
 
     public function editDetail(Request $request, $id){
+        // Retrieve the existing report from the session
         $report = $request->session()->get('header_edit');
 
-        // Check if the report exists in the database
-        if ($report->exists) {
-            $report->update();
-        }
+        // TODO : IT WON'T UPDATE
+        $report->update();
 
         $details_data = Detail::where('report_id', $id)->get();
         $request->session()->put('details_edit', $details_data);
@@ -243,53 +243,6 @@ class QaqcReportController extends Controller
         return redirect()->route('qaqc.report.createdefect');
     }
 
-    public function store(Request $request)
-    {
-            $data = $request->all();
-
-
-            // Extract common attributes
-            $commonAttributes = [
-                'Rec_Date' => $data['Rec_Date'],
-                'Verify_Date' => $data['Verify_Date'],
-                'Customer' => $data['Customer'],
-                'Invoice_No' => $data['Invoice_No'],
-                'created_by' => auth()->user()->name,
-                'num_of_parts' => $data['num_of_parts'],
-            ];
-
-            // Create the VerificationReportHeader and get its doc_num
-
-            $report = Report::create($commonAttributes);
-
-
-            // Save the main data to the database, including defect details
-            foreach ($data['part_names'] as $key => $partName) {
-                $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];
-                $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
-                $Remarks = $data['remark'][$key] ?? [];
-
-
-                $attributes = [
-                    'Report_Id' => $report->id,
-                    'Part_Name' => $partName,
-                    'Rec_Quantity' => $data['rec_quantity'][$key],
-                    'Verify_Quantity' => $data['verify_quantity'][$key],
-                    'Can_Use' => $data['can_use'][$key],
-                    'Cant_use' => $data['cant_use'][$key],
-                    // Extract defect details and remarks
-                    // Assign values to attributes
-                    'Customer_Defect_Detail' => json_encode($customerDefectDetails),
-                    'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
-                    'Remark' => json_encode($Remarks),
-                ];
-
-                Detail::create($attributes);
-            }
-
-        return redirect()->route('qaqc.report.index')->with('success', 'Report has been stored successfully!');
-    }
-
     public function destroy($id){
         $report = Report::findOrFail($id);
 
@@ -405,6 +358,9 @@ class QaqcReportController extends Controller
             'invoice_no' => 'string',
             'created_by' => 'string',
         ]);
+
+        $validatedData['autograph_1'] = strtoupper(auth()->user()->name) . '.png';
+        $validatedData['autograph_user_1'] = auth()->user()->name;
 
         // $data = $request->session()->get('header');
 
@@ -537,11 +493,15 @@ class QaqcReportController extends Controller
     public function redirectToIndex()
     {
         session()->forget('header');
-        session()->forget('header_edit');
         session()->forget('details');
+        $this->resetEditSessions();
+        return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully stored/updated!']);
+    }
+
+    private function resetEditSessions(){
+        session()->forget('header_edit');
         session()->forget('details_edit');
         session()->forget('active_tab');
-        return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully added!']);
     }
 
     public function savePdf($id)

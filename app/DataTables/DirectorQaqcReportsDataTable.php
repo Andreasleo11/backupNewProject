@@ -37,8 +37,8 @@ class DirectorQaqcReportsDataTable extends DataTable
                                     @endif
                                     ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$is_approve}}-{{$doc_num}}" />')
-            ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
-            ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
+            ->editColumn('rec_date', '{{ \Carbon\Carbon::parse($rec_date)->format(\'d-m-Y\') }}')
+            ->editColumn('verify_date', '{{ \Carbon\Carbon::parse($verify_date)->format(\'d-m-Y\') }}')
             ->setRowId('id');
     }
 
@@ -50,10 +50,8 @@ class DirectorQaqcReportsDataTable extends DataTable
      */
     public function query(Report $model): QueryBuilder
     {
-        // return $model::whereNotNull('autograph_1')
-        //     ->whereNotNull('autograph_2')
-        //     ->whereNotNull('autograph_3')->newQuery();
-        return $model->newQuery();
+        return $model::withAutographs()->newQuery();
+        // return $model->newQuery();
     }
 
     /**
@@ -68,7 +66,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    ->orderBy(10 ,'asc')
+                    ->orderBy(7 ,'asc')
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -94,14 +92,11 @@ class DirectorQaqcReportsDataTable extends DataTable
                 ->printable(false)
                 ->addClass('text-center')
                 ->addClass('align-middle'),
-            Column::make('id')->addClass('align-middle')->addClass('text-center'),
             Column::make('doc_num')->addClass('align-middle')->addClass('text-center'),
             Column::make('invoice_no')->addClass('align-middle')->addClass('text-center'),
             Column::make('customer')->addClass('align-middle')->addClass('text-center'),
             Column::make('rec_date')->addClass('align-middle')->addClass('text-center'),
             Column::make('verify_date')->addClass('align-middle')->addClass('text-center'),
-            Column::make('created_at')->addClass('align-middle')->addClass('text-center'),
-            Column::make('updated_at')->addClass('align-middle')->addClass('text-center'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
@@ -115,7 +110,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                         } else if (data === 0) {
                             return \'<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">REJECTED</span>\';
                         } else {
-                            return \'<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING</span>\';
+                            return \'<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING TO BE APPROVED</span>\';
                         }
                     }
                     return data; // Return the original data for other types

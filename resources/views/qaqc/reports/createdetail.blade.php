@@ -84,7 +84,7 @@
                                 <a class="btn btn-outline-primary" id="addDataBtn">+ Add Data</a>
                             </div>
                         </div>
-                        <p>Customer name : <strong> {{ Session::get('header')->Customer ?? '-'}} </strong></p>
+                        <p>Customer name : <strong> {{ Session::get('header')->customer ?? '-'}} </strong></p>
                         <div class="card">
                             <div class="card-body">
                                 <div class="table-responsive">

@@ -75,4 +75,14 @@ class Report extends Model
             $model->doc_num = $customId;
         });
     }
+
+    public function scopeWithAutographs($query)
+    {
+        return $query->whereNotNull('autograph_3')
+            ->where(function ($query) {
+                $query->whereNotNull('autograph_1')
+                    ->orWhereNotNull('autograph_2');
+            });
+    }
+
 }
