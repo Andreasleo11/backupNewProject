@@ -120,7 +120,7 @@
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
-                <span>PPS</span>
+                <span>Bussiness</span>
             </a>
             <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
@@ -130,8 +130,33 @@
                     </a>
                 </li>               
             </ul>
+            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexds') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        DS NEW
+                    </a>
+                </li>               
+            </ul>
         </li>
-		
+
+
+        <li class="sidebar-item" id="sidebar-item-purchaseRequest">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
+                    <i class='bx bx-dots-horizontal-rounded' ></i>
+                <span>Production</span>
+            </a>
+            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexpps') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        PPS Wizard
+                    </a>
+                </li>               
+            </ul>
+
+        
 		<li class="sidebar-item" id="sidebar-item-purchaseRequest">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">

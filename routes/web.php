@@ -55,6 +55,11 @@ use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSInjectionController;
 
+
+
+
+use App\Http\Controllers\DSNewController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -308,7 +313,6 @@ Route::get("/production/capacity-forecast/step3", [CapacityByForecastController:
 
 
 //pps section 
-
 Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
 Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
 Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
@@ -361,3 +365,8 @@ Route::get("/pps/assembly/line", [PPSAssemblyController::class, "lineassembly"])
 
 Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
 
+
+
+
+Route::get("deliveryschedule/index", [DSNewController::class, "index"])->name("indexds");
+Route::get("deliveryschedule/finalwip/index", [DSNewController::class, "indexfinal"])->name("indexfinalwip");

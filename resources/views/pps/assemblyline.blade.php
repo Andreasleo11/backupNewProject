@@ -7,7 +7,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-body p-0">
-                    <h1>LineMenu for assembly
+                    <h1>Line Menu for assembly
                     </h1>
 
                     <a href="{{ route('finalresultassembly') }}" class="btn btn-secondary float-right"> Lanjut</a>
