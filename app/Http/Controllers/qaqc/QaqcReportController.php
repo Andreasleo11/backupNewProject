@@ -575,5 +575,4 @@ class QaqcReportController extends Controller
 
         return redirect()->back()->with(['success' => 'Report rejected automatically!']);
     }
-
 }

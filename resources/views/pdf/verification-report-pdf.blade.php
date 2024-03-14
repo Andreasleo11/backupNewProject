@@ -101,8 +101,8 @@
                 <th class="align-middle">Verify Quantity</th>
                 <th class="align-middle">Can Use</th>
                 <th class="align-middle">Can't Use</th>
-                <th class="align-middle">Customer Defect Detail</th>
                 <th class="align-middle">Daijo Defect Detail</th>
+                <th class="align-middle">Customer Defect Detail</th>
 
                 <!-- Add more headers as needed -->
             </tr>

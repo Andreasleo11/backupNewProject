@@ -163,7 +163,7 @@
 
                                 <div class="d-flex">
                                     <form action="{{route('qaqc.report.redirect.to.index')}}" method="get">
-                                        <button type="submit" class="btn btn-success">Finish</button>
+                                        <button type="submit" class="btn btn-success" id="finishBtn">Finish</button>
                                     </form>
                                 </div>
                             </div>
@@ -174,13 +174,51 @@
         </div>
     </div>
 </div>
-
+@include('partials.info-modal')
+<button type="button" id="showModalBtn" class="d-none" data-bs-toggle="modal" data-bs-target="#info-modal">test</button>
 @endsection
 
 
 @push('extraJs')
     <script>
-       @foreach ($details as $detail)
+
+        let details = {!! json_encode($details) !!};
+        console.log(details);
+
+        details.forEach(detail => {
+            let totalVerifyQuantity = detail.verify_quantity;
+            let defects = detail.defects;
+            console.log(defects);
+
+            // Calculate the sum of quantity for all defects of this detail
+            let totalDefectQuantity = defects.reduce((total, defect) => total + defect.quantity, 0);
+
+            console.log("total verify quantity: " + totalVerifyQuantity);
+            console.log("total defect quantity: " + totalDefectQuantity);
+
+            // Check if the sum of verify_quantity is greater than the sum of defect quantities
+            if (totalDefectQuantity > totalVerifyQuantity) {
+                // alert('Verify quantity is greater than accumulated defect quantity for detail: ' + detail.id);
+                // Update modal content
+                document.getElementById('modalTitle').textContent = 'Verify Quantity Alert';
+                document.getElementById('modalBody').textContent = 'Verify quantity is greater than accumulated defect quantity for ' + detail.part_name;
+
+                // Show Modal
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Find the button element
+                    let showModalBtn = document.getElementById('showModalBtn');
+
+                    // Trigger the button click
+                    showModalBtn.click();
+                    const finishBtn = document.getElementById('finishBtn');
+                    finishBtn.disabled = true;
+                });
+            } else {
+                finishBtn.disabled = false;
+            }
+        });
+
+        @foreach ($details as $detail)
             const checkCustomerDefect{{ $detail->id }} = document.getElementById('checkCustomerDefect{{ $detail->id }}');
             const checkDaijoDefect{{ $detail->id }} = document.getElementById('checkDaijoDefect{{ $detail->id }}');
             const customerDefectGroup{{ $detail->id }} = document.getElementById('customerDefectGroup{{ $detail->id }}');

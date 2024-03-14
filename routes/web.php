@@ -265,7 +265,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
 
-
 Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
 Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
 Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
@@ -277,18 +276,11 @@ Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDet
 
 // ROUTE PURCHASING
 
-
-
 /////// TESTING FOR EMAILING FEATURE
-
-
 
 Route::get('/send-email', [MailController::class, 'sendEmail']);
 
-
 /////// TESTING FOR EMAILING FEATURES
 
-
-
-Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg') ;
-Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr') ;
+Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
+Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
