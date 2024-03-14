@@ -55,7 +55,7 @@
                         <div class="form-group mt-3">
                             <div id="itemsContainer">
                                 <label class="form-label">List of Items</label>
-                                <div id="items"></div>
+                                <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
                                 <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add Item</button>
                             </div>
                         </div>
@@ -94,11 +94,33 @@
 <script>
     // Counter for creating unique IDs for items
     let itemIdCounter = 0;
+    let isFirstCall = true; // Flag to track the first call
 
     function addNewItem() {
         // Create a new item container
         const newItemContainer = document.createElement('div');
         newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center');
+
+        if (isFirstCall) {
+            // Define header labels and their corresponding column sizes
+            const headerLabels = ['Count', 'Item Name', 'Quantity', 'Unit Price', 'Subtotal', 'Purpose', 'Action'];
+            const columnSizes = ['col-md-1', 'col-md-3', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2', 'col-md-1'];
+
+            // Create header row and add header labels with specified column sizes
+            const headerRow = document.createElement('div');
+            headerRow.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center', 'header-row');
+
+            headerLabels.forEach((label, index) => {
+                const headerLabel = document.createElement('div');
+                headerLabel.classList.add(columnSizes[index], 'text-center', 'header-label', 'fw-semibold');
+                headerLabel.textContent = label;
+                headerRow.appendChild(headerLabel);
+            });
+
+            document.getElementById('items').appendChild(headerRow);
+
+            isFirstCall = false; // Update the flag to indicate that headers are added
+        }
 
         const countGroup = document.createElement('div')
         countGroup.classList.add('count-group', 'col-md-1' ,'text-center');
@@ -131,7 +153,7 @@
 
                     // Populate dropdown with fetched item names
                     if(data.length > 0){
-                        console.log(data);
+                        // console.log(data);
                         data.forEach(item => {
                             const option = document.createElement('option');
                             option.classList.add('dropdown-item')
@@ -161,7 +183,7 @@
         document.addEventListener('click', function(event){
             if(!itemNameInput.contains(event.traget) && !itemDropdown.contains(event.target)){
                 itemDropdown.style.display = 'none';
-                console.log(itemNameInput.value);
+                // console.log(itemNameInput.value);
             }
         });
 
@@ -192,8 +214,20 @@
 
         formGroupUnitPriceInput.appendChild(unitPriceInput);
 
+        const formGroupSubtotalInput = document.createElement('div');
+        formGroupSubtotalInput.classList.add('col-md-2');
+
+        const subtotalInput = document.createElement('input');
+        subtotalInput.classList.add('form-control');
+        subtotalInput.type = 'number';
+        subtotalInput.disabled = true;
+        subtotalInput.id = `subtotal-${itemIdCounter}`;
+        subtotalInput.value = 0;
+
+        formGroupSubtotalInput.appendChild(subtotalInput);
+
         const formGroupPurposeInput = document.createElement('div')
-        formGroupPurposeInput.classList.add('col-md-4');
+        formGroupPurposeInput.classList.add('col-md-2');
 
         const purposeInput = document.createElement('input');
         purposeInput.classList.add('form-control');
@@ -219,11 +253,19 @@
         newItemContainer.appendChild(formGroupName);
         newItemContainer.appendChild(formGroupQuantityInput);
         newItemContainer.appendChild(formGroupUnitPriceInput);
+        newItemContainer.appendChild(formGroupSubtotalInput);
         newItemContainer.appendChild(formGroupPurposeInput);
         newItemContainer.appendChild(actionGroup);
 
         // Append the new item container to the items container
         document.getElementById('items').appendChild(newItemContainer);
+
+        quantityInput.addEventListener('input', function(){
+            subtotalInput.value = parseFloat(quantityInput.value) * parseFloat(unitPriceInput.value);
+        });
+        unitPriceInput.addEventListener('input', function(){
+            subtotalInput.value = parseFloat(quantityInput.value) * parseFloat(unitPriceInput.value);
+        });
 
         // Increment the item ID counter
         itemIdCounter++;
@@ -259,11 +301,13 @@
         });
     }
 
+    addNewItem();
+
     // Add event listener for DOMContentLoaded event
     document.addEventListener('DOMContentLoaded', function() {
-            // Call addNewItem function when the DOM content is loaded
-            addNewItem();
-        });
+        // Call addNewItem function when the DOM content is loaded
+
+    });
 </script>
 
 @endsection
