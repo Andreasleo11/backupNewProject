@@ -29,25 +29,25 @@
     }
     </style>
 
-
-
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
             <div class="card">
                 <div class="container p-5">
-                    <span class="h2 ">Create Purchase Request</span>
-                    <form action="{{route('purchaserequest.insert')}}" method="POST" class="row ">
+                    <span class="h2 ">Edit Purchase Request</span>
+                    <form action="{{route('purchaserequest.update', $pr->id)}}" method="POST" class="row ">
+                        @method('PUT')
                         @csrf
 
                         <div class="form-group mt-5">
                             <label class="form-label" for="to_department">To Department</label>
                             <select class="form-select" name="to_department" id="to_department" required>
-                                <option value="" selected disabled>Select department..</option>
-                                <option value="Maintenance">Maintenance</option>
-                                <option value="Purchasing">Purchasing</option>
-                                <option value="Personnel">Personnel</option>
-                                <option value="Computer">Computer</option>
+                                <option value="{{ $pr->to_department }}" selected>{{ $pr->to_department }}</option>
+                                @foreach(['Maintenance', 'Purchasing', 'Personnel', 'Computer'] as $option)
+                                    @if($option !== $pr->to_department)
+                                        <option value="{{ $option }}">{{ $option }}</option>
+                                    @endif
+                                @endforeach
                             </select>
                             <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                         </div>
@@ -62,22 +62,22 @@
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label" for="date_of_pr">Date of PR</label>
-                            <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required>
+                            <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required value="{{ $pr->date_pr }}">
                         </div>
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label" for="date_of_required">Date of Required</label>
-                            <input class="form-control" type="date" name="date_of_required" required>
+                            <input class="form-control" type="date" name="date_of_required" required value="{{ $pr->date_required }}">
                         </div>
 
                         <div class="form-group mt-3">
                             <label class="form-label col-sm-2" for="supplier">Supplier</label>
-                            <input class="form-control" type="text" name="supplier" required>
+                            <input class="form-control" type="text" name="supplier" required value="{{ $pr->supplier }}">
                         </div>
 
                         <div class="form-group mt-3">
                             <label class="form-label" for="remark">Remark</label>
-                            <textarea class="form-control" name="remark" rows="4" cols="50" required></textarea>
+                            <textarea class="form-control" name="remark" rows="4" cols="50" required>{{ $pr->remark }}</textarea>
                         </div>
 
                         <button class="btn btn-primary mt-3" type="submit">Submit</button>
@@ -90,12 +90,17 @@
 </body>
 
 
-
 <script>
     // Counter for creating unique IDs for items
     let itemIdCounter = 0;
 
-    function addNewItem() {
+    let details = {!! json_encode($details) !!};
+
+    details.forEach(detail => {
+        addNewItem(detail);
+    });
+
+    function addNewItem($detail = null) {
         // Create a new item container
         const newItemContainer = document.createElement('div');
         newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center');
@@ -114,6 +119,7 @@
         itemNameInput.type = 'text';
         itemNameInput.name = `items[${itemIdCounter}][item_name]`;
         itemNameInput.placeholder = 'Item Name';
+        itemNameInput.value = $detail?.item_name ?? "";
 
         const itemNameDropdown = document.createElement('div');
         itemNameDropdown.id = 'itemDropdown';
@@ -177,6 +183,7 @@
         quantityInput.type = 'number';
         quantityInput.name = `items[${itemIdCounter}][quantity]`;
         quantityInput.placeholder = 'Qty';
+        quantityInput.value = $detail?.quantity ?? "";
 
         formGroupQuantityInput.appendChild(quantityInput);
 
@@ -189,6 +196,7 @@
         unitPriceInput.type = 'number';
         unitPriceInput.name = `items[${itemIdCounter}][price]`;
         unitPriceInput.placeholder = 'Unit Price';
+        unitPriceInput.value = $detail?.price ?? ""
 
         formGroupUnitPriceInput.appendChild(unitPriceInput);
 
@@ -201,6 +209,7 @@
         purposeInput.type = 'text';
         purposeInput.name = `items[${itemIdCounter}][purpose]`;
         purposeInput.placeholder = 'Purpose';
+        purposeInput.value = $detail?.purpose ?? "";
 
         formGroupPurposeInput.appendChild(purposeInput);
 
@@ -259,11 +268,6 @@
         });
     }
 
-    // Add event listener for DOMContentLoaded event
-    document.addEventListener('DOMContentLoaded', function() {
-            // Call addNewItem function when the DOM content is loaded
-            addNewItem();
-        });
 </script>
 
 @endsection

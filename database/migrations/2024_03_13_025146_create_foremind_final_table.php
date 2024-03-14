@@ -28,10 +28,6 @@ return new class extends Migration
             $table->double("Quantity_BomWip",12,5)->nullable();
             $table->double("material_prediction",12,5)->nullable();
             $table->string("U/M")->nullable();
-
-
-            $table->date("forecast_date")->nullable();
-            $table->integer("quantity")->nullable();
             $table->timestamps();
         });
     }

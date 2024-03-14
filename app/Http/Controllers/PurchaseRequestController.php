@@ -24,15 +24,29 @@ class PurchaseRequestController extends Controller
         $labels = $departments->pluck('to_department');
         $counts = $departments->pluck('count');
 
-        $userDepartmentName = Auth::user()->department->name;
+        $user = Auth::user();
+        $userDepartmentName = $user->department->name;
 
         $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
             ->whereHas('createdBy.department', function($query)use ($userDepartmentName) {
                 $query->where('name', '=', $userDepartmentName);
             })
-            ->paginate(10);
+            ->paginate(9);
 
-            // TODO: Filter must adjusted for verificator and director to view all
+
+        if ($userDepartmentName == "HRD" && $user->is_head == 1) {
+            $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
+                ->whereNotNull('autograph_1')
+                ->whereNotNull('autograph_2')
+                ->whereNull('autograph_3')
+                ->paginate(9);
+        } else if($userDepartmentName == "DIRECTOR"){
+            $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
+                ->whereNotNull('autograph_1')
+                ->whereNotNull('autograph_2')
+                ->whereNotNull('autograph_3')
+                ->paginate(9);
+        }
 
         return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
     }
@@ -83,6 +97,14 @@ class PurchaseRequestController extends Controller
         $purchaseRequest->update(['pr_no' => $prNo]);
 
         // update revisi 26 februari
+        $this->verifyAndInsertItems($request, $purchaseRequest->id);
+
+        // update revisi 26 februari
+
+        return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
+    }
+
+    private function verifyAndInsertItems($request, $id){
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];
@@ -102,7 +124,7 @@ class PurchaseRequestController extends Controller
 
                     // Create the DetailPurchaseRequest record
                     DetailPurchaseRequest::create([
-                        'purchase_request_id' => $purchaseRequest->id,
+                        'purchase_request_id' => $id,
                         'item_name' => $itemName,
                         'quantity' => $quantity,
                         'purpose' => $purpose,
@@ -122,7 +144,7 @@ class PurchaseRequestController extends Controller
 
                                     // Create the DetailPurchaseRequest record
                                 DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'purchase_request_id' => $id,
                                     'item_name' => $itemName,
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
@@ -137,7 +159,7 @@ class PurchaseRequestController extends Controller
 
                                 // Create the DetailPurchaseRequest record
                                 DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'purchase_request_id' => $id,
                                     'item_name' => $itemName,
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
@@ -146,7 +168,7 @@ class PurchaseRequestController extends Controller
                             }
                         } else{
                             DetailPurchaseRequest::create([
-                                'purchase_request_id' => $purchaseRequest->id,
+                                'purchase_request_id' => $id,
                                 'item_name' => $itemName,
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
@@ -163,7 +185,7 @@ class PurchaseRequestController extends Controller
 
                                     // Create the DetailPurchaseRequest record
                                 DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'purchase_request_id' => $id,
                                     'item_name' => $itemName,
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
@@ -179,7 +201,7 @@ class PurchaseRequestController extends Controller
 
                                 // Create the DetailPurchaseRequest record
                                 DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $purchaseRequest->id,
+                                    'purchase_request_id' => $id,
                                     'item_name' => $itemName,
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
@@ -188,7 +210,7 @@ class PurchaseRequestController extends Controller
                             }
                         } else {
                             DetailPurchaseRequest::create([
-                                'purchase_request_id' => $purchaseRequest->id,
+                                'purchase_request_id' => $id,
                                 'item_name' => $itemName,
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
@@ -199,10 +221,6 @@ class PurchaseRequestController extends Controller
                 }
             }
         }
-
-        // update revisi 26 februari
-
-        return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
     public function viewAll()
@@ -386,6 +404,35 @@ class PurchaseRequestController extends Controller
         ]);
 
         return redirect()->back()->with(['success' => 'Purchase Request rejected']);
+    }
+
+    public function edit($id){
+        $pr = PurchaseRequest::find($id);
+        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
+        return view('purchaseRequest.edit', compact('pr', 'details'));
+    }
+
+    public function update(Request $request, $id){
+        $validated= $request->validate([
+            'to_department' => 'string|max:255',
+            'date_of_pr' => 'date',
+            'date_required' => 'date',
+            'remark' => 'string',
+            'supplier' => 'string',
+        ]);
+
+        PurchaseRequest::find($id)->update($validated);
+
+        DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
+
+        $this->verifyAndInsertItems($request, $id);
+        return redirect()->route('purchaserequest.home')->with(['success' => 'Purchase request updated successfully!']);
+    }
+
+    public function destroy($id){
+        PurchaseRequest::find($id)->delete();
+        DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
+        return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
     }
 
 }

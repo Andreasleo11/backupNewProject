@@ -31,7 +31,7 @@ class QaqcMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Qaqc Mail',
+            subject: $this->mailData['subject'],
             from: Auth::user()->email,
             cc: $this->mailData['cc'],
         );

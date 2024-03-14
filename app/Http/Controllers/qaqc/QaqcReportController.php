@@ -548,13 +548,14 @@ class QaqcReportController extends Controller
         $filePath = Storage::url($fileName);
 
         $mailData = [
+            'subject' => 'QAQC Mail',
             'title' => 'Mail from ' . env('APP_NAME'),
             'body' => 'This is for testing email using smtp.',
             'cc' => ['andreasleonardo.al@gmail.com'],
             'file_path' => $filePath
         ];
 
-        // TODO: WORKS BUT USING MINE
+        // TODO: UNDER DEVELOPMENT
         Mail::to('raymondlay023@gmail.com')->send(new QaqcMail($mailData));
 
 

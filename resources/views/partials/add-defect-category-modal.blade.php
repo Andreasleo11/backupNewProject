@@ -1,4 +1,4 @@
-<div class="modal fade" tabindex="-1" class="modal fade" id="add-defect-category-modal" aria-labelledby="addDefectCategoryModal" aria-hidden="true">
+<div class="modal" tabindex="-1" id="add-defect-category-modal-{{ $detail->id }}" aria-labelledby="addDefectCategoryModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
           <form method="POST" action="{{ route('qaqc.defectcategory.store') }}">

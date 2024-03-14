@@ -51,6 +51,17 @@
                                 <a href="{{ route('purchaserequest.detail', ['id' => $pr->id]) }}" class="btn btn-secondary">
                                     <i class='bx bx-info-circle' ></i> Detail
                                 </a>
+                                @if($pr->user_id_create === Auth::user()->id)
+                                    @if ($pr->status == 1 && $pr->status != -1)
+                                        <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
+                                            <i class='bx bx-edit'></i></i> Edit
+                                        </a>
+                                        @include('partials.delete-pr-modal', ['id' => $pr->id, 'doc_num' => $pr->doc_num])
+                                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-pr-modal-{{ $pr->id }}">
+                                            <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
+                                        </button>
+                                    @endif
+                                @endif
                             </td>
                             <td>
                                 @if($pr->status === -1)

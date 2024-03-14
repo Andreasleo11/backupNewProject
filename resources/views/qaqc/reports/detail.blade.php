@@ -13,7 +13,6 @@
 @endpush
 
 @section('content')
-
     <section>
         <div class="row">
             <div class="col">
@@ -26,14 +25,18 @@
                 </nav>
             </div>
             <div class="col-auto">
-                <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-primary">
-                    <i class='bx bx-envelope' ></i>
-                    Send mail
-                </a>
+                {{-- TODO: EMAIL FEATURE --}}
+                @if(Auth::user()->name == 'Deni')
+                    <button class="btn btn-outline-primary me-2" data-bs-target="#send-mail-modal" data-bs-toggle="modal">
+                        <i class='bx bx-envelope' ></i> Send mail
+                    </button>
+                    @include('partials.send-mail-modal', ['report' => $report])
+
+                    <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test email</a>
+                @endif
                 <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
                     <i class='bx bx-upload'></i> Upload
                 </button>
-
                 @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
             </div>
         </div>

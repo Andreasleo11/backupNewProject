@@ -105,9 +105,9 @@
                                                     <h5>2. Add Defects for <span class="fw-semibold">{{ $detail->part_name }}</span> </h5>
                                                 </div>
                                                 <div class="col-auto">
-                                                    <a href="" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-defect-modal-{{ $detail->id }}">+ Add Defect</a>
-                                                    <a href="" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#add-defect-category-modal">+ Add Defect Category</a>
+                                                    <a class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#add-defect-modal-{{ $detail->id }}">+ Add Defect</a>
                                                     @include('partials.add-defect-modal')
+                                                    <a class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#add-defect-category-modal-{{ $detail->id }}">+ Add Defect Category</a>
                                                     @include('partials.add-defect-category-modal')
                                                 </div>
                                             </div>

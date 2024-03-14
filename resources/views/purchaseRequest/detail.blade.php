@@ -16,11 +16,13 @@
 <div class="row">
     <div class="col"></div>
     <div class="col-auto">
-        <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
-            <i class='bx bx-upload'></i> Upload
-        </button>
+        @if(Auth::user()->id == $userCreatedBy->id)
+            <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                <i class='bx bx-upload'></i> Upload
+            </button>
 
-        @include('partials.upload-files-modal', ['doc_id' => $purchaseRequest->doc_num])
+            @include('partials.upload-files-modal', ['doc_id' => $purchaseRequest->doc_num])
+        @endif
     </div>
 </div>
 
@@ -231,10 +233,12 @@
                                 <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}" class="pt-1 pb-0 btn btn-success">
                                     <i class='bx bxs-download'></i>
                                 </a>
-                                <button class="pt-1 pb-0 btn btn-danger" onclick="document.getElementById('deleteForm').submit();">
-                                    <i class='bx bxs-trash-alt'></i>
-                                </button>
-                                <form id="deleteForm" action="{{ route('file.delete', $file->id) }}" method="post"> @csrf @method('DELETE')</form>
+                                @if(Auth::user()->id == $userCreatedBy->id)
+                                    <button class="pt-1 pb-0 btn btn-danger" onclick="document.getElementById('deleteForm').submit();">
+                                        <i class='bx bxs-trash-alt'></i>
+                                    </button>
+                                    <form id="deleteForm" action="{{ route('file.delete', $file->id) }}" method="post"> @csrf @method('DELETE')</form>
+                                @endif
                             </div>
                         </div>
                     </div>
