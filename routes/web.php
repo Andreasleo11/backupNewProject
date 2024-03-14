@@ -60,6 +60,12 @@ use App\Http\Controllers\pps\PPSInjectionController;
 
 use App\Http\Controllers\DSNewController;
 
+
+
+
+
+use App\Http\Controllers\HolidayListController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -370,3 +376,8 @@ Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"
 
 Route::get("deliveryschedule/index", [DSNewController::class, "index"])->name("indexds");
 Route::get("deliveryschedule/finalwip/index", [DSNewController::class, "indexfinal"])->name("indexfinalwip");
+
+
+Route::get("setting/holiday-list", [HolidayListController::class, "index"])->name("indexholiday");
+Route::get("setting/holiday-list/create", [HolidayListController::class, "create"])->name("createholiday");
+Route::post('setting/input/holidays', [HolidayListController::class, 'store'])->name('holidays.store');

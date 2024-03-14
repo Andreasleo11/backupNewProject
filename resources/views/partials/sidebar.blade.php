@@ -156,6 +156,22 @@
                 </li>               
             </ul>
 
+
+            <li class="sidebar-item" id="sidebar-item-setting">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bx-dots-horizontal-rounded' ></i>
+                <span>setting</span>
+            </a>
+            <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexholiday') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Holiday List
+                    </a>
+                </li>               
+            </ul>
+
         
 		<li class="sidebar-item" id="sidebar-item-purchaseRequest">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
