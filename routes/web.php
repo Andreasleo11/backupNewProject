@@ -296,7 +296,6 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
 Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
 
-
 Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
 
 Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
