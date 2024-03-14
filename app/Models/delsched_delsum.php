@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class delsched_delfilter extends Model
+class delsched_delsum extends Model
 {
-    protected $table = 'delsched_delfilter';
+    protected $table = 'delsched_delsum';
 }

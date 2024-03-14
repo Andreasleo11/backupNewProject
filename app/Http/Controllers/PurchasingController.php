@@ -21,7 +21,7 @@ class PurchasingController extends Controller
          $forecasts = ForemindFinal::all();
          $transformedData = [];
 
-                 // Get unique months from all forecasts
+         // Get unique months from all forecasts
          $allMonths = [];
 
          foreach ($forecasts as $forecast) {
@@ -32,8 +32,6 @@ class PurchasingController extends Controller
          // Ensure unique months and sort them
          $uniqueMonths = array_unique($allMonths);
          sort($uniqueMonths);
-
-
 
         // Fetch your materials data from the database
         $materials = DB::table('forecast_material_predictions')->get();
