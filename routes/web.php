@@ -199,6 +199,9 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::put('/director/qaqc/reject/{id}', [ReportController::class, 'reject'])->name('director.qaqc.reject');
         Route::put('/director/qaqc/approveSelected', [ReportController::class, 'approveSelected'])->name('director.qaqc.approveSelected');
         Route::put('/director/qaqc/rejectSelected', [ReportController::class, 'rejectSelected'])->name('director.qaqc.rejectSelected');
+
+        Route::put('/director/pr/approveSelected', [PurchaseRequestController::class, 'approveSelected'])->name('director.pr.approveSelected');
+        Route::put('/director/pr/rejectSelected', [PurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected');
     });
 
     Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function(){

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\DirectorPurchaseRequestDataTable;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
@@ -14,7 +15,7 @@ use App\Models\MasterDataPr;
 
 class PurchaseRequestController extends Controller
 {
-    public function index()
+    public function index(DirectorPurchaseRequestDataTable $datatable)
     {
         // Get user information
         $user = Auth::user();
@@ -61,7 +62,8 @@ class PurchaseRequestController extends Controller
         // $counts = $departments->pluck('count');
 
         // return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
-        return view('purchaseRequest.index', compact('purchaseRequests'));
+        // return view('purchaseRequest.index', compact('purchaseRequests'));
+        return $datatable->render('purchaseRequest.index', compact('purchaseRequests'));
     }
 
     public function getChartData(Request $request, $year, $month)
@@ -446,6 +448,47 @@ class PurchaseRequestController extends Controller
         PurchaseRequest::find($id)->delete();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
+    }
+
+    public function approveSelected(Request $request){
+        $ids = $request->input('ids', []);
+
+        if(empty($ids)) {
+            return response()->json(['message' => 'No records selected for approval. (server)']);
+        } else {
+            try {
+                foreach ($ids as $id) {
+                    PurchaseRequest::find($id)->update(['status' => 4]);
+                }
+                return response()->json(['message'=>'selected records approved successfully. (server)']);
+            } catch (\Throwable $th) {
+                return response()->json(['message'=>'failed to approve selected records. (server)']);
+                throw $th;
+            }
+        }
+
+    }
+
+    public function rejectSelected(Request $request){
+        $ids = $request->input('ids', []);
+        $rejectionReason = $request->input('rejection_reason');
+
+        if(empty($ids)) {
+            return response()->json(['message' => 'No records selected for rejection. (server)']);
+        }
+
+        try {
+            foreach ($ids as $id) {
+                PurchaseRequest::find($id)->update([
+                    'status' => -1,
+                    'description' => $rejectionReason
+                ]);
+            }
+            return response()->json(['message'=>'selected records rejected successfully. (server)']);
+        } catch (\Throwable $th) {
+            return response()->json(['message'=>'failed to reject selected records. (server)']);
+            throw $th;
+        }
     }
 
 }
