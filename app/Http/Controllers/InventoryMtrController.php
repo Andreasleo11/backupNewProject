@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\sapInventoryMtr;
 
+use App\DataTables\sapInventoryMtrDataTable;
+
 class InventoryMtrController extends Controller
 {
-    public function index()
+    public function index(sapInventoryMtrDataTable $dataTable)
     {
-        $datas = sapInventoryMtr::paginate(10);
+        // $datas = sapInventoryMtr::paginate(10);
 
 
-        return view("sap.inventorymtr", compact("datas"));
+        
+        return $dataTable->render("sap.inventorymtr");
     }
 }

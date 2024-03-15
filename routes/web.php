@@ -62,10 +62,12 @@ use App\Http\Controllers\DSNewController;
 
 
 
-
-
 use App\Http\Controllers\HolidayListController;
 
+
+
+
+use App\Http\Controllers\PurchasingReminderController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -377,7 +379,13 @@ Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"
 Route::get("deliveryschedule/index", [DSNewController::class, "index"])->name("indexds");
 Route::get("deliveryschedule/finalwip/index", [DSNewController::class, "indexfinal"])->name("indexfinalwip");
 
-
+//adding holiday list feature
 Route::get("setting/holiday-list", [HolidayListController::class, "index"])->name("indexholiday");
 Route::get("setting/holiday-list/create", [HolidayListController::class, "create"])->name("createholiday");
-Route::post('setting/input/holidays', [HolidayListController::class, 'store'])->name('holidays.store');
+Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
+//adding holiday list feature
+
+//reminder feature 
+Route::get("purchasing/reminder", [PurchasingReminderController::class, "index"])->name('reminderindex');
+Route::get("purchasing/reminder/detail", [PurchasingReminderController::class, "detail"])->name('reminderdetail');
+//reminder feature

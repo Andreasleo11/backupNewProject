@@ -156,6 +156,50 @@
                 </li>               
             </ul>
 
+            <li class="sidebar-item" id="sidebar-item-list">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bx-dots-horizontal-rounded' ></i>
+                <span>listitem</span>
+            </a>
+            <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-list">
+                    <a href="{{ route('inventoryfg') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Inventory FG
+                    </a>
+                </li>           
+                
+                <li class="sidebar-list">
+                    <a href="{{ route('inventorymtr') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Inventory MTR
+                    </a>
+                </li>           
+            </ul>
+
+            <li class="sidebar-item" id="sidebar-item-purchasing">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bx-dots-horizontal-rounded' ></i>
+                <span>Purchasing</span>
+            </a>
+            <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-purchasing">
+                    <a href="{{ route('purchasing.landing') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Forecast Prediction
+                    </a>
+                </li>           
+                
+                <li class="sidebar-purchasing">
+                    <a href="{{ route('reminderindex') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Reminder
+                    </a>
+                </li>           
+            </ul>
+
 
             <li class="sidebar-item" id="sidebar-item-setting">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
