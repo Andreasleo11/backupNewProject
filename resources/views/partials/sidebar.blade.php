@@ -147,12 +147,14 @@
                         Form Keluar
                     </a>
                 </li>
-                <li class="sidebar-item">
-                    <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Defect Categories
-                    </a>
-                </li>
+                @if(Auth::user()->department->name === "QA" || Auth::user()->department->name === "QC")
+                    <li class="sidebar-item">
+                        <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Defect Categories
+                        </a>
+                    </li>
+                @endif
             </ul>
         </li>
 

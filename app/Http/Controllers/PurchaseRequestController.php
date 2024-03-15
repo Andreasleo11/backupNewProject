@@ -16,39 +16,52 @@ class PurchaseRequestController extends Controller
 {
     public function index()
     {
-        $departments = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
-        ->groupBy('to_department')
-        ->get();
-
-        // Prepare data for the chart
-        $labels = $departments->pluck('to_department');
-        $counts = $departments->pluck('count');
-
+        // Get user information
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
+        $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
 
-        $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
-            ->whereHas('createdBy.department', function($query)use ($userDepartmentName) {
-                $query->where('name', '=', $userDepartmentName);
-            })
-            ->paginate(9);
+        // Determine conditions based on user department and role
+        $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy', 'createdBy.department');
 
-
-        if ($userDepartmentName == "HRD" && $user->is_head == 1) {
-            $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
-                ->whereNotNull('autograph_1')
+        if ($isHRDHead) {
+            // If the user is HRD Head, filter requests with specific conditions
+            $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
                 ->whereNull('autograph_3')
-                ->paginate(9);
-        } else if($userDepartmentName == "DIRECTOR"){
-            $purchaseRequests = PurchaseRequest::with('files', 'createdBy', 'createdBy.department')
-                ->whereNotNull('autograph_1')
+                ->where('status', 2);
+
+            $purchaseRequestsQuery;
+        } elseif ($userDepartmentName === "DIRECTOR") {
+            // If the user is a director, filter requests with specific conditions
+            $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
                 ->whereNotNull('autograph_3')
-                ->paginate(9);
+                ->where('status', 3);
+        } else {
+            // Otherwise, filter requests based on user department
+            $purchaseRequestsQuery->whereHas('createdBy.department', function ($query) use ($userDepartmentName) {
+                $query->where('name', '=', $userDepartmentName);
+            });
         }
 
-        return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
+        $purchaseRequests = $purchaseRequestsQuery
+            ->orderByRaw('CASE WHEN status != -1 THEN 0 ELSE 1 END')
+            ->orderBy('updated_at', 'desc')
+            ->orderBy('status', 'desc')
+            ->paginate(10);
+
+        // // Get department-wise purchase request counts for chart
+        // $departments = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
+        //     ->groupBy('to_department')
+        //     ->get();
+
+        // // Prepare data for the chart
+        // $labels = $departments->pluck('to_department');
+        // $counts = $departments->pluck('count');
+
+        // return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
+        return view('purchaseRequest.index', compact('purchaseRequests'));
     }
 
     public function getChartData(Request $request, $year, $month)
