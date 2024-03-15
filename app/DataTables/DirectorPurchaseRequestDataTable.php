@@ -90,8 +90,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
     {
         return $model->whereNotNull('autograph_1')
         ->whereNotNull('autograph_2')
-        ->whereNotNull('autograph_3')
-        ->where('status', 3)->newQuery();
+        ->whereNotNull('autograph_3')->newQuery();
     }
 
     /**
