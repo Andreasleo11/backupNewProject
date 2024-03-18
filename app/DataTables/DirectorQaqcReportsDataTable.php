@@ -87,22 +87,22 @@ class DirectorQaqcReportsDataTable extends DataTable
         return [
             Column::computed('select_all')
                 ->addClass('check_all')
+                ->title('')
                 ->width(50)
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center')
-                ->addClass('align-middle'),
-            Column::make('doc_num')->addClass('align-middle')->addClass('text-center'),
-            Column::make('invoice_no')->addClass('align-middle')->addClass('text-center'),
-            Column::make('customer')->addClass('align-middle')->addClass('text-center'),
-            Column::make('rec_date')->addClass('align-middle')->addClass('text-center'),
-            Column::make('verify_date')->addClass('align-middle')->addClass('text-center'),
+                ->addClass('text-center align-middle'),
+            Column::make('doc_num')->addClass('text-center align-middle'),
+            Column::make('invoice_no')->addClass('text-center align-middle'),
+            Column::make('customer')->addClass('text-center align-middle'),
+            Column::make('rec_date')->addClass('text-center align-middle'),
+            Column::make('verify_date')->addClass('text-center align-middle'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center')
-                ->addClass('align-middle')->addClass('text-center'),
-            Column::make('is_approve')->title('Status')->data('is_approve')->addClass('align-middle')->addClass('text-center')
+                ->addClass('text-center align-middle'),
+            Column::make('is_approve')->title('Status')->data('is_approve')->addClass('text-center align-middle')
                 ->renderRaw('function(data, type, row, meta){
                     if (type === \'display\') {
                         if (data === 1) {

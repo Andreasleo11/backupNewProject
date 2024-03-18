@@ -24,7 +24,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', '<div class="d-flex">
+            ->addColumn('action', '
                                     <a href="{{ route("purchaserequest.detail", ["id" => $id]) }}" class="btn btn-secondary me-2">
                                         <i class="bx bx-info-circle" ></i> Detail
                                     </a>
@@ -59,7 +59,6 @@ class DirectorPurchaseRequestDataTable extends DataTable
                                             </button>
                                         @endif
                                     @endif
-                                </div>
                                 ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$status}}-{{$doc_num}}" />')
             // ->addColumn('status', '@if($pr->status === -1)
@@ -126,19 +125,19 @@ class DirectorPurchaseRequestDataTable extends DataTable
         return [
             Column::computed('select_all')
                 ->addClass('check_all')
+                ->title('')
                 ->width(50)
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center align-middle'),
-            Column::make('id')->addClass('text-center align-middle'),
+                ->addClass('text-center')
+                ->addClass('align-middle'),
+            Column::make('pr_no')->addClass('text-center align-middle'),
             Column::make('date_pr')->addClass('text-center align-middle'),
             Column::make('to_department')->addClass('text-center align-middle'),
-            Column::make('pr_no')->addClass('text-center align-middle'),
             Column::make('supplier')->addClass('text-center align-middle'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(60)
                   ->addClass('text-center align-middle'),
             Column::make('status')->addClass('text-center align-middle')->renderRaw(
                 'function(data, type, row, meta){
