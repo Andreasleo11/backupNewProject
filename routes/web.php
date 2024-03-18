@@ -68,6 +68,10 @@ use App\Http\Controllers\HolidayListController;
 
 
 use App\Http\Controllers\PurchasingReminderController;
+
+use App\Http\Controllers\PurchasingRequirementController;
+
+use App\Http\Controllers\ProjectTrackerController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -375,9 +379,11 @@ Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"
 
 
 
-
+// newDS feature
 Route::get("deliveryschedule/index", [DSNewController::class, "index"])->name("indexds");
 Route::get("deliveryschedule/finalwip/index", [DSNewController::class, "indexfinal"])->name("indexfinalwip");
+// newDS feature
+
 
 //adding holiday list feature
 Route::get("setting/holiday-list", [HolidayListController::class, "index"])->name("indexholiday");
@@ -389,3 +395,16 @@ Route::post('setting/input/holidays', [HolidayListController::class, "store"])->
 Route::get("purchasing/reminder", [PurchasingReminderController::class, "index"])->name('reminderindex');
 Route::get("purchasing/reminder/detail", [PurchasingReminderController::class, "detail"])->name('reminderdetail');
 //reminder feature
+
+
+Route::get("purchasing/requirement", [PurchasingRequirementController::class, "index"])->name("purchasingrequirement.index");
+Route::get("purchasing/requirement/detail", [PurchasingRequirementController::class, "detail"])->name("purchasingrequirement.detail");
+
+Route::get("projecttracker/index", [ProjectTrackerController::Class, "index"])->name("pt.index");
+Route::get("projecttracker/create", [ProjectTrackerController::Class, "create"])->name("pt.create");
+Route::post("projecttracker/post", [ProjectTrackerController::class, "store"])->name("pt.store");
+Route::get("projecttracker/detail/{id}", [ProjectTrackerController::class, "detail"])->name("pt.detail");
+Route::put('projecttracker/{id}/update-ongoing', [ProjectTrackerController::class, 'updateOngoing'])->name('pt.updateongoing');
+Route::put('projecttracker/{id}/update-test', [ProjectTrackerController::class, 'updateTest'])->name('pt.updatetest');
+Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
+Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');

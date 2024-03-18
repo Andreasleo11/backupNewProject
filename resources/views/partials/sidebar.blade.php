@@ -116,13 +116,13 @@
             </li> --}}
         @endif
 
-        <li class="sidebar-item" id="sidebar-item-purchaseRequest">
+        <li class="sidebar-item" id="sidebar-item-Business">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
+                data-bs-target="#businessitem" aria-expanded="false" aria-controls="purchaseRequest">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
-                <span>Bussiness</span>
+                <span>Business</span>
             </a>
-            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+            <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
                     <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
@@ -130,7 +130,7 @@
                     </a>
                 </li>               
             </ul>
-            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+            <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
                     <a href="{{ route('indexds') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
@@ -141,13 +141,13 @@
         </li>
 
 
-        <li class="sidebar-item" id="sidebar-item-purchaseRequest">
+        <li class="sidebar-item" id="sidebar-item-production">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
+                data-bs-target="#productionitem" aria-expanded="false" aria-controls="purchaseRequest">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
                 <span>Production</span>
             </a>
-            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+            <ul id="productionitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
                     <a href="{{ route('indexpps') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
@@ -158,11 +158,11 @@
 
             <li class="sidebar-item" id="sidebar-item-list">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
+                data-bs-target="#inventoryitem" aria-expanded="false" aria-controls="setting">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
-                <span>listitem</span>
+                <span>Inventory</span>
             </a>
-            <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+            <ul id="inventoryitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-list">
                     <a href="{{ route('inventoryfg') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
@@ -180,11 +180,11 @@
 
             <li class="sidebar-item" id="sidebar-item-purchasing">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
+                data-bs-target="#purchasingitem" aria-expanded="false" aria-controls="setting">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
                 <span>Purchasing</span>
             </a>
-            <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+            <ul id="purchasingitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-purchasing">
                     <a href="{{ route('purchasing.landing') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
@@ -197,7 +197,14 @@
                         <i class='bx bx-file'></i>
                         Reminder
                     </a>
-                </li>           
+                </li>       
+                
+                <li class="sidebar-purchasing">
+                    <a href="{{ route('purchasingrequirement.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Purchasing Requirement
+                    </a>
+                </li>       
             </ul>
 
 
@@ -252,6 +259,12 @@
                     <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Defect Categories
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('pt.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Project Tracker
                     </a>
                 </li>
             </ul>
