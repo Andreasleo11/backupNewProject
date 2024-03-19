@@ -5,51 +5,57 @@
         <div class="row justify-content-center">
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card shadow h-100 py-2" style="border-left: 3px solid blue;">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="fs-5 fw-bold text-primary text-uppercase mb-1">Approved</div>
-                                <div class="h4 mb-0 fw-bold text-secondary">{{ $approvedDoc}}</div>
-                            </div>
-                            <div class="col-auto">
-                                <box-icon name='check' color="gray" size="lg"></box-icon>
+                <a href="{{ route('qaqc.report.index') }}">
+                    <div class="card shadow h-100 py-2 btn btn-light text-start" style="border-left: 3px solid green;">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="fs-5 fw-bold text-success text-uppercase mb-1">Approved</div>
+                                    <div class="h4 mb-0 fw-bold text-secondary">{{ $approvedDoc }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <box-icon name='check' color="gray" size="lg"></box-icon>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card shadow h-100 py-2" style="border-left: 3px solid green;">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="fs-5 fw-bold text-success text-uppercase mb-1">Waiting</div>
-                                <div class="h4 mb-0 fw-bold text-secondary">{{$waitingDoc}}</div>
-                            </div>
-                            <div class="col-auto">
-                                <box-icon name='time' color="gray" size="lg"></box-icon>
+                <a href="{{ route('qaqc.report.index') }}">
+                    <div class="card shadow h-100 py-2 btn btn-light text-start" style="border-left: 3px solid orange;">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="fs-5 fw-bold text-warning text-uppercase mb-1">Waiting</div>
+                                    <div class="h4 mb-0 fw-bold text-secondary">{{ $waitingDoc }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <box-icon name='time' color="gray" size="lg"></box-icon>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card shadow h-100 py-2" style="border-left: 3px solid red;">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col mr-2">
-                                <div class="fs-5 fw-bold text-danger text-uppercase mb-1">Rejected</div>
-                                <div class="h4 mb-0 fw-bold text-secondary">{{$rejectedDoc}}</div>
-                            </div>
-                            <div class="col-auto">
-                                <box-icon name='x-circle' color="gray" size="lg"></box-icon>
+                <a href="{{ route('qaqc.report.index') }}">
+                    <div class="card shadow h-100 py-2 btn btn-light text-start" style="border-left: 3px solid red;">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="fs-5 fw-bold text-danger text-uppercase mb-1">Rejected</div>
+                                    <div class="h4 mb-0 fw-bold text-secondary">{{ $rejectedDoc }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <box-icon name='x-circle' color="gray" size="lg"></box-icon>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
         </div>
@@ -134,12 +140,15 @@
                 for (let i = 0; i < numWeeks; i++) {
                     const weekStart = new Date(currentDate);
                     const weekEnd = new Date(currentDate.setDate(currentDate.getDate() + 6));
-                    labels.push(`Week ${i + 1}: ${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`);
+                    labels.push(
+                        `Week ${i + 1}: ${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`);
                     currentDate.setDate(currentDate.getDate() + 1); // Move to the next week
                 }
 
                 // Update chart data
-                datas = Array.from({ length: numWeeks }, () => Math.floor(Math.random() * 100)); // Generate random data for each week
+                datas = Array.from({
+                    length: numWeeks
+                }, () => Math.floor(Math.random() * 100)); // Generate random data for each week
                 myChart.data.labels = labels;
                 myChart.data.datasets[0].data = datas;
 
@@ -155,5 +164,4 @@
             window.addEventListener('resize', updateChart);
         });
     </script>
-
 @endpush

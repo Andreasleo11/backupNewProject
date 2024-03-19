@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e672f932eae32f28f1307c61c307b8db",
+    "content-hash": "61a895b2f49d8beff1b638f0052beaff",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -85,26 +85,26 @@
         },
         {
             "name": "barryvdh/laravel-snappy",
-            "version": "v1.0.2",
+            "version": "v1.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/barryvdh/laravel-snappy.git",
-                "reference": "940eec2d99b89cbc9bea2f493cf068382962a485"
+                "reference": "716dcb6db24de4ce8e6ae5941cfab152af337ea0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-snappy/zipball/940eec2d99b89cbc9bea2f493cf068382962a485",
-                "reference": "940eec2d99b89cbc9bea2f493cf068382962a485",
+                "url": "https://api.github.com/repos/barryvdh/laravel-snappy/zipball/716dcb6db24de4ce8e6ae5941cfab152af337ea0",
+                "reference": "716dcb6db24de4ce8e6ae5941cfab152af337ea0",
                 "shasum": ""
             },
             "require": {
-                "illuminate/filesystem": "^9|^10",
-                "illuminate/support": "^9|^10",
-                "knplabs/knp-snappy": "^1.4",
+                "illuminate/filesystem": "^9|^10|^11.0",
+                "illuminate/support": "^9|^10|^11.0",
+                "knplabs/knp-snappy": "^1.4.4",
                 "php": ">=7.2"
             },
             "require-dev": {
-                "orchestra/testbench": "^7|^8"
+                "orchestra/testbench": "^7|^8|^9.0"
             },
             "type": "library",
             "extra": {
@@ -147,7 +147,7 @@
             ],
             "support": {
                 "issues": "https://github.com/barryvdh/laravel-snappy/issues",
-                "source": "https://github.com/barryvdh/laravel-snappy/tree/v1.0.2"
+                "source": "https://github.com/barryvdh/laravel-snappy/tree/v1.0.3"
             },
             "funding": [
                 {
@@ -159,7 +159,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-04-07T10:38:54+00:00"
+            "time": "2024-03-09T19:20:39+00:00"
         },
         {
             "name": "brick/math",
@@ -1605,21 +1605,21 @@
             "time": "2023-12-03T19:50:20+00:00"
         },
         {
-            "name": "h4cc/wkhtmltoimage-i386",
+            "name": "h4cc/wkhtmltoimage-amd64",
             "version": "0.12.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/h4cc/wkhtmltoimage-i386.git",
-                "reference": "64f7a1c7d1e42d6741e22a080206c00c4899e88b"
+                "url": "https://github.com/h4cc/wkhtmltoimage-amd64.git",
+                "reference": "c4e33f635207af89a704205b8902fb5715ca88be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/h4cc/wkhtmltoimage-i386/zipball/64f7a1c7d1e42d6741e22a080206c00c4899e88b",
-                "reference": "64f7a1c7d1e42d6741e22a080206c00c4899e88b",
+                "url": "https://api.github.com/repos/h4cc/wkhtmltoimage-amd64/zipball/c4e33f635207af89a704205b8902fb5715ca88be",
+                "reference": "c4e33f635207af89a704205b8902fb5715ca88be",
                 "shasum": ""
             },
             "bin": [
-                "bin/wkhtmltoimage-i386"
+                "bin/wkhtmltoimage-amd64"
             ],
             "type": "library",
             "notification-url": "https://packagist.org/downloads/",
@@ -1632,7 +1632,7 @@
                     "email": "github@h4cc.de"
                 }
             ],
-            "description": "Convert html to image using webkit (qtwebkit). Static linked linux binary for i386 systems.",
+            "description": "Convert html to image using webkit (qtwebkit). Static linked linux binary for amd64 systems.",
             "homepage": "http://wkhtmltopdf.org/",
             "keywords": [
                 "binary",
@@ -1643,29 +1643,34 @@
                 "wkhtmltoimage"
             ],
             "support": {
-                "issues": "https://github.com/h4cc/wkhtmltoimage-i386/issues",
-                "source": "https://github.com/h4cc/wkhtmltoimage-i386/tree/master"
+                "issues": "https://github.com/h4cc/wkhtmltoimage-amd64/issues",
+                "source": "https://github.com/h4cc/wkhtmltoimage-amd64/tree/master"
             },
-            "time": "2018-01-15T07:28:21+00:00"
+            "time": "2018-01-15T07:23:40+00:00"
         },
         {
-            "name": "h4cc/wkhtmltopdf-i386",
+            "name": "h4cc/wkhtmltopdf-amd64",
             "version": "0.12.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/h4cc/wkhtmltopdf-i386.git",
-                "reference": "da14486ec8eba1873b026b56126ed02d2f2ae5e3"
+                "url": "https://github.com/h4cc/wkhtmltopdf-amd64.git",
+                "reference": "4e2ab2d032a5d7fbe2a741de8b10b8989523c95b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/h4cc/wkhtmltopdf-i386/zipball/da14486ec8eba1873b026b56126ed02d2f2ae5e3",
-                "reference": "da14486ec8eba1873b026b56126ed02d2f2ae5e3",
+                "url": "https://api.github.com/repos/h4cc/wkhtmltopdf-amd64/zipball/4e2ab2d032a5d7fbe2a741de8b10b8989523c95b",
+                "reference": "4e2ab2d032a5d7fbe2a741de8b10b8989523c95b",
                 "shasum": ""
             },
             "bin": [
-                "bin/wkhtmltopdf-i386"
+                "bin/wkhtmltopdf-amd64"
             ],
             "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "h4cc\\WKHTMLToPDF\\": ""
+                }
+            },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL Version 3"
@@ -1676,7 +1681,7 @@
                     "email": "github@h4cc.de"
                 }
             ],
-            "description": "Convert html to pdf using webkit (qtwebkit). Static linked linux binary for i386 systems.",
+            "description": "Convert html to pdf using webkit (qtwebkit). Static linked linux binary for amd64 systems.",
             "homepage": "http://wkhtmltopdf.org/",
             "keywords": [
                 "binary",
@@ -1687,10 +1692,10 @@
                 "wkhtmltopdf"
             ],
             "support": {
-                "issues": "https://github.com/h4cc/wkhtmltopdf-i386/issues",
-                "source": "https://github.com/h4cc/wkhtmltopdf-i386/tree/master"
+                "issues": "https://github.com/h4cc/wkhtmltopdf-amd64/issues",
+                "source": "https://github.com/h4cc/wkhtmltopdf-amd64/tree/master"
             },
-            "time": "2018-01-15T07:18:15+00:00"
+            "time": "2018-01-15T06:57:33+00:00"
         },
         {
             "name": "knplabs/knp-snappy",

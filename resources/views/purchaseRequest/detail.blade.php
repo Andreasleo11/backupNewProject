@@ -2,113 +2,134 @@
 @push('extraCss')
     <style>
         .autograph-box {
-            width: 200px; /* Adjust the width as needed */
-            height: 100px; /* Adjust the height as needed */
+            width: 200px;
+            /* Adjust the width as needed */
+            height: 100px;
+            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #ccc; /* Add border for better visibility */
+            border: 1px solid #ccc;
+            /* Add border for better visibility */
         }
     </style>
 @endpush
 
 @section('content')
 
-<div class="row">
-    <div class="col"></div>
-    <div class="col-auto">
-        @if(Auth::user()->id == $userCreatedBy->id)
-            <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
-                <i class='bx bx-upload'></i> Upload
-            </button>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col-auto">
+            @if (Auth::user()->id == $userCreatedBy->id)
+                <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                    <i class='bx bx-upload'></i> Upload
+                </button>
 
-            @include('partials.upload-files-modal', ['doc_id' => $purchaseRequest->doc_num])
+                @include('partials.upload-files-modal', ['doc_id' => $purchaseRequest->doc_num])
+            @endif
+        </div>
+    </div>
+
+    <div class="mt-4">
+        @if ($message = Session::get('success'))
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <i class='bx bx-check-circle me-2' style="font-size:20px;"></i>
+                {{ $message }}
+                <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+            </div>
+        @elseif ($errors->any())
+            <div class="alert alert-danger alert-dismissable fade show" role="alert">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <div>
+                        <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
         @endif
     </div>
-</div>
 
-<div class="mt-4">
-    @if ($message = Session::get('success'))
-        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-            <i class='bx bx-check-circle me-2' style="font-size:20px;" ></i>
-            {{ $message }}
-            <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @elseif ($errors->any())
-        <div class="alert alert-danger alert-dismissable fade show" role="alert">
-            <div class="d-flex">
-                <div class="flex-grow-1">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-                <div>
-                    <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+    <section aria-label="header" class="container">
+        <div class="row text-center">
+            <div class="col">
+                <h2>Preparation</h2>
+                <div class="autograph-box container" id="autographBox1"></div>
+                <div class="container mt-2" id="autographuser1"></div>
+            </div>
+
+            @include('partials.reject-pr-confirmation', $purchaseRequest)
+
+            <div class="col">
+                <h2>Dept Head</h2>
+                <div class="autograph-box container" id="autographBox2"></div>
+                <div class="container mt-2 border-1" id="autographuser2"></div>
+                @if (Auth::check() &&
+                        Auth::user()->department &&
+                        Auth::user()->is_head == 1 &&
+                        Auth::user()->department == $userCreatedBy->department &&
+                        $purchaseRequest->status == 1)
+                    <div class="row px-4 d-flex justify-content-center">
+                        <div class="col-auto me-3">
+                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                class="btn btn-danger">Reject</button>
+                        </div>
+                        <div class="col-auto">
+                            <button id="btn2" class="btn btn-success"
+                                onclick="addAutograph(2, {{ $purchaseRequest->id }})">Approve</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <div class="col">
+                <h2>Verificator</h2>
+                <div class="autograph-box container" id="autographBox3"></div>
+                <div class="container mt-2 border-1" id="autographuser3"></div>
+                @if (Auth::check() &&
+                        Auth::user()->department->name == 'HRD' &&
+                        Auth::user()->is_head == 1 &&
+                        $purchaseRequest->status == 2)
+                    <div class="row px-4 d-flex justify-content-center">
+                        <div class="col-auto me-3">
+                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                class="btn btn-danger">Reject</button>
+                        </div>
+                        <div class="col-auto">
+                            <button id="btn3" class="btn btn-success"
+                                onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <div class="col">
+                <h2>Director</h2>
+                <div class="autograph-box container" id="autographBox4"></div>
+                <div class="container mt-2 border-1" id="autographuser4"></div>
+                @if (Auth::check() && Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3)
+                    <div class="row px-4 d-flex justify-content-center ">
+                        <div class="col-auto me-3">
+                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                class="btn btn-danger">Reject</button>
+                        </div>
+                        <div class="col-auto">
+                            <button id="btn4" class="btn btn-success"
+                                onclick="addAutograph(4, {{ $purchaseRequest->id }}, {{ $user->id }})">Approve</button>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
-    @endif
-</div>
+    </section>
 
-<section aria-label="header" class="container">
-    <div class="row text-center">
-        <div class="col">
-            <h2>Preparation</h2>
-            <div class="autograph-box container" id="autographBox1"></div>
-            <div class="container mt-2" id="autographuser1"></div>
-        </div>
-
-        @include('partials.reject-pr-confirmation', $purchaseRequest)
-
-        <div class="col">
-            <h2>Dept Head</h2>
-            <div class="autograph-box container" id="autographBox2"></div>
-            <div class="container mt-2 border-1" id="autographuser2"></div>
-            @if(Auth::check() &&  Auth::user()->department && Auth::user()->is_head == 1 && Auth::user()->department == $userCreatedBy->department && $purchaseRequest->status == 1)
-            <div class="row px-4 d-flex justify-content-center">
-                <div class="col-auto me-3">
-                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation" class="btn btn-danger">Reject</button></div>
-                <div class="col-auto">
-                    <button id="btn2" class="btn btn-success" onclick="addAutograph(2, {{ $purchaseRequest->id }})">Approve</button>
-                </div>
-            </div>
-            @endif
-        </div>
-
-        <div class="col">
-            <h2>Verificator</h2>
-            <div class="autograph-box container" id="autographBox3"></div>
-            <div class="container mt-2 border-1" id="autographuser3"></div>
-            @if(Auth::check() && Auth::user()->department->name == "HRD" && Auth::user()->is_head == 1  && $purchaseRequest->status == 2)
-            <div class="row px-4 d-flex justify-content-center">
-                <div class="col-auto me-3">
-                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation" class="btn btn-danger">Reject</button></div>
-                <div class="col-auto">
-                    <button id="btn3" class="btn btn-success" onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
-                </div>
-            </div>
-            @endif
-        </div>
-
-        <div class="col">
-            <h2>Director</h2>
-            <div class="autograph-box container" id="autographBox4"></div>
-            <div class="container mt-2 border-1" id="autographuser4"></div>
-            @if(Auth::check() && Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3)
-            <div class="row px-4 d-flex justify-content-center ">
-                <div class="col-auto me-3">
-                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation" class="btn btn-danger">Reject</button></div>
-                <div class="col-auto">
-                    <button id="btn4" class="btn btn-success" onclick="addAutograph(4, {{ $purchaseRequest->id }}, {{$user->id}})">Approve</button>
-                </div>
-            </div>
-            @endif
-        </div>
-    </div>
-</section>
-
-<section aria-label="table-report" class="container mt-5">
+    <section aria-label="table-report" class="container mt-5">
         <div class="card">
             <div class="mt-4 text-center">
                 <span class="h1 fw-semibold">Purchase Requisition</span> <br>
@@ -136,9 +157,9 @@
                                 <td>: {{ $purchaseRequest->pr_no }}</td>
                             </tr>
                             <tr>
-                            <th>Supplier</th>
+                                <th>Supplier</th>
                                 <td>: {{ $purchaseRequest->supplier }}</td>
-                            <th>Remark</th>
+                                <th>Remark</th>
                                 <td>: {{ $purchaseRequest->remark }}</td>
                             </tr>
                         </tbody>
@@ -166,22 +187,22 @@
                         @endphp
                         <tbody>
                             @forelse($purchaseRequest->itemDetail as $detail)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ $detail->item_name}}</td>
-                                <td>{{ $detail->quantity}}</td>
-                                <td>{{ $detail->purpose}}</td>
-                                <td> @currency($detail->price) </td>
-                                <td> @currency($detail->master->price) </td>
-                                <td> @currency($detail->quantity * $detail->price) </td>
-                                @php
-                                    $totalall += $detail->quantity * $detail->price; // Update the total
-                                @endphp
-                            </tr>
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $detail->item_name }}</td>
+                                    <td>{{ $detail->quantity }}</td>
+                                    <td>{{ $detail->purpose }}</td>
+                                    <td> @currency($detail->price) </td>
+                                    <td> @currency($detail->master->price) </td>
+                                    <td> @currency($detail->quantity * $detail->price) </td>
+                                    @php
+                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                    @endphp
+                                </tr>
                             @empty
-                            <tr>
-                                <td colspan="7">No Data</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="7">No Data</td>
+                                </tr>
                             @endforelse
                         </tbody>
                         <tfoot>
@@ -202,17 +223,18 @@
             @forelse ($files as $file)
                 @if (!function_exists('formatFileSize'))
                     @php
-                    function formatFileSize($bytes) {
-                        if ($bytes < 1024) {
-                            return $bytes . ' bytes';
-                        } else if ($bytes < 1024 * 1024) {
-                            return number_format($bytes / 1024, 2) . ' KB';
-                        } else if ($bytes < 1024 * 1024 * 1024) {
-                            return number_format($bytes / (1024 * 1024), 2) . ' MB';
-                        } else {
-                            return number_format($bytes / (1024 * 1024 * 1024), 2) . ' GB';
+                        function formatFileSize($bytes)
+                        {
+                            if ($bytes < 1024) {
+                                return $bytes . ' bytes';
+                            } elseif ($bytes < 1024 * 1024) {
+                                return number_format($bytes / 1024, 2) . ' KB';
+                            } elseif ($bytes < 1024 * 1024 * 1024) {
+                                return number_format($bytes / (1024 * 1024), 2) . ' MB';
+                            } else {
+                                return number_format($bytes / (1024 * 1024 * 1024), 2) . ' GB';
+                            }
                         }
-                    }
                     @endphp
                 @endif
                 @php
@@ -230,14 +252,17 @@
                                 <span>{{ formatFileSize($file->size) }}</span>
                             </div>
                             <div class="col-auto">
-                                <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}" class="pt-1 pb-0 btn btn-success">
+                                <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}"
+                                    class="pt-1 pb-0 btn btn-success">
                                     <i class='bx bxs-download'></i>
                                 </a>
-                                @if(Auth::user()->id == $userCreatedBy->id)
-                                    <button class="pt-1 pb-0 btn btn-danger" onclick="document.getElementById('deleteForm').submit();">
+                                @if (Auth::user()->id == $userCreatedBy->id)
+                                    <button class="pt-1 pb-0 btn btn-danger"
+                                        onclick="document.getElementById('deleteForm').submit();">
                                         <i class='bx bxs-trash-alt'></i>
                                     </button>
-                                    <form id="deleteForm" action="{{ route('file.delete', $file->id) }}" method="post"> @csrf @method('DELETE')</form>
+                                    <form id="deleteForm" action="{{ route('file.delete', $file->id) }}" method="post">
+                                        @csrf @method('DELETE')</form>
                                 @endif
                             </div>
                         </div>
@@ -252,7 +277,6 @@
 
 @push('extraJs')
     <script>
-
         // Function to add autograph to the specified box
         function addAutograph(section, prId) {
             // Get the div element
@@ -265,34 +289,33 @@
             var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
             console.log('image path :', imageUrl);
 
-            autographBox.style.backgroundImage = "url('" +imageUrl + "')";
+            autographBox.style.backgroundImage = "url('" + imageUrl + "')";
 
             // Make an AJAX request to save the image path
             fetch('/save-signature-path/' + prId + '/' + section, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({
-                    imagePath: imageUrl,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        imagePath: imageUrl,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
 
             checkAutographStatus(prId);
         }
 
 
-        function checkAutographStatus(reportId)
-        {
+        function checkAutographStatus(reportId) {
             // Assume you have a variable from the server side indicating the autograph status
             var autographs = {
                 autograph_1: '{{ $purchaseRequest->autograph_1 ?? null }}',
@@ -319,7 +342,7 @@
                 // Check if autograph status is present in the database
                 if (autographs['autograph_' + i]) {
 
-                    if(btnId){
+                    if (btnId) {
                         // console.log(btnId);
                         btnId.style.display = 'none';
                     }
@@ -338,9 +361,8 @@
         }
 
         // Call the function to check autograph status on page load
-        window.onload = function () {
+        window.onload = function() {
             checkAutographStatus({{ $purchaseRequest->id }});
         };
-
     </script>
 @endpush

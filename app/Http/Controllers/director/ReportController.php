@@ -4,6 +4,7 @@ namespace App\Http\Controllers\director;
 
 use App\DataTables\DirectorQaqcReportsDataTable;
 use App\Http\Controllers\Controller;
+use App\Models\File;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,7 @@ class ReportController extends Controller
     public function detail($id)
     {
         $report = Report::with('details')->find($id);
+        $files = File::where('doc_id', $report->doc_num)->get();
         $user =  Auth::user();
         foreach($report->details as $pd){
                     $data1 = json_decode($pd->daijo_defect_detail);
@@ -43,7 +45,7 @@ class ReportController extends Controller
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('director.qaqc.detail', compact('report','user','autographNames'));
+        return view('director.qaqc.detail', compact('report','user','autographNames', 'files'));
     }
 
     public function approve($id)

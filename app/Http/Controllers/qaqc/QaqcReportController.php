@@ -31,6 +31,7 @@ class QaqcReportController extends Controller
     public function index()
     {
         $this->resetEditSessions();
+
         $reports = Report::orderBy('created_at', 'desc')->paginate(9);
 
         return view('qaqc.reports.index',compact('reports'));

@@ -3,11 +3,14 @@
 @push('extraCss')
     <style>
         .autograph-box {
-            width: 200px; /* Adjust the width as needed */
-            height: 100px; /* Adjust the height as needed */
+            width: 200px;
+            /* Adjust the width as needed */
+            height: 100px;
+            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #ccc; /* Add border for better visibility */
+            border: 1px solid #ccc;
+            /* Add border for better visibility */
         }
     </style>
 @endpush
@@ -18,21 +21,22 @@
             <div class="col">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
-                        <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('qaqc.home') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('qaqc.report.index') }}">Reports</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Detail</li>
                     </ol>
                 </nav>
             </div>
             <div class="col-auto">
                 {{-- TODO: EMAIL FEATURE --}}
-                @if(Auth::user()->name == 'Deni')
+                @if (Auth::user()->name == 'Deni')
                     <button class="btn btn-outline-primary me-2" data-bs-target="#send-mail-modal" data-bs-toggle="modal">
-                        <i class='bx bx-envelope' ></i> Send mail
+                        <i class='bx bx-envelope'></i> Send mail
                     </button>
                     @include('partials.send-mail-modal', ['report' => $report])
 
-                    <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test email</a>
+                    <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test
+                        email</a>
                 @endif
                 <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
                     <i class='bx bx-upload'></i> Upload
@@ -45,9 +49,10 @@
     <div class="mt-4">
         @if ($message = Session::get('success'))
             <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-                <i class='bx bx-check-circle me-2' style="font-size:20px;" ></i>
+                <i class='bx bx-check-circle me-2' style="font-size:20px;"></i>
                 {{ $message }}
-                <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert"
+                    aria-label="Close"></button>
             </div>
         @elseif ($errors->any())
             <div class="alert alert-danger alert-dismissable fade show" role="alert">
@@ -55,12 +60,13 @@
                     <div class="flex-grow-1">
                         <ul>
                             @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                                <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                     <div>
-                        <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        <button id="closeAlertButton" type="button" class="btn-close" data-bs-dismiss="alert"
+                            aria-label="Close"></button>
                     </div>
                 </div>
             </div>
@@ -76,7 +82,7 @@
                 <h2>QC Inspector</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
-                {{-- @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == "INSPECTOR")
+                {{-- @if (Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'INSPECTOR')
                     <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $report->id }})">Acc QC Inspector</button>
                 @endif --}}
             </div>
@@ -85,8 +91,9 @@
                 <h2>QC Leader</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
-                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'LEADER')
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QC Leader</button>
+                @if (Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'LEADER')
+                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(2, {{ $report->id }})">Acc QC
+                        Leader</button>
                 @endif
             </div>
 
@@ -94,8 +101,12 @@
                 <h2>QC Head</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
-                @if(Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'HEAD' && ($report->autograph_1 || $report->autograph_2) != null)
-                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3, {{ $report->id }}, {{$user->id}})">Acc QC Head</button>
+                @if (Auth::check() &&
+                        $currentUser->department->name == 'QC' &&
+                        $currentUser->specification->name == 'HEAD' &&
+                        ($report->autograph_1 || $report->autograph_2) != null)
+                    <button id="btn3" class="btn btn-primary"
+                        onclick="addAutograph(3, {{ $report->id }}, {{ $user->id }})">Acc QC Head</button>
                 @endif
             </div>
         </div>
@@ -106,8 +117,8 @@
             <div class="pt-4 text-center">
                 <span class="h1 fw-semibold">Verification Reports</span> <br>
                 <div class="mt-1">
-                    <span class="fs-5">{{ $report->doc_num ?? '-'}} </span> <br>
-                    <span class="fs-6 ">Created By : {{ $report->created_by ?? '-'}} </span>
+                    <span class="fs-5">{{ $report->doc_num ?? '-' }} </span> <br>
+                    <span class="fs-6 ">Created By : {{ $report->created_by ?? '-' }} </span>
                 </div>
                 @include('partials.vqc-status-badge')
                 <hr>
@@ -159,32 +170,38 @@
                             @forelse($report->details as $detail)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $detail->part_name}}</td>
-                                    <td>{{ $detail->rec_quantity}}</td>
-                                    <td>{{ $detail->verify_quantity}}</td>
-                                    <td>{{ $detail->can_use}}</td>
-                                    <td>{{ $detail->cant_use}}</td>
+                                    <td>{{ $detail->part_name }}</td>
+                                    <td>{{ $detail->rec_quantity }}</td>
+                                    <td>{{ $detail->verify_quantity }}</td>
+                                    <td>{{ $detail->can_use }}</td>
+                                    <td>{{ $detail->cant_use }}</td>
                                     <td colspan="3" class="p-0">
-                                        @foreach($detail->defects as $defect)
+                                        @foreach ($detail->defects as $defect)
                                             @if ($defect->is_daijo)
                                                 <table class="table table-borderless mb-0">
-                                                    <tbody class="text-center" >
-                                                        <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
-                                                        <td style="background-color: transparent; width:34%;"> {{ $defect->category->name }}</td>
-                                                        <td style="background-color: transparent"> {{ $defect->remarks}}</td>
+                                                    <tbody class="text-center">
+                                                        <td style="background-color: transparent; width:33%;">
+                                                            {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent; width:34%;">
+                                                            {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks }}
+                                                        </td>
                                                     </tbody>
                                                 </table>
                                             @endif
                                         @endforeach
                                     </td>
                                     <td colspan="3" class="p-0">
-                                        @foreach($detail->defects as $defect)
+                                        @foreach ($detail->defects as $defect)
                                             @if (!$defect->is_daijo)
                                                 <table class="table table-borderless mb-0">
-                                                    <tbody class="text-center" >
-                                                        <td style="background-color: transparent; width:33%;"> {{ $defect->quantity }}</td>
-                                                        <td style="background-color: transparent; width:34%;"> {{ $defect->category->name }}</td>
-                                                        <td style="background-color: transparent"> {{ $defect->remarks}}</td>
+                                                    <tbody class="text-center">
+                                                        <td style="background-color: transparent; width:33%;">
+                                                            {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent; width:34%;">
+                                                            {{ $defect->category->name }}</td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks }}
+                                                        </td>
                                                     </tbody>
                                                 </table>
                                             @endif
@@ -202,54 +219,7 @@
     </section>
 
     <section aria-label="uploaded">
-        <div class="container mt-5">
-            <h4 class="mb-3">Files</h4>
-            @forelse ($files as $file)
-                @if (!function_exists('formatFileSize'))
-                    @php
-                    function formatFileSize($bytes) {
-                        if ($bytes < 1024) {
-                            return $bytes . ' bytes';
-                        } else if ($bytes < 1024 * 1024) {
-                            return number_format($bytes / 1024, 2) . ' KB';
-                        } else if ($bytes < 1024 * 1024 * 1024) {
-                            return number_format($bytes / (1024 * 1024), 2) . ' MB';
-                        } else {
-                            return number_format($bytes / (1024 * 1024 * 1024), 2) . ' GB';
-                        }
-                    }
-                    @endphp
-                @endif
-                @php
-                    $filename = basename($file->name);
-                @endphp
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                LOGO
-                            </div>
-                            <div class="col text-secondary ">
-                                <span>{{ $filename }}</span> <br>
-                                <span>{{ $file->mime_type }}</span>
-                                <span>{{ formatFileSize($file->size) }}</span>
-                            </div>
-                            <div class="col-auto">
-                                <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}" class="pt-1 pb-0 btn btn-success">
-                                    <i class='bx bxs-download'></i>
-                                </a>
-                                <button class="pt-1 pb-0 btn btn-danger" onclick="document.getElementById('deleteForm').submit();">
-                                    <i class='bx bxs-trash-alt'></i>
-                                </button>
-                                <form id="deleteForm" action="{{ route('file.delete', $file->id) }}" method="post"> @csrf @method('DELETE')</form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <p>No Files Were Uploaded</p>
-            @endforelse
-        </div>
+        @include('partials.uploaded-section')
     </section>
 
     {{-- <section>
@@ -585,33 +555,32 @@
             var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
             console.log('image path :', imageUrl);
 
-            autographBox.style.backgroundImage = "url('" +imageUrl + "')";
+            autographBox.style.backgroundImage = "url('" + imageUrl + "')";
 
             // Make an AJAX request to save the image path
             fetch('/save-image-path/' + reportId + '/' + section, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({
-                    imagePath: imageUrl,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        imagePath: imageUrl,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
 
             checkAutographStatus(reportId);
         }
 
-        function checkAutographStatus(reportId)
-        {
+        function checkAutographStatus(reportId) {
             // Assume you have a variable from the server side indicating the autograph status
             var autographs = {
                 autograph_1: '{{ $report->autograph_1 ?? null }}',
@@ -637,7 +606,7 @@
                 // Check if autograph status is present in the database
                 if (autographs['autograph_' + i]) {
 
-                    if(btnId){
+                    if (btnId) {
                         // console.log(btnId);
                         btnId.style.display = 'none';
                     }
@@ -656,7 +625,7 @@
         }
 
         // Call the function to check autograph status on page load
-        window.onload = function () {
+        window.onload = function() {
             checkAutographStatus({{ $report->id }});
         };
 
@@ -664,15 +633,9 @@
 
         // Function to hide the alert after 3 seconds
         setTimeout(() => {
-            if(closeAlertButton){
+            if (closeAlertButton) {
                 closeAlertButton.click();
             }
         }, 3000);
     </script>
 @endpush
-
-
-
-
-
-

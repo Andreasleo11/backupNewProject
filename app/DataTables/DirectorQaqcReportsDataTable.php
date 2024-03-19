@@ -70,11 +70,13 @@ class DirectorQaqcReportsDataTable extends DataTable
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
+                        // Button::raw('copy')->titleAttr('Copy Data to Clipboard'),
                         // Button::make('pdf'),
                         Button::make('print'),
                         // Button::make('reset'),
                         // Button::make('reload')
                     ]);
+
     }
 
     /**
