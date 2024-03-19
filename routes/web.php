@@ -409,3 +409,15 @@ Route::put('projecttracker/{id}/update-ongoing', [ProjectTrackerController::clas
 Route::put('projecttracker/{id}/update-test', [ProjectTrackerController::class, 'updateTest'])->name('pt.updatetest');
 Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
 Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');
+
+
+
+Route::get("delsched/start1", [DeliveryScheduleController::class, "step1"])->name("deslsched.step1");
+Route::get("delsched/start2", [DeliveryScheduleController::class, "step2"])->name("deslsched.step2");
+Route::get("delsched/start3", [DeliveryScheduleController::class, "step3"])->name("deslsched.step3");
+Route::get("delsched/start4", [DeliveryScheduleController::class, "step4"])->name("deslsched.step4");
+
+
+Route::get("delsched/wip/step1", [DeliveryScheduleController::class, "step1wip"])->name("delschedwip.step1");
+Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
+

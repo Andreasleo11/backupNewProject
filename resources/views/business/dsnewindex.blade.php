@@ -22,7 +22,7 @@
        
 
         <a href="{{ route('indexfinalwip') }}" class="btn btn-secondary float-right"> WIP</a>
-        <a href="#" class="btn btn-secondary float-right"> Update</a>
+        <a href="{{ route('deslsched.step1') }}" class="btn btn-secondary float-right"> Update</a>
     </section>
 
 

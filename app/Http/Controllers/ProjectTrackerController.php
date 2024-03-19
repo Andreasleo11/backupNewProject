@@ -56,12 +56,17 @@ class ProjectTrackerController extends Controller
     public function detail($id)
     {
         $project = ProjectMaster::find($id);
+        $histories = $project->prohist()->get();
        
-        return view("projecttracker.detail", compact("project"));
+        return view("projecttracker.detail", compact("project", "histories"));
     }
 
-    public function updateOngoing($id)
+    public function updateOngoing(Request $request, $id)
     {
+        $request->validate([
+            'remark' => 'required|string|max:255', // Validation rule for the remark field
+        ]);
+
         $project = ProjectMaster::findOrFail($id);
 
         if ($project->start_date == null || $project->status == "Initiating") {
@@ -75,7 +80,8 @@ class ProjectTrackerController extends Controller
             $projectHistory->project_id = $project->id;
             $projectHistory->date = now();
             $projectHistory->status = "OnGoing";
-            // Add other project history data as needed
+            $projectHistory->remarks = $request->input('remark');
+           
             $projectHistory->save();
         }
     
@@ -83,8 +89,12 @@ class ProjectTrackerController extends Controller
         return redirect()->route('pt.index', $id);
     }
 
-    public function updateTest($id)
+    public function updateTest(Request $request,$id)
     {
+        $request->validate([
+            'remark' => 'required|string|max:255', // Validation rule for the remark field
+        ]);
+
         $project = ProjectMaster::findOrFail($id);
 
         if ($project->status == "OnGoing" || $project->status == "NeedToBeRevised") {
@@ -97,6 +107,7 @@ class ProjectTrackerController extends Controller
             $projectHistory->project_id = $project->id;
             $projectHistory->date = now();
             $projectHistory->status = "ReadyToTest";
+            $projectHistory->remarks = $request->input('remark');
             // Add other project history data as needed
             $projectHistory->save();
         }
@@ -129,8 +140,12 @@ class ProjectTrackerController extends Controller
         return redirect()->route('pt.index', $id);
     }
 
-    public function updateAccept($id)
+    public function updateAccept(Request $request, $id)
     {
+        $request->validate([
+            'remark' => 'required|string|max:255', // Validation rule for the remark field
+        ]);
+
         $project = ProjectMaster::findOrFail($id);
 
         if ($project->status == "ReadyToTest") {
@@ -144,6 +159,7 @@ class ProjectTrackerController extends Controller
             $projectHistory->project_id = $project->id;
             $projectHistory->date = now();
             $projectHistory->status = "Accept";
+            $projectHistory->remarks = $request->input('remark');
             // Add other project history data as needed
             $projectHistory->save();
         }

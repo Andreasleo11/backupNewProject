@@ -22,7 +22,7 @@
 
 
         <a href="{{ route('indexds') }}" class="btn btn-secondary float-right"> FINAL DS</a>
-        <a href="#" class="btn btn-secondary float-right"> Update</a>
+        <a href="{{ route('delschedwip.step1') }}" class="btn btn-secondary float-right"> Update</a>
     </section>
 
      

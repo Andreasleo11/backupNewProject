@@ -47,6 +47,14 @@
                     </td>
                     <td class="table-bordered">{{ $currentCustomer }}</td>
                 </tr>
+                <tr>
+                    <td colspan="3" align=right><strong>Total</strong></td>
+                    @foreach ($monthlyTotals as $monthlyTotal)
+                        <td><strong>{{ $monthlyTotal }}</strong></td>
+                    @endforeach
+                    <td><strong>{{ array_sum($monthlyTotals) }}</strong></td>
+                    <td></td> <!-- Empty cell for customer -->
+                </tr>
             @endif
 
             <!-- Initialize for the new material code -->
@@ -69,6 +77,7 @@
             @endphp
         @endforeach
     @endforeach
+
 
     <!-- Print the final row for the last material -->
     <tr>

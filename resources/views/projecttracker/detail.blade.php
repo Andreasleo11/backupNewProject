@@ -2,8 +2,36 @@
 
 @section('content')
 
+
+
 <div class="container">
     <div class="card">
+    @if($project->status == "Initiating")
+    <div class="progress" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 10%"></div>
+    </div>
+    @endif
+    @if($project->status == "OnGoing")
+    <div class="progress" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 30%"></div>
+    </div>
+    @endif
+    @if($project->status == "ReadyToTest")
+    <div class="progress" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 60%"></div>
+    </div>
+    @endif
+    @if($project->status == "NeedToBeRevised")
+    <div class="progress" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 80%"></div>
+    </div>
+    @endif
+
+    @if($project->status == "Accept")
+    <div class="progress" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="height: 12px">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+    </div>
+    @endif
         <div class="card-header">{{ $project->project_name }}</div>
         <div class="card-body">
             <p><strong>Department:</strong> {{ $project->dept }}</p>
@@ -17,11 +45,24 @@
     </div>
 </div>
 
+            @if ($histories->isEmpty())
+                <p>No historical data available</p>
+            @else
+            @foreach ($histories as $history)
+                <p><strong>Date:</strong> {{ $history->date }} &nbsp;&nbsp; <strong>Status:</strong> {{ $history->status }} &nbsp;&nbsp; <strong>Remark:</strong> {{ $history->remarks }}</p>
+            @endforeach
+            @endif
+
+
 
 @if ($project->start_date == null || $project->status == "Initiating")
     <form action="{{ route('pt.updateongoing', $project->id) }}" method="POST">
         @csrf
         @method('PUT')
+        <div class="form-group">
+            <label for="remark">Remark:</label>
+            <input type="text" id="remark" name="remark" class="form-control" required>
+        </div>
         <button type="submit" class="btn btn-primary">Start Project</button>
     </form>
 @endif
@@ -31,6 +72,10 @@
     <form action="{{ route('pt.updatetest', $project->id) }}" method="POST">
         @csrf
         @method('PUT')
+        <div class="form-group">
+            <label for="remark">Remark:</label>
+            <input type="text" id="remark" name="remark" class="form-control" required>
+        </div>
         <button type="submit" class="btn btn-primary">Go for Testing</button>
     </form>
 @endif
@@ -48,6 +93,10 @@
     <form action="{{ route('pt.updateaccept', $project->id) }}" method="POST">
         @csrf
         @method('PUT')
+        <div class="form-group">
+            <label for="remark">Remark:</label>
+            <input type="text" id="remark" name="remark" class="form-control" required>
+        </div>
         <button type="submit" class="btn btn-primary">Accept</button>
     </form>
 @endif

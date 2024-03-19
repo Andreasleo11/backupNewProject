@@ -23,6 +23,6 @@ class ProjectMaster extends Model
 
     public function prohist()
     {
-        return $this->hasMany(ProjectHistory::class);
+        return $this->hasMany(ProjectHistory::class, 'project_id', 'id');
     }
 }
