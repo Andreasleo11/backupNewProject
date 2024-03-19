@@ -56,7 +56,7 @@ use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSInjectionController;
 
 
-
+use App\Http\Controllers\DeliveryScheduleController;
 
 use App\Http\Controllers\DSNewController;
 
@@ -380,8 +380,9 @@ Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"
 
 
 // newDS feature
-Route::get("deliveryschedule/index", [DSNewController::class, "index"])->name("indexds");
-Route::get("deliveryschedule/finalwip/index", [DSNewController::class, "indexfinal"])->name("indexfinalwip");
+Route::get("deliveryschedule/index", [DeliveryScheduleController::class, "index"])->name("indexds");
+Route::get("deliveryschedule/finalwip/index", [DeliveryScheduleController::class, "indexfinal"])->name("indexfinalwip");
+
 // newDS feature
 
 

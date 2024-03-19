@@ -121,20 +121,12 @@
                 data-bs-target="#businessitem" aria-expanded="false" aria-controls="purchaseRequest">
                     <i class='bx bx-dots-horizontal-rounded' ></i>
                 <span>Business</span>
-            </a>
-            <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Delivery Schedule
-                    </a>
-                </li>               
-            </ul>
+            </a>            
             <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
                     <a href="{{ route('indexds') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
-                        DS NEW
+                        Delivery Schedule
                     </a>
                 </li>               
             </ul>
