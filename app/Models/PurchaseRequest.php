@@ -64,4 +64,19 @@ class PurchaseRequest extends Model
             $model->doc_num = $customId;
         });
     }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 4);
+    }
+
+    public function scopeWaiting($query)
+    {
+        return $query->where('status', 3);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', -1);
+    }
 }

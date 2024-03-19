@@ -234,8 +234,8 @@
             console.log('Section:', section);
             console.log('Report ID:', prId);
             var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
-            console.log('username :', username);
             var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
+            console.log('username :', username);
             console.log('image path :', imageUrl);
 
             autographBox.style.backgroundImage = "url('" + imageUrl + "')";

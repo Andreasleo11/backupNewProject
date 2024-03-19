@@ -87,4 +87,19 @@ class Report extends Model
             });
     }
 
+    public function scopeApproved($query)
+    {
+        return $query->withAutographs()->where('is_approve', 1);
+    }
+
+    public function scopeWaiting($query)
+    {
+        return $query->withAutographs()->whereNull('is_approve');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->withAutographs()->where('is_approve', 0);
+    }
+
 }
