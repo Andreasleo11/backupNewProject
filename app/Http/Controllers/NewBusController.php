@@ -78,9 +78,17 @@ class NewBusController extends Controller
 				$val_customer_name = $tab_sap_customer->customer_name;
 			}
 			
-			$ins_final = array('delivery_date' => $val_delivery_date_i, 'item_code' => $val_item_code_i, 'item_name' => $val_item_name, 'delivery_qty' => $val_delivery_qty_i, 
-			'so_number' => $val_so_number_i, 'doc_status' => 'O', 'packaging_code' => $val_packaging, 'standar_pack' => $val_standar_packaging,
-			'customer_code' => $val_customer_code, 'customer_name' => $val_customer_name, 'departement' => $val_departement);	
+			$ins_final = array('delivery_date' => $val_delivery_date_i, 
+			'item_code' => $val_item_code_i, 
+			'item_name' => $val_item_name, 
+			'delivery_qty' => $val_delivery_qty_i, 
+			'so_number' => $val_so_number_i, 
+			'doc_status' => 'O', 
+			'packaging_code' => $val_packaging, 
+			'standar_pack' => $val_standar_packaging,
+			'customer_code' => $val_customer_code, 
+			'customer_name' => $val_customer_name, 
+			'departement' => $val_departement);	
 			delsched_final::insert($ins_final);
 			
 		}
@@ -375,6 +383,14 @@ class NewBusController extends Controller
 		
 		return Redirect::action('NewBusController@delivery_schedule');
 	}
+
+
+
+
+
+	// wip section 
+
+
 	
 	public function delivery_schedule_wip()
     {

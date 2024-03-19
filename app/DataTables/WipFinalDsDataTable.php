@@ -51,6 +51,7 @@ class WipFinalDsDataTable extends DataTable
                     ->minifiedAjax()
                     //->dom('Bfrtip')
                     ->orderBy(1)
+                    
                     ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
@@ -88,7 +89,18 @@ class WipFinalDsDataTable extends DataTable
             Column::make('stock_wip'),
             Column::make('balance_wip'),
             Column::make('outstanding_wip'),
-            Column::make('status'),
+            Column::make('status')->data('status')->renderRaw('function(data, type, row, meta){
+                if (type === \'display\') {
+                    if (data === "light") {
+                        return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium"> Secure </span>\';
+                    } else if (data === "danger" ) {
+                        return \'<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">Danger</span>\';
+                    } else if (data === "warning"){
+                        return \'<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 f w-medium">Warning</span>\';
+                    }
+                }
+                return data; // Return the original data for other types
+            }'),
         ];
     }
 
