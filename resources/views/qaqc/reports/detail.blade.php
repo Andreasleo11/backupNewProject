@@ -219,7 +219,9 @@
     </section>
 
     <section aria-label="uploaded">
-        @include('partials.uploaded-section')
+        @include('partials.uploaded-section', [
+            'showDeleteButton' => Auth::user()->name == $report->autograph_user_1,
+        ])
     </section>
 
     {{-- <section>

@@ -218,60 +218,9 @@
     </section>
 
     <section aria-label="uploaded">
-        <div class="container mt-5">
-            <h4 class="mb-3">Files</h4>
-            @forelse ($files as $file)
-                @if (!function_exists('formatFileSize'))
-                    @php
-                        function formatFileSize($bytes)
-                        {
-                            if ($bytes < 1024) {
-                                return $bytes . ' bytes';
-                            } elseif ($bytes < 1024 * 1024) {
-                                return number_format($bytes / 1024, 2) . ' KB';
-                            } elseif ($bytes < 1024 * 1024 * 1024) {
-                                return number_format($bytes / (1024 * 1024), 2) . ' MB';
-                            } else {
-                                return number_format($bytes / (1024 * 1024 * 1024), 2) . ' GB';
-                            }
-                        }
-                    @endphp
-                @endif
-                @php
-                    $filename = basename($file->name);
-                @endphp
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-auto">
-                                LOGO
-                            </div>
-                            <div class="col text-secondary ">
-                                <span>{{ $filename }}</span> <br>
-                                <span>{{ $file->mime_type }}</span>
-                                <span>{{ formatFileSize($file->size) }}</span>
-                            </div>
-                            <div class="col-auto">
-                                <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}"
-                                    class="pt-1 pb-0 btn btn-success">
-                                    <i class='bx bxs-download'></i>
-                                </a>
-                                @if (Auth::user()->id == $userCreatedBy->id)
-                                    <button class="pt-1 pb-0 btn btn-danger"
-                                        onclick="document.getElementById('deleteForm').submit();">
-                                        <i class='bx bxs-trash-alt'></i>
-                                    </button>
-                                    <form id="deleteForm" action="{{ route('file.delete', $file->id) }}" method="post">
-                                        @csrf @method('DELETE')</form>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <p>No Files Were Uploaded</p>
-            @endforelse
-        </div>
+        @include('partials.uploaded-section', [
+            'showDeleteButton' => Auth::user()->id == $userCreatedBy->id,
+        ])
     </section>
 @endsection
 

@@ -170,7 +170,9 @@
     </section>
 
     <section aria-label="uploaded">
-        @include('partials.uploaded-section')
+        @include('partials.uploaded-section', [
+            'showDeleteButton' => false,
+        ])
     </section>
 
     <section aria-label="approval" class="container mt-5 mb-8">

@@ -452,13 +452,19 @@ class PurchaseRequestController extends Controller
 
     public function approveSelected(Request $request){
         $ids = $request->input('ids', []);
+        $username = Auth::user()->name;
+        $imageUrl = $username . '.png';
 
         if(empty($ids)) {
             return response()->json(['message' => 'No records selected for approval. (server)']);
         } else {
             try {
                 foreach ($ids as $id) {
-                    PurchaseRequest::find($id)->update(['status' => 4]);
+                    PurchaseRequest::find($id)->update([
+                        'autograph_4' => $imageUrl,
+                        'autograph_user_4' => $username,
+                        'status' => 4
+                    ]);
                 }
                 return response()->json(['message'=>'selected records approved successfully. (server)']);
             } catch (\Throwable $th) {

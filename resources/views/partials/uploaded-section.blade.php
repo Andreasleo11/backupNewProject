@@ -28,7 +28,7 @@
                     <div class="card m-4 ms-0 ">
                         <div class="card-body btn btn-light" style="max-width: 250px">
                             <div class="text-end">
-                                @if (Auth::user()->name == $report->autograph_name_1)
+                                @if ($showDeleteButton)
                                     <a class="btn btn-outline-danger"
                                         onclick="document.getElementById('deleteForm{{ $file->id }}').submit();">
                                         <i class='bx bxs-trash-alt bx-xs bx-tada-hover'></i>
