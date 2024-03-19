@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-
-<section class="header">
+    <section class="header">
         <div class="row">
             <div class="col">
                 <h1 class="h1">DELIVERY SCHEDULE FINAL </h1>
@@ -13,13 +12,13 @@
 
     <section class="content">
         <div class="card mt-5">
-            <div class="card-body p-0">
+            <div class="card-body">
                 <div class="table-responsive">
                     {{ $dataTable->table() }}
                 </div>
             </div>
         </div>
-       
+
 
         <a href="{{ route('indexfinalwip') }}" class="btn btn-secondary float-right"> WIP</a>
         <a href="{{ route('deslsched.step1') }}" class="btn btn-secondary float-right"> Update</a>
@@ -27,7 +26,6 @@
 
 
 
- 
-{{ $dataTable->scripts() }}
-@endsection
 
+    {{ $dataTable->scripts() }}
+@endsection

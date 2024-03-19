@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <section class="header">
         <div class="row">
             <div class="col">
@@ -12,16 +11,16 @@
 
     <section class="content">
         <div class="card mt-5">
-            <div class="card-body p-0">
+            <div class="card-body">
                 <div class="table-responsive">
-                {{ $dataTable->table() }}
+                    {{ $dataTable->table() }}
                 </div>
             </div>
         </div>
-        
+
     </section>
 
-{{ $dataTable->scripts() }}
+    {{ $dataTable->scripts() }}
 @endsection
 
 @push('extraJs')

@@ -51,6 +51,15 @@ class HomeController extends Controller
                 case "COMPUTER":
                     return redirect()->route('computer.home');
                     break;
+                case "PURCHASING":
+                    return redirect()->route('purchasing.home');
+                    break;
+                case "PRODUCTION":
+                    return redirect()->route('production.home');
+                    break;
+                case "BUSINESS":
+                    return redirect()->route('business.home');
+                    break;
                 // default:
                 //     return redirect()->
             }

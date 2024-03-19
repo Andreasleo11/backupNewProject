@@ -3,6 +3,7 @@
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\Auth\PasswordChangeController;
+use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\DefectCategoryController;
 use App\Http\Controllers\director\DirectorHomeController;
 use App\Http\Controllers\director\ReportController;
@@ -63,10 +64,7 @@ use App\Http\Controllers\DSNewController;
 
 
 use App\Http\Controllers\HolidayListController;
-
-
-
-
+use App\Http\Controllers\ProductionHomeController;
 use App\Http\Controllers\PurchasingReminderController;
 
 use App\Http\Controllers\PurchasingRequirementController;
@@ -236,6 +234,98 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
         Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
     });
+
+    Route::middleware(['checkDepartment:PURCHASING'])->group(function(){
+
+        Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.home');
+
+        Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
+        Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
+        Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
+        Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
+        Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class,'indexcustomer']);
+
+        Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
+        Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
+
+        Route::get("purchasing/reminder", [PurchasingReminderController::class, "index"])->name('reminderindex');
+        Route::get("purchasing/reminder/detail", [PurchasingReminderController::class, "detail"])->name('reminderdetail');
+
+        Route::get("purchasing/requirement", [PurchasingRequirementController::class, "index"])->name("purchasingrequirement.index");
+        Route::get("purchasing/requirement/detail", [PurchasingRequirementController::class, "detail"])->name("purchasingrequirement.detail");
+
+    });
+
+    Route::middleware(['checkDepartment:BUSINESS'])->group(function(){
+        Route::get('/business/home', [BusinessHomeController::class, 'index'])->name('business.home');
+        Route::get("deliveryschedule/index", [DeliveryScheduleController::class, "index"])->name("indexds");
+        Route::get("deliveryschedule/finalwip/index", [DeliveryScheduleController::class, "indexfinal"])->name("indexfinalwip");
+    });
+
+    Route::middleware(['checkDepartment:PRODUCTION'])->group(function(){
+        Route::get('/production', [ProductionHomeController::class, 'index'])->name('production.home');
+        Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
+
+        Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
+        Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1');
+        Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
+        Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');
+
+        //pps section
+        Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
+        Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
+        Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
+
+        Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
+        Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
+        Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
+        //jika ada post untuk delivery
+
+        Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");
+        // jika ada post untuk items
+
+        Route::get("/pps/injection/line", [PPSInjectionController::class, "lineinjection"])->name("lineinjection");
+        //jika ada post untuk line
+
+        Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
+
+
+
+
+        Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
+        //jika ada post untuk start
+
+        Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
+        //jika ada post untuk delivery
+
+        Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
+        // jika ada post untuk items
+
+        Route::get("/pps/second/line", [PPSSecondController::class, "linesecond"])->name("linesecond");
+        //jika ada post untuk line
+
+        Route::get("pps/secondfinal",  [PPSSecondController::class, "finalresultsecond"])->name("finalsecondpps");
+
+
+
+
+
+        Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
+        //jika ada post untuk start
+
+        Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
+        //jika ada post untuk delivery
+
+        Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
+        // jika ada post untuk items
+
+        Route::get("/pps/assembly/line", [PPSAssemblyController::class, "lineassembly"])->name("lineassembly");
+        //jika ada post untuk line
+
+        Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
+
+
+    });
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
@@ -281,21 +371,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 // Route::post('/upload-autograph/{reportId}/{section}', [ReportViewController::class, 'uploadAutograph']);
 
-//ROUTE PURCHASING
 
-Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.landing');
-
-
-Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
-Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
-Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
-Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
-Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class,'indexcustomer']);
-
-Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
-Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
-
-// ROUTE PURCHASING
 
 
 
@@ -313,77 +389,12 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
 Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
 
-Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
-
-Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
-Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1');
-Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
-Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');
-
 //
 
 
 
-//pps section 
-Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
-Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
-Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
-
-Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
-Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
-Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
-//jika ada post untuk delivery 
-
-Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");
-// jika ada post untuk items
-
-Route::get("/pps/injection/line", [PPSInjectionController::class, "lineinjection"])->name("lineinjection");
-//jika ada post untuk line 
-
-Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
 
 
-
-
-Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
-//jika ada post untuk start 
-
-Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
-//jika ada post untuk delivery 
-
-Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
-// jika ada post untuk items
-
-Route::get("/pps/second/line", [PPSSecondController::class, "linesecond"])->name("linesecond");
-//jika ada post untuk line 
-
-Route::get("pps/secondfinal",  [PPSSecondController::class, "finalresultsecond"])->name("finalsecondpps");
-
-
-
-
-
-Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
-//jika ada post untuk start 
-
-Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
-//jika ada post untuk delivery 
-
-Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
-// jika ada post untuk items
-
-Route::get("/pps/assembly/line", [PPSAssemblyController::class, "lineassembly"])->name("lineassembly");
-//jika ada post untuk line 
-
-Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
-
-
-
-// newDS feature
-Route::get("deliveryschedule/index", [DeliveryScheduleController::class, "index"])->name("indexds");
-Route::get("deliveryschedule/finalwip/index", [DeliveryScheduleController::class, "indexfinal"])->name("indexfinalwip");
-
-// newDS feature
 
 
 //adding holiday list feature
@@ -392,17 +403,8 @@ Route::get("setting/holiday-list/create", [HolidayListController::class, "create
 Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
 //adding holiday list feature
 
-//reminder feature 
-Route::get("purchasing/reminder", [PurchasingReminderController::class, "index"])->name('reminderindex');
-Route::get("purchasing/reminder/detail", [PurchasingReminderController::class, "detail"])->name('reminderdetail');
-//reminder feature
-
-
-Route::get("purchasing/requirement", [PurchasingRequirementController::class, "index"])->name("purchasingrequirement.index");
-Route::get("purchasing/requirement/detail", [PurchasingRequirementController::class, "detail"])->name("purchasingrequirement.detail");
-
-Route::get("projecttracker/index", [ProjectTrackerController::Class, "index"])->name("pt.index");
-Route::get("projecttracker/create", [ProjectTrackerController::Class, "create"])->name("pt.create");
+Route::get("projecttracker/index", [ProjectTrackerController::class, "index"])->name("pt.index");
+Route::get("projecttracker/create", [ProjectTrackerController::class, "create"])->name("pt.create");
 Route::post("projecttracker/post", [ProjectTrackerController::class, "store"])->name("pt.store");
 Route::get("projecttracker/detail/{id}", [ProjectTrackerController::class, "detail"])->name("pt.detail");
 Route::put('projecttracker/{id}/update-ongoing', [ProjectTrackerController::class, 'updateOngoing'])->name('pt.updateongoing');

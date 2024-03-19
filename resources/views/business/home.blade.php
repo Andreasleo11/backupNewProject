@@ -14,7 +14,7 @@
                             </div>
                         @endif
 
-                        {{ __('PURCHASING HOME') }}
+                        {{ __('BUSINESS HOME') }}
                     </div>
                 </div>
             </div>
