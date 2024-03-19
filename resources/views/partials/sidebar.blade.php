@@ -129,24 +129,26 @@
                         Purchase Request
                     </a>
                 </li>
-                <li class="sidebar-item">
-                    <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Monthly PR
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="{{ route('formcuti.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Cuti
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Keluar
-                    </a>
-                </li>
+                @if (Auth::user()->department->name !== 'DIRECTOR')
+                    <li class="sidebar-item">
+                        <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Monthly PR
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('formcuti.home') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Cuti
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Keluar
+                        </a>
+                    </li>
+                @endif
                 @if (Auth::user()->department->name === 'QA' || Auth::user()->department->name === 'QC')
                     <li class="sidebar-item">
                         <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
