@@ -129,6 +129,8 @@
                         Purchase Request
                     </a>
                 </li>
+
+                {{-- FEATURES IN DEVELOPMENT --}}
                 @if (Auth::user()->department->name !== 'DIRECTOR')
                     <li class="sidebar-item">
                         <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
