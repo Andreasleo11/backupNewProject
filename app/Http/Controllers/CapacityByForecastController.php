@@ -172,7 +172,7 @@ class CapacityByForecastController extends Controller
 		foreach($tab_forecast_div as $fore_forecast_div){			
 			$val_forecast_qty = $fore_forecast_div->quantity;
 			$val_item_code = $fore_forecast_div->item_code;
-			$tab_fct_inventory_fg = DB::table('sap_fct_inventory_fg')->where('item_code',$val_item_code)->first();		
+			$tab_fct_inventory_fg = DB::table('sap_fct_inventory_fgs')->where('item_code',$val_item_code)->first();		
 			
 			if(empty($tab_fct_inventory_fg->pair)){
 				if(empty($tab_fct_inventory_fg->fg_code_1)){															
@@ -188,7 +188,7 @@ class CapacityByForecastController extends Controller
 		foreach($tab_forecast_sorted as $fore_forecast_sorted){						
 			$val_item_code_srt = $fore_forecast_sorted->item_code;
 							
-			$tab_sap_lineproduction = DB::table('sap_fct_lineproduction')->where('item_code',$val_item_code_srt)->orderBy('priority','asc')->get();
+			$tab_sap_lineproduction = DB::table('sap_fct_lineproductions')->where('item_code',$val_item_code_srt)->orderBy('priority','asc')->get();
 			
 			foreach($tab_sap_lineproduction as $fore_sap_line_production){			
 				$val_item_code_line = $fore_sap_line_production->item_code;
@@ -211,12 +211,12 @@ class CapacityByForecastController extends Controller
 				}
 			}
 						
-			$tab_fct_inventory_fg = DB::table('sap_fct_inventory_fg')->where('item_code',$val_item_code_srt)->first();	
+			$tab_fct_inventory_fg = DB::table('sap_fct_inventory_fgs')->where('item_code',$val_item_code_srt)->first();	
 			
 			$val_cycle_time_raw = $tab_fct_inventory_fg->cycle_time;
 			$val_process_owner = $tab_fct_inventory_fg->process_owner;
 			
-			$tab_fct_inventory_fg_pair = DB::table('sap_fct_inventory_fg')->where('pair',$val_item_code_srt)->first();
+			$tab_fct_inventory_fg_pair = DB::table('sap_fct_inventory_fgs')->where('pair',$val_item_code_srt)->first();
 			if(empty($tab_fct_inventory_fg_pair->item_code)){
 				$val_pair = null;
 			} else {
