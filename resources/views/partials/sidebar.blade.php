@@ -145,7 +145,13 @@
                         <i class='bx bx-file'></i>
                         PPS Wizard
                     </a>
-                </li>               
+                </li>     
+                <li class="sidebar-item">
+                    <a href="{{ route('capacityforecastindex') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Capacity By Forecast
+                    </a>
+                </li>       
             </ul>
 
             <li class="sidebar-item" id="sidebar-item-list">
