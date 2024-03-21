@@ -47,6 +47,10 @@ use App\Http\Controllers\ComputerHomeController;
 
 use App\Http\Controllers\InventoryFgController;
 use App\Http\Controllers\InventoryMtrController;
+use App\Http\Controllers\InvLineListController;
+
+
+
 use App\Http\Controllers\CapacityByForecastController;
 
 
@@ -312,6 +316,9 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 
 Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
 Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
+Route::get('/inventory/line-list',  [InvLineListController::class, "index"])->name('invlinelist');
+Route::post("/add/line", [InvLineListController::class, "addline"])->name('addline');
+
 
 Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
 Route::get("/production/capacity-line", [CapacityByForecastController::class, "line"])->name('capacityforecastline');
@@ -395,6 +402,7 @@ Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"
 // newDS feature
 Route::get("deliveryschedule/index", [DeliveryScheduleController::class, "index"])->name("indexds");
 Route::get("deliveryschedule/finalwip/index", [DeliveryScheduleController::class, "indexfinal"])->name("indexfinalwip");
+Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
 
 // newDS feature
 

@@ -16,11 +16,13 @@ use App\Models\delsched_finalwip;
 use App\Models\delsched_solist;
 use App\Models\delsched_stock;
 use App\Models\delsched_stockwip;
+use App\Models\SapDelsched;
 
 use App\Models\DelschedFinal;
 use App\Models\DelschedFinalWip;
 use App\DataTables\DeliveryNewTableDataTable;
 use App\DataTables\WipFinalDsDataTable;
+use App\DataTables\SapDelschedDataTable;
 
 class DeliveryScheduleController extends Controller
 {
@@ -46,6 +48,19 @@ class DeliveryScheduleController extends Controller
         // }
       
         return $dataTable->render("business.dsnewindexwip");
+    }
+
+
+	public function indexraw(SapDelschedDataTable $dataTable)
+    {
+        // $datas = DelschedFinalWip::paginate(10);
+
+        // foreach($datas as $data)
+        // {
+        //     dd($data);
+        // }
+      
+        return $dataTable->render("business.rawdelsched");
     }
 
     public function step1()
