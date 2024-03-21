@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
         Blade::directive('currency', function ($expression) {
-            return "<?php echo 'Rp. ' . number_format($expression, 0, ',', '.'); ?>";
+            return $expression != null ? "<?php echo 'Rp. ' . number_format($expression, 0, ',', '.'); ?>" : "";
         });
         Paginator::useBootstrap();
         Builder::useVite();
