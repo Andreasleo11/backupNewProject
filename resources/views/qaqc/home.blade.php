@@ -5,28 +5,28 @@
         <div class="row justify-content-center">
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <a href="{{ route('qaqc.report.index') }}">
+                <a href="{{ route('qaqc.report.indexFilter', 'approved') }}">
                     <x-card title="Approved" :content="$approvedDoc" color="green" titleColor="text-success"
                         icon="<box-icon name='check' color='gray' size='lg'></box-icon>" />
                 </a>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <a href="{{ route('qaqc.report.index') }}">
+                <a href="{{ route('qaqc.report.indexFilter', 'waitingSignature') }}">
                     <x-card title="Waiting Signature" :content="$waitingSignatureDoc" color="gray" titleColor="text-secondary"
                         icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
                 </a>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <a href="{{ route('qaqc.report.index') }}">
-                    <x-card title="Waiting Approval" :content="$waitingDoc" color="orange" titleColor="text-warning"
+                <a href="{{ route('qaqc.report.indexFilter', 'waitingApproval') }}">
+                    <x-card title="Waiting Approval" :content="$waitingApprovalDoc" color="orange" titleColor="text-warning"
                         icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
                 </a>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <a href="{{ route('qaqc.report.index') }}">
+                <a href="{{ route('qaqc.report.indexFilter', 'rejected') }}">
                     <x-card title="Rejected" :content="$rejectedDoc" color="red" titleColor="text-danger"
                         contentColor="text-secondary" icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                 </a>

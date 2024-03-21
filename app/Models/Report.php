@@ -99,7 +99,15 @@ class Report extends Model
         return $query->where('is_approve', 1);
     }
 
-    public function scopeWaiting($query)
+    public function scopeWaitingSignature($query)
+    {
+        return $query->where('is_approve', 2)
+            ->whereNot(function($query){
+                $query->WaitingApproval();
+            });
+    }
+
+    public function scopeWaitingApproval($query)
     {
         return $query->withAutographs()->where('is_approve', 2);
     }

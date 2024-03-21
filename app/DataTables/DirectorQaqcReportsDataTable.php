@@ -53,8 +53,12 @@ class DirectorQaqcReportsDataTable extends DataTable
     {
         return $model::where(function($query){
             $query->approved()->orWhere(
-                function($query){$query->waiting()->orWhere(function($query){$query->rejected();});}
-            );
+                function($query){
+                    $query->waitingApproval()->orWhere(
+                        function($query){
+                            $query->rejected();
+                        });
+                    });
         })->newQuery();
     }
 

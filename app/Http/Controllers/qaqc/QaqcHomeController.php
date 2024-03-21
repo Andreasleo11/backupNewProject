@@ -9,12 +9,11 @@ class QaqcHomeController extends Controller
 {
     public function index()
     {
+        $approvedDoc = Report::approved()->count();
+        $waitingSignatureDoc = Report::waitingSignature()->count();
+        $waitingApprovalDoc = Report::waitingApproval()->count();
+        $rejectedDoc = Report::rejected()->count();
 
-        $approvedDoc = Report::where('is_approve', 1)->count();
-        $waitingSignatureDoc = Report::withAutographs()->whereNull('is_approve')->count();
-        $waitingDoc = Report::whereNull('is_approve')->count() - $waitingSignatureDoc;
-        $rejectedDoc = Report::where('is_approve', 0)->count();
-
-        return view('qaqc.home', compact('approvedDoc', 'waitingSignatureDoc', 'waitingDoc','rejectedDoc'));
+        return view('qaqc.home', compact('approvedDoc', 'waitingSignatureDoc', 'waitingApprovalDoc', 'rejectedDoc'));
     }
 }

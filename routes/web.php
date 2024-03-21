@@ -136,6 +136,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
         Route::get('/qaqc/reports/', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
+        Route::get('/qaqc/reports/{status}', [QaqcReportController::class, 'indexFilter'])->name('qaqc.report.indexFilter');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
 
         Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit');

@@ -66,6 +66,30 @@ class QaqcReportController extends Controller
         // $reports = $paginator;
 
         $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
+        return view('qaqc.reports.index', compact('reports'));
+    }
+
+    public function indexFilter($status)
+    {
+        if($status != null){
+            if ($status === 'approved') {
+                // Logic when the status is approved
+                $reports = Report::approved()->orderBy('updated_at', 'desc')->paginate(9);
+            } elseif ($status === 'rejected') {
+                // Logic when the status is rejected
+                $reports = Report::rejected()->orderBy('updated_at', 'desc')->paginate(9);
+            } elseif ($status === 'waitingSignature') {
+                // Logic when the status is waitingSignature
+                $reports = Report::waitingSignature()->orderBy('updated_at', 'desc')->paginate(9);
+            } elseif ($status === 'waitingApproval') {
+                // Logic when the status is waitingApproval
+                $reports = Report::waitingApproval()->orderBy('updated_at', 'desc')->paginate(9);
+            } else {
+                $reports = [];
+            }
+        } else {
+            $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
+        }
 
         return view('qaqc.reports.index', compact('reports'));
     }

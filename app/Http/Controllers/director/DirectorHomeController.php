@@ -12,7 +12,7 @@ class DirectorHomeController extends Controller
     {
         $reportCounts = [
             'approved' => Report::approved()->count(),
-            'waiting' => Report::waiting()->count(),
+            'waiting' => Report::waitingApproval()->count(),
             'rejected' => Report::rejected()->count(),
         ];
 
