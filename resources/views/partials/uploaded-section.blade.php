@@ -25,38 +25,36 @@
             @endphp
             <div class="col d-flex col-xl-3 col-md-4">
                 <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}">
-
                     <div class="card">
                         <div class="card-body btn btn-light" style="max-width: 250px">
-                            <div class="col text-center">
-                                <div class="col d-flex align-items-center p-0" style="min-height:100px">
-                                    @if ($extension == 'pdf')
-                                        <img src="{{ asset('image/ic-pdf.png') }}" alt="ext-logo" width="50px"
-                                            class="me-2">
-                                    @elseif(in_array($extension, ['xls', 'xlsx', 'csv']))
-                                        <img src="{{ asset('image/ic-xls.png') }}" alt="ext-logo" width="50px"
-                                            class="me-2">
-                                    @elseif(in_array($extension, ['png', 'jpeg', 'jpg']))
-                                        <img src="{{ asset('image/ic-image.png') }}" alt="ext-logo" width="50px"
-                                            class="me-2">
-                                    @elseif(in_array($extension, ['docx', 'doc']))
-                                        <img src="{{ asset('image/ic-doc.png') }}" alt="ext-logo" width="50px"
-                                            class="me-2">
-                                    @endif
-                                    <div class="text-secondary text-start fw-semibold" style="max-width: 150px">
-                                        {{ $filenameWithoutExtension }}
-                                    </div>
+                            <div class="col d-flex align-items-center p-0 text-center" style="min-height:100px">
+                                @if ($extension == 'pdf')
+                                    <img src="{{ asset('image/ic-pdf.png') }}" alt="ext-logo" width="50px"
+                                        class="me-2">
+                                @elseif(in_array($extension, ['xls', 'xlsx', 'csv']))
+                                    <img src="{{ asset('image/ic-xls.png') }}" alt="ext-logo" width="50px"
+                                        class="me-2">
+                                @elseif(in_array($extension, ['png', 'jpeg', 'jpg']))
+                                    <img src="{{ asset('image/ic-image.png') }}" alt="ext-logo" width="50px"
+                                        class="me-2">
+                                @elseif(in_array($extension, ['docx', 'doc']))
+                                    <img src="{{ asset('image/ic-doc.png') }}" alt="ext-logo" width="50px"
+                                        class="me-2">
+                                @endif
+                                <div class="text-secondary text-start fw-semibold"
+                                    style="overflow: hidden; text-overflow: ellipsis; max-height: 4.5em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                                    {{ $filenameWithoutExtension }}
                                 </div>
-                                <div class="mb-2 text-secondary">
-                                    {{ formatFileSize($file->size) }}
-                                </div>
+                            </div>
+                            <div class="mb-2 text-secondary">
+                                {{ formatFileSize($file->size) }}
                             </div>
                         </div>
                     </div>
                 </a>
                 @if ($showDeleteButton)
-                    <div class="container">
-                        <a class="btn btn-outline-danger"
+                    <div class="col d-flex">
+                        <a class="btn btn-outline-danger d-flex align-items-center "
                             onclick="document.getElementById('deleteForm{{ $file->id }}').submit();">
                             <i class='bx bxs-trash-alt bx-xs bx-tada-hover'></i>
                             <form id="deleteForm{{ $file->id }}" action="{{ route('file.delete', $file->id) }}"
@@ -65,9 +63,7 @@
                         </a>
                     </div>
                 @endif
-
             </div>
-
         @empty
             <p>No Files Were Uploaded</p>
         @endforelse
