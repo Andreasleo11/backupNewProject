@@ -287,3 +287,4 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 
 Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
 Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
+Route::get('/reports/updateall', [ReportController::class, 'updateall']);

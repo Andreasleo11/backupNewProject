@@ -26,27 +26,7 @@
 
 @section('content')
 
-    @if ($message = Session::get('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <p>{{ $message }}</p>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @elseif ($errors->any())
-        <div class="alert alert-danger alert-dismissable fade show" role="alert">
-            <div class="d-flex">
-                <div class="flex-grow-1">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-                <div class="">
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </div>
-        </div>
-    @endif
+    @include('partials.alert-success-error')
     <div class="container mt-3">
         <div class="row justify-content-center">
             <div class="col">

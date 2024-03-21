@@ -14,6 +14,8 @@ use App\Models\DefectCategory;
 use App\Models\MasterDataRogCustomerName;
 use App\Models\MasterDataRogPartName;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -32,9 +34,40 @@ class QaqcReportController extends Controller
     {
         $this->resetEditSessions();
 
-        $reports = Report::orderBy('created_at', 'desc')->paginate(9);
+        /*
+        * if want to sorted by status priorities
+        *
+        */
+        // $sortedReports = Report::orderBy('updated_at', 'desc')->get()->sortBy(function ($report) {
+        //     $hoursDifference = Date::now()->diffInHours($report->rejected_at);
+        //     if ($report->is_approve === 1) {
+        //         return 1; // Priority for approved
+        //     } elseif ($report->is_approve === 0) {
+        //         return 2; // Priority for rejected
+        //     } elseif ($report->rejected_at != null && $hoursDifference < 24) {
+        //         if ($report->autograph_3 != null) {
+        //             return 3; // Priority for waiting on approval
+        //         } else {
+        //             return 4; // Priority for revision
+        //         }
+        //     } elseif (($report->autograph_1 || $report->autograph_2) && $report->autograph_3) {
+        //         return 3; // Priority for waiting on approval
+        //     } else {
+        //         return 5; // Priority for waiting signature
+        //     }
+        // });
 
-        return view('qaqc.reports.index',compact('reports'));
+        // $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        // $perPage = 9;
+        // $currentPageItems = $sortedReports->slice(($currentPage - 1) * $perPage, $perPage);
+        // $paginator = new LengthAwarePaginator($currentPageItems, $sortedReports->count(), $perPage);
+        // $paginator->setPath(route('qaqc.report.index'));
+
+        // $reports = $paginator;
+
+        $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
+
+        return view('qaqc.reports.index', compact('reports'));
     }
 
     public function detail($id)
@@ -75,7 +108,7 @@ class QaqcReportController extends Controller
         $validatedData['autograph_user_1'] = auth()->user()->name;
         $validatedData['autograph_3'] = null;
         $validatedData['autograph_user_3'] = null;
-        $validatedData['is_approve'] = null;
+        $validatedData['is_approve'] = 2;
 
         $report = $request->session()->get('header_edit');
 
@@ -90,7 +123,6 @@ class QaqcReportController extends Controller
         // Retrieve the existing report from the session
         $report = $request->session()->get('header_edit');
 
-        // TODO : IT WON'T UPDATE
         $report->update();
 
         $details_data = Detail::where('report_id', $id)->get();
@@ -262,7 +294,7 @@ class QaqcReportController extends Controller
         ]);
 
         Report::where('id', $id)->update([
-            'is_approve' => null,
+            'is_approve' => 2,
             'description' => null,
         ]);
 
@@ -494,10 +526,22 @@ class QaqcReportController extends Controller
 
     public function redirectToIndex()
     {
+        $id = session()->get('header')->id ?? session()->get('header_edit')->id;
+        // dd($id);
+        Report::find($id)->update(['updated_at' => now()]);
+
         session()->forget('header');
         session()->forget('details');
         $this->resetEditSessions();
+
+
         return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully stored/updated!']);
+    }
+
+    private function updateUpdatedAt(){
+        $id = session()->get('header')->id ?? session()->get('header_edit')->id;
+        // dd($id);
+        Report::find($id)->update(['updated_at' => now()]);
     }
 
     private function resetEditSessions(){

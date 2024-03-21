@@ -1,7 +1,7 @@
 @php
     $hoursDifference = Date::now()->diffInHours($report->rejected_at);
 @endphp
-@if($report->is_approve === 1)
+@if ($report->is_approve === 1)
     <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
 @elseif($report->is_approve === 0)
     <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>

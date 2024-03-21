@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Report extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'reports';
 
     protected $fillable = [
         'rec_date',
@@ -28,7 +27,7 @@ class Report extends Model
         'description',
         'first_reject',
         'rejected_at',
-        // Add other fields as needed
+        'updated_at',
     ];
 
     // Define relationships if needed
@@ -87,19 +86,27 @@ class Report extends Model
             });
     }
 
+    public function scopeApprovedOrRejected($query)
+    {
+        return $query->where(function($query){
+            $query->where('is_approve', 0)
+            ->orWhere('is_approve', 1);
+        });
+    }
+
     public function scopeApproved($query)
     {
-        return $query->withAutographs()->where('is_approve', 1);
+        return $query->where('is_approve', 1);
     }
 
     public function scopeWaiting($query)
     {
-        return $query->withAutographs()->whereNull('is_approve');
+        return $query->withAutographs()->where('is_approve', 2);
     }
 
     public function scopeRejected($query)
     {
-        return $query->withAutographs()->where('is_approve', 0);
+        return $query->where('is_approve', 0);
     }
 
 }

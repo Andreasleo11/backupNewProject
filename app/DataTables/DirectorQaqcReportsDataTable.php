@@ -10,6 +10,7 @@ use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
+use Yajra\DataTables\Html\SearchPane;
 use Yajra\DataTables\Services\DataTable;
 
 class DirectorQaqcReportsDataTable extends DataTable
@@ -50,8 +51,11 @@ class DirectorQaqcReportsDataTable extends DataTable
      */
     public function query(Report $model): QueryBuilder
     {
-        return $model::withAutographs()->newQuery();
-        // return $model->newQuery();
+        return $model::where(function($query){
+            $query->approved()->orWhere(
+                function($query){$query->waiting()->orWhere(function($query){$query->rejected();});}
+            );
+        })->newQuery();
     }
 
     /**
@@ -65,7 +69,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                     ->setTableId('director-reports-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
-                    //->dom('Bfrtip')
+                    // ->dom('Bfrtip')
                     ->orderBy(7 ,'asc')
                     ->buttons([
                         Button::make('excel'),
@@ -74,8 +78,20 @@ class DirectorQaqcReportsDataTable extends DataTable
                         // Button::make('pdf'),
                         Button::make('print'),
                         // Button::make('reset'),
-                        // Button::make('reload')
-                    ]);
+                        Button::make('reload')
+                        // Button::make('searchPanes'),
+                    ])
+                    // ->searchPanes(SearchPane::make())
+                    // ->addColumnDef([
+                    //     'targets' => '_all',
+                    //     'searchPanes' => [
+                    //         'show' => true,
+                    //         'vieTotal' => false,
+                    //         'viewCount' => false,
+                    //     ],
+                    // ])
+                    // ->dom('PBfrtip')
+                    ;
 
     }
 
@@ -129,4 +145,5 @@ class DirectorQaqcReportsDataTable extends DataTable
     {
         return 'DirectorReport_' . date('YmdHis');
     }
+
 }

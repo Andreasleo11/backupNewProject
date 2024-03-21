@@ -25,19 +25,9 @@
             @endphp
             <div class="col d-flex col-xl-3 col-md-4">
                 <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}">
-                    <div class="card m-4 ms-0 ">
+
+                    <div class="card">
                         <div class="card-body btn btn-light" style="max-width: 250px">
-                            <div class="text-end">
-                                @if ($showDeleteButton)
-                                    <a class="btn btn-outline-danger"
-                                        onclick="document.getElementById('deleteForm{{ $file->id }}').submit();">
-                                        <i class='bx bxs-trash-alt bx-xs bx-tada-hover'></i>
-                                        <form id="deleteForm{{ $file->id }}"
-                                            action="{{ route('file.delete', $file->id) }}" method="post">
-                                            @csrf @method('DELETE')</form>
-                                    </a>
-                                @endif
-                            </div>
                             <div class="col text-center">
                                 <div class="col d-flex align-items-center p-0" style="min-height:100px">
                                     @if ($extension == 'pdf')
@@ -53,9 +43,9 @@
                                         <img src="{{ asset('image/ic-doc.png') }}" alt="ext-logo" width="50px"
                                             class="me-2">
                                     @endif
-                                    <span class="text-secondary text-start fw-semibold">
+                                    <div class="text-secondary text-start fw-semibold" style="max-width: 150px">
                                         {{ $filenameWithoutExtension }}
-                                    </span>
+                                    </div>
                                 </div>
                                 <div class="mb-2 text-secondary">
                                     {{ formatFileSize($file->size) }}
@@ -64,7 +54,20 @@
                         </div>
                     </div>
                 </a>
+                @if ($showDeleteButton)
+                    <div class="container">
+                        <a class="btn btn-outline-danger"
+                            onclick="document.getElementById('deleteForm{{ $file->id }}').submit();">
+                            <i class='bx bxs-trash-alt bx-xs bx-tada-hover'></i>
+                            <form id="deleteForm{{ $file->id }}" action="{{ route('file.delete', $file->id) }}"
+                                method="post">
+                                @csrf @method('DELETE')</form>
+                        </a>
+                    </div>
+                @endif
+
             </div>
+
         @empty
             <p>No Files Were Uploaded</p>
         @endforelse

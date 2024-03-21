@@ -13,7 +13,7 @@ use PhpParser\Node\Stmt\Foreach_;
 
 class ReportController extends Controller
 {
-    public function index(DirectorQaqcReportsDataTable $dataTable)
+    public function index(DirectorQaqcReportsDataTable $dataTable, Request $request)
     {
         // $reports = Report::whereNotNull('autograph_1')
         //     ->whereNotNull('autograph_2')
@@ -21,7 +21,11 @@ class ReportController extends Controller
         //     ->get();
 
         // return view('director.qaqc.index', compact('reports'));
-        return $dataTable->render('director.qaqc.index');
+
+
+        return $dataTable
+            // ->with('filter_status', $request->filter_status)
+            ->render('director.qaqc.index');
     }
 
     public function detail($id)
@@ -135,4 +139,12 @@ class ReportController extends Controller
         }
     }
 
+    public function updateAll()
+    {
+        $reports = Report::where('is_approve', -1)->get();
+        // dd($reports);
+        foreach ($reports as $report) {
+            $report->update(['is_approve' => 2]);
+        }
+    }
 }
