@@ -58,8 +58,8 @@
                                     <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
-                                    <td>{{ $report->rec_date }}</td>
-                                    <td>{{ $report->verify_date }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($report->rec_date)->format('d-m-Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($report->verify_date)->format('d-m-Y') }}</td>
                                     <td>
                                         <a href="{{ route('qaqc.report.detail', $report->id) }}"
                                             class="btn btn-secondary my-1 me-1 ">
