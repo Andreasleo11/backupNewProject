@@ -74,11 +74,11 @@ class DirectorPurchaseRequestController extends Controller
         }
     }
 
-    public function updateAll()
-    {
-        $prs = PurchaseRequest::where('status', -1)->get();
-        foreach ($prs as $pr) {
-            $pr->update(['status' => 5]);
-        }
-    }
+    // public function updateAll()
+    // {
+    //     $prs = PurchaseRequest::where('status', -1)->get();
+    //     foreach ($prs as $pr) {
+    //         $pr->update(['status' => 5]);
+    //     }
+    // }
 }

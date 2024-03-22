@@ -165,7 +165,7 @@
         </div>
         @if ($reports != null)
             <div class="d-flex justify-content-end mt-3">
-                {{ $reports->links() }}
+                {{ $reports->appends(['status' => $status])->links() }}
             </div>
         @endif
     </section>

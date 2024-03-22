@@ -86,7 +86,7 @@ class QaqcReportController extends Controller
         } else {
             $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
         }
-        return view('qaqc.reports.index', compact('reports'));
+        return view('qaqc.reports.index', compact('reports', 'status'));
     }
 
     public function detail($id)

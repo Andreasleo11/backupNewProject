@@ -139,12 +139,12 @@ class ReportController extends Controller
         }
     }
 
-    public function updateAll()
-    {
-        $reports = Report::where('is_approve', -1)->get();
-        // dd($reports);
-        foreach ($reports as $report) {
-            $report->update(['is_approve' => 2]);
-        }
-    }
+    // public function updateAll()
+    // {
+    //     $reports = Report::where('is_approve', -1)->get();
+    //     // dd($reports);
+    //     foreach ($reports as $report) {
+    //         $report->update(['is_approve' => 2]);
+    //     }
+    // }
 }
