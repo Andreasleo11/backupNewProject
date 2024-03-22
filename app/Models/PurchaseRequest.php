@@ -77,6 +77,6 @@ class PurchaseRequest extends Model
 
     public function scopeRejected($query)
     {
-        return $query->where('status', -1);
+        return $query->where('status', 5);
     }
 }
