@@ -346,7 +346,7 @@
             let hasApprovedOrRejected = false;
 
             selectedReportIdsWithStatus.forEach(report => {
-                if (report.status === '-1' || report.status === '4') {
+                if (report.status === '5' || report.status === '4') {
                     hasApprovedOrRejected = true;
                 }
             });
