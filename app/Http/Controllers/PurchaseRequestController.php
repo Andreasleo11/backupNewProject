@@ -47,7 +47,7 @@ class PurchaseRequestController extends Controller
         }
 
         $purchaseRequests = $purchaseRequestsQuery
-            ->orderByRaw('CASE WHEN status != -1 THEN 0 ELSE 1 END')
+            ->orderByRaw('CASE WHEN status != 5 THEN 0 ELSE 1 END')
             ->orderBy('updated_at', 'desc')
             ->orderBy('status', 'desc')
             ->paginate(10);
@@ -62,8 +62,7 @@ class PurchaseRequestController extends Controller
         // $counts = $departments->pluck('count');
 
         // return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
-        // return view('purchaseRequest.index', compact('purchaseRequests'));
-        return $datatable->render('purchaseRequest.index', compact('purchaseRequests'));
+        return view('purchaseRequest.index', compact('purchaseRequests'));
     }
 
     public function getChartData(Request $request, $year, $month)
@@ -87,11 +86,8 @@ class PurchaseRequestController extends Controller
         return view('purchaseRequest.create', compact('master'));
     }
 
-
-
     public function insert(Request $request)
     {
-
         $userIdCreate = Auth::id();
 
         // pr header
@@ -238,12 +234,6 @@ class PurchaseRequestController extends Controller
         }
     }
 
-    public function viewAll()
-    {
-        // dd($purchaseRequest);
-        return view('purchaseRequest.viewAll', compact('purchaseRequests'));
-    }
-
     public function detail($id)
     {
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
@@ -257,7 +247,7 @@ class PurchaseRequestController extends Controller
         // dd($priceBefore);
 
            // Check if autograph_2 is filled
-        if($purchaseRequest->status != -1){
+        if($purchaseRequest->status != 5){
             if ($purchaseRequest->autograph_2 !== null) {
                 $purchaseRequest->status = 2;
             }
@@ -407,19 +397,7 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function reject(Request $request, $id)
-    {
-        $request->validate([
-            'description' => 'string|max:255'
-        ]);
 
-        PurchaseRequest::find($id)->update([
-            'status' => -1,
-            'description' => $request->description
-        ]);
-
-        return redirect()->back()->with(['success' => 'Purchase Request rejected']);
-    }
 
     public function edit($id){
         $pr = PurchaseRequest::find($id);
@@ -449,52 +427,4 @@ class PurchaseRequestController extends Controller
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
     }
-
-    public function approveSelected(Request $request){
-        $ids = $request->input('ids', []);
-        $username = Auth::user()->name;
-        $imageUrl = $username . '.png';
-
-        if(empty($ids)) {
-            return response()->json(['message' => 'No records selected for approval. (server)']);
-        } else {
-            try {
-                foreach ($ids as $id) {
-                    PurchaseRequest::find($id)->update([
-                        'autograph_4' => $imageUrl,
-                        'autograph_user_4' => $username,
-                        'status' => 4
-                    ]);
-                }
-                return response()->json(['message'=>'selected records approved successfully. (server)']);
-            } catch (\Throwable $th) {
-                return response()->json(['message'=>'failed to approve selected records. (server)']);
-                throw $th;
-            }
-        }
-
-    }
-
-    public function rejectSelected(Request $request){
-        $ids = $request->input('ids', []);
-        $rejectionReason = $request->input('rejection_reason');
-
-        if(empty($ids)) {
-            return response()->json(['message' => 'No records selected for rejection. (server)']);
-        }
-
-        try {
-            foreach ($ids as $id) {
-                PurchaseRequest::find($id)->update([
-                    'status' => -1,
-                    'description' => $rejectionReason
-                ]);
-            }
-            return response()->json(['message'=>'selected records rejected successfully. (server)']);
-        } catch (\Throwable $th) {
-            return response()->json(['message'=>'failed to reject selected records. (server)']);
-            throw $th;
-        }
-    }
-
 }

@@ -123,12 +123,23 @@
                 <span>Other</span>
             </a>
             <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Purchase Request
-                    </a>
-                </li>
+
+
+                @if (Auth::user()->department->name === 'DIRECTOR')
+                    <li class="sidebar-item">
+                        <a href="{{ route('director.pr.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Purchase Request
+                        </a>
+                    </li>
+                @else
+                    <li class="sidebar-item">
+                        <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Purchase Request
+                        </a>
+                    </li>
+                @endif
 
                 {{-- FEATURES IN DEVELOPMENT --}}
                 @if (Auth::user()->department->name !== 'DIRECTOR')

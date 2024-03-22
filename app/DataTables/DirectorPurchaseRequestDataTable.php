@@ -142,7 +142,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
             Column::make('status')->addClass('text-center align-middle')->renderRaw(
                 'function(data, type, row, meta){
                     if(type === \'display\'){
-                        if(data == -1){
+                        if(data == 5){
                             return \'<span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>\'
                         } else if(data == 0) {
                             return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR PREPARATION</span>\'

@@ -44,7 +44,7 @@ use App\Http\Controllers\PurchasingDetailController;
 
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ComputerHomeController;
-
+use App\Http\Controllers\DirectorPurchaseRequestController;
 use App\Http\Controllers\InventoryFgController;
 use App\Http\Controllers\InventoryMtrController;
 
@@ -201,8 +201,9 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::put('/director/qaqc/approveSelected', [ReportController::class, 'approveSelected'])->name('director.qaqc.approveSelected');
         Route::put('/director/qaqc/rejectSelected', [ReportController::class, 'rejectSelected'])->name('director.qaqc.rejectSelected');
 
-        Route::put('/director/pr/approveSelected', [PurchaseRequestController::class, 'approveSelected'])->name('director.pr.approveSelected');
-        Route::put('/director/pr/rejectSelected', [PurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected');
+        Route::get('/director/pr/index', [DirectorPurchaseRequestController::class, 'index'])->name('director.pr.index');
+        Route::put('/director/pr/approveSelected', [DirectorPurchaseRequestController::class, 'approveSelected'])->name('director.pr.approveSelected');
+        Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected');
     });
 
     Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function(){
@@ -288,4 +289,5 @@ Route::get('/send-email', [MailController::class, 'sendEmail']);
 
 Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
 Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
-Route::get('/reports/updateall', [ReportController::class, 'updateall']);
+// Route::get('/reports/updateall', [ReportController::class, 'updateall']);
+// Route::get('/pr/updateall', [PurchaseRequestController::class, 'updateall']);
