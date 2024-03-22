@@ -30,7 +30,7 @@ class QaqcReportController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->resetEditSessions();
 
@@ -65,12 +65,8 @@ class QaqcReportController extends Controller
 
         // $reports = $paginator;
 
-        $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
-        return view('qaqc.reports.index', compact('reports'));
-    }
+        $status = $request->status;
 
-    public function indexFilter($status)
-    {
         if($status != null){
             if ($status === 'approved') {
                 // Logic when the status is approved
@@ -90,7 +86,6 @@ class QaqcReportController extends Controller
         } else {
             $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
         }
-
         return view('qaqc.reports.index', compact('reports'));
     }
 
@@ -550,21 +545,17 @@ class QaqcReportController extends Controller
 
     public function redirectToIndex()
     {
-        $id = session()->get('header')->id ?? session()->get('header_edit')->id;
-        // dd($id);
-        Report::find($id)->update(['updated_at' => now()]);
+        $this->updateUpdatedAt();
 
         session()->forget('header');
         session()->forget('details');
         $this->resetEditSessions();
-
 
         return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully stored/updated!']);
     }
 
     private function updateUpdatedAt(){
         $id = session()->get('header')->id ?? session()->get('header_edit')->id;
-        // dd($id);
         Report::find($id)->update(['updated_at' => now()]);
     }
 
@@ -631,12 +622,8 @@ class QaqcReportController extends Controller
         return redirect()->back()->with(['success' => 'Email sent successfully!']);
     }
 
-    public function reject(Request $request, $id)
+    public function rejectAuto(Request $request, $id)
     {
-        $request->validate([
-            'description' => 'required'
-        ]);
-
         Report::find($id)->update([
             'is_approve' => false,
             'description' => $request->description,

@@ -175,8 +175,8 @@
         ])
     </section>
 
-    {{-- <section aria-label="approval" class="container mt-5 mb-8">
-        @if ($report->is_approve === null)
+    <section aria-label="approval" class="container mt-5 mb-8">
+        @if ($report->is_approve === 2)
             @include('partials.reject-modal', ['id' => $report->id])
 
             <div class="container text-center">
@@ -188,10 +188,10 @@
                     <button class="btn btn-success btn-lg" type="submit">Approve</button>
                 </form>
             </div>
-        @elseif(!isset($report->attachment))
+        @elseif(!isset($files))
             <div class="text-center">No attachment, can't proceed to approve or reject this document.</div>
         @endif
-    </section> --}}
+    </section>
 
 @endsection
 

@@ -178,9 +178,11 @@
                                     </div>
 
                                     <div class="d-flex">
-                                        <form action="{{ route('qaqc.report.redirect.to.index') }}" method="get">
-                                            <button type="submit" class="btn btn-success">Finish</button>
-                                        </form>
+                                        <a href="{{ route('qaqc.report.redirect.to.index') }}"
+                                            class="btn btn-success">Finish</a>
+                                        {{-- <form action="{{ route('qaqc.report.redirect.to.index') }}" method="get">
+                                            <button type="submit" class="btn btn-success" class="disabled">Finish</button>
+                                        </form> --}}
                                     </div>
                                 </div>
                             </div>

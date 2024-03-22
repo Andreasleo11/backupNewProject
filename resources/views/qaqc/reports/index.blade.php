@@ -71,19 +71,23 @@
                                             $hoursDifference = Date::now()->diffInHours($report->rejected_at);
                                         @endphp
 
-                                        <form class="d-none" action="{{ route('qaqc.report.reject', $report->id) }}"
+                                        <form class="d-none" action="{{ route('qaqc.report.rejectAuto', $report->id) }}"
                                             method="get" id="form-reject-report-{{ $report->id }}"><input
                                                 type="hidden" name="description"
                                                 value="Automatically rejected after 24 hours"></form>
 
                                         <script>
-                                            @if ($hoursDifference > 24 && $report->is_approve === null)
+                                            @if ($hoursDifference > 24 && $report->is_approve === 2 && $report->is_locked == false)
                                                 document.getElementById('form-reject-report-{{ $report->id }}').submit();
                                             @endif
                                         </script>
 
                                         <a href="{{ route('qaqc.report.edit', $report->id) }}"
-                                            class="btn btn-primary my-1 me-1 @if ($report->created_by !== Auth::user()->name || $hoursDifference > 24 || $report->is_approve == 1) d-none @endif">
+                                            class="btn btn-primary my-1 me-1 @if (
+                                                $report->created_by !== Auth::user()->name ||
+                                                    $hoursDifference > 24 ||
+                                                    $report->is_approve == 1 ||
+                                                    $report->is_locked) d-none @endif">
                                             <i class='bx bx-edit'></i> <span class="d-none d-sm-inline">Edit</span>
                                         </a>
 
@@ -94,7 +98,8 @@
                                                 $report->created_by !== Auth::user()->name ||
                                                     $hoursDifference > 24 ||
                                                     $report->autograph_3 ||
-                                                    $report->is_approve == 1) d-none @endif"
+                                                    $report->is_approve == 1 ||
+                                                    $report->is_locked) d-none @endif"
                                             data-bs-toggle="modal"
                                             data-bs-target="#delete-report-modal{{ $report->id }}">
                                             <i class='bx bx-trash-alt'></i> <span class="d-none d-sm-inline">Delete</span>
@@ -133,7 +138,7 @@
                                                     @endif
                                                 </li>
                                                 <li>
-                                                    @if ($report->first_reject)
+                                                    @if ($report->is_approve == false)
                                                         <a class="btn btn-success dropdown-item @if ($report->is_locked) disabled @endif"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#lock-report-modal-confirmation-{{ $report->id }}">

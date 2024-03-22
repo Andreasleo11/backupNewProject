@@ -7,6 +7,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p>
+                        Once the report is locked, it cannot be modified or edited.
+                    </p>
                     Are you sure want to lock <strong>{{ $report->doc_num }}</strong>?
                 </div>
                 <div class="modal-footer">
