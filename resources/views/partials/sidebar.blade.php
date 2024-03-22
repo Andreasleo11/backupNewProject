@@ -116,30 +116,20 @@
             </li> --}}
         @endif
 
-        <li class="sidebar-item" id="sidebar-item-purchaseRequest">
+        <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#purchaseRequest" aria-expanded="false" aria-controls="purchaseRequest">
+                data-bs-target="#other" aria-expanded="false" aria-controls="other">
                 <i class='bx bx-dots-horizontal-rounded'></i>
                 <span>Other</span>
             </a>
-            <ul id="purchaseRequest" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-
-
-                @if (Auth::user()->department->name === 'DIRECTOR')
-                    <li class="sidebar-item">
-                        <a href="{{ route('director.pr.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Purchase Request
-                        </a>
-                    </li>
-                @else
-                    <li class="sidebar-item">
-                        <a href="{{ route('purchaserequest.home') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Purchase Request
-                        </a>
-                    </li>
-                @endif
+            <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ Auth::user()->department->name === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
+                        class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Purchase Request
+                    </a>
+                </li>
 
                 {{-- FEATURES IN DEVELOPMENT --}}
                 @if (Auth::user()->department->name !== 'DIRECTOR')
