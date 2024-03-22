@@ -5,6 +5,11 @@
     <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
 @elseif($report->is_approve === 0)
     <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
+    @if ($report->is_locked)
+        <span class="badge text-bg-dark py-2 fs-6">
+            <i class='bx bxs-lock-alt'></i>
+        </span>
+    @endif
 @elseif($report->rejected_at != null && $hoursDifference < 24)
     @if ($report->autograph_3 != null)
         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>

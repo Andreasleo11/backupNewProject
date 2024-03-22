@@ -28,6 +28,7 @@ class Report extends Model
         'first_reject',
         'rejected_at',
         'updated_at',
+        'is_locked'
     ];
 
     // Define relationships if needed

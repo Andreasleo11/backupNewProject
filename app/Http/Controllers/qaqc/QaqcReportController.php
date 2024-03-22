@@ -644,4 +644,10 @@ class QaqcReportController extends Controller
 
         return redirect()->back()->with(['success' => 'Report rejected automatically!']);
     }
+
+    public function lock($id)
+    {
+        Report::find($id)->update(['is_locked' => true]);
+        return redirect()->back()->with(['success' => 'Report locked successfully!']);
+    }
 }

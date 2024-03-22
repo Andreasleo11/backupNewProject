@@ -87,6 +87,7 @@
                                             <i class='bx bx-edit'></i> <span class="d-none d-sm-inline">Edit</span>
                                         </a>
 
+
                                         @include('partials.delete-report-modal')
                                         <button
                                             class="btn btn-danger my-1 me-1 @if (
@@ -99,20 +100,16 @@
                                             <i class='bx bx-trash-alt'></i> <span class="d-none d-sm-inline">Delete</span>
                                         </button>
 
-                                        {{-- <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
-                                            @csrfqaqc\detail
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger my-1">
-                                                <i class='bx bx-trash-alt' ></i> <span class="d-none d-sm-inline">Delete</span>
-                                            </button>
-                                        </form> --}}
+                                        @include('partials.lock-report-confirmation-modal')
 
                                         <div class="btn-group" role="group">
+
                                             <button type="button"
                                                 class="btn text-success border border-success dropdown-toggle"
                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                 More
                                             </button>
+
                                             <ul class="dropdown-menu">
                                                 <li>
                                                     <a href="{{ route('qaqc.report.download', $report->id) }}"
@@ -132,6 +129,16 @@
                                                             class="btn btn-success dropdown-item">
                                                             <i class='bx bx-download'></i> <span
                                                                 class="d-none d-sm-inline">Download Attachment</span>
+                                                        </a>
+                                                    @endif
+                                                </li>
+                                                <li>
+                                                    @if ($report->first_reject)
+                                                        <a class="btn btn-success dropdown-item @if ($report->is_locked) disabled @endif"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#lock-report-modal-confirmation-{{ $report->id }}">
+                                                            <i class='bx bxs-lock'></i>
+                                                            Lock
                                                         </a>
                                                     @endif
                                                 </li>
