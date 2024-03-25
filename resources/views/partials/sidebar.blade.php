@@ -228,6 +228,20 @@
                 </li>               
             </ul>
 
+            <li class="sidebar-item" id="sidebar-item-maintenance">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#maintenance" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bx-dots-horizontal-rounded' ></i>
+                <span>Maintenance</span>
+            </a>
+            <ul id="maintenance" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('moulddown.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Mould Repair
+                    </a>
+                </li>               
+            </ul>    
         
 		<li class="sidebar-item" id="sidebar-item-purchaseRequest">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"

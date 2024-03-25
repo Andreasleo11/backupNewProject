@@ -76,6 +76,9 @@ use App\Http\Controllers\PurchasingReminderController;
 use App\Http\Controllers\PurchasingRequirementController;
 
 use App\Http\Controllers\ProjectTrackerController;
+
+
+use App\Http\Controllers\MouldDownController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -366,6 +369,7 @@ Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultin
 
 
 Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
+Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
 //jika ada post untuk start 
 
 Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
@@ -384,6 +388,7 @@ Route::get("pps/secondfinal",  [PPSSecondController::class, "finalresultsecond"]
 
 
 Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
+Route::post("/pps/assembly-process-form", [PPSAssemblyController::class, "processAssemblyForm"])->name("processAssemblyForm");
 //jika ada post untuk start 
 
 Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
@@ -442,6 +447,9 @@ Route::get("delsched/start4", [DeliveryScheduleController::class, "step4"])->nam
 Route::get("delsched/wip/step1", [DeliveryScheduleController::class, "step1wip"])->name("delschedwip.step1");
 Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
 
+
+Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
+Route::post("/add/mould", [MouldDownController::class, "addmould"])->name('addmould');
 
 
 
