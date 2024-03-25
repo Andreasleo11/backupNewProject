@@ -58,8 +58,8 @@
                                     <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($report->rec_date)->format('d-m-Y') }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($report->verify_date)->format('d-m-Y') }}</td>
+                                    <td> @formatDate($report->rec_date)</td>
+                                    <td> @formatDate($report->verify_date)</td>
                                     <td>
                                         <a href="{{ route('qaqc.report.detail', $report->id) }}"
                                             class="btn btn-secondary my-1 me-1 ">
@@ -72,9 +72,8 @@
                                         @endphp
 
                                         <form class="d-none" action="{{ route('qaqc.report.rejectAuto', $report->id) }}"
-                                            method="get" id="form-reject-report-{{ $report->id }}"><input
-                                                type="hidden" name="description"
-                                                value="Automatically rejected after 24 hours"></form>
+                                            method="get" id="form-reject-report-{{ $report->id }}"><input type="hidden"
+                                                name="description" value="Automatically rejected after 24 hours"></form>
 
                                         <script>
                                             @if ($hoursDifference > 24 && $report->is_approve === 2 && $report->is_locked == false)
@@ -124,28 +123,12 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    @if ($report->attachment)
-                                                        @php
-                                                            $filename = basename($report->attachment);
-                                                        @endphp
-
-                                                        <a href="{{ asset('storage/attachments/' . $report->attachment) }}"
-                                                            download="{{ $filename }}"
-                                                            class="btn btn-success dropdown-item">
-                                                            <i class='bx bx-download'></i> <span
-                                                                class="d-none d-sm-inline">Download Attachment</span>
-                                                        </a>
-                                                    @endif
-                                                </li>
-                                                <li>
-                                                    @if ($report->is_approve == false)
-                                                        <a class="btn btn-success dropdown-item @if ($report->is_locked) disabled @endif"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#lock-report-modal-confirmation-{{ $report->id }}">
-                                                            <i class='bx bxs-lock'></i>
-                                                            Lock
-                                                        </a>
-                                                    @endif
+                                                    <a class="btn btn-success dropdown-item @if ($report->is_locked || $report->is_approve) disabled @endif"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#lock-report-modal-confirmation-{{ $report->id }}">
+                                                        <i class='bx bxs-lock'></i>
+                                                        Lock
+                                                    </a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -170,6 +153,3 @@
         @endif
     </section>
 @endsection
-
-@push('extraJs')
-@endpush

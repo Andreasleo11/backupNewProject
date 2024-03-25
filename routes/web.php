@@ -159,7 +159,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
 
         Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
-        Route::get('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
+        Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
 
         //revisi create page
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');

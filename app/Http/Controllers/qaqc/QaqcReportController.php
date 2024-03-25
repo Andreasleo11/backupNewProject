@@ -604,19 +604,27 @@ class QaqcReportController extends Controller
         $this->savePdf($id);
 
         $report = Report::with('details')->find($id);
-        $fileName = 'pdfs/verification-report-' . $report->id . '.pdf';
-        $filePath = Storage::url($fileName);
+        $pdfName = 'pdfs/verification-report-' . $report->id . '.pdf';
+        $pdfPath = Storage::url($pdfName);
+
+        $files = File::where('doc_id', $report->doc_num)->get();
+        $filePaths = collect($files)->map(function ($file) {
+            return Storage::url('files/' . $file->name);
+        })->toArray();
+
+        $filePaths[] = $pdfPath;
 
         $mailData = [
-            'subject' => 'QAQC Mail',
-            'title' => 'Mail from ' . env('APP_NAME'),
-            'body' => 'This is for testing email using smtp.',
-            'cc' => ['andreasleonardo.al@gmail.com'],
-            'file_path' => $filePath
+            'to' => $request->to ?? 'raymondlay023@gmail.com',
+            'cc' => $request->cc ?? ['andreasleonardo.al@gmail.com', 'raymondlay034@gmail.com'],
+            'subject' => $request->cc ?? 'QAQC Verification Report Mail',
+            'body' => $request->body ?? 'Mail from ' . env('APP_NAME') ,
+            'file_paths' => $filePaths
         ];
 
-        // TODO: UNDER DEVELOPMENT
-        Mail::to('raymondlay023@gmail.com')->send(new QaqcMail($mailData));
+        // dd($request->all());
+
+        Mail::send(new QaqcMail($mailData));
 
 
         return redirect()->back()->with(['success' => 'Email sent successfully!']);

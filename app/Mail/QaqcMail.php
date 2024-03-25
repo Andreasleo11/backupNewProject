@@ -31,9 +31,10 @@ class QaqcMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            to: $this->mailData['to'],
             subject: $this->mailData['subject'],
-            from: Auth::user()->email,
             cc: $this->mailData['cc'],
+            from: Auth::user()->email,
         );
     }
 
@@ -54,10 +55,16 @@ class QaqcMail extends Mailable
      */
     public function attachments(): array
     {
-        return [
-            Attachment::fromPath(
-                public_path($this->mailData['file_path'])
-            )
-        ];
+        $filePaths = $this->mailData['file_paths'];
+
+        $attachments = [];
+
+        foreach ($filePaths as $filePath) {
+            $attachments[] = Attachment::fromPath(
+                public_path($filePath)
+            );
+        }
+
+        return $attachments;
     }
 }

@@ -34,9 +34,9 @@
                         <i class='bx bx-envelope'></i> Send mail
                     </button>
                     @include('partials.send-mail-modal', ['report' => $report])
-
+                    {{--
                     <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test
-                        email</a>
+                        email</a> --}}
                 @endif
                 <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
                     <i class='bx bx-upload'></i> Upload
@@ -107,13 +107,13 @@
                         <tbody>
                             <tr>
                                 <th>Rec Date</th>
-                                <td>: {{ $report->rec_date }}</td>
+                                <td>: @formatDate($report->rec_date)</td>
                                 <th>Customer</th>
                                 <td>: {{ $report->customer }}</td>
                             </tr>
                             <tr>
                                 <th>Verify Date</th>
-                                <td>: {{ $report->verify_date }}</td>
+                                <td>: @formatDate($report->verify_date)</td>
                                 <th>Invoice No</th>
                                 <td>: {{ $report->invoice_no }}</td>
                             </tr>

@@ -3,11 +3,14 @@
 @section('content')
     <style>
         .autograph-box {
-            width: 200px; /* Adjust the width as needed */
-            height: 100px; /* Adjust the height as needed */
+            width: 200px;
+            /* Adjust the width as needed */
+            height: 100px;
+            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #ccc; /* Add border for better visibility */
+            border: 1px solid #ccc;
+            /* Add border for better visibility */
         }
     </style>
     {{-- <table class="table table-borderless">
@@ -66,7 +69,7 @@
     <div class="pt-4 pb-5 text-center">
         <span class="h3 fw-semibold">Verification Reports</span>
         {{-- <p class="fs-5 mt-2">Created By : {{ $report->created_by ?? '-'}} </p>
-            @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
+            @if ($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
                 <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
             @elseif($report->is_approve === 0)
                 <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
@@ -75,18 +78,22 @@
             @else
                 <span class="badge text-bg-secondary px-3 py-2 fs-6">WAITING SIGNATURE</span>
             @endif --}}
+        <div class="mt-1">
+            <span class="fs-5">{{ $report->doc_num ?? '-' }} </span> <br>
+            <span class="fs-6 ">Created By : {{ $report->created_by ?? '-' }} </span>
+        </div>
     </div>
     <table class="table table-borderlesss">
         <tbody>
             <tr>
                 <th>Rec Date</th>
-                <td>: {{ $report->rec_date }}</td>
+                <td>: {{ \Carbon\Carbon::parse($report->rec_date)->format('d-m-Y') }}</td>
                 <th>Customer</th>
                 <td>: {{ $report->customer }}</td>
             </tr>
             <tr>
                 <th>Verify Date</th>
-                <td>: {{ $report->verify_date }}</td>
+                <td>: {{ \Carbon\Carbon::parse($report->verify_date)->format('d-m-Y') }}</td>
                 <th>Invoice No</th>
                 <td>: {{ $report->invoice_no }}</td>
             </tr>
@@ -112,15 +119,16 @@
             @forelse($report->details as $detail)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $detail->part_name}}</td>
-                    <td>{{ $detail->rec_quantity}}</td>
-                    <td>{{ $detail->verify_quantity}}</td>
-                    <td>{{ $detail->can_use}}</td>
-                    <td>{{ $detail->cant_use}}</td>
+                    <td>{{ $detail->part_name }}</td>
+                    <td>{{ $detail->rec_quantity }}</td>
+                    <td>{{ $detail->verify_quantity }}</td>
+                    <td>{{ $detail->can_use }}</td>
+                    <td>{{ $detail->cant_use }}</td>
                     <td>
                         @foreach ($detail->defects as $defect)
                             @if ($defect->is_daijo)
-                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }} <br>
+                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }}
+                                <br>
                             @endif
                         @endforeach
                     </td>
@@ -128,7 +136,8 @@
                     <td>
                         @foreach ($detail->defects as $defect)
                             @if (!$defect->is_daijo)
-                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }} <br>
+                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }}
+                                <br>
                             @endif
                         @endforeach
                     </td>
