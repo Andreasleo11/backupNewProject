@@ -173,7 +173,14 @@
                         <i class='bx bx-file'></i>
                         Inventory MTR
                     </a>
-                </li>           
+                </li>   
+                
+                <li class="sidebar-list">
+                    <a href="{{ route('invlinelist') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Machine and Line list 
+                    </a>
+                </li>     
             </ul>
 
             <li class="sidebar-item" id="sidebar-item-purchasing">
