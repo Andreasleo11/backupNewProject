@@ -159,6 +159,44 @@
             </li> --}}
         @endif
 
+        <li class="sidebar-item" id="sidebar-item-Business">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#businessitem" aria-expanded="false" aria-controls="purchaseRequest">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Business</span>
+            </a>
+            <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexds') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Delivery Schedule
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
+        <li class="sidebar-item" id="sidebar-item-production">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#productionitem" aria-expanded="false" aria-controls="purchaseRequest">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Production</span>
+            </a>
+            <ul id="productionitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexpps') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        PPS Wizard
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('capacityforecastindex') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Capacity By Forecast
+                    </a>
+                </li>
+            </ul>
+
         <li class="sidebar-item" id="sidebar-item-list">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#inventoryitem" aria-expanded="false" aria-controls="setting">
@@ -177,6 +215,13 @@
                     <a href="{{ route('inventorymtr') }}" class="sidebar-link">
                         <i class='bx bx-cube'></i>
                         Inventory MTR
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('invlinelist') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Machine and Line list
                     </a>
                 </li>
             </ul>
@@ -198,6 +243,20 @@
                 </li>
             </ul>
 
+        <li class="sidebar-item" id="sidebar-item-maintenance">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#maintenance" aria-expanded="false" aria-controls="setting">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Maintenance</span>
+            </a>
+            <ul id="maintenance" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('moulddown.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Mould Repair
+                    </a>
+                </li>
+            </ul>
 
         <li class="sidebar-item" id="sidebar-item-purchaseRequest">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"

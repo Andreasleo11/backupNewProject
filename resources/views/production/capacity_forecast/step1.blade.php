@@ -63,8 +63,8 @@
                             </div>
                         <form action = "{{ route('step1') }}">
                             <div class="mb-3">
-                                    <label for="date_selected" class="form-label">Pilih Tanggal:</label>
-                                    <input type="date"  id="date_selected" name="date_selected" class="form-control" required>
+                                    <label for="start_date" class="form-label">Pilih Tanggal:</label>
+                                    <input type="date"  id="start_date" name="start_date" class="form-control" required>
                             </div>
                             <div class="d-flex justify-content-between border-top p-3">
                                 <div class="">

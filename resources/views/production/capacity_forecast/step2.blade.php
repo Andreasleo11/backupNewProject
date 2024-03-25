@@ -64,7 +64,7 @@
                            
                             <div class="d-flex justify-content-between border-top p-3">
                                 <div class="">
-                                <a href="{{ route('step2') }}" class="btn btn-secondary float-right"> Mulai Proses 2</a>
+                                <a href="{{ route('step2logic') }}" class="btn btn-secondary float-right"> Mulai Proses 2</a>
                                 </div>
 
                             </div>

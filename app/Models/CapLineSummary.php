@@ -8,5 +8,4 @@ use Illuminate\Database\Eloquent\Model;
 class CapLineSummary extends Model
 {
     use HasFactory;
-    protected $table = 'cap_line_summarys';
 }
