@@ -28,8 +28,10 @@
                 </nav>
             </div>
             <div class="col-auto">
-                {{-- TODO: EMAIL FEATURE --}}
-                @if (Auth::user()->name == 'Dedi')
+                @php
+                    $user = Auth::user();
+                @endphp
+                @if ($user->department->name == 'QC' && ($user->specification->name = 'INSPECTOR'))
                     <button class="btn btn-outline-primary me-2" data-bs-target="#send-mail-modal" data-bs-toggle="modal">
                         <i class='bx bx-envelope'></i> Send mail
                     </button>
