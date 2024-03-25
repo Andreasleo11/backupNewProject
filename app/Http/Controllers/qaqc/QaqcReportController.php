@@ -615,17 +615,16 @@ class QaqcReportController extends Controller
         $filePaths[] = $pdfPath;
 
         $mailData = [
-            'to' => $request->to ?? 'raymondlay023@gmail.com',
-            'cc' => $request->cc ?? ['andreasleonardo.al@gmail.com', 'raymondlay034@gmail.com'],
-            'subject' => $request->cc ?? 'QAQC Verification Report Mail',
+            'to' =>  array_filter(array_map('trim', explode(';', $request->to))) ?? 'raymondlay023@gmail.com',
+            'cc' =>  array_filter(array_map('trim', explode(';', $request->cc))) ?? ['andreasleonardo.al@gmail.com', 'raymondlay034@gmail.com'],
+            'subject' => $request->subject ?? 'QAQC Verification Report Mail',
             'body' => $request->body ?? 'Mail from ' . env('APP_NAME') ,
             'file_paths' => $filePaths
         ];
 
-        // dd($request->all());
-
         Mail::send(new QaqcMail($mailData));
 
+        $report->update(['has_been_emailed' => true]);
 
         return redirect()->back()->with(['success' => 'Email sent successfully!']);
     }

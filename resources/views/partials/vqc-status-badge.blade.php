@@ -15,9 +15,19 @@
         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
     @else
         <span class="badge text-bg-secondary px-3 py-2 fs-6">REVISION</span>
+        @if ($report->has_been_emailed)
+            <span class="badge text-bg-secondary py-2 fs-6">
+                <i class='bx bx-mail-send'></i>
+            </span>
+        @endif
     @endif
 @elseif(($report->autograph_1 || $report->autograph_2) && $report->autograph_3)
     <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
 @else
     <span class="badge text-bg-secondary px-3 py-2 fs-6">WAITING SIGNATURE</span>
+    @if ($report->has_been_emailed)
+        <span class="badge text-bg-secondary py-2 fs-6">
+            <i class='bx bx-mail-send'></i>
+        </span>
+    @endif
 @endif

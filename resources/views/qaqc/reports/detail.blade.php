@@ -32,10 +32,15 @@
                     $user = Auth::user();
                 @endphp
                 @if ($user->department->name == 'QC' && $user->specification->name == 'INSPECTOR')
-                    <button class="btn btn-outline-primary me-2" data-bs-target="#send-mail-modal" data-bs-toggle="modal">
+                    <button class="btn btn-outline-primary me-2"
+                        @if ($report->has_been_emailed) data-bs-target="#send-mail-confirmation-modal"
+                    @else
+                        data-bs-target="#send-mail-modal" @endif
+                        data-bs-toggle="modal">
                         <i class='bx bx-envelope'></i> Send mail
                     </button>
                     @include('partials.send-mail-modal', ['report' => $report])
+                    @include('partials.send-mail-confirmation')
                     {{--
                     <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test
                         email</a> --}}

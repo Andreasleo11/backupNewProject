@@ -49,8 +49,9 @@
                             @php
                                 $fileName = 'verification-report-' . $report->id . '.pdf';
                                 $filePath = Storage::url('pdfs/' . $fileName);
+                                $fileExists = file_exists(public_path('storage/pdfs/' . $fileName));
                             @endphp
-                            @if ($filePath)
+                            @if ($fileExists)
                                 <p>
                                     <a href="{{ asset($filePath) }}" download="{{ $fileName }}">
                                         <div class="card btn btn-light col">
@@ -61,7 +62,12 @@
                                     </a>
                                 </p>
                             @else
-                                <p>you need to export the document first</p>
+                                <div class="mt-2 mb-1 text-secondary fw-bold">
+                                    You need to export the document first
+                                </div>
+                                <a href="{{ route('qaqc.report.savePdf', $report->id) }}"
+                                    class="btn btn-outline-primary">Export
+                                    PDF</a>
                             @endif
                             @foreach ($files as $file)
                                 @php
@@ -78,11 +84,8 @@
                                     </a>
                                 </p>
                             @endforeach
-
                         </div>
                     </div>
-
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
