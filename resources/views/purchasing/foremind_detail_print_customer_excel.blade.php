@@ -88,6 +88,7 @@
         @endforeach
     @endforeach
 
+
     <!-- Print the final row for the last material -->
     <tr>
         <td class="table-bordered">{{ $currentMaterialCode }}</td>

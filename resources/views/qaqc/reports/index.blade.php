@@ -1,6 +1,13 @@
 @extends('layouts.app')
-
+{{-- @push('extraCss')
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }} ">
+@endpush --}}
 @section('content')
+    {{-- <button onclick="showToast(successMsg)">Success</button>
+    <button onclick="showToast(errorMsg)">Error</button>
+    <button onclick="showToast(invalidMsg)">Invalid</button>
+    <div id="toastBox"></div> --}}
+
     <section class="header">
         <div class="row">
             <div class="col">

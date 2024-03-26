@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\View;
 use App\Exports\ForExport;
 use App\Exports\ForExportCustomer;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 class PurchasingDetailController extends Controller
 {
@@ -227,9 +228,40 @@ class PurchasingDetailController extends Controller
 
         // dd($qforecast);
 
-        $export = new ForExport($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast,$vendorName);
 
-        $fileName = $vendorName ? $vendorName . '_exported_data.xlsx' : 'filename.xlsx';
+        $export = new ForExport($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName);
+
+        $fileName = $vendorName ? $vendorName . '_exported_data_INTERNAL.xlsx' : 'filename.xlsx';
+
+        $userEmail = auth()->user()->email;
+        $userName = auth()->user()->name;
+
+
+
+        // Tambahan testing send email saat klik export
+
+        Excel::store($export, 'public/' . $fileName);
+        // Export data to Excel file and store it temporarily
+
+
+        $filePath = Storage::url($fileName);
+        // dd($filePath);
+
+        // Config::set('mail.from.address', $userEmail);
+        // Config::set('mail.from.name', $userName);
+
+        // $recipientEmail = 'andreasleonardo.al@gmail.com'; // Replace with the recipient's email address
+        // $emailSubject = 'Exported Data'; // atur subject email
+        // $emailMessage = 'poantexJONZ';
+
+        // // Mail::to($recipientEmail)
+        // // ->send(new sendMail($emailSubject, $emailMessage, $filePath));
+
+        // Mail::to($recipientEmail)
+        //     ->send(new ExportedDataEmail($emailSubject, $emailMessage, $filePath));
+
+
+        // // Tambahan testing send email saat klik export
 
         return Excel::download($export,  $fileName);
     }
@@ -308,7 +340,7 @@ class PurchasingDetailController extends Controller
 
         $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName);
 
-        $fileName = $vendorName ? $vendorName . '_exported_data.xlsx' : 'filename.xlsx';
+        $fileName = $vendorName ? $vendorName . '_exported_data_Customer.xlsx' : 'filename.xlsx';
 
         return Excel::download($export,  $fileName);
     }

@@ -15,23 +15,35 @@
             </a>
         </li>
 
-        @if (Auth::user()->department->name === 'Production')
+        @if (Auth::user()->department->name === 'PRODUCTION')
             <li class="sidebar-item" id="sidebar-item-production">
-                <a href="{{ route('superadmin.production') }}" class="sidebar-link">
-                    <i class="lni lni-agenda"></i>
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#productionitem" aria-expanded="false" aria-controls="purchaseRequest">
+                    <i class="fa fa-cogs" aria-hidden="true"></i>
                     <span>Production</span>
                 </a>
+                <ul id="productionitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('indexpps') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            PPS Wizard
+                        </a>
+                    </li>
+                </ul>
             </li>
-        @elseif (Auth::user()->department->name === 'Business')
+        @elseif (Auth::user()->department->name === 'BUSINESS')
             <li class="sidebar-item" id="sidebar-item-business">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                    data-bs-target="#business" aria-expanded="false" aria-controls="business">
-                    <i class="lni lni-protection"></i>
+                    data-bs-target="#businessitem" aria-expanded="false" aria-controls="purchaseRequest">
+                    <i class='bx bx-objects-vertical-bottom'></i>
                     <span>Business</span>
                 </a>
-                <ul id="business" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{ route('superadmin.business') }}" class="sidebar-link">Reports</a>
+                        <a href="{{ route('indexds') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Delivery Schedule
+                        </a>
                     </li>
                 </ul>
             </li>
@@ -74,6 +86,36 @@
                     </li>
                 </ul>
             </li>
+        @elseif (Auth::user()->department->name === 'PURCHASING')
+            <li class="sidebar-item" id="sidebar-item-purchasing">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#purchasingitem" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bx-dollar-circle'></i>
+                    <span>Purchasing</span>
+                </a>
+                <ul id="purchasingitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-purchasing">
+                        <a href="{{ route('purchasing_home') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Forecast Prediction
+                        </a>
+                    </li>
+
+                    <li class="sidebar-purchasing">
+                        <a href="{{ route('reminderindex') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Reminder
+                        </a>
+                    </li>
+
+                    <li class="sidebar-purchasing">
+                        <a href="{{ route('purchasingrequirement.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Purchasing Requirement
+                        </a>
+                    </li>
+                </ul>
+            </li>
         @elseif (Auth::user()->department->name === 'ADMIN')
             <li class="sidebar-item" id="sidebar-item-admin">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
@@ -96,6 +138,7 @@
                     </li>
                 </ul>
             </li>
+            {{-- TODO: UNDER DEVELOPMENT --}}
             {{-- <li class="sidebar-item" id="sidebar-item-users">
                 <a href="{{ route('superadmin.users') }}" class="sidebar-link">
                     <i class='bx bx-user'></i>
@@ -115,6 +158,105 @@
                 </a>
             </li> --}}
         @endif
+
+        <li class="sidebar-item" id="sidebar-item-Business">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#businessitem" aria-expanded="false" aria-controls="purchaseRequest">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Business</span>
+            </a>
+            <ul id="businessitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexds') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Delivery Schedule
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
+        <li class="sidebar-item" id="sidebar-item-production">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#productionitem" aria-expanded="false" aria-controls="purchaseRequest">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Production</span>
+            </a>
+            <ul id="productionitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexpps') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        PPS Wizard
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('capacityforecastindex') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Capacity By Forecast
+                    </a>
+                </li>
+            </ul>
+
+        <li class="sidebar-item" id="sidebar-item-list">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#inventoryitem" aria-expanded="false" aria-controls="setting">
+                <i class='bx bxs-component'></i>
+                <span>Inventory</span>
+            </a>
+            <ul id="inventoryitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-list">
+                    <a href="{{ route('inventoryfg') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Inventory FG
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('inventorymtr') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Inventory MTR
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('invlinelist') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Machine and Line list
+                    </a>
+                </li>
+            </ul>
+
+
+
+        <li class="sidebar-item" id="sidebar-item-setting">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
+                <i class='bx bx-cog'></i>
+                <span>Setting</span>
+            </a>
+            <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('indexholiday') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Holiday List
+                    </a>
+                </li>
+            </ul>
+
+        <li class="sidebar-item" id="sidebar-item-maintenance">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#maintenance" aria-expanded="false" aria-controls="setting">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Maintenance</span>
+            </a>
+            <ul id="maintenance" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('moulddown.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Mould Repair
+                    </a>
+                </li>
+            </ul>
 
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
@@ -160,6 +302,12 @@
                         </a>
                     </li>
                 @endif
+                <li class="sidebar-item">
+                    <a href="{{ route('pt.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Project Tracker
+                    </a>
+                </li>
             </ul>
         </li>
 

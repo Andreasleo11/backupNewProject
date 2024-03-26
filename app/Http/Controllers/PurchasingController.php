@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\foremindFinal;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 
 class PurchasingController extends Controller
 {
@@ -21,7 +21,7 @@ class PurchasingController extends Controller
          $forecasts = ForemindFinal::all();
          $transformedData = [];
 
-                 // Get unique months from all forecasts
+         // Get unique months from all forecasts
          $allMonths = [];
 
          foreach ($forecasts as $forecast) {
@@ -33,37 +33,37 @@ class PurchasingController extends Controller
          $uniqueMonths = array_unique($allMonths);
          sort($uniqueMonths);
 
-
-
         // Fetch your materials data from the database
-        $materials = DB::table('forecast_material_predictions')->get();
+        $materials = DB::table('forecast_material_predictions')->paginate(10);
         $allmonth = [];
         foreach($materials as $material){
-        $decodedForecast = json_decode($material->quantity_forecast, true);
-        // dd($decodedForecast);
-        $stringForecast = json_decode($decodedForecast, true);
-        // dd($stringForecast);
-        $decodedMonths = json_decode($material->months, true);
-        $stringMonths = json_decode($decodedMonths, true);
-        $truevalue[] = $stringMonths;
-        
-        $monthm[] = array_keys($stringMonths);
-        $values[] = array_values($stringMonths);
-        $qforecast[] = array_values($stringForecast);
-        // dd($qforecast);
-        $combinedArray = array(array_values($stringForecast),array_values($stringMonths));
-        // dd($combinedArray);
+            $decodedForecast = json_decode($material->quantity_forecast, true);
+            // dd($decodedForecast);
+            $stringForecast = json_decode($decodedForecast, true);
+            // dd($stringForecast);
+            $decodedMonths = json_decode($material->months, true);
+            $stringMonths = json_decode($decodedMonths, true);
+            $truevalue[] = $stringMonths;
+
+            $monthm[] = array_keys($stringMonths);
+            $values[] = array_values($stringMonths);
+            $qforecast[] = array_values($stringForecast);
+            // dd($qforecast);
+            $combinedArray = array(array_values($stringForecast),array_values($stringMonths));
+            // dd($combinedArray);
 
         }
 
+// dd($qforecast);
+
             return view('purchasing.foremind_detail',  [
-                'monthm' => $monthm, // Ensure this is the correct data
+                // 'monthm' => $monthm, // Ensure this is the correct data
                 'materials' => $materials,
                 'values' => $values,
                 'mon' => $uniqueMonths,
                 'qforecast' => $qforecast,
-                
+
             ]);
     }
-    
+
 }
