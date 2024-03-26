@@ -6,11 +6,11 @@
     @csrf
     <div class="form-group">
         <label for="start_date">Tanggal Awal:</label>
-        <input type="date" name="start_date" id="start_date" value = "{{$datedata[14]->start_date}}" class="form-control" required>
+        <input type="date" name="start_date" id="start_date" value = "{{$datedata[16]->start_date}}" class="form-control" required>
     </div>
     <div class="form-group">
         <label for="end_date">Tanggal Akhir:</label>
-        <input type="date" name="end_date" id="end_date" value = "{{$datedata[14]->end_date}}" class="form-control" required>
+        <input type="date" name="end_date" id="end_date" value = "{{$datedata[16]->end_date}}" class="form-control" required>
     </div>
     <div class="form-group">
         <label for="hm_fg">Jarak H-Min FG (hari):</label>
