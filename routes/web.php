@@ -77,6 +77,8 @@ use App\Http\Controllers\ProjectTrackerController;
 
 
 use App\Http\Controllers\MouldDownController;
+use Illuminate\Contracts\View\View;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -208,7 +210,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         //REVISI
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
-        // Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
+        Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
 
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
     });
@@ -412,5 +414,3 @@ Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"]
 
 Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
 Route::post("/add/mould", [MouldDownController::class, "addmould"])->name('addmould');
-
-

@@ -74,6 +74,9 @@
                                                 class="d-none d-sm-inline ">Detail</span>
                                         </a>
 
+                                        <a href="{{ route('qaqc.report.preview', $report->id) }}"
+                                            class="btn btn-primary">preview</a>
+
                                         @php
                                             $hoursDifference = Date::now()->diffInHours($report->rejected_at);
                                         @endphp

@@ -120,11 +120,11 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $detail->part_name }}</td>
-                    <td>{{ $detail->rec_quantity }}</td>
-                    <td>{{ $detail->verify_quantity }}</td>
-                    <td>{{ $detail->can_use }}</td>
-                    <td>{{ $detail->cant_use }}</td>
-                    <td>
+                    <td style="width: 5%">{{ $detail->rec_quantity }}</td>
+                    <td style="width: 5%">{{ $detail->verify_quantity }}</td>
+                    <td style="width: 5%">{{ $detail->can_use }}</td>
+                    <td style="width: 5%">{{ $detail->cant_use }}</td>
+                    <td style="width: 40%">
                         @foreach ($detail->defects as $defect)
                             @if ($defect->is_daijo)
                                 {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }}
