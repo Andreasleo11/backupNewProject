@@ -260,6 +260,12 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
         Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
 
+        Route::get("purchasing/reminder", [PurchasingReminderController::class, "index"])->name('reminderindex');
+        Route::get("purchasing/reminder/detail", [PurchasingReminderController::class, "detail"])->name('reminderdetail');
+
+        Route::get("purchasing/requirement", [PurchasingRequirementController::class, "index"])->name("purchasingrequirement.index");
+        Route::get("purchasing/requirement/detail", [PurchasingRequirementController::class, "detail"])->name("purchasingrequirement.detail");
+
     });
 });
 
