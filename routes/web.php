@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\accounting\AccountingHomeController;
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\Auth\PasswordChangeController;
@@ -15,33 +16,20 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\SuperAdminHomeController;
-
 use App\Http\Controllers\hrd\ImportantDocController;
 use Illuminate\Support\Facades\Auth;
-
-
-// use App\Http\Controllers\PEController;
-
 use App\Http\Controllers\PurchasingController;
-
 use App\Http\Controllers\PurchaseRequestController;
-
 use App\Http\Controllers\FormCutiController;
-
 use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PEController;
-
-
-
 
 //ROUTE SPECIAL PURCHASING
 use App\Http\Controllers\PurchasingMaterialController;
 use App\Http\Controllers\materialPredictionController;
 use App\Http\Controllers\PurchasingDetailController;
-
 //ROUTE SPECIAL PURCHASING
-
 
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ComputerHomeController;
@@ -49,37 +37,26 @@ use App\Http\Controllers\DirectorPurchaseRequestController;
 use App\Http\Controllers\InventoryFgController;
 use App\Http\Controllers\InventoryMtrController;
 use App\Http\Controllers\InvLineListController;
-
-
-
 use App\Http\Controllers\CapacityByForecastController;
-
-
 use App\Http\Controllers\pps\PPSGeneralController;
 use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSInjectionController;
-
-
 use App\Http\Controllers\DeliveryScheduleController;
 
 use App\Http\Controllers\DSNewController;
 
-
-
 use App\Http\Controllers\HolidayListController;
 use App\Http\Controllers\ProductionHomeController;
 use App\Http\Controllers\PurchasingReminderController;
-
 use App\Http\Controllers\PurchasingRequirementController;
-
 use App\Http\Controllers\ProjectTrackerController;
-
-
 use App\Http\Controllers\MouldDownController;
-
 use App\Http\Controllers\LineDownController;
-use Illuminate\Contracts\View\View;
+use App\Http\Controllers\maintenance\MaintenanceHomeController;
+use App\Http\Controllers\pe\PEHomeController;
+use App\Models\Department;
+use App\Models\Role;
 
 /*
 |--------------------------------------------------------------------------
@@ -152,14 +129,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 });
 
 
-Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
-
-    Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
-    Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
-
-    Route::middleware(['checkDepartment:COMPUTER', 'checkSessionId'])->group(function () {
-        Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
-    });
+Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:QA,QC', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
@@ -170,7 +140,6 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
 
         Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
-
         Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit');
         Route::post('/qaqc/report/{id}/updateheader',[QaQcReportController::class, 'updateHeader'])->name('qaqc.report.updateHeader');
         Route::get('/qaqc/report/{id}/editdetail',[QaQcReportController::class, 'editDetail'])->name('qaqc.report.editDetail');
@@ -178,28 +147,21 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::post('/qaqc/report/{id}/updatedetail',[QaQcReportController::class, 'updateDetail'])->name('qaqc.report.updateDetail');
         Route::get('/qaqc/report/{id}/editDefect',[QaQcReportController::class, 'editDefect'])->name('qaqc.report.editDefect');
         Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update' ])->name('qaqc.report.update');
-        //revisi create page
         Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create');
         Route::post('/qaqc/reports/createHeader', [QaqcReportController::class, 'postCreateHeader'])->name('qaqc.report.createheader');
-
         Route::get('/qaqc/reports/createdetail', [QaqcReportController::class, 'createDetail'])->name('qaqc.report.createdetail');
         Route::post('/qaqc/reports/postdetail', [QaqcReportController::class, 'postDetail'])->name('qaqc.report.postdetail');
-
         Route::get('/qaqc/reports/createdefect', [QaqcReportController::class, 'createDefect'])->name('qaqc.report.createdefect');
         Route::post('/qaqc/reports/postdefect', [QaqcReportController::class, 'postDefect'])->name('qaqc.report.postdefect');
         Route::delete('/qaqc/report/{id}/deletedefect', [QaqcReportController::class, 'deleteDefect'])->name('qaqc.report.deletedefect');
         Route::post('/update-active-tab', [QaqcReportController::class, 'updateActiveTab'])->name('update-active-tab');
         Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
-
         Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
         Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
-
-        //revisi create page
         Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
         // adding new defect category
-
         Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
         Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
         Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
@@ -213,14 +175,14 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         //REVISI
 
         Route::get('/item/price', [QaqcReportController::class, 'getItemPrice']);
-
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
         Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
-
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
+        Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
+
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
         Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
         Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
@@ -231,6 +193,8 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:DIRECTOR'])->group(function() {
+
+        Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index');
         Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('director.qaqc.detail');
         Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('director.qaqc.approve');
@@ -243,8 +207,9 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected');
     });
 
-    Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function(){
-        Route::get('/pe', [PEController::class, 'index'])->name('pe.landing');
+    Route::middleware(['checkDepartment:PE'])->group(function(){
+        Route::get('pe/home', [PEHomeController::class, 'index'])->name('pe.home');
+
         Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
         Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
         Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
@@ -271,6 +236,112 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get("purchasing/requirement", [PurchasingRequirementController::class, "index"])->name("purchasingrequirement.index");
         Route::get("purchasing/requirement/detail", [PurchasingRequirementController::class, "detail"])->name("purchasingrequirement.detail");
 
+    });
+
+    Route::middleware(['checkDepartment:COMPUTER', 'checkSessionId'])->group(function () {
+        Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
+    });
+
+    Route::middleware(['checkDepartment:BUSINESS'])->group(function(){
+        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
+        Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
+        Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
+
+        Route::get("delsched/start1", [DeliveryScheduleController::class, "step1"])->name("deslsched.step1");
+        Route::get("delsched/start2", [DeliveryScheduleController::class, "step2"])->name("deslsched.step2");
+        Route::get("delsched/start3", [DeliveryScheduleController::class, "step3"])->name("deslsched.step3");
+        Route::get("delsched/start4", [DeliveryScheduleController::class, "step4"])->name("deslsched.step4");
+
+        Route::get("delsched/wip/step1", [DeliveryScheduleController::class, "step1wip"])->name("delschedwip.step1");
+        Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
+    });
+
+    Route::middleware(['checkDepartment:ACCOUNTING'])->group(function(){
+        Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
+    });
+
+    Route::middleware(['checkDepartment:PRODUCTION'])->group(function(){
+        Route::get('production/home', [ProductionHomeController::class, 'index'])->name('production.home');
+
+        Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
+        Route::get("/production/capacity-line", [CapacityByForecastController::class, "line"])->name('capacityforecastline');
+        Route::get("/production/capacity-distribution", [CapacityByForecastController::class, "distribution"])->name('capacityforecastdistribution');
+        Route::get("/production/capacity-detail", [CapacityByForecastController::class, "detail"])->name('capacityforecastdetail');
+
+        Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
+        Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1second');
+        Route::get("/production/capacity-forecast/step1second", [CapacityByForecastController::class, "step1_second"])->name('step1');
+
+        Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
+        Route::get("/production/capacity-forecast/step2logic", [CapacityByForecastController::class, "step2logic"])->name('step2logic');
+
+        Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');
+        Route::get("/production/capacity-forecast/step3logic", [CapacityByForecastController::class, "step3logic"])->name('step3logic');
+        Route::get("/production/capacity-forecast/step3last", [CapacityByForecastController::class, "step3logiclast"])->name('step3logicklast');
+
+
+        Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
+        Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
+        Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
+
+        Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
+        Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
+        Route::get("pps/injection/process1", [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
+        Route::get("pps/injection/process2", [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
+        Route::get("pps/injection/process3", [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
+
+
+        Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
+        Route::get("pps/injection/process4", [PPSInjectionController::class, 'process4'])->name("injectionprocess4");
+        //jika ada post untuk delivery
+
+        Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");
+        // jika ada post untuk items
+
+        Route::get("/pps/injection/line", [PPSInjectionController::class, "lineinjection"])->name("lineinjection");
+        //jika ada post untuk line
+
+        Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
+
+
+        Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
+        Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
+        //jika ada post untuk start
+
+        Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
+        //jika ada post untuk delivery
+
+        Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
+        // jika ada post untuk items
+
+        Route::get("/pps/second/line", [PPSSecondController::class, "linesecond"])->name("linesecond");
+        //jika ada post untuk line
+
+        Route::get("pps/secondfinal",  [PPSSecondController::class, "finalresultsecond"])->name("finalsecondpps");
+
+        Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
+        Route::post("/pps/assembly-process-form", [PPSAssemblyController::class, "processAssemblyForm"])->name("processAssemblyForm");
+        //jika ada post untuk start
+
+        Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
+        //jika ada post untuk delivery
+
+        Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
+        // jika ada post untuk items
+
+        Route::get("/pps/assembly/line", [PPSAssemblyController::class, "lineassembly"])->name("lineassembly");
+        //jika ada post untuk line
+
+        Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
+    });
+
+    Route::middleware(['checkDepartment:MAINTENANCE'])->group(function(){
+        Route::get('maintenance/home', [MaintenanceHomeController::class, 'index'])->name('maintenance.home');
+
+        Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
+        Route::post("/add/mould", [MouldDownController::class, "addmould"])->name('addmould');
+        Route::get("maintenance/line-repair", [LineDownController::class, "index"])->name("linedown.index");
+        Route::post("/add/line", [LineDownController::class, "addline"])->name('addline');
     });
 });
 
@@ -320,119 +391,34 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
     Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class,'saveImagePath']);
 
+    Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
+    Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
+
+    Route::get('/inventory/line-list',  [InvLineListController::class, "index"])->name('invlinelist');
+    Route::post("/add/line", [InvLineListController::class, "addline"])->name('addline');
+
+    Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
+    Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
+
+    //adding holiday list feature
+    Route::get("setting/holiday-list", [HolidayListController::class, "index"])->name("indexholiday");
+    Route::get("setting/holiday-list/create", [HolidayListController::class, "create"])->name("createholiday");
+    Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
+    //adding holiday list feature
+
+    Route::get("projecttracker/index", [ProjectTrackerController::class, "index"])->name("pt.index");
+    Route::get("projecttracker/create", [ProjectTrackerController::class, "create"])->name("pt.create");
+    Route::post("projecttracker/post", [ProjectTrackerController::class, "store"])->name("pt.store");
+    Route::get("projecttracker/detail/{id}", [ProjectTrackerController::class, "detail"])->name("pt.detail");
+    Route::put('projecttracker/{id}/update-ongoing', [ProjectTrackerController::class, 'updateOngoing'])->name('pt.updateongoing');
+    Route::put('projecttracker/{id}/update-test', [ProjectTrackerController::class, 'updateTest'])->name('pt.updatetest');
+    Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
+    Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');
 });
 
-Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
-Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
-Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
-
-Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
-Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
-
-Route::get('/inventory/line-list',  [InvLineListController::class, "index"])->name('invlinelist');
-Route::post("/add/line", [InvLineListController::class, "addline"])->name('addline');
-
-Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
-Route::get("/production/capacity-line", [CapacityByForecastController::class, "line"])->name('capacityforecastline');
-Route::get("/production/capacity-distribution", [CapacityByForecastController::class, "distribution"])->name('capacityforecastdistribution');
-Route::get("/production/capacity-detail", [CapacityByForecastController::class, "detail"])->name('capacityforecastdetail');
-
-Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
-Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1second');
-Route::get("/production/capacity-forecast/step1second", [CapacityByForecastController::class, "step1_second"])->name('step1');
-
-Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
-Route::get("/production/capacity-forecast/step2logic", [CapacityByForecastController::class, "step2logic"])->name('step2logic');
-
-Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');
-Route::get("/production/capacity-forecast/step3logic", [CapacityByForecastController::class, "step3logic"])->name('step3logic');
-Route::get("/production/capacity-forecast/step3last", [CapacityByForecastController::class, "step3logiclast"])->name('step3logicklast');
-
-//pps section
-Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
-Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
-Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
-
-Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
-Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
-Route::get("pps/injection/process1", [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
-Route::get("pps/injection/process2", [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
-Route::get("pps/injection/process3", [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
-
-
-Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
-Route::get("pps/injection/process4", [PPSInjectionController::class, 'process4'])->name("injectionprocess4");
-//jika ada post untuk delivery
-
-Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");
-Route::get("/pps/injection/process5", [PPSInjectionController::class, "process5"])->name('process5');
-// jika ada post untuk items
-
-Route::get("/pps/injection/line", [PPSInjectionController::class, "lineinjection"])->name("lineinjection");
-//jika ada post untuk line
-
-Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
-
-
-Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
-Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
-//jika ada post untuk start
-
-Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
-//jika ada post untuk delivery
-
-Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
-// jika ada post untuk items
-
-Route::get("/pps/second/line", [PPSSecondController::class, "linesecond"])->name("linesecond");
-//jika ada post untuk line
-
-Route::get("pps/secondfinal",  [PPSSecondController::class, "finalresultsecond"])->name("finalsecondpps");
-
-Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
-Route::post("/pps/assembly-process-form", [PPSAssemblyController::class, "processAssemblyForm"])->name("processAssemblyForm");
-//jika ada post untuk start
-
-Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
-//jika ada post untuk delivery
-
-Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
-// jika ada post untuk items
-
-Route::get("/pps/assembly/line", [PPSAssemblyController::class, "lineassembly"])->name("lineassembly");
-//jika ada post untuk line
-
-Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
-
-Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
-Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
-
-//adding holiday list feature
-Route::get("setting/holiday-list", [HolidayListController::class, "index"])->name("indexholiday");
-Route::get("setting/holiday-list/create", [HolidayListController::class, "create"])->name("createholiday");
-Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
-//adding holiday list feature
-
-Route::get("projecttracker/index", [ProjectTrackerController::class, "index"])->name("pt.index");
-Route::get("projecttracker/create", [ProjectTrackerController::class, "create"])->name("pt.create");
-Route::post("projecttracker/post", [ProjectTrackerController::class, "store"])->name("pt.store");
-Route::get("projecttracker/detail/{id}", [ProjectTrackerController::class, "detail"])->name("pt.detail");
-Route::put('projecttracker/{id}/update-ongoing', [ProjectTrackerController::class, 'updateOngoing'])->name('pt.updateongoing');
-Route::put('projecttracker/{id}/update-test', [ProjectTrackerController::class, 'updateTest'])->name('pt.updatetest');
-Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
-Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');
-
-Route::get("delsched/start1", [DeliveryScheduleController::class, "step1"])->name("deslsched.step1");
-Route::get("delsched/start2", [DeliveryScheduleController::class, "step2"])->name("deslsched.step2");
-Route::get("delsched/start3", [DeliveryScheduleController::class, "step3"])->name("deslsched.step3");
-Route::get("delsched/start4", [DeliveryScheduleController::class, "step4"])->name("deslsched.step4");
-
-Route::get("delsched/wip/step1", [DeliveryScheduleController::class, "step1wip"])->name("delschedwip.step1");
-Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
-
-Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
-Route::post("/add/mould", [MouldDownController::class, "addmould"])->name('addmould');
-Route::get("maintenance/line-repair", [LineDownController::class, "index"])->name("linedown.index");
-Route::post("/add/line", [LineDownController::class, "addline"])->name('addline');
-
-
+//! AFTER UPDATE PLEASE DELETE THIS
+// Route::get('/updateRoles', function(){
+//     Role::find(1)->update(['name' => 'SUPERADMIN']);
+//     Role::find(2)->update(['name' => 'STAFF']);
+//     Role::find(3)->update(['name' => 'USER']);
+// });

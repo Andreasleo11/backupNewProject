@@ -14,24 +14,11 @@
                             </div>
                         @endif
 
-                        {{ __('PE PAGE') }}
+                        {{ __('ACCOUNTING HOME') }}
                     </div>
                 </div>
             </div>
         </div>
 
     </div>
-
-    {{--
-<div class="container">
-    <div class="row justify-content-center">
-        <a href="{{ route('pe.trial') }}" class="btn btn-primary">FORM REQUEST TRIAL</a>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row justify-content-center">
-        <a href="{{ route('pe.formlist') }}" class="btn btn-primary">LIST FORM REQUEST</a>
-    </div>
-</div> --}}
 @endsection

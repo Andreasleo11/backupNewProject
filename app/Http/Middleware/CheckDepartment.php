@@ -17,7 +17,7 @@ class CheckDepartment
     public function handle(Request $request, Closure $next, ...$departments): Response
     {
         $user = Auth::user();
-        if($user->department->name && in_array($user->department->name, $departments)){
+        if($user->department->name && in_array($user->department->name, $departments) || $user->role_id == 1){
             return $next($request);
         }
         return redirect('/');
