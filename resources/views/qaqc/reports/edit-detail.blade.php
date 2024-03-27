@@ -88,7 +88,7 @@
                             <hr>
                             <div class="d-flex justify-content-between mb-3">
                                 <div class="col-auto">
-                                    <span class="h3">Add/Remove Part Details</span>
+                                    <span class="h3">Edit Part Details</span>
                                     <p class="text-secondary mt-2">You need to add part details for the report header that
                                         you have <br>
                                         been made before. Everytime you add, it will stored in the table <br> below.</p>
@@ -110,6 +110,7 @@
                                                     <th class="text-center">Verify Quantity</th>
                                                     <th class="text-center">Can Use</th>
                                                     <th class="text-center">Can't Use</th>
+                                                    <th class="text-center">Price</th>
                                                     <th class="text-center">Action</th>
                                                 </tr>
                                             </thead>
@@ -164,10 +165,38 @@
                 <td><input required type="number" value="${detail.verify_quantity ?? ''}" name="verify_quantity${rowCount}" class="form-control verify-input"></td>
                 <td><input required type="number" value="${detail.can_use ?? ''}" name="can_use${rowCount}" class="form-control canuse-input"></td>
                 <td><input required type="number" value="${detail.cant_use ?? ''}" name="cant_use${rowCount}" class="form-control cantuse-input"></td>
-                <td><input required type="number" value="${detail.price ?? ''}" name="price${rowCount}" class="form-control price-input"></td>
+                <td><input required type="text" value="${detail.price ?? ''}" name="price${rowCount}" id="priceInput${rowCount}" class="form-control price-input"></td>
                 <td><a class="btn btn-danger btn-sm" onclick="removeItem(${detail.id})">Remove</a></td>
             `;
             tableBody.appendChild(newRow);
+
+            function formatPrice(input) {
+                let price = input.value.replace(/\D/g, ''); // Remove non-digit characters
+                price = parseInt(price); // Convert string to integer
+                if (!isNaN(price)) {
+                    // Format the price with thousand separators and add currency symbol
+                    const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
+                    input.value = formattedPrice;
+                } else {
+                    input.value = ''; // Clear the input if it's not a valid number
+                }
+            }
+
+            const priceInput = document.getElementById('priceInput' + rowCount);
+
+            formatPrice(priceInput);
+
+            priceInput.addEventListener('input', function(event) {
+                let price = event.target.value.replace(/\D/g, ''); // Remove non-digit characters
+                price = parseInt(price); // Convert string to integer
+                if (!isNaN(price)) {
+                    // Format the price with thousand separators and add currency symbol
+                    const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
+                    event.target.value = formattedPrice;
+                } else {
+                    event.target.value = ''; // Clear the input if it's not a valid number
+                }
+            });
 
             const itemNameInput = document.getElementById('itemNameInput' + rowCount);
             const itemDropdown = document.getElementById('itemDropdown' + rowCount);
@@ -191,7 +220,8 @@
                                 option.addEventListener('click', function() {
                                     itemNameInput.value = item;
                                     itemDropdown.innerHTML =
-                                    ''; // Hide dropdown after selection
+                                        ''; // Hide dropdown after selection
+                                    handleItemSelection(item);
                                 });
                                 itemDropdown.appendChild(option);
                             });
@@ -203,15 +233,59 @@
                     .catch(error => console.error('Error:', error));
             });
 
+            function handleItemSelection(selectedItem) {
+                fetch(`/item/price?name=${selectedItem}`)
+                    .then(response => {
+                        // Check if the response is OK
+                        if (response.ok) {
+                            // Parse the JSON response
+                            return response.json();
+                        } else {
+                            // Handle error if response is not OK
+                            throw new Error('Failed to fetch latest price');
+                        }
+                    })
+                    .then(data => {
+                        console.log(data);
+                        console.log(data.latest_price);
+                        priceInput.value = data.latest_price;
+                        formatPrice(priceInput);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            itemNameInput.addEventListener('change', function(event) {
+                let inputVal = event.target.value.trim();
+                console.log(inputVal);
+                // Make an AJAX request to fetch relevant items
+                if (inputVal !== "") {
+                    fetch(`/item/price?name=${inputVal}`)
+                        .then(response => {
+                            // Check if the response is OK
+                            if (response.ok) {
+                                // Parse the JSON response
+                                return response.json();
+                            } else {
+                                // Handle error if response is not OK
+                                throw new Error('Failed to fetch latest price');
+                            }
+                        })
+                        .then(data => {
+                            // console.log(data);
+                            // console.log(data.latest_price);
+                            priceInput.value = data.latest_price;
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+
             // Close dropdown when clicking outside the dropdown or input field
             document.addEventListener('click', function(event) {
                 if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
                     itemDropdown.style.display = 'none';
-                    console.log(itemNameInput.value);
+                    // console.log(itemNameInput.value);
                 }
             });
-
-
         }
 
         // Add event listener to the Add Data button

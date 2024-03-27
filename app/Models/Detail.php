@@ -17,7 +17,7 @@ class Detail extends Model
         'verify_quantity',
         'can_use',
         'cant_use',
-        'item_price',
+        'price',
     ];
 
     // Define relationships if needed

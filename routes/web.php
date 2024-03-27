@@ -210,7 +210,7 @@ Route::middleware(['checkUserRole:2', 'checkSessionId'])->group(function () {
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         //REVISI
 
-        Route::get('/item/prices', [QaqcReportController::class, 'getItemPrices'])->name('item.prices');
+        Route::get('/item/price', [QaqcReportController::class, 'getItemPrice']);
 
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
         Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');

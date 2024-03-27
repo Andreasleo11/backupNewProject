@@ -136,9 +136,9 @@ class UserSeeder extends seeder
         // ] );
 
         DB::table('users')->insert([
-            'name' => 'Bernadett',
-            'email' => 'bernadett@daijo.co.id',
-            'password' => Hash::make("bernadett1234"),
+            'name' => 'Suwanto',
+            'email' => 'suwanto@daijo.co.id',
+            'password' => Hash::make("suwanto1234"),
             'role_id' => '2',
             'department' => 'HRD'
         ]);

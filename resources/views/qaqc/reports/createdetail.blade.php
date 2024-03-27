@@ -167,14 +167,26 @@
                 <td><input required type="number" value="${detail.verify_quantity ?? ''}" name="verify_quantity${rowCount}" class="form-control verify-input"></td>
                 <td><input required type="number" value="${detail.can_use ?? ''}" name="can_use${rowCount}" class="form-control canuse-input"></td>
                 <td><input required type="number" value="${detail.cant_use ?? ''}" name="cant_use${rowCount}" class="form-control cantuse-input"></td>
-                <td><input required type="text" value="${detail.item_price ?? ''}" name="price${rowCount}" id="priceInput${rowCount}" class="form-control price-input">
-                    <div id="priceDropdown${rowCount}" class="dropdown-content"></div></td>
+                <td><input required type="text" value="${detail.price ?? ''}" name="price${rowCount}" id="priceInput${rowCount}" class="form-control price-input"></td>
                 <td><a class="btn btn-danger btn-sm" onclick="removeItem()">Remove </a></td>
             `;
             tableBody.appendChild(newRow);
 
+            function formatPrice(input) {
+                let price = input.value.replace(/\D/g, ''); // Remove non-digit characters
+                price = parseInt(price); // Convert string to integer
+                if (!isNaN(price)) {
+                    // Format the price with thousand separators and add currency symbol
+                    const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
+                    input.value = formattedPrice;
+                } else {
+                    input.value = ''; // Clear the input if it's not a valid number
+                }
+            }
 
             const priceInput = document.getElementById('priceInput' + rowCount);
+
+            formatPrice(priceInput);
 
             priceInput.addEventListener('input', function(event) {
                 let price = event.target.value.replace(/\D/g, ''); // Remove non-digit characters
@@ -185,46 +197,6 @@
                     event.target.value = formattedPrice;
                 } else {
                     event.target.value = ''; // Clear the input if it's not a valid number
-                }
-            });
-
-            const priceDropdown = document.getElementById('priceDropdown' + rowCount);
-            priceInput.addEventListener('keyup', function() {
-                const inputVal = priceInput.value.trim();
-
-                // Make an AJAX request to fetch relevant items
-                fetch(`/item/prices?name=${inputVal}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Clear previous dropdown options
-                        priceDropdown.innerHTML = '';
-
-                        // Display dropdown options
-                        if (data.length > 0) {
-                            data.forEach(item => {
-                                const option = document.createElement('div');
-                                option.classList.add('dropdown-item');
-                                option.textContent = item;
-                                option.addEventListener('click', function() {
-                                    priceInput.value = item;
-                                    priceDropdown.innerHTML =
-                                        ''; // Hide dropdown after selection
-                                });
-                                priceDropdown.appendChild(option);
-                            });
-                            priceDropdown.style.display = 'block'; // Show dropdown
-                        } else {
-                            priceDropdown.style.display = 'none'; // Hide dropdown if no options
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            });
-
-            // Close dropdown when clicking outside the dropdown or input field
-            document.addEventListener('click', function(event) {
-                if (!priceInput.contains(event.target) && !itemDropdown.contains(event.target)) {
-                    itemDropdown.style.display = 'none';
-                    console.log(priceInput.value);
                 }
             });
 
@@ -251,6 +223,7 @@
                                     itemNameInput.value = item;
                                     itemDropdown.innerHTML =
                                         ''; // Hide dropdown after selection
+                                    handleItemSelection(item);
                                 });
                                 itemDropdown.appendChild(option);
                             });
@@ -262,15 +235,58 @@
                     .catch(error => console.error('Error:', error));
             });
 
+            function handleItemSelection(selectedItem) {
+                fetch(`/item/price?name=${selectedItem}`)
+                    .then(response => {
+                        // Check if the response is OK
+                        if (response.ok) {
+                            // Parse the JSON response
+                            return response.json();
+                        } else {
+                            // Handle error if response is not OK
+                            throw new Error('Failed to fetch latest price');
+                        }
+                    })
+                    .then(data => {
+                        console.log(data);
+                        console.log(data.latest_price);
+                        priceInput.value = data.latest_price;
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+            itemNameInput.addEventListener('change', function(event) {
+                let inputVal = event.target.value.trim();
+                console.log(inputVal);
+                // Make an AJAX request to fetch relevant items
+                if (inputVal !== "") {
+                    fetch(`/item/price?name=${inputVal}`)
+                        .then(response => {
+                            // Check if the response is OK
+                            if (response.ok) {
+                                // Parse the JSON response
+                                return response.json();
+                            } else {
+                                // Handle error if response is not OK
+                                throw new Error('Failed to fetch latest price');
+                            }
+                        })
+                        .then(data => {
+                            // console.log(data);
+                            // console.log(data.latest_price);
+                            priceInput.value = data.latest_price;
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+
             // Close dropdown when clicking outside the dropdown or input field
             document.addEventListener('click', function(event) {
                 if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
                     itemDropdown.style.display = 'none';
-                    console.log(itemNameInput.value);
+                    // console.log(itemNameInput.value);
                 }
             });
-
-
         }
 
         // Add event listener to the Add Data button
