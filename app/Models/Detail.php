@@ -17,6 +17,7 @@ class Detail extends Model
         'verify_quantity',
         'can_use',
         'cant_use',
+        'price',
     ];
 
     // Define relationships if needed
@@ -29,4 +30,5 @@ class Detail extends Model
     {
         return $this->hasMany(Defect::class);
     }
+
 }

@@ -11,11 +11,13 @@ use App\Models\File;
 use App\Models\Report;
 use App\Models\Detail;
 use App\Models\DefectCategory;
+use App\Models\MasterDataPartNumberPrice;
 use App\Models\MasterDataRogCustomerName;
 use App\Models\MasterDataRogPartName;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -168,6 +170,7 @@ class QaqcReportController extends Controller
                 'verify_quantity' . $i => 'required',
                 'can_use' . $i => 'required',
                 'cant_use' . $i => 'required',
+                'price' . $i => 'required',
             ]);
 
 
@@ -178,6 +181,7 @@ class QaqcReportController extends Controller
                 'verify_quantity' => $request->input("verify_quantity$i"),
                 'can_use' => $request->input("can_use$i"),
                 'cant_use' => $request->input("cant_use$i"),
+                'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i")),
             ];
                 $detail = Detail::where('report_id', $id)
                 ->where('part_name', $rowData['part_name'])
@@ -185,11 +189,22 @@ class QaqcReportController extends Controller
 
                 if (!$detail) {
                 // If the detail doesn't exist, create a new one
+                    MasterDataPartNumberPrice::create([
+                        'name' => $request->input("itemName$i"),
+                        'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i"))
+                    ]);
+
+                    $itemPrice = MasterDataPartNumberPrice::where('name', $request->input("itemName$i"))->latest()->first()->price;
+                    $rowData['price'] = $itemPrice;
                     $detail = new Detail();
                     $detail->fill($rowData);
                     $detail->save();
                 } else {
                 // If the detail exists, update its attributes
+                    MasterDataPartNumberPrice::create([
+                        'name' => $request->input("itemName$i"),
+                        'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i"))
+                    ]);
                     $detail->update($rowData);
                 }
 
@@ -236,6 +251,21 @@ class QaqcReportController extends Controller
         return response()->json($items);
     }
 
+    public function getItemPrice(Request $request)
+    {
+        $encodedItemName = $request->input('name');
+        $itemName = urldecode($encodedItemName);
+
+        // Log::info('decoded item name: ', $itemName);
+
+        // Query the database to get the latest price for the given item name
+        $latestPrice = MasterDataPartNumberPrice::where('name', $itemName)
+            ->latest('created_at')
+            ->value('price');
+
+        return response()->json(['latest_price' => $latestPrice]);
+    }
+
 
     public function postDetail(Request $request)
     {
@@ -263,6 +293,7 @@ class QaqcReportController extends Controller
                 'verify_quantity' . $i => 'required',
                 'can_use' . $i => 'required',
                 'cant_use' . $i => 'required',
+                'price' . $i => 'required',
             ]);
 
             $rowData = [
@@ -273,21 +304,32 @@ class QaqcReportController extends Controller
                 'can_use' => $request->input("can_use$i"),
                 'cant_use' => $request->input("cant_use$i"),
             ];
-                $detail = Detail::where('report_id', $reportId)
-                ->where('part_name', $rowData['part_name'])
-                ->first();
 
-                if (!$detail) {
-                // If the detail doesn't exist, create a new one
-                    $detail = new Detail();
-                    $detail->fill($rowData);
-                    $detail->save();
-                } else {
-                // If the detail exists, update its attributes
-                    $detail->update($rowData);
-                }
+            $detail = Detail::where('report_id', $reportId)
+            ->where('part_name', $rowData['part_name'])
+            ->first();
 
-                $details[] = $detail;
+            if (!$detail) {
+            // If the detail doesn't exist, create a new one
+                MasterDataPartNumberPrice::create([
+                    'name' => $request->input("itemName$i"),
+                    'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i"))
+                ]);
+
+                $itemPrice = MasterDataPartNumberPrice::where('name', $request->input("itemName$i"))->latest()->first()->price;
+                // dd($itemPrice);
+                $rowData['price'] = $itemPrice;
+                $detail = new Detail();
+                $detail->fill($rowData);
+                $detail->save();
+            } else {
+            // If the detail exists, update its attributes
+                $itemPrice = MasterDataPartNumberPrice::where('name', $request->input("itemName$i"))->latest()->first()->price;
+                $rowData['price'] = $itemPrice;
+                $detail->update($rowData);
+            }
+
+            $details[] = $detail;
 
         }
 
@@ -414,8 +456,7 @@ class QaqcReportController extends Controller
 
         $validatedData['autograph_1'] = strtoupper(auth()->user()->name) . '.png';
         $validatedData['autograph_user_1'] = auth()->user()->name;
-
-        // $data = $request->session()->get('header');
+        $validatedData['is_approve'] = 2;
 
         $report = $request->session()->get('header');
 
@@ -436,6 +477,9 @@ class QaqcReportController extends Controller
 
     public function createDetail(Request $request)
     {
+        // dd(MasterDataPartNumberPrice::where('name', '(RM)-733-CVRDRLL-BL/COVER DRL LH')
+        // ->latest('created_at')
+        // ->value('updated_at'));
         $header = $request->session()->get('header');
 
         // Extract the customer name from the header
@@ -448,7 +492,7 @@ class QaqcReportController extends Controller
         $details = $request->session()->get('details');
 
         // $request->session()->forget('detail');
-        // dd($detail);
+        // dd($details);
 
 
         return view('qaqc.reports.createdetail', compact('data', 'details'));

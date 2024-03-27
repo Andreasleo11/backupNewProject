@@ -110,6 +110,7 @@
                 <th class="align-middle">Can't Use</th>
                 <th class="align-middle">Daijo Defect Detail</th>
                 <th class="align-middle">Customer Defect Detail</th>
+                <th class="align-middle">Price</th>
 
                 <!-- Add more headers as needed -->
             </tr>
@@ -132,7 +133,6 @@
                             @endif
                         @endforeach
                     </td>
-
                     <td>
                         @foreach ($detail->defects as $defect)
                             @if (!$defect->is_daijo)
@@ -141,6 +141,7 @@
                             @endif
                         @endforeach
                     </td>
+                    <td>@currency($detail->price)</td>
                 </tr>
             @empty
                 <td colspan="11">No data</td>
