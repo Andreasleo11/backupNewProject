@@ -257,6 +257,14 @@
                     </a>
                 </li>
             </ul>
+            <ul id="maintenance" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('linedown.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Line Repair
+                    </a>
+                </li>
+            </ul>
 
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"

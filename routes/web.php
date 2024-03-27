@@ -77,6 +77,8 @@ use App\Http\Controllers\ProjectTrackerController;
 
 
 use App\Http\Controllers\MouldDownController;
+
+use App\Http\Controllers\LineDownController;
 use Illuminate\Contracts\View\View;
 
 /*
@@ -426,3 +428,7 @@ Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"]
 
 Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
 Route::post("/add/mould", [MouldDownController::class, "addmould"])->name('addmould');
+Route::get("maintenance/line-repair", [LineDownController::class, "index"])->name("linedown.index");
+Route::post("/add/line", [LineDownController::class, "addline"])->name('addline');
+
+
