@@ -39,17 +39,11 @@ class HomeController extends Controller
                 case "QC":
                     return redirect()->route('qaqc.home');
                     break;
+                case "ACCOUNTING":
+                    return redirect()->route('accounting.home');
+                    break;
                 case "DIRECTOR":
                     return redirect()->route('director.home');
-                    break;
-                case "HRD":
-                    return redirect()->route('hrd.home');
-                    break;
-                case "PLASTIC INJECTION":
-                    return redirect()->route('pe.home');
-                    break;
-                case "COMPUTER":
-                    return redirect()->route('computer.home');
                     break;
                 case "PURCHASING":
                     return redirect()->route('purchasing.home');
@@ -57,8 +51,23 @@ class HomeController extends Controller
                 case "PRODUCTION":
                     return redirect()->route('production.home');
                     break;
+                case "HRD":
+                    return redirect()->route('hrd.home');
+                    break;
                 case "BUSINESS":
                     return redirect()->route('business.home');
+                    break;
+                case "PE":
+                    return redirect()->route('pe.home');
+                    break;
+                case "PLASTIC INJECTION":
+                    return redirect()->route('pi.home');
+                    break;
+                case "COMPUTER":
+                    return redirect()->route('computer.home');
+                    break;
+                case "MAINTENANCE":
+                    return redirect()->route('maintenance.home');
                     break;
                 // default:
                 //     return redirect()->

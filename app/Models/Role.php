@@ -9,6 +9,10 @@ class Role extends Model
 {
     use HasFactory;
 
+    //! AFTER UPDATE PLEASE DELETE THIS
+    // protected $fillable = [
+    //     'name'
+    // ];
 
     public function users()
     {
