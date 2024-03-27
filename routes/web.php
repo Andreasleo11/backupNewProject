@@ -365,6 +365,7 @@ Route::get("pps/injection/process4", [PPSInjectionController::class, 'process4']
 //jika ada post untuk delivery
 
 Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");
+Route::get("/pps/injection/process5", [PPSInjectionController::class, "process5"])->name('process5');
 // jika ada post untuk items
 
 Route::get("/pps/injection/line", [PPSInjectionController::class, "lineinjection"])->name("lineinjection");
