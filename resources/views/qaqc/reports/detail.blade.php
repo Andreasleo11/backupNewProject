@@ -193,7 +193,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <td colspan="9">No data</td>
+                                <td colspan="13">No data</td>
                             @endforelse
                         </tbody>
                     </table>
