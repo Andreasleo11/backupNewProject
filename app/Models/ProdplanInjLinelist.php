@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProdplanInjLinelist extends Model
 {
     use HasFactory;
+    public $timestamps = false;
     protected $fillable = [
         'area',
         'line_code',

@@ -15,6 +15,12 @@ use App\Models\ProdplanInjDelitem;
 use App\Models\ProdplanInjDelraw;
 use App\Models\ProdplanInjDelsched;
 use App\Models\ProdplanInjItem;
+use App\Models\ProdplanInjLinelist;
+use App\Models\ProdplanInjLinecap;
+use App\Models\InvLineList;
+
+use App\Models\MtcLineDown;
+
 use Illuminate\Support\Facades\Date;
 
 use App\DataTables\ProdplanInjDelschedDataTable;
@@ -545,6 +551,36 @@ class PPSInjectionController extends Controller
         // return view("pps.injectionitem");
         return $dataTable->render("pps.injectionitem");
     }
+
+	public function process5()
+	{
+		DB::table('prodplan_inj_linelists')->truncate();
+
+		$data = InvLineList::where('departement', 390)->get();
+		// dd($data);
+
+		foreach($data as $item)
+		{
+			ProdplanInjLinelist::create([
+				'area' => $item->area,
+				'line_code' => $item->line_code,
+				'daily_minutes' => $item->daily_minutes,
+				'continue_running' => $item->continue_running ?? 0,
+				'status' => 'START',
+			]);
+		}
+
+		$datadate = MtcLineDown::where('line_code', 'line_code')->get();
+
+		foreach($datadate as $item)
+		{
+			ProdplanInjLinelist::update([
+				'start_repair' => $item->date_down,
+				'end_repair' => $item->date_prediction,
+			]);
+		}
+
+	}
 
     public function lineinjection()
     {
