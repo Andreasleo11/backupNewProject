@@ -9,7 +9,7 @@ class UtiDateList extends Model
 {
     use HasFactory;
     protected $table = 'uti_date_list';
-    // public $timestamps = false;
+    public $timestamps = false;
 
     protected $fillable = [
         'start_date',
