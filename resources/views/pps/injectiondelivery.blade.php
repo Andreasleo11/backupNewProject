@@ -23,7 +23,7 @@
 
     {{ $dataTable->scripts() }}
 
-                    <a href="{{ route('iteminjection') }}" class="btn btn-secondary float-right"> Lanjut</a>
+                    <a href="{{ route('injectionprocess4') }}" class="btn btn-secondary float-right"> Lanjut</a>
                 </div>
             </div>
         </div>

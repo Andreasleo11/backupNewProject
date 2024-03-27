@@ -386,7 +386,7 @@ class DeliveryScheduleController extends Controller
 		$now->modify('+420 minutes');
 		
 		$tb_datelist = DB::table('uti_date_list')->where('id','13')->update([			
-			'last_update' => $now,
+			'updated_at' => $now,
 		]);
 		
 		return redirect()->route('indexds');

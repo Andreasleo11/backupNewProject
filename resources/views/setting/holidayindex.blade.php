@@ -6,8 +6,9 @@
         <div class="row">
             <div class="col">
                 <h1 class="h1"> Holiday List </h1>
-
-                <a href="{{ route('createholiday') }}" class="btn btn-secondary float-right"> Tambahkan Hari Libur</a>
+                @include('partials.add-new-holiday-modal')
+                <a class="btn btn-secondary float-right" data-bs-target="#add-new-holiday" data-bs-toggle="modal" > Tambahkan Hari Libur </a>
+                <!-- <a href="{{ route('createholiday') }}" class="btn btn-secondary float-right"> Tambahkan Hari Libur</a> -->
             </div>
         </div>
     </section>

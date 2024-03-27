@@ -50,7 +50,7 @@ class DeliveryNewTableDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    ->orderBy(1)
+                    ->orderBy(1,'asc')
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),

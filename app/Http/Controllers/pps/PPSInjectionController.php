@@ -18,6 +18,7 @@ use App\Models\ProdplanInjItem;
 use Illuminate\Support\Facades\Date;
 
 use App\DataTables\ProdplanInjDelschedDataTable;
+use App\DataTables\ProdplanInjItemDataTable;
 
 class PPSInjectionController extends Controller
 {
@@ -463,9 +464,86 @@ class PPSInjectionController extends Controller
         return $dataTable->render("pps.injectiondelivery");
     }
 
-    public function iteminjection()
+
+    public function process4()
     {
-        return view("pps.injectionitem");
+        DB::table('prodplan_inj_items')->truncate();
+		
+		$tab_delsched_itemonly = DB::table('prodplan_inj_delscheds')->select('item_code')->distinct()->get();
+		
+		foreach($tab_delsched_itemonly as $delsched_itemonly){
+						
+			$ins_items = array(					
+				'item_code' => $delsched_itemonly->item_code);
+			ProdplanInjItem::insert($ins_items);
+			
+		}
+		
+		$tab_items = DB::table('prodplan_inj_items')->get();
+		
+		foreach($tab_items as $items){
+			
+			$val_items_id = $items->id;
+			$val_item_code = $items->item_code;
+			$tab_delsched = DB::table('prodplan_inj_delscheds')->where('item_code',$val_item_code)->first();
+			$val_pair_code = $tab_delsched->pair_code;
+			$val_bom_level = $tab_delsched->prior_bom_level;
+			$val_lead_time = $tab_delsched->remarks_leadtime;
+			
+			$sum_outstanding = DB::table('prodplan_inj_delscheds')->where('item_code',$val_item_code)->sum('outstanding');
+			
+			//Update data di tabel items
+			DB::table('prodplan_inj_items')->where('id',$val_items_id)->update([			
+				'pair_code' => $val_pair_code,
+				'bom_level' => $val_bom_level,
+				'lead_time' => $val_lead_time,
+				'total_delivery' => $sum_outstanding,
+			]);
+		}
+		
+		$tab_items_up = DB::table('prodplan_inj_items')->get();
+		
+		foreach($tab_items as $items){
+			
+			$val_items_id = $items->id;
+			
+			if(empty($items->pair_code)){
+				$val_prior_item = $items->item_code;				
+			} else {
+				$val_prior_item = $items->pair_code;
+			}
+			
+			$tab_inventory_fg = DB::table('sap_inventory_fg')->where('item_code',$val_prior_item)->first();
+			
+			$val_continue_prod = $tab_inventory_fg->continue_production;
+			$val_cycle_time_raw = $tab_inventory_fg->cycle_time;
+			$val_daily_limit = $tab_inventory_fg->daily_limit;
+			$val_prod_min = $tab_inventory_fg->production_min_qty;
+			$val_cavity = $tab_inventory_fg->cavity;
+			$val_safety_stock = $tab_inventory_fg->safety_stock;
+			
+			//Update data di tabel items
+			DB::table('prodplan_inj_items')->where('id',$val_items_id)->update([							
+				'continue_prod' => $val_continue_prod,
+				'safety_stock' => $val_safety_stock,
+				'daily_limit' => $val_daily_limit,
+				'prod_min' => $val_prod_min,
+				'cycle_time_raw' => $val_cycle_time_raw,
+				'cavity' => $val_cavity,
+			]);
+		}	
+
+        return redirect()->route('iteminjection');
+    }
+
+
+    public function iteminjection(ProdplanInjItemDataTable $dataTable)
+    {
+        // $tab_items = DB::table('prodplan_inj_items')->get();
+        // dd($tab_items);
+        
+        // return view("pps.injectionitem");
+        return $dataTable->render("pps.injectionitem");
     }
 
     public function lineinjection()
