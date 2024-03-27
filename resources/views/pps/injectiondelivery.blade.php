@@ -10,7 +10,20 @@
                     <h1>Delivery Menu for injection 
                     </h1>
 
-                    <a href="{{ route('iteminjection') }}" class="btn btn-secondary float-right"> Lanjut</a>
+                    <section class="content">
+        <div class="card mt-5">
+            <div class="card-body">
+                <div class="table-responsive">
+                    {{ $dataTable->table() }}
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    {{ $dataTable->scripts() }}
+
+                    <a href="{{ route('injectionprocess4') }}" class="btn btn-secondary float-right"> Lanjut</a>
                 </div>
             </div>
         </div>

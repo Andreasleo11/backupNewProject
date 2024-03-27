@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\DelschedFinal;
+use App\Models\ProdplanInjDelsched;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class DeliveryNewTableDataTable extends DataTable
+class ProdplanInjDelschedDataTable extends DataTable
 {
     /**
      * Build DataTable class.
@@ -23,17 +23,17 @@ class DeliveryNewTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'deliverynewtable.action')
+            ->addColumn('action', 'prodplaninjdelsched.action')
             ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\DeliveryNewTable $model
+     * @param \App\Models\ProdplanInjDelsched $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function query(DelschedFinal $model): QueryBuilder
+    public function query(ProdplanInjDelsched $model): QueryBuilder
     {
         return $model->newQuery();
     }
@@ -46,11 +46,12 @@ class DeliveryNewTableDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('deliverynewtable-table')
+                    ->setTableId('prodplaninjdelsched-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    ->orderBy(1,'asc')
+                    ->orderBy(1)
+                    ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -69,7 +70,7 @@ class DeliveryNewTableDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('status')->data('status')->renderRaw('function(data, type, row, meta){
+            Column::make('color')->data('color')->renderRaw('function(data, type, row, meta){
                 if (type === \'display\') {
                     if (data === "light") {
                         return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium"> Aman </span>\';
@@ -83,25 +84,16 @@ class DeliveryNewTableDataTable extends DataTable
                 }
                 return data; // Return the original data for other types
             }'),
-            Column::make('id'),
-            Column::make('so_number'),
+            Column::make('actual_deldate'),
+            Column::make('remarks_leadtime'),
             Column::make('delivery_date'),
-            Column::make('customer_code'),
-            Column::make('customer_name'),
             Column::make('item_code'),
             Column::make('item_name'),
-            Column::make('departement'),
-            Column::make('delivery_qty'),
-            Column::make('delivered'),
+            Column::make('pair_code'),
+            Column::make('pair_name'),
+            Column::make('prior_bom_level'),
             Column::make('outstanding'),
-            Column::make('customer_code'),
-            Column::make('stock'),
-            Column::make('balance'),
-            Column::make('outstanding_stk'),
-            Column::make('packaging_code'),
-            Column::make('standar_pack'),
-            Column::make('packaging_qty'),
-            Column::make('doc_status'),
+            Column::make('status'),
         ];
     }
 
@@ -112,6 +104,6 @@ class DeliveryNewTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DeliveryNewTable_' . date('YmdHis');
+        return 'ProdplanInjDelsched_' . date('YmdHis');
     }
 }
