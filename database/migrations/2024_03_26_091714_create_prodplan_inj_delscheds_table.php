@@ -32,7 +32,7 @@ return new class extends Migration
             $table->integer("outstanding")->nullable();
             $table->integer("status")->nullable();
             $table->string("remarks")->nullable();
-            $table->integer("remars_leadtime")->nullable();
+            $table->integer("remarks_leadtime")->nullable();
             $table->integer("remarks_actual")->nullable();
             $table->string("color")->nullable();
             $table->integer("upcode")->nullable();

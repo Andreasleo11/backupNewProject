@@ -350,6 +350,11 @@ Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('porta
 
 Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
 Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
+Route::get("pps/injection/process1", [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
+Route::get("pps/injection/process2", [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
+Route::get("pps/injection/process3", [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
+
+
 Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
 //jika ada post untuk delivery
 
