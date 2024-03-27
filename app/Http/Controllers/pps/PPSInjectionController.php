@@ -473,7 +473,8 @@ class PPSInjectionController extends Controller
 
     public function process4()
     {
-        DB::table('prodplan_inj_items')->truncate();
+        DB::table('prodplan_inj_linelists')->truncate();
+		DB::table('prodplan_inj_linecaps')->truncate();
 		
 		$tab_delsched_itemonly = DB::table('prodplan_inj_delscheds')->select('item_code')->distinct()->get();
 		
