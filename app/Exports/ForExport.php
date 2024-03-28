@@ -6,9 +6,11 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 
-class ForExport implements FromView, ShouldAutoSize
+class ForExport implements FromView, ShouldAutoSize, WithStyles
 {
     use Exportable;
 
@@ -42,5 +44,19 @@ class ForExport implements FromView, ShouldAutoSize
             'qforecast' => $this->qforecast,
             'vendorName' => $this->vendorname,
         ]);
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        // Apply all borders to all cells
+        $sheet->getStyle($sheet->calculateWorksheetDimension())
+            ->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+            ]);
     }
 }
