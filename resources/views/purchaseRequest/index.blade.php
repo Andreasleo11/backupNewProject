@@ -30,6 +30,7 @@
                                 <th class="fw-semibold fs-5">Action</th>
                                 <th class="fw-semibold fs-5">Status</th>
                                 <th class="fw-semibold fs-5">Description</th>
+                                <th class="fw-semibold fs-5">Approved Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,12 +86,13 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {{ $pr->description }}
+                                        {{ $pr->description ?? '-' }}
                                     </td>
+                                    <td>@formatDate($pr->approved_at)</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8">No Data</td>
+                                    <td colspan="9">No Data</td>
                                 </tr>
                             @endforelse
                         </tbody>

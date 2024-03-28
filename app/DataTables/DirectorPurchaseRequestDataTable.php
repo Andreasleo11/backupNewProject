@@ -159,6 +159,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
                     return data;
                 }'
             )->exportable(false),
+            Column::make('approved_at')->title('Approved Date')->data('approved_at')->addClass('text-center align middle')
         ];
     }
 

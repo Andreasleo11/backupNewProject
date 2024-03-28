@@ -29,7 +29,8 @@ class Report extends Model
         'rejected_at',
         'updated_at',
         'is_locked',
-        'has_been_emailed'
+        'has_been_emailed',
+        'approved_at'
     ];
 
     // Define relationships if needed

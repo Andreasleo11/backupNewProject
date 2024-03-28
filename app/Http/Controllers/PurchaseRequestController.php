@@ -397,8 +397,6 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-
-
     public function edit($id){
         $pr = PurchaseRequest::find($id);
         $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
@@ -426,5 +424,20 @@ class PurchaseRequestController extends Controller
         PurchaseRequest::find($id)->delete();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
+    }
+
+
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'string|max:255'
+        ]);
+
+        PurchaseRequest::find($id)->update([
+            'status' => 5,
+            'description' => $request->description
+        ]);
+
+        return redirect()->back()->with(['success' => 'Purchase Request rejected']);
     }
 }
