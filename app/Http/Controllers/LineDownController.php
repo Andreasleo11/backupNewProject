@@ -5,17 +5,20 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MtcLineDown;
+use App\Models\InvLineList;
 use App\DataTables\MtcLineDownDataTable;
 
 class LineDownController extends Controller
 {
     public function index(MtcLineDownDataTable $dataTable)
     {
-        return $dataTable->render("maintenance.lineindex");
+        $data = InvLineList::pluck('line_code')->unique();
+        return $dataTable->render("maintenance.lineindex", compact("data"));
     }
 
-    public function addline(Request $request)
+    public function addlinedown(Request $request)
     {
+        // dd($request->all());
          // Validate the incoming request data
          $validatedData = $request->validate([
             'line_code' => 'required',
