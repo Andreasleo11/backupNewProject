@@ -27,15 +27,6 @@ class DirectorQaqcReportsDataTable extends DataTable
             ->addColumn('action', '<a href="{{ route("director.qaqc.detail", ["id" => $id]) }}" class="btn btn-secondary">
                                         <i class="bx bx-info-circle" ></i> Detail
                                     </a>
-                                    @if($attachment)
-                                    @php
-                                        $filename = basename($attachment);
-                                        @endphp
-                                    <a href="{{ asset("storage/attachments/" . $attachment) }}" class="btn btn-success" download="{{ $filename }}">
-                                        <i class="bx bx-download"></i>
-                                        Attachment
-                                    </a>
-                                    @endif
                                     ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$is_approve}}-{{$doc_num}}" />')
             ->editColumn('rec_date', '{{ \Carbon\Carbon::parse($rec_date)->format(\'d-m-Y\') }}')

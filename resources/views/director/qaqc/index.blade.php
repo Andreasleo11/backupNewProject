@@ -64,111 +64,115 @@
 @endsection
 
 @push('extraJs')
-    {{-- {{ $dataTable->scripts() }} --}}
+    {{ $dataTable->scripts() }}
     <script type="module">
-        $(function() {
-            window.LaravelDataTables = window.LaravelDataTables || {};
-            window.LaravelDataTables["director-reports-table"] = $("#director-reports-table").DataTable({
-                "serverSide": true,
-                "processing": true,
-                "ajax": {
-                    "url": "http:\/\/127.0.0.1:8000\/director\/qaqc\/index",
-                    "type": "GET",
-                    "data": function(data) {
-                        for (var i = 0, len = data.columns.length; i < len; i++) {
-                            if (!data.columns[i].search.value) delete data.columns[i].search;
-                            if (data.columns[i].searchable === true) delete data.columns[i].searchable;
-                            if (data.columns[i].orderable === true) delete data.columns[i].orderable;
-                            if (data.columns[i].data === data.columns[i].name) delete data.columns[i]
-                                .name;
-                        }
-                        delete data.search.regex;
-                    }
-                },
-                "columns": [{
-                    "data": "select_all",
-                    "name": "select_all",
-                    "title": "",
-                    "orderable": false,
-                    "searchable": false,
-                    "className": "check_all text-center align-middle",
-                    "width": 50
-                }, {
-                    "data": "doc_num",
-                    "name": "doc_num",
-                    "title": "Doc Num",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "invoice_no",
-                    "name": "invoice_no",
-                    "title": "Invoice No",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "customer",
-                    "name": "customer",
-                    "title": "Customer",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "rec_date",
-                    "name": "rec_date",
-                    "title": "Rec Date",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "verify_date",
-                    "name": "verify_date",
-                    "title": "Verify Date",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "action",
-                    "name": "action",
-                    "title": "Action",
-                    "orderable": false,
-                    "searchable": false,
-                    "className": "text-center text-center align-middle"
-                }, {
-                    "data": "is_approve",
-                    "name": "is_approve",
-                    "title": "Status",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle",
-                    "render": function(data, type, row, meta) {
-                        if (type === 'display') {
-                            if (data === 1) {
-                                return '<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium">APPROVED</span>';
-                            } else if (data === 0) {
-                                return '<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">REJECTED</span>';
-                            } else {
-                                return '<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING TO BE APPROVED</span>';
-                            }
-                        }
-                        return data; // Return the original data for other types
-                    }
-                }],
-                "order": [
-                    [7, "asc"]
-                ],
-                "buttons": [{
-                    "extend": "excel"
-                }, {
-                    "extend": "csv"
-                }, {
-                    "extend": "print"
-                }, {
-                    "extend": "reload"
-                }]
-            });
+        // $(function() {
+        //     window.LaravelDataTables = window.LaravelDataTables || {};
+        //     window.LaravelDataTables["director-reports-table"] = $("#director-reports-table").DataTable({
+        //         "serverSide": true,
+        //         "processing": true,
+        //         "ajax": {
+        //             "url": "http:\/\/127.0.0.1:8000\/director\/qaqc\/index",
+        //             "type": "GET",
+        //             "data": function(data) {
+        //                 for (var i = 0, len = data.columns.length; i < len; i++) {
+        //                     if (!data.columns[i].search.value) delete data.columns[i].search;
+        //                     if (data.columns[i].searchable === true) delete data.columns[i].searchable;
+        //                     if (data.columns[i].orderable === true) delete data.columns[i].orderable;
+        //                     if (data.columns[i].data === data.columns[i].name) delete data.columns[i]
+        //                         .name;
+        //                 }
+        //                 delete data.search.regex;
+        //             }
+        //         },
+        //         "columns": [{
+        //             "data": "select_all",
+        //             "name": "select_all",
+        //             "title": "",
+        //             "orderable": false,
+        //             "searchable": false,
+        //             "className": "check_all text-center align-middle",
+        //             "width": 50
+        //         }, {
+        //             "data": "doc_num",
+        //             "name": "doc_num",
+        //             "title": "Doc Num",
+        //             "orderable": true,
+        //             "searchable": true,
+        //             "className": "text-center align-middle"
+        //         }, {
+        //             "data": "invoice_no",
+        //             "name": "invoice_no",
+        //             "title": "Invoice No",
+        //             "orderable": true,
+        //             "searchable": true,
+        //             "className": "text-center align-middle"
+        //         }, {
+        //             "data": "customer",
+        //             "name": "customer",
+        //             "title": "Customer",
+        //             "orderable": true,
+        //             "searchable": true,
+        //             "className": "text-center align-middle"
+        //         }, {
+        //             "data": "rec_date",
+        //             "name": "rec_date",
+        //             "title": "Rec Date",
+        //             "orderable": true,
+        //             "searchable": true,
+        //             "className": "text-center align-middle"
+        //         }, {
+        //             "data": "verify_date",
+        //             "name": "verify_date",
+        //             "title": "Verify Date",
+        //             "orderable": true,
+        //             "searchable": true,
+        //             "className": "text-center align-middle"
+        //         }, {
+        //             "data": "action",
+        //             "name": "action",
+        //             "title": "Action",
+        //             "orderable": false,
+        //             "searchable": false,
+        //             "className": "text-center text-center align-middle"
+        //         }, {
+        //             "data": "is_approve",
+        //             "name": "is_approve",
+        //             "title": "Status",
+        //             "orderable": true,
+        //             "searchable": true,
+        //             "className": "text-center align-middle",
+        //             "render": function(data, type, row, meta) {
+        //                 if (type === 'display') {
+        //                     if (data === 1) {
+        //                         return '<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium">APPROVED</span>';
+        //                     } else if (data === 0) {
+        //                         return '<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">REJECTED</span>';
+        //                     } else {
+        //                         return '<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 fw-medium">WAITING TO BE APPROVED</span>';
+        //                     }
+        //                 }
+        //                 return data; // Return the original data for other types
+        //             }
+        //         }],
+        //         "order": [
+        //             [7, "asc"]
+        //         ],
+        //         "buttons": [{
+        //             "extend": "excel"
+        //         }, {
+        //             "extend": "csv"
+        //         }, {
+        //             "extend": "print"
+        //         }, {
+        //             "extend": "reload"
+        //         }]
+        //     });
 
+
+        // });
+
+        $(function() {
             let dataTable = window.LaravelDataTables["director-reports-table"];
             $('#status-filter').change(function() {
                 let status = $(this).val();
