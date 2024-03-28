@@ -4,6 +4,28 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Invoice Export</title>
+    <style>
+        /* Table styles */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        /* Table header styles */
+        th {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            background-color: #f2f2f2;
+        }
+
+        /* Table data styles */
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
 
 </head>
 <body>

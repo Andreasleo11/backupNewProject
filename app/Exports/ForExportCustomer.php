@@ -6,9 +6,11 @@ use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 
-class ForExportCustomer implements FromView, ShouldAutoSize
+class ForExportCustomer implements FromView, ShouldAutoSize, WithStyles
 {
     use Exportable;
 
