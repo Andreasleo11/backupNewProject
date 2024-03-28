@@ -10,7 +10,20 @@
                     <h1>Delivery Menu for second
                     </h1>
 
-                    <a href="{{ route('itemsecond') }}" class="btn btn-secondary float-right"> Lanjut</a>
+                    <section class="content">
+        <div class="card mt-5">
+            <div class="card-body">
+                <div class="table-responsive">
+                    {{ $dataTable->table() }}
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    {{ $dataTable->scripts() }}
+
+                    <a href="{{ route('secondprocess4') }}" class="btn btn-secondary float-right"> Lanjut</a>
                 </div>
             </div>
         </div>

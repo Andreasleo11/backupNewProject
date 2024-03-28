@@ -14,6 +14,13 @@ class PPSAssemblyController extends Controller
     {
         $data = ProdplanScenario::get();
         $datedata = UtiDateList::get();
+
+        DB::table('prodplan_asm_delitems')->truncate();
+        DB::table('prodplan_asm_delraws')->truncate();
+        DB::table('prodplan_asm_delscheds')->truncate();		
+        DB::table('prodplan_asm_items')->truncate();
+        DB::table('prodplan_asm_linecaps')->truncate();
+        DB::table('prodplan_asm_linelists')->truncate();
         return view("pps.assemblyindex", compact("data", "datedata"));
     }
 

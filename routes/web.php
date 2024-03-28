@@ -308,9 +308,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
         Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
+        Route::get("pps/second/process1", [PPSSecondController::class, 'process1'])->name('secondprocess1');
+        Route::get("pps/second/process2", [PPSSecondController::class, 'process2'])->name('secondprocess2');
+        Route::get("pps/second/process3", [PPSSecondController::class, 'process3'])->name('secondprocess3');
         //jika ada post untuk start
 
         Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
+        Route::get("pps/second/process4", [PPSSecondController::class, 'process4'])->name('secondprocess4');
+        Route::get("pps/second/process5", [PPSSecondController::class, 'process5'])->name('secondprocess5');
+        Route::get("pps/second/process6", [PPSSecondController::class, 'process6'])->name('secondprocess6');
         //jika ada post untuk delivery
 
         Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
