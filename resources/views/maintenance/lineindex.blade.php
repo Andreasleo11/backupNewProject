@@ -22,7 +22,7 @@
             </div>
         </div>
         @include('partials.add-new-linedown-modal')
-        <a class="btn btn-secondary float-right" data-bs-target="#add-new-line" data-bs-toggle="modal" > add </a>
+        <a class="btn btn-secondary float-right" data-bs-target="#add-new-linedown" data-bs-toggle="modal" > add </a>
     </section>
 
 {{ $dataTable->scripts() }}

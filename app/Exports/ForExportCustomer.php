@@ -45,4 +45,18 @@ class ForExportCustomer implements FromView, ShouldAutoSize
             'vendorName' => $this->vendorname,
         ]);
     }
+
+    public function styles(Worksheet $sheet)
+    {
+        // Apply all borders to all cells
+        $sheet->getStyle($sheet->calculateWorksheetDimension())
+            ->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000'],
+                    ],
+                ],
+            ]);
+    }
 }

@@ -564,8 +564,8 @@ class DeliveryScheduleController extends Controller
 
 		$now = new DateTime();
 		$now->modify('+420 minutes');
-
-		$tb_datelist = DB::table('uti_date_list')->where('id','14')->update([
+	
+		$tb_datelist = DB::table('uti_date_list')->where('id','14')->update([			
 			'updated_at' => $now,
 		]);
 

@@ -1,7 +1,7 @@
-<div class="modal" tabindex="-1" class="modal fade" id="add-new-line" aria-hidden="true">
+<div class="modal" tabindex="-1" class="modal fade" id="add-new-linedown" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{route('addline')}}">
+            <form method="POST" action="{{route('addlinedown')}}">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Add User</h5>
@@ -14,7 +14,12 @@
                                 <label for="line_code" class="form-label">Line Code: </label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="line_code" class="form-control" id="line_code">
+                            <select name="line_code" id="line_code" class="form-control">
+                                <option value="">Select Line Code</option>
+                                @foreach($data as $line_code)
+                                    <option value="{{ $line_code }}">{{ $line_code }}</option>
+                                @endforeach
+                            </select>
                             </div>
                         </div>
                     </div>

@@ -341,7 +341,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
         Route::post("/add/mould", [MouldDownController::class, "addmould"])->name('addmould');
         Route::get("maintenance/line-repair", [LineDownController::class, "index"])->name("linedown.index");
-        Route::post("/add/line", [LineDownController::class, "addline"])->name('addline');
+        Route::post("/add/line/down", [LineDownController::class, "addlinedown"])->name('addlinedown');
     });
 });
 
