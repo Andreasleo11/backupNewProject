@@ -45,9 +45,11 @@
                     <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test
                         email</a> --}}
                 @endif
-                <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
-                    <i class='bx bx-upload'></i> Upload
-                </button>
+                @if ($user->specification->name !== '-')
+                    <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                        <i class='bx bx-upload'></i> Upload
+                    </button>
+                @endif
                 @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
             </div>
         </div>
