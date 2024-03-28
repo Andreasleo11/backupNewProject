@@ -266,7 +266,7 @@
             </ul>
         </li>
 
-        @if (($user->is_head && $department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
+        @if (($user->is_head && $department === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
             <li class="sidebar-item" id="sidebar-item-setting">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
