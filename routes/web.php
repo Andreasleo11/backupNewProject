@@ -293,6 +293,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
         Route::get("pps/injection/process4", [PPSInjectionController::class, 'process4'])->name("injectionprocess4");
+        Route::get("pps/injection/process5", [PPSInjectionController::class, 'process5'])->name("injectionprocess5");
+        Route::get("pps/injection/process6", [PPSInjectionController::class, 'process6'])->name("injectionprocess6");
         //jika ada post untuk delivery
 
         Route::get("/pps/injection/items", [PPSInjectionController::class, "iteminjection"])->name("iteminjection");

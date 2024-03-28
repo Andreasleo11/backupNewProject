@@ -20,6 +20,7 @@ use App\Models\ProdplanInjLinecap;
 use App\Models\InvLineList;
 
 use App\Models\MtcLineDown;
+use App\Models\UtiHolidayList;
 
 use Illuminate\Support\Facades\Date;
 
@@ -581,6 +582,92 @@ class PPSInjectionController extends Controller
 			]);
 		}
 
+	}
+
+	public function process6()
+	{
+		DB::table('prodplan_inj_linecaps')->truncate();
+		$date = UtiDateList::find(15);
+		$holiday = UtiHolidayList::get();
+		$data = ProdplanInjLinelist::get();
+		
+
+		// dd($data);
+
+		// Assuming $date is the instance of UtiDateList
+		$start_date = Carbon::parse($date->start_date);
+		$end_date = Carbon::parse($date->end_date);
+
+		$dates = [];
+
+		// Loop through each date from start_date to end_date
+		for ($current_date = $start_date; $current_date->lte($end_date); $current_date->addDay()) {
+			$dates[] = $current_date->format('Y-m-d');
+		}
+		
+		foreach ($holiday as $holidayItem) {
+			foreach ($dates as $key => $date) {
+				if ($date == $holidayItem->date && $holidayItem->half_day == 0) {
+					unset($dates[$key]);
+				}
+			}
+		}
+		// dd($dates);
+
+		foreach ($data as $item) {
+			foreach ($dates as $date) {
+				$lineCap = new ProdplanInjLinecap();
+				$lineCap->line_code = $item->line_code; // Assuming line_code is a field in both models
+				$lineCap->running_date = $date; // Set the running date from $dates
+				$department = InvLineList::where('line_code', $item->line_code)->value('departement');
+
+				 // Check if the running_date is a holiday with half_day = 1
+				 $holiday = UtiHolidayList::where('date', $date)
+				 ->where('half_day', 1)
+				 ->exists();
+				// dd($holiday);
+		
+				$eachTimeLimit = $item->daily_minutes / 3;
+				
+				if($holiday){
+					// If it's a holiday with half_day = 1, adjust the daily_minutes
+					$lineCap->time_limit_all = $item->daily_minutes / 2;
+					$lineCap->time_limit_one = $eachTimeLimit / 2;
+					$lineCap->time_limit_two = $eachTimeLimit / 2;
+					$lineCap->time_limit_three = $eachTimeLimit / 2;
+				} else {
+					$lineCap->time_limit_all = $item->daily_minutes;
+					$lineCap->time_limit_one = $eachTimeLimit;
+					$lineCap->time_limit_two = $eachTimeLimit;
+					$lineCap->time_limit_three = $eachTimeLimit;
+				}
+
+
+				if ($department) {
+					$lineCap->departement = $department;
+				} else {
+					// If the department is not found, handle the situation accordingly
+					// For example, set a default value or log an error
+					$lineCap->departement = 'Default Department';
+				}
+
+				$lineDown = MtcLineDown::where('line_code', $item->line_code)
+					->where('date_down', '<=', $date)
+					->where('date_prediction', '>=', $date)
+					->exists();
+					
+
+				if ($lineDown) {
+					// If line_code matches and falls within the date range, set time_limit_all, one, two, and three to 0
+					$lineCap->time_limit_all = 0;
+					$lineCap->time_limit_one = 0;
+					$lineCap->time_limit_two = 0;
+					$lineCap->time_limit_three = 0;
+			}
+		
+				$lineCap->save();
+			}
+		}
 	}
 
     public function lineinjection()

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProdplanInjLinecap extends Model
 {
     use HasFactory;
-
+    public $timestamps = false;
     protected $fillable = [
         'running_date',
         'line_code',
