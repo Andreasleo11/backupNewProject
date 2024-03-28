@@ -128,6 +128,15 @@ class DirectorQaqcReportsDataTable extends DataTable
                     }
                     return data; // Return the original data for other types
                 }')->exportable(false),
+            Column::make('approved_at')->title('Approved Date')->data('approved_at')->addClass('text-center align middle')
+                ->renderRaw('function(data, type, row, meta){
+                    if (type === \'display\') {
+                        if (data === null) {
+                            return \'Not approved yet\';
+                        }
+                    }
+                    return data; // Return the original data for other types
+                }')
         ];
     }
 

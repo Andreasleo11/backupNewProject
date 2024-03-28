@@ -14,20 +14,6 @@ class DirectorPurchaseRequestController extends Controller
         return $datatable->render('director.purchaseRequest.index');
     }
 
-    public function reject(Request $request, $id)
-    {
-        $request->validate([
-            'description' => 'string|max:255'
-        ]);
-
-        PurchaseRequest::find($id)->update([
-            'status' => 5,
-            'description' => $request->description
-        ]);
-
-        return redirect()->back()->with(['success' => 'Purchase Request rejected']);
-    }
-
     public function approveSelected(Request $request){
         $ids = $request->input('ids', []);
         $username = Auth::user()->name;

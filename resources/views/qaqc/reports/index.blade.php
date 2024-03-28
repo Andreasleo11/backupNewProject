@@ -57,6 +57,7 @@
                                 <th>Action</th>
                                 <th>Status</th>
                                 <th>Description</th>
+                                <th>Approved Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -147,10 +148,11 @@
                                     <td>
                                         @include('partials.vqc-status-badge')
                                     </td>
-                                    <td>{{ $report->description }}</td>
+                                    <td>{{ $report->description ?? '-' }}</td>
+                                    <td>@formatDate($report->approved_at)</td>
                                 </tr>
                             @empty
-                                <td colspan="8">No data</td>
+                                <td colspan="9">No data</td>
                             @endforelse
                         </tbody>
                     </table>

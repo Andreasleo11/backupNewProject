@@ -49,105 +49,13 @@
             </div>
         </div>
     </section>
+@endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts() }}
 
     <script type="module">
         $(function() {
-            window.LaravelDataTables = window.LaravelDataTables || {};
-            window.LaravelDataTables["purchaserequest-table"] = $("#purchaserequest-table").DataTable({
-                "serverSide": true,
-                "processing": true,
-                "ajax": {
-                    "url": "http:\/\/127.0.0.1:8000\/director/pr/index",
-                    "type": "GET",
-                    "data": function(data) {
-                        for (var i = 0, len = data.columns.length; i < len; i++) {
-                            if (!data.columns[i].search.value) delete data.columns[i].search;
-                            if (data.columns[i].searchable === true) delete data.columns[i].searchable;
-                            if (data.columns[i].orderable === true) delete data.columns[i].orderable;
-                            if (data.columns[i].data === data.columns[i].name) delete data.columns[i]
-                                .name;
-                        }
-                        delete data.search.regex;
-                    }
-                },
-                "columns": [{
-                    "data": "select_all",
-                    "name": "select_all",
-                    "title": "",
-                    "orderable": false,
-                    "searchable": false,
-                    "className": "check_all text-center align-middle",
-                    "width": 50
-                }, {
-                    "data": "pr_no",
-                    "name": "pr_no",
-                    "title": "Pr No",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "date_pr",
-                    "name": "date_pr",
-                    "title": "Date Pr",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "to_department",
-                    "name": "to_department",
-                    "title": "To Department",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "supplier",
-                    "name": "supplier",
-                    "title": "Supplier",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "action",
-                    "name": "action",
-                    "title": "Action",
-                    "orderable": false,
-                    "searchable": false,
-                    "className": "text-center align-middle"
-                }, {
-                    "data": "status",
-                    "name": "status",
-                    "title": "Status",
-                    "orderable": true,
-                    "searchable": true,
-                    "className": "text-center align-middle",
-                    "render": function(data, type, row, meta) {
-                        if (type === 'display') {
-                            if (data == 5) {
-                                return '<span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>'
-                            } else if (data == 0) {
-                                return '<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR PREPARATION</span>'
-                            } else if (data == 1) {
-                                return '<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT HEAD</span>'
-                            } else if (data == 2) {
-                                return '<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR VERIFICATION</span>'
-                            } else if (data == 3) {
-                                return '<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DIRECTOR</span>'
-                            } else if (data == 4) {
-                                return '<span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>'
-                            }
-                        }
-                        return data;
-                    }
-                }],
-                "buttons": [{
-                    "extend": "excel"
-                }, {
-                    "extend": "csv"
-                }, {
-                    "extend": "print"
-                }]
-            });
-
             let dataTable = window.LaravelDataTables["purchaserequest-table"];
             $('#status-filter').change(function() {
                 let status = $(this).val();
@@ -158,10 +66,6 @@
         });
     </script>
 
-    {{-- {{ $dataTable->scripts() }} --}}
-@endsection
-
-@push('extraJs')
     <script>
         const rejectSelectedButton = document.getElementById('reject-selected-btn');
         const approveSelectedButton = document.getElementById('approve-selected-btn');
