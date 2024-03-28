@@ -10,7 +10,7 @@
     @if (!empty($materials))
     <div class="row">
         <div class="col-12 table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-bordered" >
                 <thead>
                     <tr>
                         <td colspan="8"  align="center" >Forecast Report</td>
