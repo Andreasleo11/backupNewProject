@@ -1,34 +1,35 @@
 @extends('layouts.app')
 
 @section('content')
-
-<section class="header">
+    <section class="header">
         <div class="row">
             <div class="col">
-                <h1 class="h1">DELIVERY SCHEDULE FINAL </h1>
+                <h1 class="h1">DELIVERY SCHEDULE (WIP) </h1>
+            </div>
+            <div class="col-auto">
+
+                <a href="{{ route('delschedwip.step1') }}" class="btn btn-primary"> Update</a>
             </div>
         </div>
-</section>
+    </section>
 
 
     <section class="content">
         <div class="card mt-5">
-            <div class="card-body p-0">
+            <div class="card-body">
                 <div class="table-responsive">
-                {{ $dataTable->table() }}
+                    {{ $dataTable->table() }}
                 </div>
             </div>
         </div>
 
-
-        <a href="{{ route('indexds') }}" class="btn btn-secondary float-right"> FINAL DS</a>
-        <a href="{{ route('delschedwip.step1') }}" class="btn btn-secondary float-right"> Update</a>
+        <div class="text-end mt-3">
+            <a href="{{ route('indexds') }}" class="btn btn-secondary"> Delivery Schedule </a>
+        </div>
     </section>
-
-     
-{{ $dataTable->scripts() }}
 @endsection
 
 
 @push('extraJs')
+    {{ $dataTable->scripts() }}
 @endpush

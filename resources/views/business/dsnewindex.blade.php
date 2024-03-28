@@ -4,7 +4,11 @@
     <section class="header">
         <div class="row">
             <div class="col">
-                <h1 class="h1">DELIVERY SCHEDULE FINAL </h1>
+                <h1 class="h1">DELIVERY SCHEDULE</h1>
+            </div>
+            <div class="col-auto">
+
+                <a href="{{ route('deslsched.step1') }}" class="btn btn-primary"> Update</a>
             </div>
         </div>
     </section>
@@ -19,14 +23,13 @@
             </div>
         </div>
 
-
-        <a href="{{ route('indexfinalwip') }}" class="btn btn-secondary float-right"> WIP</a>
-        <a href="{{ route('deslsched.step1') }}" class="btn btn-secondary float-right"> Update</a>
-        <a href="{{ route('rawdelsched') }}" class="btn btn-secondary float-right"> Raw Delivery Schedule </a>
+        <div class="d-flex justify-content-between mt-3 ">
+            <a href="{{ route('indexfinalwip') }}" class="btn btn-secondary"> Delivery Schedule (WIP)</a>
+            <a href="{{ route('rawdelsched') }}" class="btn btn-secondary"> Delivery Schedule (RAW)</a>
+        </div>
     </section>
-
-
-
-
-    {{ $dataTable->scripts() }}
 @endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts() }}
+@endpush
