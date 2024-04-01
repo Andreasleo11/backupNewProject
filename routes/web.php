@@ -420,6 +420,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
     Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])->name('download.holiday.template');
     Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])->name('upload.holiday.template');
+    Route::delete('/holiday/{id}/delete', [HolidayListController::class, 'delete'])->name('holiday.delete');
+    Route::put('/holiday/{id}/update', [HolidayListController::class, 'update'])->name('holiday.update');
 
 
     Route::get("projecttracker/index", [ProjectTrackerController::class, "index"])->name("pt.index");

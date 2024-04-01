@@ -70,4 +70,29 @@ class HolidayListController extends Controller
         // Process and insert the data into the holiday list table
         return redirect()->back()->with('success', 'Holiday list template uploaded successfully.');
     }
+
+    public function delete($id){
+        UtiHolidayList::find($id)->delete();
+
+        return redirect()->back()->with(['success' => 'Holiday has been deleted successfully!']);
+    }
+
+    public function update($id, Request $request){
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'name' => 'required|string',
+            'description' => 'required|string',
+            'half_day' => 'required|boolean',
+        ]);
+
+        UtiHolidayList::find($id)->update([
+            'date' => $validated['date'],
+            'holiday_name' => $validated['name'],
+            'description'=>$validated['description'],
+            'half_day' => $validated['half_day']
+        ]);
+
+        return redirect()->back()->with(['success' => 'Holiday has been edited successfully!']);
+
+    }
 }
