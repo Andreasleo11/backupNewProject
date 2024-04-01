@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\HolidayListTemplateExport;
 use App\Http\Controllers\Controller;
+use App\Imports\HolidayListTemplateImport;
 use Illuminate\Http\Request;
 use App\Models\UtiHolidayList;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HolidayListController extends Controller
 {
@@ -46,5 +49,25 @@ class HolidayListController extends Controller
 
         // Redirect the user back or to another page
         return redirect()->route('indexholiday')->with('success', 'Holiday created successfully!');
+    }
+
+    public function downloadTemplate(){
+        return Excel::download(new HolidayListTemplateExport(), 'holiday_list_template.xlsx');
+    }
+
+    public function uploadTemplate(Request $request){
+        $request->validate([
+            'holiday_file' => 'required|mimes:xlsx,xls', // Ensure the file is an Excel file
+        ]);
+
+        $file = $request->file('holiday_file');
+
+        // // Parse the Excel file and get the data
+        // $data = Excel::toArray(new HolidayListTemplateImport(), $file);
+
+        Excel::import(new HolidayListTemplateImport(), $file);
+
+        // Process and insert the data into the holiday list table
+        return redirect()->back()->with('success', 'Holiday list template uploaded successfully.');
     }
 }

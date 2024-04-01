@@ -402,11 +402,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
     Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');
 
-    //adding holiday list feature
+    // Holiday list feature
     Route::get("setting/holiday-list", [HolidayListController::class, "index"])->name("indexholiday");
     Route::get("setting/holiday-list/create", [HolidayListController::class, "create"])->name("createholiday");
     Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
-    //adding holiday list feature
+    Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])->name('download.holiday.template');
+    Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])->name('upload.holiday.template');
+
 
     Route::get("projecttracker/index", [ProjectTrackerController::class, "index"])->name("pt.index");
     Route::get("projecttracker/create", [ProjectTrackerController::class, "create"])->name("pt.create");
@@ -417,10 +419,3 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
     Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');
 });
-
-//! AFTER UPDATE PLEASE DELETE THIS
-// Route::get('/updateRoles', function(){
-//     Role::find(1)->update(['name' => 'SUPERADMIN']);
-//     Role::find(2)->update(['name' => 'STAFF']);
-//     Role::find(3)->update(['name' => 'USER']);
-// });
