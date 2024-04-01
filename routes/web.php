@@ -308,9 +308,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
         Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
+        Route::get("pps/second/process1", [PPSSecondController::class, 'process1'])->name('secondprocess1');
+        Route::get("pps/second/process2", [PPSSecondController::class, 'process2'])->name('secondprocess2');
+        Route::get("pps/second/process3", [PPSSecondController::class, 'process3'])->name('secondprocess3');
         //jika ada post untuk start
 
         Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
+        Route::get("pps/second/process4", [PPSSecondController::class, 'process4'])->name('secondprocess4');
+        Route::get("pps/second/process5", [PPSSecondController::class, 'process5'])->name('secondprocess5');
+        Route::get("pps/second/process6", [PPSSecondController::class, 'process6'])->name('secondprocess6');
         //jika ada post untuk delivery
 
         Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
@@ -323,9 +329,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
         Route::post("/pps/assembly-process-form", [PPSAssemblyController::class, "processAssemblyForm"])->name("processAssemblyForm");
+        Route::get("pps/assembly/process1", [PPSAssemblyController::class, 'process1'])->name('assemblyprocess1');
+        Route::get("pps/assembly/process2", [PPSAssemblyController::class, 'process2'])->name('assemblyprocess2');
+        Route::get("pps/assembly/process3", [PPSAssemblyController::class, 'process3'])->name('assemblyprocess3');
         //jika ada post untuk start
 
         Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
+        Route::get("pps/assembly/process4", [PPSAssemblyController::class, 'process4'])->name('assemblyprocess4');
+        Route::get("pps/assembly/process5", [PPSAssemblyController::class, 'process5'])->name('assemblyprocess5');
+        Route::get("pps/assembly/process6", [PPSAssemblyController::class, 'process6'])->name('assemblyprocess6');
         //jika ada post untuk delivery
 
         Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
