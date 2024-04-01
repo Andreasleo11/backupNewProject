@@ -35,13 +35,18 @@
             <table class="table table-striped table-bordered" >
                 <thead>
                     <tr>
-                        <td colspan="8"  align="center" >Forecast Report</td>
-
-                        <td>Nama Vendor: {{$vendorName}}</td>
-                        <td>Date : {{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
+                    <td>Nama Vendor: {{$vendorName}}</td>
+                        <td colspan="10" rowspan="4"  align="center" >Forecast Report</td>
                     </tr>
                     <tr>
-                        <td colspan="10"></td> <!-- Blank cell with colspan="10" -->
+                    <td>Date : {{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
+                       <!-- Blank cell with colspan="10" -->
+                    </tr>
+                    <tr>
+                    <td>ATT : ISI NAMA </td>
+                    </tr>
+                    <tr>
+                    <td>FR : {{ Auth::user()->name }} </td>
                     </tr>
                     <tr>
                         <th>Material Code</th>

@@ -30,6 +30,7 @@
                                 <th>Nama Libur</th>
                                 <th>Deskripsi</th>
                                 <th>Half Day</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -45,6 +46,27 @@
                                         <td>{{ $item->holiday_name }}</td>
                                         <td>{{ $item->description }}</td>
                                         <td>{{ $item->half_day }}</td>
+                                        <td>
+
+                                            @include('partials.edit-holiday-modal')
+                                            <button data-bs-target="#edit-holiday-modal-{{ $item->id }}"
+                                                data-bs-toggle="modal" class="btn btn-primary my-1 me-1">
+                                                <i class='bx bx-edit'></i> <span class="d-none d-sm-inline">Edit</span>
+                                            </button>
+
+
+                                            @include('partials.delete-confirmation-modal', [
+                                                'id' => $item->id,
+                                                'title' => 'Delete holiday confirmation',
+                                                'body' =>
+                                                    'Are you sure want to delete ' . $item->holiday_name . '?',
+                                            ])
+                                            <button class="btn btn-danger my-1 me-1" data-bs-toggle="modal"
+                                                data-bs-target="#delete-confirmation-modal-{{ $item->id }}">
+                                                <i class='bx bx-trash-alt'></i> <span
+                                                    class="d-none d-sm-inline">Delete</span>
+                                            </button>
+                                        </td>
                                     </tr>
                                 @endforeach
                             @endif

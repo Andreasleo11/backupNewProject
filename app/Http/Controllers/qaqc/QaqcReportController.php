@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\qaqc;
 
+use App\Exports\ReportsExport;
 use App\Http\Controllers\Controller;
 use App\Mail\QaqcMail;
 use App\Models\Defect;
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -590,10 +592,31 @@ class QaqcReportController extends Controller
     public function redirectToIndex()
     {
         $this->updateUpdatedAt();
+        $id = session()->get('header')->id;
+        $pdfName = 'pdfs/verification-report-' . $id . '.pdf';
+        $pdfPath[] = Storage::url($pdfName);
+        if($id != null)
+        {
+
+            $this->savePdf($id);
+
+            $mailData = [
+                'to' => 'andreasleonardo.al@gmail.com',
+                'cc' =>  ['andreasleonardo0@gmail.com', 'raymondlay023@gmail.com'],
+                'subject' => 'QAQC Verification Report Mail',
+                'body' => 'Mail from ' . env('APP_NAME') ,
+                'file_paths' => $pdfPath
+            ];
+            // dd($mailData);
+    
+            Mail::send(new QaqcMail($mailData));
+        }
 
         session()->forget('header');
         session()->forget('details');
         $this->resetEditSessions();
+
+
 
         return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully stored/updated!']);
     }
@@ -687,5 +710,10 @@ class QaqcReportController extends Controller
     {
         Report::find($id)->update(['is_locked' => true]);
         return redirect()->back()->with(['success' => 'Report locked successfully!']);
+    }
+
+    public function exportToExcel()
+    {
+        return Excel::download(new ReportsExport(), 'reports-all-data.xlsx');
     }
 }
