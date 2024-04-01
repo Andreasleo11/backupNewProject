@@ -10,19 +10,14 @@ class Detail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'Report_Id',
-        'Part_Name',
-        'Rec_Quantity',
-        'Verify_Quantity',
-        'Prod_Date',
-        'Shift',
-        'Can_Use',
-        'Cant_Use',
-        'Customer_Defect_Detail',
-        'Daijo_Defect_Detail',
-        'Remark',
-       
-        // Add other fields as needed
+
+        'report_id',
+        'part_name',
+        'rec_quantity',
+        'verify_quantity',
+        'can_use',
+        'cant_use',
+        'price',
     ];
 
     // Define relationships if needed
@@ -30,4 +25,10 @@ class Detail extends Model
     {
         return $this->belongsTo(Report::class);
     }
+
+    public function defects()
+    {
+        return $this->hasMany(Defect::class);
+    }
+
 }

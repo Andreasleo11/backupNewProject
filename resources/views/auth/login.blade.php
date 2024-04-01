@@ -10,6 +10,16 @@
     <link rel="stylesheet" href="css/login-style.css">
 </head>
 <body>
+
+    @if($message = Session::get('error'))
+        <div class="container mt-3">
+            <div class="alert alert-danger alert-dismissible fade show">
+                <p>{{$message}}</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    @endif
+
     <div class="container d-flex align-items-center min-vh-100 justify-content-center">
         <div class="card rounded-5">
             <div class="row">
@@ -59,7 +69,7 @@
                                 </div>
                             </div>
 
-{{--
+                            {{--
                             <div class="row mb-3">
                                 <div class="col-md-6 offset-md-4">
                                     <div class="form-check">
@@ -72,18 +82,17 @@
                                 </div>
                             </div> --}}
 
-                            <div class="row mb-0">
-                                <div class="col-md-8 offset-md-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        {{ __('Login') }}
-                                    </button>
-
-                                    {{-- @if (Route::has('password.request'))
+                            <div class="row mb-0 mt-4 px-3">
+                                <button type="submit" class="btn btn-primary">
+                                    {{ __('Login') }}
+                                </button>
+                                {{-- <div class="col">
+                                    @if (Route::has('password.request'))
                                         <a class="btn btn-link" href="{{ route('password.request') }}">
                                             {{ __('Forgot Your Password?') }}
                                         </a>
-                                    @endif --}}
-                                </div>
+                                    @endif
+                                </div> --}}
                             </div>
                         </form>
                     </div>

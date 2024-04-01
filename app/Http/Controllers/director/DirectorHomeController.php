@@ -3,20 +3,25 @@
 namespace App\Http\Controllers\director;
 
 use App\Http\Controllers\Controller;
+use App\Models\PurchaseRequest;
 use App\Models\Report;
 
 class DirectorHomeController extends Controller
 {
     public function index()
     {
-        $approvedDoc = Report::where('is_approve', 1)->count();
-        $waitingDoc = Report::whereNull('is_approve')
-            ->whereNotNull('attachment')
-            ->whereNotNull('autograph_1')
-            ->whereNotNull('autograph_2')
-            ->whereNotNull('autograph_3')->count();
-        $rejectedDoc = Report::where('is_approve', 0)->count();
+        $reportCounts = [
+            'approved' => Report::approved()->count(),
+            'waiting' => Report::waitingApproval()->count(),
+            'rejected' => Report::rejected()->count(),
+        ];
 
-        return view('director.home', compact('approvedDoc', 'waitingDoc','rejectedDoc'));
+        $purchaseRequestCounts = [
+            'approved' => PurchaseRequest::approved()->count(),
+            'waiting' => PurchaseRequest::waiting()->count(),
+            'rejected' => PurchaseRequest::rejected()->count(),
+        ];
+
+        return view('director.home', compact('reportCounts', 'purchaseRequestCounts'));
     }
 }

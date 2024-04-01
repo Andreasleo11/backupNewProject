@@ -1,7 +1,12 @@
 @extends('layouts.app')
-<!-- Content Wrapper. Contains page content -->
-
+{{-- @push('extraCss')
+    <link rel="stylesheet" href="{{ asset('css/toast.css') }} ">
+@endpush --}}
 @section('content')
+    {{-- <button onclick="showToast(successMsg)">Success</button>
+    <button onclick="showToast(errorMsg)">Error</button>
+    <button onclick="showToast(invalidMsg)">Invalid</button>
+    <div id="toastBox"></div> --}}
 
     <section class="header">
         <div class="row">
@@ -9,9 +14,14 @@
                 <h1 class="h1">Verification Reports</h1>
             </div>
             <div class="col text-end">
-                <a href="{{route('qaqc.report.create')}}" class="btn btn-primary">
-                    <i class='bx bx-plus' ></i> Add Report
-                </a>
+                @php
+                    $currentUser = Auth::user();
+                @endphp
+                @if ($currentUser->department->name == 'QC' && $currentUser->specification->name == 'INSPECTOR')
+                    <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">
+                        <i class='bx bx-plus'></i> Add <span class="d-none d-sm-inline">Report</span>
+                    </a>
+                @endif
             </div>
         </div>
     </section>
@@ -19,7 +29,7 @@
     <section>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('qaqc.home') }}">Home</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Reports</li>
             </ol>
         </nav>
@@ -36,76 +46,123 @@
         <div class="card mt-5">
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped text-center">
+                    <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
-                            <tr>
-                                <th class="fw-semibold fs-5">No</th>
-                                <th class="fw-semibold fs-5">Invoice No</th>
-                                <th class="fw-semibold fs-5">Customer</th>
-                                <th class="fw-semibold fs-5">Rec Date</th>
-                                <th class="fw-semibold fs-5">Verify Date</th>
-                                <th class="fw-semibold fs-5">Action</th>
-                                <th class="fw-semibold fs-5">Status</th>
-                                <th class="fw-semibold fs-5">Description</th>
+                            <tr class="align-middle fw-semibold fs-5">
+                                <th class="p-3">Doc. Number</th>
+                                <th>Invoice No</th>
+                                <th>Customer</th>
+                                <th>Rec Date</th>
+                                <th>Verify Date</th>
+                                <th>Action</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Approved Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($reports as $report)
-                                <tr>
-                                    <td>{{ $loop->iteration }}</td>
+                            @forelse ($reports as $report)
+                                <tr class="align-middle">
+                                    <td>{{ $report->doc_num }}</td>
                                     <td>{{ $report->invoice_no }}</td>
                                     <td>{{ $report->customer }}</td>
-                                    <td>{{ $report->rec_date }}</td>
-                                    <td>{{ $report->verify_date }}</td>
+                                    <td> @formatDate($report->rec_date)</td>
+                                    <td> @formatDate($report->verify_date)</td>
                                     <td>
-                                        <a href="{{ route('qaqc.report.detail', ['id' => $report->id]) }}" class="btn btn-secondary">
-                                            <i class='bx bx-info-circle' ></i> Detail
-                                        </a>
-                                        <a href="{{ route('qaqc.report.edit', $report->id) }}" class="btn btn-primary">
-                                            <i class='bx bx-edit' ></i> Edit
+                                        <a href="{{ route('qaqc.report.detail', $report->id) }}"
+                                            class="btn btn-secondary my-1 me-1 ">
+                                            <i class='bx bx-info-circle'></i> <span
+                                                class="d-none d-sm-inline ">Detail</span>
                                         </a>
 
-                                        <form action="{{ route('qaqc.report.delete', $report->id) }}" method="post" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class='bx bx-trash-alt' ></i> Delete
+                                        {{-- DEV ONLY --}}
+                                        {{-- <a href="{{ route('qaqc.report.preview', $report->id) }}"
+                                            class="btn btn-primary">preview</a> --}}
+
+                                        @php
+                                            $hoursDifference = Date::now()->diffInHours($report->rejected_at);
+                                        @endphp
+
+                                        <form class="d-none" action="{{ route('qaqc.report.rejectAuto', $report->id) }}"
+                                            method="get" id="form-reject-report-{{ $report->id }}"><input type="hidden"
+                                                name="description" value="Automatically rejected after 24 hours"></form>
+
+                                        <script>
+                                            @if ($hoursDifference > 24 && $report->is_approve === 2 && $report->is_locked == false)
+                                                document.getElementById('form-reject-report-{{ $report->id }}').submit();
+                                            @endif
+                                        </script>
+
+                                        <a href="{{ route('qaqc.report.edit', $report->id) }}"
+                                            class="btn btn-primary my-1 me-1 @if (
+                                                $report->created_by !== Auth::user()->name ||
+                                                    $hoursDifference > 24 ||
+                                                    $report->is_approve == 1 ||
+                                                    $report->is_locked) d-none @endif">
+                                            <i class='bx bx-edit'></i> <span class="d-none d-sm-inline">Edit</span>
+                                        </a>
+
+
+                                        @include('partials.delete-report-modal')
+                                        <button
+                                            class="btn btn-danger my-1 me-1 @if (
+                                                $report->created_by !== Auth::user()->name ||
+                                                    $hoursDifference > 24 ||
+                                                    $report->autograph_3 ||
+                                                    $report->is_approve == 1 ||
+                                                    $report->is_locked) d-none @endif"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#delete-report-modal{{ $report->id }}">
+                                            <i class='bx bx-trash-alt'></i> <span class="d-none d-sm-inline">Delete</span>
+                                        </button>
+
+                                        @include('partials.lock-report-confirmation-modal')
+
+                                        <div class="btn-group" role="group">
+
+                                            <button type="button"
+                                                class="btn text-success border border-success dropdown-toggle"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                More
                                             </button>
-                                        </form>
 
-                                        {{-- @if($report->attachment)
-                                            @php
-                                                $filename = basename($report->attachment);
-                                            @endphp
-                                            <a href="{{ asset('storage/attachments/' . $report->attachment) }}" class="btn btn-secondary" download="{{ $filename }}">
-                                                <i class='bx bx-download'></i> Download
-                                            </a>
-                                        @endif --}}
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a href="{{ route('qaqc.report.download', $report->id) }}"
+                                                        class="btn btn-success my-1 dropdown-item">
+                                                        <i class='bx bxs-file-pdf'></i> <span
+                                                            class="d-none d-sm-inline">Export PDF</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="btn btn-success dropdown-item @if ($report->is_locked || $report->is_approve) disabled @endif"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#lock-report-modal-confirmation-{{ $report->id }}">
+                                                        <i class='bx bxs-lock'></i>
+                                                        Lock
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </td>
                                     <td>
-                                        @if($report->autograph_1 && $report->autograph_2 && $report->autograph_3 && $report->is_approve === 1)
-                                            <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
-
-                                        @elseif($report->is_approve === 0)
-                                            <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
-                                        @elseif($report->attachment === null)
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ATTACHMENT</span>
-                                        @elseif($report->autograph_1 && $report->autograph_2 && $report->autograph_3)
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
-                                        @else
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING SIGNATURE</span>
-                                        @endif
+                                        @include('partials.vqc-status-badge')
                                     </td>
-                                    <td>{{ $report->description }}</td>
+                                    <td>{{ $report->description ?? '-' }}</td>
+                                    <td>@formatDate($report->approved_at)</td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <td colspan="9">No data</td>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
-            </div><!-- /.card-body -->
+            </div>
         </div>
+        @if ($reports != null)
+            <div class="d-flex justify-content-end mt-3">
+                {{ $reports->appends(['status' => $status])->links() }}
+            </div>
+        @endif
     </section>
-
-
-
 @endsection

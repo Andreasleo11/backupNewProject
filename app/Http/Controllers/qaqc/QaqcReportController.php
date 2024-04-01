@@ -3,10 +3,26 @@
 namespace App\Http\Controllers\qaqc;
 
 use App\Http\Controllers\Controller;
+use App\Mail\QaqcMail;
+use App\Models\Defect;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\File;
 use App\Models\Report;
 use App\Models\Detail;
+use App\Models\DefectCategory;
+use App\Models\MasterDataPartNumberPrice;
+use App\Models\MasterDataRogCustomerName;
+use App\Models\MasterDataRogPartName;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+
+use function PHPUnit\Framework\isEmpty;
 
 class QaqcReportController extends Controller
 {
@@ -16,51 +32,332 @@ class QaqcReportController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $reports = Report::get();
+        $this->resetEditSessions();
 
-        return view('qaqc.reports.index',compact('reports'));
+        /*
+        * if want to sorted by status priorities
+        *
+        */
+        // $sortedReports = Report::orderBy('updated_at', 'desc')->get()->sortBy(function ($report) {
+        //     $hoursDifference = Date::now()->diffInHours($report->rejected_at);
+        //     if ($report->is_approve === 1) {
+        //         return 1; // Priority for approved
+        //     } elseif ($report->is_approve === 0) {
+        //         return 2; // Priority for rejected
+        //     } elseif ($report->rejected_at != null && $hoursDifference < 24) {
+        //         if ($report->autograph_3 != null) {
+        //             return 3; // Priority for waiting on approval
+        //         } else {
+        //             return 4; // Priority for revision
+        //         }
+        //     } elseif (($report->autograph_1 || $report->autograph_2) && $report->autograph_3) {
+        //         return 3; // Priority for waiting on approval
+        //     } else {
+        //         return 5; // Priority for waiting signature
+        //     }
+        // });
+
+        // $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        // $perPage = 9;
+        // $currentPageItems = $sortedReports->slice(($currentPage - 1) * $perPage, $perPage);
+        // $paginator = new LengthAwarePaginator($currentPageItems, $sortedReports->count(), $perPage);
+        // $paginator->setPath(route('qaqc.report.index'));
+
+        // $reports = $paginator;
+
+        $status = $request->status;
+
+        if($status != null){
+            if ($status === 'approved') {
+                // Logic when the status is approved
+                $reports = Report::approved()->orderBy('updated_at', 'desc')->paginate(9);
+            } elseif ($status === 'rejected') {
+                // Logic when the status is rejected
+                $reports = Report::rejected()->orderBy('updated_at', 'desc')->paginate(9);
+            } elseif ($status === 'waitingSignature') {
+                // Logic when the status is waitingSignature
+                $reports = Report::waitingSignature()->orderBy('updated_at', 'desc')->paginate(9);
+            } elseif ($status === 'waitingApproval') {
+                // Logic when the status is waitingApproval
+                $reports = Report::waitingApproval()->orderBy('updated_at', 'desc')->paginate(9);
+            } else {
+                $reports = [];
+            }
+        } else {
+            $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
+        }
+        return view('qaqc.reports.index', compact('reports', 'status'));
     }
 
     public function detail($id)
     {
-        $report = Report::with('details')->find($id);
-        // $user = Auth::user();
+        $report = Report::with('details', 'details.defects', 'details.defects.category' )->find($id);
         $user =  Auth::user();
-        foreach($report->details as $pd){
-                    $data1 = json_decode($pd->daijo_defect_detail);
-                    $data2 = json_decode($pd->customer_defect_detail);
-                    $data3 = json_decode($pd->remark);
-
-                    $pd->daijo_defect_detail = $data1;
-                    $pd->customer_defect_detail = $data2;
-                    $pd->remark = $data3;
-
-                }
-
         $autographNames = [
             'autograph_name_1' => $report->autograph_user_1 ?? null,
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        return view('qaqc.reports.detail', compact('report','user','autographNames'));
+        $files = File::where('doc_id', $report->doc_num)->get();
+        return view('qaqc.reports.detail', compact('report','user','autographNames', 'files'));
     }
 
-    public function uploadAttachment(Request $request)
+    public function edit(Request $request, $id)
+    {
+        $header = $request->session()->get('header_edit');
+        if($header == null){
+            $request->session()->put('header_edit', Report::find($id));
+            $header = $request->session()->get('header_edit');
+        }
+
+        return view('qaqc.reports.edit', compact('header', 'id'));
+    }
+
+    public function updateHeader(Request $request, $id){
+        $validatedData = $request->validate([
+            'rec_date' => 'date',
+            'verify_date' => 'date',
+            'customer' => 'string',
+            'invoice_no' => 'string',
+            'num_of_parts' => 'integer',
+            'created_by' => 'string',
+        ]);
+
+        $validatedData['autograph_1'] = strtoupper(auth()->user()->name) . '.png';
+        $validatedData['autograph_user_1'] = auth()->user()->name;
+        $validatedData['autograph_3'] = null;
+        $validatedData['autograph_user_3'] = null;
+        $validatedData['is_approve'] = 2;
+
+        $report = $request->session()->get('header_edit');
+
+        $report->fill($validatedData);
+
+        $request->session()->put('header_edit', $report);
+
+        return redirect()->route('qaqc.report.editDetail', $id);
+    }
+
+    public function editDetail(Request $request, $id){
+        // Retrieve the existing report from the session
+        $report = $request->session()->get('header_edit');
+
+        $report->update();
+
+        $details_data = Detail::where('report_id', $id)->get();
+        $request->session()->put('details_edit', $details_data);
+        $details = $request->session()->get('details_edit');
+
+        return view('qaqc.reports.edit-detail', compact('details', 'id'));
+
+    }
+
+    public function destroyDetail($id){
+        Detail::where('id', $id)->delete();
+        return response()->json(['message'=>'Detail has been deleted.']);
+    }
+
+    public function updateDetail(Request $request, $id){
+        $details = [];
+
+        for($i = 1; $i <= $request->input('rowCount'); $i++){
+
+            $request->validate([
+                'itemName' . $i => 'required',
+                'rec_quantity' . $i => 'required',
+                'verify_quantity' . $i => 'required',
+                'can_use' . $i => 'required',
+                'cant_use' . $i => 'required',
+                'price' . $i => 'required',
+            ]);
+
+
+            $rowData = [
+                'report_id' => $id,
+                'part_name' => $request->input("itemName$i"),
+                'rec_quantity' => $request->input("rec_quantity$i"),
+                'verify_quantity' => $request->input("verify_quantity$i"),
+                'can_use' => $request->input("can_use$i"),
+                'cant_use' => $request->input("cant_use$i"),
+                'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i")),
+            ];
+                $detail = Detail::where('report_id', $id)
+                ->where('part_name', $rowData['part_name'])
+                ->first();
+
+                if (!$detail) {
+                // If the detail doesn't exist, create a new one
+                    MasterDataPartNumberPrice::create([
+                        'name' => $request->input("itemName$i"),
+                        'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i"))
+                    ]);
+
+                    $itemPrice = MasterDataPartNumberPrice::where('name', $request->input("itemName$i"))->latest()->first()->price;
+                    $rowData['price'] = $itemPrice;
+                    $detail = new Detail();
+                    $detail->fill($rowData);
+                    $detail->save();
+                } else {
+                // If the detail exists, update its attributes
+                    MasterDataPartNumberPrice::create([
+                        'name' => $request->input("itemName$i"),
+                        'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i"))
+                    ]);
+                    $detail->update($rowData);
+                }
+
+                $details[] = $detail;
+
+        }
+
+        $request->session()->put('details_edit', $details);
+        return redirect()->route('qaqc.report.editDefect', $id);
+    }
+
+    public function editDefect(Request $request, $id){
+        $categories = DefectCategory::get();
+        $defect = $request->session()->get('defects_edit');
+        $details = Detail::where('report_id', $id)->with('defects', 'defects.category')->get();
+        if (!Session::has('active_tab')) {
+            if ($details->isNotEmpty()) {
+                Session::put('active_tab', $details->first()->id);
+            }
+        }
+
+        return view('qaqc.reports.edit-defect', compact('categories', 'details', 'id'));
+    }
+
+    public function create(Request $request)
+    {
+        $header = $request->session()->get('header');
+        return view('qaqc.reports.create', compact('header'));
+    }
+
+    public function getCustomers(Request $request)
+    {
+        $Customername = $request->input('customer_name');
+        $cust = MasterDataRogCustomerName::where('name', 'like', "%$Customername%")->distinct()->pluck('name')->toArray();
+
+        return response()->json($cust);
+    }
+
+    public function getItems(Request $request)
+    {
+        $itemName = $request->input('item_name');
+        $items = MasterDataRogPartName::where('name', 'like', "%$itemName%")->pluck('name')->toArray();
+
+        return response()->json($items);
+    }
+
+    public function getItemPrice(Request $request)
+    {
+        $encodedItemName = $request->input('name');
+        $itemName = urldecode($encodedItemName);
+
+        // Log::info('decoded item name: ', $itemName);
+
+        // Query the database to get the latest price for the given item name
+        $latestPrice = MasterDataPartNumberPrice::where('name', $itemName)
+            ->latest('created_at')
+            ->value('price');
+
+        return response()->json(['latest_price' => $latestPrice]);
+    }
+
+
+    public function postDetail(Request $request)
+    {
+        $report = $request->session()->get('header');
+
+        // Check if the report exists in the database
+        if (!$report->exists) {
+            // If the report exists, update its details
+            $report->save();
+        } else {
+            // If the report doesn't exist, save it to get the ID
+            $report->update();
+        }
+
+        // Retrieve the report_id from the saved or updated report
+        $reportId = $report->id;
+
+        $details = [];
+
+        for($i = 1; $i <= $request->input('rowCount'); $i++){
+
+            $request->validate([
+                'itemName' . $i => 'required',
+                'rec_quantity' . $i => 'required',
+                'verify_quantity' . $i => 'required',
+                'can_use' . $i => 'required',
+                'cant_use' . $i => 'required',
+                'price' . $i => 'required',
+            ]);
+
+            $rowData = [
+                'report_id' => $reportId,
+                'part_name' => $request->input("itemName$i"),
+                'rec_quantity' => $request->input("rec_quantity$i"),
+                'verify_quantity' => $request->input("verify_quantity$i"),
+                'can_use' => $request->input("can_use$i"),
+                'cant_use' => $request->input("cant_use$i"),
+            ];
+
+            $detail = Detail::where('report_id', $reportId)
+            ->where('part_name', $rowData['part_name'])
+            ->first();
+
+            if (!$detail) {
+            // If the detail doesn't exist, create a new one
+                MasterDataPartNumberPrice::create([
+                    'name' => $request->input("itemName$i"),
+                    'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i"))
+                ]);
+
+                $itemPrice = MasterDataPartNumberPrice::where('name', $request->input("itemName$i"))->latest()->first()->price;
+                // dd($itemPrice);
+                $rowData['price'] = $itemPrice;
+                $detail = new Detail();
+                $detail->fill($rowData);
+                $detail->save();
+            } else {
+            // If the detail exists, update its attributes
+                $itemPrice = MasterDataPartNumberPrice::where('name', $request->input("itemName$i"))->latest()->first()->price;
+                $rowData['price'] = $itemPrice;
+                $detail->update($rowData);
+            }
+
+            $details[] = $detail;
+
+        }
+
+        $request->session()->put('details', $details);
+
+        return redirect()->route('qaqc.report.createdefect');
+    }
+
+    public function destroy($id){
+        $report = Report::findOrFail($id);
+
+        $report->details()->delete();
+        $report->delete();
+
+
+        return redirect()->route('qaqc.report.index')->with('success', 'Report has been deleted successfully!');
+    }
+
+    public function uploadAttachment(Request $request, $id)
     {
         $request->validate([
-            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls|max:5120', // Adjust allowed file types and size
-            'reportId' => 'required|exists:reports,id',
+            'attachment' => 'required|mimes:pdf,doc,docx,xlsx,xls,png,jpg,jpeg', // Adjust allowed file types and size
         ]);
 
-        $reportId = $request->input('reportId');
-
-        Report::where('id', $reportId)->update([
-            'is_approve' => null,
+        Report::where('id', $id)->update([
+            'is_approve' => 2,
             'description' => null,
         ]);
-
 
         $file = $request->file('attachment');
 
@@ -71,7 +368,7 @@ class QaqcReportController extends Controller
         $file->storeAs('public/attachments', $filename);
 
         // Update the reports table with the attachment filename
-        Report::where('id', $reportId)->update(['attachment' => $filename]);
+        Report::where('id', $id)->update(['attachment' => $filename]);
 
         return redirect()->back()->with('success', 'Attachment uploaded and saved successfully!');
     }
@@ -93,210 +390,302 @@ class QaqcReportController extends Controller
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
-    public function edit($id)
+    public function exportToPdf($id)
     {
-        $report = Report::find($id);
-        $details = $report->details;
+        $report = Report::with('details')->find($id);
+        $user =  Auth::user();
+        foreach($report->details as $pd){
+            $data1 = json_decode($pd->daijo_defect_detail);
+            $data2 = json_decode($pd->customer_defect_detail);
+            $data3 = json_decode($pd->remark);
 
-        return view('qaqc.reports.edit', compact('report','details'));
+            $pd->daijo_defect_detail = $data1;
+            $pd->customer_defect_detail = $data2;
+            $pd->remark = $data3;
+        }
+
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
+
+        $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('verification-report-'. $report->id . '.pdf');
     }
 
-    public function update(Request $request, $id)
+    public function previewPdf($id)
     {
-        $data = $request->all();
+        $report = Report::with('details')->find($id);
+        $user =  Auth::user();
+        foreach($report->details as $pd){
+            $data1 = json_decode($pd->daijo_defect_detail);
+            $data2 = json_decode($pd->customer_defect_detail);
+            $data3 = json_decode($pd->remark);
 
-        foreach ($data['remark'] as $key => &$values) {
-            $modifiedValues = [];
-
-            $index = 0;
-            while ($index < count($values)) {
-                // Check if the value is "other"
-                if ($values[$index] === 'other') {
-                    // Check if there is a next index and a next value
-                    if (isset($values[$index + 1])) {
-                        // Replace "other" with the value from the next index
-                        $modifiedValues[] = $values[$index + 1];
-                        // Skip the next value
-                        $index += 2;
-                    }
-                } else {
-                    // Keep non-"other" values
-                    $modifiedValues[] = $values[$index];
-                    $index++;
-                }
-            }
-
-            // Update the original array with the modified values
-            $data['remark'][$key] = $modifiedValues;
+            $pd->daijo_defect_detail = $data1;
+            $pd->customer_defect_detail = $data2;
+            $pd->remark = $data3;
         }
 
-        // Remove the reference to $values
-        unset($values);
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
 
+        return view('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'));
 
-        if (isset($data['customer_defect_detail'])) {
-            $data['customer_defect_detail'] = array_map(function ($array) {
-                $foundNull = false;
-                return array_filter($array, function ($value) use (&$foundNull) {
-                    if ($value === null && !$foundNull) {
-                        $foundNull = true;
-                        return false;
-                    }
-                    return true;
-                });
-            }, $data['customer_defect_detail']);
-        }
+        // $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
+        // ->setPaper('a4', 'landscape');
 
-        // Remove only the first null value from daijo_defect_detail
-        if (isset($data['daijo_defect_detail'])) {
-            $data['daijo_defect_detail'] = array_map(function ($array) {
-                $foundNull = false;
-                return array_filter($array, function ($value) use (&$foundNull) {
-                    if ($value === null && !$foundNull) {
-                        $foundNull = true;
-                        return false;
-                    }
-                    return true;
-                });
-            }, $data['daijo_defect_detail']);
-        }
+        // return $pdf->stream('verification-report-'. $report->id . '.pdf');
+    }
 
-        // dd($data);
-
-        // Update the existing record
-        $report = Report::findOrFail($id);
-
-        // Update common attributes
-        $report->update([
-            'Rec_Date' => $data['rec_Date'],
-            'Verify_Date' => $data['verify_date'],
-            'Customer' => $data['customer'],
-            'Invoice_No' => $data['invoice_no'],
-            'num_of_parts' => $data['num_of_parts'],
-            // Add other attributes as needed
+    public function postCreateHeader(Request $request)
+    {
+        $validatedData = $request->validate([
+            'rec_date' => 'date',
+            'verify_date' => 'date',
+            'customer' => 'string',
+            'invoice_no' => 'string',
+            'created_by' => 'string',
         ]);
 
-        // Update details
-        foreach ($data['part_names'] as $key => $partName) {
-            $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];
-            $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
-            $Remarks = $data['remark'][$key] ?? [];
+        $validatedData['autograph_1'] = strtoupper(auth()->user()->name) . '.png';
+        $validatedData['autograph_user_1'] = auth()->user()->name;
+        $validatedData['is_approve'] = 2;
 
-            $detail = Detail::where('Report_Id', $id)->where('Part_Name', $partName)->first();
+        $report = $request->session()->get('header');
 
-            // Update detail attributes
-            $detail->update([
-                'Part_Name' => $partName,
-                'Rec_Quantity' => $data['rec_quantity'][$key],
-                'Verify_Quantity' => $data['verify_quantity'][$key],
-                'Prod_Date' => $data['prod_date'][$key],
-                'Shift' => $data['shift'][$key],
-                'Can_Use' => $data['can_use'][$key],
-                'Cant_use' => $data['cant_use'][$key],
-                // Extract defect details and remarks
-                // Add other attributes as needed
-                'Customer_Defect_Detail' => json_encode($customerDefectDetails),
-                'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
-                'Remark' => json_encode($Remarks),
-            ]);
+        // Check if the report exists in the session
+        if ($report) {
+            // If the report exists, update its attributes with the validated data
+            $report->fill($validatedData);
+        } else {
+            // If the report doesn't exist, create a new report instance with the validated data
+            $report = new Report($validatedData);
         }
 
-        // Redirect to a view or route after the update
-        return redirect()->route('qaqc.report.index')->with('success', 'Report has been updated successfully!');
+        // Store the updated or new report in the session
+        $request->session()->put('header', $report);
+
+        return redirect()->route('qaqc.report.createdetail');
     }
 
-    public function create()
+    public function createDetail(Request $request)
     {
-        return view('qaqc.reports.create');
+        // dd(MasterDataPartNumberPrice::where('name', '(RM)-733-CVRDRLL-BL/COVER DRL LH')
+        // ->latest('created_at')
+        // ->value('updated_at'));
+        $header = $request->session()->get('header');
+
+        // Extract the customer name from the header
+        $customerName = $header['customer'] ?? null;
+
+        // Retrieve item names associated with the same customer name
+        $data = MasterDataRogCustomerName::get()->pluck('item_name');
+
+        // $data = MasterDataRog::pluck('item_name');
+        $details = $request->session()->get('details');
+
+        // $request->session()->forget('detail');
+        // dd($details);
+
+
+        return view('qaqc.reports.createdetail', compact('data', 'details'));
     }
 
-    public function store(Request $request)
+
+    // dd($rowData);
+
+    public function createDefect(Request $request)
     {
-            $data = $request->all();
-
-            foreach ($data['remark'] as $key => &$values) {
-                $modifiedValues = [];
-
-                $index = 0;
-                while ($index < count($values)) {
-                    // Check if the value is "other"
-                    if ($values[$index] === 'other') {
-                        // Check if there is a next index and a next value
-                        if (isset($values[$index + 1])) {
-                            // Replace "other" with the value from the next index
-                            $modifiedValues[] = $values[$index + 1];
-                            // Skip the next value
-                            $index += 2;
-                        }
-                    } else {
-                        // Keep non-"other" values
-                        $modifiedValues[] = $values[$index];
-                        $index++;
-                    }
-                }
-
-                // Update the original array with the modified values
-                $data['remark'][$key] = $modifiedValues;
+        $categories = DefectCategory::get();
+        $defect = $request->session()->get('defects');
+        $report = $request->session()->get('header') ?? $request->session()->get('header_edit');
+        $reportId = $report->id;
+        $details = Detail::where('Report_Id', $reportId)->with('defects', 'defects.category')->get();
+        if (!Session::has('active_tab')) {
+            if ($details->isNotEmpty()) {
+                Session::put('active_tab', $details->first()->id);
             }
+        }
 
-            // Remove the reference to $values
-            unset($values);
+        return view('qaqc.reports.createdefect', compact('categories', 'details'));
+    }
 
-            // dd($data);
+    public function postDefect(Request $request)
+    {
+        $request->validate([
+            "detail_id" => "required|int",
+            "quantity_customer" => "nullable|int",
+            "quantity_daijo" => 'nullable|int',
+            "customer_defect_category" => 'nullable|int',
+            "daijo_defect_category" => 'nullable|int',
+            "remark" => "nullable|string",
+            "other_remark" => 'nullable|string',
+        ]);
 
-
-            // Extract common attributes
-            $commonAttributes = [
-                'Rec_Date' => $data['Rec_Date'],
-                'Verify_Date' => $data['Verify_Date'],
-                'Customer' => $data['Customer'],
-                'Invoice_No' => $data['Invoice_No'],
-                'created_by' => auth()->user()->name,
-                'num_of_parts' => $data['num_of_parts'],
+        if($request->remark === "other")
+        {
+            // Common data for both customer and daijo defects
+            $commonData = [
+                'detail_id' => $request->detail_id,
+                'remarks' => $request->other_remark,
+            ];
+        } else {
+            $commonData = [
+                'detail_id' => $request->detail_id,
+                'remarks' => $request->remark,
             ];
 
-            // Create the VerificationReportHeader and get its doc_num
+        }
 
-            $report = Report::create($commonAttributes);
+        // Create customer defect if checkbox is checked
+        if ($request->has('check_customer') && $request->has('check_daijo')) {
+            Defect::create(array_merge($commonData, [
+                'category_id' => $request->daijo_defect_category,
+                'is_daijo' => true,
+                'quantity' => $request->quantity_daijo,
+            ]));
 
+            Defect::create(array_merge($commonData, [
+                'category_id' => $request->customer_defect_category,
+                'is_daijo' => false,
+                'quantity' => $request->quantity_customer,
+            ]));
+        } else if ($request->has('check_customer')) {
+            Defect::create(array_merge($commonData, [
+                'category_id' => $request->customer_defect_category,
+                'is_daijo' => false,
+                'quantity' => $request->quantity_customer,
+            ]));
+        } else if ($request->has('check_daijo')) {
+            Defect::create(array_merge($commonData, [
+                'category_id' => $request->daijo_defect_category,
+                'is_daijo' => true,
+                'quantity' => $request->quantity_daijo,
+            ]));
+        }
 
-            // Save the main data to the database, including defect details
-            foreach ($data['part_names'] as $key => $partName) {
-                $customerDefectDetails = $data['customer_defect_detail'][$key] ?? [];
-                $daijoDefectDetails = $data['daijo_defect_detail'][$key] ?? [];
-                $Remarks = $data['remark'][$key] ?? [];
-
-
-                $attributes = [
-                    'Report_Id' => $report->id,
-                    'Part_Name' => $partName,
-                    'Rec_Quantity' => $data['rec_quantity'][$key],
-                    'Verify_Quantity' => $data['verify_quantity'][$key],
-                    'Prod_Date' => $data['prod_date'][$key],
-                    'Shift' => $data['shift'][$key],
-                    'Can_Use' => $data['can_use'][$key],
-                    'Cant_use' => $data['cant_use'][$key],
-                    // Extract defect details and remarks
-                    // Assign values to attributes
-                    'Customer_Defect_Detail' => json_encode($customerDefectDetails),
-                    'Daijo_Defect_Detail' => json_encode($daijoDefectDetails),
-                    'Remark' => json_encode($Remarks),
-                ];
-
-            Detail::create($attributes);
-            }
-
-
-        return redirect()->route('qaqc.report.index')->with('success', 'Report has been stored successfully!');
+        return redirect()->back()->with(['success' => 'Defect added successfully!']);
     }
 
-    public function destroy($id){
-        $report = Report::findOrFail($id);
+    public function deleteDefect($id)
+    {
+        Defect::find($id)->delete();
+        return redirect()->back()->with(['success' => 'Defect deleted successfully!']);
+    }
 
-        $report->details()->delete();
-        $report->delete();
+    public function updateActiveTab(Request $request)
+    {
+        $detailId = $request->input('detailId');
+        Session::put('active_tab', $detailId);
+        return response()->json(['message' => 'Active tab updated successfully']);
+    }
 
+    public function redirectToIndex()
+    {
+        $this->updateUpdatedAt();
 
-        return redirect()->route('qaqc.report.index')->with('success', 'Report has been deleted successfully!');
+        session()->forget('header');
+        session()->forget('details');
+        $this->resetEditSessions();
+
+        return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully stored/updated!']);
+    }
+
+    private function updateUpdatedAt(){
+        $id = session()->get('header')->id ?? session()->get('header_edit')->id;
+        Report::find($id)->update(['updated_at' => now()]);
+    }
+
+    private function resetEditSessions(){
+        session()->forget('header_edit');
+        session()->forget('details_edit');
+        session()->forget('active_tab');
+    }
+
+    public function savePdf($id)
+    {
+        $report = Report::with('details')->find($id);
+        $user =  Auth::user();
+        foreach($report->details as $pd){
+            $data1 = json_decode($pd->daijo_defect_detail);
+            $data2 = json_decode($pd->customer_defect_detail);
+            $data3 = json_decode($pd->remark);
+
+            $pd->daijo_defect_detail = $data1;
+            $pd->customer_defect_detail = $data2;
+            $pd->remark = $data3;
+        }
+
+        $autographNames = [
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
+        ];
+
+        $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
+            ->setPaper('a4', 'landscape');
+
+        // Define the file path and name
+        $fileName = 'verification-report-' . $report->id . '.pdf';
+        $filePath = 'pdfs/' . $fileName; // Adjust the directory structure as needed
+
+        // Save the PDF file to the public storage
+        Storage::disk('public')->put($filePath, $pdf->output());
+
+        // Optionally, you can return a response indicating that the PDF has been saved
+        return redirect()->back()->with(['message' => 'PDF saved successfully', 'file_path' => $filePath]);
+    }
+
+    public function sendEmail($id, Request $request)
+    {
+        $this->savePdf($id);
+
+        $report = Report::with('details')->find($id);
+        $pdfName = 'pdfs/verification-report-' . $report->id . '.pdf';
+        $pdfPath = Storage::url($pdfName);
+
+        $files = File::where('doc_id', $report->doc_num)->get();
+        $filePaths = collect($files)->map(function ($file) {
+            return Storage::url('files/' . $file->name);
+        })->toArray();
+
+        $filePaths[] = $pdfPath;
+
+        $mailData = [
+            'to' =>  array_filter(array_map('trim', explode(';', $request->to))) ?? 'raymondlay023@gmail.com',
+            'cc' =>  array_filter(array_map('trim', explode(';', $request->cc))) ?? ['andreasleonardo.al@gmail.com', 'raymondlay034@gmail.com'],
+            'subject' => $request->subject ?? 'QAQC Verification Report Mail',
+            'body' => $request->body ?? 'Mail from ' . env('APP_NAME') ,
+            'file_paths' => $filePaths
+        ];
+
+        Mail::send(new QaqcMail($mailData));
+
+        $report->update(['has_been_emailed' => true]);
+
+        return redirect()->back()->with(['success' => 'Email sent successfully!']);
+    }
+
+    public function rejectAuto(Request $request, $id)
+    {
+        Report::find($id)->update([
+            'is_approve' => false,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with(['success' => 'Report rejected automatically!']);
+    }
+
+    public function lock($id)
+    {
+        Report::find($id)->update(['is_locked' => true]);
+        return redirect()->back()->with(['success' => 'Report locked successfully!']);
     }
 }

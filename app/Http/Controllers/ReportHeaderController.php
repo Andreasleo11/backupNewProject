@@ -6,11 +6,17 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Report;
 use App\Models\Detail;
+use App\Models\MasterDatafgDaijo;
+use App\Models\User;
+
 
 class ReportHeaderController extends Controller
 {
     public function create()
     {
+        $data = MasterDatafgDaijo::all();
+        dd($data);
+
         return view('qaqc.reports.create_header');
     }
 

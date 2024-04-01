@@ -1,55 +1,81 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card shadow h-100 py-2" style="border-left: 3px solid blue;    ">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="fs-5 fw-bold text-primary text-uppercase mb-1">Approved</div>
-                            <div class="h4 mb-0 fw-bold text-secondary">{{ $approvedDoc}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <box-icon name='check' color="gray" size="lg"></box-icon>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="container">
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card shadow h-100 py-2" style="border-left: 3px solid green;    ">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="fs-5 fw-bold text-success text-uppercase mb-1">Waiting</div>
-                            <div class="h4 mb-0 fw-bold text-secondary">{{$waitingDoc}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <box-icon name='time' color="gray" size="lg"></box-icon>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card shadow h-100 py-2" style="border-left: 3px solid red; ">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="fs-5 fw-bold text-danger text-uppercase mb-1">Rejected</div>
-                            <div class="h4 mb-0 fw-bold text-secondary">{{$rejectedDoc}}</div>
-                        </div>
-                        <div class="col-auto">
-                            <box-icon name='x-circle' color="gray" size="lg"></box-icon>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
-</div>
+    <section aria-label="header">
+
+    </section>
+
+    <section aria-label="content">
+        <div>
+            <div class="p-4 pb-0">
+                <h4 class="fw-lighter text-secondary fs-3">QA/QC Reports</h4>
+            </div>
+            <hr>
+            <div class="row justify-content-center">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ route('director.qaqc.index') }}">
+                        <x-card title="Approved" :content="$reportCounts['approved']" color="green" titleColor="text-success"
+                            icon="<box-icon name='check' color='gray' size='lg'></box-icon>" />
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ route('director.qaqc.index') }}">
+                        <x-card title="Waiting" :content="$reportCounts['waiting']" color="orange" titleColor="text-warning"
+                            icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ route('director.qaqc.index') }}">
+                        <x-card title="Rejected" :content="$reportCounts['rejected']" color="red" titleColor="text-danger"
+                            contentColor="text-secondary"
+                            icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <section aria-label="header2">
+    </section>
+
+    <section aria-label="content2">
+        <div class="mt-5">
+
+            <div class="p-4 pb-0">
+                <h4 class="text-secondary fs-3">Purchase Requests</h4>
+            </div>
+            <hr>
+
+            <div class="row justify-content-center">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ route('director.pr.index') }}">
+                        <x-card title="Approved" :content="$purchaseRequestCounts['approved']" color="green" titleColor="text-success"
+                            icon="<box-icon name='check' color='gray' size='lg'></box-icon>" />
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ route('director.pr.index') }}">
+                        <x-card title="Waiting" :content="$purchaseRequestCounts['waiting']" color="orange" titleColor="text-warning"
+                            icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
+                    </a>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <a href="{{ route('director.pr.index') }}">
+                        <x-card title="Rejected" :content="$purchaseRequestCounts['rejected']" color="red" titleColor="text-danger"
+                            contentColor="text-secondary"
+                            icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
 @endsection
