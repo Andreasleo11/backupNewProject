@@ -577,7 +577,7 @@ class PPSAssemblyController extends Controller
 		DB::table('prodplan_asm_linecaps')->truncate();
 		$date = UtiDateList::find(17);
 		$holiday = UtiHolidayList::get();
-		$data = ProdplanSndLinelist::get();
+		$data = ProdplanAsmLinelist::get();
 		
 
 		// dd($data);
@@ -604,7 +604,7 @@ class PPSAssemblyController extends Controller
 
 		foreach ($data as $item) {
 			foreach ($dates as $date) {
-				$lineCap = new ProdplanSndLinecap();
+				$lineCap = new ProdplanAsmLinecap();
 				$lineCap->line_code = $item->line_code; // Assuming line_code is a field in both models
 				$lineCap->running_date = $date; // Set the running date from $dates
 				$department = InvLineList::where('line_code', $item->line_code)->value('departement');
