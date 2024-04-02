@@ -3,32 +3,41 @@
 @section('content')
     <!-- Main content -->
     <form method="GET" action="/foremind-detail/print" target="_blank">
-        @csrf
-        <div class="form-group">
-            <div class="row align-items-center g-3">
-                <div class="col-auto">
-                    <label class="form-label" for="vendor_code">Enter Vendor Code(for Internal)</label>
-                </div>
-                <div class="col-auto">
-                    <input class="form-control" type="text" id="vendor_code" name="vendor_code" required>
-                </div>
-                <div class="col">
-                    <button class="btn btn-primary" type="submit">Submit</button>
-                </div>
+    @csrf
+    <div class="form-group">
+        <div class="row align-items-center g-3">
+            <div class="col-auto">
+                <label class="form-label" for="vendor_code">Select Vendor Name (for Internal)</label>
+            </div>
+            <div class="col-auto">
+                <select class="form-select" id="vendor_code" name="vendor_code" required>
+                    <option value="" selected disabled>Select Vendor Name</option>
+                    @foreach($contacts as $contact)
+                        <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col">
+                <button class="btn btn-primary" type="submit">Submit</button>
             </div>
         </div>
-    </form>
-
+    </div>
+</form>
     <form method="GET" action="/foremind-detail/printCustomer" target="_blank">
         @csrf
         <div class="form-group mt-2">
             <div class="row align-items-center g-3">
                 <div class="col-auto">
-                    <label class="form-label for="vendor_code">Enter Vendor Code(for Customer)</label>
+                    <label class="form-label for="vendor_code" >Enter Vendor Code(for Customer)</label>
                 </div>
                 <div class="col-auto">
-                    <input class="form-control" type="text" id="vendor_code" name="vendor_code" required>
-                </div>
+                <select class="form-select" id="vendor_code" name="vendor_code" required>
+                    <option value="" selected disabled>Select Vendor Name</option>
+                    @foreach($contacts as $contact)
+                        <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
+                    @endforeach
+                </select>
+            </div>
                 <div class="col">
                     <button class="btn btn-primary" type="submit">Submit</button>
                 </div>

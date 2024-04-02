@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\foremindFinal;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\PurchasingContact;
 
 class PurchasingController extends Controller
 {
@@ -20,7 +21,8 @@ class PurchasingController extends Controller
          // Retrieve forecasts from the foremindFinal table
          $forecasts = ForemindFinal::all();
          $transformedData = [];
-
+         $contacts = PurchasingContact::all();
+        
          // Get unique months from all forecasts
          $allMonths = [];
 
@@ -62,7 +64,7 @@ class PurchasingController extends Controller
                 'values' => $values,
                 'mon' => $uniqueMonths,
                 'qforecast' => $qforecast,
-
+                'contacts' =>$contacts,
             ]);
     }
 
