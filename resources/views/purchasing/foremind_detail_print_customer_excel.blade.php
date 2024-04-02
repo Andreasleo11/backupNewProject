@@ -43,7 +43,7 @@
                        <!-- Blank cell with colspan="10" -->
                     </tr>
                     <tr>
-                    <td>ATT : ISI NAMA </td>
+                    <td>ATT : {{ $contact->persontocontact }} </td>
                     </tr>
                     <tr>
                     <td>FR : {{ Auth::user()->name }} </td>
