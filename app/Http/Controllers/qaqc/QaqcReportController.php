@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Config;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -600,9 +601,13 @@ class QaqcReportController extends Controller
 
             $this->savePdf($id);
 
+             // Get 'to' and 'cc' email addresses from the configuration file
+            $to = Config::get('email.to');
+            $cc = Config::get('email.cc');
+
             $mailData = [
-                'to' => 'andreasleonardo.al@gmail.com',
-                'cc' =>  ['andreasleonardo0@gmail.com', 'raymondlay023@gmail.com'],
+                'to' => $to,
+                'cc' =>   $cc,
                 'subject' => 'QAQC Verification Report Mail',
                 'body' => 'Mail from ' . env('APP_NAME') ,
                 'file_paths' => $pdfPath
