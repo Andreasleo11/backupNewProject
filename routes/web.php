@@ -93,6 +93,9 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
     Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
     Route::get('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
+    Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
+    Route::post('/change-email',  [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
+
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
 
     Route::prefix('superadmin')->group(function () {
@@ -108,6 +111,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
             Route::post('/departments/create', [DepartmentController::class, 'store'])->name('departments.store');
             Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
             Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
+
 
             Route::get('/permission', function () {
                 return view('admin.permissions');
