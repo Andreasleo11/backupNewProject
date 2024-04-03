@@ -37,16 +37,16 @@ class PurchasingDetailController extends Controller
             // Get vendor code from user input
             $vendorCode = $request->input('vendor_code');
             
+            $materials = DB::table('forecast_material_predictions')
+            ->where('vendor_code', $vendorCode)
+            ->get();
+            // dd($materials);
 
-            // Fetch your materials data from the database based on vendor code
-            if ($vendorCode) {
-                $materials = DB::table('forecast_material_predictions')
-                    ->where('vendor_code', $vendorCode)
-                    ->get();
-            } else {
-                $materials = []; // Empty array if no vendor code provided
+
+            if ($materials->isEmpty()) {
+                return redirect()->back()->withErrors(['error'=> 'Vendor code not exist (Internal)']);
+                // return redirect()->back()->with('error', 'No materials found for the provided vendor code');
             }
-
 
 
 
@@ -108,13 +108,14 @@ class PurchasingDetailController extends Controller
             // Get vendor code from user input
             $vendorCode = $request->input('vendor_code');
 
+            $materials = DB::table('forecast_material_predictions')
+            ->where('vendor_code', $vendorCode)
+            ->get();
             // Fetch your materials data from the database based on vendor code
-            if ($vendorCode) {
-                $materials = DB::table('forecast_material_predictions')
-                    ->where('vendor_code', $vendorCode)
-                    ->get();
-            } else {
-                $materials = []; // Empty array if no vendor code provided
+            
+            if ($materials->isEmpty()) {
+                return redirect()->back()->withErrors(['error'=> 'Vendor code not exist (Customer)']);
+                // return redirect()->back()->with('error', 'No materials found for the provided vendor code');
             }
 
 

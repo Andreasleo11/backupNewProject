@@ -95,6 +95,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
     Route::post('/change-email',  [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
+    Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
 
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
 
