@@ -594,6 +594,7 @@ class QaqcReportController extends Controller
     {
         $this->updateUpdatedAt();
         $id = session()->get('header')->id;
+        $cust = session()->get('header')->customer;
         $pdfName = 'pdfs/verification-report-' . $id . '.pdf';
         $pdfPath[] = Storage::url($pdfName);
         if($id != null)
@@ -602,14 +603,14 @@ class QaqcReportController extends Controller
             $this->savePdf($id);
 
              // Get 'to' and 'cc' email addresses from the configuration file
-            $to = Config::get('email.to');
-            $cc = Config::get('email.cc');
+            $to = Config::get('email.feature_qc.to');
+            $cc = Config::get('email.feature_qc.cc');
 
             $mailData = [
                 'to' => $to,
                 'cc' =>   $cc,
-                'subject' => 'QAQC Verification Report Mail',
-                'body' => 'Mail from ' . env('APP_NAME') ,
+                'subject' => 'QAQC Verification Report Mail ' . $cust,
+                'body' => 'Mail from ' . env('APP_NAME'),
                 'file_paths' => $pdfPath
             ];
             // dd($mailData);

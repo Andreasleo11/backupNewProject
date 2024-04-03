@@ -2,6 +2,7 @@
 
 @section('content')
     <!-- Main content -->
+    @include('partials.alert-success-error')
     <form method="GET" action="/foremind-detail/print" target="_blank">
     @csrf
     <div class="form-group">
@@ -23,7 +24,7 @@
         </div>
     </div>
 </form>
-    <form method="GET" action="/foremind-detail/printCustomer" target="_blank">
+    <form method="GET" action="/foremind-detail/printCustomer" target="_blank"> 
         @csrf
         <div class="form-group mt-2">
             <div class="row align-items-center g-3">
