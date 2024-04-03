@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\HolidayListDataTable;
 use App\Exports\HolidayListTemplateExport;
 use App\Http\Controllers\Controller;
 use App\Imports\HolidayListTemplateImport;
@@ -11,11 +12,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class HolidayListController extends Controller
 {
-    public function index()
+    public function index(HolidayListDataTable $dataTable)
     {
         $datas = UtiHolidayList::get();
         // dd($datas);
-        return view("setting.holidayindex", compact("datas"));
+        return $dataTable->render("setting.holidayindex", compact("datas"));
     }
 
     public function create()
