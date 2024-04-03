@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\foremindFinal;
+use App\Models\PurchasingContact;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
@@ -35,6 +36,7 @@ class PurchasingDetailController extends Controller
 
             // Get vendor code from user input
             $vendorCode = $request->input('vendor_code');
+            
 
             // Fetch your materials data from the database based on vendor code
             if ($vendorCode) {
@@ -279,7 +281,8 @@ class PurchasingDetailController extends Controller
 
         $vendorInfo = $getVendorInfo($vendorCode);
         $vendorName = $vendorInfo->vendor_name;
-
+        $contact = PurchasingContact::where('vendor_code', $vendorCode)->first();
+        
         // // Get data based on vendor code
         $materials = DB::table('forecast_material_predictions')
             ->where('vendor_code', $vendorCode)
@@ -338,7 +341,7 @@ class PurchasingDetailController extends Controller
 
         // dd($qforecast);
 
-        $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName);
+        $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName,$contact);
 
         $fileName = $vendorName ? $vendorName . '_exported_data_Customer.xlsx' : 'filename.xlsx';
 

@@ -298,6 +298,7 @@
                         Purchase Request
                     </a>
                 </li>
+                
 
                 {{-- FEATURES IN DEVELOPMENT --}}
                 @if ($department !== 'DIRECTOR')
@@ -317,6 +318,12 @@
                         <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Form Keluar
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Change Default Email for QC
                         </a>
                     </li>
                 @endif

@@ -93,6 +93,9 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
     Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
     Route::get('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
+    Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
+    Route::post('/change-email',  [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
+
     Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
 
     Route::prefix('superadmin')->group(function () {
@@ -108,6 +111,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
             Route::post('/departments/create', [DepartmentController::class, 'store'])->name('departments.store');
             Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
             Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
+
 
             Route::get('/permission', function () {
                 return view('admin.permissions');
@@ -178,6 +182,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
         Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
+        Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
@@ -308,9 +313,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
         Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
+        Route::get("pps/second/process1", [PPSSecondController::class, 'process1'])->name('secondprocess1');
+        Route::get("pps/second/process2", [PPSSecondController::class, 'process2'])->name('secondprocess2');
+        Route::get("pps/second/process3", [PPSSecondController::class, 'process3'])->name('secondprocess3');
         //jika ada post untuk start
 
         Route::get("/pps/second/delivery", [PPSSecondController::class, "deliverysecond"])->name("deliverysecond");
+        Route::get("pps/second/process4", [PPSSecondController::class, 'process4'])->name('secondprocess4');
+        Route::get("pps/second/process5", [PPSSecondController::class, 'process5'])->name('secondprocess5');
+        Route::get("pps/second/process6", [PPSSecondController::class, 'process6'])->name('secondprocess6');
         //jika ada post untuk delivery
 
         Route::get("/pps/second/items", [PPSSecondController::class, "itemsecond"])->name("itemsecond");
@@ -323,9 +334,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("/pps/assembly/start", [PPSAssemblyController::class, "indexscenario"])->name("indexassembly");
         Route::post("/pps/assembly-process-form", [PPSAssemblyController::class, "processAssemblyForm"])->name("processAssemblyForm");
+        Route::get("pps/assembly/process1", [PPSAssemblyController::class, 'process1'])->name('assemblyprocess1');
+        Route::get("pps/assembly/process2", [PPSAssemblyController::class, 'process2'])->name('assemblyprocess2');
+        Route::get("pps/assembly/process3", [PPSAssemblyController::class, 'process3'])->name('assemblyprocess3');
         //jika ada post untuk start
 
         Route::get("/pps/assembly/delivery", [PPSAssemblyController::class, "deliveryassembly"])->name("deliveryassembly");
+        Route::get("pps/assembly/process4", [PPSAssemblyController::class, 'process4'])->name('assemblyprocess4');
+        Route::get("pps/assembly/process5", [PPSAssemblyController::class, 'process5'])->name('assemblyprocess5');
+        Route::get("pps/assembly/process6", [PPSAssemblyController::class, 'process6'])->name('assemblyprocess6');
         //jika ada post untuk delivery
 
         Route::get("/pps/assembly/items", [PPSAssemblyController::class, "itemassembly"])->name("itemassembly");
@@ -408,6 +425,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('setting/input/holidays', [HolidayListController::class, "store"])->name('holidays.store');
     Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])->name('download.holiday.template');
     Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])->name('upload.holiday.template');
+    Route::delete('/holiday/{id}/delete', [HolidayListController::class, 'delete'])->name('holiday.delete');
+    Route::put('/holiday/{id}/update', [HolidayListController::class, 'update'])->name('holiday.update');
 
 
     Route::get("projecttracker/index", [ProjectTrackerController::class, "index"])->name("pt.index");
