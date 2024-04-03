@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <section class="header">
         <div class="row align-items-center">
             <div class="col-auto">
@@ -21,9 +20,10 @@
 
     <section class="content">
         <div class="card mt-5">
-            <div class="card-body p-0">
+            <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped text-center mb-0">
+                    {{ $dataTable->table() }}
+                    {{-- <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr class="align-middle fw-semibold fs-5">
                                 <th>Tanggal</th>
@@ -71,9 +71,22 @@
                                 @endforeach
                             @endif
                         </tbody>
-                    </table>
+                    </table> --}}
                 </div>
             </div>
         </div>
+
+        @foreach ($datas as $item)
+            @include('partials.edit-holiday-modal')
+            @include('partials.delete-confirmation-modal', [
+                'id' => $item->id,
+                'title' => 'Delete holiday confirmation',
+                'body' => 'Are you sure want to delete ' . $item->holiday_name . '?',
+            ])
+        @endforeach
     </section>
 @endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts() }}
+@endpush
