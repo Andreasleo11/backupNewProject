@@ -80,6 +80,7 @@
             @include('partials.edit-holiday-modal')
             @include('partials.delete-confirmation-modal', [
                 'id' => $item->id,
+                'route' => 'holiday.delete',
                 'title' => 'Delete holiday confirmation',
                 'body' => 'Are you sure want to delete ' . $item->holiday_name . '?',
             ])
