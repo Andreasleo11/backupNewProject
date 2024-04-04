@@ -61,6 +61,10 @@
                                     </div>
                                 </div>
                             </div>
+
+                        <div>
+                            <h1>PILIH TANGGAL 1 DI BULAN YANG INGIN DIPILIH</h1>
+                        </div>
                         <form action = "{{ route('step1') }}">
                             <div class="mb-3">
                                     <label for="start_date" class="form-label">Pilih Tanggal:</label>

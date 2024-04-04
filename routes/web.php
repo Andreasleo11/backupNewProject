@@ -275,15 +275,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("/production/capacity-detail", [CapacityByForecastController::class, "detail"])->name('capacityforecastdetail');
 
         Route::get("/production/capacity-forecast/view-step", [CapacityByForecastController::class, "viewstep1"])->name('viewstep1');
-        Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1second');
-        Route::get("/production/capacity-forecast/step1second", [CapacityByForecastController::class, "step1_second"])->name('step1');
+        Route::get("/production/capacity-forecast/step1", [CapacityByForecastController::class, "step1"])->name('step1');
+        Route::get("/production/capacity-forecast/step1second", [CapacityByForecastController::class, "step1_second"])->name('step1second');
 
         Route::get("/production/capacity-forecast/step2", [CapacityByForecastController::class, "step2"])->name('step2');
         Route::get("/production/capacity-forecast/step2logic", [CapacityByForecastController::class, "step2logic"])->name('step2logic');
 
         Route::get("/production/capacity-forecast/step3", [CapacityByForecastController::class, "step3"])->name('step3');
         Route::get("/production/capacity-forecast/step3logic", [CapacityByForecastController::class, "step3logic"])->name('step3logic');
-        Route::get("/production/capacity-forecast/step3last", [CapacityByForecastController::class, "step3logiclast"])->name('step3logicklast');
+        Route::get("/production/capacity-forecast/step3last", [CapacityByForecastController::class, "step3logiclast"])->name('step3logiclast');
 
 
         Route::get("/pps/index", [PPSGeneralController::class, "index"])->name("indexpps");
