@@ -22,13 +22,13 @@
                         <div class="form-group mt-3 row">
                             <label for="toInput" class="col-form-label col-sm-2">To</label>
                             <div class="col">
-                                <textarea name="to" id="toInput" cols="30" rows="4" class="form-control semicolon-input">andriani@daijo.co.id; albert@daijo.co.id; nurul@daijo.co.id; riki@daijo.co.id; rony@daijo.co.id; sukiyono@daijo.co.id; budiman@daijo.co.id; heri@daijo.co.id; leny@daijo.co.id; popon@daijo.co.id; sukur@daijo.co.id; supri@daijo.co.id; wiji@daijo.co.id; agus_s@daijo.co.id; catur@daijo.co.id; yeyen@daijo.co.id; </textarea>
+                                <textarea name="to" id="toInput" cols="30" rows="4" class="form-control semicolon-input">andriani@daijo.co.id; sriyati@daijo.co.id; anik@daijo.co.id; albert@daijo.co.id; nurul@daijo.co.id; riki@daijo.co.id; rony@daijo.co.id; sukiyono@daijo.co.id; budiman@daijo.co.id; heri@daijo.co.id; leny@daijo.co.id; popon@daijo.co.id; sukur@daijo.co.id; supri@daijo.co.id; wiji@daijo.co.id; agus_s@daijo.co.id; catur@daijo.co.id; yeyen@daijo.co.id; </textarea>
                             </div>
                         </div>
                         <div class="form-group mt-3 row">
                             <label class="col-form-label col-sm-2">CC</label>
                             <div class="col">
-                                <textarea name="cc" id="ccInput" cols="30" rows="4" class="form-control semicolon-input">deni_qc@daijo.co.id; beata.qc@daijo.co.id; erizal@daijo.co.id; nurul_hidayati@daijo.co.id; herlina@daijo.co.id; srie@daijo.co.id; bayu@daijo.co.id; ekoqc@daijo.co.id; QA01_daijo@daijo.co.id; qa02_daijo@daijo.co.id; umi@daijo.co.id; yuli@daijo.co.id; emma@daijo.co.id; </textarea>
+                                <textarea name="cc" id="ccInput" cols="30" rows="4" class="form-control semicolon-input">deni_qc@daijo.co.id; beata.qc@daijo.co.id; erizal@daijo.co.id; nurul_hidayati@daijo.co.id; herlina@daijo.co.id; srie@daijo.co.id; bayu@daijo.co.id; ekoqc@daijo.co.id; QA01_daijo@daijo.co.id; qa02_daijo@daijo.co.id; umi@daijo.co.id; yuli@daijo.co.id; emma@daijo.co.id; abdulrahim@daijo.co.id; raditya_qc@daijo.co.id; naya@daijo.co.id </textarea>
                             </div>
                         </div>
                         <div class="form-group mt-3 row">
