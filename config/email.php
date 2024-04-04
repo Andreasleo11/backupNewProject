@@ -1,7 +1,7 @@
 <?php return array (
   'feature_qc' => 
   array (
-    'to' => 'andreas@daijo.co.id',
+    'to' => 'deni_qc@daijo.co.id',
     'cc' => 
     array (
       0 => 'andreasleonardo.al@gmail.com',
