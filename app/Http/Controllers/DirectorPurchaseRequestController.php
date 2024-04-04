@@ -27,7 +27,8 @@ class DirectorPurchaseRequestController extends Controller
                     PurchaseRequest::find($id)->update([
                         'autograph_4' => $imageUrl,
                         'autograph_user_4' => $username,
-                        'status' => 4
+                        'status' => 4,
+                        'approved_at' => now(),
                     ]);
                 }
                 return response()->json(['message'=>'selected records approved successfully. (server)']);
