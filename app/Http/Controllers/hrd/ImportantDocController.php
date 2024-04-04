@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\hrd;
 
+use App\DataTables\ImportantDocumentDataTable;
 use Illuminate\Http\Request;
 use App\Models\hrd\ImportantDoc;
 use App\Models\hrd\ImportantDocType;
@@ -11,10 +12,10 @@ use Dompdf\Dompdf;
 
 class ImportantDocController extends Controller
 {
-    public function index()
+    public function index(ImportantDocumentDataTable $dataTable)
     {
         $importantDocs = ImportantDoc::with('type','files')->orderBy('expired_date')->get();
-        return view('hrd.importantDocs.index', compact('importantDocs'));
+        return $dataTable->render('hrd.importantDocs.index', compact('importantDocs'));
     }
 
     /**

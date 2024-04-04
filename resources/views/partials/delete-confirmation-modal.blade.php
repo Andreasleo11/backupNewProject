@@ -1,7 +1,7 @@
 <div class="modal fade" id="delete-confirmation-modal-{{ $id }}">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('holiday.delete', $id) }}" method="post">
+            <form action="{{ route($route, $id) }}" method="post">
                 @csrf
                 @method('DELETE')
                 <div class="modal-header">
@@ -9,7 +9,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="modalBody">
-                    {{ $body }}
+                    {!! $body !!}
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-danger">Delete</button>

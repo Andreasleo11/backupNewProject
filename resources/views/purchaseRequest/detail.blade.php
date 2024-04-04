@@ -15,6 +15,16 @@
 @endpush
 
 @section('content')
+    <section class="breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a
+                        href="{{ auth()->user()->department->name === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}">Purchase
+                        Requests</a></li>
+                <li class="breadcrumb-item active">Detail</li>
+            </ol>
+        </nav>
+    </section>
 
     <div class="row">
         <div class="col"></div>
@@ -192,8 +202,8 @@
                                     <td>{{ $detail->item_name }}</td>
                                     <td>{{ $detail->quantity }}</td>
                                     <td>{{ $detail->purpose }}</td>
-                                    <td> @currency($detail->price) </td>
                                     <td> @currency($detail->master->price) </td>
+                                    <td> @currency($detail->price) </td>
                                     <td> @currency($detail->quantity * $detail->price) </td>
                                     @php
                                         $totalall += $detail->quantity * $detail->price; // Update the total
