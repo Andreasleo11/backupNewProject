@@ -47,7 +47,7 @@
                                             <i class='bx bx-info-circle'></i> Detail
                                         </a>
                                         @if ($pr->user_id_create === Auth::user()->id)
-                                            @if ($pr->status == 1 && $pr->status != -1)
+                                            @if ($pr->status == 1)
                                                 <a href="{{ route('purchaserequest.edit', $pr->id) }}"
                                                     class="btn btn-primary">
                                                     <i class='bx bx-edit'></i></i> Edit
