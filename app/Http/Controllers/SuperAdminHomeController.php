@@ -19,22 +19,38 @@ class SuperAdminHomeController extends Controller
     public function updateEmailpage()
     {
          // Get the 'to' and 'cc' values from the configuration file
-         $to = Config::get('email.to');
-         $cc = implode('; ', Config::get('email.cc'));
          
+         $to = Config::get('email.feature_qc.to');
+         $cc = implode(';',array_map('trim', Config::get('email.feature_qc.cc')));
+         $allConfigurations = config('email');
+         $featureNames = array_keys($allConfigurations);
          
-        return view('admin.updateemail', compact('to', 'cc'));
+        return view('admin.updateemail', compact('to', 'cc', 'featureNames'));
     }
+
+
+    public function getEmailSettings(Request $request, $feature)
+    {
+        // Fetch the email settings based on the selected feature
+        $emailSettings = config("email.$feature");
+        
+        // Return the email settings as JSON response
+        return response()->json($emailSettings);
+    }
+
 
     public function updateEmail(Request $request)
     {
          // Update the email settings in the configuration file
+        $config = config('email');
         $to = $request->to;
-        $cc = explode('; ', $request->cc);
-
-        $config = [
-            'to' => $to,
-            'cc' => $cc,
+    
+        $cc = explode(';', trim($request->cc));
+        $feature = $request->feature;
+        
+        $config[$feature]= [
+                'to' => $to,
+                'cc' => $cc,
         ];
 
         // Write the updated configuration to the file
