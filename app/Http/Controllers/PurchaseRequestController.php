@@ -121,7 +121,7 @@ class PurchaseRequestController extends Controller
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
-                $price = $itemData['price'];
+                $price = (int) str_replace(['Rp. ', '.'], '', $itemData['price']);
 
                 // Check if the item exists in MasterDataPr
                 $existingItem = MasterDataPr::where('name', $itemName)->first();
@@ -283,12 +283,19 @@ class PurchaseRequestController extends Controller
 
         // Save $imagePath to the database for the specified $reportId and $section
         $pr = PurchaseRequest::find($prId);
+
+        if(Auth::user()->department->name === 'DIRECTOR'){
             $pr->update([
-                "autograph_{$section}" => $imagePath
+                "autograph_{$section}" => $imagePath,
+                "autograph_user_{$section}" => $username,
+                "approved_at" => now(),
             ]);
+        } else {
             $pr->update([
+                "autograph_{$section}" => $imagePath,
                 "autograph_user_{$section}" => $username
             ]);
+        }
 
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
@@ -421,6 +428,7 @@ class PurchaseRequestController extends Controller
     }
 
     public function destroy($id){
+        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         PurchaseRequest::find($id)->delete();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
