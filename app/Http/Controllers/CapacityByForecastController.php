@@ -166,6 +166,19 @@ class CapacityByForecastController extends Controller
     public function step1_second(Request $request)
     {
         DB::table('cap_line_distributions')->truncate();
+
+		
+		
+		// $test1= DB::table('cap_forecast_sorteds')->select('item_code')->distinct()->get();
+		// foreach($test1 as $test2){
+		// 	$code = $test2->item_code;
+		// 	$test = DB::table('sap_fct_inventory_fgs')->where('item_code',$code)->first();
+		// 	// foreach ($test as $row) {
+		// 	// 	// Access and print the cycle_time property of each row
+		// 	// 	$ano[] = $row->cycle_time;
+		// 	// }
+		// }
+		// dd($test1);
 	
 		$tab_forecast_div = DB::table('cap_forecast_divs')->get();
 	
@@ -184,7 +197,6 @@ class CapacityByForecastController extends Controller
 		}		
 		
 		$tab_forecast_sorted = DB::table('cap_forecast_sorteds')->select('item_code')->distinct()->get();
-		
 		foreach($tab_forecast_sorted as $fore_forecast_sorted){						
 			$val_item_code_srt = $fore_forecast_sorted->item_code;
 							
@@ -212,8 +224,10 @@ class CapacityByForecastController extends Controller
 			}
 						
 			$tab_fct_inventory_fg = DB::table('sap_fct_inventory_fgs')->where('item_code',$val_item_code_srt)->first();	
-			
+		
+
 			$val_cycle_time_raw = $tab_fct_inventory_fg->cycle_time;
+			
 			$val_process_owner = $tab_fct_inventory_fg->process_owner;
 			
 			$tab_fct_inventory_fg_pair = DB::table('sap_fct_inventory_fgs')->where('pair',$val_item_code_srt)->first();
@@ -400,7 +414,7 @@ class CapacityByForecastController extends Controller
 			}
 
 		}			
-        return redirect()->route('step3logicklast');
+        return redirect()->route('step3logiclast');
     }
 
     public function step3logiclast(Request $request)
