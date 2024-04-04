@@ -614,7 +614,7 @@ class QaqcReportController extends Controller
                 'file_paths' => $pdfPath
             ];
             // dd($mailData);
-    
+
             Mail::send(new QaqcMail($mailData));
         }
 
