@@ -593,8 +593,8 @@ class QaqcReportController extends Controller
     public function redirectToIndex()
     {
         $this->updateUpdatedAt();
-        $id = session()->get('header')->id;
-        $cust = session()->get('header')->customer;
+        $id = session()->get('header')->id ?? session()->get('header_edit')->id;
+        $cust = session()->get('header')->customer ?? session()->get('header_edit')->customer;
         $pdfName = 'pdfs/verification-report-' . $id . '.pdf';
         $pdfPath[] = Storage::url($pdfName);
         if($id != null)
