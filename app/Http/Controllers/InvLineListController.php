@@ -13,7 +13,9 @@ class InvLineListController extends Controller
 {
     public function index(InvLineListDataTable $dataTable)
     {   
-        return $dataTable->render("sap.linelist");
+        $datas = InvLineList::get();
+        // dd($datas);
+        return $dataTable->render("sap.linelist", compact('datas'));
     }
 
 
@@ -40,4 +42,27 @@ class InvLineListController extends Controller
         return redirect()->route('invlinelist')->with('success', 'Line added successfully');
     }
     
+    public function editline(Request $request, $linecode)
+    {
+        $newlines = InvLineList::where('line_code', $linecode)->get();
+
+        foreach($newlines as $newline){
+        // dd($newline)
+        $newline->where('line_code', $request->line_code)->update([
+            'line_name' => $request->line_name,
+            'departement' => $request->departement,
+            'daily_minutes' => $request->daily_minutes,
+        ]);
+        }
+
+        return redirect()->route('invlinelist')->with(['success' => 'User updated successfully!']);
+
+    }
+
+    public function deleteline($linecode)
+    {
+        InvLineList::where('line_code', $linecode)->delete();
+        return redirect()->back()->with(['success' => 'User deleted successfully!']);
+
+    }
 }

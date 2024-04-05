@@ -23,7 +23,9 @@ class InvLineListDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'invlinelist.action')
+            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-line-modal{{str_replace(\' \', \'\',$line_code)}}"><i class="bx bx-edit"></i></button>
+            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{str_replace(\' \', \'\',$line_code)}}"><i class="bx bx-trash"></i></button>
+            ')
             ->setRowId('id');
     }
 
@@ -51,7 +53,6 @@ class InvLineListDataTable extends DataTable
                     ->minifiedAjax()
                     //->dom('Bfrtip')
                     ->orderBy(1)
-                    ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -74,6 +75,11 @@ class InvLineListDataTable extends DataTable
             Column::make('line_name'),
             Column::make('departement'),
             Column::make('daily_minutes'),
+            Column::computed('action')
+            ->exportable(false)
+            ->printable(false)
+            ->addClass('text-center')
+            ->addClass('align-middle'),
         ];
     }
 
