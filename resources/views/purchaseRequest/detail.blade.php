@@ -67,6 +67,9 @@
     </div>
 
     <section aria-label="header" class="container">
+
+        @include('partials.reject-pr-confirmation', $purchaseRequest)
+
         <div class="row text-center">
             <div class="col">
                 <h2>Preparation</h2>
@@ -74,7 +77,23 @@
                 <div class="container mt-2" id="autographuser1"></div>
             </div>
 
-            @include('partials.reject-pr-confirmation', $purchaseRequest)
+            <div class="col">
+                <h2>Purchaser</h2>
+                <div class="autograph-box container" id="autographBox5"></div>
+                <div class="container mt-2" id="autographuser5"></div>
+                @if (Auth::check() && (Auth::user()->specification->name == 'PURCHASER' && $purchaseRequest->status == 1))
+                    <div class="row px-4 d-flex justify-content-center">
+                        <div class="col-auto me-3">
+                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                class="btn btn-danger">Reject</button>
+                        </div>
+                        <div class="col-auto">
+                            <button id="btn5" class="btn btn-success"
+                                onclick="addAutograph(5, {{ $purchaseRequest->id }})">Approve</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
 
             <div class="col">
                 <h2>Dept Head</h2>
@@ -84,7 +103,7 @@
                         Auth::user()->department &&
                         Auth::user()->is_head == 1 &&
                         Auth::user()->department == $userCreatedBy->department &&
-                        $purchaseRequest->status == 1)
+                        $purchaseRequest->status == 6)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-3">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
@@ -170,7 +189,9 @@
                                 <th>Supplier</th>
                                 <td>: {{ $purchaseRequest->supplier }}</td>
                                 <th>Remark</th>
-                                <td>: {{ $purchaseRequest->remark }}</td>
+                                <td style="width: 40%">:
+                                    {{ $purchaseRequest->remark }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -281,6 +302,7 @@
                 autograph_2: '{{ $purchaseRequest->autograph_2 ?? null }}',
                 autograph_3: '{{ $purchaseRequest->autograph_3 ?? null }}',
                 autograph_4: '{{ $purchaseRequest->autograph_4 ?? null }}',
+                autograph_5: '{{ $purchaseRequest->autograph_5 ?? null }}',
             };
 
             var autographNames = {
@@ -288,10 +310,11 @@
                 autograph_name_2: '{{ $purchaseRequest->autograph_user_2 ?? null }}',
                 autograph_name_3: '{{ $purchaseRequest->autograph_user_3 ?? null }}',
                 autograph_name_4: '{{ $purchaseRequest->autograph_user_4 ?? null }}',
+                autograph_name_5: '{{ $purchaseRequest->autograph_user_5 ?? null }}',
             };
 
             // Loop through each autograph status and update the UI accordingly
-            for (var i = 1; i <= 4; i++) {
+            for (var i = 1; i <= 5; i++) {
                 var autographBox = document.getElementById('autographBox' + i);
                 var autographInput = document.getElementById('autographInput' + i);
                 var autographNameBox = document.getElementById('autographuser' + i);

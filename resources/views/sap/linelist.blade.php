@@ -23,6 +23,17 @@
         <a class="btn btn-secondary float-right" data-bs-target="#add-new-line" data-bs-toggle="modal" > add </a>
     </section>
 
+    @foreach($datas as $data)
+            @include('partials.edit-line-modal')
+        
+            @include('partials.delete-confirmation-modal', [
+                            'id' => str_replace(' ', '',$data->line_code),
+                            'route' => 'deleteline',
+                            'title' => 'Delete Line confirmation',
+                            'body' => 'Are you sure want to delete ' . str_replace(' ', '',$data->line_code) . '?',
+                        ])
+    @endforeach
+
      
 {{ $dataTable->scripts() }}
 @endsection

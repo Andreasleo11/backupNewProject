@@ -421,6 +421,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get('/inventory/line-list',  [InvLineListController::class, "index"])->name('invlinelist');
     Route::post("/add/line", [InvLineListController::class, "addline"])->name('addline');
+    Route::put("/edit/line/{id}", [InvLineListController::class, "editline"])->name('editline');
+    Route::delete("/delete/line/{linecode}", [InvLineListController::class, "deleteline"])->name('deleteline');
 
     Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg');
     Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr');

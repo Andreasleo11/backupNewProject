@@ -9,6 +9,7 @@ class InvLineList extends Model
 {
     use HasFactory;
     public $timestamps = false;
+    
 
     protected $fillable = [
         'line_code',
