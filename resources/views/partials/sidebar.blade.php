@@ -36,8 +36,14 @@
                     </li>
                     <li class="sidebar-item" id="sidebar-item-departments">
                         <a href="{{ route('superadmin.departments') }}" class="sidebar-link">
-                            <i class='bx bx-user'></i>
+                            <i class='bx bx-building-house'></i>
                             <span>Departments</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item" id="sidebar-item-departments">
+                        <a href="{{ route('superadmin.specifications') }}" class="sidebar-link">
+                            <i class='bx bx-task'></i>
+                            <span>Specifications</span>
                         </a>
                     </li>
                 </ul>
@@ -298,7 +304,7 @@
                         Purchase Request
                     </a>
                 </li>
-                
+
 
                 {{-- FEATURES IN DEVELOPMENT --}}
                 @if ($department !== 'DIRECTOR')

@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\Department;
+use App\Models\Specification;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class DepartmentsDataTable extends DataTable
+class SpecificationDataTable extends DataTable
 {
     /**
      * Build DataTable class.
@@ -32,10 +32,10 @@ class DepartmentsDataTable extends DataTable
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\Department $model
+     * @param \App\Models\Specification $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function query(Department $model): QueryBuilder
+    public function query(Specification $model): QueryBuilder
     {
         return $model->newQuery();
     }
@@ -48,7 +48,7 @@ class DepartmentsDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('departments-table')
+                    ->setTableId('specification-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
@@ -78,7 +78,6 @@ class DepartmentsDataTable extends DataTable
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(60)
                   ->addClass('text-center'),
         ];
     }
@@ -90,6 +89,6 @@ class DepartmentsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Departments_' . date('YmdHis');
+        return 'Specification_' . date('YmdHis');
     }
 }

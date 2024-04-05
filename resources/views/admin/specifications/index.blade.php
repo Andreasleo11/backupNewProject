@@ -1,14 +1,13 @@
 @extends('layouts.app')
-
 @section('content')
     <section aria-label="header">
         <div class="d-flex justify-content-between align-items-center">
-            <span class="fs-1">Department List</span>
+            <span class="fs-1">Specification List</span>
             <div>
-                @include('partials.add-department-modal')
-                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-department-modal">
+                @include('partials.add-specification-modal')
+                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-specification-modal">
                     <i class="lni lni-plus"></i>
-                    Add department
+                    Add Specification
                 </button>
             </div>
         </div>
@@ -18,7 +17,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('superadmin.home') }}">Home</a></li>
-                <li class="breadcrumb-item active">Departments</li>
+                <li class="breadcrumb-item active">Specifications</li>
             </ol>
         </nav>
     </section>
