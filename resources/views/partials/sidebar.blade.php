@@ -36,8 +36,14 @@
                     </li>
                     <li class="sidebar-item" id="sidebar-item-departments">
                         <a href="{{ route('superadmin.departments') }}" class="sidebar-link">
-                            <i class='bx bx-user'></i>
+                            <i class='bx bx-building-house'></i>
                             <span>Departments</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item" id="sidebar-item-departments">
+                        <a href="{{ route('superadmin.specifications') }}" class="sidebar-link">
+                            <i class='bx bx-task'></i>
+                            <span>Specifications</span>
                         </a>
                     </li>
                 </ul>
@@ -298,7 +304,7 @@
                         Purchase Request
                     </a>
                 </li>
-                
+
 
                 {{-- FEATURES IN DEVELOPMENT --}}
                 @if ($department !== 'DIRECTOR')
@@ -320,13 +326,8 @@
                             Form Keluar
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Change Default Email for QC
-                        </a>
-                    </li>
                 @endif
+
                 @if ($department === 'QA' || $department === 'QC')
                     <li class="sidebar-item">
                         <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
@@ -335,12 +336,21 @@
                         </a>
                     </li>
                 @endif
-                <li class="sidebar-item">
-                    <a href="{{ route('pt.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Project Tracker
-                    </a>
-                </li>
+
+                @if ($user->role->name === 'SUPERADMIN')
+                    <li class="sidebar-item">
+                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Change Default Email QC
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('pt.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Project Tracker
+                        </a>
+                    </li>
+                @endif
             </ul>
         </li>
     </ul>
