@@ -97,15 +97,15 @@ class UsersDataTable extends DataTable
             Column::make('role')
                 ->data('role.name')
                 ->searchable(false)
-                ->addClass('align-middle'),
+                ->addClass('align-middle')->orderable(false),
             Column::make('department')
                 ->data('department.name')
                 ->searchable(false)
-                ->addClass('align-middle'),
+                ->addClass('align-middle')->orderable(false),
             Column::make('specification')
                 ->data('specification.name')
                 ->searchable(false)
-                ->addClass('align-middle'),
+                ->addClass('align-middle')->orderable(false),
             Column::make('created_at')->addClass('align-middle'),
             Column::make('updated_at')->addClass('align-middle'),
             Column::computed('action')
