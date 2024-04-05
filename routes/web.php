@@ -55,6 +55,7 @@ use App\Http\Controllers\MouldDownController;
 use App\Http\Controllers\LineDownController;
 use App\Http\Controllers\maintenance\MaintenanceHomeController;
 use App\Http\Controllers\pe\PEHomeController;
+use App\Http\Controllers\SpecificationController;
 use App\Models\Department;
 use App\Models\Role;
 
@@ -102,17 +103,21 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {
             Route::get('/users', [UserController::class, 'index'])->name('users');
-            Route::post('/users/create', [UserController::class, 'store'])->name('users.store');
+            Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
             Route::put('/users/update/{id}', [UserController::class, 'update'])->name('users.update');
             Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
             Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
             Route::delete('/users/delete-selected', [UserController::class, 'deleteSelected'])->name('users.deleteSelected');
 
             Route::get('/departments', [DepartmentController::class, 'index'])->name('departments');
-            Route::post('/departments/create', [DepartmentController::class, 'store'])->name('departments.store');
+            Route::post('/departments/store', [DepartmentController::class, 'store'])->name('departments.store');
             Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
             Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
 
+            Route::get('/specifications', [SpecificationController::class, 'index'])->name('specifications');
+            Route::post('/specifications/store', [SpecificationController::class, 'store'])->name('specifications.store');
+            Route::put('/specifications/{id}/update', [SpecificationController::class, 'update'])->name('specifications.update');
+            Route::delete('/specifications/{id}/delete', [SpecificationController::class, 'destroy'])->name('specifications.delete');
 
             Route::get('/permission', function () {
                 return view('admin.permissions');
