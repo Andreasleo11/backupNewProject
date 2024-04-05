@@ -15,8 +15,16 @@ use App\Models\MasterDataPr;
 
 class PurchaseRequestController extends Controller
 {
-    public function index(DirectorPurchaseRequestDataTable $datatable)
+    public function index(DirectorPurchaseRequestDataTable $datatable, Request $request)
     {
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        // if($startDate && $endDate){
+        //     dd($startDate . '-' . $endDate);
+        // }
+
         // Get user information
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
@@ -44,6 +52,16 @@ class PurchaseRequestController extends Controller
             $purchaseRequestsQuery->whereHas('createdBy.department', function ($query) use ($userDepartmentName) {
                 $query->where('name', '=', $userDepartmentName);
             });
+        }
+
+        // Additional filtering based on startDate and endDate
+        if ($startDate && $endDate) {
+            $purchaseRequestsQuery->whereBetween('date_pr', [$startDate, $endDate]);
+            $request->session()->put('start_date', $startDate);
+            $request->session()->put('end_date', $endDate);
+        } else {
+            $request->session()->forget('start_date', $startDate);
+            $request->session()->forget('end_date', $endDate);
         }
 
         $purchaseRequests = $purchaseRequestsQuery
@@ -90,8 +108,8 @@ class PurchaseRequestController extends Controller
     {
         $userIdCreate = Auth::id();
 
-        // pr header
-        $purchaseRequest = PurchaseRequest::create([
+        // Define common data
+        $commonData = [
             'user_id_create' => $userIdCreate,
             'to_department' => $request->input('to_department'),
             'date_pr' => $request->input('date_of_pr'),
@@ -100,9 +118,19 @@ class PurchaseRequestController extends Controller
             'supplier' => $request->input('supplier'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
-            'status' => 1,
+        ];
 
-        ]);
+        // Set status and additional autograph fields based on the user's specification
+        if (Auth::user()->specification->name == 'PURCHASER') {
+            $commonData['status'] = 6;
+            $commonData['autograph_5'] = strtoupper(Auth::user()->name) . '.png';
+            $commonData['autograph_user_5'] = Auth::user()->name;
+        } else {
+            $commonData['status'] = 1;
+        }
+
+        // Create the purchase request
+        $purchaseRequest = PurchaseRequest::create($commonData);
 
         $prNo = substr($request->input('to_department'), 0, 4) . '-' . $purchaseRequest->id;
         $purchaseRequest->update(['pr_no' => $prNo]);
@@ -248,6 +276,11 @@ class PurchaseRequestController extends Controller
 
            // Check if autograph_2 is filled
         if($purchaseRequest->status != 5){
+
+            if ($purchaseRequest->autograph_5 !== null) {
+                $purchaseRequest->status = 6;
+            }
+
             if ($purchaseRequest->autograph_2 !== null) {
                 $purchaseRequest->status = 2;
             }

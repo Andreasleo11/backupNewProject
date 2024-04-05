@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <div class="row d-flex">
@@ -14,6 +13,28 @@
             @endif
         </div>
     </div>
+
+    <form action="{{ route('purchaserequest.home') }}" method="get">
+        <div class="div mt-3 row">
+            <div class="col-auto">
+                <label for="start_date" class="form-label">Start date</label>
+                <input type="date" name="start_date" id="" class="form-control"
+                    value="{{ Session::get('start_date') ?? '' }}">
+            </div>
+            <div class="col-auto">
+                <label for="end_date" class="form-label">End date</label>
+                <input type="date" name="end_date" id="" class="form-control"
+                    value="{{ Session::get('end_date') ?? '' }}">
+            </div>
+            <div class="col-auto align-content-end ">
+                <a href="{{ route('purchaserequest.home', ['start_date' => null, 'end_date' => null]) }}"
+                    class="btn btn-secondary">Reset</a>
+            </div>
+            <div class="col-auto align-content-end ">
+                <button class="btn btn-primary mt-3">Filter</button>
+            </div>
+        </div>
+    </form>
 
     <section class="content">
         <div class="card mt-5">
@@ -46,12 +67,17 @@
                                             class="btn btn-secondary">
                                             <i class='bx bx-info-circle'></i> Detail
                                         </a>
-                                        @if ($pr->user_id_create === Auth::user()->id)
-                                            @if ($pr->status == 1)
-                                                <a href="{{ route('purchaserequest.edit', $pr->id) }}"
-                                                    class="btn btn-primary">
-                                                    <i class='bx bx-edit'></i></i> Edit
-                                                </a>
+                                        @php
+                                            $user = Auth::user();
+                                        @endphp
+                                        @if (
+                                            ($pr->status == 1 && $user->specification->name == 'PURCHASER') ||
+                                                ($pr->status == 6 && $user->is_head == 1) ||
+                                                ($pr->status == 2 && $user->department->name == 'HRD'))
+                                            <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
+                                                <i class='bx bx-edit'></i></i> Edit
+                                            </a>
+                                            @if ($pr->user_id_create === Auth::user()->id)
                                                 @include('partials.delete-pr-modal', [
                                                     'id' => $pr->id,
                                                     'doc_num' => $pr->doc_num,
@@ -71,6 +97,8 @@
                                             <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR
                                                 PREPARATION</span>
                                         @elseif($pr->status === 1)
+                                            <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR PURCHASER</span>
+                                        @elseif($pr->status === 6)
                                             <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT
                                                 HEAD</span>
                                         @elseif($pr->status === 2)
