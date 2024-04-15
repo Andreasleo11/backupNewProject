@@ -43,7 +43,7 @@ use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSInjectionController;
 use App\Http\Controllers\DeliveryScheduleController;
-
+use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\DSNewController;
 
 use App\Http\Controllers\HolidayListController;
@@ -398,6 +398,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
     // Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
 
+    Route::get('/purchaserequest/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
+    Route::get('/purchaserequest/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
     Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE

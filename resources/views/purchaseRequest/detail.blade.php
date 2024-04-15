@@ -207,6 +207,9 @@
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
+                                @if (Auth::user()->department === 'DIRECTOR')
+                                    <th rowspan="2" class="align-middle">Is Approve</th>
+                                @endif
                             </tr>
                             <tr>
                                 <th>Before</th>
@@ -218,7 +221,8 @@
                         @endphp
                         <tbody>
                             @forelse($purchaseRequest->itemDetail as $detail)
-                                <tr>
+                                <tr
+                                    class="{{ $detail->is_approve !== null ? ($detail->is_approve == 1 ? 'table-success' : 'table-danger') : '' }}">
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $detail->item_name }}</td>
                                     <td>{{ $detail->quantity }}</td>
@@ -229,6 +233,18 @@
                                     @php
                                         $totalall += $detail->quantity * $detail->price; // Update the total
                                     @endphp
+                                    @if (Auth::user()->department === 'DIRECTOR')
+                                        <td>
+                                            @if ($detail->is_approve === null)
+                                                <a href="{{ route('purchaserequest.detail.approve', $detail->id) }}"
+                                                    class="btn btn-success">Approve</a>
+                                                <a href="{{ route('purchaserequest.detail.reject', $detail->id) }}"
+                                                    class="btn btn-danger">Reject</a>
+                                            @else
+                                                {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                            @endif
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
