@@ -99,38 +99,72 @@
                 <h2>Dept Head</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographuser2"></div>
+                @php
+                    $detailObj = null;
+                    $count = 0;
+                    $isApproveNotEmpty = null;
+                    $countItemHasApprovalStatus = 0;
+                    foreach ($purchaseRequest->itemDetail as $detail) {
+                        $count += 1;
+                        if ($detail->is_approve_by_head !== null) {
+                            $isApproveNotEmpty = true;
+                            $detailObj = $detail;
+                            $countItemHasApprovalStatus += 1;
+                        }
+                    }
+                @endphp
                 @if (Auth::check() &&
-                        Auth::user()->department &&
-                        Auth::user()->is_head == 1 &&
                         Auth::user()->department == $userCreatedBy->department &&
-                        $purchaseRequest->status == 6)
-                    <div class="row px-4 d-flex justify-content-center">
-                        <div class="col-auto me-2">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                class="btn btn-danger">Reject</button>
+                        Auth::user()->is_head == 1 &&
+                        $purchaseRequest->status == 6 &&
+                        $isApproveNotEmpty)
+                    @if ($count === $countItemHasApprovalStatus)
+                        <div class="row px-4 d-flex justify-content-center">
+                            <div
+                                class="col-auto me-2 {{ $count == 1 && $detailObj->is_approve_by_head !== null ? 'd-none' : '' }}">
+                                <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                    class="btn btn-danger">Reject</button>
+                            </div>
+                            <div
+                                class="col-auto {{ $count == 1 && $detailObj->is_approve_by_head !== null ? 'd-none' : '' }}">
+                                <button id="btn2" class="btn btn-success"
+                                    onclick="addAutograph(2, {{ $purchaseRequest->id }})">Approve</button>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <button id="btn2" class="btn btn-success"
-                                onclick="addAutograph(2, {{ $purchaseRequest->id }})">Approve</button>
-                        </div>
-                    </div>
+                    @endif
                 @endif
+                {{-- @dd($count) --}}
             </div>
 
             <div class="col">
                 <h2>Verificator</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
+                @php
+                    $detailObj = null;
+                    $count = 0;
+                    $isApproveNotEmpty = null;
+                    foreach ($purchaseRequest->itemDetail as $detail) {
+                        if ($detail->is_approve_by_verificator !== null) {
+                            $isApproveNotEmpty = true;
+                            $count += 1;
+                            $detailObj = $detail;
+                            break;
+                        }
+                    }
+                @endphp
                 @if (Auth::check() &&
                         Auth::user()->department->name == 'HRD' &&
                         Auth::user()->is_head == 1 &&
-                        $purchaseRequest->status == 2)
+                        $purchaseRequest->status == 2 &&
+                        $isApproveNotEmpty)
                     <div class="row px-4 d-flex justify-content-center">
-                        <div class="col-auto me-2">
+                        <div
+                            class="col-auto me-2 {{ $count == 1 && $detailObj->is_approve_by_verificator ? 'd-none' : '' }}">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
-                        <div class="col-auto">
+                        <div class="col-auto {{ $count == 1 && $detailObj->is_approve_by_verificator ? '' : 'd-none' }}">
                             <button id="btn3" class="btn btn-success"
                                 onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
                         </div>
@@ -142,13 +176,29 @@
                 <h2>Director</h2>
                 <div class="autograph-box container" id="autographBox4"></div>
                 <div class="container mt-2 border-1" id="autographuser4"></div>
-                @if (Auth::check() && Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3)
+                @php
+                    $detailObj = null;
+                    $count = 0;
+                    $isApproveNotEmpty = null;
+                    foreach ($purchaseRequest->itemDetail as $detail) {
+                        if ($detail->is_approve !== null) {
+                            $isApproveNotEmpty = true;
+                            $count += 1;
+                            $detailObj = $detail;
+                            break;
+                        }
+                    }
+                @endphp
+                @if (Auth::check() &&
+                        Auth::user()->department->name == 'DIRECTOR' &&
+                        $purchaseRequest->status == 3 &&
+                        $isApproveNotEmpty)
                     <div class="row px-4 d-flex justify-content-center ">
-                        <div class="col-auto me-2">
+                        <div class="col-auto me-2 {{ $count == 1 && $detailObj->is_approve ? 'd-none' : '' }}">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
-                        <div class="col-auto">
+                        <div class="col-auto {{ $count == 1 && $detailObj->is_approve ? '' : 'd-none' }}">
                             <button id="btn4" class="btn btn-success"
                                 onclick="addAutograph(4, {{ $purchaseRequest->id }}, {{ $user->id }})">Approve</button>
                         </div>
@@ -197,6 +247,11 @@
                     </table>
                 </div>
 
+
+                @php
+                    $user = Auth::user();
+                @endphp
+
                 <div class="table-responsive mt-4">
                     <table class="table table-bordered table-hover text-center table-striped mb-0">
                         <thead>
@@ -207,7 +262,10 @@
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
-                                @if (Auth::user()->department->name === 'DIRECTOR')
+                                @if (
+                                    $user->department->name === 'DIRECTOR' ||
+                                        $user->specification->name == 'VERIFICATOR' ||
+                                        ($user->department == $userCreatedBy->department && $user->is_head == 1))
                                     <th rowspan="2" class="align-middle">Is Approve</th>
                                 @endif
                             </tr>
@@ -221,31 +279,206 @@
                         @endphp
                         <tbody>
                             @forelse($purchaseRequest->itemDetail as $detail)
-                                <tr
-                                    class="{{ $detail->is_approve !== null ? ($detail->is_approve == 1 ? 'table-success' : 'table-danger') : '' }}">
-                                    <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $detail->item_name }}</td>
-                                    <td>{{ $detail->quantity }}</td>
-                                    <td>{{ $detail->purpose }}</td>
-                                    <td> @currency($detail->master->price) </td>
-                                    <td> @currency($detail->price) </td>
-                                    <td> @currency($detail->quantity * $detail->price) </td>
-                                    @php
-                                        $totalall += $detail->quantity * $detail->price; // Update the total
-                                    @endphp
-                                    @if (Auth::user()->department->name === 'DIRECTOR')
-                                        <td>
-                                            @if ($detail->is_approve === null)
-                                                <a href="{{ route('purchaserequest.detail.reject', $detail->id) }}"
-                                                    class="btn btn-danger">Reject</a>
-                                                <a href="{{ route('purchaserequest.detail.approve', $detail->id) }}"
-                                                    class="btn btn-success">Approve</a>
-                                            @else
-                                                {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                @if ($user->specification->name == 'VERIFICATOR')
+                                    @if ($detail->is_approve_by_head || $detail->is_approve_by_verificator)
+                                        <tr
+                                            class="{{ $detail->is_approve_by_verificator !== null ? ($detail->is_approve_by_verificator ? 'table-success' : 'table-danger') : '' }}">
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $detail->item_name }}</td>
+                                            <td>{{ $detail->quantity }}</td>
+                                            <td>{{ $detail->purpose }}</td>
+                                            <td> @currency($detail->master->price) </td>
+                                            <td> @currency($detail->price) </td>
+                                            <td> @currency($detail->quantity * $detail->price) </td>
+                                            @php
+                                                if ($purchaseRequest->status == 6 || $purchaseRequest->status == 2) {
+                                                    if ($detail->is_approve_by_head !== 0) {
+                                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    }
+                                                } elseif (
+                                                    $purchaseRequest->status == 2 ||
+                                                    $purchaseRequest->status == 3
+                                                ) {
+                                                    if ($detail->is_approve_by_verificator !== 0) {
+                                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    }
+                                                } elseif (
+                                                    $purchaseRequest->status == 3 ||
+                                                    $purchaseRequest->status == 4
+                                                ) {
+                                                    if ($detail->is_approve !== 0) {
+                                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    }
+                                                }
+                                            @endphp
+
+                                            @if ($user->department == $userCreatedBy->department && $user->is_head == 1)
+                                                <td>
+                                                    @if ($detail->is_approve_by_head === null)
+                                                        <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                            class="btn btn-danger">Reject</a>
+                                                        <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                            class="btn btn-success">Approve</a>
+                                                    @else
+                                                        {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                    @endif
+                                                </td>
+                                            @elseif ($user->specification->name == 'VERIFICATOR')
+                                                <td>
+                                                    @if ($detail->is_approve_by_verificator === null)
+                                                        <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                            class="btn btn-danger">Reject</a>
+                                                        <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                            class="btn btn-success">Approve</a>
+                                                    @else
+                                                        {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
+                                                    @endif
+                                                </td>
+                                            @elseif ($user->department->name === 'DIRECTOR')
+                                                <td>
+                                                    @if ($detail->is_approve === null)
+                                                        <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                            class="btn btn-danger">Reject</a>
+                                                        <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                            class="btn btn-success">Approve</a>
+                                                    @else
+                                                        {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                                    @endif
+                                                </td>
                                             @endif
-                                        </td>
+                                        </tr>
                                     @endif
-                                </tr>
+                                @elseif($user->department->name == 'DIRECTOR')
+                                    @if ($detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_head))
+                                        <tr
+                                            class="{{ $detail->is_approve !== null ? ($detail->is_approve ? 'table-success' : 'table-danger') : '' }}">
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $detail->item_name }}</td>
+                                            <td>{{ $detail->quantity }}</td>
+                                            <td>{{ $detail->purpose }}</td>
+                                            <td> @currency($detail->master->price) </td>
+                                            <td> @currency($detail->price) </td>
+                                            <td> @currency($detail->quantity * $detail->price) </td>
+                                            @php
+                                                if ($purchaseRequest->status == 6 || $purchaseRequest->status == 2) {
+                                                    if ($detail->is_approve_by_head !== 0) {
+                                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    }
+                                                } elseif (
+                                                    $purchaseRequest->status == 2 ||
+                                                    $purchaseRequest->status == 3
+                                                ) {
+                                                    if ($detail->is_approve_by_verificator !== 0) {
+                                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    }
+                                                } elseif (
+                                                    $purchaseRequest->status == 3 ||
+                                                    $purchaseRequest->status == 4
+                                                ) {
+                                                    if ($detail->is_approve !== 0) {
+                                                        $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    }
+                                                }
+                                            @endphp
+
+                                            @if ($user->department == $userCreatedBy->department && $user->is_head == 1)
+                                                <td>
+                                                    @if ($detail->is_approve_by_head === null)
+                                                        <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                            class="btn btn-danger">Reject</a>
+                                                        <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                            class="btn btn-success">Approve</a>
+                                                    @else
+                                                        {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                    @endif
+                                                </td>
+                                            @elseif ($user->specification->name === 'VERIFICATOR')
+                                                <td>
+                                                    @if ($detail->is_approve_by_verificator === null)
+                                                        <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                            class="btn btn-danger">Reject</a>
+                                                        <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                            class="btn btn-success">Approve</a>
+                                                    @else
+                                                        {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
+                                                    @endif
+                                                </td>
+                                            @elseif ($user->department->name === 'DIRECTOR')
+                                                <td>
+                                                    @if ($detail->is_approve === null)
+                                                        <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                            class="btn btn-danger">Reject</a>
+                                                        <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                            class="btn btn-success">Approve</a>
+                                                    @else
+                                                        {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                                    @endif
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endif
+                                @else
+                                    <tr
+                                        class="{{ $detail->is_approve !== null || $detail->is_approve_by_verificator !== null || $detail->is_approve_by_head !== null ? ($detail->is_approve || $detail->is_approve_by_verificator || $detail->is_approve_by_head ? 'table-success' : 'table-danger') : '' }}">
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $detail->item_name }}</td>
+                                        <td>{{ $detail->quantity }}</td>
+                                        <td>{{ $detail->purpose }}</td>
+                                        <td> @currency($detail->master->price) </td>
+                                        <td> @currency($detail->price) </td>
+                                        <td> @currency($detail->quantity * $detail->price) </td>
+                                        @php
+                                            if ($purchaseRequest->status == 6 || $purchaseRequest->status == 2) {
+                                                if ($detail->is_approve_by_head !== 0) {
+                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                }
+                                            } elseif ($purchaseRequest->status == 2 || $purchaseRequest->status == 3) {
+                                                if ($detail->is_approve_by_verificator !== 0) {
+                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                }
+                                            } elseif ($purchaseRequest->status == 3 || $purchaseRequest->status == 4) {
+                                                if ($detail->is_approve !== 0) {
+                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                }
+                                            }
+                                        @endphp
+
+                                        @if ($user->department == $userCreatedBy->department && $user->is_head == 1)
+                                            <td>
+                                                @if ($detail->is_approve_by_head === null)
+                                                    <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                        class="btn btn-danger">Reject</a>
+                                                    <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                        class="btn btn-success">Approve</a>
+                                                @else
+                                                    {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                @endif
+                                            </td>
+                                        @elseif ($user->specification->name == 'VERIFICATOR')
+                                            <td>
+                                                @if ($detail->is_approve_by_verificator === null)
+                                                    <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                        class="btn btn-danger">Reject</a>
+                                                    <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                        class="btn btn-success">Approve</a>
+                                                @else
+                                                    {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
+                                                @endif
+                                            </td>
+                                        @elseif ($user->department->name === 'DIRECTOR')
+                                            <td>
+                                                @if ($detail->is_approve === null)
+                                                    <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                        class="btn btn-danger">Reject</a>
+                                                    <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                        class="btn btn-success">Approve</a>
+                                                @else
+                                                    {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                                @endif
+                                            </td>
+                                        @endif
+                                    </tr>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="7">No Data</td>
