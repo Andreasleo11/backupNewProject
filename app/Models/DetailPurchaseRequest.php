@@ -15,6 +15,8 @@ class DetailPurchaseRequest extends Model
         'quantity',
         'purpose',
         'price',
+        'is_approve_by_head',
+        'is_approve_by_verificator',
         'is_approve'
     ];
 
