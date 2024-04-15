@@ -83,7 +83,7 @@
                 <div class="container mt-2" id="autographuser5"></div>
                 @if (Auth::check() && (Auth::user()->specification->name == 'PURCHASER' && $purchaseRequest->status == 1))
                     <div class="row px-4 d-flex justify-content-center">
-                        <div class="col-auto me-3">
+                        <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
@@ -105,7 +105,7 @@
                         Auth::user()->department == $userCreatedBy->department &&
                         $purchaseRequest->status == 6)
                     <div class="row px-4 d-flex justify-content-center">
-                        <div class="col-auto me-3">
+                        <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
@@ -126,7 +126,7 @@
                         Auth::user()->is_head == 1 &&
                         $purchaseRequest->status == 2)
                     <div class="row px-4 d-flex justify-content-center">
-                        <div class="col-auto me-3">
+                        <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
@@ -144,7 +144,7 @@
                 <div class="container mt-2 border-1" id="autographuser4"></div>
                 @if (Auth::check() && Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3)
                     <div class="row px-4 d-flex justify-content-center ">
-                        <div class="col-auto me-3">
+                        <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
@@ -207,7 +207,7 @@
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
-                                @if (Auth::user()->department === 'DIRECTOR')
+                                @if (Auth::user()->department->name === 'DIRECTOR')
                                     <th rowspan="2" class="align-middle">Is Approve</th>
                                 @endif
                             </tr>
@@ -233,13 +233,13 @@
                                     @php
                                         $totalall += $detail->quantity * $detail->price; // Update the total
                                     @endphp
-                                    @if (Auth::user()->department === 'DIRECTOR')
+                                    @if (Auth::user()->department->name === 'DIRECTOR')
                                         <td>
                                             @if ($detail->is_approve === null)
-                                                <a href="{{ route('purchaserequest.detail.approve', $detail->id) }}"
-                                                    class="btn btn-success">Approve</a>
                                                 <a href="{{ route('purchaserequest.detail.reject', $detail->id) }}"
                                                     class="btn btn-danger">Reject</a>
+                                                <a href="{{ route('purchaserequest.detail.approve', $detail->id) }}"
+                                                    class="btn btn-success">Approve</a>
                                             @else
                                                 {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
                                             @endif
