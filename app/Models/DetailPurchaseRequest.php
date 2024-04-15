@@ -15,6 +15,7 @@ class DetailPurchaseRequest extends Model
         'quantity',
         'purpose',
         'price',
+        'is_approve'
     ];
 
     public function itemDetail()
