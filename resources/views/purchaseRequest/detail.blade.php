@@ -104,12 +104,16 @@
                     $count = 0;
                     $isApproveNotEmpty = null;
                     $countItemHasApprovalStatus = 0;
+                    $thereIsApprovedItem = false;
                     foreach ($purchaseRequest->itemDetail as $detail) {
                         $count += 1;
                         if ($detail->is_approve_by_head !== null) {
                             $isApproveNotEmpty = true;
                             $detailObj = $detail;
                             $countItemHasApprovalStatus += 1;
+                        }
+                        if ($detail->is_approve_by_head === 1) {
+                            $thereIsApprovedItem = true;
                         }
                     }
                 @endphp
@@ -121,12 +125,12 @@
                     @if ($count === $countItemHasApprovalStatus)
                         <div class="row px-4 d-flex justify-content-center">
                             <div
-                                class="col-auto me-2 {{ $count == 1 && $detailObj->is_approve_by_head !== null ? 'd-none' : '' }}">
+                                class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
                                 <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                                     class="btn btn-danger">Reject</button>
                             </div>
                             <div
-                                class="col-auto {{ $count == 1 && $detailObj->is_approve_by_head !== null ? 'd-none' : '' }}">
+                                class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_head) || !$thereIsApprovedItem ? 'd-none' : '' }}">
                                 <button id="btn2" class="btn btn-success"
                                     onclick="addAutograph(2, {{ $purchaseRequest->id }})">Approve</button>
                             </div>
@@ -144,12 +148,19 @@
                     $detailObj = null;
                     $count = 0;
                     $isApproveNotEmpty = null;
+                    $countItemHasApprovalStatus = 0;
+                    $thereIsApprovedItem = false;
                     foreach ($purchaseRequest->itemDetail as $detail) {
+                        if ($detail->is_approve_by_head != 0) {
+                            $count += 1;
+                        }
                         if ($detail->is_approve_by_verificator !== null) {
                             $isApproveNotEmpty = true;
-                            $count += 1;
                             $detailObj = $detail;
-                            break;
+                            $countItemHasApprovalStatus += 1;
+                        }
+                        if ($detail->is_approve_by_verificator === 1) {
+                            $thereIsApprovedItem = true;
                         }
                     }
                 @endphp
@@ -158,17 +169,20 @@
                         Auth::user()->is_head == 1 &&
                         $purchaseRequest->status == 2 &&
                         $isApproveNotEmpty)
-                    <div class="row px-4 d-flex justify-content-center">
-                        <div
-                            class="col-auto me-2 {{ $count == 1 && $detailObj->is_approve_by_verificator ? 'd-none' : '' }}">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                class="btn btn-danger">Reject</button>
+                    @if ($count === $countItemHasApprovalStatus)
+                        <div class="row px-4 d-flex justify-content-center">
+                            <div
+                                class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_verificator) || $thereIsApprovedItem ? 'd-none' : '' }}">
+                                <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                    class="btn btn-danger">Reject</button>
+                            </div>
+                            <div
+                                class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_verificator) || !$thereIsApprovedItem ? 'd-none' : '' }}">
+                                <button id="btn3" class="btn btn-success"
+                                    onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
+                            </div>
                         </div>
-                        <div class="col-auto {{ $count == 1 && $detailObj->is_approve_by_verificator ? '' : 'd-none' }}">
-                            <button id="btn3" class="btn btn-success"
-                                onclick="addAutograph(3, {{ $purchaseRequest->id }})">Approve</button>
-                        </div>
-                    </div>
+                    @endif
                 @endif
             </div>
 
@@ -180,12 +194,19 @@
                     $detailObj = null;
                     $count = 0;
                     $isApproveNotEmpty = null;
+                    $countItemHasApprovalStatus = 0;
+                    $thereIsApprovedItem = false;
                     foreach ($purchaseRequest->itemDetail as $detail) {
+                        if ($detail->is_approve_by_verificator != 0) {
+                            $count += 1;
+                        }
                         if ($detail->is_approve !== null) {
                             $isApproveNotEmpty = true;
-                            $count += 1;
                             $detailObj = $detail;
-                            break;
+                            $countItemHasApprovalStatus += 1;
+                        }
+                        if ($detail->is_approve === 1) {
+                            $thereIsApprovedItem = true;
                         }
                     }
                 @endphp
@@ -193,16 +214,20 @@
                         Auth::user()->department->name == 'DIRECTOR' &&
                         $purchaseRequest->status == 3 &&
                         $isApproveNotEmpty)
-                    <div class="row px-4 d-flex justify-content-center ">
-                        <div class="col-auto me-2 {{ $count == 1 && $detailObj->is_approve ? 'd-none' : '' }}">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                class="btn btn-danger">Reject</button>
+                    @if ($count === $countItemHasApprovalStatus)
+                        <div class="row px-4 d-flex justify-content-center">
+                            <div
+                                class="col-auto me-2 {{ ($count === 1 && $detailObj->is_approve) || $thereIsApprovedItem ? 'd-none' : '' }}">
+                                <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                    class="btn btn-danger">Reject</button>
+                            </div>
+                            <div
+                                class="col-auto {{ ($count === 1 && !$detailObj->is_approve) || !$thereIsApprovedItem ? 'd-none' : '' }}">
+                                <button id="btn4" class="btn btn-success"
+                                    onclick="addAutograph(4, {{ $purchaseRequest->id }}, {{ $user->id }})">Approve</button>
+                            </div>
                         </div>
-                        <div class="col-auto {{ $count == 1 && $detailObj->is_approve ? '' : 'd-none' }}">
-                            <button id="btn4" class="btn btn-success"
-                                onclick="addAutograph(4, {{ $purchaseRequest->id }}, {{ $user->id }})">Approve</button>
-                        </div>
-                    </div>
+                    @endif
                 @endif
             </div>
         </div>
@@ -418,8 +443,13 @@
                                         </tr>
                                     @endif
                                 @else
-                                    <tr
-                                        class="{{ $detail->is_approve !== null || $detail->is_approve_by_verificator !== null || $detail->is_approve_by_head !== null ? ($detail->is_approve || $detail->is_approve_by_verificator || $detail->is_approve_by_head ? 'table-success' : 'table-danger') : '' }}">
+                                    {{-- @dd($detail->is_approve_by_head === 1) --}}
+                                    <tr class="
+                                            @if ($detail->is_approve === 1 || $detail->is_approve_by_verificator === 1 || $detail->is_approve_by_head === 1) table-success
+                                            @elseif ($detail->is_approve === 0 || $detail->is_approve_by_verificator === 0 || $detail->is_approve_by_head === 0)
+                                                table-danger @endif
+                                        "
+                                        {{-- class="{{ ($detail->is_approve === 1 || $detail->is_approve_by_verificator === 1 || $detail->is_approve_by_head === 1 ? 'table-success' : $detail->is_approve === 0 || $detail->is_approve_by_verificator === 0 || $detail->is_approve_by_head === 0) ? 'table-danger' : '' }}" --}}>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $detail->item_name }}</td>
                                         <td>{{ $detail->quantity }}</td>
@@ -437,9 +467,11 @@
                                                     $totalall += $detail->quantity * $detail->price; // Update the total
                                                 }
                                             } elseif ($purchaseRequest->status == 3 || $purchaseRequest->status == 4) {
-                                                if ($detail->is_approve !== 0) {
+                                                if ($detail->is_approve === 1) {
                                                     $totalall += $detail->quantity * $detail->price; // Update the total
                                                 }
+                                            } else {
+                                                $totalall += $detail->quantity * $detail->price; // Update the total
                                             }
                                         @endphp
 
