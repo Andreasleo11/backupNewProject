@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Date;
 
 use App\DataTables\ProdplanAsmDelschedDataTable;
 use App\DataTables\ProdplanAsmItemDataTable;
+use App\DataTables\ProdplanAsmLinecapDataTable;
 
 class PPSAssemblyController extends Controller
 {
@@ -159,9 +160,13 @@ class PPSAssemblyController extends Controller
 					$val_departement = $wip_link->departement;
 				
 					$val_item_code = $wip_link->wip_code;
+					// dd($val_item_code);
 					$val_delivery_date = $wip_link->delivery_date;
+					// dd($val_delivery_date);
 					$val_bom_level = $wip_link->bom_level;	
-					$val_delivery_qty = $wip_link->outstanding_wip;
+					// dd($val_bom_level);
+					$val_delivery_qty = $wip_link->outstanding_wip; 
+					// dd($val_delivery_qty);
 					
 					$tab_inventoryfg = DB::table('sap_inventory_fg')->where('item_code',$val_item_code)->first();
 					$val_pair = $tab_inventoryfg->pair?? 'Default';
@@ -569,6 +574,7 @@ class PPSAssemblyController extends Controller
 				'end_repair' => $item->date_prediction,
 			]);
 		}
+		return redirect()->route('assemblyprocess6');
 
 	}
 
@@ -656,12 +662,15 @@ class PPSAssemblyController extends Controller
 				$lineCap->save();
 			}
 		}
+
+		return redirect()->route('lineassembly');
 	}
 
 
-    public function lineassembly()
+    public function lineassembly(ProdplanAsmLinecapDataTable $dataTable)
     {
-        return view("pps.assemblyline");
+		return $dataTable->render("pps.assemblyline");
+        // return view("pps.assemblyline");
     }
 
     public function finalresultassembly()

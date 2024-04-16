@@ -23,7 +23,7 @@
 
     {{ $dataTable->scripts() }}
     
-                    <a href="{{ route('lineassembly') }}" class="btn btn-secondary float-right"> Lanjut</a>
+                    <a href="{{ route('assemblyprocess5') }}" class="btn btn-secondary float-right"> Lanjut</a>
                 </div>
             </div>
         </div>
