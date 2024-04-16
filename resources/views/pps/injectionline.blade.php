@@ -10,6 +10,20 @@
                     <h1>LineMenu for injection 
                     </h1>
 
+                    
+                    <section class="content">
+                    <div class="card mt-5">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                {{ $dataTable->table() }}
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+
+                {{ $dataTable->scripts() }}
+                
                     <a href="{{ route('finalinjectionpps') }}" class="btn btn-secondary float-right"> Lanjut</a>
                 </div>
             </div>

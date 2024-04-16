@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Date;
 
 use App\DataTables\ProdplanInjDelschedDataTable;
 use App\DataTables\ProdplanInjItemDataTable;
+use App\DataTables\ProdplanInjLinecapDataTable;
 
 class PPSInjectionController extends Controller
 {
@@ -560,7 +561,7 @@ class PPSInjectionController extends Controller
 
 		$data = InvLineList::where('departement', 390)->get();
 		// dd($data);
-
+		
 		foreach($data as $item)
 		{
 			ProdplanInjLinelist::create([
@@ -581,6 +582,8 @@ class PPSInjectionController extends Controller
 				'end_repair' => $item->date_prediction,
 			]);
 		}
+
+	return redirect()->route('injectionprocess6');
 
 	}
 
@@ -668,11 +671,13 @@ class PPSInjectionController extends Controller
 				$lineCap->save();
 			}
 		}
+		return redirect()->route('lineinjection');
 	}
 
-    public function lineinjection()
+    public function lineinjection(ProdplanInjLinecapDataTable $dataTable)
     {
-        return view("pps.injectionline");
+		return $dataTable->render("pps.injectionline");
+        // return view("pps.injectionline");
     }
 
     public function finalresultinjection()

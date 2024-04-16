@@ -30,7 +30,7 @@
                             'id' => str_replace(' ', '',$data->line_code),
                             'route' => 'deleteline',
                             'title' => 'Delete Line confirmation',
-                            'body' => 'Are you sure want to delete ' . str_replace(' ', '',$data->line_code) . '?',
+                            'body' => 'Are you sure want to delete ' . $data->line_code . '?',
                         ])
     @endforeach
 
