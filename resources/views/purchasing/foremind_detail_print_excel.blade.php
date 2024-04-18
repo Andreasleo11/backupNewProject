@@ -12,22 +12,24 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Material Code</th>
-                        <th>Material Name</th>
-                        <th>Item No</th>
-                        <th>Vendor Code</th>
-                        <th>U/M</th>
-                        <th>NET Quantity</th>
+                        <th align="center" style="vertical-align: middle; height:60px; font-size: 18px;">No</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Material Code</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Material Name</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Item No</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Vendor Code</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">U/M</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">NET Quantity</th>
                         @foreach ($mon as $month)
-                            <th>{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+                            <th align="center" style="vertical-align: middle; font-size: 18px;">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
                         @endforeach
-                        <th>Total</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php
                         $previousMaterialCode = null;
                         $monthlyTotalPredictions = array_fill(0, count($mon), 0);
+                        $i = 1;
                     @endphp
 
                     @foreach ($materials as $material)
@@ -35,17 +37,19 @@
                             <!-- Calculate and display the total prediction per month before the blank row -->
                             @if ($previousMaterialCode !== null)
                             <tr>
-                                <td colspan="6" align=right>Total Akhir</td>
+                                <td colspan="7" align=right>Total Akhir</td>
 
                                 @foreach ($monthlyTotalPredictions as $monthlyTotalPrediction)
-                                    <td><strong>{{ $monthlyTotalPrediction }}</strong></td>
+                                    <td align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotalPrediction }}</strong></td>
                                 @endforeach
 
-                                <td><strong>{{ array_sum($monthlyTotalPredictions) }}</strong></td>
+                                <td align="center" style="vertical-align: middle;"><strong>{{ array_sum($monthlyTotalPredictions) }}</strong></td>
                             </tr>
 
                             <!-- Add a blank row to separate material codes -->
-                            <tr></tr>
+                            <tr>
+                                <td colspan="13" style="height:60px;"></td>
+                            </tr>
                             @endif
                             <!-- Reset monthly total predictions for the new material code -->
                             @php
@@ -54,12 +58,13 @@
                         @endif
 
                         <tr>
-                            <td  rowspan = 2>{{ $material->material_code }}</td>
-                            <td  rowspan = 2>{{ $material->material_name }}</td>
-                            <td  rowspan = 2>{{ $material->item_no }}</td>
-                            <td  rowspan = 2>{{ $material->vendor_code }}</td>
-                            <td  rowspan = 2>{{ $material->unit_of_measure }}</td>
-                            <td  rowspan = 2>{{ $material->quantity_material }}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{$i++}}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{ $material->material_code }}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{ $material->material_name }}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{ $material->item_no }}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{ $material->vendor_code }}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{ $material->unit_of_measure }}</td>
+                            <td  rowspan = 2 align="center" style="vertical-align: middle;">{{ $material->quantity_material }}</td>
                             @php
                             $total = 0;
                         @endphp
@@ -72,7 +77,7 @@
                                     $monthlyTotalPredictions[$index] += $calculation;
                                 @endphp
                                 
-                                    <td>
+                                    <td align="center" style="vertical-align: middle;">
                                         {{ $value }}
                                     </td>
                                     
@@ -90,7 +95,7 @@
                                     
                                 @endphp
                                 
-                                <td>
+                                <td align="center" style="vertical-align: middle;">
                                     <b>{{ $calculation }}</b>
                                 </td>
                                 
@@ -107,19 +112,14 @@
 
                     <!-- Calculate and display the total prediction per month for the last material code -->
                     <tr>
-                        <td>Total Akhir</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                    <td colspan="7" align=right>Total Akhir</td>
                         
 
                         @foreach ($monthlyTotalPredictions as $monthlyTotalPrediction)
-                            <td><strong>{{ $monthlyTotalPrediction }}</strong></td>
+                            <td align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotalPrediction }}</strong></td>
                         @endforeach
 
-                        <td><strong>{{ array_sum($monthlyTotalPredictions) }}</strong></td>
+                        <td align="center" style="vertical-align: middle;"><strong>{{ array_sum($monthlyTotalPredictions) }}</strong></td>
                     </tr>
                 </tbody>
             </table>

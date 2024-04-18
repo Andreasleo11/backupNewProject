@@ -339,7 +339,6 @@ class PurchasingDetailController extends Controller
             }
 
 
-
         // dd($qforecast);
 
         $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName,$contact);
