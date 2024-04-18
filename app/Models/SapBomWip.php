@@ -5,22 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class sapInventoryMtr extends Model
+class SapBomWip extends Model
 {
-    use HasFactory;
-    protected $table = 'sap_inventory_mtr';
+    protected $table = 'sap_bom_wip';
     public $timestamps = false;
     public $incrementing = false;
     protected $primaryKey = null;
 
     protected $fillable = [
         'fg_code',
-        'material_code',
-        'material_name',
-        'bom_quantity',
-        'in_stock',
+        'semi_first',
+        'qty_first',
+        'semi_second',
+        'qty_second',
+        'semi_third',
+        'qty_third',
+        'level',
         'item_group',
-        'vendor_code',
-        'vendor_name',    
     ];
 }

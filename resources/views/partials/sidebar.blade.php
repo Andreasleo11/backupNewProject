@@ -287,6 +287,15 @@
                         </a>
                     </li>
                 </ul>
+
+                <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('indexupdatepage') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Update Page
+                        </a>
+                    </li>
+                </ul>
             </li>
         @endif
 
@@ -304,6 +313,9 @@
                         Purchase Request
                     </a>
                 </li>
+
+
+        
 
 
                 {{-- FEATURES IN DEVELOPMENT --}}
