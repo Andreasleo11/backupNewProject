@@ -446,9 +446,10 @@ class PurchaseRequestController extends Controller
     }
 
     public function update(Request $request, $id){
-        $validated= $request->validate([
+        // dd($request->all());
+        $validated = $request->validate([
             'to_department' => 'string|max:255',
-            'date_of_pr' => 'date',
+            'date_pr' => 'date',
             'date_required' => 'date',
             'remark' => 'string',
             'supplier' => 'string',
