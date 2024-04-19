@@ -141,7 +141,8 @@
                                 <th rowspan="2">Can't Use</th>
                                 <th colspan="3">Daijo Defect</th>
                                 <th colspan="3">Customer Defect</th>
-                                <th rowspan="2">Price</th>
+                                <th rowspan="2">Price Per Quantity</th>
+                                <th rowspan="2">Total</th>
                             </tr>
                             <tr>
                                 <th>Quantity</th>
@@ -196,7 +197,8 @@
                                             @endif
                                         @endforeach
                                     </td>
-                                    <td> @currency($detail->price) </td>
+                                    <td width="15%"> @currency($detail->price) </td>
+                                    <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
                                 </tr>
                             @empty
                                 <td colspan="14">No data</td>
