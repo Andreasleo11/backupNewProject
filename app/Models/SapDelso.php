@@ -5,17 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SapDelsched extends Model
+class SapDelso extends Model
 {
-    protected $table = 'sap_delsched';
+    protected $table = 'sap_delso';
     public $timestamps = false;
     public $incrementing = false;
     protected $primaryKey = null;
     
     protected $fillable = [
-        'item_code',
-        'delivery_date',
-        'delivery_qty',
-        'so_number',
+        'doc_num',
+        'doc_status',
+        'item_no',
+        'quantity',
+        'delivered_qty',
+        'line_num',
+        'row_status',
     ];
 }

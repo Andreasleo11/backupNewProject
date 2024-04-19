@@ -69,6 +69,9 @@ class HomeController extends Controller
                 case "MAINTENANCE":
                     return redirect()->route('maintenance.home');
                     break;
+                case "PPIC":
+                    return redirect()->route('ppic.home');
+                    break;
             }
         } else {
             return view('welcome');

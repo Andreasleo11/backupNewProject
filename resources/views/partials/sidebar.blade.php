@@ -114,6 +114,23 @@
                 </ul>
             </li>
         @endif
+        @if ($department === 'PPIC' || $user->role->name === 'SUPERADMIN')
+            <li class="sidebar-item" id="sidebar-item-ppic">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#ppicitem" aria-expanded="false" aria-controls="purchaseRequest">
+                    <i class='bx bx-objects-vertical-bottom'></i>
+                    <span>PPIC</span>
+                </a>
+                <ul id="ppicitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('indexds') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Delivery Schedule
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
         @if ($department === 'MAINTENANCE' || $user->role->name === 'SUPERADMIN')
             <li class="sidebar-item" id="sidebar-item-maintenance">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
@@ -287,6 +304,15 @@
                         </a>
                     </li>
                 </ul>
+
+                <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('indexupdatepage') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Update Page
+                        </a>
+                    </li>
+                </ul>
             </li>
         @endif
 
@@ -304,6 +330,9 @@
                         Purchase Request
                     </a>
                 </li>
+
+
+        
 
 
                 {{-- FEATURES IN DEVELOPMENT --}}

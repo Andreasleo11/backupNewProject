@@ -55,7 +55,9 @@ use App\Http\Controllers\MouldDownController;
 use App\Http\Controllers\LineDownController;
 use App\Http\Controllers\maintenance\MaintenanceHomeController;
 use App\Http\Controllers\pe\PEHomeController;
+use App\Http\Controllers\PPICHomeController;
 use App\Http\Controllers\SpecificationController;
+use App\Http\Controllers\UpdateDailyController;
 use App\Models\Department;
 use App\Models\Role;
 
@@ -253,7 +255,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
     });
 
-    Route::middleware(['checkDepartment:BUSINESS'])->group(function(){
+    Route::middleware(['checkDepartment:BUSINESS,PPIC'])->group(function(){
+        Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
         Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
@@ -450,4 +453,11 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::put('projecttracker/{id}/update-test', [ProjectTrackerController::class, 'updateTest'])->name('pt.updatetest');
     Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
     Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');
+
+
+
+    Route::get("updatepage/index", [UpdateDailyController::class, "index"])->name("indexupdatepage");
+    Route::post("/processdailydata", [UpdateDailyController::Class, 'update'])->name("updatedata");
+
+
 });

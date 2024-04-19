@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Date;
 
 use App\DataTables\ProdplanSndDelschedDataTable;
 use App\DataTables\ProdplanSndItemDataTable;
+use App\DataTables\ProdplanSndLinecapDataTable;
 
 class PPSSecondController extends Controller
 {
@@ -567,6 +568,8 @@ class PPSSecondController extends Controller
 			]);
 		}
 
+		return redirect()->route('secondprocess6');
+
 	}
 
 	public function process6()
@@ -653,12 +656,14 @@ class PPSSecondController extends Controller
 				$lineCap->save();
 			}
 		}
+		return redirect()->route('linesecond');
 	}
 
 
-    public function linesecond()
+    public function linesecond(ProdplanSndLinecapDataTable $dataTable)
     {
-        return view("pps.secondline");
+		return $dataTable->render("pps.secondline");
+        // return view("pps.secondline");
     }
 
     public function finalresultsecond()
