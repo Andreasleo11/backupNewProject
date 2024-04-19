@@ -455,12 +455,12 @@
                                     @endif
                                 @else
                                     {{-- @dd($detail->is_approve_by_head === 1) --}}
-                                    <tr class="
+                                    <tr
+                                        class="
                                             @if ($detail->is_approve === 1 || $detail->is_approve_by_verificator === 1 || $detail->is_approve_by_head === 1) table-success
                                             @elseif ($detail->is_approve === 0 || $detail->is_approve_by_verificator === 0 || $detail->is_approve_by_head === 0)
                                                 table-danger @endif
-                                        "
-                                        {{-- class="{{ ($detail->is_approve === 1 || $detail->is_approve_by_verificator === 1 || $detail->is_approve_by_head === 1 ? 'table-success' : $detail->is_approve === 0 || $detail->is_approve_by_verificator === 0 || $detail->is_approve_by_head === 0) ? 'table-danger' : '' }}" --}}>
+                                        ">
                                         <td>{{ $loop->iteration }}</td>
                                         <td><a href="" class="editable" data-type="text" data-name="item_name"
                                                 data-pk="{{ $detail->id }}">{{ $detail->item_name }}</a><span
