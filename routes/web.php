@@ -457,7 +457,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
     Route::get("updatepage/index", [UpdateDailyController::class, "index"])->name("indexupdatepage");
-    Route::post("/processdailydata", [UpdateDailyController::Class, 'update'])->name("updatedata");
+    Route::post("/processdailydata", [UpdateDailyController::class, 'update'])->name("updatedata");
 
 
 });
