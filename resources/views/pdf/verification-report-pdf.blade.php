@@ -128,7 +128,7 @@
                     <td style="width: 40%">
                         @foreach ($detail->defects as $defect)
                             @if ($defect->is_daijo)
-                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }}
+                                {{ $defect->quantity . ' : ' . ($defect->category ? $defect->category->name : '-') . ' (' . $defect->remarks . ') ' }}
                                 <br>
                             @endif
                         @endforeach
@@ -136,7 +136,7 @@
                     <td>
                         @foreach ($detail->defects as $defect)
                             @if (!$defect->is_daijo)
-                                {{ $defect->quantity . ' : ' . $defect->category->name . ' (' . $defect->remarks . ') ' }}
+                                {{ $defect->quantity . ' : ' . ($defect->category ? $defect->category->name : '-') . ' (' . $defect->remarks . ') ' }}
                                 <br>
                             @endif
                         @endforeach

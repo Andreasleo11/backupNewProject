@@ -138,10 +138,10 @@
                                                                     <td>{{ $loop->iteration }}</td>
                                                                     @if ($defect->is_daijo)
                                                                         <td></td>
-                                                                        <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
+                                                                        <td>{{ {{ $defect->quantity . ' : ' . ($defect->category?->name ?? '-') }} }}
                                                                         </td>
                                                                     @else
-                                                                        <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
+                                                                        <td>{{ {{ $defect->quantity . ' : ' . ($defect->category?->name ?? '-') }} }}
                                                                         </td>
                                                                         <td></td>
                                                                     @endif
