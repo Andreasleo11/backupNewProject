@@ -74,9 +74,9 @@
                                             ($pr->status == 1 && $user->specification->name == 'PURCHASER') ||
                                                 ($pr->status == 6 && $user->is_head == 1) ||
                                                 ($pr->status == 2 && $user->department->name == 'HRD'))
-                                            <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
-                                                <i class='bx bx-edit'></i></i> Edit
-                                            </a>
+                                            {{-- <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
+                                                <i class='bx bx-edit'></i> Edit
+                                            </a> --}}
                                             @if ($pr->user_id_create === Auth::user()->id)
                                                 @include('partials.delete-pr-modal', [
                                                     'id' => $pr->id,

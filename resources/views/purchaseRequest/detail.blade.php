@@ -220,16 +220,27 @@
 
     <section aria-label="pr-header-body" class="container mt-5">
         <div class="card">
-            <div
-                class="form-check form-switch mt-2 me-2 text-end {{ ($purchaseRequest->status == 1 && $user->specification->name == 'PURCHASER') ||
-                ($purchaseRequest->status == 6 && $user->is_head == 1) ||
-                ($purchaseRequest->status == 2 && $user->department->name == 'HRD')
-                    ? ''
-                    : 'd-none' }}">
-                <input type="checkbox" class="btn-check" id="toggle-edit" autocomplete="off">
-                <label class="btn btn-outline-secondary" id="edit-mode-label" for="toggle-edit">
-                    Edit Mode Off</label>
+            <div class="d-flex flex-row-reverse mb-3">
+                <div
+                    class="p-2 form-check form-switch {{ ($purchaseRequest->status == 1 && $user->specification->name == 'PURCHASER') ||
+                    ($purchaseRequest->status == 6 && $user->is_head == 1) ||
+                    ($purchaseRequest->status == 2 && $user->department->name == 'HRD')
+                        ? ''
+                        : 'd-none' }}">
+                    <input type="checkbox" class="btn-check" id="toggle-edit" autocomplete="off">
+                    <label class="btn btn-outline-secondary" id="edit-mode-label" for="toggle-edit">
+                        Edit Mode Off</label>
+                </div>
+                <div class="p-2">
+                    @include('partials.edit-purchase-request-modal', [
+                        'pr' => $purchaseRequest,
+                        'details' => $purchaseRequest->itemDetail,
+                    ])
+                    <button data-bs-target="#edit-purchase-request-modal-{{ $purchaseRequest->id }}" data-bs-toggle="modal"
+                        class="btn btn-primary"><i class='bx bx-edit'></i> Edit</button>
+                </div>
             </div>
+
             <div class="mt-4 text-center">
                 <span class="h1 fw-semibold">Purchase Requisition</span> <br>
                 <div class="fs-6 mt-2">
@@ -493,7 +504,6 @@
                                                 if ($detail->is_approve === 1) {
                                                     $totalall += $detail->quantity * $detail->price; // Update the total
                                                 }
-
                                             } elseif ($purchaseRequest->status == 5) {
                                                 $totalall += $detail->quantity * $detail->price; // Update the total
                                             }
