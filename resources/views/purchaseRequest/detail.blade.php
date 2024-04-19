@@ -12,13 +12,6 @@
             /* Add border for better visibility */
         }
     </style>
-
-    <script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
-
-    <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"
-        rel="stylesheet" />
-    <script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js">
-    </script>
 @endpush
 
 @section('content')
@@ -221,17 +214,7 @@
     <section aria-label="pr-header-body" class="container mt-5">
         <div class="card">
             <div class="d-flex flex-row-reverse mb-3">
-                <div
-                    class="p-2 form-check form-switch {{ $purchaseRequest->status == 1 ||
-                    $user->specification->name == 'PURCHASER' ||
-                    ($purchaseRequest->status == 6 && $user->is_head == 1) ||
-                    ($purchaseRequest->status == 2 && $user->department->name == 'HRD')
-                        ? ''
-                        : 'd-none' }}">
-                    <input type="checkbox" class="btn-check" id="toggle-edit" autocomplete="off">
-                    <label class="btn btn-outline-secondary" id="edit-mode-label" for="toggle-edit">
-                        Edit Mode Off</label>
-                </div>
+
                 <div
                     class="p-2 {{ $purchaseRequest->status == 1 ||
                     $user->specification->name == 'PURCHASER' ||
@@ -265,10 +248,7 @@
                                 <th>Date PR</th>
                                 <td>: {{ $purchaseRequest->date_pr }}</td>
                                 <th>Date Required</th>
-                                <td>:
-                                    <a href="" class="header-editable" data-type="text" data-name="date_required"
-                                        data-pk="{{ $purchaseRequest->id }}">{{ $purchaseRequest->date_required }}</a><span
-                                        id="span-date-required">{{ $purchaseRequest->date_required }}</span>
+                                <td>: {{ $purchaseRequest->date_required }}
                                 </td>
                             </tr>
                             <tr>
@@ -279,14 +259,9 @@
                             </tr>
                             <tr>
                                 <th>Supplier</th>
-                                <td>: <a href="" class="header-editable" data-type="text" data-name="supplier"
-                                        data-pk="{{ $purchaseRequest->id }}">{{ $purchaseRequest->supplier }}</a> <span
-                                        id="span-supplier"> {{ $purchaseRequest->supplier }}</span></td>
+                                <td>: {{ $purchaseRequest->supplier }}</td>
                                 <th>Remark</th>
-                                <td style="width: 40%">: <a href="" class="header-editable" data-type="textarea"
-                                        data-name="remark"
-                                        data-pk="{{ $purchaseRequest->id }}">{{ $purchaseRequest->remark }}</a><span
-                                        id="span-remark">{{ $purchaseRequest->remark }}</span>
+                                <td style="width: 40%">: {{ $purchaseRequest->remark }}
                                 </td>
                             </tr>
                         </tbody>
@@ -394,24 +369,15 @@
                                         <tr
                                             class="{{ $detail->is_approve_by_verificator !== null ? ($detail->is_approve_by_verificator ? 'table-success' : 'table-danger') : '' }}">
                                             <td>{{ $loop->iteration }}</td>
-                                            <td><a href="" class="editable" data-type="text"
-                                                    data-name="item_name"
-                                                    data-pk="{{ $detail->id }}">{{ $detail->item_name }}</a><span
-                                                    id="span-item-name-{{ $detail->id }}">{{ $detail->item_name }}</span>
+                                            <td>{{ $detail->item_name }}
                                             </td>
 
-                                            <td><a href="" class="editable" data-type="text" data-name="quantity"
-                                                    data-pk="{{ $detail->id }}">{{ $detail->quantity }}</a><span
-                                                    id="span-quantity-{{ $detail->id }}">{{ $detail->quantity }}</span>
+                                            <td>{{ $detail->quantity }}
                                             </td>
-                                            <td><a href="" class="editable" data-type="text" data-name="purpose"
-                                                    data-pk="{{ $detail->id }}">{{ $detail->purpose }}</a><span
-                                                    id="span-purpose-{{ $detail->id }}">{{ $detail->purpose }}</span>
+                                            <td>{{ $detail->purpose }}
                                             </td>
                                             <td> @currency($detail->master->price ?? 0) </td>
-                                            <td> <a href="" class="editable" data-type="text" data-name="price"
-                                                    data-pk="{{ $detail->id }}">@currency($detail->price) </a><span
-                                                    id="span-price-{{ $detail->id }}">@currency($detail->price)</span>
+                                            <td> @currency($detail->price)
                                             </td>
                                             @php
                                                 if ($purchaseRequest->status == 6 || $purchaseRequest->status == 2) {
@@ -480,22 +446,14 @@
                                                 table-danger @endif
                                         ">
                                         <td>{{ $loop->iteration }}</td>
-                                        <td><a href="" class="editable" data-type="text" data-name="item_name"
-                                                data-pk="{{ $detail->id }}">{{ $detail->item_name }}</a><span
-                                                id="span-item-name-{{ $detail->id }}">{{ $detail->item_name }}</span>
+                                        <td>{{ $detail->item_name }}
                                         </td>
 
-                                        <td><a href="" class="editable" data-type="text" data-name="quantity"
-                                                data-pk="{{ $detail->id }}">{{ $detail->quantity }}</a><span
-                                                id="span-quantity-{{ $detail->id }}">{{ $detail->quantity }}</span>
+                                        <td>{{ $detail->quantity }}
                                         </td>
-                                        <td><a href="" class="editable" data-type="text" data-name="purpose"
-                                                data-pk="{{ $detail->id }}">{{ $detail->purpose }}</a><span
-                                                id="span-purpose-{{ $detail->id }}">{{ $detail->purpose }}</span></td>
+                                        <td>{{ $detail->purpose }}</td>
                                         <td> @currency($detail->master->price ?? 0) </td>
-                                        <td> <a href="" class="editable" data-type="text" data-name="price"
-                                                data-pk="{{ $detail->id }}">@currency($detail->price) </a><span
-                                                id="span-price-{{ $detail->id }}">@currency($detail->price)</span>
+                                        <td> @currency($detail->price)
                                         </td>
                                         <td> @currency($detail->quantity * $detail->price) </td>
                                         @php
@@ -578,234 +536,6 @@
 @endsection
 
 @push('extraJs')
-    <script>
-        // Get references to the checkbox and label elements
-        let checkbox = document.getElementById('toggle-edit');
-        let label = document.getElementById('edit-mode-label');
-        // Get references to all span elements
-        const allSpanElements = document.querySelectorAll('[id^="span-"]');
-
-        const editMode = "{{ session('edit_mode') }}";
-        if (editMode) {
-            label.textContent = 'Edit Mode On';
-            label.classList.remove('btn-outline-secondary');
-            label.classList.add('btn-primary');
-            // Hide all span elements
-            allSpanElements.forEach(span => {
-                span.classList.add('d-none');
-            });
-            $('.header-editable, .editable').toggle();
-            // Set checkbox state based on editMode
-            checkbox.checked = true;
-        }
-
-        // Add event listener to the checkbox
-        checkbox.addEventListener('change', function() {
-            const isChecked = checkbox.checked;
-            // Update the label text based on checkbox state
-            if (isChecked) {
-                label.textContent = 'Edit Mode On';
-                label.classList.remove('btn-outline-secondary');
-                label.classList.add('btn-primary');
-                // Hide all span elements
-                allSpanElements.forEach(span => {
-                    span.classList.add('d-none');
-                });
-            } else {
-                label.textContent = 'Edit Mode Off';
-                label.classList.remove('btn-primary');
-                label.classList.add('btn-outline-secondary');
-                // Show all span elements
-                allSpanElements.forEach(span => {
-                    span.classList.remove('d-none');
-                });
-            }
-
-            // Update session state on the server
-            updateSession(isChecked);
-        });
-
-        // Function to update session state on the server
-        function updateSession(isChecked) {
-            fetch('/update-edit-mode', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        isChecked: isChecked
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Failed to update session state');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error updating session state:', error);
-                });
-        }
-
-        $.fn.editable.defaults.mode = 'inline';
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        });
-
-        // Overwrite the global templates
-        $.fn.editableform.buttons =
-            '<button type="submit" class="btn btn-primary editable-submit">OK</button>' +
-            '<button type="button" class="btn btn-secondary editable-cancel">Cancel</button>';
-
-        // Select the specific <td> containing the date_required field
-        const dateRequiredTd = $('td:has(#span-date-required)');
-
-        // Apply the editable function to the dateRequiredTd element
-        dateRequiredTd.find('.header-editable').editable({
-            url: '/purchaserequest/update',
-            success: function(response, newValue) {
-                // Reload the page on success
-                window.location.reload();
-            },
-            validate: function(value) {
-                // If the input is empty, return required field message
-                if ($.trim(value) == '') {
-                    return 'This field is required';
-                }
-
-                // Check if the input matches the YYYY-MM-DD format
-                const regexPattern = /^\d{4}-\d{2}-\d{2}$/;
-                if (!regexPattern.test(value)) {
-                    return 'Invalid date format. Please enter date in YYYY-MM-DD format.';
-                }
-
-                // Extract year, month, and day components from the input date string
-                const [year, month, day] = value.split('-').map(Number);
-
-                // Check if the month and day values are valid
-                if (month < 1 || month > 12 || day < 1 || day > 31) {
-                    return 'Invalid date';
-                }
-
-                // Check for months with less than 31 days
-                if ([4, 6, 9, 11].includes(month) && day === 31) {
-                    return 'Invalid date for this month';
-                }
-
-                // Check for February
-                if (month === 2) {
-                    // Check for February 29 in leap years
-                    if (day === 29) {
-                        if (!((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0)) {
-                            return 'Invalid date (not a leap year)';
-                        }
-                    }
-                    // Check for February 30 or 31
-                    else if (day === 30 || day === 31) {
-                        return 'Invalid date for February';
-                    }
-                }
-            }
-        });
-
-        $('.editable').editable({
-            url: '/purchaserequest/detail/update',
-            success: function(response, newValue) {
-                // Reload the page on success
-                window.location.reload();
-            },
-            validate: function(value) {
-                // Remove leading/trailing spaces
-                value = $.trim(value);
-
-                // Check if the field is required
-                if (value === '') {
-                    return 'This field is required';
-                }
-
-                // Check if the length exceeds 255 characters
-                if (value.length > 255) {
-                    return 'Maximum length exceeded (255 characters)';
-                }
-
-                // Remove currency symbol and comma separators
-                const numericValue = parseFloat(value.replace(/\D/g, ''));
-                console.log(numericValue);
-
-                // Check if the parsed numeric value is a valid number
-                if (!isNaN(numericValue)) {
-
-                    // Check if the numeric value exceeds the maximum allowed value
-                    if (numericValue > 999999999) {
-                        return 'Field cannot be more than 999,999,999!';
-                    }
-                }
-
-                console.log(value);
-
-            }
-        });
-
-        $('.header-editable').editable({
-            url: '/purchaserequest/update',
-            success: function(response, newValue) {
-                // Reload the page on success
-                window.location.reload();
-            },
-            validate: function(value) {
-                // Remove leading/trailing spaces
-                value = $.trim(value);
-                if (value == '') {
-                    return 'This field is required';
-                }
-
-                // Check if the length exceeds 150 characters
-                if (value.length > 150) {
-                    return 'Maximum length exceeded (150 characters)';
-                }
-
-            }
-        });
-
-        $('#toggle-edit').click(function(e) {
-            e.stopPropagation();
-            $('.header-editable, .editable').toggle();
-        });
-
-        $('.header-editable, .editable').toggle();
-
-        // format the price input
-        $(document).ready(function() {
-            // Attach input event listener using event delegation
-            $(document).on('click', 'a[data-name="price"].editable-click', function() {
-                // Find the closest editable container and then find the input inside it
-                var inputField = $(this).siblings('.editable-container').find('.editable-input input');
-                // Check if the input field is found
-                if (inputField.length > 0) {
-                    // // Input field found, log it to the console
-                    // console.log(inputField);
-                    inputField.on('input', function() {
-                        formatPrice(this);
-                    });
-                }
-            });
-        });
-
-        function formatPrice(input) {
-            let price = input.value.replace(/\D/g, ''); // Remove non-digit characters
-            price = parseInt(price); // Convert string to integer
-            if (!isNaN(price)) {
-                // Format the price with thousand separators and add currency symbol
-                const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
-                input.value = formattedPrice;
-            } else {
-                input.value = ''; // Clear the input if it's not a valid number
-            }
-        }
-    </script>
-
     {{-- autograph script --}}
     <script>
         // Function to add autograph to the specified box

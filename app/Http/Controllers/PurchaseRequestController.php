@@ -484,38 +484,4 @@ class PurchaseRequestController extends Controller
 
         return redirect()->back()->with(['success' => 'Purchase Request rejected']);
     }
-
-    public function updateEditable(Request $request)
-    {
-        if($request->ajax()){
-            $pr = PurchaseRequest::find($request->pk);
-
-            if($request->name == "supplier"){
-                $pr->update(['supplier' => $request->value]);
-            } else if($request->name == "date_required"){
-                $pr->update(['date_required' => $request->value]);
-            } else if($request->name == "remark"){
-                $pr->update(['remark' => $request->value]);
-            }
-        }
-    }
-
-    public function updateEditModeSession(Request $request)
-    {
-        // Retrieve the isChecked value from the request data
-        $isChecked = $request->input('isChecked');
-
-        // Use the isChecked value in an if statement
-        if ($isChecked == 1) {
-            // Do something if isChecked is true
-            Session::put('edit_mode', true);
-            // $request->session()->put('edit_mode', true);
-        } else {
-            // Do something if isChecked is false
-            $request->session()->forget('edit_mode');
-        }
-
-        return response()->json(['success' => true]);
-    }
-
 }
