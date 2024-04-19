@@ -231,7 +231,12 @@
                     <label class="btn btn-outline-secondary" id="edit-mode-label" for="toggle-edit">
                         Edit Mode Off</label>
                 </div>
-                <div class="p-2">
+                <div
+                    class="p-2 {{ ($purchaseRequest->status == 1 && $user->specification->name == 'PURCHASER') ||
+                    ($purchaseRequest->status == 6 && $user->is_head == 1) ||
+                    ($purchaseRequest->status == 2 && $user->department->name == 'HRD')
+                        ? ''
+                        : 'd-none' }}">
                     @include('partials.edit-purchase-request-modal', [
                         'pr' => $purchaseRequest,
                         'details' => $purchaseRequest->itemDetail,
