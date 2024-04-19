@@ -45,6 +45,8 @@ use App\Http\Controllers\pps\PPSInjectionController;
 use App\Http\Controllers\DeliveryScheduleController;
 use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\DSNewController;
+use App\Http\Controllers\EmployeeMasterController;
+
 
 use App\Http\Controllers\HolidayListController;
 use App\Http\Controllers\ProductionHomeController;
@@ -454,7 +456,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
     Route::get("updatepage/index", [UpdateDailyController::class, "index"])->name("indexupdatepage");
-    Route::post("/processdailydata", [UpdateDailyController::Class, 'update'])->name("updatedata");
+    Route::post("/processdailydata", [UpdateDailyController::class, 'update'])->name("updatedata");
 
+    Route::get("/employeemaster/index", [EmployeeMasterController::class, 'index'])->name("index.employeesmaster");
+    Route::post("/employeemaster/add", [EmployeeMasterController::class, "addemployee"])->name('addemployee');
 
 });

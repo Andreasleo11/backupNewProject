@@ -77,14 +77,14 @@ class UpdateDailyController extends Controller
         }
         
         elseif ($selectedOption === 'sap_inventoryfg') {
-            DB::table('sap_inventoryfg')->truncate();
+            DB::table('sap_inventory_fg')->truncate();
             $excelFileName = $this->processInventoryfgFiles($uploadedFiles);
             $this->importInventoryfgFile($excelFileName);
             return Redirect::route('indexupdatepage');
         } 
         
         elseif ($selectedOption === 'sap_inventorymtr') {
-            DB::table('sap_inventorymtr')->truncate();
+            DB::table('sap_inventory_mtr')->truncate();
             $excelFileName = $this->processInventorymtrFiles($uploadedFiles);
             $this->importInventoryMtrFile($excelFileName);
             return Redirect::route('indexupdatepage');
@@ -125,7 +125,7 @@ class UpdateDailyController extends Controller
         $excelFileName = 'databomwip.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new BomWip($allData), 'AutomateFile/' . $excelFileName);
+        Excel::store(new BomWip($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName; 
@@ -196,7 +196,7 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delactual.xlsx';
             $excelFilePath = public_path($excelFileName);
     
-            Excel::store(new Delactual($data), 'AutomateFile/' . $excelFileName);
+            Excel::store(new Delactual($data), 'public/AutomateFile/' . $excelFileName);
     
             // $filePath = Storage::url($fileName);
             return $excelFileName; 
@@ -267,7 +267,7 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delsched.csv';
             $excelFilePath = public_path($excelFileName);
     
-            Excel::store(new Delsched($data), 'AutomateFile/' . $excelFileName);
+            Excel::store(new Delsched($data), 'public/AutomateFile/' . $excelFileName);
     
             // $filePath = Storage::url($fileName);
             return $excelFileName; 
@@ -325,7 +325,7 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delso.csv';
             $excelFilePath = public_path($excelFileName);
     
-            Excel::store(new Delso($data), 'AutomateFile/' . $excelFileName);
+            Excel::store(new Delso($data), 'public/AutomateFile/' . $excelFileName);
     
             // $filePath = Storage::url($fileName);
             return $excelFileName; 
@@ -386,7 +386,7 @@ class UpdateDailyController extends Controller
         $excelFileName = 'inventoryfg.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new InventoryFg($allData), 'AutomateFile/' . $excelFileName);
+        Excel::store(new InventoryFg($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName; 
@@ -433,7 +433,7 @@ class UpdateDailyController extends Controller
          $excelFileName = 'inventorymtr.csv';
          $excelFilePath = public_path($excelFileName);
  
-         Excel::store(new InventoryMtr($allData), 'AutomateFile/' . $excelFileName);
+         Excel::store(new InventoryMtr($allData), 'public/AutomateFile/' . $excelFileName);
  
          // $filePath = Storage::url($fileName);
          return $excelFileName; 
@@ -473,7 +473,7 @@ class UpdateDailyController extends Controller
        $excelFileName = 'lineproduction.xlsx';
        $excelFilePath = public_path($excelFileName);
 
-       Excel::store(new LineProduction($allData), 'AutomateFile/' . $excelFileName);
+       Excel::store(new LineProduction($allData), 'public/AutomateFile/' . $excelFileName);
 
        // $filePath = Storage::url($fileName);
        return $excelFileName; 
