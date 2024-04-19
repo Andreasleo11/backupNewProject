@@ -459,7 +459,7 @@ class PurchaseRequestController extends Controller
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
         $this->verifyAndInsertItems($request, $id);
-        return redirect()->route('purchaserequest.home')->with(['success' => 'Purchase request updated successfully!']);
+        return redirect()->back()->with(['success' => 'Purchase request updated successfully!']);
     }
 
     public function destroy($id){
