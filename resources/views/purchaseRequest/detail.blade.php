@@ -222,7 +222,8 @@
         <div class="card">
             <div class="d-flex flex-row-reverse mb-3">
                 <div
-                    class="p-2 form-check form-switch {{ ($purchaseRequest->status == 1 && $user->specification->name == 'PURCHASER') ||
+                    class="p-2 form-check form-switch {{ $purchaseRequest->status == 1 ||
+                    $user->specification->name == 'PURCHASER' ||
                     ($purchaseRequest->status == 6 && $user->is_head == 1) ||
                     ($purchaseRequest->status == 2 && $user->department->name == 'HRD')
                         ? ''
@@ -232,7 +233,8 @@
                         Edit Mode Off</label>
                 </div>
                 <div
-                    class="p-2 {{ ($purchaseRequest->status == 1 && $user->specification->name == 'PURCHASER') ||
+                    class="p-2 {{ $purchaseRequest->status == 1 ||
+                    $user->specification->name == 'PURCHASER' ||
                     ($purchaseRequest->status == 6 && $user->is_head == 1) ||
                     ($purchaseRequest->status == 2 && $user->department->name == 'HRD')
                         ? ''
