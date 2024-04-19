@@ -73,14 +73,14 @@
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label" for="date_of_pr">Date of PR</label>
-                                <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required
+                                <label class="form-label" for="date_pr">Date of PR</label>
+                                <input class="form-control" type="date" id="date_pr" name="date_pr" required
                                     value="{{ $pr->date_pr }}">
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label" for="date_of_required">Date of Required</label>
-                                <input class="form-control" type="date" name="date_of_required" required
+                                <label class="form-label" for="date_required">Date of Required</label>
+                                <input class="form-control" type="date" name="date_required" required
                                     value="{{ $pr->date_required }}">
                             </div>
 
