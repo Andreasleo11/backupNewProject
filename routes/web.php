@@ -391,8 +391,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('/purchaserequest/{id}/edit', [PurchaseRequestController::class, 'edit'])->name('purchaserequest.edit');
     Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update');
     Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete');
-    Route::post('/purchaserequest/update', [PurchaseRequestController::class, 'updateEditable'])->name('purchaserequest.updateEditable');
-    Route::post('/update-edit-mode', [PurchaseRequestController::class, 'updateEditModeSession'])->name('purchaserequest.updateEditModeSession');
 
     // PR MONTHLY
     Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
