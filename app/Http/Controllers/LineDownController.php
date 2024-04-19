@@ -13,7 +13,8 @@ class LineDownController extends Controller
     public function index(MtcLineDownDataTable $dataTable)
     {
         $data = InvLineList::pluck('line_code')->unique();
-        return $dataTable->render("maintenance.lineindex", compact("data"));
+        $maindata = MtcLineDown::get();
+        return $dataTable->render("maintenance.lineindex", compact("data", "maindata"));
     }
 
     public function addlinedown(Request $request)

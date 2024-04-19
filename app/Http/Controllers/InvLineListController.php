@@ -13,6 +13,7 @@ class InvLineListController extends Controller
 {
     public function index(InvLineListDataTable $dataTable)
     {   
+        
         $datas = InvLineList::get();
         // dd($datas);
         return $dataTable->render("sap.linelist", compact('datas'));
