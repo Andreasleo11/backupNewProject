@@ -97,7 +97,7 @@
                     <td class="table-bordered" rowspan="2"  align="center" style="vertical-align: middle;">{{ $currentCustomer }}</td>
                 </tr>
                 <tr>
-                    <td colspan="3" align=right  style="vertical-align: middle;"><strong>Total</strong></td>
+                    <td colspan="4" align=right  style="vertical-align: middle;"><strong>Total</strong></td>
                     @foreach ($monthlyTotals as $monthlyTotal)
                         <td   align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotal }}</strong></td>
                     @endforeach
@@ -148,7 +148,7 @@
         <td class="table-bordered" rowspan="2"   align="center" style="vertical-align: middle;">{{ $currentCustomer }}</td>
     </tr>
     <tr>
-            <td colspan="3" align=right  style="vertical-align: middle;"><strong>Total</strong></td>
+            <td colspan="4" align=right  style="vertical-align: middle;"><strong>Total</strong></td>
             @foreach ($monthlyTotals as $monthlyTotal)
                 <td   align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotal }}</strong></td>
             @endforeach
