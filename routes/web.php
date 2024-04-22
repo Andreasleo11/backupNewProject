@@ -60,6 +60,9 @@ use App\Http\Controllers\pe\PEHomeController;
 use App\Http\Controllers\PPICHomeController;
 use App\Http\Controllers\SpecificationController;
 use App\Http\Controllers\UpdateDailyController;
+use App\Http\Controllers\EvaluationDataController;
+use App\Http\Controllers\DisciplinePageController;
+
 use App\Models\Department;
 use App\Models\Role;
 
@@ -460,5 +463,11 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get("/employeemaster/index", [EmployeeMasterController::class, 'index'])->name("index.employeesmaster");
     Route::post("/employeemaster/add", [EmployeeMasterController::class, "addemployee"])->name('addemployee');
+
+    Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index");
+    Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
+
+    Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index");
+
 
 });

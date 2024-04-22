@@ -16,4 +16,9 @@ class Employee extends Model
         'start_date',
         'status',
     ];
+
+    public function evaluationData()
+    {
+        return $this->hasMany(EvaluationData::class, 'NIK', 'NIK');
+    }
 }

@@ -15,9 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string("NIK");
             $table->date("Month");
-            $table->integer("Alpha");
-            $table->integer("Telat");
-            $table->integer("Izin"); 
+            $table->integer("Alpha")->default(0);
+            $table->integer("Telat")->default(0);
+            $table->integer("Izin")->default(0); 
+            $table->integer("kerajinan_kerja")->nullable()->default(0);
+            $table->integer("kerapian_pakaian")->nullable()->default(0);
+            $table->integer("kerapian_rambut")->nullable()->default(0);
+            $table->integer("kerapian_sepatu")->nullable()->default(0);
+            $table->integer("prestasi")->nullable()->default(0);
+            $table->integer("loyalitas")->nullable()->default(0);
         });
     }
 
