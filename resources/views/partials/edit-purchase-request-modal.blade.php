@@ -115,6 +115,7 @@
 
 
         let details = {!! json_encode($details) !!};
+        console.log(details);
 
         details.forEach(detail => {
             addNewItem(detail);
