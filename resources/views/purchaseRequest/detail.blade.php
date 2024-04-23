@@ -367,7 +367,7 @@
                                                     table-success
                                                 @elseif($detail->is_approve_by_verificator === 0)
                                                     table-danger text-decoration-line-through
-                                                @elseif($detail->is_approve_by_verificator === null)
+                                                @elseif(Auth::user()->specification->name === 'VERIFICATOR')
                                                 @else
                                                     @if ($detail->is_approve_by_head === 1)
                                                         table-success
@@ -417,59 +417,48 @@
                                             if ($detail->is_approve) {
                                                 $totalall += $detail->quantity * $detail->price; // Update the total
                                             }
+                                        } elseif ($purchaseRequest->status === 1) {
+                                            $totalall += $detail->quantity * $detail->price; // Update the total
                                         } else {
                                             $totalall += 0;
                                         }
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
-                                    <td class="text-decoration-none">
-                                        @php
-                                            $approvalType = '';
-                                            $approvalStatus = '';
-                                            $rejectRoute = '';
-                                            $approveRoute = '';
-                                            $approveButtonText = '';
-                                            $rejectButtonText = 'Reject';
-
-                                            if (
-                                                $user->department == $userCreatedBy->department &&
-                                                $user->is_head == 1
-                                            ) {
-                                                $approvalType = 'head';
-                                                $approvalStatus = $detail->is_approve_by_head;
-                                            } elseif ($user->specification->name == 'VERIFICATOR') {
-                                                $approvalType = 'verificator';
-                                                $approvalStatus = $detail->is_approve_by_verificator;
-                                            } elseif ($user->department->name === 'DIRECTOR') {
-                                                $approvalType = 'director';
-                                                $approvalStatus = $detail->is_approve;
-                                            }
-
-                                            if ($approvalStatus === null) {
-                                                $rejectRoute = route('purchaserequest.detail.reject', [
-                                                    'id' => $detail->id,
-                                                    'type' => $approvalType,
-                                                ]);
-                                                $approveRoute = route('purchaserequest.detail.approve', [
-                                                    'id' => $detail->id,
-                                                    'type' => $approvalType,
-                                                ]);
-                                                $approveButtonText = 'Approve';
-                                            } else {
-                                                $approveButtonText = $approvalStatus == 1 ? 'Yes' : 'No';
-                                            }
-                                        @endphp
-
-                                        @if ($approvalStatus !== null)
-                                            {{ $approveButtonText }}
-                                        @else
-                                            <a href="{{ $rejectRoute }}"
-                                                class="btn btn-danger">{{ $rejectButtonText }}</a>
-                                            <a href="{{ $approveRoute }}"
-                                                class="btn btn-success">{{ $approveButtonText }}</a>
-                                        @endif
-                                    </td>
+                                    @if ($user->department == $userCreatedBy->department && $user->is_head == 1)
+                                        <td>
+                                            @if ($detail->is_approve_by_head === null)
+                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                    class="btn btn-danger">Reject</a>
+                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                    class="btn btn-success">Approve</a>
+                                            @else
+                                                {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                            @endif
+                                        </td>
+                                    @elseif ($user->specification->name == 'VERIFICATOR')
+                                        <td>
+                                            @if ($detail->is_approve_by_verificator === null)
+                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                    class="btn btn-danger">Reject</a>
+                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                    class="btn btn-success">Approve</a>
+                                            @else
+                                                {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
+                                            @endif
+                                        </td>
+                                    @elseif ($user->department->name === 'DIRECTOR')
+                                        <td>
+                                            @if ($detail->is_approve === null)
+                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                    class="btn btn-danger">Reject</a>
+                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                    class="btn btn-success">Approve</a>
+                                            @else
+                                                {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                            @endif
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
