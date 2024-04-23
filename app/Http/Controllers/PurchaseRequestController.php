@@ -499,8 +499,6 @@ class PurchaseRequestController extends Controller
             $pr->update($dataToUpdate);
         }
 
-        // $this->updatePurchaseRequestDetails($id, $request->items, DetailPurchaseRequest::where('purchase_request_id', $id)->get());
-
         $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
@@ -515,78 +513,15 @@ class PurchaseRequestController extends Controller
                         'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head,
                         'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
                     ]);
+                } else {
+                    $detail->update([
+                        'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head
+                    ]);
                 }
             }
         }
 
         return redirect()->back()->with(['success' => 'Purchase request updated successfully!']);
-    }
-
-    public function updatePurchaseRequestDetails($prId, $items, $details){
-        // Add pr and format price to each item in the array
-        foreach ($items as &$item) {
-            $item['purchase_request_id'] = $prId;
-            $item['price'] = preg_replace("/[^0-9]/", "", $item['price']);
-        }
-
-        // Unset the reference to avoid potential side effects
-        unset($item);
-
-        $additionalData = [];
-        // dd($items);
-        // dd($details);
-
-        foreach ($items as $data) {
-            if (isset($data['item_name'])) {
-                DetailPurchaseRequest::updateOrCreate(
-                    ['item_name' => $data['item_name']],
-                    $data
-                );
-            }
-        }
-
-        // foreach ($items as $item) {
-        //     foreach ($details as $detail) {
-        //         if($item['item_name'] === $detail->item_name){
-        //             // unset($item['purchase_request_id']);
-        //             // dd($item);
-        //             // Case 1 : if the input item name is same as the detail from db
-        //             dd($item);
-        //             $detail->update($item);
-        //         } else {
-        //             // Case 2 : if the input item name isn't same as the detail from db
-        //             DetailPurchaseRequest::create($item);
-        //         }
-        //     }
-        // }
-
-        // foreach ($details as $detail) {
-        //     $detailName = $detail->item_name;
-        //     $detailPrice = $detail->price;
-
-        //     // check  if the item exists in MasterDataPr
-        //     $existingDetail = MasterDataPr::where('name', $detailName)->first();
-
-        //     if(!$existingDetail){
-        //         // Case 1 : Item not avaiable in MasterDataPr
-        //         MasterDataPr::create([
-        //             'name' => $detailName,
-        //             'price' => $detailPrice,
-        //         ]);
-
-        //     } else {
-        //         if($existingDetail->latest_price === null){
-        //             $existingDetail->update([
-        //                 'latest_price' => $detailPrice,
-        //             ]);
-        //         } else {
-        //             $existingDetail->update([
-        //                 'price' => $existingDetail->price,
-        //                 'latest_price' => $detail->price,
-        //             ]);
-        //         }
-        //     }
-        // }
     }
 
     public function destroy($id){
