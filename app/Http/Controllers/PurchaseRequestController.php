@@ -308,7 +308,18 @@ class PurchaseRequestController extends Controller
 
         $files = File::where('doc_id', $doc_id)->get();
 
-        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files'));
+        // Filter itemDetail based on user role
+        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user) {
+            if ($user->department->name === "DIRECTOR") {
+                return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_head);
+            } elseif ($user->specification->name === "VERIFICATOR") {
+                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+            } else {
+                return true; // Include all details for other roles
+            }
+        })->values(); // Ensure that the result is an array;
+
+        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail'));
     }
 
     public function saveImagePath(Request $request, $prId, $section)
@@ -439,11 +450,12 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function edit($id){
-        $pr = PurchaseRequest::find($id);
-        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-        return view('purchaseRequest.edit', compact('pr', 'details'));
-    }
+    // public function edit($id){
+    //     $pr = PurchaseRequest::find($id);
+    //     $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
+
+    //     return view('purchaseRequest.edit', compact('pr', 'details'));
+    // }
 
     public function update(Request $request, $id){
         // dd($request->all());
@@ -455,12 +467,126 @@ class PurchaseRequestController extends Controller
             'supplier' => 'string',
         ]);
 
-        PurchaseRequest::find($id)->update($validated);
+        // Define the additional attribute and its value
+        $additionalData = [];
 
+        $pr = PurchaseRequest::find($id);
+
+        // dept head update
+        if($pr->status == 6) {
+            $additionalData['autograph_2'] = null;
+            $additionalData['autograph_user_2'] = null;
+            $additionalData['status'] = 6;
+
+            // Merge the validated data with the additional data
+            $dataToUpdate = array_merge($validated, $additionalData);
+
+            // dd($dataToUpdate);
+
+            $pr->update($dataToUpdate);
+
+            // verificator update
+        } else if($pr->status == 3){
+            $additionalData['autograph_3'] = null;
+            $additionalData['autograph_user_3'] = null;
+            $additionalData['status'] = 3;
+
+            // Merge the validated data with the additional data
+            $dataToUpdate = array_merge($validated, $additionalData);
+
+            // dd($dataToUpdate);
+
+            $pr->update($dataToUpdate);
+        }
+
+        // $this->updatePurchaseRequestDetails($id, $request->items, DetailPurchaseRequest::where('purchase_request_id', $id)->get());
+
+        $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
         $this->verifyAndInsertItems($request, $id);
+
+        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
+
+        foreach ($details as $detail) {
+            foreach ($oldDetails as $oldDetail) {
+                if($detail->item_name === $oldDetail->item_name){
+                    $detail->update([
+                        'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head,
+                        'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->back()->with(['success' => 'Purchase request updated successfully!']);
+    }
+
+    public function updatePurchaseRequestDetails($prId, $items, $details){
+        // Add pr and format price to each item in the array
+        foreach ($items as &$item) {
+            $item['purchase_request_id'] = $prId;
+            $item['price'] = preg_replace("/[^0-9]/", "", $item['price']);
+        }
+
+        // Unset the reference to avoid potential side effects
+        unset($item);
+
+        $additionalData = [];
+        // dd($items);
+        // dd($details);
+
+        foreach ($items as $data) {
+            if (isset($data['item_name'])) {
+                DetailPurchaseRequest::updateOrCreate(
+                    ['item_name' => $data['item_name']],
+                    $data
+                );
+            }
+        }
+
+        // foreach ($items as $item) {
+        //     foreach ($details as $detail) {
+        //         if($item['item_name'] === $detail->item_name){
+        //             // unset($item['purchase_request_id']);
+        //             // dd($item);
+        //             // Case 1 : if the input item name is same as the detail from db
+        //             dd($item);
+        //             $detail->update($item);
+        //         } else {
+        //             // Case 2 : if the input item name isn't same as the detail from db
+        //             DetailPurchaseRequest::create($item);
+        //         }
+        //     }
+        // }
+
+        // foreach ($details as $detail) {
+        //     $detailName = $detail->item_name;
+        //     $detailPrice = $detail->price;
+
+        //     // check  if the item exists in MasterDataPr
+        //     $existingDetail = MasterDataPr::where('name', $detailName)->first();
+
+        //     if(!$existingDetail){
+        //         // Case 1 : Item not avaiable in MasterDataPr
+        //         MasterDataPr::create([
+        //             'name' => $detailName,
+        //             'price' => $detailPrice,
+        //         ]);
+
+        //     } else {
+        //         if($existingDetail->latest_price === null){
+        //             $existingDetail->update([
+        //                 'latest_price' => $detailPrice,
+        //             ]);
+        //         } else {
+        //             $existingDetail->update([
+        //                 'price' => $existingDetail->price,
+        //                 'latest_price' => $detail->price,
+        //             ]);
+        //         }
+        //     }
+        // }
     }
 
     public function destroy($id){
