@@ -110,9 +110,8 @@
                 <th class="align-middle">Can't Use</th>
                 <th class="align-middle">Daijo Defect Detail</th>
                 <th class="align-middle">Customer Defect Detail</th>
-                <th class="align-middle">Price</th>
-
-                <!-- Add more headers as needed -->
+                <th class="align-middle">Price per Quantity</th>
+                <th class="align-middle">Total</th>
             </tr>
         </thead>
 
@@ -141,7 +140,8 @@
                             @endif
                         @endforeach
                     </td>
-                    <td>@currency($detail->price)</td>
+                    <td width="15%"> @currency($detail->price) </td>
+                    <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
                 </tr>
             @empty
                 <td colspan="11">No data</td>
