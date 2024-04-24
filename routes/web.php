@@ -45,6 +45,8 @@ use App\Http\Controllers\pps\PPSInjectionController;
 use App\Http\Controllers\DeliveryScheduleController;
 use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\DSNewController;
+use App\Http\Controllers\EmployeeMasterController;
+
 
 use App\Http\Controllers\HolidayListController;
 use App\Http\Controllers\ProductionHomeController;
@@ -58,6 +60,9 @@ use App\Http\Controllers\pe\PEHomeController;
 use App\Http\Controllers\PPICHomeController;
 use App\Http\Controllers\SpecificationController;
 use App\Http\Controllers\UpdateDailyController;
+use App\Http\Controllers\EvaluationDataController;
+use App\Http\Controllers\DisciplinePageController;
+
 use App\Models\Department;
 use App\Models\Role;
 
@@ -457,5 +462,15 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("updatepage/index", [UpdateDailyController::class, "index"])->name("indexupdatepage");
     Route::post("/processdailydata", [UpdateDailyController::class, 'update'])->name("updatedata");
 
+    Route::get("/employeemaster/index", [EmployeeMasterController::class, 'index'])->name("index.employeesmaster");
+    Route::post("/employeemaster/add", [EmployeeMasterController::class, "addemployee"])->name('addemployee');
 
+    Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index");
+    Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
+
+    Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index");
+    Route::put("/edit/discipline/{id}", [DisciplinePageController::class, "update"])->name('editdiscipline');
+    Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
+    Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
+    Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
 });
