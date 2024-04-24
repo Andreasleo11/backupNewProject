@@ -357,8 +357,11 @@ class DisciplinePageController extends Controller
     {
         $user = Auth::user();
 
+
+
+        $employees = null;
         //PEER LOGIC UNTUK HANDLE ORANG ORANG DIBAWAH DEPT HEADNYA SAJA - HARUS DIHANDLE MANUAL 
-        if($user->is_head == 0)
+        if($user->is_head == 1 && $user->department_id == 2)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '340');
@@ -369,9 +372,204 @@ class DisciplinePageController extends Controller
                 $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
             //    dd($employee);
             }
-            
-         
         }
+
+        elseif($user->is_head == 1 && $user->department_id == 3)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '100');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 8)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '200');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 22)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '310');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 5)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '320');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 17)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '330');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 24)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '331');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 18)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '350');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 19)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '361');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 20)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '362');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 16)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '363');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 11)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '390');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 9)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '500');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 15)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '600');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 6)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '311');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 25)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '351');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
+        
         return $dataTable->render("setting.disciplineindexstep1", compact("employees"));
     }
 
