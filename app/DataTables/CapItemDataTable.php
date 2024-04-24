@@ -82,6 +82,7 @@ class CapItemDataTable extends DataTable
             Column::make('pair'),
             Column::make('total_forecast_time'),
             Column::make('counter_forecast'),
+			Column::make('total_prior'),
         ];
     }
 
