@@ -268,7 +268,7 @@ class DisciplinePageController extends Controller
         
         $excelFileName = $this->processExcelFile($uploadedFiles);
         $this->importExcelFile($excelFileName);
-        return redirect()->back();
+        return redirect()->route('discipline.index')->with('success', 'Line added successfully');
     }
 
     public function processExcelFile($files)
@@ -569,7 +569,7 @@ class DisciplinePageController extends Controller
             }
         }
 
-        
+
         return $dataTable->render("setting.disciplineindexstep1", compact("employees"));
     }
 
