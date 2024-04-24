@@ -35,28 +35,38 @@
             <table class="table table-striped table-bordered" >
                 <thead>
                     <tr>
-                    <td>Nama Vendor: {{$vendorName}}</td>
-                        <td colspan="10" rowspan="4"  align="center" >Forecast Report</td>
+                    <td style="vertical-align: middle; height:60px; font-size: 18px;">Nama Vendor</td>
+                    <td colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;">{{$vendorName}}</td>
                     </tr>
                     <tr>
-                    <td>Date : {{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
+                    <td style="vertical-align: middle; height:60px; font-size: 18px;">Date</td>
+                    <td  colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;" >{{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
                        <!-- Blank cell with colspan="10" -->
                     </tr>
                     <tr>
-                    <td>ATT : {{ $contact->persontocontact }} </td>
+                    <td style="vertical-align: middle; height:60px; font-size: 18px;">ATT</td>
+                    <td  colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;"> {{ $contact->persontocontact }} </td>
                     </tr>
                     <tr>
-                    <td>FR : {{ Auth::user()->name }} </td>
+                    <td style="vertical-align: middle; height:60px; font-size: 18px;">FR </td>
+                    <td  colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;">{{ $contact->p_member }}</td>
                     </tr>
                     <tr>
-                        <th>Material Code</th>
-                        <th>Material Name</th>
-                        <th>U/M</th>
+                    <td colspan="12"   align="center" style="vertical-align: middle; font-size: 30px;" >Forecast Report</td>
+                    </tr>
+                    <tr>
+                        <td colspan="12"></td>
+                    </tr>
+                    <tr>
+                        <th align="center" style="vertical-align: middle; height:60px; font-size: 18px;" >No</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Material Code</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Material Name</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">U/M</th>
                         @foreach ($mon as $month)
-                            <th>{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+                            <th align="center" style="vertical-align: middle; font-size: 18px;">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
                         @endforeach
-                        <th>Total</th>
-                        <th>Customer<th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Total</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Customer<th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,6 +74,7 @@
         $currentMaterialCode = null;
         $materialTotal = 0;
         $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
+        $i = 1;
     @endphp
 
     @foreach ($materials as $key => $material)
@@ -71,26 +82,30 @@
             <!-- Print material code, name, and unit of measure only for the first occurrence -->
             @if ($currentMaterialCode != null)
                 <tr>
-                    <td class="table-bordered">{{ $currentMaterialCode }}</td>
-                    <td class="table-bordered">{{ $currentMaterialName }}</td>
-                    <td class="table-bordered">{{ $currentMaterialMeasure }}</td>
+                    <td class="table-bordered"  align="center" style="vertical-align: middle;">{{$i++}}</td>
+                    <td class="table-bordered"  align="center" style="vertical-align: middle;">{{ $currentMaterialCode }}</td>
+                    <td class="table-bordered"   align="center" style="vertical-align: middle;">{{ $currentMaterialName }}</td>
+                    <td class="table-bordered"   align="center" style="vertical-align: middle;">{{ $currentMaterialMeasure }}</td>
                     @foreach ($monthlyTotals as $monthlyTotal)
-                        <td class="table-bordered">
+                        <td class="table-bordered"   align="center" style="vertical-align: middle;">
                             <strong>{{ $monthlyTotal }}</strong>
                         </td>
                     @endforeach
-                    <td class="table-bordered">
+                    <td class="table-bordered"   align="center" style="vertical-align: middle;">
                         <strong>{{ array_sum($monthlyTotals) }}</strong>
                     </td>
-                    <td class="table-bordered">{{ $currentCustomer }}</td>
+                    <td class="table-bordered" rowspan="2"  align="center" style="vertical-align: middle;">{{ $currentCustomer }}</td>
                 </tr>
                 <tr>
-                    <td colspan="3" align=right><strong>Total</strong></td>
+                    <td colspan="4" align=right  style="vertical-align: middle;"><strong>Total</strong></td>
                     @foreach ($monthlyTotals as $monthlyTotal)
-                        <td><strong>{{ $monthlyTotal }}</strong></td>
+                        <td   align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotal }}</strong></td>
                     @endforeach
-                    <td><strong>{{ array_sum($monthlyTotals) }}</strong></td>
+                    <td  align="center" style="vertical-align: middle;"><strong>{{ array_sum($monthlyTotals) }}</strong></td>
                     <td></td> <!-- Empty cell for customer -->
+                </tr>
+                <tr>
+                    <td colspan="12"></td>
                 </tr>
             @endif
 
@@ -118,25 +133,26 @@
 
     <!-- Print the final row for the last material -->
     <tr>
-        <td class="table-bordered">{{ $currentMaterialCode }}</td>
-        <td class="table-bordered">{{ $currentMaterialName }}</td>
-        <td class="table-bordered">{{ $currentMaterialMeasure }}</td>
+        <td class="table-bordered"  align="center" style="vertical-align: middle;">{{$i++}}</td>
+        <td class="table-bordered"   align="center" style="vertical-align: middle;">{{ $currentMaterialCode }}</td>
+        <td class="table-bordered"   align="center" style="vertical-align: middle;">{{ $currentMaterialName }}</td>
+        <td class="table-bordered"   align="center" style="vertical-align: middle;">{{ $currentMaterialMeasure }}</td>
         @foreach ($monthlyTotals as $monthlyTotal)
-            <td class="table-bordered">
+            <td class="table-bordered"   align="center" style="vertical-align: middle;">
                 <strong>{{ $monthlyTotal }}</strong>
             </td>
         @endforeach
-        <td class="table-bordered">
+        <td class="table-bordered"  align="center"  style="vertical-align: middle;">
             <strong>{{ array_sum($monthlyTotals) }}</strong>
         </td>
-        <td class="table-bordered">{{ $currentCustomer }}</td>
+        <td class="table-bordered" rowspan="2"   align="center" style="vertical-align: middle;">{{ $currentCustomer }}</td>
     </tr>
     <tr>
-            <td colspan="3" align=right><strong>Total</strong></td>
+            <td colspan="4" align=right  style="vertical-align: middle;"><strong>Total</strong></td>
             @foreach ($monthlyTotals as $monthlyTotal)
-                <td><strong>{{ $monthlyTotal }}</strong></td>
+                <td   align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotal }}</strong></td>
             @endforeach
-            <td><strong>{{ array_sum($monthlyTotals) }}</strong></td>
+            <td   align="center" style="vertical-align: middle;"><strong>{{ array_sum($monthlyTotals) }}</strong></td>
             <td></td> <!-- Empty cell for customer -->
         </tr>
 </tbody>

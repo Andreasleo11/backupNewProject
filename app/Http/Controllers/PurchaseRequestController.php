@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Log;
 
 class PurchaseRequestController extends Controller
 {
@@ -266,7 +268,7 @@ class PurchaseRequestController extends Controller
     {
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
         foreach ($purchaseRequest->itemDetail as $detail) {
-            $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price;
+            $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
         }
         // dd($priceBefore);
         $user =  Auth::user();
@@ -306,7 +308,18 @@ class PurchaseRequestController extends Controller
 
         $files = File::where('doc_id', $doc_id)->get();
 
-        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files'));
+        // Filter itemDetail based on user role
+        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user) {
+            if ($user->department->name === "DIRECTOR") {
+                return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_head);
+            } elseif ($user->specification->name === "VERIFICATOR") {
+                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+            } else {
+                return true; // Include all details for other roles
+            }
+        })->values(); // Ensure that the result is an array;
+
+        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail'));
     }
 
     public function saveImagePath(Request $request, $prId, $section)
@@ -437,27 +450,78 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function edit($id){
-        $pr = PurchaseRequest::find($id);
-        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-        return view('purchaseRequest.edit', compact('pr', 'details'));
-    }
+    // public function edit($id){
+    //     $pr = PurchaseRequest::find($id);
+    //     $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
+
+    //     return view('purchaseRequest.edit', compact('pr', 'details'));
+    // }
 
     public function update(Request $request, $id){
-        $validated= $request->validate([
+        // dd($request->all());
+        $validated = $request->validate([
             'to_department' => 'string|max:255',
-            'date_of_pr' => 'date',
+            'date_pr' => 'date',
             'date_required' => 'date',
             'remark' => 'string',
             'supplier' => 'string',
         ]);
 
-        PurchaseRequest::find($id)->update($validated);
+        // Define the additional attribute and its value
+        $additionalData = [];
 
+        $pr = PurchaseRequest::find($id);
+
+        // dept head update
+        if($pr->status == 6) {
+            $additionalData['autograph_2'] = null;
+            $additionalData['autograph_user_2'] = null;
+            $additionalData['status'] = 6;
+
+            // Merge the validated data with the additional data
+            $dataToUpdate = array_merge($validated, $additionalData);
+
+            // dd($dataToUpdate);
+
+            $pr->update($dataToUpdate);
+
+            // verificator update
+        } else if($pr->status == 3){
+            $additionalData['autograph_3'] = null;
+            $additionalData['autograph_user_3'] = null;
+            $additionalData['status'] = 3;
+
+            // Merge the validated data with the additional data
+            $dataToUpdate = array_merge($validated, $additionalData);
+
+            // dd($dataToUpdate);
+
+            $pr->update($dataToUpdate);
+        }
+
+        $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
         $this->verifyAndInsertItems($request, $id);
-        return redirect()->route('purchaserequest.home')->with(['success' => 'Purchase request updated successfully!']);
+
+        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
+
+        foreach ($details as $detail) {
+            foreach ($oldDetails as $oldDetail) {
+                if($detail->item_name === $oldDetail->item_name){
+                    $detail->update([
+                        'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head,
+                        'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
+                    ]);
+                } else {
+                    $detail->update([
+                        'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->back()->with(['success' => 'Purchase request updated successfully!']);
     }
 
     public function destroy($id){

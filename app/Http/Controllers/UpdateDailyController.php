@@ -44,7 +44,7 @@ class UpdateDailyController extends Controller
     }
 
     public function update(Request $request)
-    {   
+    {
        // Separate uploaded files based on selected option
         $selectedOption = $request->input('selected_option');
         $uploadedFiles = $request->file('excel_files');
@@ -54,42 +54,42 @@ class UpdateDailyController extends Controller
             $this->importBomWipFile($excelFileName);
             return Redirect::route('indexupdatepage');
         }
-        
+
         elseif ($selectedOption === 'sap_delactual') {
             DB::table('sap_delactual')->truncate();
             $excelFileName = $this->processDelactualFiles($uploadedFiles);
             $this->importDelactualFile($excelFileName);
             return Redirect::route('indexupdatepage');
-        } 
-        
+        }
+
         elseif ($selectedOption === 'sap_delsched') {
             DB::table('sap_delsched')->truncate();
             $excelFileName = $this->processDelschedFiles($uploadedFiles);
             $this->importDelschedFile($excelFileName);
             return Redirect::route('indexupdatepage');
         }
-        
+
         elseif ($selectedOption === 'sap_delso') {
             DB::table('sap_delso')->truncate();
             $excelFileName = $this->processDelsoFiles($uploadedFiles);
             $this->importDelsoFile($excelFileName);
             return Redirect::route('indexupdatepage');
         }
-        
+
         elseif ($selectedOption === 'sap_inventoryfg') {
             DB::table('sap_inventory_fg')->truncate();
             $excelFileName = $this->processInventoryfgFiles($uploadedFiles);
             $this->importInventoryfgFile($excelFileName);
             return Redirect::route('indexupdatepage');
-        } 
-        
+        }
+
         elseif ($selectedOption === 'sap_inventorymtr') {
             DB::table('sap_inventory_mtr')->truncate();
             $excelFileName = $this->processInventorymtrFiles($uploadedFiles);
             $this->importInventoryMtrFile($excelFileName);
             return Redirect::route('indexupdatepage');
-        } 
-        
+        }
+
         elseif ($selectedOption === 'sap_lineproduction') {
             DB::table('sap_lineproduction')->truncate();
             $excelFileName = $this->processLineproductionFiles($uploadedFiles);
@@ -103,7 +103,7 @@ class UpdateDailyController extends Controller
         // Initialize an array to store all data
         $allData = [];
 
-        // Iterate through each file 
+        // Iterate through each file
         foreach ($files as $file) {
             // Read the XLS file
             $data = Excel::toArray([], $file);
@@ -119,7 +119,7 @@ class UpdateDailyController extends Controller
             $allData = array_merge($allData, $data[0]);
         }
 
-        
+
         try {
         // Convert array data into an Excel file
         $excelFileName = 'databomwip.xlsx';
@@ -128,7 +128,7 @@ class UpdateDailyController extends Controller
         Excel::store(new BomWip($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
-        return $excelFileName; 
+        return $excelFileName;
 
         } catch (\Exception $e) {
             // Log or handle the error
@@ -169,38 +169,39 @@ class UpdateDailyController extends Controller
             // Get the temporary path of the uploaded file
             $filePath = $uploadedFile->getRealPath();
 
-    
+
             // Read the Excel file and process the data
             $data = Excel::toArray([], $filePath)[0];
-    
+
             // Remove the first row (header)
             array_shift($data);
-    
+
             // Remove the first column
             foreach ($data as &$row) {
                 array_shift($row);
             }
-    
+
             // Format date cells in column B to yyyy-mm-dd
             foreach ($data as &$row) {
                 $row[1] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[1])->format('Y-m-d');
             }
-    
+
             // Format number cells in column D to have zero decimal places
             foreach ($data as &$row) {
                 $row[3] = number_format($row[3], 0, '.', '');
             }
-    
-           
+
+
 
             $excelFileName = 'delactual.xlsx';
             $excelFilePath = public_path($excelFileName);
     
             Excel::store(new Delactual($data), 'public/AutomateFile/' . $excelFileName);
-    
+   
+
             // $filePath = Storage::url($fileName);
-            return $excelFileName; 
-    
+            return $excelFileName;
+
             return 'Excel file processed and imported successfully.';
         } catch (\Exception $e) {
             // Handle any errors that occur during processing or importing
@@ -224,8 +225,8 @@ class UpdateDailyController extends Controller
         }
     }
 
-    
-    
+
+
 
 
 
@@ -234,7 +235,7 @@ class UpdateDailyController extends Controller
 
     private function processDelschedFiles($file)
     {
-      
+
         try {
             // Get the uploaded file object
             $uploadedFile = $file[0];
@@ -242,23 +243,23 @@ class UpdateDailyController extends Controller
             // Get the temporary path of the uploaded file
             $filePath = $uploadedFile->getRealPath();
 
-    
+
             // Read the Excel file and process the data
             $data = Excel::toArray([], $filePath)[0];
-    
+
             // Remove the first row (header)
             array_shift($data);
-    
+
             // Remove the first column
             foreach ($data as &$row) {
                 array_shift($row);
             }
-    
+
             // Format date cells in column B to yyyy-mm-dd
             foreach ($data as &$row) {
                 $row[1] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row[1])->format('Y-m-d');
             }
-    
+
             // Format number cells in column D to have zero decimal places
             foreach ($data as &$row) {
                 $row[2] = number_format($row[2], 0, '.', '');
@@ -270,8 +271,8 @@ class UpdateDailyController extends Controller
             Excel::store(new Delsched($data), 'public/AutomateFile/' . $excelFileName);
     
             // $filePath = Storage::url($fileName);
-            return $excelFileName; 
-    
+            return $excelFileName;
+
         } catch (\Exception $e) {
             // Handle any errors that occur during processing or importing
             return 'Error: ' . $e->getMessage();
@@ -280,10 +281,10 @@ class UpdateDailyController extends Controller
 
     private function importDelschedFile($excelFileName)
     {
-       
+
             // Import the Excel file using the DelschedImport class
         Excel::import(new DelschedImport, public_path('storage/AutomateFile/' . $excelFileName));
-    
+
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';
     }
@@ -299,13 +300,13 @@ class UpdateDailyController extends Controller
             // Get the temporary path of the uploaded file
             $filePath = $uploadedFile->getRealPath();
 
-    
+
             // Read the Excel file and process the data
             $data = Excel::toArray([], $filePath)[0];
-    
+
             // Remove the first row (header)
             array_shift($data);
-    
+
             // Remove the first column
             foreach ($data as &$row) {
                 array_shift($row);
@@ -320,16 +321,17 @@ class UpdateDailyController extends Controller
                 $row[4] = number_format($row[4], 0, '.', '');
             }
 
-           
+
 
             $excelFileName = 'delso.csv';
             $excelFilePath = public_path($excelFileName);
+
     
             Excel::store(new Delso($data), 'public/AutomateFile/' . $excelFileName);
     
             // $filePath = Storage::url($fileName);
-            return $excelFileName; 
-    
+            return $excelFileName;
+
         } catch (\Exception $e) {
             // Handle any errors that occur during processing or importing
             return 'Error: ' . $e->getMessage();
@@ -341,7 +343,7 @@ class UpdateDailyController extends Controller
     {
             // Import the Excel file using the DelschedImport class
         Excel::import(new DelsoImport, public_path('storage/AutomateFile/' . $excelFileName));
-    
+
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';
     }
@@ -352,7 +354,7 @@ class UpdateDailyController extends Controller
         // Initialize an array to store all data
         $allData = [];
 
-        // Iterate through each file 
+        // Iterate through each file
         foreach ($files as $file) {
             // Read the XLS file
             $data = Excel::toArray([], $file);
@@ -377,27 +379,27 @@ class UpdateDailyController extends Controller
                     }
                 }
             }
-    
+
 
             // Append data from this file to the allData array
             $allData = array_merge($allData, $data[0]);
         }
-        
+
         $excelFileName = 'inventoryfg.xlsx';
         $excelFilePath = public_path($excelFileName);
 
         Excel::store(new InventoryFg($allData), 'public/AutomateFile/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
-        return $excelFileName; 
-       
+        return $excelFileName;
+
     }
 
     private function  importInventoryfgFile($excelFileName)
     {
             // Import the Excel file using the DelschedImport class
         Excel::import(new InventoryFgImport, public_path('storage/AutomateFile/' . $excelFileName));
-    
+
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';
     }
@@ -409,13 +411,13 @@ class UpdateDailyController extends Controller
          // Initialize an array to store all data
          $allData = [];
 
-         // Iterate through each file 
+         // Iterate through each file
          foreach ($files as $file) {
              // Read the XLS file
              $data = Excel::toArray([], $file);
              // Remove the first row (header)
              array_shift($data[0]);
- 
+
               // Remove the first column
              foreach ($data[0] as &$row) {
                  array_shift($row);
@@ -425,7 +427,7 @@ class UpdateDailyController extends Controller
                 $row[3] = number_format($row[3], 5, '.', ''); // Column 3
                 $row[4] = number_format($row[4], 5, '.', ''); // Column 4
             }
- 
+
              // Append data from this file to the allData array
              $allData = array_merge($allData, $data[0]);
          }
@@ -436,14 +438,14 @@ class UpdateDailyController extends Controller
          Excel::store(new InventoryMtr($allData), 'public/AutomateFile/' . $excelFileName);
  
          // $filePath = Storage::url($fileName);
-         return $excelFileName; 
+         return $excelFileName;
     }
 
         private function  importInventoryMtrFile($excelFileName)
     {
             // Import the Excel file using the DelschedImport class
         Excel::import(new InventoryMtrImport, public_path('storage/AutomateFile/' . $excelFileName));
-    
+
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';
     }
@@ -455,7 +457,7 @@ class UpdateDailyController extends Controller
        // Initialize an array to store all data
        $allData = [];
 
-       // Iterate through each file 
+       // Iterate through each file
        foreach ($files as $file) {
            // Read the XLS file
            $data = Excel::toArray([], $file);
@@ -476,18 +478,18 @@ class UpdateDailyController extends Controller
        Excel::store(new LineProduction($allData), 'public/AutomateFile/' . $excelFileName);
 
        // $filePath = Storage::url($fileName);
-       return $excelFileName; 
-      
+       return $excelFileName;
+
     }
 
-    
+
     private function  importLineProductionFile($excelFileName)
     {
             // Import the Excel file using the DelschedImport class
         Excel::import(new LineProductionImport, public_path('storage/AutomateFile/' . $excelFileName));
-    
+
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';
     }
-    
+
 }

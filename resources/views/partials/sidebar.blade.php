@@ -218,6 +218,12 @@
                             Purchasing Requirement
                         </a>
                     </li>
+                    <li class="sidebar-purchasing">
+                        <a href="{{ route('indexds') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Delivery Schedule
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
@@ -373,49 +379,55 @@
                 {{-- FEATURES IN DEVELOPMENT --}}
                 @if ($department !== 'DIRECTOR')
                     <li class="sidebar-item">
-                        <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
+                    <li class="sidebar-purchasing">
+                        <a href="{{ route('indexds') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Monthly PR
+                            Delivery Schedule
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a href="{{ route('formcuti.home') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Form Cuti
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Form Keluar
-                        </a>
-                    </li>
-                @endif
-
-                @if ($department === 'QA' || $department === 'QC')
-                    <li class="sidebar-item">
-                        <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Defect Categories
-                        </a>
-                    </li>
-                @endif
-
-                @if ($user->role->name === 'SUPERADMIN')
-                    <li class="sidebar-item">
-                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Change Default Email QC
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a href="{{ route('pt.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Project Tracker
-                        </a>
-                    </li>
-                @endif
-            </ul>
+                    <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Monthly PR
+                    </a>
         </li>
+        <li class="sidebar-item">
+            <a href="{{ route('formcuti.home') }}" class="sidebar-link">
+                <i class='bx bx-file'></i>
+                Form Cuti
+            </a>
+        </li>
+        <li class="sidebar-item">
+            <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
+                <i class='bx bx-file'></i>
+                Form Keluar
+            </a>
+        </li>
+        @endif
+
+        @if ($department === 'QA' || $department === 'QC')
+            <li class="sidebar-item">
+                <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
+                    <i class='bx bx-file'></i>
+                    Defect Categories
+                </a>
+            </li>
+        @endif
+
+        @if ($user->role->name === 'SUPERADMIN')
+            <li class="sidebar-item">
+                <a href="{{ route('changeemail.page') }}" class="sidebar-link">
+                    <i class='bx bx-file'></i>
+                    Change Default Email QC
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{{ route('pt.index') }}" class="sidebar-link">
+                    <i class='bx bx-file'></i>
+                    Project Tracker
+                </a>
+            </li>
+        @endif
+    </ul>
+    </li>
     </ul>
 </aside>

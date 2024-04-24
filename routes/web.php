@@ -260,7 +260,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
     });
 
-    Route::middleware(['checkDepartment:BUSINESS,PPIC'])->group(function(){
+    Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function(){
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
         Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
@@ -408,6 +408,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get('/purchaserequest/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
     Route::get('/purchaserequest/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
+    Route::post('/purchaserequest/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
     Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
