@@ -16,7 +16,7 @@
     <div class="col-auto">
     <div class="row align-items-center">
     <div class="col-auto">
-    <div class="form-label">Filter by status</div>
+    <div class="form-label">Filter Bulan</div>
         </div>
             <div class="col-auto">
                 <select name="filter_status" id="status-filter" class="form-select">
