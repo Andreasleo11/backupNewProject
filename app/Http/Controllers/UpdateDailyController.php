@@ -195,8 +195,9 @@ class UpdateDailyController extends Controller
 
             $excelFileName = 'delactual.xlsx';
             $excelFilePath = public_path($excelFileName);
-
+    
             Excel::store(new Delactual($data), 'public/AutomateFile/' . $excelFileName);
+   
 
             // $filePath = Storage::url($fileName);
             return $excelFileName;
@@ -266,9 +267,9 @@ class UpdateDailyController extends Controller
 
             $excelFileName = 'delsched.csv';
             $excelFilePath = public_path($excelFileName);
-
+    
             Excel::store(new Delsched($data), 'public/AutomateFile/' . $excelFileName);
-
+    
             // $filePath = Storage::url($fileName);
             return $excelFileName;
 
@@ -325,8 +326,9 @@ class UpdateDailyController extends Controller
             $excelFileName = 'delso.csv';
             $excelFilePath = public_path($excelFileName);
 
+    
             Excel::store(new Delso($data), 'public/AutomateFile/' . $excelFileName);
-
+    
             // $filePath = Storage::url($fileName);
             return $excelFileName;
 
@@ -432,9 +434,9 @@ class UpdateDailyController extends Controller
 
          $excelFileName = 'inventorymtr.csv';
          $excelFilePath = public_path($excelFileName);
-
+ 
          Excel::store(new InventoryMtr($allData), 'public/AutomateFile/' . $excelFileName);
-
+ 
          // $filePath = Storage::url($fileName);
          return $excelFileName;
     }
