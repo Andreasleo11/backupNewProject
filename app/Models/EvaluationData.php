@@ -25,10 +25,16 @@ class EvaluationData extends Model
         'kerapian_sepatu',
         'prestasi',
         'loyalitas',
+        'total',
     ];
 
     public function karyawan()
     {
         return $this->belongsTo(Employee::class, 'NIK', 'NIK');
+    }
+
+    public function getTotalAttribute()
+    {
+        return $this->Alpha + $this->Telat + $this->Izin;
     }
 }

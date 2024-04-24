@@ -358,8 +358,16 @@
                     </a>
                 </li>
 
-
-        
+                @if ($user->is_head|| $user->role->name === 'SUPERADMIN')
+                <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Discipline Evaluation 
+                        </a>
+                    </li>
+                </ul>
+                @endif
 
 
                 {{-- FEATURES IN DEVELOPMENT --}}

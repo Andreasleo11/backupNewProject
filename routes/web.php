@@ -468,6 +468,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
 
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index");
-
-
+    Route::put("/edit/discipline/{id}", [DisciplinePageController::class, "update"])->name('editdiscipline');
+    Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
+    Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
+    Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
 });
