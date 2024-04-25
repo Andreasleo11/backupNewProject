@@ -284,6 +284,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
     });
 
+    Route::middleware(['checkDepartment:BUSINESS'])->group(function(){
+        Route::get('business/home', [BusinessHomeController::class, 'index'])->name('business.home');
+    });
+
     Route::middleware(['checkDepartment:ACCOUNTING'])->group(function(){
         Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
     });
@@ -411,11 +415,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:MANAGEMENT'])->group(function(){
-        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('assembly.home');
+        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('management.home');
     });
 
     Route::middleware(['checkDepartment:LOGISTIC'])->group(function(){
-        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('assembly.home');
+        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
     });
 
     Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function(){
