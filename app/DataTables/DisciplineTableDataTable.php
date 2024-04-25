@@ -25,7 +25,7 @@ class DisciplineTableDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
         ->addColumn('total', '{{ $Alpha + $Izin + $Telat}}')
-        ->addColumn('totaldiscipline', '{{($kerajinan_kerja + $kerapian_pakaian + $kerapian_rambut + $kerapian_sepatu + $prestasi + $loyalitas) / 6 }}')
+        ->addColumn('totaldiscipline', '@php $total = 100; @endphp {{($total + $kerajinan_kerja + $kerapian_pakaian + $kerapian_rambut + $kerapian_sepatu + $prestasi + $loyalitas) / 6 }}')
         ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-edit"></i></button>
         ')
         ->editcolumn('kerajinan_kerja', '<a class="editable" href="#" data-type="number">{{$kerajinan_kerja}}</a>')
