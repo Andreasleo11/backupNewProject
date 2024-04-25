@@ -44,7 +44,7 @@
                             <th class="table-bordered">Material Name</th>
                             <th class="table-bordered">Unit Measure</th>
                             @foreach ($mon as $month)
-                                <th class="table-bordered">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+                                <th class="table-bordered">{{ \Carbon\Carbon::parse($month)->format('M-Y') }}</th>
                             @endforeach
                             <th>Total</th>
                             <th>Customer</th>

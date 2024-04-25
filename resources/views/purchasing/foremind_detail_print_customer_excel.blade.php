@@ -36,26 +36,26 @@
                 <thead>
                     <tr>
                     <td style="vertical-align: middle; height:60px; font-size: 18px;">Nama Vendor</td>
-                    <td colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;">{{$vendorName}}</td>
+                    <td colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;">{{$vendorName}}</td>
                     </tr>
                     <tr>
                     <td style="vertical-align: middle; height:60px; font-size: 18px;">Date</td>
-                    <td  colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;" >{{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
+                    <td  colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;" >{{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
                        <!-- Blank cell with colspan="10" -->
                     </tr>
                     <tr>
                     <td style="vertical-align: middle; height:60px; font-size: 18px;">ATT</td>
-                    <td  colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;"> {{ $contact->persontocontact }} </td>
+                    <td  colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;"> {{ $contact->persontocontact }} </td>
                     </tr>
                     <tr>
                     <td style="vertical-align: middle; height:60px; font-size: 18px;">FR </td>
-                    <td  colspan="11" style="vertical-align: middle; height:60px; font-size: 18px;">{{ $contact->p_member }}</td>
+                    <td  colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;">{{ $contact->p_member }}</td>
                     </tr>
                     <tr>
-                    <td colspan="12"   align="center" style="vertical-align: middle; font-size: 30px;" >Forecast Report</td>
+                    <td colspan="13"   align="center" style="vertical-align: middle; font-size: 30px;" >Forecast Report</td>
                     </tr>
                     <tr>
-                        <td colspan="12"></td>
+                        <td colspan="13"></td>
                     </tr>
                     <tr>
                         <th align="center" style="vertical-align: middle; height:60px; font-size: 18px;" >No</th>
@@ -63,9 +63,10 @@
                         <th align="center" style="vertical-align: middle; font-size: 18px;">Material Name</th>
                         <th align="center" style="vertical-align: middle; font-size: 18px;">U/M</th>
                         @foreach ($mon as $month)
-                            <th align="center" style="vertical-align: middle; font-size: 18px;">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+                            <th align="center" style="vertical-align: middle; font-size: 18px;">{{ \Carbon\Carbon::parse($month)->format('M-Y') }}</th>
                         @endforeach
                         <th align="center" style="vertical-align: middle; font-size: 18px;">Total</th>
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Keterangan</th>
                         <th align="center" style="vertical-align: middle; font-size: 18px;">Customer<th>
                     </tr>
                 </thead>
@@ -91,9 +92,10 @@
                             <strong>{{ $monthlyTotal }}</strong>
                         </td>
                     @endforeach
-                    <td class="table-bordered"   align="center" style="vertical-align: middle;">
-                        <strong>{{ array_sum($monthlyTotals) }}</strong>
-                    </td>
+                        <td class="table-bordered"   align="center" style="vertical-align: middle;">
+                            <strong>{{ array_sum($monthlyTotals) }}</strong>
+                        </td>
+                    <td class="table-bordered" rowspan="2"  align="center" style="vertical-align: middle;"></td>
                     <td class="table-bordered" rowspan="2"  align="center" style="vertical-align: middle;">{{ $currentCustomer }}</td>
                 </tr>
                 <tr>
@@ -145,6 +147,7 @@
         <td class="table-bordered"  align="center"  style="vertical-align: middle;">
             <strong>{{ array_sum($monthlyTotals) }}</strong>
         </td>
+        <td class="table-bordered" rowspan="2"   align="center" style="vertical-align: middle;"></td>
         <td class="table-bordered" rowspan="2"   align="center" style="vertical-align: middle;">{{ $currentCustomer }}</td>
     </tr>
     <tr>

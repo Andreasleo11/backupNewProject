@@ -12,6 +12,9 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                    <td colspan="15"   align="center" style="vertical-align: middle; font-size: 30px;" >Forecast Report Internal</td>
+                    </tr>
+                    <tr>
                         <th align="center" style="vertical-align: middle; height:60px; font-size: 18px;">No</th>
                         <th align="center" style="vertical-align: middle; font-size: 18px;">Material Code</th>
                         <th align="center" style="vertical-align: middle; font-size: 18px;">Material Name</th>
@@ -20,8 +23,9 @@
                         <th align="center" style="vertical-align: middle; font-size: 18px;">U/M</th>
                         <th align="center" style="vertical-align: middle; font-size: 18px;">NET Quantity</th>
                         @foreach ($mon as $month)
-                            <th align="center" style="vertical-align: middle; font-size: 18px;">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+                            <th align="center" style="vertical-align: middle; font-size: 18px;">{{ \Carbon\Carbon::parse($month)->format('M-Y') }}</th>
                         @endforeach
+                        <th align="center" style="vertical-align: middle; font-size: 18px;">Keterangan</th>
                         <th align="center" style="vertical-align: middle; font-size: 18px;">Total</th>
                     </tr>
                 </thead>
@@ -42,7 +46,7 @@
                                 @foreach ($monthlyTotalPredictions as $monthlyTotalPrediction)
                                     <td align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotalPrediction }}</strong></td>
                                 @endforeach
-
+                                <td></td>
                                 <td align="center" style="vertical-align: middle;"><strong>{{ array_sum($monthlyTotalPredictions) }}</strong></td>
                             </tr>
 
@@ -118,7 +122,7 @@
                         @foreach ($monthlyTotalPredictions as $monthlyTotalPrediction)
                             <td align="center" style="vertical-align: middle;"><strong>{{ $monthlyTotalPrediction }}</strong></td>
                         @endforeach
-
+                        <td></td>
                         <td align="center" style="vertical-align: middle;"><strong>{{ array_sum($monthlyTotalPredictions) }}</strong></td>
                     </tr>
                 </tbody>
