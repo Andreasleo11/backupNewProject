@@ -54,8 +54,6 @@ class CapacityByForecastController extends Controller
         return $dataTable->render("production.capacity_forecast.detail");
     }
 
-
-
     public function viewstep1()
     {
         return view("production.capacity_forecast.step1");
@@ -70,7 +68,11 @@ class CapacityByForecastController extends Controller
 		DB::table('cap_forecast_sorteds')->truncate();
 		DB::table('cap_forecast_sums')->truncate();
 		DB::table('cap_items')->truncate();
-		DB::table('cap_line_summaries')->truncate();				
+		DB::table('cap_line_summaries')->truncate();
+		DB::table('cap_line_distributions')->truncate();
+		DB::table('cap_line_capacities')->truncate();
+		DB::table('cap_line_summaries')->truncate();
+		DB::table('cap_results')->truncate();		
 		
 		$val_start_date = $request->start_date;			
 		$fmonthonly = (new Carbon($val_start_date))->month;
@@ -158,16 +160,12 @@ class CapacityByForecastController extends Controller
 		}		
 		
 		return redirect()->route("step1second");
-
-
         
     }
 
     public function step1_second(Request $request)
     {
         DB::table('cap_line_distributions')->truncate();
-
-		
 		
 		// $test1= DB::table('cap_forecast_sorteds')->select('item_code')->distinct()->get();
 		// foreach($test1 as $test2){
@@ -225,7 +223,6 @@ class CapacityByForecastController extends Controller
 						
 			$tab_fct_inventory_fg = DB::table('sap_fct_inventory_fgs')->where('item_code',$val_item_code_srt)->first();	
 		
-
 			$val_cycle_time_raw = $tab_fct_inventory_fg->cycle_time;
 			
 			$val_process_owner = $tab_fct_inventory_fg->process_owner;
@@ -302,9 +299,12 @@ class CapacityByForecastController extends Controller
 			
 			$cal_total_forecast_time = $cal_cycle_time * $sum_forecast_div_selected / 60;
 			
+			$con_total_prior = DB::table('cap_line_distributions')->where('item_code',$val_item_code_srt)->count();
+			
 			$ins_items = array('item_code' => $val_item_code_srt, 'line_category' => $val_category, 'quantity' => $sum_forecast_div_selected, 
 			'departement' => $val_departement, 'cavity' => $val_cavity, 'man_power' => $val_man_power, 'total_forecast_time' => $cal_total_forecast_time,
-			'cycle_time_raw' => $val_cycle_time_raw, 'cycle_time' => $cal_cycle_time, 'pair' => $val_pair, 'counter_forecast' => $sum_forecast_div_selected);		
+			'cycle_time_raw' => $val_cycle_time_raw, 'cycle_time' => $cal_cycle_time, 'pair' => $val_pair, 'counter_forecast' => $sum_forecast_div_selected,
+			'total_prior' => $con_total_prior);		
 			CapItem::insert($ins_items);
 		}
 
@@ -322,6 +322,8 @@ class CapacityByForecastController extends Controller
         DB::table('cap_line_capacities')->truncate();
 		DB::table('cap_line_summaries')->truncate();
 	
+		//setup lama waktu
+	
 		$tab_line_list = DB::table('inv_line_lists')->get();
 		
 		foreach($tab_line_list as $fore_line_list){
@@ -338,6 +340,40 @@ class CapacityByForecastController extends Controller
 			$ins_line_capacity = array('line_code' => $val_line_code, 'departement' => $val_departement, 'time_limit' => $cal_time_limit, 'status' => 0);		
 			CapLineCapacity::insert($ins_line_capacity);			
 		}
+		
+		//insert banyak prior di cap_line_distribution
+		$tab_cap_line_distribution = DB::table('cap_line_distributions')->get();
+		foreach($tab_cap_line_distribution as $fore_line_distribution){	
+		
+			$val_item_code = $fore_line_distribution->item_code;
+			
+			$tab_items = DB::table('cap_items')->where('item_code',$val_item_code)->first();
+			$val_total_prior = $tab_items->total_prior;
+			
+			$update_pr_items = DB::table('cap_line_distributions')->where('item_code',$val_item_code)->update([										
+				'total_prior' => $val_total_prior,
+				'order' => 0,
+			]);	
+		
+		}
+		
+		//insert order di cap_line_distribution
+		$tab_cap_line_distribution_ii = DB::table('cap_line_distributions')->orderBy('total_prior','asc')->orderBy('bom_level','asc')->orderBy('item_code','asc')->orderBy('priority','asc')->get();
+		foreach($tab_cap_line_distribution_ii as $fore_line_distribution_ii){	
+			
+			$val_id = $fore_line_distribution_ii->id;	
+
+			$con_total_distribution = DB::table('cap_line_distributions')->count();
+			$con_total_distribution_unorder = DB::table('cap_line_distributions')->where('order',0)->count();
+			
+			$cal_order = $con_total_distribution - $con_total_distribution_unorder + 1;
+			
+			$update_pr_items = DB::table('cap_line_distributions')->where('id',$val_id)->update([										
+				'order' => $cal_order,																		
+			]);	
+		
+		}
+		
         return redirect()->route("step3");
     }
 
@@ -360,7 +396,7 @@ class CapacityByForecastController extends Controller
 								
 				$val_line_code = $line_capacity->line_code;				
 								
-				$tab_line_distribution = DB::table('cap_line_distributions')->where('line_code',$val_line_code)->where('priority',$i)->orderBy('id','asc')->get();
+				$tab_line_distribution = DB::table('cap_line_distributions')->where('line_code',$val_line_code)->where('priority',$i)->orderBy('order','asc')->get();
 				
 				foreach($tab_line_distribution as $line_distribution){
 					$val_distribution_id = $line_distribution->id;
