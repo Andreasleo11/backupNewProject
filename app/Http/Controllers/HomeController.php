@@ -32,49 +32,37 @@ class HomeController extends Controller
         } else if ($user->role_id == 2){
             // dd($user->department->name);
             $department = $user->department->name;
-            switch ($department) {
-                case "QA":
-                    return redirect()->route('qaqc.home');
-                    break;
-                case "QC":
-                    return redirect()->route('qaqc.home');
-                    break;
-                case "ACCOUNTING":
-                    return redirect()->route('accounting.home');
-                    break;
-                case "DIRECTOR":
-                    return redirect()->route('director.home');
-                    break;
-                case "PURCHASING":
-                    return redirect()->route('purchasing.home');
-                    break;
-                case "PRODUCTION":
-                    return redirect()->route('production.home');
-                    break;
-                case "HRD":
-                    return redirect()->route('hrd.home');
-                    break;
-                case "BUSINESS":
-                    return redirect()->route('business.home');
-                    break;
-                case "PE":
-                    return redirect()->route('pe.home');
-                    break;
-                case "PLASTIC INJECTION":
-                    return redirect()->route('pi.home');
-                    break;
-                case "COMPUTER":
-                    return redirect()->route('computer.home');
-                    break;
-                case "MAINTENANCE":
-                    return redirect()->route('maintenance.home');
-                    break;
-                case "PPIC":
-                    return redirect()->route('ppic.home');
-                    break;
-            }
+            $abbrString = $this->abbreviateString($department);
+            // dd($abbrString);
+            return redirect()->route($abbrString . '.home');
         } else {
             return view('welcome');
+        }
+    }
+
+    private function abbreviateString($string) {
+        // Check if the string contains multiple words
+        if (strpos($string, ' ') !== false) {
+            // Convert the string to lowercase
+            $lowercaseString = strtolower($string);
+
+            // Split the string into words
+            $words = explode(' ', $lowercaseString);
+
+            // Initialize an empty abbreviation string
+            $abbreviation = '';
+
+            // Iterate through each word
+            foreach ($words as $word) {
+                // Add the first letter of each word to the abbreviation string
+                $abbreviation .= substr($word, 0, 1);
+            }
+
+            // Return the abbreviation
+            return $abbreviation;
+        } else {
+            // Return the lowercase version of the string
+            return strtolower($string);
         }
     }
 }
