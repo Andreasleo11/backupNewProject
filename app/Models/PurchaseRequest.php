@@ -30,7 +30,8 @@ class PurchaseRequest extends Model
         'pr_no',
         'supplier',
         'description',
-        'approved_at'
+        'approved_at',
+        'updated_at'
     ];
 
 

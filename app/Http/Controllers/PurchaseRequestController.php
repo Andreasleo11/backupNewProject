@@ -31,6 +31,9 @@ class PurchaseRequestController extends Controller
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
         $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
+        $isHead = $user->is_head;
+        $isPurchaser = $user->specification->name === "PURCHASER";
+
 
         // Determine conditions based on user department and role
         $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy', 'createdBy.department');
@@ -38,17 +41,14 @@ class PurchaseRequestController extends Controller
         if ($isHRDHead) {
             // If the user is HRD Head, filter requests with specific conditions
             $purchaseRequestsQuery->whereNotNull('autograph_1')
+                ->whereNotNull('autograph_5')
                 ->whereNotNull('autograph_2')
                 ->whereNull('autograph_3')
                 ->where('status', 2);
-
-            $purchaseRequestsQuery;
-        } elseif ($userDepartmentName === "DIRECTOR") {
-            // If the user is a director, filter requests with specific conditions
+        } elseif ($isPurchaser || $isHead) {
+            // If the user is a purchaser, filter requests with specific conditions
             $purchaseRequestsQuery->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
-                ->whereNotNull('autograph_3')
-                ->where('status', 3);
+                ->where('to_department', ucwords(strtolower($userDepartmentName)));
         } else {
             // Otherwise, filter requests based on user department
             $purchaseRequestsQuery->whereHas('createdBy.department', function ($query) use ($userDepartmentName) {
@@ -67,21 +67,18 @@ class PurchaseRequestController extends Controller
         }
 
         $purchaseRequests = $purchaseRequestsQuery
-            ->orderByRaw('CASE WHEN status != 5 THEN 0 ELSE 1 END')
-            ->orderBy('updated_at', 'desc')
-            ->orderBy('status', 'desc')
+            ->orderByRaw("
+                        CASE
+                            WHEN status = 1 THEN 0
+                            WHEN status = 6 THEN 1
+                            WHEN status = 2 THEN 2
+                            WHEN status = 3 THEN 3
+                            WHEN status = 4 THEN 4
+                            ELSE 5
+                        END")->orderBy('updated_at', 'desc')
+            // ->orderBy('status', 'desc')
             ->paginate(10);
 
-        // // Get department-wise purchase request counts for chart
-        // $departments = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
-        //     ->groupBy('to_department')
-        //     ->get();
-
-        // // Prepare data for the chart
-        // $labels = $departments->pluck('to_department');
-        // $counts = $departments->pluck('count');
-
-        // return view('purchaseRequest.index', compact('labels', 'counts', 'purchaseRequests'));
         return view('purchaseRequest.index', compact('purchaseRequests'));
     }
 
@@ -468,7 +465,9 @@ class PurchaseRequestController extends Controller
         ]);
 
         // Define the additional attribute and its value
-        $additionalData = [];
+        $additionalData = [
+            'updated_at' => now(),
+        ];
 
         $pr = PurchaseRequest::find($id);
 
@@ -497,7 +496,10 @@ class PurchaseRequestController extends Controller
             // dd($dataToUpdate);
 
             $pr->update($dataToUpdate);
+        } else {
+            $pr->update($additionalData);
         }
+
 
         $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
