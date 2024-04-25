@@ -3,6 +3,7 @@
 use App\Http\Controllers\accounting\AccountingHomeController;
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
+use App\Http\Controllers\AssemblyHomeController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\DefectCategoryController;
@@ -53,10 +54,18 @@ use App\Http\Controllers\PurchasingRequirementController;
 use App\Http\Controllers\ProjectTrackerController;
 use App\Http\Controllers\MouldDownController;
 use App\Http\Controllers\LineDownController;
+use App\Http\Controllers\LogisticHomeController;
 use App\Http\Controllers\maintenance\MaintenanceHomeController;
+use App\Http\Controllers\ManagementHomeController;
+use App\Http\Controllers\MMHomeController;
+use App\Http\Controllers\MouldingHomeController;
 use App\Http\Controllers\pe\PEHomeController;
+use App\Http\Controllers\PersonaliaHomeController;
+use App\Http\Controllers\PIHomeController;
 use App\Http\Controllers\PPICHomeController;
 use App\Http\Controllers\SpecificationController;
+use App\Http\Controllers\SPHomeController;
+use App\Http\Controllers\StoreHomeController;
 use App\Http\Controllers\UpdateDailyController;
 use App\Models\Department;
 use App\Models\Role;
@@ -371,6 +380,43 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("maintenance/line-repair", [LineDownController::class, "index"])->name("linedown.index");
         Route::post("/add/line/down", [LineDownController::class, "addlinedown"])->name('addlinedown');
     });
+
+    Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function(){
+        Route::get('pi/home', [PIHomeController::class, 'index'])->name('pi.home');
+    });
+
+    Route::middleware(['checkDepartment:MOULDING'])->group(function(){
+        Route::get('moulding/home', [MouldingHomeController::class, 'index'])->name('moulding.home');
+    });
+
+    Route::middleware(['checkDepartment:STORE'])->group(function(){
+        Route::get('store/home', [StoreHomeController::class, 'index'])->name('store.home');
+    });
+
+    Route::middleware(['checkDepartment:SECOND PROCESS'])->group(function(){
+        Route::get('sp/home', [SPHomeController::class, 'index'])->name('sp.home');
+    });
+
+    Route::middleware(['checkDepartment:ASSEMBLY'])->group(function(){
+        Route::get('assembly/home', [AssemblyHomeController::class, 'index'])->name('assembly.home');
+    });
+
+    Route::middleware(['checkDepartment:PERSONALIA'])->group(function(){
+        Route::get('personalia/home', [PersonaliaHomeController::class, 'index'])->name('personalia.home');
+    });
+
+    Route::middleware(['checkDepartment:MANAGEMENT'])->group(function(){
+        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('assembly.home');
+    });
+
+    Route::middleware(['checkDepartment:LOGISTIC'])->group(function(){
+        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('assembly.home');
+    });
+
+    Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function(){
+        Route::get('mm/home', [MMHomeController::class, 'index'])->name('mm.home');
+    });
+
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
