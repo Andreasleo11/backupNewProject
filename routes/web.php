@@ -279,6 +279,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
     });
 
+    Route::middleware(['checkDepartment:BUSINESS'])->group(function(){
+        Route::get('business/home', [BusinessHomeController::class, 'index'])->name('business.home');
+    });
+
     Route::middleware(['checkDepartment:ACCOUNTING'])->group(function(){
         Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
     });
