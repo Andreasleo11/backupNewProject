@@ -410,11 +410,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:MANAGEMENT'])->group(function(){
-        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('assembly.home');
+        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('management.home');
     });
 
     Route::middleware(['checkDepartment:LOGISTIC'])->group(function(){
-        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('assembly.home');
+        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
     });
 
     Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function(){

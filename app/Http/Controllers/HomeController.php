@@ -32,8 +32,10 @@ class HomeController extends Controller
         } else if ($user->role_id == 2){
             // dd($user->department->name);
             $department = $user->department->name;
+            if($department === "QC" || $department === "QA"){
+                return redirect()->route('qaqc.home');
+            }
             $abbrString = $this->abbreviateString($department);
-            // dd($abbrString);
             return redirect()->route($abbrString . '.home');
         } else {
             return view('welcome');
