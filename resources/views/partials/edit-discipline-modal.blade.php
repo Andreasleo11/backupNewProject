@@ -15,7 +15,7 @@
                                 <label for="kerajinan_kerja" class="form-label"> Kerajinan Kerja : </label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="number" name="kerajinan_kerja" class="form-control" id="kerajinan_kerja" value="{{$employee->kerajinan_kerja}}">
+                                <input type="text" name="kerajinan_kerja" class="form-control" id="kerajinan_kerja" value="{{$employee->kerajinan_kerja}}">
                             </div>
                         </div>
                     </div>
@@ -25,7 +25,7 @@
                                 <label for="kerapian_pakaian" class="form-label">Kerapian Pakaian:</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="number" name="kerapian_pakaian" class="form-control" id="kerapian_pakaian" value="{{$employee->kerapian_pakaian}}"> 
+                                <input type="text" name="kerapian_pakaian" class="form-control" id="kerapian_pakaian" value="{{$employee->kerapian_pakaian}}"> 
                             </div>
                         </div>
                     </div>
@@ -35,7 +35,7 @@
                                 <label for="kerapian_rambut" class="form-label">Kerapian Rambut:</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="number" name="kerapian_rambut" class="form-control" id="kerapian_rambut" value="{{$employee->kerapian_rambut}}">
+                                <input type="text" name="kerapian_rambut" class="form-control" id="kerapian_rambut" value="{{$employee->kerapian_rambut}}">
                             </div>
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                                 <label for="kerapian_sepatu" class="form-label">Kerapian Sepatu:</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="number" name="kerapian_sepatu" class="form-control" id="kerapian_sepatu" value="{{$employee->kerapian_sepatu}}">
+                                <input type="text" name="kerapian_sepatu" class="form-control" id="kerapian_sepatu" value="{{$employee->kerapian_sepatu}}">
                             </div>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
                                 <label for="prestasi" class="form-label">Prestasi :</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="number" name="prestasi" class="form-control" id="prestasi" value="{{$employee->prestasi}}">
+                                <input type="text" name="prestasi" class="form-control" id="prestasi" value="{{$employee->prestasi}}">
                             </div>
                         </div>
                     </div>
@@ -65,7 +65,7 @@
                                 <label for="loyalitas" class="form-label">Loyalitas:</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="number" name="loyalitas" class="form-control" id="loyalitas" value="{{$employee->loyalitas}}">
+                                <input type="text" name="loyalitas" class="form-control" id="loyalitas" value="{{$employee->loyalitas}}">
                             </div>
                         </div>
                     </div>
