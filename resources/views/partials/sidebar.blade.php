@@ -224,6 +224,13 @@
                             Delivery Schedule
                         </a>
                     </li>
+
+                    <li class="sidebar-purchasing">
+                        <a href="{{ route('fc.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Forecast Customer Master
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
