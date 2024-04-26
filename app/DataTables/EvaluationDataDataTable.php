@@ -84,6 +84,7 @@ class EvaluationDataDataTable extends DataTable
             Column::make('Alpha'),
             Column::make('Telat'),
             Column::make('Izin'),
+            Column::make('Sakit'),
         ];  
     }
 

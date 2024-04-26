@@ -24,23 +24,163 @@ class DisciplineTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-        ->addColumn('total', '{{ $Alpha + $Izin + $Telat}}')
-        ->addColumn('totaldiscipline', '@php $total = 100; @endphp {{($total + $kerajinan_kerja + $kerapian_pakaian + $kerapian_rambut + $kerapian_sepatu + $prestasi + $loyalitas) / 6 }}')
+        ->addColumn('total', '
+        @php
+        
+        $total = 40;
+
+        $countalpha = $Alpha * 10;
+        $countizin = $Izin * 2;
+        $counttelat = $Telat * 0.5;
+
+        $all = $total - ($countalpha + $countizin + $counttelat + $Sakit);
+        
+        if($all < 0)
+        {
+            $all = 0;
+        }
+        @endphp
+        {{ $all }}')
+        ->addColumn('totaldiscipline', '@php 
+        
+        $total = 0; 
+
+        if($kerajinan_kerja === "A")
+        {
+            $total += 10;   
+        }
+        elseif($kerajinan_kerja === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($kerajinan_kerja === "C")
+        {
+            $total += 5;   
+        }
+        elseif($kerajinan_kerja === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($kerajinan_kerja === "E")
+        {
+            $total += 0;   
+        }
+        if($kerapian_pakaian === "A")
+        {
+            $total += 10;   
+        }
+        elseif($kerapian_pakaian === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($kerapian_pakaian === "C")
+        {
+            $total += 5;   
+        }
+        elseif($kerapian_pakaian === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($kerapian_pakaian === "E")
+        {
+            $total += 0;   
+        }
+
+        if($kerapian_rambut === "A")
+        {
+            $total += 10;   
+        }
+        elseif($kerapian_rambut === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($kerapian_rambut === "C")
+        {
+            $total += 5;   
+        }
+        elseif($kerapian_rambut === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($kerapian_rambut === "E")
+        {
+            $total += 0;   
+        }
+
+        if($kerapian_sepatu === "A")
+        {
+            $total += 10;   
+        }
+        elseif($kerapian_sepatu === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($kerapian_sepatu === "C")
+        {
+            $total += 5;   
+        }
+        elseif($kerapian_sepatu === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($kerapian_sepatu === "E")
+        {
+            $total += 0;   
+        }
+
+        if($prestasi === "A")
+        {
+            $total += 10;   
+        }
+        elseif($prestasi === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($prestasi === "C")
+        {
+            $total += 5;   
+        }
+        elseif($prestasi === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($prestasi === "E")
+        {
+            $total += 0;   
+        }
+
+        if($loyalitas === "A")
+        {
+            $total += 10;   
+        }
+        elseif($loyalitas === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($loyalitas === "C")
+        {
+            $total += 5;   
+        }
+        elseif($loyalitas === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($loyalitas === "E")
+        {
+            $total += 0;   
+        }
+        
+        @endphp {{ $total }}')
+        ->addColumn('totalall', '{{ $total + $totaldiscipline }}')
         ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-edit"></i></button>
         ')
-        ->editcolumn('kerajinan_kerja', '<a class="editable" href="#" data-type="number">{{$kerajinan_kerja}}</a>')
-        ->editcolumn('kerapian_pakaian', '<a class="editable" href="" data-type="text">{{$kerapian_pakaian}}</a>')
-        ->editcolumn('kerapian_rambut', '<a class="editable" href="" data-type="text">{{$kerapian_rambut}}</a>')
-        ->editcolumn('kerapian_sepatu', '<a class="editable" href="" data-type="text">{{$kerapian_sepatu}}</a>')
-        ->editcolumn('prestasi', '<a class="editable" href="" data-type="text">{{$prestasi}}</a>')
-        ->editcolumn('loyalitas', '<a class="editable" href="" data-type="text">{{$loyalitas}}</a>')
         ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\EvaluationData $model
+     * @param \App\Models\EvaluationData $mod   el
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(EvaluationData $model): QueryBuilder
@@ -209,6 +349,7 @@ class DisciplineTableDataTable extends DataTable
             Column::make('Alpha'),
             Column::make('Telat'),
             Column::make('Izin'),
+            Column::make('Sakit'),
             Column::make('total')
                 ->name('Total Nilai Kehadiran')
                 ->searchable(false)
@@ -221,10 +362,15 @@ class DisciplineTableDataTable extends DataTable
             Column::make('prestasi'),
             Column::make('loyalitas'),
             Column::make('totaldiscipline')
-                ->name('Total Nilai Kedisiplinan')
-                ->searchable(false)
-                ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
+            ->name('Total Nilai Kedisiplinan')
+            ->searchable(false)
+            ->exportable(false)
+            ->addClass('align-middle')->orderable(false),
+            Column::make('totalall')
+            ->name('Total Akhir')
+            ->searchable(false)
+            ->exportable(false)
+            ->addClass('align-middle')->orderable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

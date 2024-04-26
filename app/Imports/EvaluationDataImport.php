@@ -20,6 +20,7 @@ class EvaluationDataImport implements ToModel
                 'Alpha'  => $row[2] ?? 0,
                 'Telat'  => $row[3] ?? 0,
                 'Izin'  => $row[4] ?? 0,
+                'Sakit' => $row[5] ??0,
             ]);
         
         }
