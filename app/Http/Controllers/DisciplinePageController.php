@@ -40,6 +40,19 @@ class DisciplinePageController extends Controller
             }
         }
 
+        elseif($user->is_head == 1 && $user->department_id == 1)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '341');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
         elseif($user->is_head == 1 && $user->department_id == 3)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
