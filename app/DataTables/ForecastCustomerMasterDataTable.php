@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\EvaluationData;
+use App\Models\ForecastCustomerMaster;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -12,7 +12,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class EvaluationDataDataTable extends DataTable
+class ForecastCustomerMasterDataTable extends DataTable
 {
     /**
      * Build DataTable class.
@@ -23,19 +23,19 @@ class EvaluationDataDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'evaluationdata.action')
+            ->addColumn('action', 'forecastcustomermaster.action')
             ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\EvaluationData $model
+     * @param \App\Models\ForecastCustomerMaster $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function query(EvaluationData $model): QueryBuilder
-    { 
-        return $model::with('karyawan')->newQuery();
+    public function query(ForecastCustomerMaster $model): QueryBuilder
+    {
+        return $model->newQuery();
     }
 
     /**
@@ -46,7 +46,7 @@ class EvaluationDataDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('evaluationdata-table')
+                    ->setTableId('forecastcustomermaster-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
@@ -71,21 +71,10 @@ class EvaluationDataDataTable extends DataTable
     {
         return [
             Column::make('id'),
-            Column::make('NIK'),
-            Column::make('Name')
-                ->data('karyawan.Nama')
-                ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.Dept')
-                ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('Month'),
-            Column::make('Alpha'),
-            Column::make('Telat'),
-            Column::make('Izin'),
-            Column::make('Sakit'),
-        ];  
+            Column::make('forecast_code'),
+            Column::make('forecast_name'),
+            Column::make('customer'),
+        ];
     }
 
     /**
@@ -95,6 +84,6 @@ class EvaluationDataDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'EvaluationData_' . date('YmdHis');
+        return 'ForecastCustomerMaster_' . date('YmdHis');
     }
 }

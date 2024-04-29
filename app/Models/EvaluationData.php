@@ -19,6 +19,7 @@ class EvaluationData extends Model
         'Alpha',
         'Telat',
         'Izin',
+        'Sakit',
         'kerajinan_kerja',
         'kerapian_pakaian',
         'kerapian_rambut',

@@ -71,6 +71,8 @@ use App\Http\Controllers\StoreHomeController;
 use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
+use App\Http\Controllers\ForecastCustomerController;
+
 
 use App\Models\Department;
 use App\Models\Role;
@@ -523,4 +525,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
     Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
     Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
+
+
+    Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index");
+    Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 });

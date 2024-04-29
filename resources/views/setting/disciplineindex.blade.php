@@ -34,6 +34,9 @@
                     <option value="12">December</option>
                 </select>
              </div>
+            <div class="col-auto">
+            <?php echo date('Y'); ?>
+        </div>
         </div>
     </div>
 <section class="content">

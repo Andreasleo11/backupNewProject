@@ -40,6 +40,19 @@ class DisciplinePageController extends Controller
             }
         }
 
+        elseif($user->is_head == 1 && $user->department_id == 1)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '341');
+            })
+            ->get();
+
+            foreach ($employees as $employee) {
+                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
+            //    dd($employee);
+            }
+        }
+
         elseif($user->is_head == 1 && $user->department_id == 3)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
@@ -319,15 +332,15 @@ class DisciplinePageController extends Controller
         foreach ($data as $row) {
             foreach ($existingRecords as $record) {
                 $j +=1;
-                if ($record->NIK === $row[1]) { // Check if NIK matches
+                if ($record->NIK === $row[1] && $record->Month === $row[2]) { // Check if NIK matches
                     // Update the attributes with new values
                    EvaluationData::where('id', $record->id)->update([
-                    'kerajinan_kerja'=> $row[6], 
-                    'kerapian_pakaian' => $row[7],
-                    'kerapian_rambut' => $row[8],
-                    'kerapian_sepatu'=> $row[9],
-                    'prestasi' => $row[10],
-                    'loyalitas' =>  $row[11],
+                    'kerajinan_kerja'=> $row[7], 
+                    'kerapian_pakaian' => $row[8],
+                    'kerapian_rambut' => $row[9],
+                    'kerapian_sepatu'=> $row[10],
+                    'prestasi' => $row[11],
+                    'loyalitas' =>  $row[12],
                    ]);
                     $i += 1;
                 }

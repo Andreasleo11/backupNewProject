@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\foremindFinal;
 use App\Models\PurchasingContact;
+use App\Models\ForecastCustomerMaster;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
@@ -293,7 +294,9 @@ class PurchasingDetailController extends Controller
         $transformedData = [];
 
 
-
+        $customers = ForecastCustomerMaster::get();
+        
+        // dd($materials);
                 // Get unique months from all forecasts
         $allMonths = [];
 
@@ -340,6 +343,18 @@ class PurchasingDetailController extends Controller
 
 
         // dd($qforecast);
+         //CODE UNTUK REPLACE CUSTOMER 
+        foreach ($materials as $material) {
+            foreach ($customers as $customer) {
+                if($material->customer === '5H45') {
+                    $material->customer = 'ITSP/IKUYO';
+                    break; // Break both inner and outer loops once the replacement is done
+                }elseif ($material->customer === $customer->forecast_name) {
+                    $material->customer = $customer->customer;
+                    break; // Break the inner loop once the replacement is done
+                }
+            }
+        }
 
         $export = new ForExportCustomer($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast, $vendorName,$contact);
 
@@ -347,6 +362,7 @@ class PurchasingDetailController extends Controller
 
         return Excel::download($export,  $fileName);
     }
-
+    
+    
 
 }
