@@ -658,8 +658,7 @@ class QaqcReportController extends Controller
         ];
 
         $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
-            ->setPaper('a4', 'landscape')
-            ->scale(0.75);
+            ->setPaper('a4', 'landscape');
 
         // Define the file path and name
         $fileName = 'verification-report-' . $report->id . '.pdf';
