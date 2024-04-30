@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
+use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
 
@@ -22,10 +24,6 @@ class PurchaseRequestController extends Controller
 
         $startDate = $request->start_date;
         $endDate = $request->end_date;
-
-        // if($startDate && $endDate){
-        //     dd($startDate . '-' . $endDate);
-        // }
 
         // Get user information
         $user = Auth::user();
@@ -47,8 +45,15 @@ class PurchaseRequestController extends Controller
                 ->where('status', 2);
         } elseif ($isPurchaser || $isHead) {
             // If the user is a purchaser, filter requests with specific conditions
-            $purchaseRequestsQuery->whereNotNull('autograph_1')
-                ->where('to_department', ucwords(strtolower($userDepartmentName)));
+
+            if($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING'){
+                $purchaseRequestsQuery->whereNotNull('autograph_1')
+                    ->where('to_department', ucwords(strtolower($userDepartmentName)));
+            } else {
+                $purchaseRequestsQuery->whereNotNull('autograph_1')
+                    ->where('to_department', 'Personnel')->orWhere('to_department', 'Maintenance');
+            }
+
         } else {
             // Otherwise, filter requests based on user department
             $purchaseRequestsQuery->whereHas('createdBy.department', function ($query) use ($userDepartmentName) {
@@ -99,7 +104,6 @@ class PurchaseRequestController extends Controller
     public function create()
     {
         $master = MasterDataPr::get();
-        // dd($master);
         return view('purchaseRequest.create', compact('master'));
     }
 
@@ -136,13 +140,27 @@ class PurchaseRequestController extends Controller
 
         // update revisi 26 februari
         $this->verifyAndInsertItems($request, $purchaseRequest->id);
+        $this->executeSendPRNotificationCommand();
 
         // update revisi 26 februari
 
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
+    private function executeSendPRNotificationCommand()
+    {
+        // Execute the email:send-pr-notification command
+        Artisan::call('email:send-pr-notification');
+
+        // Get the output of the command (optional)
+        $output = Artisan::output();
+
+        // You can handle the output or return a response as needed
+        return response()->json(['message' => 'Command executed successfully', 'output' => $output]);
+    }
+
     private function verifyAndInsertItems($request, $id){
+        $this->executeSendPRNotificationCommand();
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];

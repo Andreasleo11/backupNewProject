@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Console\Commands\SendPREmailNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -82,4 +83,15 @@ class PurchaseRequest extends Model
     {
         return $query->where('status', 5);
     }
+
+    protected static function booted()
+    {
+        static::updating(function ($purchaseRequest) {
+            if ($purchaseRequest->isDirty('status')) {
+                // Dispatch your command here
+                SendPREmailNotification::dispatch($purchaseRequest);
+            }
+        });
+    }
+
 }
