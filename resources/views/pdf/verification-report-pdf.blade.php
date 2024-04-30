@@ -28,6 +28,12 @@
             font-size: 10px;
             /* Adjust the font size as needed */
         }
+
+        @page {
+            transform: scale(0.75);
+            /* Adjust the scale factor as needed */
+            transform-origin: 0 0;
+        }
     </style>
     {{-- <table class="table table-borderless">
         <tbody>
