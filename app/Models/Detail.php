@@ -18,6 +18,7 @@ class Detail extends Model
         'can_use',
         'cant_use',
         'price',
+        'do_num',
     ];
 
     // Define relationships if needed

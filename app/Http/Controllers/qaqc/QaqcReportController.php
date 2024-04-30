@@ -185,6 +185,7 @@ class QaqcReportController extends Controller
                 'can_use' => $request->input("can_use$i"),
                 'cant_use' => $request->input("cant_use$i"),
                 'price' => (int) str_replace(['Rp. ', '.'], '', $request->input("price$i")),
+                'do_num' => $request->input("do_num$i")
             ];
                 $detail = Detail::where('report_id', $id)
                 ->where('part_name', $rowData['part_name'])
@@ -622,8 +623,6 @@ class QaqcReportController extends Controller
         session()->forget('details');
         $this->resetEditSessions();
 
-
-
         return redirect()->route('qaqc.report.index')->with(['success' => 'Report succesfully stored/updated!']);
     }
 
@@ -659,7 +658,8 @@ class QaqcReportController extends Controller
         ];
 
         $pdf = Pdf::loadView('pdf/verification-report-pdf', compact('report', 'user', 'autographNames'))
-            ->setPaper('a4', 'landscape');
+            ->setPaper('a4', 'landscape')
+            ->scale(0.75);
 
         // Define the file path and name
         $fileName = 'verification-report-' . $report->id . '.pdf';

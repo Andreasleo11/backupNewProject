@@ -2,15 +2,31 @@
 
 @section('content')
     <style>
+        /* Reduce font size for all text */
+        body {
+            font-size: 12px;
+            /* Adjust the font size as needed */
+        }
+
+        /* Reduce font size for specific elements */
         .autograph-box {
             width: 200px;
-            /* Adjust the width as needed */
             height: 100px;
-            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
             border: 1px solid #ccc;
-            /* Add border for better visibility */
+        }
+
+        /* Reduce font size for table headers */
+        th {
+            font-size: 10px;
+            /* Adjust the font size as needed */
+        }
+
+        /* Reduce font size for table cells */
+        td {
+            font-size: 10px;
+            /* Adjust the font size as needed */
         }
     </style>
     {{-- <table class="table table-borderless">
@@ -112,19 +128,20 @@
                 <th class="align-middle">Customer Defect Detail</th>
                 <th class="align-middle">Price per Quantity</th>
                 <th class="align-middle">Total</th>
+                <th class="align-middle">DO Number</th>
             </tr>
         </thead>
 
         <tbody>
             @forelse($report->details as $detail)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    <td style="width: 2%">{{ $loop->iteration }}</td>
                     <td>{{ $detail->part_name }}</td>
                     <td style="width: 5%">{{ $detail->rec_quantity }}</td>
                     <td style="width: 5%">{{ $detail->verify_quantity }}</td>
                     <td style="width: 5%">{{ $detail->can_use }}</td>
                     <td style="width: 5%">{{ $detail->cant_use }}</td>
-                    <td style="width: 40%">
+                    <td style="max-width: 40%">
                         @foreach ($detail->defects as $defect)
                             @if ($defect->is_daijo)
                                 {{ $defect->quantity . ' : ' . ($defect->category ? $defect->category->name : '-') . ' (' . $defect->remarks . ') ' }}
@@ -140,8 +157,9 @@
                             @endif
                         @endforeach
                     </td>
-                    <td width="15%"> @currency($detail->price) </td>
-                    <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
+                    <td width="10%"> @currency($detail->price) </td>
+                    <td> @currency($detail->price * $detail->rec_quantity) </td>
+                    <td> {{ $detail->do_num }} </td>
                 </tr>
             @empty
                 <td colspan="11">No data</td>
