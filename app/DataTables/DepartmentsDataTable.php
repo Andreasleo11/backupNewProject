@@ -77,6 +77,17 @@ class DepartmentsDataTable extends DataTable
             Column::make('id'),
             Column::make('dept_no'),
             Column::make('name'),
+            Column::make('is_office')->title('At Office')->data('is_office')->renderRaw('function(data, type, row, meta){
+                if (type === \'display\') {
+                    if (data === 1) {
+                        return \'Yes\';
+                    }
+                    else if (data === 0) {
+                        return \'No\';
+                    }
+                }
+                return data; // Return the original data for other types
+            }'),
             Column::make('created_at'),
             Column::make('updated_at'),
             Column::computed('action')

@@ -28,6 +28,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group mt-4">
+                        <div class="col">
+                            <label class="form-label me-5">At Office</label>
+
+                            <div class="form-check form-check-inline ms-2">
+                                <input class="form-check-input" type="radio" name="is_office" value="1">
+                                <label class="form-check-label">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="is_office" value="0">
+                                <label class="form-check-label">No</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
