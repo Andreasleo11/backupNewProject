@@ -143,6 +143,7 @@
                                 <th colspan="3">Customer Defect</th>
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
+                                <th rowspan="2">DO Number</th>
                             </tr>
                             <tr>
                                 <th>Quantity</th>
@@ -199,6 +200,7 @@
                                     </td>
                                     <td width="15%"> @currency($detail->price) </td>
                                     <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
+                                    <td> {{ $detail->do_num }} </td>
                                 </tr>
                             @empty
                                 <td colspan="14">No data</td>
