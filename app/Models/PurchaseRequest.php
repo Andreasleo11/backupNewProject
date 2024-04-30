@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Console\Commands\SendPREmailNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Bus;
 
 class PurchaseRequest extends Model
 {
@@ -32,7 +33,8 @@ class PurchaseRequest extends Model
         'supplier',
         'description',
         'approved_at',
-        'updated_at'
+        'updated_at',
+        'pic',
     ];
 
 
@@ -88,8 +90,7 @@ class PurchaseRequest extends Model
     {
         static::updating(function ($purchaseRequest) {
             if ($purchaseRequest->isDirty('status')) {
-                // Dispatch your command here
-                SendPREmailNotification::dispatch($purchaseRequest);
+                Bus::dispatch(new SendPREmailNotification($purchaseRequest));
             }
         });
     }

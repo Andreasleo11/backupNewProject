@@ -66,6 +66,7 @@ class SendPREmailNotification extends Command
                     $purchaser = 'andreasleonardo.al@gmail.com';
                 }
                 $to = $purchaser;
+                break;
             case 6:
                 // Retrieve the user who is a head and belongs to the same department as the creator of the latest PurchaseRequest
                 $user = User::where('is_head', 1)
@@ -105,11 +106,11 @@ class SendPREmailNotification extends Command
             'cc' => $cc,
             'subject' => 'PR Notification',
             'from' => 'pt.daijoindustrial@daijo.co.id',
-            'url' => 'http://116.254.114.93:2420',
+            'url' => 'http://116.254.114.93:2420/purchaserequest/detail/' . $newPr->id,
             'newPr' => $newPr
         ];
 
         Mail::send(new PRMail($mailData));
-        $this->info('PR notification sent successfully.');
+        // $this->info('PR notification sent successfully.');
     }
 }
