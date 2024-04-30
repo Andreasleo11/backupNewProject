@@ -12,6 +12,7 @@ class Department extends Model
     protected $fillable = [
         'name',
         'dept_no',
+        'is_office',
     ];
 
     public function users(){

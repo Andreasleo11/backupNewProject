@@ -6,7 +6,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Department</h5>
+                    <h5 class="modal-title">Edit Department</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -29,6 +29,22 @@
                             <div class="col-sm-9">
                                 <input type="text" name="dept_no" class="form-control" id="inputDeptNo"
                                     value="{{ $department->dept_no }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="col">
+                            <label for="inputDeptNo" class="form-label me-5">At Office</label>
+
+                            <div class="form-check form-check-inline ms-2">
+                                <input class="form-check-input" type="radio" name="is_office" value="1"
+                                    {{ $department->is_office ? 'checked' : '' }}>
+                                <label class="form-check-label">Yes</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="is_office" value="0"
+                                    {{ !$department->is_office ? 'checked' : '' }}>
+                                <label class="form-check-label">No</label>
                             </div>
                         </div>
                     </div>
