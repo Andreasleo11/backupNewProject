@@ -36,15 +36,14 @@ class SendPREmailNotification extends Command
         switch ($newPr->status) {
             case 1:
                 if($newPr->to_department === "Computer"){
-                    // $purchaser = User::with(['department', 'specification'])
-                    //                 ->whereHas('department', function ($query) {
-                    //                     $query->where('name', 'COMPUTER');
-                    //                 })
-                    //                 ->whereHas('specification', function ($query) {
-                    //                     $query->where('name', 'PURCHASER');
-                    //                 })
-                    //                 ->first()->email;
-                    $purchaser = 'raymond@daijo.co.id';
+                    $purchaser = User::with(['department', 'specification'])
+                                    ->whereHas('department', function ($query) {
+                                        $query->where('name', 'COMPUTER');
+                                    })
+                                    ->whereHas('specification', function ($query) {
+                                        $query->where('name', 'PURCHASER');
+                                    })
+                                    ->first()->email;
                 } elseif($newPr->to_department === "Purchasing") {
                     $purchaser = User::with(['department', 'specification'])
                                     ->whereHas('department', function ($query) {
