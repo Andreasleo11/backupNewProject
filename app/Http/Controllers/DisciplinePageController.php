@@ -260,8 +260,137 @@ class DisciplinePageController extends Controller
     public function update(Request $request, $id)
     {
         $dis = EvaluationData::where('id', $id)->get();
-
+        $total = 40;
+    
+    
         foreach($dis as $di)
+        
+        $total = 40 - (($di->Alpha * 10) + ($di->Izin * 2) + ($di->Sakit) + ($di->Telat * 0.5));
+        if($request->kerajinan_kerja === "A")
+        {
+            $total += 10;   
+        }
+        elseif($request->kerajinan_kerja === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($request->kerajinan_kerja === "C")
+        {
+            $total += 5;   
+        }
+        elseif($request->kerajinan_kerja === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($request->kerajinan_kerja === "E")
+        {
+            $total += 0;   
+        }
+        if($request->kerapian_pakaian === "A")
+        {
+            $total += 10;   
+        }
+        elseif($request->kerapian_pakaian === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($request->kerapian_pakaian === "C")
+        {
+            $total += 5;   
+        }
+        elseif($request->kerapian_pakaian === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($request->kerapian_pakaian === "E")
+        {
+            $total += 0;   
+        }
+
+        if($request->kerapian_rambut === "A")
+        {
+            $total += 10;   
+        }
+        elseif($request->kerapian_rambut === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($request->kerapian_rambut === "C")
+        {
+            $total += 5;   
+        }
+        elseif($request->kerapian_rambut === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($request->kerapian_rambut === "E")
+        {
+            $total += 0;   
+        }
+
+        if($request->kerapian_sepatu === "A")
+        {
+            $total += 10;   
+        }
+        elseif($request->kerapian_sepatu === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($request->kerapian_sepatu === "C")
+        {
+            $total += 5;   
+        }
+        elseif($request->kerapian_sepatu === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($request->kerapian_sepatu === "E")
+        {
+            $total += 0;   
+        }
+
+        if($request->prestasi === "A")
+        {
+            $total += 10;   
+        }
+        elseif($request->prestasi === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($request->prestasi === "C")
+        {
+            $total += 5;   
+        }
+        elseif($request->prestasi === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($request->prestasi === "E")
+        {
+            $total += 0;   
+        }
+
+        if($request->loyalitas === "A")
+        {
+            $total += 10;   
+        }
+        elseif($request->loyalitas === "B")
+        {
+            $total += 7.5;   
+        }
+        elseif($request->loyalitas === "C")
+        {
+            $total += 5;   
+        }
+        elseif($request->loyalitas === "D")
+        {
+            $total += 2.5;   
+        }
+        elseif($request->loyalitas === "E")
+        {
+            $total += 0;   
+        }
+        
         $di->where('id', $request->id)->update(
             [
                 'kerajinan_kerja' =>$request->kerajinan_kerja,
@@ -270,6 +399,7 @@ class DisciplinePageController extends Controller
                 'kerapian_sepatu' =>$request->kerapian_sepatu,
                 'prestasi' =>$request->prestasi,
                 'loyalitas' =>$request->loyalitas,
+                'total' => $total,
             ]);
 
         return redirect()->route('discipline.index')->with('success', 'Line added successfully');
@@ -320,18 +450,154 @@ class DisciplinePageController extends Controller
     {
         $import = new DesciplineDataImport();
         $data = Excel::toArray($import, 'public/Evaluation/DisciplineData.xlsx')[0];
-
+      
         // Extract unique NIKs from the imported data
         $uniqueNIKs = array_unique(array_column($data, 1)); // Assuming NIK is at index 1
-
+        // dd($uniqueNIKs);
         // Fetch existing records based on NIK
         $existingRecords = EvaluationData::whereIn('NIK', $uniqueNIKs)->get();
-        
+
+        foreach ($data as &$dat) {
+            foreach ($dat as &$value) {
+                if ($value === null) {
+                    $value = 0;
+                }
+            }
+        }
+       
         $i = 0;
         $j = 0;
+        $total = 40;
         foreach ($data as $row) {
             foreach ($existingRecords as $record) {
                 $j +=1;
+              
+                $total = 40 - (($row[3] * 10) + ($row[4] * 0.5) + ($row[5]*2) + ($row[6]));
+                if($row[7] === "A")
+                {
+                    $total += 10;   
+                }
+                elseif($row[7] === "B")
+                {
+                    $total += 7.5;   
+                }
+                elseif($row[7] === "C")
+                {
+                    $total += 5;   
+                }
+                elseif($row[7] === "D")
+                {
+                    $total += 2.5;   
+                }
+                elseif($row[7] === "E")
+                {
+                    $total += 0;   
+                }
+                if($row[8] === "A")
+                {
+                    $total += 10;   
+                }
+                elseif($row[8] === "B")
+                {
+                    $total += 7.5;   
+                }
+                elseif($row[8] === "C")
+                {
+                    $total += 5;   
+                }
+                elseif($row[8] === "D")
+                {
+                    $total += 2.5;   
+                }
+                elseif($row[8] === "E")
+                {
+                    $total += 0;   
+                }
+        
+                if($row[9] === "A")
+                {
+                    $total += 10;   
+                }
+                elseif($row[9] === "B")
+                {
+                    $total += 7.5;   
+                }
+                elseif($row[9] === "C")
+                {
+                    $total += 5;   
+                }
+                elseif($row[9] === "D")
+                {
+                    $total += 2.5;   
+                }
+                elseif($row[9] === "E")
+                {
+                    $total += 0;   
+                }
+        
+                if($row[10] === "A")
+                {
+                    $total += 10;   
+                }
+                elseif($row[10] === "B")
+                {
+                    $total += 7.5;   
+                }
+                elseif($row[10] === "C")
+                {
+                    $total += 5;   
+                }
+                elseif($row[10] === "D")
+                {
+                    $total += 2.5;   
+                }
+                elseif($row[10] === "E")
+                {
+                    $total += 0;   
+                }
+        
+                if($row[11] === "A")
+                {
+                    $total += 10;   
+                }
+                elseif($row[11] === "B")
+                {
+                    $total += 7.5;   
+                }
+                elseif($row[11] === "C")
+                {
+                    $total += 5;   
+                }
+                elseif($row[11] === "D")
+                {
+                    $total += 2.5;   
+                }
+                elseif($row[11] === "E")
+                {
+                    $total += 0;   
+                }
+        
+                if($row[12] === "A")
+                {
+                    $total += 10;   
+                }
+                elseif($row[12] === "B")
+                {
+                    $total += 7.5;   
+                }
+                elseif($row[12] === "C")
+                {
+                    $total += 5;   
+                }
+                elseif($row[12] === "D")
+                {
+                    $total += 2.5;   
+                }
+                elseif($row[12] === "E")
+                {
+                    $total += 0;   
+                }
+               
                 if ($record->NIK === $row[1] && $record->Month === $row[2]) { // Check if NIK matches
                     // Update the attributes with new values
                    EvaluationData::where('id', $record->id)->update([
@@ -341,6 +607,7 @@ class DisciplinePageController extends Controller
                     'kerapian_sepatu'=> $row[10],
                     'prestasi' => $row[11],
                     'loyalitas' =>  $row[12],
+                    'total' => $total,
                    ]);
                     $i += 1;
                 }

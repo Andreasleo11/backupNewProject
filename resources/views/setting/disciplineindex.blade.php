@@ -10,6 +10,9 @@
         <button type="submit">Submit</button>
     </form> -->
 
+    @include('partials.info-discipline-page-modal')
+    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal" > Info </a>
+
     <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a>
 
 
@@ -68,6 +71,19 @@
 
             // Filter by month column
             dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
+        });
+        
+        // Custom sorting function for 'totalall'
+        $.fn.dataTable.ext.order['totalall-desc'] = function(settings, col) {
+            return this.api().column(col, {order:'index'}).nodes().map(function(td, index) {
+                let totalallValue = parseFloat($(td).closest('tr').find('td:eq(17)').text());
+                return [totalallValue, index];
+            });
+        };
+
+        // Order by 'totalall' column in descending order
+        $('#disciplinetable-table').on('draw.dt', function() {
+            dataTable.order([17, 'desc']).draw();
         });
     });  
 </script>

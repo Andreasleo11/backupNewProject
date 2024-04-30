@@ -88,4 +88,19 @@ class EvaluationDataController extends Controller
         // If the import is successful, return a success message or any other response
         return 'Excel file imported successfully.';
     }
+    
+    public function delete(Request $request)
+    {
+        $selectedMonth = $request->input('filter_status');
+        $selectedYear = date('Y');
+
+        $startDate = $selectedYear . '-' . $selectedMonth . '-01';
+        $endDate = date('Y-m-t', strtotime($startDate));
+
+        EvaluationData::whereBetween('Month', [$startDate, $endDate])->delete();
+        
+
+        return redirect()->back()->with('success', 'Data for selected month has been deleted.');
+        // dd($request->all());
+    }
 }
