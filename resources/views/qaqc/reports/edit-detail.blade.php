@@ -111,6 +111,7 @@
                                                     <th class="text-center">Can Use</th>
                                                     <th class="text-center">Can't Use</th>
                                                     <th class="text-center">Price</th>
+                                                    <th class="text-center">DO Number</th>
                                                     <th class="text-center">Action</th>
                                                 </tr>
                                             </thead>
@@ -166,6 +167,8 @@
                 <td><input required type="number" value="${detail.can_use ?? ''}" name="can_use${rowCount}" class="form-control canuse-input"></td>
                 <td><input required type="number" value="${detail.cant_use ?? ''}" name="cant_use${rowCount}" class="form-control cantuse-input"></td>
                 <td><input required type="text" value="${detail.price ?? ''}" name="price${rowCount}" id="priceInput${rowCount}" class="form-control price-input"></td>
+                <td><input type="text" value="${detail.do_num ?? ''}" name="do_num${rowCount}" class="form-control"></td>
+
                 <td><a class="btn btn-danger btn-sm" onclick="removeItem(${detail.id})">Remove</a></td>
             `;
             tableBody.appendChild(newRow);
