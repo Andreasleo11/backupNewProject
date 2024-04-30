@@ -519,6 +519,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index");
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
+    Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
+
 
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index");
     Route::put("/edit/discipline/{id}", [DisciplinePageController::class, "update"])->name('editdiscipline');

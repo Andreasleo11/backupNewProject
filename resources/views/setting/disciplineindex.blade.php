@@ -10,6 +10,9 @@
         <button type="submit">Submit</button>
     </form> -->
 
+    @include('partials.info-discipline-page-modal')
+    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal" > Info </a>
+
     <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a>
 
 
@@ -69,6 +72,7 @@
             // Filter by month column
             dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
         });
+        
     });  
 </script>
 

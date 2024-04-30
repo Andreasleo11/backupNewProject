@@ -34,8 +34,5 @@ class EvaluationData extends Model
         return $this->belongsTo(Employee::class, 'NIK', 'NIK');
     }
 
-    public function getTotalAttribute()
-    {
-        return $this->Alpha + $this->Telat + $this->Izin;
-    }
+  
 }
