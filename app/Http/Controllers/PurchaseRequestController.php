@@ -119,6 +119,7 @@ class PurchaseRequestController extends Controller
             'date_required' => $request->input('date_of_required'),
             'remark' => $request->input('remark'),
             'supplier' => $request->input('supplier'),
+            'pic' => $request->input('pic'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
         ];
@@ -464,13 +465,6 @@ class PurchaseRequestController extends Controller
 
         return response()->json($items);
     }
-
-    // public function edit($id){
-    //     $pr = PurchaseRequest::find($id);
-    //     $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-
-    //     return view('purchaseRequest.edit', compact('pr', 'details'));
-    // }
 
     public function update(Request $request, $id){
         // dd($request->all());
