@@ -21,12 +21,13 @@ class DesciplineDataImport implements ToModel, WithUpserts
             'Alpha' => $row[3] ?? 0,
             'Telat' => $row[4] ?? 0,
             'Izin' => $row[5] ?? 0,
-            'kerajinan_kerja'  => $row[6] ?? 0,
-            'kerapian_pakaian'  => $row[7] ?? 0,
-            'kerapian_rambut'  => $row[8] ?? 0,
-            'kerapian_sepatu'  => $row[9] ?? 0,
-            'prestasi'  => $row[10] ?? 0,
-            'loyalitas'  => $row[11] ?? 0,
+            'Sakit' =>$row[6] ??0,
+            'kerajinan_kerja'  => $row[7] ?? 0,
+            'kerapian_pakaian'  => $row[8] ?? 0,
+            'kerapian_rambut'  => $row[9] ?? 0,
+            'kerapian_sepatu'  => $row[10] ?? 0,
+            'prestasi'  => $row[11] ?? 0,
+            'loyalitas'  => $row[12] ?? 0,
         ]);
     }
 

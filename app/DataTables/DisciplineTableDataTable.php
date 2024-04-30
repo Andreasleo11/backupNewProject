@@ -24,7 +24,7 @@ class DisciplineTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-        ->addColumn('total', '
+        ->addColumn('totalkehadiran', '
         @php
         
         $total = 40;
@@ -171,7 +171,6 @@ class DisciplineTableDataTable extends DataTable
         }
         
         @endphp {{ $total }}')
-        ->addColumn('totalall', '{{ $total + $totaldiscipline }}')
         ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-edit"></i></button>
         ')
         ->setRowId('id');
@@ -318,7 +317,7 @@ class DisciplineTableDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->dom('Bfrtip')
-                    ->orderBy(1)
+                    ->orderBy(1,'asc')
                     ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel')->addClass('animated-button'),
@@ -357,7 +356,7 @@ class DisciplineTableDataTable extends DataTable
             Column::make('Telat'),
             Column::make('Izin'),
             Column::make('Sakit'),
-            Column::make('total')
+            Column::make('totalkehadiran')
                 ->name('Total Nilai Kehadiran')
                 ->searchable(false)
                 ->exportable(false)
@@ -373,11 +372,9 @@ class DisciplineTableDataTable extends DataTable
             ->searchable(false)
             ->exportable(false)
             ->addClass('align-middle')->orderable(false),
-            Column::make('totalall')
-            ->name('Total Akhir')
-            ->searchable(false)
-            ->exportable(false)
-            ->addClass('align-middle')->orderable(false),
+            Column::make('total')
+            ->exportable(false),
+
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
