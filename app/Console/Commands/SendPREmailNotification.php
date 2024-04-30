@@ -66,6 +66,7 @@ class SendPREmailNotification extends Command
                     $purchaser = 'andreasleonardo.al@gmail.com';
                 }
                 $to = $purchaser;
+                break;
             case 6:
                 // Retrieve the user who is a head and belongs to the same department as the creator of the latest PurchaseRequest
                 $user = User::where('is_head', 1)
