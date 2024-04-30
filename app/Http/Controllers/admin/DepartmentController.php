@@ -20,10 +20,12 @@ class DepartmentController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255|string',
+            'dept_no' => 'nullable|max:255|string',
         ]);
 
         Department::create([
-            'name' => strtoupper($request->name)
+            'name' => strtoupper($request->name),
+            'dept_no' => $request->dept_no,
         ]);
 
         return redirect()->route('superadmin.departments')->with(['success' => 'Department added successfully!']);
@@ -34,6 +36,7 @@ class DepartmentController extends Controller
         $department = Department::find($id);
         $request->validate([
             'name' => 'required|max:255|string',
+            'dept_no' => 'nullable|max:255|string',
         ]);
 
         $department->update($request->all());

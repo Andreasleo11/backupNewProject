@@ -1,7 +1,8 @@
-<div class="modal fade" tabindex="-1" id="edit-department-modal-{{ $department->id }}" aria-labelledby="editDepartmentModal" aria-hidden="true">
+<div class="modal fade" tabindex="-1" id="edit-department-modal-{{ $department->id }}"
+    aria-labelledby="editDepartmentModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{route('superadmin.departments.update', $department->id)}}">
+            <form method="POST" action="{{ route('superadmin.departments.update', $department->id) }}">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
@@ -15,7 +16,19 @@
                                 <label for="inputName" class="form-label">Name</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="name" class="form-control" id="inputName" value="{{ $department->name }}">
+                                <input type="text" name="name" class="form-control" id="inputName"
+                                    value="{{ $department->name }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="inputDeptNo" class="form-label">Dept No</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="text" name="dept_no" class="form-control" id="inputDeptNo"
+                                    value="{{ $department->dept_no }}">
                             </div>
                         </div>
                     </div>
