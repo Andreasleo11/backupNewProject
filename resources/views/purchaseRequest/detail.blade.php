@@ -322,9 +322,15 @@
                             <tr>
                                 <th>Supplier</th>
                                 <td>: {{ $purchaseRequest->supplier }}</td>
-                                <th>Remark</th>
-                                <td style="width: 40%">: {{ $purchaseRequest->remark }}
+                                <th>PIC</th>
+                                <td>: {{ $purchaseRequest->pic }}</td>
+
                                 </td>
+                            </tr>
+                            <tr>
+                                <th style="width: 15%">Remark</th>
+                                <td colspan="3" style="width: 35%; word-wrap: break-word; word-break: break-all;">:
+                                    {{ $purchaseRequest->remark }}
                             </tr>
                         </tbody>
                     </table>
