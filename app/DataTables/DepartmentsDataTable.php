@@ -23,7 +23,10 @@ class DepartmentsDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'COMING SOON')
+            ->addColumn('action', '
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-department-modal-{{$id}}"><i class="bx bx-edit"></i></button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-department-modal-{{$id}}"><i class="bx bx-trash"></i></button>
+            ')
             ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
             ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
             ->setRowId('id');
@@ -72,13 +75,13 @@ class DepartmentsDataTable extends DataTable
     {
         return [
             Column::make('id'),
+            Column::make('dept_no'),
             Column::make('name'),
             Column::make('created_at'),
             Column::make('updated_at'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(60)
                   ->addClass('text-center'),
         ];
     }
