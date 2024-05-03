@@ -89,7 +89,10 @@ class DirectorPurchaseRequestDataTable extends DataTable
     {
         return $model->whereNotNull('autograph_1')
         ->whereNotNull('autograph_2')
-        ->whereNotNull('autograph_3')->newQuery();
+        ->where(function($query){
+            $query->whereNotNull('autograph_3')
+                ->orWhereNotNull('autograph_6');
+        })->newQuery();
     }
 
     /**
@@ -144,13 +147,11 @@ class DirectorPurchaseRequestDataTable extends DataTable
                     if(type === \'display\'){
                         if(data == 5){
                             return \'<span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>\'
-                        } else if(data == 0) {
-                            return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR PREPARATION</span>\'
                         } else if(data == 1){
                             return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT HEAD</span>\'
                         } else if(data == 2){
                             return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR VERIFICATION</span>\'
-                        } else if(data == 3){
+                        } else if(data == 3 || data == 7){
                             return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DIRECTOR</span>\'
                         } else if(data == 4){
                             return \'<span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>\'

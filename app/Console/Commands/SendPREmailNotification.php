@@ -7,6 +7,7 @@ use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendPREmailNotification extends Command
@@ -30,8 +31,7 @@ class SendPREmailNotification extends Command
      */
     public function handle()
     {
-        // $newPR = PurchaseRequest::whereDate('created_at', now())->get();
-        $newPr = PurchaseRequest::with('createdBy', 'createdBy.department')->latest()->first();
+        $newPr = PurchaseRequest::with('createdBy', 'createdBy.department')->whereDate('updated_at', now())->first();
 
         switch ($newPr->status) {
             case 1:
@@ -65,31 +65,57 @@ class SendPREmailNotification extends Command
                 } else {
                     $purchaser = 'andreasleonardo.al@gmail.com';
                 }
+                //! DEBUG EMAIL
+                $purchaser = 'andreasleonardo.al@gmail.com';
                 $to = $purchaser;
                 break;
             case 6:
                 // Retrieve the user who is a head and belongs to the same department as the creator of the latest PurchaseRequest
-                $user = User::where('is_head', 1)
+                $to = User::where('is_head', 1)
                             ->whereHas('department', function($query) use ($newPr) {
                                 $query->where('name', $newPr->createdBy->department->name);
                             })
-                            ->first();
-                $to = $user->email;
+                            ->first()->email;
+                //! DEBUG EMAIL
+                $to = 'raymondlay023@gmail.com';
                 break;
             case 2:
-                $to = User::with('specification')
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'VERIFICATOR');
-                        })
-                        ->where('is_head', 1)
-                        ->first();
+                if ($newPr->type === 'factory') {
+                    // Initial assignment of $to
+                    $to = User::where('is_gm', 1)->where('department', '!=', 'MOULDING')->first()->email;
+
+                    // Additional condition for user department name is 'MOULDING' and createdBy department name is 'MOULDING'
+                    if ($newPr->createdBy->department->name === 'MOULDING') {
+                        $to = User::where('department', 'MOULDING')->where('is_gm', 1)->first()->email;
+                    }
+                } else {
+                    $to = User::with('specification')
+                            ->whereHas('specification', function ($query) {
+                                $query->where('name', 'VERIFICATOR');
+                            })
+                            ->where('is_head', 1)
+                            ->first()->email;
+                }
+                //! DEBUG EMAIL
+                $to = 'raymondlay023@gmail.com';
                 break;
             case 3:
-                $to = User::with('department')
-                        ->whereHas('department', function ($query) {
-                            $query->where('name', 'DIRECTOR');
-                        })
-                        ->first();
+                if ($newPr->to_department === 'Computer' && $newPr->type === 'factory') {
+                    $to = User::with('specification')
+                            ->whereHas('specification', function ($query) {
+                                $query->where('name', 'VERIFICATOR');
+                            })
+                            ->where('is_head', 1)
+                            ->first()->email;
+                } else {
+                    $to = User::with('department')
+                            ->whereHas('department', function ($query) {
+                                $query->where('name', 'DIRECTOR');
+                            })
+                            ->first()->email;
+                }
+                //! DEBUG EMAIL
+                $to = 'raymondlay023@gmail.com';
                 break;
             default:
                 $to = 'raymondlay023@gmail.com';
@@ -109,6 +135,8 @@ class SendPREmailNotification extends Command
             'url' => 'http://116.254.114.93:2420/purchaserequest/detail/' . $newPr->id,
             'newPr' => $newPr
         ];
+
+        // Log::info('mail data : ', $mailData);
 
         Mail::send(new PRMail($mailData));
         // $this->info('PR notification sent successfully.');
