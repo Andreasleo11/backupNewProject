@@ -65,8 +65,6 @@ class SendPREmailNotification extends Command
                 } else {
                     $purchaser = 'andreasleonardo.al@gmail.com';
                 }
-                //! DEBUG EMAIL
-                $purchaser = 'andreasleonardo.al@gmail.com';
                 $to = $purchaser;
                 break;
             case 6:
@@ -76,8 +74,6 @@ class SendPREmailNotification extends Command
                                 $query->where('name', $newPr->createdBy->department->name);
                             })
                             ->first()->email;
-                //! DEBUG EMAIL
-                $to = 'raymondlay023@gmail.com';
                 break;
             case 2:
                 if ($newPr->type === 'factory') {
@@ -96,8 +92,6 @@ class SendPREmailNotification extends Command
                             ->where('is_head', 1)
                             ->first()->email;
                 }
-                //! DEBUG EMAIL
-                $to = 'raymondlay023@gmail.com';
                 break;
             case 3:
                 if ($newPr->to_department === 'Computer' && $newPr->type === 'factory') {
@@ -114,8 +108,6 @@ class SendPREmailNotification extends Command
                             })
                             ->first()->email;
                 }
-                //! DEBUG EMAIL
-                $to = 'raymondlay023@gmail.com';
                 break;
             default:
                 $to = 'raymondlay023@gmail.com';
