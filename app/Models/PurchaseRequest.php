@@ -22,11 +22,13 @@ class PurchaseRequest extends Model
         'autograph_3',
         'autograph_4',
         'autograph_5',
+        'autograph_6',
         'autograph_user_1',
         'autograph_user_2',
         'autograph_user_3',
         'autograph_user_4',
         'autograph_user_5',
+        'autograph_user_6',
         'attachment_pr',
         'status',
         'pr_no',
@@ -35,6 +37,7 @@ class PurchaseRequest extends Model
         'approved_at',
         'updated_at',
         'pic',
+        'type'
     ];
 
 

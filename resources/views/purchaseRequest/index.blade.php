@@ -18,16 +18,28 @@
         <div class="div mt-3 row">
             <div class="col-auto">
                 <label for="start_date" class="form-label">Start date</label>
-                <input type="date" name="start_date" id="" class="form-control"
-                    value="{{ Session::get('start_date') ?? '' }}">
+                <input type="date" name="start_date" class="form-control" value="{{ Session::get('start_date') ?? '' }}">
             </div>
             <div class="col-auto">
                 <label for="end_date" class="form-label">End date</label>
-                <input type="date" name="end_date" id="" class="form-control"
-                    value="{{ Session::get('end_date') ?? '' }}">
+                <input type="date" name="end_date" class="form-control" value="{{ Session::get('end_date') ?? '' }}">
             </div>
+            <div class="col-auto">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" name="status">
+                    <option value="0" {{ session('status') === null ? 'selected' : '' }}>All Status</option>
+                    <option value="1" {{ session('status') == 1 ? 'selected' : '' }}>Waiting for Dept Head</option>
+                    <option value="6" {{ session('status') == 6 ? 'selected' : '' }}>Waiting for Purchaser</option>
+                    <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>Waiting for GM</option>
+                    <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>Waiting for Verificator</option>
+                    <option value="7" {{ session('status') == 7 ? 'selected' : '' }}>Waiting for Director</option>
+                    <option value="5" {{ session('status') == 5 ? 'selected' : '' }}>Rejected</option>
+                    <option value="4" {{ session('status') == 4 ? 'selected' : '' }}>Approved</option>
+                </select>
+            </div>
+
             <div class="col-auto align-content-end ">
-                <a href="{{ route('purchaserequest.home', ['start_date' => null, 'end_date' => null]) }}"
+                <a href="{{ route('purchaserequest.home', ['start_date' => null, 'end_date' => null, 'status' => null]) }}"
                     class="btn btn-secondary">Reset</a>
             </div>
             <div class="col-auto align-content-end ">

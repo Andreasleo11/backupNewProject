@@ -12,25 +12,18 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
-use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Log;
 
 class PurchaseRequestController extends Controller
 {
     public function index(DirectorPurchaseRequestDataTable $datatable, Request $request)
     {
-
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-
         // Get user information
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
         $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
-        $isHead = $user->is_head;
         $isPurchaser = $user->specification->name === "PURCHASER";
+        $isGM = $user->is_gm === 1;
 
 
         // Determine conditions based on user department and role
@@ -39,20 +32,43 @@ class PurchaseRequestController extends Controller
         if ($isHRDHead) {
             // If the user is HRD Head, filter requests with specific conditions
             $purchaseRequestsQuery->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_5')
                 ->whereNotNull('autograph_2')
+                ->whereNotNull('autograph_5')
                 ->whereNull('autograph_3')
-                ->where('status', 2);
-        } elseif ($isPurchaser || $isHead) {
+                ->where(function($query) {
+                    $query->where(function($query) {
+                            $query->where('to_department', 'Personnel')
+                                  ->where('type', 'office');
+                        })
+                        ->orWhere(function($query) {
+                            $query->where('to_department', 'Computer');
+                        });
+                });
+        } elseif ($isGM) {
+            $purchaseRequestsQuery->whereNotNull('autograph_1')
+                ->whereNotNull('autograph_2')
+                ->whereNotNull('autograph_5')
+                ->where(function ($query) {
+                    $query->where('type', 'factory');
+                    // Additional condition for users where is_gm is 1 and department is 'MOULDING'
+                    if (auth()->user()->is_gm && auth()->user()->department->name === 'MOULDING') {
+                        $query->orWhere(function ($query) {
+                            $query->where('department', 'MOULDING');
+                        });
+                    }
+                });
+        } elseif ($isPurchaser) {
             // If the user is a purchaser, filter requests with specific conditions
 
             if($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING'){
-                $purchaseRequestsQuery->whereNotNull('autograph_1')
+                $purchaseRequestsQuery
                     ->where('to_department', ucwords(strtolower($userDepartmentName)));
             } else {
-                $purchaseRequestsQuery->whereNotNull('autograph_1')
+                $purchaseRequestsQuery
                     ->where('to_department', 'Personnel')->orWhere('to_department', 'Maintenance');
             }
+
+            $purchaseRequestsQuery->whereNotNull('autograph_1')->whereNotNull('autograph_2');
 
         } else {
             // Otherwise, filter requests based on user department
@@ -60,6 +76,11 @@ class PurchaseRequestController extends Controller
                 $query->where('name', '=', $userDepartmentName);
             });
         }
+
+        // Custom Filter
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $status = $request->status;
 
         // Additional filtering based on startDate and endDate
         if ($startDate && $endDate) {
@@ -71,17 +92,49 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('end_date', $endDate);
         }
 
+        // Filtering based on the status
+        if($status){
+            $request->session()->put('status', $status);
+            switch ($status) {
+                // Waiting for GM
+                case 2:
+                    $purchaseRequestsQuery->where('type', 'factory')->where('status', 2);
+                    break;
+                // Waiting for Verificator
+                case 3:
+                    $purchaseRequestsQuery->where(function ($query) {
+                        $query->where('status', 2)->where('type', 'office')
+                        ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
+                    });
+                    break;
+                // Waiting for Director
+                case 7:
+                    $purchaseRequestsQuery->where(function ($query) {
+                        $query->where('status', 3)->whereNot(function($query){
+                            $query->where('to_department', 'Computer')->where('type', 'factory');
+                        });
+                    });
+                    break;
+
+                default:
+                    $purchaseRequestsQuery->where('status', $status);
+                    break;
+            }
+        } else {
+            $request->session()->forget('status', $status);
+        }
+
         $purchaseRequests = $purchaseRequestsQuery
-            ->orderByRaw("
-                        CASE
-                            WHEN status = 1 THEN 0
-                            WHEN status = 6 THEN 1
-                            WHEN status = 2 THEN 2
-                            WHEN status = 3 THEN 3
-                            WHEN status = 4 THEN 4
-                            ELSE 5
-                        END")->orderBy('updated_at', 'desc')
-            // ->orderBy('status', 'desc')
+            ->orderBy('updated_at', 'desc')
+            // ->orderByRaw("
+            //             CASE
+            //                 WHEN status = 1 THEN 0
+            //                 WHEN status = 6 THEN 1
+            //                 WHEN status = 2 THEN 2
+            //                 WHEN status = 3 THEN 3
+            //                 WHEN status = 4 THEN 4
+            //                 ELSE 5
+            //             END")
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
@@ -120,9 +173,11 @@ class PurchaseRequestController extends Controller
             'remark' => $request->input('remark'),
             'supplier' => $request->input('supplier'),
             'pic' => $request->input('pic'),
+            'type' => $request->input('type'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
         ];
+        // dd($commonData);
 
         // Set status and additional autograph fields based on the user's specification
         if (Auth::user()->specification->name == 'PURCHASER') {
@@ -286,29 +341,41 @@ class PurchaseRequestController extends Controller
         foreach ($purchaseRequest->itemDetail as $detail) {
             $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
         }
-        // dd($priceBefore);
         $user =  Auth::user();
         $userCreatedBy = $purchaseRequest->createdBy;
 
         // dd($priceBefore);
 
-           // Check if autograph_2 is filled
+        // If Report not Rejected
         if($purchaseRequest->status != 5){
-
-            if ($purchaseRequest->autograph_5 !== null) {
+            // Dept Head Autograph
+            if ($purchaseRequest->autograph_2 !== null) {
                 $purchaseRequest->status = 6;
             }
 
-            if ($purchaseRequest->autograph_2 !== null) {
+            // Purchaser Autograph
+            if ($purchaseRequest->autograph_5 !== null) {
                 $purchaseRequest->status = 2;
             }
 
-            // Check if autograph_3 is also filled
-            if ($purchaseRequest->autograph_3 !== null) {
-                $purchaseRequest->status = 3;
+            // GM Autograph
+            if($purchaseRequest->type === 'factory' || $purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                if ($purchaseRequest->autograph_6 !== null) {
+                    if($purchaseRequest->to_department === 'Computer'){
+                        $purchaseRequest->status = 3;
+                    }
+                    $purchaseRequest->status = 3;
+                }
             }
 
-            // Check if autograph_4 is also filled
+            // Verificator Autograph
+            if($purchaseRequest->type === 'office' || $purchaseRequest->to_department === 'Computer'){
+                if ($purchaseRequest->autograph_3 !== null) {
+                    $purchaseRequest->status = 3;
+                }
+            }
+
+            // Director Autograph
             if ($purchaseRequest->autograph_4 !== null) {
                 $purchaseRequest->status = 4;
             }
@@ -317,7 +384,6 @@ class PurchaseRequestController extends Controller
         // Save the updated status
         $purchaseRequest->save();
 
-
         $timestamp = strtotime($purchaseRequest->created_at);
         $formattedDate = date("Ymd", $timestamp);
         $doc_id = 'PR/' . $purchaseRequest->id . '/' .$formattedDate;
@@ -325,10 +391,16 @@ class PurchaseRequestController extends Controller
         $files = File::where('doc_id', $doc_id)->get();
 
         // Filter itemDetail based on user role
-        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user) {
+        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
             if ($user->department->name === "DIRECTOR") {
-                return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_head);
+                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                    return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_gm && $detail->is_approve_by_head);
+                }
+                return $detail->is_approve || ($detail->is_approve_by_verificator || $detail->is_approve_by_gm && $detail->is_approve_by_head);
             } elseif ($user->specification->name === "VERIFICATOR") {
+                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm || $detail->is_approve_by_verificator;
+                }
                 return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
             } else {
                 return true; // Include all details for other roles
@@ -450,8 +522,6 @@ class PurchaseRequestController extends Controller
 
     }
 
-
-
 // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {
@@ -482,22 +552,36 @@ class PurchaseRequestController extends Controller
         ];
 
         $pr = PurchaseRequest::find($id);
+        $isPurchaser = Auth::user()->specification === "PURCHASER";
+        $isHead = Auth::user()->is_head === 1;
 
         // dept head update
-        if($pr->status == 6) {
-            $additionalData['autograph_2'] = null;
-            $additionalData['autograph_user_2'] = null;
+        if($pr->status === 1) {
+            if($isHead){
+                $additionalData['autograph_2'] = null;
+                $additionalData['autograph_user_2'] = null;
+            }
+            $additionalData['status'] = 1;
+            $dataToUpdate = array_merge($validated, $additionalData);
+
+            $pr->update($dataToUpdate);
+        } elseif($pr->status === 6) {
+            if($isHead){
+                $additionalData['autograph_2'] = null;
+                $additionalData['autograph_user_2'] = null;
+            } elseif($isPurchaser) {
+                $additionalData['autograph_6'] = null;
+                $additionalData['autograph_user_6'] = null;
+            }
             $additionalData['status'] = 6;
 
             // Merge the validated data with the additional data
             $dataToUpdate = array_merge($validated, $additionalData);
-
             // dd($dataToUpdate);
-
             $pr->update($dataToUpdate);
 
-            // verificator update
-        } else if($pr->status == 3){
+        // verificator update
+        } else if($pr->status === 3){
             $additionalData['autograph_3'] = null;
             $additionalData['autograph_user_3'] = null;
             $additionalData['status'] = 3;
@@ -522,14 +606,11 @@ class PurchaseRequestController extends Controller
 
         foreach ($details as $detail) {
             foreach ($oldDetails as $oldDetail) {
+                // If the current detail name equal with the old detail name than it will replaced with the old one
                 if($detail->item_name === $oldDetail->item_name){
                     $detail->update([
-                        'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head,
+                        'is_approve_by_head' => $oldDetail->is_approve_by_head,
                         'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
-                    ]);
-                } else {
-                    $detail->update([
-                        'is_approve_by_head' => Auth::user()->specification->name === "VERIFICATOR" ? 1 : $oldDetail->is_approve_by_head
                     ]);
                 }
             }
@@ -558,5 +639,18 @@ class PurchaseRequestController extends Controller
         ]);
 
         return redirect()->back()->with(['success' => 'Purchase Request rejected']);
+    }
+
+    public function approveAllDetailItems($prId, $type){
+        if ($type === 'GM') {
+            $details = DetailPurchaseRequest::where('purchase_request_id', $prId)
+                        ->where('is_approve_by_head', true)->get();
+
+            foreach ($details as $detail) {
+                $detail->update(['is_approve_by_gm' => true]);
+            }
+            return response()->json(['success' => 'All detail approved successfully!']);
+        }
+        return response()->json(['error' => 'Something went wrong!']);
     }
 }
