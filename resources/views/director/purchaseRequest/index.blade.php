@@ -119,7 +119,7 @@
                             'content');
                         var approveRoute = document.getElementById('approve-selected-btn').getAttribute(
                             'data-approve-url');
-                        console.log(approveRoute);
+                        // console.log(approveRoute);
 
                         fetch(approveRoute, {
                             method: 'PUT',
@@ -159,7 +159,7 @@
                     ids.push(userId);
                 });
 
-                console.log(ids);
+                // console.log(ids);
 
                 var rejectionReason = document.getElementById('rejectionReason').value;
 
@@ -244,8 +244,8 @@
                 approvalStatusMap[report.docNum] = report.status;
             });
 
-            console.log(reportIds);
-            console.log(approvalStatusMap);
+            // console.log(reportIds);
+            // console.log(approvalStatusMap);
 
             let hasApprovedOrRejected = false;
 
@@ -292,7 +292,7 @@
             let hasApprovedOrRejected = false;
 
             selectedReportIdsWithStatus.forEach(report => {
-                if (report.status === '-1' || report.status === '4') {
+                if (report.status === '5' || report.status === '4') {
                     hasApprovedOrRejected = true;
                 }
             });
@@ -311,8 +311,8 @@
                     showInfoModal('Cannot Reject',
                         'You cannot reject because there is no selected purchase request.');
                 }
-                console.log('Executing rejection process for selected purchase request:',
-                    selectedReportIdsWithStatus);
+                // console.log('Executing rejection process for selected purchase request:',
+                //     selectedReportIdsWithStatus);
             }
         });
 

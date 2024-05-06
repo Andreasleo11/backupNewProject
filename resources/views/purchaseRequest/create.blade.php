@@ -46,9 +46,10 @@
                         <form action="{{ route('purchaserequest.insert') }}" method="POST" class="row ">
                             @csrf
 
-                            <div class="form-group mt-5">
+                            <div class="form-group mt-5 col-md-6">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
-                                <select class="form-select" name="to_department" id="to_department" required>
+                                <select class="form-select" name="to_department" id="toDepartmentDropdown" required
+                                    onchange="updateTypeDropdown()">
                                     <option value="" selected disabled>Select department..</option>
                                     <option value="Maintenance">Maintenance</option>
                                     <option value="Purchasing">Purchasing</option>
@@ -56,6 +57,14 @@
                                     <option value="Computer">Computer</option>
                                 </select>
                                 <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
+                            </div>
+
+                            <div class="form-group mt-5 col-md-6">
+                                <label class="form-label fs-5 fw-bold" for="type">Type</label>
+                                <select class="form-select" name="type" id="typeDropdown" required>
+                                    <option value="" selected disabled>Select Type..</option>
+                                </select>
+                                <div class="form-text">Pilih Tipe dari PR. </div>
                             </div>
 
                             <div class="form-group mt-3">
@@ -104,6 +113,27 @@
 
 
     <script>
+        function updateTypeDropdown() {
+            // Get Selected value of the type dropdown
+            var selectedValue = document.getElementById('toDepartmentDropdown').value;
+
+            var typeDropdown = document.getElementById('typeDropdown');
+
+            typeDropdown.innerHTML = "";
+
+            if (selectedValue === "Maintenance") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+            } else if (selectedValue === "Purchasing") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+            } else if (selectedValue === "Personnel") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+            } else {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+            }
+        }
+
         // Counter for creating unique IDs for items
         let itemIdCounter = 0;
         let isFirstCall = true; // Flag to track the first call
