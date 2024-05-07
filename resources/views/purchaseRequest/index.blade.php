@@ -82,25 +82,26 @@
                                         @php
                                             $user = Auth::user();
                                         @endphp
-                                        @if (
-                                            ($pr->status == 1 && $user->specification->name == 'PURCHASER') ||
-                                                ($pr->status == 6 && $user->is_head == 1) ||
-                                                ($pr->status == 2 && $user->department->name == 'HRD'))
-                                            {{-- <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
+
+                                        {{-- Edit Feature --}}
+                                        {{-- @if (($pr->status == 1 && $user->specification->name == 'PURCHASER') || ($pr->status == 6 && $user->is_head == 1) || ($pr->status == 2 && $user->department->name == 'HRD'))
+                                            <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
                                                 <i class='bx bx-edit'></i> Edit
-                                            </a> --}}
-                                            @if ($pr->user_id_create === Auth::user()->id)
-                                                @include('partials.delete-pr-modal', [
-                                                    'id' => $pr->id,
-                                                    'doc_num' => $pr->doc_num,
-                                                ])
-                                                <button class="btn btn-danger" data-bs-toggle="modal"
-                                                    data-bs-target="#delete-pr-modal-{{ $pr->id }}">
-                                                    <i class='bx bx-trash-alt'></i> <span
-                                                        class="d-none d-sm-inline">Delete</span>
-                                                </button>
-                                            @endif
-                                        @endif
+                                            </a>
+                                        @endif --}}
+
+                                        {{-- Delete Feature --}}
+                                        {{-- @if ($pr->user_id_create === Auth::user()->id)
+                                            @include('partials.delete-pr-modal', [
+                                                'id' => $pr->id,
+                                                'doc_num' => $pr->doc_num,
+                                            ])
+                                            <button class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#delete-pr-modal-{{ $pr->id }}">
+                                                <i class='bx bx-trash-alt'></i> <span
+                                                    class="d-none d-sm-inline">Delete</span>
+                                            </button>
+                                        @endif --}}
                                     </td>
                                     <td>
                                         @include('partials.pr-status-badge')
