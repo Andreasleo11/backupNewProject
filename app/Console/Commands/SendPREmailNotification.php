@@ -12,6 +12,12 @@ use Illuminate\Support\Facades\Mail;
 
 class SendPREmailNotification extends Command
 {
+    public $purchaseRequest;
+
+    public function __construct(PurchaseRequest $purchaseRequest) {
+        parent::__construct();
+        $this->purchaseRequest = $purchaseRequest;
+    }
     /**
      * The name and signature of the console command.
      *
@@ -31,20 +37,20 @@ class SendPREmailNotification extends Command
      */
     public function handle()
     {
-        $newPr = PurchaseRequest::with('createdBy', 'createdBy.department')->whereDate('updated_at', now())->first();
+        // $newPr = PurchaseRequest::with('createdBy', 'createdBy.department')->whereDate('updated_at', now())->first();
+        $newPr = $this->purchaseRequest;
 
         switch ($newPr->status) {
             case 1:
-                $status = $this->checkStatus($newPr->status);
                 // Retrieve the user who is a head and belongs to the same department as the creator of the latest PurchaseRequest
                 $to = User::where('is_head', 1)
                             ->whereHas('department', function($query) use ($newPr) {
                                 $query->where('name', $newPr->createdBy->department->name);
                             })
                             ->first()->email;
+
                 break;
             case 6:
-                $status = $this->checkStatus($newPr->status);
                 if($newPr->to_department === "Computer"){
                     $purchaser = User::with(['department', 'specification'])
                                     ->whereHas('department', function ($query) {
@@ -71,9 +77,9 @@ class SendPREmailNotification extends Command
                     $purchaser = 'andreasleonardo.al@gmail.com';
                 }
                 $to = $purchaser;
+
                 break;
             case 7:
-                $status = $this->checkStatus($newPr->status);
                  // Initial assignment of $to
                  $to = User::whereHas('department', function ($query) {
                     $query->where('name', '!=', 'MOULDING')->where('is_gm', 1);
@@ -89,29 +95,29 @@ class SendPREmailNotification extends Command
                     ->first()
                     ->email;
                  }
+                break;
             case 2:
-                $status = $this->checkStatus($newPr->status);
                 $to = User::with('specification')
                         ->whereHas('specification', function ($query) {
                             $query->where('name', 'VERIFICATOR');
                         })
                         ->where('is_head', 1)
                         ->first()->email;
+
                 break;
             case 3:
-                $status = $this->checkStatus($newPr->status);
                 $to = User::with('department')
                         ->whereHas('department', function ($query) {
                             $query->where('name', 'DIRECTOR');
                         })
                         ->first()->email;
+
+                $to = 'raymondlay034@gmail.com';
                 break;
             case 4:
-                $status = $this->checkStatus($newPr->status);
                 $to = $newPr->createdBy->email;
                 break;
             case 5:
-                $status = $this->checkStatus($newPr->status);
                 $to = $newPr->createdBy->email;
                 break;
             default:
@@ -120,6 +126,7 @@ class SendPREmailNotification extends Command
         }
 
         $cc = ['raymondlay023@gmail.com', 'andreasleonardo.al@gmail.com'];
+        $status = $this->checkStatus($newPr->status);
         $mailData = [
             'to' => $to,
             'cc' => $cc,

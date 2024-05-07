@@ -91,9 +91,21 @@ class PurchaseRequest extends Model
 
     protected static function booted()
     {
+        static::created(function ($purchaseRequest) {
+            // Dispatch the job to send the email notification
+            Bus::dispatch(new SendPREmailNotification($purchaseRequest));
+        });
+
         static::updating(function ($purchaseRequest) {
             if ($purchaseRequest->isDirty('status')) {
-                Bus::dispatch(new SendPREmailNotification($purchaseRequest));
+                $originalStatus = $purchaseRequest->getOriginal('status');
+                $newStatus = $purchaseRequest->status;
+
+                // Check if the status has changed
+                if ($originalStatus !== $newStatus) {
+                    // Dispatch the job to send the email notification
+                    Bus::dispatch(new SendPREmailNotification($purchaseRequest));
+                }
             }
         });
     }
