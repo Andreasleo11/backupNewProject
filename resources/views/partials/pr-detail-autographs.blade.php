@@ -116,7 +116,7 @@
                 }
             }
         @endphp
-        @if (Auth::check() && Auth::user()->is_gm === 1 && $purchaseRequest->status == 2 && $isApproveNotEmpty)
+        @if (Auth::check() && Auth::user()->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -147,7 +147,7 @@
 
     {{-- VERIFICATOR AUTOGRAPH --}}
     <div
-        class="col {{ $purchaseRequest->to_department === 'Computer' || $purchaseRequest->type === 'office' ? '' : 'd-none' }}">
+        class="col {{ ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') || $purchaseRequest->type === 'office' ? '' : 'd-none' }}">
         <h2>Verificator</h2>
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2 border-1" id="autographuser3"></div>
@@ -174,7 +174,7 @@
         @if (Auth::check() &&
                 Auth::user()->department->name == 'HRD' &&
                 Auth::user()->is_head == 1 &&
-                ($purchaseRequest->status == 2 || $purchaseRequest->status == 7) &&
+                $purchaseRequest->status == 2 &&
                 $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">

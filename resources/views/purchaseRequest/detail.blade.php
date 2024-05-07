@@ -175,7 +175,7 @@
 
                                     {{-- Logic for total --}}
                                     @php
-                                        if ($purchaseRequest->status === 6) {
+                                        if ($purchaseRequest->status === 6 || $purchaseRequest->status === 7) {
                                             if (!is_null($detail->is_approve_by_head)) {
                                                 if ($detail->is_approve_by_head) {
                                                     $totalall += $detail->quantity * $detail->price;
@@ -199,8 +199,14 @@
                                                     $totalall += $detail->quantity * $detail->price;
                                                 }
                                             } else {
-                                                if ($detail->is_approve_by_verificator) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                if (
+                                                    $purchaseRequest->type === 'office' ||
+                                                    ($purchaseRequest->to_department === 'Computer' &&
+                                                        $purchaseRequest->type === 'factory')
+                                                ) {
+                                                    if ($detail->is_approve_by_verificator) {
+                                                        $totalall += $detail->quantity * $detail->price;
+                                                    }
                                                 } elseif ($detail->is_approve_by_gm) {
                                                     $totalall += $detail->quantity * $detail->price;
                                                 }
