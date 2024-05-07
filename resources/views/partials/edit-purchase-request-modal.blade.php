@@ -47,19 +47,21 @@
                             @method('PUT')
                             @csrf
 
-                            <div class="form-group mt-3">
+                            <div class="form-group mt-3 col-md-6">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
-                                <select class="form-select" name="to_department" id="to_department" required>
+                                <select class="form-select" name="to_department" id="to_department" required disabled>
                                     <option value="{{ $pr->to_department }}" selected>
                                         {{ $pr->to_department }}
                                     </option>
-                                    @foreach (['Maintenance', 'Purchasing', 'Personnel', 'Computer'] as $option)
-                                        @if ($option !== $pr->to_department)
-                                            <option value="{{ $option }}">{{ $option }}</option>
-                                        @endif
-                                    @endforeach
                                 </select>
-                                <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
+                            </div>
+
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold" for="type">Type</label>
+                                <select class="form-select" name="type" id="typeDropdown" required disabled>
+                                    <option value="{{ $pr->type }}" selected>
+                                        {{ ucwords($pr->type) }}</option>
+                                </select>
                             </div>
 
                             <div class="form-group mt-3">
@@ -127,7 +129,14 @@
         let details = {!! json_encode($details) !!};
         console.log(details);
 
-        details.forEach(detail => {
+        // Filter the detail before fill it to edit modal. It will not contain the rejected.
+        let filteredDetails = details.filter(detail => {
+            return detail.is_approve_by_head === 1 || detail.is_approve_by_head === null;
+        });
+
+        console.log("Filtered Details:", filteredDetails);
+
+        filteredDetails.forEach(detail => {
             addNewItem(detail);
         });
 
