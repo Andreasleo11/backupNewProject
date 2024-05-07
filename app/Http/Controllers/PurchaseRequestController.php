@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
+use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 
 class PurchaseRequestController extends Controller
@@ -61,11 +62,11 @@ class PurchaseRequestController extends Controller
             // If the user is a purchaser, filter requests with specific conditions
 
             if($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING'){
-                $purchaseRequestsQuery
-                    ->where('to_department', ucwords(strtolower($userDepartmentName)));
-            } else {
-                $purchaseRequestsQuery
-                    ->where('to_department', 'Personnel')->orWhere('to_department', 'Maintenance');
+                $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
+            } elseif ($user->email === 'nur@daijo.co.id'){
+                $purchaseRequestsQuery->where('to_department', 'Maintenance');
+            } elseif($userDepartmentName === 'PERSONALIA'){
+                $purchaseRequestsQuery->where('to_department', 'Personnel');
             }
 
             $purchaseRequestsQuery->whereNotNull('autograph_1')->whereNotNull('autograph_2');
@@ -78,9 +79,9 @@ class PurchaseRequestController extends Controller
         }
 
         // Custom Filter
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-        $status = $request->status;
+        $startDate = $request->session()->get('start_date') ?? $request->start_date;
+        $endDate = $request->session()->get('end_date') ?? $request->end_date;
+        $status = $request->session()->get('status') ?? $request->status;
 
         // Additional filtering based on startDate and endDate
         if ($startDate && $endDate) {
@@ -176,17 +177,9 @@ class PurchaseRequestController extends Controller
             'type' => $request->input('type'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
+            'status' => 1
         ];
         // dd($commonData);
-
-        // Set status and additional autograph fields based on the user's specification
-        if (Auth::user()->specification->name == 'PURCHASER') {
-            $commonData['status'] = 6;
-            $commonData['autograph_5'] = strtoupper(Auth::user()->name) . '.png';
-            $commonData['autograph_user_5'] = Auth::user()->name;
-        } else {
-            $commonData['status'] = 1;
-        }
 
         // Create the purchase request
         $purchaseRequest = PurchaseRequest::create($commonData);
@@ -344,39 +337,50 @@ class PurchaseRequestController extends Controller
         $user =  Auth::user();
         $userCreatedBy = $purchaseRequest->createdBy;
 
-        // dd($priceBefore);
+        $computerFactory = $purchaseRequest->type === 'factory' && $purchaseRequest->to_department === 'Computer';
 
-        // If Report not Rejected
-        if($purchaseRequest->status != 5){
+        // If PR not Rejected
+        if($purchaseRequest->status !== 5){
             // Dept Head Autograph
             if ($purchaseRequest->autograph_2 !== null) {
+                // status when purchaser has not signed
                 $purchaseRequest->status = 6;
             }
 
             // Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
-                $purchaseRequest->status = 2;
+                if($purchaseRequest->type === 'factory' || $computerFactory){
+                    // status when gm has not signed
+                    $purchaseRequest->status = 7;
+                } else {
+                    // status when verificator has not signed
+                    $purchaseRequest->status = 2;
+                }
             }
 
             // GM Autograph
-            if($purchaseRequest->type === 'factory' || $purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+            if($purchaseRequest->type === 'factory' ){
                 if ($purchaseRequest->autograph_6 !== null) {
-                    if($purchaseRequest->to_department === 'Computer'){
-                        $purchaseRequest->status = 3;
-                    }
+                    // status when director has not signed
                     $purchaseRequest->status = 3;
+                    if($computerFactory){
+                        // status when verificator has not signed
+                        $purchaseRequest->status = 2;
+                    }
                 }
             }
 
             // Verificator Autograph
-            if($purchaseRequest->type === 'office' || $purchaseRequest->to_department === 'Computer'){
+            if($purchaseRequest->type === 'office' || $computerFactory){
                 if ($purchaseRequest->autograph_3 !== null) {
+                    // status when director has not signed
                     $purchaseRequest->status = 3;
                 }
             }
 
             // Director Autograph
             if ($purchaseRequest->autograph_4 !== null) {
+                // status when PR approved
                 $purchaseRequest->status = 4;
             }
         }
@@ -544,11 +548,13 @@ class PurchaseRequestController extends Controller
             'date_required' => 'date',
             'remark' => 'string',
             'supplier' => 'string',
+            'pic' => 'string'
         ]);
 
         // Define the additional attribute and its value
         $additionalData = [
             'updated_at' => now(),
+            'pic' => $request->pic,
         ];
 
         $pr = PurchaseRequest::find($id);
@@ -596,7 +602,7 @@ class PurchaseRequestController extends Controller
             $pr->update($additionalData);
         }
 
-
+        // Delete and Store it again
         $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
@@ -610,6 +616,7 @@ class PurchaseRequestController extends Controller
                 if($detail->item_name === $oldDetail->item_name){
                     $detail->update([
                         'is_approve_by_head' => $oldDetail->is_approve_by_head,
+                        'is_approve_by_gm' => $oldDetail->is_approve_by_gm,
                         'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
                     ]);
                 }
@@ -620,9 +627,8 @@ class PurchaseRequestController extends Controller
     }
 
     public function destroy($id){
-        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
-        PurchaseRequest::find($id)->delete();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
+        PurchaseRequest::find($id)->delete();
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
     }
 
