@@ -69,7 +69,7 @@
                                     <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3">
                                     </div>
-                                    @if (Auth::user()->id === $pr->createdBy->id)
+                                    @if (Auth::user()->specification->name === 'PURCHASER')
                                         <button class="btn btn-secondary btn-sm" type="button"
                                             onclick="addNewItem()">Add
                                             Item</button>

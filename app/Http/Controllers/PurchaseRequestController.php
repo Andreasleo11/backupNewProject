@@ -36,6 +36,7 @@ class PurchaseRequestController extends Controller
                 ->whereNotNull('autograph_2')
                 ->whereNotNull('autograph_5')
                 ->whereNull('autograph_3')
+                ->orWhereNotNull('autograph_3')
                 ->where(function($query) {
                     $query->where(function($query) {
                             $query->where('to_department', 'Personnel')
@@ -69,7 +70,7 @@ class PurchaseRequestController extends Controller
                 $purchaseRequestsQuery->where('to_department', 'Personnel');
             }
 
-            $purchaseRequestsQuery->whereNotNull('autograph_1')->whereNotNull('autograph_2');
+            $purchaseRequestsQuery->whereNotNull('autograph_1');
 
         } else {
             // Otherwise, filter requests based on user department
@@ -79,9 +80,14 @@ class PurchaseRequestController extends Controller
         }
 
         // Custom Filter
-        $startDate = $request->session()->get('start_date') ?? $request->start_date;
-        $endDate = $request->session()->get('end_date') ?? $request->end_date;
-        $status = $request->session()->get('status') ?? $request->status;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $status = $request->status;
+
+        // Retrieve the stored session values for filter persistence
+        $storedStartDate = $request->session()->get('start_date');
+        $storedEndDate = $request->session()->get('end_date');
+        $storedStatus = $request->session()->get('status');
 
         // Additional filtering based on startDate and endDate
         if ($startDate && $endDate) {
@@ -91,6 +97,16 @@ class PurchaseRequestController extends Controller
         } else {
             $request->session()->forget('start_date', $startDate);
             $request->session()->forget('end_date', $endDate);
+        }
+
+        // Apply stored session values for filter persistence
+        if (!$startDate && !$endDate && $storedStartDate && $storedEndDate) {
+            $startDate = $storedStartDate;
+            $endDate = $storedEndDate;
+        }
+
+        if ($status != 0 && $storedStatus) {
+            $status = $storedStatus;
         }
 
         // Filtering based on the status
@@ -189,7 +205,7 @@ class PurchaseRequestController extends Controller
 
         // update revisi 26 februari
         $this->verifyAndInsertItems($request, $purchaseRequest->id);
-        $this->executeSendPRNotificationCommand();
+        // $this->executeSendPRNotificationCommand();
 
         // update revisi 26 februari
 
@@ -209,7 +225,7 @@ class PurchaseRequestController extends Controller
     }
 
     private function verifyAndInsertItems($request, $id){
-        $this->executeSendPRNotificationCommand();
+        // $this->executeSendPRNotificationCommand();
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];
@@ -618,6 +634,10 @@ class PurchaseRequestController extends Controller
                         'is_approve_by_head' => $oldDetail->is_approve_by_head,
                         'is_approve_by_gm' => $oldDetail->is_approve_by_gm,
                         'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
+                    ]);
+                } else {
+                    $detail->update([
+                        'is_approve_by_head' => auth()->user()->specification->name === "PURCHASER" ? 1 : 0,
                     ]);
                 }
             }
