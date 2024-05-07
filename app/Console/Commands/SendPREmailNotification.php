@@ -119,10 +119,7 @@ class SendPREmailNotification extends Command
                 break;
         }
 
-        //! DEBUG EMAIL
-        $to = 'raymondlay023@gmail.com';
         $cc = ['raymondlay023@gmail.com', 'andreasleonardo.al@gmail.com'];
-
         $mailData = [
             'to' => $to,
             'cc' => $cc,
