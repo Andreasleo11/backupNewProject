@@ -127,6 +127,7 @@
                                 <th rowspan="2" class="align-middle">No</th>
                                 <th rowspan="2" class="align-middle">Item Name</th>
                                 <th rowspan="2" class="align-middle">Quantity</th>
+                                <th rowspan="2" class="align-middle">UoM</th>
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
@@ -168,6 +169,7 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $detail->item_name }}</td>
                                     <td>{{ $detail->quantity }}</td>
+                                    <td>{{ $detail->uom }}</td>
                                     <td>{{ $detail->purpose }}</td>
                                     <td> @currency($detail->master->price ?? 0) </td>
                                     <td> @currency($detail->price)</td>

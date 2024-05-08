@@ -145,8 +145,12 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'Item Name', 'Quantity', 'Unit Price', 'Subtotal', 'Purpose', 'Action'];
-                const columnSizes = ['col-md-1', 'col-md-3', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2', 'col-md-1'];
+                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Unit Price', 'Subtotal', 'Purpose',
+                    'Action'
+                ];
+                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2',
+                    'col-md-1'
+                ];
 
                 // Create header row and add header labels with specified column sizes
                 const headerRow = document.createElement('div');
@@ -170,7 +174,7 @@
 
             // Create input fields for item details
             const formGroupName = document.createElement('div')
-            formGroupName.classList.add('col-md-3');
+            formGroupName.classList.add('col-md-2');
 
             const itemNameInput = document.createElement('input');
             itemNameInput.classList.add('form-control');
@@ -245,6 +249,19 @@
 
             formGroupQuantityInput.appendChild(quantityInput);
 
+            const formGroupUomInput = document.createElement('div')
+            formGroupUomInput.classList.add('col-md-1')
+
+            const uomInput = document.createElement('input');
+            uomInput.classList.add('form-control');
+            uomInput.value = 'PCS';
+            uomInput.setAttribute('required', 'required');
+            uomInput.type = 'text';
+            uomInput.name = `items[${itemIdCounter}][uom]`;
+            uomInput.placeholder = 'UoM';
+
+            formGroupUomInput.appendChild(uomInput);
+
             const formGroupUnitPriceInput = document.createElement('div')
             formGroupUnitPriceInput.classList.add('col-md-2');
 
@@ -295,6 +312,7 @@
             newItemContainer.appendChild(countGroup);
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupQuantityInput);
+            newItemContainer.appendChild(formGroupUomInput);
             newItemContainer.appendChild(formGroupUnitPriceInput);
             newItemContainer.appendChild(formGroupSubtotalInput);
             newItemContainer.appendChild(formGroupPurposeInput);

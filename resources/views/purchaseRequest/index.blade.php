@@ -91,7 +91,7 @@
                                         @endif --}}
 
                                         {{-- Delete Feature --}}
-                                        {{-- @if ($pr->user_id_create === Auth::user()->id)
+                                        @if ($pr->user_id_create === Auth::user()->id)
                                             @include('partials.delete-pr-modal', [
                                                 'id' => $pr->id,
                                                 'doc_num' => $pr->doc_num,
@@ -101,7 +101,7 @@
                                                 <i class='bx bx-trash-alt'></i> <span
                                                     class="d-none d-sm-inline">Delete</span>
                                             </button>
-                                        @endif --}}
+                                        @endif
                                     </td>
                                     <td>
                                         @include('partials.pr-status-badge')

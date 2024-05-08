@@ -225,13 +225,14 @@ class PurchaseRequestController extends Controller
     }
 
     private function verifyAndInsertItems($request, $id){
-        // $this->executeSendPRNotificationCommand();
+        // dd($request->all());
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
                 $price = (int) str_replace(['Rp. ', '.'], '', $itemData['price']);
+                $uom = strtoupper($itemData['uom']);
 
                 // Check if the item exists in MasterDataPr
                 $existingItem = MasterDataPr::where('name', $itemName)->first();
@@ -250,6 +251,7 @@ class PurchaseRequestController extends Controller
                         'quantity' => $quantity,
                         'purpose' => $purpose,
                         'price' => $price,
+                        'uom' => $uom
                     ]);
                 } else {
                     // Case 2: Item available in MasterDataPr
@@ -270,6 +272,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             } else {
                                 // Move the latest price to the price column
@@ -285,6 +288,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             }
                         } else{
@@ -294,6 +298,7 @@ class PurchaseRequestController extends Controller
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
                                 'price' => $price,
+                                'uom' => $uom
                             ]);
                         }
                     }else{
@@ -311,6 +316,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             } else {
 
@@ -327,6 +333,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             }
                         } else {
@@ -336,6 +343,7 @@ class PurchaseRequestController extends Controller
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
                                 'price' => $price,
+                                'uom' => $uom
                             ]);
                         }
                     }
@@ -647,8 +655,10 @@ class PurchaseRequestController extends Controller
     }
 
     public function destroy($id){
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         PurchaseRequest::find($id)->delete();
+        DB::statement('SET FOREIGN_KEY_CHECKS = 1');
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
     }
 

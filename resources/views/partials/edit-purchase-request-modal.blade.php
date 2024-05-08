@@ -101,8 +101,7 @@
                                     value="{{ $pr->pic }}">
                             </div>
 
-                            <div class="form-group
-                                    mt-3">
+                            <div class="form-group mt-3">
                                 <label class="form-label fs-5 fw-bold" for="remark">Remark</label>
                                 <textarea class="form-control" name="remark" rows="4" cols="50" required>{{ $pr->remark }}</textarea>
                             </div>
