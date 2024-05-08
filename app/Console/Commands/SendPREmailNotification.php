@@ -124,7 +124,7 @@ class SendPREmailNotification extends Command
                 break;
         }
 
-        $cc = ['raymondlay023@gmail.com', 'andreasleonardo.al@gmail.com'];
+        $cc = $newPr->createdBy->email;
         $status = $this->checkStatus($newPr->status);
         $mailData = [
             'to' => $to,
