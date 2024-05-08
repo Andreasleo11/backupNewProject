@@ -112,7 +112,6 @@ class SendPREmailNotification extends Command
                         })
                         ->first()->email;
 
-                $to = 'raymondlay034@gmail.com';
                 break;
             case 4:
                 $to = $newPr->createdBy->email;
