@@ -57,6 +57,7 @@
                             <tr>
                                 <th class="fw-semibold fs-5">No</th>
                                 <th class="fw-semibold fs-5">Date PR</th>
+                                <th class="fw-semibold fs-5">From Department</th>
                                 <th class="fw-semibold fs-5">To Department</th>
                                 <th class="fw-semibold fs-5">PR No </th>
                                 <th class="fw-semibold fs-5">Supplier</th>
@@ -71,6 +72,7 @@
                                 <tr class="align-middle">
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $pr->date_pr }}</td>
+                                    <td>{{ $pr->from_department ?? $pr->createdBy->department->name }}</td>
                                     <td>{{ $pr->to_department }}</td>
                                     <td>{{ $pr->pr_no }}</td>
                                     <td>{{ $pr->supplier }}</td>
@@ -91,7 +93,7 @@
                                         @endif --}}
 
                                         {{-- Delete Feature --}}
-                                        @if ($pr->user_id_create === Auth::user()->id)
+                                        {{-- @if ($pr->user_id_create === Auth::user()->id)
                                             @include('partials.delete-pr-modal', [
                                                 'id' => $pr->id,
                                                 'doc_num' => $pr->doc_num,
@@ -101,7 +103,7 @@
                                                 <i class='bx bx-trash-alt'></i> <span
                                                     class="d-none d-sm-inline">Delete</span>
                                             </button>
-                                        @endif
+                                        @endif --}}
                                     </td>
                                     <td>
                                         @include('partials.pr-status-badge')

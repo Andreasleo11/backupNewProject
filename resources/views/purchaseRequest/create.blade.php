@@ -39,18 +39,35 @@
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-10">
+            <div class="col-md-11">
                 <div class="card">
                     <div class="container p-5">
                         <div class="h2 text-center fw-semibold">Create Purchase Request</div>
                         <form action="{{ route('purchaserequest.insert') }}" method="POST" class="row ">
                             @csrf
 
-                            <div class="form-group mt-5 col-md-6">
+                            <div class="form-group mt-5 col-md-4">
+                                <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
+                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
+                                    <option value="" selected disabled>Select from department..</option>
+                                    @foreach ($departments as $department)
+                                        @if ($department->id === Auth::user()->department->id)
+                                            <option value="{{ $department->name }}" selected>{{ $department->name }}
+                                            </option>
+                                        @elseif ($department->name === 'HRD' || $department->name === 'DIRECTOR')
+                                        @else
+                                            <option value="{{ $department->name }}">{{ $department->name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                                <div class="form-text">Pilih departmen tujuan (HANYA JIKA DIPERLUKAN)</div>
+                            </div>
+
+                            <div class="form-group mt-5 col-md-4">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
                                 <select class="form-select" name="to_department" id="toDepartmentDropdown" required
                                     onchange="updateTypeDropdown()">
-                                    <option value="" selected disabled>Select department..</option>
+                                    <option value="" selected disabled>Select to department..</option>
                                     <option value="Maintenance">Maintenance</option>
                                     <option value="Purchasing">Purchasing</option>
                                     <option value="Personnel">Personnel</option>
@@ -59,12 +76,12 @@
                                 <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                             </div>
 
-                            <div class="form-group mt-5 col-md-6">
+                            <div class="form-group mt-5 col-md-4">
                                 <label class="form-label fs-5 fw-bold" for="type">Type</label>
                                 <select class="form-select" name="type" id="typeDropdown" required>
                                     <option value="" selected disabled>Select Type..</option>
                                 </select>
-                                <div class="form-text">Pilih Tipe dari PR. </div>
+                                <div class="form-text">Pilih Tipe dari PR</div>
                             </div>
 
                             <div class="form-group mt-3">

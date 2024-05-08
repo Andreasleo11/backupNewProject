@@ -29,8 +29,7 @@
                 }
             }
         @endphp
-        @if (Auth::check() &&
-                Auth::user()->department == $userCreatedBy->department &&
+        @if (Auth::user()->department->name === $purchaseRequest->from_department &&
                 Auth::user()->is_head == 1 &&
                 $purchaseRequest->status == 1 &&
                 $isApproveNotEmpty)
@@ -67,7 +66,7 @@
         <h2>Purchaser</h2>
         <div class="autograph-box container" id="autographBox5"></div>
         <div class="container mt-2" id="autographuser5"></div>
-        @if (Auth::check() && (Auth::user()->specification->name == 'PURCHASER' && $purchaseRequest->status === 6))
+        @if (Auth::user()->specification->name == 'PURCHASER' && $purchaseRequest->status === 6)
             <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-2">
                     <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
@@ -116,7 +115,7 @@
                 }
             }
         @endphp
-        @if (Auth::check() && Auth::user()->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
+        @if (Auth::user()->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -171,8 +170,7 @@
                 }
             }
         @endphp
-        @if (Auth::check() &&
-                Auth::user()->department->name == 'HRD' &&
+        @if (Auth::user()->department->name == 'HRD' &&
                 Auth::user()->is_head == 1 &&
                 $purchaseRequest->status == 2 &&
                 $isApproveNotEmpty)
@@ -231,10 +229,7 @@
                 }
             }
         @endphp
-        @if (Auth::check() &&
-                Auth::user()->department->name == 'DIRECTOR' &&
-                $purchaseRequest->status == 3 &&
-                $isApproveNotEmpty)
+        @if (Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3 && $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div

@@ -76,7 +76,7 @@
                 <span class="h1 fw-semibold">Purchase Requisition</span> <br>
                 <div class="fs-6 mt-2">
                     <span class="fs-6 text-secondary">Created By : </span> {{ $userCreatedBy->name }} <br>
-                    <span class="fs-6 text-secondary">From Department : </span> {{ $userCreatedBy->department->name }}
+                    <span class="fs-6 text-secondary">From Department : </span> {{ $purchaseRequest->from_department }}
                     <br>
                     <span class="fs-6 text-secondary">Doc num : </span> {{ $purchaseRequest->doc_num }}
                     <div class="mt-2">
@@ -231,7 +231,7 @@
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
-                                    @if ($user->department == $userCreatedBy->department && $user->is_head == 1)
+                                    @if ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1)
                                         <td>
                                             @if ($detail->is_approve_by_head === null)
                                                 <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
