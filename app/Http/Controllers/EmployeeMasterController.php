@@ -18,7 +18,7 @@ class EmployeeMasterController extends Controller
 
     public function addemployee(Request $request)
     {
-        dd($request->all());
+        
         // Validate the incoming request data
         $validatedData = $request->validate([
             'NIK' => 'required',

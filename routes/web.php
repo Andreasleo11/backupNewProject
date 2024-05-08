@@ -73,6 +73,8 @@ use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 
+use App\Http\Controllers\AdjustFormQcController;
+
 
 use App\Models\Department;
 use App\Models\Role;
@@ -159,7 +161,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
 Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
-    Route::middleware(['checkDepartment:QA,QC', 'checkSessionId'])->group(function () {
+    Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
         Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
@@ -197,6 +199,17 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         // adding new defect category
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
+        
+         //masukin ke dalem dept QC , ppic , store, logistic, accounting , direktur
+        //FORM ADJUST SECITON 
+        Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
+        Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
+        Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
+        Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
+        Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
+        Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
+        //////////////
+       
         //REVISI
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
@@ -207,6 +220,25 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
         Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports');
+
+
+        
+   
+    });
+
+
+    Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
+          
+        //FORM ADJUST SECITON 
+          Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
+          Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
+          Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
+          Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
+          Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
+          Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
+          //////////////
+         
+          Route::get('listformadjust/all',[AdjustFormQcController::class,'listformadjust'])->name('listformadjust');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {
@@ -531,4 +563,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index");
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
+
+
+   
 });
