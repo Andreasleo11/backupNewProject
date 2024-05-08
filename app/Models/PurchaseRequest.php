@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Console\Commands\SendPREmailNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Bus;
 
 class PurchaseRequest extends Model
 {
@@ -21,18 +22,22 @@ class PurchaseRequest extends Model
         'autograph_3',
         'autograph_4',
         'autograph_5',
+        'autograph_6',
         'autograph_user_1',
         'autograph_user_2',
         'autograph_user_3',
         'autograph_user_4',
         'autograph_user_5',
+        'autograph_user_6',
         'attachment_pr',
         'status',
         'pr_no',
         'supplier',
         'description',
         'approved_at',
-        'updated_at'
+        'updated_at',
+        'pic',
+        'type'
     ];
 
 
@@ -86,10 +91,21 @@ class PurchaseRequest extends Model
 
     protected static function booted()
     {
+        static::created(function ($purchaseRequest) {
+            // Dispatch the job to send the email notification
+            Bus::dispatch(new SendPREmailNotification($purchaseRequest));
+        });
+
         static::updating(function ($purchaseRequest) {
             if ($purchaseRequest->isDirty('status')) {
-                // Dispatch your command here
-                SendPREmailNotification::dispatch($purchaseRequest);
+                $originalStatus = $purchaseRequest->getOriginal('status');
+                $newStatus = $purchaseRequest->status;
+
+                // Check if the status has changed
+                if ($originalStatus !== $newStatus) {
+                    // Dispatch the job to send the email notification
+                    Bus::dispatch(new SendPREmailNotification($purchaseRequest));
+                }
             }
         });
     }

@@ -13,12 +13,11 @@ class EmployeeMasterController extends Controller
     {
         $datas = Employee::get();
         return $dataTable->render("setting.employeeindex", compact("datas"));
-        
+
     }
 
     public function addemployee(Request $request)
     {
-        
         // Validate the incoming request data
         $validatedData = $request->validate([
             'NIK' => 'required',

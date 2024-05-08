@@ -18,7 +18,8 @@ class DetailPurchaseRequest extends Model
         'price',
         'is_approve_by_head',
         'is_approve_by_verificator',
-        'is_approve'
+        'is_approve',
+        'is_approve_by_gm'
     ];
 
     public function itemDetail()

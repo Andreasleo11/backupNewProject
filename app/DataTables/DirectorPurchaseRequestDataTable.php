@@ -61,21 +61,6 @@ class DirectorPurchaseRequestDataTable extends DataTable
                                     @endif
                                 ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$status}}-{{$doc_num}}" />')
-            // ->addColumn('status', '@if($pr->status === -1)
-            //                         <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
-            //                     @elseif($pr->status === 0)
-            //                         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR PREPARATION</span>
-            //                     @elseif($pr->status === 1)
-            //                         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT HEAD</span>
-            //                     @elseif($pr->status === 2)
-            //                         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR VERIFICATION</span>
-            //                     @elseif($pr->files === null)
-            //                         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ATTACHMENT</span>
-            //                     @elseif($pr->status === 3)
-            //                         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DIRECTOR</span>
-            //                     @elseif($pr->status === 4)
-            //                         <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
-            //                     @endif ')
             ->setRowId('id');
     }
 
@@ -87,9 +72,12 @@ class DirectorPurchaseRequestDataTable extends DataTable
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
-        return $model->whereNotNull('autograph_1')
-        ->whereNotNull('autograph_2')
-        ->whereNotNull('autograph_3')->newQuery();
+        return $model
+        ->where(function($query){
+            $query->where('status', 4)
+                ->orWhere('status', 5)
+                ->orWhere('status', 3);
+        })->newQuery();
     }
 
     /**
@@ -104,7 +92,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    // ->orderBy(1)
+                    ->orderBy(6, 'asc')
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -129,8 +117,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
                 ->width(50)
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center')
-                ->addClass('align-middle'),
+                ->addClass('text-center align-middle'),
             Column::make('pr_no')->addClass('text-center align-middle'),
             Column::make('date_pr')->addClass('text-center align-middle'),
             Column::make('to_department')->addClass('text-center align-middle'),
@@ -144,12 +131,6 @@ class DirectorPurchaseRequestDataTable extends DataTable
                     if(type === \'display\'){
                         if(data == 5){
                             return \'<span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>\'
-                        } else if(data == 0) {
-                            return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR PREPARATION</span>\'
-                        } else if(data == 1){
-                            return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT HEAD</span>\'
-                        } else if(data == 2){
-                            return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR VERIFICATION</span>\'
                         } else if(data == 3){
                             return \'<span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR DIRECTOR</span>\'
                         } else if(data == 4){

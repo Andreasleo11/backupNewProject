@@ -42,13 +42,14 @@
             <div class="col-md-10">
                 <div class="card">
                     <div class="container p-5">
-                        <span class="h2 ">Create Purchase Request</span>
+                        <div class="h2 text-center fw-semibold">Create Purchase Request</div>
                         <form action="{{ route('purchaserequest.insert') }}" method="POST" class="row ">
                             @csrf
 
-                            <div class="form-group mt-5">
-                                <label class="form-label" for="to_department">To Department</label>
-                                <select class="form-select" name="to_department" id="to_department" required>
+                            <div class="form-group mt-5 col-md-6">
+                                <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
+                                <select class="form-select" name="to_department" id="toDepartmentDropdown" required
+                                    onchange="updateTypeDropdown()">
                                     <option value="" selected disabled>Select department..</option>
                                     <option value="Maintenance">Maintenance</option>
                                     <option value="Purchasing">Purchasing</option>
@@ -58,9 +59,17 @@
                                 <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                             </div>
 
+                            <div class="form-group mt-5 col-md-6">
+                                <label class="form-label fs-5 fw-bold" for="type">Type</label>
+                                <select class="form-select" name="type" id="typeDropdown" required>
+                                    <option value="" selected disabled>Select Type..</option>
+                                </select>
+                                <div class="form-text">Pilih Tipe dari PR. </div>
+                            </div>
+
                             <div class="form-group mt-3">
                                 <div id="itemsContainer">
-                                    <label class="form-label">List of Items</label>
+                                    <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
                                     <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
                                         Item</button>
@@ -68,22 +77,27 @@
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label" for="date_of_pr">Date of PR</label>
+                                <label class="form-label fs-5 fw-bold" for="date_of_pr">Date of PR</label>
                                 <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required>
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label" for="date_of_required">Date of Required</label>
+                                <label class="form-label fs-5 fw-bold" for="date_of_required">Date of Required</label>
                                 <input class="form-control" type="date" name="date_of_required" required>
                             </div>
 
-                            <div class="form-group mt-3">
-                                <label class="form-label col-sm-2" for="supplier">Supplier</label>
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold col-sm-2" for="supplier">Supplier</label>
                                 <input class="form-control" type="text" name="supplier" required>
                             </div>
 
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold col-sm-2" for="pic">PIC</label>
+                                <input class="form-control" type="text" name="pic" required>
+                            </div>
+
                             <div class="form-group mt-3">
-                                <label class="form-label" for="remark">Remark</label>
+                                <label class="form-label fs-5 fw-bold" for="remark">Remark</label>
                                 <textarea class="form-control" name="remark" rows="4" cols="50" required></textarea>
                             </div>
 
@@ -99,6 +113,27 @@
 
 
     <script>
+        function updateTypeDropdown() {
+            // Get Selected value of the type dropdown
+            var selectedValue = document.getElementById('toDepartmentDropdown').value;
+
+            var typeDropdown = document.getElementById('typeDropdown');
+
+            typeDropdown.innerHTML = "";
+
+            if (selectedValue === "Maintenance") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+            } else if (selectedValue === "Purchasing") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+            } else if (selectedValue === "Personnel") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+            } else {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+            }
+        }
+
         // Counter for creating unique IDs for items
         let itemIdCounter = 0;
         let isFirstCall = true; // Flag to track the first call

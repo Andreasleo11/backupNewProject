@@ -48,225 +48,8 @@
 
         @include('partials.reject-pr-confirmation', $purchaseRequest)
 
+        @include('partials.pr-detail-autographs')
 
-        <div class="row text-center">
-            <div class="col">
-                <h2>Preparation</h2>
-                <div class="autograph-box container" id="autographBox1"></div>
-                <div class="container mt-2" id="autographuser1"></div>
-            </div>
-
-            <div class="col">
-                <h2>Purchaser</h2>
-                <div class="autograph-box container" id="autographBox5"></div>
-                <div class="container mt-2" id="autographuser5"></div>
-                @if (Auth::check() && (Auth::user()->specification->name == 'PURCHASER' && $purchaseRequest->status == 1))
-                    <div class="row px-4 d-flex justify-content-center">
-                        <div class="col-auto me-2">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                class="btn btn-danger">Reject</button>
-                        </div>
-                        <div class="col-auto">
-                            @include('partials.approve-pr-confirmation-modal', [
-                                'title' => 'Approve confirmation',
-                                'body' =>
-                                    'Are you sure want to approve <strong>' .
-                                    $purchaseRequest->doc_num .
-                                    '</strong>?',
-                                'confirmButton' => [
-                                    'id' => 'btn5',
-                                    'class' => 'btn btn-success',
-                                    'onclick' =>
-                                        'addAutograph(5, ' . $purchaseRequest->id . ', ' . $user->id . ')',
-                                    'text' => 'Approve',
-                                ],
-                            ])
-                            <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                                class="btn btn-success">Approve</button>
-                        </div>
-                    </div>
-                @endif
-            </div>
-
-            <div class="col">
-                <h2>Dept Head</h2>
-                <div class="autograph-box container" id="autographBox2"></div>
-                <div class="container mt-2 border-1" id="autographuser2"></div>
-                @php
-                    $detailObj = null;
-                    $count = 0;
-                    $isApproveNotEmpty = null;
-                    $countItemHasApprovalStatus = 0;
-                    $thereIsApprovedItem = false;
-                    foreach ($purchaseRequest->itemDetail as $detail) {
-                        $count += 1;
-                        if ($detail->is_approve_by_head !== null) {
-                            $isApproveNotEmpty = true;
-                            $detailObj = $detail;
-                            $countItemHasApprovalStatus += 1;
-                        }
-                        if ($detail->is_approve_by_head === 1) {
-                            $thereIsApprovedItem = true;
-                        }
-                    }
-                @endphp
-                @if (Auth::check() &&
-                        Auth::user()->department == $userCreatedBy->department &&
-                        Auth::user()->is_head == 1 &&
-                        $purchaseRequest->status == 6 &&
-                        $isApproveNotEmpty)
-                    @if ($count === $countItemHasApprovalStatus)
-                        <div class="row px-4 d-flex justify-content-center">
-                            <div
-                                class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
-                                <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                    class="btn btn-danger">Reject</button>
-                            </div>
-                            <div
-                                class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_head) || !$thereIsApprovedItem ? 'd-none' : '' }}">
-                                @include('partials.approve-pr-confirmation-modal', [
-                                    'title' => 'Approve confirmation',
-                                    'body' =>
-                                        'Are you sure want to approve <strong>' .
-                                        $purchaseRequest->doc_num .
-                                        '</strong>?',
-                                    'confirmButton' => [
-                                        'id' => 'btn2',
-                                        'class' => 'btn btn-success',
-                                        'onclick' =>
-                                            'addAutograph(2, ' . $purchaseRequest->id . ', ' . $user->id . ')',
-                                        'text' => 'Approve',
-                                    ],
-                                ])
-                                <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                                    class="btn btn-success">Approve</button>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-                {{-- @dd($count) --}}
-            </div>
-
-            <div class="col">
-                <h2>Verificator</h2>
-                <div class="autograph-box container" id="autographBox3"></div>
-                <div class="container mt-2 border-1" id="autographuser3"></div>
-                @php
-                    $detailObj = null;
-                    $count = 0;
-                    $isApproveNotEmpty = null;
-                    $countItemHasApprovalStatus = 0;
-                    $thereIsApprovedItem = false;
-                    foreach ($purchaseRequest->itemDetail as $detail) {
-                        if ($detail->is_approve_by_head != 0) {
-                            $count += 1;
-                        }
-                        if ($detail->is_approve_by_verificator !== null) {
-                            $isApproveNotEmpty = true;
-                            $detailObj = $detail;
-                            $countItemHasApprovalStatus += 1;
-                        }
-                        if ($detail->is_approve_by_verificator === 1) {
-                            $thereIsApprovedItem = true;
-                        }
-                    }
-                @endphp
-                @if (Auth::check() &&
-                        Auth::user()->department->name == 'HRD' &&
-                        Auth::user()->is_head == 1 &&
-                        $purchaseRequest->status == 2 &&
-                        $isApproveNotEmpty)
-                    @if ($count === $countItemHasApprovalStatus)
-                        <div class="row px-4 d-flex justify-content-center">
-                            <div
-                                class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_verificator) || $thereIsApprovedItem ? 'd-none' : '' }}">
-                                <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                    class="btn btn-danger">Reject</button>
-                            </div>
-                            <div
-                                class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_verificator) || !$thereIsApprovedItem ? 'd-none' : '' }}">
-                                @include('partials.approve-pr-confirmation-modal', [
-                                    'title' => 'Approve confirmation',
-                                    'body' =>
-                                        'Are you sure want to approve <strong>' .
-                                        $purchaseRequest->doc_num .
-                                        '</strong>?',
-                                    'confirmButton' => [
-                                        'id' => 'btn3',
-                                        'class' => 'btn btn-success',
-                                        'onclick' =>
-                                            'addAutograph(3, ' . $purchaseRequest->id . ', ' . $user->id . ')',
-                                        'text' => 'Approve',
-                                    ],
-                                ])
-                                <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                                    class="btn btn-success">Approve</button>
-                            </div>
-                        </div>
-                    @endif
-                @endif
-            </div>
-
-            <div class="col">
-                <h2>Director</h2>
-                <div class="autograph-box container" id="autographBox4"></div>
-                <div class="container mt-2 border-1" id="autographuser4"></div>
-                @php
-                    $detailObj = null;
-                    $count = 0;
-                    $isApproveNotEmpty = null;
-                    $countItemHasApprovalStatus = 0;
-                    $thereIsApprovedItem = false;
-                    foreach ($purchaseRequest->itemDetail as $detail) {
-                        if ($detail->is_approve_by_verificator != 0) {
-                            $count += 1;
-                        }
-                        if ($detail->is_approve !== null) {
-                            $isApproveNotEmpty = true;
-                            $detailObj = $detail;
-                            $countItemHasApprovalStatus += 1;
-                        }
-                        if ($detail->is_approve === 1) {
-                            $thereIsApprovedItem = true;
-                        }
-                    }
-                @endphp
-                @if (Auth::check() &&
-                        Auth::user()->department->name == 'DIRECTOR' &&
-                        $purchaseRequest->status == 3 &&
-                        $isApproveNotEmpty)
-                    @if ($count === $countItemHasApprovalStatus)
-                        <div class="row px-4 d-flex justify-content-center">
-                            <div
-                                class="col-auto me-2 {{ ($count === 1 && $detailObj->is_approve) || $thereIsApprovedItem ? 'd-none' : '' }}">
-                                <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                    class="btn btn-danger">Reject</button>
-                            </div>
-                            <div
-                                class="col-auto {{ ($count === 1 && !$detailObj->is_approve) || !$thereIsApprovedItem ? 'd-none' : '' }}">
-                                @include('partials.approve-pr-confirmation-modal', [
-                                    'title' => 'Approve confirmation',
-                                    'body' =>
-                                        'Are you sure want to approve <strong>' .
-                                        $purchaseRequest->doc_num .
-                                        '</strong>?',
-                                    'confirmButton' => [
-                                        'id' => 'btn4',
-                                        'class' => 'btn btn-success',
-                                        'onclick' =>
-                                            'addAutograph(4, ' . $purchaseRequest->id . ', ' . $user->id . ')',
-                                        'text' => 'Approve',
-                                    ],
-                                ])
-                                <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                                    class="btn btn-success">Approve</button>
-
-                            </div>
-                        </div>
-                    @endif
-                @endif
-            </div>
-        </div>
     </section>
 
     <section aria-label="pr-header-body" class="container mt-5">
@@ -275,8 +58,8 @@
 
                 <div
                     class="p-2 {{ ($purchaseRequest->user_id_create === $user->id && $purchaseRequest->status === 1) ||
-                    ($purchaseRequest->status === 1 && $user->specification->name === 'PURCHASER') ||
-                    ($purchaseRequest->status === 6 && $user->is_head === 1) ||
+                    ($purchaseRequest->status === 1 && $user->is_head) ||
+                    ($purchaseRequest->status === 6 && $user->specification->name === 'PURCHASER') ||
                     ($purchaseRequest->status === 2 && $user->department->name === 'HRD')
                         ? ''
                         : 'd-none' }}">
@@ -293,7 +76,8 @@
                 <span class="h1 fw-semibold">Purchase Requisition</span> <br>
                 <div class="fs-6 mt-2">
                     <span class="fs-6 text-secondary">Created By : </span> {{ $userCreatedBy->name }} <br>
-                    <span class="fs-6 text-secondary">From Department : </span> {{ $userCreatedBy->department->name }} <br>
+                    <span class="fs-6 text-secondary">From Department : </span> {{ $userCreatedBy->department->name }}
+                    <br>
                     <span class="fs-6 text-secondary">Doc num : </span> {{ $purchaseRequest->doc_num }}
                     <div class="mt-2">
                         @include('partials.pr-status-badge', ['pr' => $purchaseRequest])
@@ -322,9 +106,15 @@
                             <tr>
                                 <th>Supplier</th>
                                 <td>: {{ $purchaseRequest->supplier }}</td>
-                                <th>Remark</th>
-                                <td style="width: 40%">: {{ $purchaseRequest->remark }}
+                                <th>PIC</th>
+                                <td>: {{ $purchaseRequest->pic }}</td>
+
                                 </td>
+                            </tr>
+                            <tr>
+                                <th style="width: 15%">Remark</th>
+                                <td colspan="3" style="width: 35%; word-wrap: break-word; word-break: break-all;">:
+                                    {{ $purchaseRequest->remark }}
                             </tr>
                         </tbody>
                     </table>
@@ -385,40 +175,54 @@
 
                                     {{-- Logic for total --}}
                                     @php
-                                        if ($purchaseRequest->status === 6) {
+                                        if ($purchaseRequest->status === 6 || $purchaseRequest->status === 7) {
                                             if (!is_null($detail->is_approve_by_head)) {
                                                 if ($detail->is_approve_by_head) {
-                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    $totalall += $detail->quantity * $detail->price;
                                                 }
                                             } else {
-                                                $totalall += $detail->quantity * $detail->price; // Update the total
+                                                $totalall += $detail->quantity * $detail->price;
                                             }
                                         } elseif ($purchaseRequest->status === 2) {
                                             if (!is_null($detail->is_approve_by_verificator)) {
                                                 if ($detail->is_approve_by_verificator) {
-                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    $totalall += $detail->quantity * $detail->price;
                                                 }
                                             } else {
                                                 if ($detail->is_approve_by_head) {
-                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    $totalall += $detail->quantity * $detail->price;
                                                 }
                                             }
                                         } elseif ($purchaseRequest->status === 3) {
                                             if (!is_null($detail->is_approve)) {
                                                 if ($detail->is_approve) {
-                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                    $totalall += $detail->quantity * $detail->price;
                                                 }
                                             } else {
-                                                if ($detail->is_approve_by_verificator) {
-                                                    $totalall += $detail->quantity * $detail->price; // Update the total
+                                                if (
+                                                    $purchaseRequest->type === 'office' ||
+                                                    ($purchaseRequest->to_department === 'Computer' &&
+                                                        $purchaseRequest->type === 'factory')
+                                                ) {
+                                                    if ($detail->is_approve_by_verificator) {
+                                                        $totalall += $detail->quantity * $detail->price;
+                                                    }
+                                                } elseif ($detail->is_approve_by_gm) {
+                                                    $totalall += $detail->quantity * $detail->price;
                                                 }
                                             }
                                         } elseif ($purchaseRequest->status === 4) {
                                             if ($detail->is_approve) {
-                                                $totalall += $detail->quantity * $detail->price; // Update the total
+                                                $totalall += $detail->quantity * $detail->price;
                                             }
                                         } elseif ($purchaseRequest->status === 1) {
-                                            $totalall += $detail->quantity * $detail->price; // Update the total
+                                            if (!is_null($detail->is_approve_by_head)) {
+                                                if ($detail->is_approve_by_head) {
+                                                    $totalall += $detail->quantity * $detail->price;
+                                                }
+                                            } else {
+                                                $totalall += $detail->quantity * $detail->price;
+                                            }
                                         } else {
                                             $totalall += 0;
                                         }
@@ -469,7 +273,7 @@
                         <tfoot>
                             <tr>
                                 <td colspan="6" class="text-right"><strong>Total</strong></td>
-                                <td class="table-active fw-semibold">@currency($totalall)</td>
+                                <td class="table-active fw-semibold">@currency($totalall ?? 0)</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -516,6 +320,10 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log(data.message);
+                    // Approve all detail items if the user is GM
+                    @if (Auth::user()->is_gm)
+                        approveAllDetailItems(prId, 'GM');
+                    @endif
                     location.reload();
                 })
                 .catch(error => {
@@ -534,6 +342,7 @@
                 autograph_3: '{{ $purchaseRequest->autograph_3 ?? null }}',
                 autograph_4: '{{ $purchaseRequest->autograph_4 ?? null }}',
                 autograph_5: '{{ $purchaseRequest->autograph_5 ?? null }}',
+                autograph_6: '{{ $purchaseRequest->autograph_6 ?? null }}',
             };
 
             var autographNames = {
@@ -542,10 +351,11 @@
                 autograph_name_3: '{{ $purchaseRequest->autograph_user_3 ?? null }}',
                 autograph_name_4: '{{ $purchaseRequest->autograph_user_4 ?? null }}',
                 autograph_name_5: '{{ $purchaseRequest->autograph_user_5 ?? null }}',
+                autograph_name_6: '{{ $purchaseRequest->autograph_user_6 ?? null }}',
             };
 
             // Loop through each autograph status and update the UI accordingly
-            for (var i = 1; i <= 5; i++) {
+            for (var i = 1; i <= 6; i++) {
                 var autographBox = document.getElementById('autographBox' + i);
                 var autographInput = document.getElementById('autographInput' + i);
                 var autographNameBox = document.getElementById('autographuser' + i);
@@ -571,6 +381,18 @@
                     autographNameBox.style.display = 'block';
                 }
             }
+        }
+
+        function approveAllDetailItems(prId, type) {
+            // Make an AJAX request to save the image path
+            fetch(`/approveAllDetailItems/${prId}/${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
         }
 
         // Call the function to check autograph status on page load

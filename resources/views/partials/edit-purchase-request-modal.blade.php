@@ -41,57 +41,69 @@
                 </div>
                 <div class="row justify-content-center">
                     <div class="container p-5 pb-0">
-                        <div class="h2 text-center">Edit Purchase Request</div>
+                        <div class="h2 text-center fw-bold mb-4">Edit Purchase Request</div>
                         <form action="{{ route('purchaserequest.update', $pr->id) }}" method="POST" class="row"
                             id="form-pr-edit">
                             @method('PUT')
                             @csrf
 
-                            <div class="form-group mt-3">
-                                <label class="form-label" for="to_department">To Department</label>
-                                <select class="form-select" name="to_department" id="to_department" required>
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
+                                <select class="form-select" name="to_department" id="to_department" required disabled>
                                     <option value="{{ $pr->to_department }}" selected>
                                         {{ $pr->to_department }}
                                     </option>
-                                    @foreach (['Maintenance', 'Purchasing', 'Personnel', 'Computer'] as $option)
-                                        @if ($option !== $pr->to_department)
-                                            <option value="{{ $option }}">{{ $option }}</option>
-                                        @endif
-                                    @endforeach
                                 </select>
-                                <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
+                            </div>
+
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold" for="type">Type</label>
+                                <select class="form-select" name="type" id="typeDropdown" required disabled>
+                                    <option value="{{ $pr->type }}" selected>
+                                        {{ ucwords($pr->type) }}</option>
+                                </select>
                             </div>
 
                             <div class="form-group mt-3">
                                 <div id="itemsContainer">
-                                    <label class="form-label">List of Items</label>
+                                    <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3">
                                     </div>
-                                    <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
-                                        Item</button>
+                                    @if (Auth::user()->specification->name === 'PURCHASER')
+                                        <button class="btn btn-secondary btn-sm" type="button"
+                                            onclick="addNewItem()">Add
+                                            Item</button>
+                                    @endif
                                 </div>
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label" for="date_pr">Date of PR</label>
+                                <label class="form-label fs-5 fw-bold" for="date_pr">Date of PR</label>
                                 <input class="form-control" type="date" id="date_pr" name="date_pr" required
                                     value="{{ $pr->date_pr }}">
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label" for="date_required">Date of Required</label>
+                                <label class="form-label fs-5 fw-bold" for="date_required">Date of Required</label>
                                 <input class="form-control" type="date" name="date_required" required
                                     value="{{ $pr->date_required }}">
                             </div>
 
-                            <div class="form-group mt-3">
-                                <label class="form-label col-sm-2" for="supplier">Supplier</label>
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold col-sm-2" for="supplier">Supplier</label>
                                 <input class="form-control" type="text" name="supplier" required
                                     value="{{ $pr->supplier }}">
                             </div>
 
-                            <div class="form-group mt-3">
-                                <label class="form-label" for="remark">Remark</label>
+                            <div class="form-group mt-3 col-md-6">
+                                <label class="form-label fs-5 fw-bold fs-5 fw-bold col-sm-2" for="pic">PIC</label>
+                                <input class="form-control" type="text" name="pic" required
+                                    value="{{ $pr->pic }}">
+                            </div>
+
+                            <div class="form-group
+                                    mt-3">
+                                <label class="form-label fs-5 fw-bold" for="remark">Remark</label>
                                 <textarea class="form-control" name="remark" rows="4" cols="50" required>{{ $pr->remark }}</textarea>
                             </div>
                         </form>
@@ -117,7 +129,14 @@
         let details = {!! json_encode($details) !!};
         console.log(details);
 
-        details.forEach(detail => {
+        // Filter the detail before fill it to edit modal. It will not contain the rejected.
+        let filteredDetails = details.filter(detail => {
+            return detail.is_approve_by_head === 1 || detail.is_approve_by_head === null;
+        });
+
+        console.log("Filtered Details:", filteredDetails);
+
+        filteredDetails.forEach(detail => {
             addNewItem(detail);
         });
 
