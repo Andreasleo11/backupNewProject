@@ -637,7 +637,7 @@ class PurchaseRequestController extends Controller
                     ]);
                 } else {
                     $detail->update([
-                        'is_approve_by_head' => auth()->user()->specification->name === "PURCHASER" ? 1 : 0,
+                        'is_approve_by_head' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_head,
                     ]);
                 }
             }
