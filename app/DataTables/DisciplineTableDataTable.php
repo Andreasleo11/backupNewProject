@@ -268,7 +268,7 @@ class DisciplineTableDataTable extends DataTable
                     $query->where('Dept', '320');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 22) {
+        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 7) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {

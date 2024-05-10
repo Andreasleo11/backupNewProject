@@ -60,20 +60,81 @@
 
 <script type="module">
     $(function() {
-        let dataTable = window.LaravelDataTables["disciplinetable-table"];
-        $('#status-filter').change(function() {
-            let selectedMonth = $(this).val();
-            console.log("Selected month:", selectedMonth); // Output the selected month to console
+    // Check if the filtered month is stored in localStorage
+    let selectedMonth = localStorage.getItem('selectedMonth');
 
-            // Extract the month part from the date format (yyyy-mm-dd)
-            let formattedMonth = selectedMonth.padStart(2, '0'); // Pad single-digit months with 0
-            console.log("Formatted month:", formattedMonth);
+    // Initialize DataTable and apply initial filter if the month is stored
+    let dataTable = window.LaravelDataTables["disciplinetable-table"];
+    if (selectedMonth) {
+        $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
+        applyFilter(selectedMonth); // Apply the filter
+    }
 
-            // Filter by month column
-            dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
+    // Event listener for filter select element
+    $('#status-filter').change(function() {
+        let selectedMonth = $(this).val();
+        console.log("Selected month:", selectedMonth); // Output the selected month to console
+
+        // Store the selected month in localStorage
+        localStorage.setItem('selectedMonth', selectedMonth);
+
+        applyFilter(selectedMonth); // Apply the filter
+    });
+
+    // Function to apply filter to DataTable
+    function applyFilter(selectedMonth) {
+        // Extract the month part from the date format (yyyy-mm-dd)
+        let formattedMonth = selectedMonth.padStart(2, '0'); // Pad single-digit months with 0
+        console.log("Formatted month:", formattedMonth);
+
+        // Filter by month column
+        dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
+    }
+});
+    
+    function setFilterValue(filterValue) {
+        fetch('/set-filter-value', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({ filterValue: filterValue }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Filter value set in session:', data.filterValue);
+        })
+        .catch(error => {
+            console.error('Error setting filter value:', error);
         });
-        
-    });  
+    }
+
+    // Function to restore filter value from session
+    function restoreFilterValue() {
+        fetch('/get-filter-value')
+        .then(response => response.json())
+        .then(data => {
+            if (data.filterValue) {
+                document.getElementById('status-filter').value = data.filterValue;
+            }
+        })
+        .catch(error => {
+            console.error('Error getting filter value:', error);
+        });
+    }
+
+    // Call restoreFilterValue() when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        restoreFilterValue();
+    });
+
+    // Event listener for filter select element
+    document.getElementById('status-filter').addEventListener('change', function() {
+        var filterValue = this.value;
+        setFilterValue(filterValue);
+    });
+
 </script>
 
 

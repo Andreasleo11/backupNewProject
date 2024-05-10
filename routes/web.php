@@ -549,6 +549,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get("/employeemaster/index", [EmployeeMasterController::class, 'index'])->name("index.employeesmaster");
     Route::post("/employeemaster/add", [EmployeeMasterController::class, "addemployee"])->name('addemployee');
+    Route::put("/edit/employee/{id}", [EmployeeMasterController::class, "editemployee"])->name('editemployee');
+    Route::delete("/delete/employee/{linecode}", [EmployeeMasterController::class, "deleteemployee"])->name('deleteemployee');
+
+
 
     Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index");
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
@@ -556,6 +560,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index");
+    Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
+    Route::get('/get-filter-value', [DisciplinePageController::class, 'getFilterValue']);
     Route::put("/edit/discipline/{id}", [DisciplinePageController::class, "update"])->name('editdiscipline');
     Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
     Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
