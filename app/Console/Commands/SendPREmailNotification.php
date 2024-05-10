@@ -45,10 +45,9 @@ class SendPREmailNotification extends Command
                 // Retrieve the user who is a head and belongs to the same department as the creator of the latest PurchaseRequest
                 $to = User::where('is_head', 1)
                             ->whereHas('department', function($query) use ($newPr) {
-                                $query->where('name', $newPr->createdBy->department->name);
+                                $query->where('name', $newPr->from_department);
                             })
                             ->first()->email;
-
                 break;
             case 6:
                 if($newPr->to_department === "Computer"){
@@ -122,11 +121,17 @@ class SendPREmailNotification extends Command
             default:
                 $to = 'raymondlay023@gmail.com';
                 break;
+            }
+        if($newPr->status !== 1){
+            $title = "There's PR Changed!";
+        } else {
+            $title = "There's a New PR!";
         }
-
-        $cc = ['raymondlay023@gmail.com', 'andreasleonardo.al@gmail.com'];
+        $title = $title;
+        $cc = $newPr->createdBy->email;
         $status = $this->checkStatus($newPr->status);
         $mailData = [
+            'title' => $title,
             'to' => $to,
             'cc' => $cc,
             'subject' => 'PR Notification',
