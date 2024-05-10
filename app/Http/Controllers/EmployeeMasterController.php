@@ -13,7 +13,7 @@ class EmployeeMasterController extends Controller
     {
         $datas = Employee::get();
         return $dataTable->render("setting.employeeindex", compact("datas"));
-
+        
     }
 
     public function addemployee(Request $request)
@@ -38,5 +38,33 @@ class EmployeeMasterController extends Controller
         return redirect()->route('index.employeesmaster')->with('success', 'Line added successfully');
 
     }
+
+
+
+    public function editemployee(Request $request, $id)
+    {
+        $newemployees = Employee::where('id', $id)->get();
+        // dd($newemployee);
+
+        foreach($newemployees as $newemployee){
+        // dd($newline)
+        $newemployee->where('id', $request->id)->update([
+            'Nama' => $request->Nama,
+            'Dept' => $request->Dept,
+            'status' => $request->status,
+        ]);
+        }
+
+        return redirect()->route('index.employeesmaster')->with(['success' => 'User updated successfully!']);
+
+    }
+
+    public function deleteemployee($id)
+    {
+        Employee::where('id', $id)->delete();
+        return redirect()->back()->with(['success' => 'User deleted successfully!']);
+
+    }
+    
 
 }

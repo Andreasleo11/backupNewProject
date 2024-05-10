@@ -79,13 +79,14 @@ class DisciplinePageController extends Controller
             }
         }
 
-        elseif($user->is_head == 1 && $user->department_id == 22)
+        elseif($user->is_head == 1 && $user->department_id == 7)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '310');
             })
             ->get();
 
+            // dd($employees);
             foreach ($employees as $employee) {
                 $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
             //    dd($employee);
@@ -255,6 +256,20 @@ class DisciplinePageController extends Controller
         return $dataTable->render("setting.disciplineindex", compact("employees"));
         }
         // return view("setting.disciplineindex", compact("employees"));
+    }
+
+
+    public function setFilterValue(Request $request)
+    {
+        $filterValue = $request->input('filterValue');
+        session(['filterValue' => $filterValue]);
+        return response()->json(['filterValue' => $filterValue]);
+    }
+
+    public function getFilterValue()
+    {
+        $filterValue = session('filterValue');
+        return response()->json(['filterValue' => $filterValue]);
     }
 
     public function update(Request $request, $id)
@@ -680,7 +695,7 @@ class DisciplinePageController extends Controller
             }
         }
 
-        elseif($user->is_head == 1 && $user->department_id == 22)
+        elseif($user->is_head == 1 && $user->department_id == 7)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '310');
