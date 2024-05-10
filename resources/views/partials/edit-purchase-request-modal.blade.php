@@ -47,7 +47,16 @@
                             @method('PUT')
                             @csrf
 
-                            <div class="form-group mt-3 col-md-6">
+                            <div class="form-group mt-3 col-md-4">
+                                <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
+                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
+                                    <option value="{{ $pr->from_department }}" selected>{{ $pr->from_department }}
+                                    </option>
+                                </select>
+                                <div class="form-text">Pilih departmen tujuan (HANYA JIKA DIPERLUKAN)</div>
+                            </div>
+
+                            <div class="form-group mt-3 col-md-4">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
                                 <select class="form-select" name="to_department" id="to_department" required disabled>
                                     <option value="{{ $pr->to_department }}" selected>
@@ -56,7 +65,7 @@
                                 </select>
                             </div>
 
-                            <div class="form-group mt-3 col-md-6">
+                            <div class="form-group mt-3 col-md-4">
                                 <label class="form-label fs-5 fw-bold" for="type">Type</label>
                                 <select class="form-select" name="type" id="typeDropdown" required disabled>
                                     <option value="{{ $pr->type }}" selected>
@@ -101,8 +110,7 @@
                                     value="{{ $pr->pic }}">
                             </div>
 
-                            <div class="form-group
-                                    mt-3">
+                            <div class="form-group mt-3">
                                 <label class="form-label fs-5 fw-bold" for="remark">Remark</label>
                                 <textarea class="form-control" name="remark" rows="4" cols="50" required>{{ $pr->remark }}</textarea>
                             </div>
@@ -147,9 +155,12 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'Item Name', 'Quantity', 'Unit Price', 'Subtotal', 'Purpose', 'Action'];
-                const columnSizes = ['col-md-1', 'col-md-3', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2', 'col-md-1'];
-
+                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Unit Price', 'Subtotal', 'Purpose',
+                    'Action'
+                ];
+                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2',
+                    'col-md-1'
+                ];
                 // Create header row and add header labels with specified column sizes
                 const headerRow = document.createElement('div');
                 headerRow.classList.add('row', 'gy-2', 'gx-2', 'align-items-center', 'header-row');
@@ -172,7 +183,7 @@
 
             // Create input fields for item details
             const formGroupName = document.createElement('div')
-            formGroupName.classList.add('col-md-3');
+            formGroupName.classList.add('col-md-2');
 
             const itemNameInput = document.createElement('input');
             itemNameInput.classList.add('form-control');
@@ -249,6 +260,19 @@
 
             formGroupQuantityInput.appendChild(quantityInput);
 
+            const formGroupUomInput = document.createElement('div')
+            formGroupUomInput.classList.add('col-md-1')
+
+            const uomInput = document.createElement('input');
+            uomInput.classList.add('form-control');
+            uomInput.value = $detail?.uom ?? "";
+            uomInput.setAttribute('required', 'required');
+            uomInput.type = 'text';
+            uomInput.name = `items[${itemIdCounter}][uom]`;
+            uomInput.placeholder = 'UoM';
+
+            formGroupUomInput.appendChild(uomInput);
+
             const formGroupUnitPriceInput = document.createElement('div')
             formGroupUnitPriceInput.classList.add('col-md-2');
 
@@ -301,6 +325,7 @@
             newItemContainer.appendChild(countGroup);
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupQuantityInput);
+            newItemContainer.appendChild(formGroupUomInput);
             newItemContainer.appendChild(formGroupUnitPriceInput);
             newItemContainer.appendChild(formGroupSubtotalInput);
             newItemContainer.appendChild(formGroupPurposeInput);

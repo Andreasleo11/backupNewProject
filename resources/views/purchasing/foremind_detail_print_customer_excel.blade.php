@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoice Export</title>
+    <title>Forecast {{$vendorName}}</title>
     <style>
         /* Table styles */
         table {

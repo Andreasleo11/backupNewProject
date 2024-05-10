@@ -23,7 +23,9 @@ class EmployeeDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-        ->addColumn('action', '<button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-trash"></i></button>
+        ->addColumn('action', '
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-employee-modal{{$id}}"><i class="bx bx-edit"></i></button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-trash"></i></button>
         ')
             ->setRowId('id');
     }

@@ -19,6 +19,7 @@ class Detail extends Model
         'cant_use',
         'price',
         'do_num',
+        'fg_measure',
     ];
 
     // Define relationships if needed
@@ -30,6 +31,16 @@ class Detail extends Model
     public function defects()
     {
         return $this->hasMany(Defect::class);
+    }
+
+    public function adjustdetail()
+    {
+        return $this->hasMany(FormAdjustMaster::class, 'detail_id','id');
+    }
+
+    public function adjustheader()
+    {
+        return $this->hasMany(HeaderFormAdjust::class);
     }
 
 }

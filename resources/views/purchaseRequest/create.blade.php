@@ -39,18 +39,35 @@
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-10">
+            <div class="col-md-11">
                 <div class="card">
                     <div class="container p-5">
                         <div class="h2 text-center fw-semibold">Create Purchase Request</div>
                         <form action="{{ route('purchaserequest.insert') }}" method="POST" class="row ">
                             @csrf
 
-                            <div class="form-group mt-5 col-md-6">
+                            <div class="form-group mt-5 col-md-4">
+                                <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
+                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
+                                    <option value="" selected disabled>Select from department..</option>
+                                    @foreach ($departments as $department)
+                                        @if ($department->id === Auth::user()->department->id)
+                                            <option value="{{ $department->name }}" selected>{{ $department->name }}
+                                            </option>
+                                        @elseif ($department->name === 'HRD' || $department->name === 'DIRECTOR')
+                                        @else
+                                            <option value="{{ $department->name }}">{{ $department->name }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                                <div class="form-text">Pilih departmen tujuan (HANYA JIKA DIPERLUKAN)</div>
+                            </div>
+
+                            <div class="form-group mt-5 col-md-4">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
                                 <select class="form-select" name="to_department" id="toDepartmentDropdown" required
                                     onchange="updateTypeDropdown()">
-                                    <option value="" selected disabled>Select department..</option>
+                                    <option value="" selected disabled>Select to department..</option>
                                     <option value="Maintenance">Maintenance</option>
                                     <option value="Purchasing">Purchasing</option>
                                     <option value="Personnel">Personnel</option>
@@ -59,12 +76,12 @@
                                 <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                             </div>
 
-                            <div class="form-group mt-5 col-md-6">
+                            <div class="form-group mt-5 col-md-4">
                                 <label class="form-label fs-5 fw-bold" for="type">Type</label>
                                 <select class="form-select" name="type" id="typeDropdown" required>
                                     <option value="" selected disabled>Select Type..</option>
                                 </select>
-                                <div class="form-text">Pilih Tipe dari PR. </div>
+                                <div class="form-text">Pilih Tipe dari PR</div>
                             </div>
 
                             <div class="form-group mt-3">
@@ -145,8 +162,12 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'Item Name', 'Quantity', 'Unit Price', 'Subtotal', 'Purpose', 'Action'];
-                const columnSizes = ['col-md-1', 'col-md-3', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2', 'col-md-1'];
+                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Unit Price', 'Subtotal', 'Purpose',
+                    'Action'
+                ];
+                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2',
+                    'col-md-1'
+                ];
 
                 // Create header row and add header labels with specified column sizes
                 const headerRow = document.createElement('div');
@@ -170,7 +191,7 @@
 
             // Create input fields for item details
             const formGroupName = document.createElement('div')
-            formGroupName.classList.add('col-md-3');
+            formGroupName.classList.add('col-md-2');
 
             const itemNameInput = document.createElement('input');
             itemNameInput.classList.add('form-control');
@@ -245,6 +266,19 @@
 
             formGroupQuantityInput.appendChild(quantityInput);
 
+            const formGroupUomInput = document.createElement('div')
+            formGroupUomInput.classList.add('col-md-1')
+
+            const uomInput = document.createElement('input');
+            uomInput.classList.add('form-control');
+            uomInput.value = 'PCS';
+            uomInput.setAttribute('required', 'required');
+            uomInput.type = 'text';
+            uomInput.name = `items[${itemIdCounter}][uom]`;
+            uomInput.placeholder = 'UoM';
+
+            formGroupUomInput.appendChild(uomInput);
+
             const formGroupUnitPriceInput = document.createElement('div')
             formGroupUnitPriceInput.classList.add('col-md-2');
 
@@ -295,6 +329,7 @@
             newItemContainer.appendChild(countGroup);
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupQuantityInput);
+            newItemContainer.appendChild(formGroupUomInput);
             newItemContainer.appendChild(formGroupUnitPriceInput);
             newItemContainer.appendChild(formGroupSubtotalInput);
             newItemContainer.appendChild(formGroupPurposeInput);

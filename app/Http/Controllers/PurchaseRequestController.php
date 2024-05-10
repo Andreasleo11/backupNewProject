@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DataTables\DirectorPurchaseRequestDataTable;
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
 use App\Models\DetailPurchaseRequest;
@@ -28,7 +29,7 @@ class PurchaseRequestController extends Controller
 
 
         // Determine conditions based on user department and role
-        $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy', 'createdBy.department');
+        $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');
 
         if ($isHRDHead) {
             // If the user is HRD Head, filter requests with specific conditions
@@ -74,8 +75,9 @@ class PurchaseRequestController extends Controller
 
         } else {
             // Otherwise, filter requests based on user department
-            $purchaseRequestsQuery->whereHas('createdBy.department', function ($query) use ($userDepartmentName) {
-                $query->where('name', '=', $userDepartmentName);
+            $purchaseRequestsQuery->where(function ($query) use ($userDepartmentName, $user) {
+                $query->where('from_department', $userDepartmentName)
+                    ->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
             });
         }
 
@@ -174,16 +176,17 @@ class PurchaseRequestController extends Controller
     public function create()
     {
         $master = MasterDataPr::get();
-        return view('purchaseRequest.create', compact('master'));
+        $departments = Department::all();
+        return view('purchaseRequest.create', compact('master', 'departments'));
     }
 
     public function insert(Request $request)
     {
         $userIdCreate = Auth::id();
-
         // Define common data
         $commonData = [
             'user_id_create' => $userIdCreate,
+            'from_department' => $request->input('from_department'),
             'to_department' => $request->input('to_department'),
             'date_pr' => $request->input('date_of_pr'),
             'date_required' => $request->input('date_of_required'),
@@ -225,13 +228,14 @@ class PurchaseRequestController extends Controller
     }
 
     private function verifyAndInsertItems($request, $id){
-        // $this->executeSendPRNotificationCommand();
+        // dd($request->all());
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
                 $price = (int) str_replace(['Rp. ', '.'], '', $itemData['price']);
+                $uom = strtoupper($itemData['uom']);
 
                 // Check if the item exists in MasterDataPr
                 $existingItem = MasterDataPr::where('name', $itemName)->first();
@@ -250,6 +254,7 @@ class PurchaseRequestController extends Controller
                         'quantity' => $quantity,
                         'purpose' => $purpose,
                         'price' => $price,
+                        'uom' => $uom
                     ]);
                 } else {
                     // Case 2: Item available in MasterDataPr
@@ -270,6 +275,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             } else {
                                 // Move the latest price to the price column
@@ -285,6 +291,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             }
                         } else{
@@ -294,6 +301,7 @@ class PurchaseRequestController extends Controller
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
                                 'price' => $price,
+                                'uom' => $uom
                             ]);
                         }
                     }else{
@@ -311,6 +319,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             } else {
 
@@ -327,6 +336,7 @@ class PurchaseRequestController extends Controller
                                     'quantity' => $quantity,
                                     'purpose' => $purpose,
                                     'price' => $price,
+                                    'uom' => $uom
                                 ]);
                             }
                         } else {
@@ -336,6 +346,7 @@ class PurchaseRequestController extends Controller
                                 'quantity' => $quantity,
                                 'purpose' => $purpose,
                                 'price' => $price,
+                                'uom' => $uom
                             ]);
                         }
                     }
@@ -346,6 +357,7 @@ class PurchaseRequestController extends Controller
 
     public function detail($id)
     {
+        $departments = Department::all();
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
         foreach ($purchaseRequest->itemDetail as $detail) {
             $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
@@ -427,7 +439,7 @@ class PurchaseRequestController extends Controller
             }
         })->values(); // Ensure that the result is an array;
 
-        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail'));
+        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments'));
     }
 
     public function saveImagePath(Request $request, $prId, $section)
@@ -647,8 +659,10 @@ class PurchaseRequestController extends Controller
     }
 
     public function destroy($id){
+        // DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         PurchaseRequest::find($id)->delete();
+        // DB::statement('SET FOREIGN_KEY_CHECKS = 1');
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
     }
 

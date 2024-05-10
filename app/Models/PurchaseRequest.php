@@ -37,7 +37,8 @@ class PurchaseRequest extends Model
         'approved_at',
         'updated_at',
         'pic',
-        'type'
+        'type',
+        'from_department'
     ];
 
 
