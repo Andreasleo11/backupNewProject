@@ -36,6 +36,9 @@ class HomeController extends Controller
                 return redirect()->route('qaqc.home');
             }
             $abbrString = $this->abbreviateString($department);
+            // if($abbrString === 'mu') {
+            //     return view('MU.home');
+            // }
             return redirect()->route($abbrString . '.home');
         } else {
             return view('welcome');

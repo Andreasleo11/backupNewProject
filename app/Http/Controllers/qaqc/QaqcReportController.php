@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\qaqc;
 
 use App\Exports\ReportsExport;
+use App\Exports\FormAdjustExport;
 use App\Http\Controllers\Controller;
 use App\Mail\QaqcMail;
 use App\Models\Defect;
@@ -720,5 +721,11 @@ class QaqcReportController extends Controller
     public function exportToExcel()
     {
         return Excel::download(new ReportsExport(), 'reports-all-data.xlsx');
+    }
+
+
+    public function exportFormAdjustToExcel()
+    {
+        return Excel::download(new FormAdjustExport(), 'formadjust-all-data.xlsx');
     }
 }

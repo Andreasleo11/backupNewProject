@@ -62,7 +62,7 @@
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
                     <i class='bx bx-badge-check'></i>
-                    <span>QA/QC</span>
+                    <span>Quality</span>
                 </a>
                 <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
@@ -74,7 +74,11 @@
                 </ul>
             </li>
         @endif
-        @if ($department === 'PRODUCTION' || $user->role->name === 'SUPERADMIN')
+        @if (
+            $department === 'PRODUCTION' ||
+                $department === 'PE' ||
+                $user->role->name === 'SUPERADMIN' ||
+                $department === 'PPIC')
             <li class="sidebar-item" id="sidebar-item-production">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#productionitem" aria-expanded="false" aria-controls="purchaseRequest">
@@ -94,10 +98,16 @@
                             Capacity By Forecast
                         </a>
                     </li>
+                    <li class="sidebar-pe">
+                        <a href="{{ route('pe.formlist') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Request Trial
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
-        @if ($department === 'BUSINESS' || $user->role->name === 'SUPERADMIN')
+        @if ($department === 'BUSINESS' || $user->role->name === 'SUPERADMIN' || $department === 'PPIC')
             <li class="sidebar-item" id="sidebar-item-business">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#businessitem" aria-expanded="false" aria-controls="purchaseRequest">
@@ -114,24 +124,8 @@
                 </ul>
             </li>
         @endif
-        @if ($department === 'PPIC' || $user->role->name === 'SUPERADMIN')
-            <li class="sidebar-item" id="sidebar-item-ppic">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                    data-bs-target="#ppicitem" aria-expanded="false" aria-controls="purchaseRequest">
-                    <i class='bx bx-objects-vertical-bottom'></i>
-                    <span>PPIC</span>
-                </a>
-                <ul id="ppicitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="{{ route('indexds') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Delivery Schedule
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        @endif
-        @if ($department === 'MAINTENANCE' || $user->role->name === 'SUPERADMIN')
+
+        @if ($department === 'MAINTENANCE' || $user->role->name === 'SUPERADMIN' || $department === 'PPIC')
             <li class="sidebar-item" id="sidebar-item-maintenance">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#maintenance" aria-expanded="false" aria-controls="setting">
@@ -161,7 +155,7 @@
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#hrd" aria-expanded="false" aria-controls="hrd">
                     <i class='bx bxs-user'></i>
-                    <span>HRD</span>
+                    <span>Human Resource</span>
                 </a>
                 <ul id="hrd" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item" id="sidebar-item-hrd">
@@ -252,24 +246,6 @@
             </li>
         @endif
 
-        @if ($department === 'PE' || $user->role->name === 'SUPERADMIN')
-            <li class="sidebar-item" id="sidebar-item-pe">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                    data-bs-target="#peitem" aria-expanded="false" aria-controls="setting">
-                    <i class="fa fa-cogs" aria-hidden="true"></i>
-                    <span>PE</span>
-                </a>
-                <ul id="peitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-pe">
-                        <a href="{{ route('pe.formlist') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Form Request Trial
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        @endif
-
         {{-- PUBLIC FEATURE --}}
 
         <li class="sidebar-item" id="sidebar-item-list">
@@ -302,7 +278,7 @@
             </ul>
         </li>
 
-        @if (($user->is_head && $department === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
+        @if (($user->is_head && $department === 'COMPUTER') || $user->role->name === 'SUPERADMIN' || $department === 'PPIC')
             <li class="sidebar-item" id="sidebar-item-setting">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#setting" aria-expanded="false" aria-controls="setting">
@@ -318,41 +294,44 @@
                     </li>
                 </ul>
 
-                <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="{{ route('indexupdatepage') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Update Page
-                        </a>
-                    </li>
-                </ul>
+                @if (($user->is_head && $department === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
+                    <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('indexupdatepage') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Update Page
+                            </a>
+                        </li>
+                    </ul>
 
-                <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="{{ route('discipline.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Discipline Evaluation 
-                        </a>
-                    </li>
-                </ul>
+                    <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Discipline Evaluation
+                            </a>
+                        </li>
+                    </ul>
 
-                <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="{{ route('evaluation.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Employee Evaluation
-                        </a>
-                    </li>
-                </ul>
+                    <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('evaluation.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Employee Evaluation
+                            </a>
+                        </li>
+                    </ul>
 
-                <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                    <li class="sidebar-item">
-                        <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Employee Master List
-                        </a>
-                    </li>
-                </ul>
+                    <ul id="setting" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Employee Master List
+                            </a>
+                        </li>
+                    </ul>
+                @endif
+
             </li>
         @endif
 
@@ -372,39 +351,38 @@
                 </li>
 
                 <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ route('listformadjust') }}"
-                        class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        LIST FORM ADJUST
-                    </a>
-                </li>
-
-               
-                <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
-                        <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                        <a href="{{ route('listformadjust') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Discipline Evaluation 
+                            LIST FORM ADJUST
                         </a>
                     </li>
-                </ul>
-               
 
 
-                {{-- FEATURES IN DEVELOPMENT --}}
-                @if ($department !== 'DIRECTOR')
-                    <li class="sidebar-item">
-                    <li class="sidebar-purchasing">
-                        <a href="{{ route('indexds') }}" class="sidebar-link">
+                    <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Discipline Evaluation
+                            </a>
+                        </li>
+                    </ul>
+
+
+
+                    {{-- FEATURES IN DEVELOPMENT --}}
+                    @if ($department !== 'DIRECTOR')
+                        <li class="sidebar-item">
+                        <li class="sidebar-purchasing">
+                            <a href="{{ route('indexds') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Delivery Schedule
+                            </a>
+                        </li>
+                        <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Delivery Schedule
+                            Monthly PR
                         </a>
-                    </li>
-                    <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Monthly PR
-                    </a>
         </li>
         <li class="sidebar-item">
             <a href="{{ route('formcuti.home') }}" class="sidebar-link">
