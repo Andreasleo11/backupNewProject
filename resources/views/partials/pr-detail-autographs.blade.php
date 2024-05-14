@@ -1,13 +1,70 @@
 <div class="row text-center">
     {{-- PREPARATION AUTOGRAPH --}}
-    <div class="col">
+    <div class="col my-2">
         <h2>Preparation</h2>
         <div class="autograph-box container" id="autographBox1"></div>
         <div class="container mt-2" id="autographuser1"></div>
     </div>
 
+    @if (!$purchaseRequest->is_import)
+        {{-- DEPT HEAD 2 AUTOGRAPH --}}
+        <div class="col my-2">
+            <h2>Dept Head 2</h2>
+            <div class="autograph-box container" id="autographBox7"></div>
+            <div class="container mt-2 border-1" id="autographuser7"></div>
+            {{-- @php
+            $detailObj = null;
+            $count = 0;
+            $isApproveNotEmpty = null;
+            $countItemHasApprovalStatus = 0;
+            $thereIsApprovedItem = false;
+            foreach ($purchaseRequest->itemDetail as $detail) {
+                $count += 1;
+                if ($detail->is_approve_by_head !== null) {
+                    $isApproveNotEmpty = true;
+                    $detailObj = $detail;
+                    $countItemHasApprovalStatus += 1;
+                }
+                if ($detail->is_approve_by_head === 1) {
+                    $thereIsApprovedItem = true;
+                }
+            }
+        @endphp --}}
+            @if (Auth::user()->department->name === $purchaseRequest->from_department &&
+                    Auth::user()->is_head == 1 &&
+                    Auth::user()->specification->name === 'DESIGN' &&
+                    $purchaseRequest->status == 1 &&
+                    $purchaseRequest->autograph_7 === null)
+                {{-- @if ($count === $countItemHasApprovalStatus) --}}
+                <div class="row px-4 d-flex justify-content-center">
+                    <div class="col-auto me-2 ">
+                        <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                            class="btn btn-danger">Reject</button>
+                    </div>
+                    <div class="col-auto ">
+                        @include('partials.approve-pr-confirmation-modal', [
+                            'title' => 'Approve confirmation',
+                            'body' =>
+                                'Are you sure want to approve <strong>' . $purchaseRequest->doc_num . '</strong>?',
+                            'confirmButton' => [
+                                'id' => 'btn7',
+                                'class' => 'btn btn-success',
+                                'onclick' => 'addAutograph(7, ' . $purchaseRequest->id . ', ' . $user->id . ')',
+                                'text' => 'Approve',
+                            ],
+                        ])
+                        <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
+                            class="btn btn-success">Approve</button>
+                    </div>
+                </div>
+                {{-- @endif --}}
+            @endif
+        </div>
+    @endif
+
+
     {{-- DEPT HEAD AUTOGRAPH --}}
-    <div class="col">
+    <div class="col my-2">
         <h2>Dept Head</h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographuser2"></div>
@@ -61,8 +118,10 @@
         @endif
     </div>
 
+
+
     {{-- PURCHASER AUTOGRAPH --}}
-    <div class="col">
+    <div class="col my-2">
         <h2>Purchaser</h2>
         <div class="autograph-box container" id="autographBox5"></div>
         <div class="container mt-2" id="autographuser5"></div>
@@ -203,7 +262,7 @@
     </div>
 
     {{-- DIRECTOR AUTOGRAPH --}}
-    <div class="col">
+    <div class="col my-2">
         <h2>Director</h2>
         <div class="autograph-box container" id="autographBox4"></div>
         <div class="container mt-2 border-1" id="autographuser4"></div>

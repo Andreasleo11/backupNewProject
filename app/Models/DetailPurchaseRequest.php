@@ -20,7 +20,8 @@ class DetailPurchaseRequest extends Model
         'is_approve_by_verificator',
         'is_approve',
         'is_approve_by_gm',
-        'uom'
+        'uom',
+        'currency'
     ];
 
     public function itemDetail()

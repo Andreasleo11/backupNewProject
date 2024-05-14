@@ -11,6 +11,7 @@ class MasterDataPr extends Model
 
     protected $fillable = [
         'name',
+        'currency',
         'price',
         'latest_price',
     ];

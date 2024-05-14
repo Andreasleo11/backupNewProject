@@ -92,9 +92,9 @@
                         <tbody>
                             <tr>
                                 <th>Date PR</th>
-                                <td>: {{ $purchaseRequest->date_pr }}</td>
+                                <td>: @formatDate($purchaseRequest->date_pr)</td>
                                 <th>Date Required</th>
-                                <td>: {{ $purchaseRequest->date_required }}
+                                <td>: @formatDate($purchaseRequest->date_required)
                                 </td>
                             </tr>
                             <tr>
@@ -144,10 +144,21 @@
                             </tr>
                         </thead>
                         @php
-                            $totalall = 0; // Initialize the variable
+                            $totalall = 0;
+                            $isThereAnyCurrencyDifference = false;
+                            $prevCurrency = null;
                         @endphp
                         <tbody>
                             @forelse($filteredItemDetail as $detail)
+                                @if (!isset($prevCurrency))
+                                    @php
+                                        $prevCurrency = $detail->currency;
+                                    @endphp
+                                @elseif($prevCurrency != $detail->currency)
+                                    @php
+                                        $isThereAnyCurrencyDifference = true;
+                                    @endphp
+                                @endif
                                 <tr
                                     class=" @if ($detail->is_approve === 1) table-success
                                             @elseif($detail->is_approve === 0)
@@ -171,9 +182,30 @@
                                     <td>{{ $detail->quantity }}</td>
                                     <td>{{ $detail->uom }}</td>
                                     <td>{{ $detail->purpose }}</td>
-                                    <td> @currency($detail->master->price ?? 0) </td>
-                                    <td> @currency($detail->price)</td>
-                                    <td> @currency($detail->quantity * $detail->price) </td>
+                                    <td>
+                                        @if ($detail->currency === 'USD')
+                                            @currencyUSD($detail->master->price)
+                                        @elseif($detail->currency === 'CNY')
+                                            @currencyCNY($detail->master->price)
+                                        @else
+                                            @currency($detail->master->price) @endif
+                                    </td>
+                                    <td>
+                                        @if ($detail->currency === 'USD')
+                                            @currencyUSD($detail->price)
+                                        @elseif($detail->currency === 'CNY')
+                                            @currencyCNY($detail->price)
+                                        @else
+                                            @currency($detail->price) @endif
+                                    </td>
+                                    <td>
+                                        @if ($detail->currency === 'USD')
+                                            @currencyUSD($detail->quantity * $detail->price)
+                                        @elseif($detail->currency === 'CNY')
+                                            @currencyCNY($detail->quantity * $detail->price)
+                                        @else
+                                            @currency($detail->quantity * $detail->price) @endif
+                                    </td>
 
                                     {{-- Logic for total --}}
                                     @php
@@ -231,7 +263,10 @@
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
-                                    @if ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1)
+                                    @if (
+                                        $user->department->name === $purchaseRequest->from_department &&
+                                            $user->is_head == 1 &&
+                                            $user->specification->name != 'DESIGN')
                                         <td>
                                             @if ($detail->is_approve_by_head === null)
                                                 <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
@@ -268,14 +303,25 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7">No Data</td>
+                                    <td colspan="8">No Data</td>
                                 </tr>
                             @endforelse
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="6" class="text-right"><strong>Total</strong></td>
-                                <td class="table-active fw-semibold">@currency($totalall ?? 0)</td>
+                                <td colspan="7" class="text-right"><strong>Total</strong></td>
+                                <td class="table-active fw-semibold">
+                                    @if (!$isThereAnyCurrencyDifference)
+                                        @if ($detail->currency === 'USD')
+                                            @currencyUSD($totalall ?? 0)
+                                        @elseif($detail->currency === 'CNY')
+                                            @currencyCNY($totalall ?? 0)
+                                        @else
+                                            @currency($totalall ?? 0) @endif
+                                    @else
+                                        There is currency difference!
+                                    @endif
+                                </td>
                             </tr>
                         </tfoot>
                     </table>
@@ -299,12 +345,12 @@
             // Get the div element
             var autographBox = document.getElementById('autographBox' + section);
 
-            console.log('Section:', section);
-            console.log('Report ID:', prId);
+            // console.log('Section:', section);
+            // console.log('Report ID:', prId);
             var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
             var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
-            console.log('username :', username);
-            console.log('image path :', imageUrl);
+            // console.log('username :', username);
+            // console.log('image path :', imageUrl);
 
             autographBox.style.backgroundImage = "url('" + imageUrl + "')";
 
@@ -345,6 +391,7 @@
                 autograph_4: '{{ $purchaseRequest->autograph_4 ?? null }}',
                 autograph_5: '{{ $purchaseRequest->autograph_5 ?? null }}',
                 autograph_6: '{{ $purchaseRequest->autograph_6 ?? null }}',
+                autograph_7: '{{ $purchaseRequest->autograph_7 ?? null }}',
             };
 
             var autographNames = {
@@ -354,10 +401,11 @@
                 autograph_name_4: '{{ $purchaseRequest->autograph_user_4 ?? null }}',
                 autograph_name_5: '{{ $purchaseRequest->autograph_user_5 ?? null }}',
                 autograph_name_6: '{{ $purchaseRequest->autograph_user_6 ?? null }}',
+                autograph_name_7: '{{ $purchaseRequest->autograph_user_7 ?? null }}',
             };
 
             // Loop through each autograph status and update the UI accordingly
-            for (var i = 1; i <= 6; i++) {
+            for (var i = 1; i <= 7; i++) {
                 var autographBox = document.getElementById('autographBox' + i);
                 var autographInput = document.getElementById('autographInput' + i);
                 var autographNameBox = document.getElementById('autographuser' + i);
