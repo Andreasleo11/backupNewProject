@@ -99,14 +99,14 @@ class SendPREmailNotification extends Command
                 ->first()
                 ->email;
 
-                 // Additional condition for user department name is 'MOULDING' and createdBy department name is 'MOULDING'
-                 if ($newPr->createdBy->department->name === 'MOULDING') {
-                     $to = User::whereHas('department', function ($query) {
-                        $query->where('name', 'MOULDING')->where('is_gm', 1);
-                    })
-                    ->first()
-                    ->email;
-                 }
+                //  // Additional condition for user department name is 'MOULDING' and createdBy department name is 'MOULDING'
+                //  if ($newPr->createdBy->department->name === 'MOULDING') {
+                //      $to = User::whereHas('department', function ($query) {
+                //         $query->where('name', 'MOULDING')->where('is_gm', 1);
+                //     })
+                //     ->first()
+                //     ->email;
+                //  }
                 break;
             case 2:
                 $to = User::with('specification')

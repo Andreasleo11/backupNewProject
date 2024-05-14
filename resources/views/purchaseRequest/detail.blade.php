@@ -312,9 +312,9 @@
                                 <td colspan="7" class="text-right"><strong>Total</strong></td>
                                 <td class="table-active fw-semibold">
                                     @if (!$isThereAnyCurrencyDifference)
-                                        @if ($detail->currency === 'USD')
+                                        @if ($prevCurrency === 'USD')
                                             @currencyUSD($totalall ?? 0)
-                                        @elseif($detail->currency === 'CNY')
+                                        @elseif($prevCurrency === 'CNY')
                                             @currencyCNY($totalall ?? 0)
                                         @else
                                             @currency($totalall ?? 0) @endif
@@ -369,7 +369,9 @@
                 .then(data => {
                     console.log(data.message);
                     // Approve all detail items if the user is GM
-                    @if (Auth::user()->is_gm)
+                    @if (Auth::user()->is_gm ||
+                            Auth::user()->specification->name === 'PURCHASER' ||
+                            $purchaseRequest->from_department === 'MOULDING')
                         approveAllDetailItems(prId, 'GM');
                     @endif
                     location.reload();

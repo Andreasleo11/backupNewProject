@@ -346,7 +346,10 @@ class PurchaseRequestController extends Controller
 
             // Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
-                if($purchaseRequest->type === 'factory' || $computerFactory){
+                if($purchaseRequest->from_department === 'MOULDING') {
+                    // direct to Director
+                    $purchaseRequest->status = 3;
+                } elseif($purchaseRequest->type === 'factory' || $computerFactory){
                     // status when gm has not signed
                     $purchaseRequest->status = 7;
                 } else {
