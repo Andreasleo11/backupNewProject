@@ -51,10 +51,10 @@ class PurchaseRequestController extends Controller
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
                 ->whereNotNull('autograph_5')
-                ->where(function ($query) {
+                ->where(function ($query) use ($user, $userDepartmentName) {
                     $query->where('type', 'factory');
                     // Additional condition for users where is_gm is 1 and department is 'MOULDING'
-                    if (auth()->user()->is_gm && auth()->user()->department->name === 'MOULDING') {
+                    if ($user->is_gm && $userDepartmentName === 'MOULDING') {
                         $query->orWhere(function ($query) {
                             $query->where('from_department', 'MOULDING');
                         });
@@ -182,6 +182,7 @@ class PurchaseRequestController extends Controller
 
     public function insert(Request $request)
     {
+        // dd(preg_replace("/[^0-9]/", "",$request->items[0]['price']));
         $userIdCreate = Auth::id();
         // Define common data
         $commonData = [
@@ -198,7 +199,14 @@ class PurchaseRequestController extends Controller
             'autograph_user_1' => Auth::user()->name,
             'status' => 1
         ];
-        // dd($commonData);
+
+        if($commonData['from_department'] === 'MOULDING' && $request->has('is_import')){
+            if($request->is_import === 'true'){
+                $commonData['is_import'] = true;
+            } else {
+                $commonData['is_import'] = false;
+            }
+        }
 
         // Create the purchase request
         $purchaseRequest = PurchaseRequest::create($commonData);
@@ -215,47 +223,39 @@ class PurchaseRequestController extends Controller
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
-    private function executeSendPRNotificationCommand()
-    {
-        // Execute the email:send-pr-notification command
-        Artisan::call('email:send-pr-notification');
-
-        // Get the output of the command (optional)
-        $output = Artisan::output();
-
-        // You can handle the output or return a response as needed
-        return response()->json(['message' => 'Command executed successfully', 'output' => $output]);
-    }
-
     private function verifyAndInsertItems($request, $id){
-        // dd($request->all());
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
-                $price = (int) str_replace(['Rp. ', '.'], '', $itemData['price']);
+                $price = preg_replace("/[^0-9]/", "", $itemData['price']);
                 $uom = strtoupper($itemData['uom']);
+                $currency = $itemData['currency'];
+
+                $commonData = [
+                    'purchase_request_id' => $id,
+                    'item_name' => $itemName,
+                    'quantity' => $quantity,
+                    'purpose' => $purpose,
+                    'price' => $price,
+                    'uom' => $uom,
+                    'currency' => $currency
+                ];
 
                 // Check if the item exists in MasterDataPr
                 $existingItem = MasterDataPr::where('name', $itemName)->first();
 
                 if (!$existingItem) {
                     // Case 1: Item not available in MasterDataPr
-                    $newItem = MasterDataPr::create([
+                    MasterDataPr::create([
                         'name' => $itemName,
+                        'currency' => $currency,
                         'price' => $price, // Store the initial price
                     ]);
 
                     // Create the DetailPurchaseRequest record
-                    DetailPurchaseRequest::create([
-                        'purchase_request_id' => $id,
-                        'item_name' => $itemName,
-                        'quantity' => $quantity,
-                        'purpose' => $purpose,
-                        'price' => $price,
-                        'uom' => $uom
-                    ]);
+                    DetailPurchaseRequest::create($commonData);
                 } else {
                     // Case 2: Item available in MasterDataPr
 
@@ -269,14 +269,7 @@ class PurchaseRequestController extends Controller
                                 $existingItem->update(['latest_price' => $price]);
 
                                     // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $id,
-                                    'item_name' => $itemName,
-                                    'quantity' => $quantity,
-                                    'purpose' => $purpose,
-                                    'price' => $price,
-                                    'uom' => $uom
-                                ]);
+                                DetailPurchaseRequest::create($commonData);
                             } else {
                                 // Move the latest price to the price column
                                 $existingItem->update(['price' => $existingItem->latest_price]);
@@ -285,24 +278,10 @@ class PurchaseRequestController extends Controller
                                 $existingItem->update(['latest_price' => $price]);
 
                                 // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $id,
-                                    'item_name' => $itemName,
-                                    'quantity' => $quantity,
-                                    'purpose' => $purpose,
-                                    'price' => $price,
-                                    'uom' => $uom
-                                ]);
+                                DetailPurchaseRequest::create($commonData);
                             }
                         } else{
-                            DetailPurchaseRequest::create([
-                                'purchase_request_id' => $id,
-                                'item_name' => $itemName,
-                                'quantity' => $quantity,
-                                'purpose' => $purpose,
-                                'price' => $price,
-                                'uom' => $uom
-                            ]);
+                            DetailPurchaseRequest::create($commonData);
                         }
                     }else{
                         // ngecek karena sudah ada latest price, maka acuan harga yang dilihat latest_price
@@ -313,14 +292,7 @@ class PurchaseRequestController extends Controller
                                 $existingItem->update(['latest_price' => $price]);
 
                                     // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $id,
-                                    'item_name' => $itemName,
-                                    'quantity' => $quantity,
-                                    'purpose' => $purpose,
-                                    'price' => $price,
-                                    'uom' => $uom
-                                ]);
+                                DetailPurchaseRequest::create($commonData);
                             } else {
 
                                 // Move the latest price to the price column
@@ -330,24 +302,10 @@ class PurchaseRequestController extends Controller
                                 $existingItem->update(['latest_price' => $price]);
 
                                 // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create([
-                                    'purchase_request_id' => $id,
-                                    'item_name' => $itemName,
-                                    'quantity' => $quantity,
-                                    'purpose' => $purpose,
-                                    'price' => $price,
-                                    'uom' => $uom
-                                ]);
+                                DetailPurchaseRequest::create($commonData);
                             }
                         } else {
-                            DetailPurchaseRequest::create([
-                                'purchase_request_id' => $id,
-                                'item_name' => $itemName,
-                                'quantity' => $quantity,
-                                'purpose' => $purpose,
-                                'price' => $price,
-                                'uom' => $uom
-                            ]);
+                            DetailPurchaseRequest::create($commonData);
                         }
                     }
                 }
@@ -373,6 +331,17 @@ class PurchaseRequestController extends Controller
             if ($purchaseRequest->autograph_2 !== null) {
                 // status when purchaser has not signed
                 $purchaseRequest->status = 6;
+            }
+
+            // SPECIAL CASE IF IT'S MOULDING
+            if($purchaseRequest->from_department === 'MOULDING'){
+                if($purchaseRequest->autograph_7 !== null){
+                    if($purchaseRequest->autograph_2 !== null){
+                        $purchaseRequest->status = 6;
+                    }
+                } else {
+                    $purchaseRequest->status = 1;
+                }
             }
 
             // Purchaser Autograph
@@ -562,7 +531,7 @@ class PurchaseRequestController extends Controller
 
         // Fetch item names and prices from the database based on user input
         $items = MasterDataPr::where('name', 'like', "%$itemName%")
-            ->select('name', 'price','latest_price')
+            ->select('name', 'currency', 'price', 'latest_price')
             ->get();
 
         return response()->json($items);
@@ -571,19 +540,23 @@ class PurchaseRequestController extends Controller
     public function update(Request $request, $id){
         // dd($request->all());
         $validated = $request->validate([
-            'to_department' => 'string|max:255',
             'date_pr' => 'date',
             'date_required' => 'date',
+            'pic' => 'string',
             'remark' => 'string',
             'supplier' => 'string',
-            'pic' => 'string'
         ]);
 
         // Define the additional attribute and its value
         $additionalData = [
             'updated_at' => now(),
-            'pic' => $request->pic,
         ];
+
+        if($request->is_import === 'true'){
+            $additionalData['is_import'] = true;
+        } else {
+            $additionalData['is_import'] = false;
+        }
 
         $pr = PurchaseRequest::find($id);
         $isPurchaser = Auth::user()->specification === "PURCHASER";
@@ -659,10 +632,10 @@ class PurchaseRequestController extends Controller
     }
 
     public function destroy($id){
-        // DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         PurchaseRequest::find($id)->delete();
-        // DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+        DB::statement('SET FOREIGN_KEY_CHECKS = 1');
         return redirect()->back()->with(['success' => 'Purchase request deleted succesfully!']);
     }
 

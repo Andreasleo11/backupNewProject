@@ -71,7 +71,7 @@
                             @forelse ($purchaseRequests as $pr)
                                 <tr class="align-middle">
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $pr->date_pr }}</td>
+                                    <td> @formatDate($pr->date_pr) </td>
                                     <td>{{ $pr->from_department ?? $pr->createdBy->department->name }}</td>
                                     <td>{{ $pr->to_department }}</td>
                                     <td>{{ $pr->pr_no }}</td>

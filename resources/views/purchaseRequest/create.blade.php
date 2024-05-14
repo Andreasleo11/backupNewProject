@@ -39,14 +39,14 @@
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-11">
+            <div class="col">
                 <div class="card">
                     <div class="container p-5">
                         <div class="h2 text-center fw-semibold">Create Purchase Request</div>
                         <form action="{{ route('purchaserequest.insert') }}" method="POST" class="row ">
                             @csrf
 
-                            <div class="form-group mt-5 col-md-4">
+                            <div class="form-group mt-5 col">
                                 <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
                                 <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
                                     <option value="" selected disabled>Select from department..</option>
@@ -60,10 +60,30 @@
                                         @endif
                                     @endforeach
                                 </select>
-                                <div class="form-text">Pilih departmen tujuan (HANYA JIKA DIPERLUKAN)</div>
+                                <div class="form-text">Ubah hanya jika ingin membuat PR diluar dari departemen sendiri</div>
                             </div>
 
-                            <div class="form-group mt-5 col-md-4">
+                            <div class="form-group mt-5 col d-none" id="localImportFormGroup">
+                                <label class="form-label fs-5 fw-bold">Local/Import</label>
+                                <div class="form-check">
+                                    <input class="form-check-input disabled" type="radio" name="is_import" id="localRadio"
+                                        value="false">
+                                    <label class="form-check-label" for="localRadio">
+                                        Local
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input disabled" type="radio" name="is_import"
+                                        id="importRadio" value="true">
+                                    <label class="form-check-label" for="importRadio">
+                                        Import
+                                    </label>
+                                </div>
+
+                                <div class="form-text">Jenis PR termasuk Import atau Export (Khusus MOULDING)</div>
+                            </div>
+
+                            <div class="form-group mt-5 col">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
                                 <select class="form-select" name="to_department" id="toDepartmentDropdown" required
                                     onchange="updateTypeDropdown()">
@@ -76,7 +96,7 @@
                                 <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                             </div>
 
-                            <div class="form-group mt-5 col-md-4">
+                            <div class="form-group mt-5 col">
                                 <label class="form-label fs-5 fw-bold" for="type">Type</label>
                                 <select class="form-select" name="type" id="typeDropdown" required>
                                     <option value="" selected disabled>Select Type..</option>
@@ -127,9 +147,31 @@
     </div>
     </body>
 
-
-
     <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var fromDepartmentDropdown = document.getElementById("fromDepartmentDropdown");
+            var localImportFormGroup = document.getElementById("localImportFormGroup");
+
+            fromDepartmentDropdown.addEventListener("change", function() {
+                if (fromDepartmentDropdown.value === "MOULDING") {
+                    localImportFormGroup.classList.remove("d-none");
+                    localImportFormGroup.querySelectorAll("input").forEach(function(input) {
+                        input.disabled = false;
+                    });
+                } else {
+                    localImportFormGroup.classList.add("d-none");
+                    localImportFormGroup.querySelectorAll("input").forEach(function(input) {
+                        input.disabled = true;
+                    });
+                }
+            });
+
+            // Trigger change event on page load if initial value is "MOULDING"
+            if (fromDepartmentDropdown.value === "MOULDING") {
+                fromDepartmentDropdown.dispatchEvent(new Event("change"));
+            }
+        });
+
         function updateTypeDropdown() {
             // Get Selected value of the type dropdown
             var selectedValue = document.getElementById('toDepartmentDropdown').value;
@@ -162,11 +204,11 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Unit Price', 'Subtotal', 'Purpose',
+                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Currency', 'Unit Price', 'Subtotal', 'Purpose',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2',
-                    'col-md-1'
+                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2',
+                    'col-md-1', 'col-md-1'
                 ];
 
                 // Create header row and add header labels with specified column sizes
@@ -224,12 +266,21 @@
                                 option.textContent = item.name;
                                 option.addEventListener('click', function() {
                                     itemNameInput.value = item.name;
+                                    currencyInput.value = item.currency;
+
                                     if (item.latest_price === null) {
                                         unitPriceInput.value = item.price;
                                     } else {
                                         unitPriceInput.value = item.latest_price;
                                     }
-                                    formatPrice(unitPriceInput);
+
+                                    formatPrice(unitPriceInput, currencyInput.value);
+                                    const unitPrice = unitPriceInput.value.replace(/[^\d]/g,
+                                        '');
+                                    subtotalInput.value = parseFloat(quantityInput.value) *
+                                        unitPrice;
+                                    formatPrice(subtotalInput, currencyInput.value);
+
                                     itemDropdown.innerHTML = '';
                                     itemNameDropdown.style.display = 'none';
                                 });
@@ -263,6 +314,9 @@
             quantityInput.type = 'number';
             quantityInput.name = `items[${itemIdCounter}][quantity]`;
             quantityInput.placeholder = 'Qty';
+            quantityInput.addEventListener('change', function() {
+                formatPrice(unitPriceInput, currencyInput.value);
+            });
 
             formGroupQuantityInput.appendChild(quantityInput);
 
@@ -278,6 +332,47 @@
             uomInput.placeholder = 'UoM';
 
             formGroupUomInput.appendChild(uomInput);
+
+            const formGroupCurrencyInput = document.createElement('div')
+            formGroupCurrencyInput.classList.add('col-md-1');
+
+            const currencyInput = document.createElement('select');
+            currencyInput.classList.add('form-select');
+            currencyInput.name = `items[${itemIdCounter}][currency]`;
+
+            var options = [{
+                    value: 'IDR',
+                    text: 'IDR',
+                    selected: true
+                },
+                {
+                    value: 'CNY',
+                    text: 'CNY',
+                    selected: false
+                },
+                {
+                    value: 'USD',
+                    text: 'USD',
+                    selected: false
+                },
+            ];
+
+            options.forEach(function(option) {
+                var optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                if (option.selected) {
+                    optionElement.selected = true;
+                }
+                currencyInput.appendChild(optionElement);
+            });
+
+            currencyInput.addEventListener('change', function() {
+                formatPrice(unitPriceInput, currencyInput.value);
+                formatPrice(subtotalInput, currencyInput.value);
+            });
+
+            formGroupCurrencyInput.appendChild(currencyInput);
 
             const formGroupUnitPriceInput = document.createElement('div')
             formGroupUnitPriceInput.classList.add('col-md-2');
@@ -304,7 +399,7 @@
             formGroupSubtotalInput.appendChild(subtotalInput);
 
             const formGroupPurposeInput = document.createElement('div')
-            formGroupPurposeInput.classList.add('col-md-2');
+            formGroupPurposeInput.classList.add('col-md-1');
 
             const purposeInput = document.createElement('input');
             purposeInput.classList.add('form-control');
@@ -319,8 +414,8 @@
             actionGroup.classList.add('col-md-1');
 
             const removeButton = document.createElement('a');
-            removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
-            removeButton.textContent = "remove";
+            removeButton.classList.add('btn', 'btn-danger', );
+            removeButton.textContent = "Remove";
             removeButton.addEventListener('click', removeItem);
 
             actionGroup.appendChild(removeButton);
@@ -330,6 +425,7 @@
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupQuantityInput);
             newItemContainer.appendChild(formGroupUomInput);
+            newItemContainer.appendChild(formGroupCurrencyInput);
             newItemContainer.appendChild(formGroupUnitPriceInput);
             newItemContainer.appendChild(formGroupSubtotalInput);
             newItemContainer.appendChild(formGroupPurposeInput);
@@ -341,13 +437,14 @@
             quantityInput.addEventListener('input', function() {
                 const unitPrice = unitPriceInput.value.replace(/[^\d]/g, '');
                 subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
-                formatPrice(subtotalInput);
+                formatPrice(subtotalInput, currencyInput.value);
             });
+
             unitPriceInput.addEventListener('input', function() {
                 const unitPrice = unitPriceInput.value.replace(/[^\d]/g, '');
                 subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
-                formatPrice(unitPriceInput);
-                formatPrice(subtotalInput);
+                formatPrice(unitPriceInput, currencyInput.value);
+                formatPrice(subtotalInput, currencyInput.value);
             });
 
             // Increment the item ID counter
@@ -387,8 +484,8 @@
                 const subtotalInput = item.querySelector('.subtotal-input');
                 const unitPriceInput = item.querySelector('.unit-price-input');
                 const quantityInput = item.querySelector('.quantity-input');
-                formatPrice(subtotalInput);
-                formatPrice(unitPriceInput);
+                formatPrice(subtotalInput, item.querySelector('select[name*="[currency]"]'));
+                formatPrice(unitPriceInput, item.querySelector('select[name*="[currency]"]'));
 
                 unitPriceInput.addEventListener('input', function(event) {
                     let price = event.target.value.replace(/\D/g, ''); // Remove non-digit characters
@@ -406,22 +503,26 @@
 
         addNewItem();
 
-        function formatPrice(input) {
+        function formatPrice(input, currency) {
             let price = input.value.replace(/\D/g, ''); // Remove non-digit characters
             price = parseInt(price); // Convert string to integer
+
+            let currencySymbol = '';
+            if (currency === 'IDR') {
+                currencySymbol = 'Rp. ';
+            } else if (currency === 'CNY') {
+                currencySymbol = '¥';
+            } else if (currency === 'USD') {
+                currencySymbol = '$';
+            }
+
             if (!isNaN(price)) {
                 // Format the price with thousand separators and add currency symbol
-                const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
+                const formattedPrice = currencySymbol + price.toLocaleString('id-ID');
                 input.value = formattedPrice;
             } else {
                 input.value = ''; // Clear the input if it's not a valid number
             }
         }
-
-        // Add event listener for DOMContentLoaded event
-        document.addEventListener('DOMContentLoaded', function() {
-            // Call addNewItem function when the DOM content is loaded
-
-        });
     </script>
 @endsection
