@@ -56,7 +56,7 @@ class PurchaseRequestController extends Controller
                     // Additional condition for users where is_gm is 1 and department is 'MOULDING'
                     if (auth()->user()->is_gm && auth()->user()->department->name === 'MOULDING') {
                         $query->orWhere(function ($query) {
-                            $query->where('department', 'MOULDING');
+                            $query->where('from_department', 'MOULDING');
                         });
                     }
                 });

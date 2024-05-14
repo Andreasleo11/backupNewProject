@@ -74,8 +74,7 @@ use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 
 use App\Http\Controllers\AdjustFormQcController;
-
-
+use App\Http\Controllers\MUHomeController;
 use App\Models\Department;
 use App\Models\DetailPurchaseRequest;
 use App\Models\Role;
@@ -200,9 +199,9 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         // adding new defect category
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
-        
+
          //masukin ke dalem dept QC , ppic , store, logistic, accounting , direktur
-        //FORM ADJUST SECITON 
+        //FORM ADJUST SECITON
         Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
         Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
         Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
@@ -210,7 +209,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
         Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
         //////////////
-       
+
         //REVISI
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
@@ -223,14 +222,14 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports');
 
 
-        
-   
+
+
     });
 
 
     Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
-          
-        //FORM ADJUST SECITON 
+
+        //FORM ADJUST SECITON
           Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
           Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
           Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
@@ -238,7 +237,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
           Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
           Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
           //////////////
-         
+
           Route::get('listformadjust/all',[AdjustFormQcController::class,'listformadjust'])->name('listformadjust');
     });
 
@@ -269,7 +268,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected');
     });
 
-    Route::middleware(['checkDepartment:PE'])->group(function(){
+    Route::middleware(['checkDepartment:PE,PPIC'])->group(function(){
         Route::get('pe/home', [PEHomeController::class, 'index'])->name('pe.home');
 
         Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
@@ -327,7 +326,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
     });
 
-    Route::middleware(['checkDepartment:PRODUCTION'])->group(function(){
+    Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function(){
         Route::get('production/home', [ProductionHomeController::class, 'index'])->name('production.home');
 
         Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
@@ -416,7 +415,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
     });
 
-    Route::middleware(['checkDepartment:MAINTENANCE'])->group(function(){
+    Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function(){
         Route::get('maintenance/home', [MaintenanceHomeController::class, 'index'])->name('maintenance.home');
 
         Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index");
@@ -459,6 +458,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function(){
         Route::get('mm/home', [MMHomeController::class, 'index'])->name('mm.home');
+    });
+
+    Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function(){
+        Route::get('mu/home', [MUHomeController::class, 'index'])->name('mu.home');
     });
 
 });
@@ -572,5 +575,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 
 
-   
+
 });
