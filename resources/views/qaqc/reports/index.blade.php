@@ -25,6 +25,9 @@
                 <a href="{{ route('export.reports') }}" class="btn btn-outline-primary">
                     Export All To Excel
                 </a>
+                <a href="{{ route('export.formadjusts') }}" class="btn btn-outline-primary">
+                    Export all Form Adjust To Excel
+                </a>
             </div>
         </div>
     </section>

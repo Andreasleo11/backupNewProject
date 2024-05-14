@@ -15,33 +15,35 @@
 
     <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a>
 
-
-    <div class="col-auto">
+ 
     <div class="row align-items-center">
-    <div class="col-auto">
-    <div class="form-label">Filter Bulan</div>
+        <div class="col-auto">
+            <div class="form-label">Filter Bulan</div>
         </div>
-            <div class="col-auto">
-                <select name="filter_status" id="status-filter" class="form-select">
-                     <option value="01" selected>January</option>
-                    <option value="02">February</option>
-                    <option value="03">March</option>
-                    <option value="04">April</option>
-                    <option value="05">May</option>
-                    <option value="06">June</option>
-                    <option value="07">July</option>
-                    <option value="08">August</option>
-                    <option value="09">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
-             </div>
-            <div class="col-auto">
+        <div class="col-auto">
+            <select name="filter_status" id="status-filter" class="form-select">
+                <option value="01" selected>January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+        <div class="col-auto">
             <?php echo date('Y'); ?>
         </div>
+        <div class="col text-end" id="filtered-employees">
+            <!-- Filtered employees will be displayed here --> 
         </div>
     </div>
+
 <section class="content">
         <div class="card mt-5">
             <div class="card-body">
@@ -86,6 +88,8 @@
         // Extract the month part from the date format (yyyy-mm-dd)
         let formattedMonth = selectedMonth.padStart(2, '0'); // Pad single-digit months with 0
         console.log("Formatted month:", formattedMonth);
+
+        filterAndDisplayEmployees(formattedMonth);
 
         // Filter by month column
         dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
@@ -134,6 +138,102 @@
         var filterValue = this.value;
         setFilterValue(filterValue);
     });
+
+    document.getElementById('status-filter').addEventListener('change', function() {
+    var selectedMonth = this.value;
+    var employees = @json($employees);
+
+    // Filter employees based on the selected month
+    var filteredEmployees = employees.filter(function(employee) {
+        var month = employee.Month.split('-')[1]; // Extract the month part from the date
+        return month === selectedMonth;
+    });
+
+    // Find the highest total among the filtered employees
+    var highestTotal = Math.max(...filteredEmployees.map(employee => employee.total));
+
+    // Filter employees with the highest total for the selected month
+    var highestTotalEmployees = filteredEmployees.filter(employee => employee.total === highestTotal);
+
+    // Filter out employees with total === 0 before calculating the lowest total
+    var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
+
+    // Find the lowest total among the non-zero filtered employees
+    var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee => employee.total)) : 0;
+
+    // Filter employees with the lowest total for the selected month
+    var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
+
+    // Display filtered employees with the highest and lowest total
+    var filteredEmployeesContainer = document.getElementById('filtered-employees');
+    filteredEmployeesContainer.innerHTML = ''; // Clear previous content
+
+    if (filteredEmployees.length === 0) {
+        filteredEmployeesContainer.textContent = 'No employees found for selected month';
+    } else {
+        highestTotalEmployees.forEach(function(employee) {
+            var employeeInfo = document.createElement('div');
+            employeeInfo.textContent = 'Karyawan Terbaik : ' + employee.karyawan.Nama + ' - Total: ' + employee.total;
+            filteredEmployeesContainer.appendChild(employeeInfo);
+        });
+
+        lowestTotalEmployees.forEach(function(employee) {
+            var employeeInfo = document.createElement('div');
+            employeeInfo.textContent = 'Karyawan Terburuk: ' + employee.karyawan.Nama + ' - Total: ' + employee.total;
+            filteredEmployeesContainer.appendChild(employeeInfo);
+        });
+    }
+});
+
+
+// Function to filter and display highest and lowest total employees
+function filterAndDisplayEmployees(month) {
+    var employees = @json($employees);
+
+    // Filter employees based on the selected month
+    var filteredEmployees = employees.filter(function(employee) {
+        var employeeMonth = employee.Month.split('-')[1]; // Extract the month part from the date
+        return employeeMonth === month;
+    });
+
+    // Filter out employees with total === 0
+    var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
+
+    // Find the highest total among the filtered employees
+    var highestTotal = nonZeroEmployees.length > 0 ? Math.max(...nonZeroEmployees.map(employee => employee.total)) : 0;
+
+    // Filter employees with the highest total for the selected month
+    var highestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === highestTotal);
+
+    // Find the lowest total among the non-zero filtered employees
+    var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee => employee.total)) : 0;
+
+    // Filter employees with the lowest total for the selected month
+    var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
+
+    // Display filtered employees with the highest and lowest total
+    var filteredEmployeesContainer = document.getElementById('filtered-employees');
+    filteredEmployeesContainer.innerHTML = ''; // Clear previous content
+
+    if (nonZeroEmployees.length === 0) {
+        filteredEmployeesContainer.textContent = 'No employees found for selected month';
+    } else {
+        highestTotalEmployees.forEach(function(employee) {
+            var employeeInfo = document.createElement('div');
+            employeeInfo.textContent = 'Karyawan Tertinggi : ' + employee.karyawan.Nama + ' - Poin: ' + employee.total;
+            employeeInfo.style.color = 'green';
+            filteredEmployeesContainer.appendChild(employeeInfo);
+        });
+
+        lowestTotalEmployees.forEach(function(employee) {
+            var employeeInfo = document.createElement('div');
+            employeeInfo.textContent = 'Karyawan Terbawah: ' + employee.karyawan.Nama + ' - Poin: ' + employee.total;
+            employeeInfo.style.color = 'red';
+            filteredEmployeesContainer.appendChild(employeeInfo);
+        });
+    }
+}
+
 
 </script>
 

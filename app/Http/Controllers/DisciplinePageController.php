@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -24,7 +25,7 @@ class DisciplinePageController extends Controller
     public function index(DisciplineTableDataTable $dataTable)
     {
         $user = Auth::user();
-        
+
         $employees = null;
         //PEER LOGIC UNTUK HANDLE ORANG ORANG DIBAWAH DEPT HEADNYA SAJA - HARUS DIHANDLE MANUAL 
         if($user->is_head == 1 && $user->department_id == 2)
@@ -34,10 +35,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+            
         }
 
         elseif($user->is_head == 1 && $user->department_id == 1)
@@ -46,11 +44,6 @@ class DisciplinePageController extends Controller
                 $query->where('Dept', '341');
             })
             ->get();
-
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 3)
@@ -59,11 +52,6 @@ class DisciplinePageController extends Controller
                 $query->where('Dept', '100');
             })
             ->get();
-
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 8)
@@ -73,10 +61,6 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 7)
@@ -86,11 +70,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            // dd($employees);
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+         
         }
 
         elseif($user->is_head == 1 && $user->department_id == 5)
@@ -100,10 +80,6 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 17)
@@ -113,10 +89,6 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 24)
@@ -126,10 +98,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+          
         }
 
         elseif($user->is_head == 1 && $user->department_id == 18)
@@ -139,10 +108,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+          
         }
 
         elseif($user->is_head == 1 && $user->department_id == 19)
@@ -152,10 +118,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+            
         }
 
         elseif($user->is_head == 1 && $user->department_id == 20)
@@ -165,10 +128,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+          
         }
 
         elseif($user->is_head == 1 && $user->department_id == 16)
@@ -177,11 +137,6 @@ class DisciplinePageController extends Controller
                 $query->where('Dept', '363');
             })
             ->get();
-
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 11)
@@ -191,10 +146,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+            
         }
 
         elseif($user->is_head == 1 && $user->department_id == 9)
@@ -204,10 +156,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+           
         }
 
         elseif($user->is_head == 1 && $user->department_id == 15)
@@ -216,11 +165,31 @@ class DisciplinePageController extends Controller
                 $query->where('Dept', '600');
             })
             ->get();
+            
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
+           
+
+            // $nonZeroEmployees = $employees->reject(function ($employee) {
+            //     return $employee->total === 0;
+            // });
+
+            // // Find the highest total
+            // $highestTotal = $nonZeroEmployees->max('total');
+            // // dd($highestTotal);
+
+            // // Filter employees with the highest total
+            // $employeesWithHighestTotal = $employees->filter(function ($employee) use ($highestTotal) {
+            //     return $employee->total === $highestTotal;
+            // });
+            
+            
+            // $minimumTotal = $nonZeroEmployees->min('total');
+
+
+            // $employeesWithLowestTotal = $employees->filter(function ($employee) use ($minimumTotal) {
+            //     return $employee->total === $minimumTotal;
+            // });
+
         }
 
         elseif($user->is_head == 1 && $user->department_id == 6)
@@ -230,10 +199,6 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         elseif($user->is_head == 1 && $user->department_id == 25)
@@ -243,16 +208,13 @@ class DisciplinePageController extends Controller
             })
             ->get();
 
-            foreach ($employees as $employee) {
-                $employee->total = $employee->Alpha + $employee->Telat + $employee->Izin;
-            //    dd($employee);
-            }
         }
 
         if($employees == null)
         {
             return redirect()->back();
         }else{
+           
         return $dataTable->render("setting.disciplineindex", compact("employees"));
         }
         // return view("setting.disciplineindex", compact("employees"));
