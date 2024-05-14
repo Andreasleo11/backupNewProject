@@ -43,11 +43,24 @@ class SendPREmailNotification extends Command
         switch ($newPr->status) {
             case 1:
                 // Retrieve the user who is a head and belongs to the same department as the creator of the latest PurchaseRequest
-                $to = User::where('is_head', 1)
+                if($newPr->from_department === 'MOULDING'){
+                    if ($newPr->is_import) {
+                        $to = 'fang@daijo.co.id';
+                    } else {
+                        $to = User::where('is_head', 1)
                             ->whereHas('department', function($query) use ($newPr) {
                                 $query->where('name', $newPr->from_department);
                             })
-                            ->first()->email;
+                            ->pluck('email')
+                            ->toArray();
+                    }
+                } else {
+                    $to = User::where('is_head', 1)
+                                ->whereHas('department', function($query) use ($newPr) {
+                                    $query->where('name', $newPr->from_department);
+                                })
+                                ->first()->email;
+                }
                 break;
             case 6:
                 if($newPr->to_department === "Computer"){
@@ -86,14 +99,14 @@ class SendPREmailNotification extends Command
                 ->first()
                 ->email;
 
-                 // Additional condition for user department name is 'MOULDING' and createdBy department name is 'MOULDING'
-                 if ($newPr->createdBy->department->name === 'MOULDING') {
-                     $to = User::whereHas('department', function ($query) {
-                        $query->where('name', 'MOULDING')->where('is_gm', 1);
-                    })
-                    ->first()
-                    ->email;
-                 }
+                //  // Additional condition for user department name is 'MOULDING' and createdBy department name is 'MOULDING'
+                //  if ($newPr->createdBy->department->name === 'MOULDING') {
+                //      $to = User::whereHas('department', function ($query) {
+                //         $query->where('name', 'MOULDING')->where('is_gm', 1);
+                //     })
+                //     ->first()
+                //     ->email;
+                //  }
                 break;
             case 2:
                 $to = User::with('specification')

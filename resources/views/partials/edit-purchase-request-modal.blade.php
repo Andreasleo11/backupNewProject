@@ -47,16 +47,37 @@
                             @method('PUT')
                             @csrf
 
-                            <div class="form-group mt-3 col-md-4">
+                            <div class="form-group mt-3 col">
                                 <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
-                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
+                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required
+                                    disabled>
                                     <option value="{{ $pr->from_department }}" selected>{{ $pr->from_department }}
                                     </option>
                                 </select>
-                                <div class="form-text">Pilih departmen tujuan (HANYA JIKA DIPERLUKAN)</div>
+                            </div>
+                            <div class="form-group mt-3 col d-none" id="localImportFormGroup">
+                                <label class="form-label fs-5 fw-bold">Local/Import</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_import" id="localRadio"
+                                        value="false" @if (!$pr->is_import) checked @endif
+                                        @if ($pr->is_import !== null) disabled @endif>
+                                    <label class="form-check-label" for="localRadio">
+                                        Local
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_import" id="importRadio"
+                                        value="true" @if ($pr->is_import) checked @endif
+                                        @if ($pr->is_import !== null) disabled @endif>
+                                    <label class="form-check-label" for="importRadio">
+                                        Import
+                                    </label>
+                                </div>
+
+                                <div class="form-text">Jenis PR termasuk Import atau Export (Khusus MOULDING)</div>
                             </div>
 
-                            <div class="form-group mt-3 col-md-4">
+                            <div class="form-group mt-3 col">
                                 <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
                                 <select class="form-select" name="to_department" id="to_department" required disabled>
                                     <option value="{{ $pr->to_department }}" selected>
@@ -65,7 +86,7 @@
                                 </select>
                             </div>
 
-                            <div class="form-group mt-3 col-md-4">
+                            <div class="form-group mt-3 col">
                                 <label class="form-label fs-5 fw-bold" for="type">Type</label>
                                 <select class="form-select" name="type" id="typeDropdown" required disabled>
                                     <option value="{{ $pr->type }}" selected>
@@ -129,39 +150,77 @@
 
 
     <script>
-        // Counter for creating unique IDs for items
-        let itemIdCounter = 0;
-        let isFirstCall = true; // Flag to track the first call
+        document.addEventListener("DOMContentLoaded", function() {
+            var fromDepartmentDropdown = document.getElementById("fromDepartmentDropdown");
+            var localImportFormGroup = document.getElementById("localImportFormGroup");
 
+            fromDepartmentDropdown.addEventListener("change", function() {
+                if (fromDepartmentDropdown.value === "MOULDING") {
+                    localImportFormGroup.classList.remove("d-none");
+                    if (document.querySelector('input[name="is_import"]:checked')) {
+                        document.querySelectorAll('input[name="is_import"]').forEach(function(input) {
+                            input.disabled = true;
+                        });
+                    } else {
+                        document.querySelectorAll('input[name="is_import"]').forEach(function(input) {
+                            input.disabled = false;
+                        });
+                    }
+                } else {
+                    localImportFormGroup.classList.add("d-none");
+                    document.querySelectorAll('input[name="is_import"]').forEach(function(input) {
+                        input.disabled = true;
+                    });
+                }
+            });
+
+            // Trigger change event on page load if initial value is "MOULDING"
+            if (fromDepartmentDropdown.value === "MOULDING") {
+                fromDepartmentDropdown.dispatchEvent(new Event("change"));
+            }
+        });
+
+        function updateTypeDropdown() {
+            var selectedValue = document.getElementById('toDepartmentDropdown').value;
+            var typeDropdown = document.getElementById('typeDropdown');
+            typeDropdown.innerHTML = "";
+
+            if (selectedValue === "Maintenance" || selectedValue === "Purchasing") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+            } else if (selectedValue === "Personnel") {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+            } else {
+                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+            }
+        }
+
+        let itemIdCounter = 0;
+        let isFirstCall = true;
 
         let details = {!! json_encode($details) !!};
-        console.log(details);
+        // console.log(details);
 
-        // Filter the detail before fill it to edit modal. It will not contain the rejected.
         let filteredDetails = details.filter(detail => {
             return detail.is_approve_by_head === 1 || detail.is_approve_by_head === null;
         });
-
-        console.log("Filtered Details:", filteredDetails);
 
         filteredDetails.forEach(detail => {
             addNewItem(detail);
         });
 
         function addNewItem($detail = null) {
-            // Create a new item container
             const newItemContainer = document.createElement('div');
             newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center');
 
             if (isFirstCall) {
-                // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Unit Price', 'Subtotal', 'Purpose',
+                const headerLabels = ['Count', 'Item Name', 'Qty', 'UoM', 'Currency', 'Unit Price', 'Subtotal', 'Purpose',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2', 'col-md-2',
-                    'col-md-1'
+                const columnSizes = ['col-md-1', 'col-md-2', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-2',
+                    'col-md-1', 'col-md-1'
                 ];
-                // Create header row and add header labels with specified column sizes
                 const headerRow = document.createElement('div');
                 headerRow.classList.add('row', 'gy-2', 'gx-2', 'align-items-center', 'header-row');
 
@@ -173,16 +232,14 @@
                 });
 
                 document.getElementById('items').appendChild(headerRow);
-
-                isFirstCall = false; // Update the flag to indicate that headers are added
+                isFirstCall = false;
             }
 
-            const countGroup = document.createElement('div')
+            const countGroup = document.createElement('div');
             countGroup.classList.add('count-group', 'col-md-1', 'text-center');
             countGroup.textContent = itemIdCounter + 1;
 
-            // Create input fields for item details
-            const formGroupName = document.createElement('div')
+            const formGroupName = document.createElement('div');
             formGroupName.classList.add('col-md-2');
 
             const itemNameInput = document.createElement('input');
@@ -197,32 +254,33 @@
             itemNameDropdown.id = 'itemDropdown';
             itemNameDropdown.classList.add('dropdown-content');
 
-            //ajax for dropdown item
             itemNameInput.addEventListener('keyup', function() {
                 const inputValue = itemNameInput.value.trim();
-                // Fetch item names from server based on user input
                 fetch(`/get-item-names?itemName=${inputValue}`)
                     .then(response => response.json())
                     .then(data => {
-                        // Clear previous dropdown options
                         itemNameDropdown.innerHTML = '';
-
-                        // Populate dropdown with fetched item names
                         if (data.length > 0) {
                             console.log(data);
                             data.forEach(item => {
                                 const option = document.createElement('option');
-                                option.classList.add('dropdown-item')
+                                option.classList.add('dropdown-item');
                                 option.value = item.id;
                                 option.textContent = item.name;
                                 option.addEventListener('click', function() {
                                     itemNameInput.value = item.name;
-                                    if (item.latest_price === null) {
-                                        unitPriceInput.value = item.price;
-                                    } else {
-                                        unitPriceInput.value = item.latest_price;
-                                    }
-                                    formatPrice(unitPriceInput);
+                                    currencyInput.value = item.currency;
+
+                                    unitPriceInput.value = item.latest_price === null ? item
+                                        .price : item.latest_price;
+
+                                    formatPrice(unitPriceInput, currencyInput.value);
+                                    const unitPrice = unitPriceInput.value.replace(/[^\d]/g,
+                                        '');
+                                    subtotalInput.value = parseFloat(quantityInput.value) *
+                                        unitPrice;
+                                    formatPrice(subtotalInput, currencyInput.value);
+
                                     itemDropdown.innerHTML = '';
                                     itemNameDropdown.style.display = 'none';
                                 });
@@ -235,19 +293,17 @@
                     })
                     .catch(error => console.error('Error:', error));
             });
-            //ajax for dropdown item
 
             document.addEventListener('click', function(event) {
-                if (!itemNameInput.contains(event.traget) && !itemDropdown.contains(event.target)) {
+                if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
                     itemDropdown.style.display = 'none';
-                    console.log(itemNameInput.value);
                 }
             });
 
             formGroupName.appendChild(itemNameInput);
             formGroupName.appendChild(itemNameDropdown);
 
-            const formGroupQuantityInput = document.createElement('div')
+            const formGroupQuantityInput = document.createElement('div');
             formGroupQuantityInput.classList.add('col-md-1');
 
             const quantityInput = document.createElement('input');
@@ -260,8 +316,8 @@
 
             formGroupQuantityInput.appendChild(quantityInput);
 
-            const formGroupUomInput = document.createElement('div')
-            formGroupUomInput.classList.add('col-md-1')
+            const formGroupUomInput = document.createElement('div');
+            formGroupUomInput.classList.add('col-md-1');
 
             const uomInput = document.createElement('input');
             uomInput.classList.add('form-control');
@@ -273,7 +329,52 @@
 
             formGroupUomInput.appendChild(uomInput);
 
-            const formGroupUnitPriceInput = document.createElement('div')
+            const formGroupCurrencyInput = document.createElement('div');
+            formGroupCurrencyInput.classList.add('col-md-1');
+
+            const currencyInput = document.createElement('select');
+            currencyInput.classList.add('form-select');
+            currencyInput.name = `items[${itemIdCounter}][currency]`;
+
+            var options = [{
+                    value: 'IDR',
+                    text: 'IDR',
+                    selected: false
+                },
+                {
+                    value: 'CNY',
+                    text: 'CNY',
+                    selected: false
+                },
+                {
+                    value: 'USD',
+                    text: 'USD',
+                    selected: false
+                },
+            ];
+
+            options.forEach(function(option) {
+                if (option.value === $detail?.currency) {
+                    option.selected = true;
+                }
+
+                var optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                if (option.selected) {
+                    optionElement.selected = true;
+                }
+                currencyInput.appendChild(optionElement);
+            });
+
+            currencyInput.addEventListener('change', function() {
+                formatPrice(unitPriceInput, currencyInput.value);
+                formatPrice(subtotalInput, currencyInput.value);
+            });
+
+            formGroupCurrencyInput.appendChild(currencyInput);
+
+            const formGroupUnitPriceInput = document.createElement('div');
             formGroupUnitPriceInput.classList.add('col-md-2');
 
             const unitPriceInput = document.createElement('input');
@@ -282,7 +383,7 @@
             unitPriceInput.type = 'text';
             unitPriceInput.name = `items[${itemIdCounter}][price]`;
             unitPriceInput.placeholder = 'Unit Price';
-            unitPriceInput.value = $detail?.price ?? ""
+            unitPriceInput.value = $detail?.price ?? "";
 
             formGroupUnitPriceInput.appendChild(unitPriceInput);
 
@@ -298,8 +399,8 @@
 
             formGroupSubtotalInput.appendChild(subtotalInput);
 
-            const formGroupPurposeInput = document.createElement('div')
-            formGroupPurposeInput.classList.add('col-md-2');
+            const formGroupPurposeInput = document.createElement('div');
+            formGroupPurposeInput.classList.add('col-md-1');
 
             const purposeInput = document.createElement('input');
             purposeInput.classList.add('form-control');
@@ -321,93 +422,91 @@
 
             actionGroup.appendChild(removeButton);
 
-            // Append input fields to the item container
             newItemContainer.appendChild(countGroup);
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupQuantityInput);
             newItemContainer.appendChild(formGroupUomInput);
+            newItemContainer.appendChild(formGroupCurrencyInput);
             newItemContainer.appendChild(formGroupUnitPriceInput);
             newItemContainer.appendChild(formGroupSubtotalInput);
             newItemContainer.appendChild(formGroupPurposeInput);
             newItemContainer.appendChild(actionGroup);
 
-            // Append the new item container to the items container
             document.getElementById('items').appendChild(newItemContainer);
 
             quantityInput.addEventListener('input', function() {
                 const unitPrice = unitPriceInput.value.replace(/[^\d]/g, '');
                 subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
-                formatPrice(subtotalInput);
+                formatPrice(subtotalInput, currencyInput.value);
             });
+
             unitPriceInput.addEventListener('input', function() {
                 const unitPrice = unitPriceInput.value.replace(/[^\d]/g, '');
                 subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
-                formatPrice(subtotalInput);
+                formatPrice(unitPriceInput, currencyInput.value);
+                formatPrice(subtotalInput, currencyInput.value);
             });
 
-            // Increment the item ID counter
             itemIdCounter++;
-
             updateItemCount();
         }
 
-        function removeItem() {
-            // Get the parent container of the remove button (which is the item container)
+        function removeItem(event) {
             const itemContainer = event.target.closest('.added-item');
-
-            // Remove the item container from the DOM
             itemContainer.remove();
-
-            // Decrement the item ID counter
             itemIdCounter--;
-
-            // Update the item count
             updateItemCount();
         }
 
         function updateItemCount() {
-            // Get all elements with the added-item class
             const addedItems = document.querySelectorAll('.added-item');
             console.log(addedItems);
 
-            // Loop through each added item and update the count
             addedItems.forEach((item, index) => {
-                // Find the countGroup element in the current added item
                 const countGroup = item.querySelector('.count-group');
-
-                // Update the text content of the countGroup element
-                countGroup.textContent = index + 1; // Add 1 because item ID starts from 0
+                countGroup.textContent = index + 1;
 
                 const subtotalInput = item.querySelector('.subtotal-input');
                 const unitPriceInput = item.querySelector('.unit-price-input');
                 const quantityInput = item.querySelector('.quantity-input');
-                formatPrice(subtotalInput);
-                formatPrice(unitPriceInput);
-
-                unitPriceInput.addEventListener('input', function(event) {
-                    let price = event.target.value.replace(/\D/g, ''); // Remove non-digit characters
-                    price = parseInt(price); // Convert string to integer
-                    if (!isNaN(price)) {
-                        // Format the price with thousand separators and add currency symbol
-                        const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
-                        event.target.value = formattedPrice;
-                    } else {
-                        event.target.value = ''; // Clear the input if it's not a valid number
-                    }
-                });
+                formatPrice(subtotalInput, document.querySelector('.form-select').value);
+                formatPrice(unitPriceInput, document.querySelector('.form-select').value);
             });
         }
 
-        function formatPrice(input) {
+        function formatPrice(input, currency) {
             let price = input.value.replace(/\D/g, ''); // Remove non-digit characters
             price = parseInt(price); // Convert string to integer
+
+            let currencySymbol = '';
+            if (currency === 'IDR') {
+                currencySymbol = 'Rp. ';
+            } else if (currency === 'CNY') {
+                currencySymbol = '¥';
+            } else if (currency === 'USD') {
+                currencySymbol = '$';
+            }
+
             if (!isNaN(price)) {
-                // Format the price with thousand separators and add currency symbol
-                const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
+                const formattedPrice = currencySymbol + price.toLocaleString('id-ID');
                 input.value = formattedPrice;
             } else {
-                input.value = ''; // Clear the input if it's not a valid number
+                input.value = '';
             }
         }
+
+        // Event listener for modal shown event
+        document.getElementById('edit-purchase-request-modal-' + {{ $pr->id }}).addEventListener('shown.bs.modal',
+            function() {
+                document.querySelectorAll('.unit-price-input').forEach(function(input) {
+                    const currency = input.closest('.added-item').querySelector('.form-select').value;
+                    formatPrice(input, currency);
+                });
+
+                document.querySelectorAll('.subtotal-input').forEach(function(input) {
+                    const currency = input.closest('.added-item').querySelector('.form-select').value;
+                    formatPrice(input, currency);
+                });
+            });
     </script>
 </div>
