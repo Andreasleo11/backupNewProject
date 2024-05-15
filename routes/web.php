@@ -73,6 +73,9 @@ use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 
+
+use App\Http\Controllers\BarcodeController;
+
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MUHomeController;
 use App\Models\Department;
@@ -575,5 +578,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 
 
-
+    Route::get('/generate-barcode', [BarcodeController::class, 'generateBarcode']);
 });
