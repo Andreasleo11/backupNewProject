@@ -6,7 +6,7 @@
         <div class="container mt-2" id="autographuser1"></div>
     </div>
 
-    @if (!$purchaseRequest->is_import)
+    @if ($purchaseRequest->is_import === 0)
         {{-- DEPT HEAD 2 AUTOGRAPH --}}
         <div class="col my-2">
             <h2>Dept Head 2</h2>
