@@ -582,6 +582,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("/formovertime/index", [FormOvertimeController::class, 'index'])->name("formovertime.index");
     Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
     Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
+    Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
+
 
     Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
 });

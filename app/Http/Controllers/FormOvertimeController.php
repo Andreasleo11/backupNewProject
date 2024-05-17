@@ -15,8 +15,9 @@ class FormOvertimeController extends Controller
 {
     public function index()
     {
-
-        return view("formovertime.index");
+        $dataheader = HeaderFormOvertime::with('Relationuser','Relationdepartement')->get();
+        // dd($dataheader);
+        return view("formovertime.index", compact("dataheader"));
     }
 
     public function create()

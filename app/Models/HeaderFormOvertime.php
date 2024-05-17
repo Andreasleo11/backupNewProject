@@ -21,4 +21,14 @@ class HeaderFormOvertime extends Model
         'is_approve',
         'status',
     ];
+
+    public function Relationuser()
+    {
+        return $this->hasone(User::class, 'id', 'user_id');
+    }
+
+    public function Relationdepartement()
+    {
+        return $this->hasone(Department::class, 'id', 'dept_id');
+    }
 }
