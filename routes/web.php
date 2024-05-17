@@ -72,6 +72,8 @@ use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
+use App\Http\Controllers\FormOvertimeController;
+
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MUHomeController;
@@ -563,6 +565,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index");
+    Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
     Route::get('/get-filter-value', [DisciplinePageController::class, 'getFilterValue']);
     Route::put("/edit/discipline/{id}", [DisciplinePageController::class, "update"])->name('editdiscipline');
@@ -576,4 +579,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
 
+    Route::get("/formovertime/index", [FormOvertimeController::class, 'index'])->name("formovertime.index");
+    Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
+    Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
+
+    Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
 });

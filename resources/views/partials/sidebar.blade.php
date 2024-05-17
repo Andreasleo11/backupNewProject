@@ -368,6 +368,15 @@
                         </li>
                     </ul>
 
+                    <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                        <li class="sidebar-item">
+                            <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Form Overtime
+                            </a>
+                        </li>
+                    </ul>
+
 
 
                     {{-- FEATURES IN DEVELOPMENT --}}

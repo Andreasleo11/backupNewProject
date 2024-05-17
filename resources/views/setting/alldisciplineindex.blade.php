@@ -2,25 +2,10 @@
 
 @section('content')
 
-<!-- <form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
-        @csrf
-        <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
-        <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
-        <br>
-        <button type="submit">Submit</button>
-    </form> -->
 
-    @include('partials.info-discipline-page-modal')
-    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal" > Info </a>
+<a href="{{ route('discipline.index') }}" class="btn btn-primary">Back</a>
 
-    <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a>
-
-    @if($user->department_id === 7 || $user->department_id === 22)
-        <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a></a>
-    @endif
-
- 
-    <div class="row align-items-center">
+<div class="row align-items-center">
         <div class="col-auto">
             <div class="form-label">Filter Bulan</div>
         </div>
@@ -58,11 +43,9 @@
         </div>
     </section>
 
-    @foreach($employees as $employee)
-            @include('partials.edit-discipline-modal')
-    @endforeach
-
 {{ $dataTable->scripts() }}
+
+
 
 <script type="module">
     $(function() {
@@ -70,7 +53,7 @@
     let selectedMonth = localStorage.getItem('selectedMonth');
 
     // Initialize DataTable and apply initial filter if the month is stored
-    let dataTable = window.LaravelDataTables["disciplinetable-table"];
+    let dataTable = window.LaravelDataTables["alldisciplinetable-table"];
     if (selectedMonth) {
         $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
         applyFilter(selectedMonth); // Apply the filter
@@ -240,6 +223,5 @@ function filterAndDisplayEmployees(month) {
 
 
 </script>
-
 
 @endsection
