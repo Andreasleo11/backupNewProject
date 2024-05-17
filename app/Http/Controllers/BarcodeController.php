@@ -12,7 +12,7 @@ class BarcodeController extends Controller
 {
     public function generateBarcode()
     {
-        $spkNumber = '20012422';
+        $spkNumber = '24006267';
         $quantity = '1200';
         $warehouse = 'FG';
         $incrementNumber = '1';
@@ -21,8 +21,8 @@ class BarcodeController extends Controller
         for($i = $incrementNumber; $i <= 6; $i++)
         {
 
-        // Format the data as required
-        $barcodeData = $spkNumber . '-' . $quantity . '-' . $warehouse . '-' . $incrementNumber;
+        // Format the data as required ( DI SAP HARUS MENGGUNAKAN TAB )
+        $barcodeData = $spkNumber . "\t" . $quantity . "\t" . $warehouse . "\t" . $incrementNumber;
     
         // Generate the barcode using DNS1D (1D Barcode)
         $barcode = new DNS1D();
