@@ -48,7 +48,7 @@ class FormOvertimeController extends Controller
 
     public function insert(Request $request)
     {
-
+        // dd($request->all());
         $userIdCreate = Auth::id();
 
         
@@ -57,9 +57,11 @@ class FormOvertimeController extends Controller
             'dept_id' => $request->input('from_department'),
             'create_date' => $request->input('date_form_overtime'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
-            'status' => 1
+            'status' => 1,
+            'is_design' => $request->input('design')
         ];
         
+        // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
 
         $this->detailOvertimeInsert($request, $headerovertime->id);
@@ -99,5 +101,31 @@ class FormOvertimeController extends Controller
                 DetailFormOvertime::create($detailData);
             }
         }
+    }
+
+
+    public function detail($id)
+    {
+        $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
+        
+        $datas = DetailFormOvertime::Where('header_id', $id)->get();
+        // dd($header);
+        return view("formovertime.detail", compact("header", "datas"));
+    }
+
+    public function saveAutographOtPath(Request $request, $id, $section)
+    {
+        $username = Auth::user()->name;
+        // Log::info('Username:', ['username' => $username]); 
+        $imagePath = $username . '.png';
+        // Log::info('imagepath : ', $imagePath);
+
+        // Save $imagePath to the database for the specified $reportId and $section
+        $report = HeaderFormOvertime::find($id);
+            $report->update([
+                "autograph_{$section}" => $imagePath
+            ]);
+
+        return response()->json(['success' => 'Autograph saved successfully!']);
     }
 }

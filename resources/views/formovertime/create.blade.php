@@ -51,6 +51,8 @@
                                 </select>
                             </div>
 
+                            <div id="designFieldContainer"></div>
+
                             <div class="form-group mt-3 col-md-6">
                                 <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of FormOvertime Create</label>
                                 <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime" required>
@@ -82,6 +84,52 @@
     </body>
 
     <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+        const departmentDropdown = document.getElementById('fromDepartmentDropdown');
+        const designFieldContainer = document.getElementById('designFieldContainer');
+
+        departmentDropdown.addEventListener('change', function () {
+            // Clear the design field container
+            designFieldContainer.innerHTML = '';
+
+            // Check if the selected department is Moulding
+            const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex].text;
+            if (selectedDepartment === 'MOULDING') {
+                // Create the Design field
+                const designFormGroup = document.createElement('div');
+                designFormGroup.classList.add('form-group', 'mt-3', 'col');
+
+                const designLabel = document.createElement('label');
+                designLabel.classList.add('form-label', 'fs-5', 'fw-bold');
+                designLabel.setAttribute('for', 'design');
+                designLabel.textContent = 'Design';
+
+                const designSelect = document.createElement('select');
+                designSelect.classList.add('form-select');
+                designSelect.setAttribute('name', 'design');
+                designSelect.setAttribute('id', 'design');
+                designSelect.required = true;
+
+                const yesOption = document.createElement('option');
+                yesOption.value = '1';
+                yesOption.textContent = 'Yes';
+
+                const noOption = document.createElement('option');
+                noOption.value = '0';
+                noOption.textContent = 'No';
+
+                designSelect.appendChild(yesOption);
+                designSelect.appendChild(noOption);
+
+                designFormGroup.appendChild(designLabel);
+                designFormGroup.appendChild(designSelect);
+
+                // Append the Design field to the container
+                designFieldContainer.appendChild(designFormGroup);
+            }
+        });
+    });
 
         // Counter for creating unique IDs for items
         let itemIdCounter = 0;
