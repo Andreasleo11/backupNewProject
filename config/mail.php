@@ -35,15 +35,15 @@ return [
 
     'mailers' => [
         'smtp' => [
-            'transport' => 'smtp',
+            'transport' => env('MAIL_MAILER', 'smtp'),
             'url' => env('MAIL_URL'),
-            'host' => 'mail.daijo.co.id',
-            'port' => 25,
+            'host' => env('MAIL_HOST', 'mail.daijo.co.id'),
+            'port' => env('MAIL_PORT', 25),
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN'),
+            'local_domain' => env('MAIL_LOCAL_DOMAIN'),
         ],
 
         'ses' => [

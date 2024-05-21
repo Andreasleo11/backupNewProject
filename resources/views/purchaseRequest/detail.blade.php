@@ -26,8 +26,12 @@
         </nav>
     </section>
 
+    @php
+        $user = Auth::user();
+    @endphp
+
     <div class="text-end container mb-5">
-        @if (Auth::user()->id == $userCreatedBy->id)
+        @if ($user->id == $userCreatedBy->id || $user->specification->name === 'PURCHASER')
             <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
                 <i class='bx bx-upload'></i> Upload
             </button>
@@ -40,9 +44,7 @@
         @include('partials.alert-success-error')
     </div>
 
-    @php
-        $user = Auth::user();
-    @endphp
+
 
     <section aria-label="autographs" class="container">
 
@@ -164,12 +166,12 @@
                                             @elseif($detail->is_approve === 0)
                                                 table-danger text-decoration-line-through
                                             @elseif($detail->is_approve === null)
-                                                @if (Auth::user()->department->name === 'DIRECTOR')
+                                                @if ($user->department->name === 'DIRECTOR')
                                                 @elseif ($detail->is_approve_by_verificator === 1)
                                                     table-success
                                                 @elseif($detail->is_approve_by_verificator === 0)
                                                     table-danger text-decoration-line-through
-                                                @elseif(Auth::user()->specification->name === 'VERIFICATOR')
+                                                @elseif($user->specification->name === 'VERIFICATOR')
                                                 @else
                                                     @if ($detail->is_approve_by_head === 1)
                                                         table-success
@@ -332,7 +334,7 @@
 
     <section aria-label="uploaded">
         @include('partials.uploaded-section', [
-            'showDeleteButton' => Auth::user()->id == $userCreatedBy->id,
+            'showDeleteButton' => $user->id == $userCreatedBy->id || $user->specification->name === 'PURCHASER',
         ])
     </section>
 @endsection

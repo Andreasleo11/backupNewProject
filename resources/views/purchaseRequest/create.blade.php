@@ -338,6 +338,7 @@
 
             const currencyInput = document.createElement('select');
             currencyInput.classList.add('form-select');
+            currencyInput.setAttribute('required', 'required');
             currencyInput.name = `items[${itemIdCounter}][currency]`;
 
             var options = [{
