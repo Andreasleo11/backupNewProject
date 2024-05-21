@@ -43,6 +43,8 @@ use App\Http\Controllers\pps\PPSGeneralController;
 use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSInjectionController;
+use App\Http\Controllers\pps\PPSKarawangController;
+
 use App\Http\Controllers\DeliveryScheduleController;
 use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\DSNewController;
@@ -72,6 +74,9 @@ use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
+
+
+use App\Http\Controllers\BarcodeController;
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MUHomeController;
@@ -327,6 +332,12 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("/pps/menu", [PPSGeneralController::class, "menu"])->name("menupps");
         Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
 
+        //KarawangRoute
+        Route::get("/pps/karawang", [PPSKarawangController::class, "index"])->name('indexkarawang');
+
+
+
+
         Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
         Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
         Route::get("pps/injection/process1", [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
@@ -552,5 +563,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 
 
-
+    Route::get('/generate-barcode', [BarcodeController::class, 'generateBarcode']);
 });

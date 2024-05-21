@@ -33,7 +33,7 @@
 </style>
 
 <div class="modal fade" id="edit-purchase-request-modal-{{ $pr->id }}" tabindex="-1">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <div class="modal-body">
                 <div class="text-end">
