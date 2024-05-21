@@ -35,6 +35,8 @@ class PPSGeneralController extends Controller
             return redirect()->route('indexsecond');
         } elseif ($scenario === 'assembly') {
             return redirect()->route('indexassembly');
+        }elseif ($scenario === 'karawang') {
+            return redirect()->route('indexkarawang');
         }
     
         // Default redirection if scenario is not recognized

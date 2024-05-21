@@ -6,7 +6,11 @@
         <div class="container mt-2" id="autographuser1"></div>
     </div>
 
-    @if ($purchaseRequest->is_import === 0)
+    @php
+        $user = Auth::user();
+    @endphp
+
+    @if ($purchaseRequest->to_department === 'MOULDING')
         {{-- DEPT HEAD 2 AUTOGRAPH --}}
         <div class="col my-2">
             <h2>Dept Head 2</h2>
@@ -30,9 +34,10 @@
                 }
             }
         @endphp --}}
-            @if (Auth::user()->department->name === $purchaseRequest->from_department &&
-                    Auth::user()->is_head == 1 &&
-                    Auth::user()->specification->name === 'DESIGN' &&
+            @if (
+                $user->department->name === $purchaseRequest->from_department &&
+                    $user->is_head == 1 &&
+                    $user->specification->name === 'DESIGN' &&
                     $purchaseRequest->status == 1 &&
                     $purchaseRequest->autograph_7 === null)
                 {{-- @if ($count === $countItemHasApprovalStatus) --}}
@@ -86,8 +91,9 @@
                 }
             }
         @endphp
-        @if (Auth::user()->department->name === $purchaseRequest->from_department &&
-                Auth::user()->is_head == 1 &&
+        @if (
+            $user->department->name === $purchaseRequest->from_department &&
+                $user->is_head == 1 &&
                 $purchaseRequest->status == 1 &&
                 $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
@@ -125,7 +131,21 @@
         <h2>Purchaser</h2>
         <div class="autograph-box container" id="autographBox5"></div>
         <div class="container mt-2" id="autographuser5"></div>
-        @if (Auth::user()->specification->name == 'PURCHASER' && $purchaseRequest->status === 6)
+        @php
+            $showApprovalButtons = false;
+            if ($purchaseRequest->to_department === 'Computer') {
+                $user->email === 'vicky@daijo.co.id' ? ($showApprovalButtons = true) : ($showApprovalButtons = false);
+            } elseif ($purchaseRequest->to_department === 'Purchasing') {
+                $user->department->name === 'PURCHASING'
+                    ? ($showApprovalButtons = true)
+                    : ($showApprovalButtons = false);
+            } else {
+                $user->email === 'nur@daijo.co.id' || $user->email === 'ani_apriani@daijo.co.id'
+                    ? ($showApprovalButtons = true)
+                    : ($showApprovalButtons = false);
+            }
+        @endphp
+        @if ($showApprovalButtons && $purchaseRequest->status === 6)
             <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-2">
                     <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
@@ -175,7 +195,7 @@
                     }
                 }
             @endphp
-            @if (Auth::user()->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
+            @if ($user->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
                 @if ($count === $countItemHasApprovalStatus)
                     <div class="row px-4 d-flex justify-content-center">
                         <div
@@ -234,10 +254,7 @@
                 }
             }
         @endphp
-        @if (Auth::user()->department->name == 'HRD' &&
-                Auth::user()->is_head == 1 &&
-                $purchaseRequest->status == 2 &&
-                $isApproveNotEmpty)
+        @if ($user->department->name == 'HRD' && $user->is_head == 1 && $purchaseRequest->status == 2 && $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -293,7 +310,7 @@
                 }
             }
         @endphp
-        @if (Auth::user()->department->name == 'DIRECTOR' && $purchaseRequest->status == 3 && $isApproveNotEmpty)
+        @if ($user->department->name == 'DIRECTOR' && $purchaseRequest->status == 3 && $isApproveNotEmpty)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
