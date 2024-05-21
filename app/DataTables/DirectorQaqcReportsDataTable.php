@@ -65,7 +65,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     // ->dom('Bfrtip')
-                    ->orderBy(7 ,'asc')
+                    ->orderBy(7 ,'desc')
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
