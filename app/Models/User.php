@@ -60,4 +60,8 @@ class User extends Authenticatable
     public function specification(){
         return $this->belongsTo(Specification::class);
     }
+
+    public function permissions(){
+        return $this->belongsToMany(Permission::class);
+    }
 }

@@ -75,6 +75,7 @@ use App\Http\Controllers\ForecastCustomerController;
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MUHomeController;
+use App\Http\Controllers\PermissionController;
 use App\Models\Department;
 use App\Models\DetailPurchaseRequest;
 use App\Models\Role;
@@ -108,11 +109,6 @@ Route::post('/change-password', [PasswordChangeController::class, 'changePasswor
 
 
 Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
-    Route::get('/users', [UserController::class, 'index'])->name('users');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::put('/users/create/{id}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/create/{id}', [UserController::class, 'destroy'])->name('users.delete');
-    Route::get('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
 
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
     Route::post('/change-email',  [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
@@ -122,38 +118,31 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {
-            Route::get('/users', [UserController::class, 'index'])->name('users');
+            Route::get('/users', [UserController::class, 'index'])->name('users')->middleware('permission:get-users');
             Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
             Route::put('/users/update/{id}', [UserController::class, 'update'])->name('users.update');
             Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete');
             Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password');
             Route::delete('/users/delete-selected', [UserController::class, 'deleteSelected'])->name('users.deleteSelected');
 
-            Route::get('/departments', [DepartmentController::class, 'index'])->name('departments');
+            Route::get('/departments', [DepartmentController::class, 'index'])->name('departments')->middleware('permission:get-departments');
             Route::post('/departments/store', [DepartmentController::class, 'store'])->name('departments.store');
             Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
             Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
 
-            Route::get('/specifications', [SpecificationController::class, 'index'])->name('specifications');
+            Route::get('/specifications', [SpecificationController::class, 'index'])->name('specifications')->middleware('permission:get-specifications');
             Route::post('/specifications/store', [SpecificationController::class, 'store'])->name('specifications.store');
             Route::put('/specifications/{id}/update', [SpecificationController::class, 'update'])->name('specifications.update');
             Route::delete('/specifications/{id}/delete', [SpecificationController::class, 'destroy'])->name('specifications.delete');
 
-            Route::get('/permission', function () {
-                return view('admin.permissions');
-            })->name('permissions');
+            Route::get('/permissions', [PermissionController::class, 'index'])->name('permissions.index')->middleware('permission:get-users-permissions');
+            Route::post('/permissions/store', [PermissionController::class, 'store'])->name('permissions.store');
+            Route::put('/permissions/{id}/update', [PermissionController::class, 'update'])->name('permissions.update');
+            Route::get('/permissions/manage', [PermissionController::class, 'manage'])->name('permissions.manage')->middleware('permission:manage-permissions');
+            Route::get('/permissions/{permission}/edit', [PermissionController::class, 'edit'])->name('permissions.edit');
+            Route::put('/permissions/{permission}', [PermissionController::class, 'updatePermission'])->name('permissions.updatePermission');
+            Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
 
-            Route::get('/settings', function () {
-                return view('admin.settings');
-            })->name('settings');
-
-            Route::get('/business', function () {
-                return view('business.business');
-            })->name('business');
-
-            Route::get('/production', function () {
-                return view('production.production');
-            })->name('production');
         });
     });
 });
@@ -200,16 +189,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
-         //masukin ke dalem dept QC , ppic , store, logistic, accounting , direktur
-        //FORM ADJUST SECITON
-        Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
-        Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
-        Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
-        Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
-        Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
-        Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
-        //////////////
-
         //REVISI
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
@@ -221,8 +200,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
         Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports');
         Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts');
-
-
 
     });
 
