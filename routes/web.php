@@ -76,7 +76,7 @@ use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 
 
-use App\Http\Controllers\BarcodeController;
+
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MUHomeController;
@@ -290,6 +290,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
         Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
+        Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('averagemonth');
+
 
         Route::get("delsched/start1", [DeliveryScheduleController::class, "step1"])->name("deslsched.step1");
         Route::get("delsched/start2", [DeliveryScheduleController::class, "step2"])->name("deslsched.step2");
@@ -563,5 +565,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 
 
-    Route::get('/generate-barcode', [BarcodeController::class, 'generateBarcode']);
+    
 });
