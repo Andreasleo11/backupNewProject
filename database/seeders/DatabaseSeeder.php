@@ -111,7 +111,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         $this->createAndAssignPermissions($adminPermissions, $adminRole);
-        $this->createAndAssignPermissions($commonPermissions, $adminRole, true, [$staffRole, $userRole]);
+        $this->createAndAssignPermissions($commonPermissions, $staffRole);
 
         // Assign roles to existing users
         $this->assignRolesToExistingUsers($adminRole, $staffRole, $userRole);
@@ -120,19 +120,13 @@ class DatabaseSeeder extends Seeder
         $this->syncUserPermissions();
     }
 
-    private function createAndAssignPermissions($permissions, $role, $onlyGetPermissions = false, $additionalRoles = [])
+    private function createAndAssignPermissions($permissions, $role)
     {
         foreach ($permissions as $permissionName) {
             $permission = Permission::firstOrCreate(['name' => $permissionName]);
 
             // Attach permissions to the specified role
             $role->permissions()->syncWithoutDetaching($permission);
-
-            if ($onlyGetPermissions && strpos($permissionName, 'get-') === 0) {
-                foreach ($additionalRoles as $additionalRole) {
-                    $additionalRole->permissions()->syncWithoutDetaching($permission);
-                }
-            }
         }
     }
 
