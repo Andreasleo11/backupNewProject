@@ -46,16 +46,15 @@
                             <span>Specifications</span>
                         </a>
                     </li>
-                    {{-- TODO: UNDER DEVELOPMENT --}}
                     <li class="sidebar-item" id="sidebar-item-admin">
-                        <a href="{{ route('superadmin.permissions.index') }}" class="sidebar-link">
+                        <a href="{{ route('superadmin.users.permissions.index') }}" class="sidebar-link">
                             <i class='bx bx-lock-alt'></i>
                             <span>Users Permissions</span>
                         </a>
                     </li>
 
                     <li class="sidebar-item" id="sidebar-item-admin">
-                        <a href="{{ route('superadmin.permissions.manage') }}" class="sidebar-link">
+                        <a href="{{ route('superadmin.permissions.index') }}" class="sidebar-link">
                             <i class='bx bx-lock-alt'></i>
                             <span>Permissions</span>
                         </a>
