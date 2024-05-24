@@ -9,9 +9,14 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Permission Name</label>
+                        <label for="name" class="form-label">Name</label>
                         <input type="text" class="form-control" id="name" name="name"
                             placeholder="Enter permission name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="description" name="description"
+                            placeholder="Enter permission description">
                     </div>
                 </div>
                 <div class="modal-footer">
