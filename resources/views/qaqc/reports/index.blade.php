@@ -22,6 +22,9 @@
                         <i class='bx bx-plus'></i> Add <span class="d-none d-sm-inline">Report</span>
                     </a>
                 @endif
+                <a href="{{ route('qaqc.summarymonth') }}" class="btn btn-outline-primary">
+                    Summary Per Month
+                </a>
                 <a href="{{ route('export.reports') }}" class="btn btn-outline-primary">
                     Export All To Excel
                 </a>
