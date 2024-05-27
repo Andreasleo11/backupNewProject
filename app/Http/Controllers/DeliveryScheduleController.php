@@ -218,7 +218,8 @@ class DeliveryScheduleController extends Controller
 			$val_delivery_qty = $delsched_final->delivery_qty;
 
 			$tab_solist = DB::table('delsched_solist')->where('so_number',$val_so_number)->first();
-			$val_so_status = $tab_solist->so_status;
+			// dd($tab_solist->so_status);
+			$val_so_status = $tab_solist->so_status ?? null;
 
 			if($val_so_status == 'C'){
 
