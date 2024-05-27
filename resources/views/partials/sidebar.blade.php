@@ -34,27 +34,33 @@
                             <span>Users</span>
                         </a>
                     </li>
-                    <li class="sidebar-item" id="sidebar-item-departments">
+                    <li class="sidebar-item" id="sidebar-item-amdmin">
                         <a href="{{ route('superadmin.departments') }}" class="sidebar-link">
                             <i class='bx bx-building-house'></i>
                             <span>Departments</span>
                         </a>
                     </li>
-                    <li class="sidebar-item" id="sidebar-item-departments">
+                    <li class="sidebar-item" id="sidebar-item-admin">
                         <a href="{{ route('superadmin.specifications') }}" class="sidebar-link">
                             <i class='bx bx-task'></i>
                             <span>Specifications</span>
                         </a>
                     </li>
+                    <li class="sidebar-item" id="sidebar-item-admin">
+                        <a href="{{ route('superadmin.users.permissions.index') }}" class="sidebar-link">
+                            <i class='bx bx-lock-alt'></i>
+                            <span>Users Permissions</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item" id="sidebar-item-admin">
+                        <a href="{{ route('superadmin.permissions.index') }}" class="sidebar-link">
+                            <i class='bx bx-lock-alt'></i>
+                            <span>Permissions</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
-            {{-- TODO: UNDER DEVELOPMENT --}}
-            {{-- <li class="sidebar-item" id="sidebar-item-permission">
-                <a href="{{ route('superadmin.permissions') }}" class="sidebar-link">
-                    <i class='bx bx-lock-alt'></i>
-                    <span>Permissions</span>
-                </a>
-            </li> --}}
         @endif
 
         @if ($department === 'QA' || $department === 'QC' || $user->role->name === 'SUPERADMIN')

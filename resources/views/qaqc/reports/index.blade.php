@@ -22,6 +22,9 @@
                         <i class='bx bx-plus'></i> Add <span class="d-none d-sm-inline">Report</span>
                     </a>
                 @endif
+                <a href="{{ route('qaqc.summarymonth') }}" class="btn btn-outline-primary">
+                    Summary Per Month
+                </a>
                 <a href="{{ route('export.reports') }}" class="btn btn-outline-primary">
                     Export All To Excel
                 </a>
@@ -90,8 +93,9 @@
                                         @endphp
 
                                         <form class="d-none" action="{{ route('qaqc.report.rejectAuto', $report->id) }}"
-                                            method="get" id="form-reject-report-{{ $report->id }}"><input type="hidden"
-                                                name="description" value="Automatically rejected after 24 hours"></form>
+                                            method="get" id="form-reject-report-{{ $report->id }}"><input
+                                                type="hidden" name="description"
+                                                value="Automatically rejected after 24 hours"></form>
 
                                         <script>
                                             @if ($hoursDifference > 24 && $report->is_approve === 2 && $report->is_locked == false)

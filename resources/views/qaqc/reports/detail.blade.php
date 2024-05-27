@@ -50,56 +50,39 @@
                         <i class='bx bx-upload'></i> Upload
                     </button>
                 @endif
+
                 @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
             </div>
+
+            @php
+                $isNull = false;
+                foreach ($report->details as $detail) {
+                    if ($detail->do_num === null) {
+                        $isNull = true;
+                    }
+                }
+            @endphp
+
+            <div class="col-auto">
+                <a href="{{ route('adjust.index', ['reports' => $report]) }}">
+                    <button type="button" class="btn btn-outline-primary {{ $isNull ? 'd-none' : '' }}">Adjust
+                        Form</button>
+                </a>
+            </div>
+            @if ($adjustForm)
+                <div class="col-auto">
+                    <form action="{{ route('adjustview') }}" method="get" class="{{ $isNull ? 'd-none' : '' }}">
+                        <input type="hidden" name="report_id" value="{{ $report->id }}">
+                        <button type="submit" class="btn btn-outline-success" id="finishBtn">View Adjust Form </button>
+                    </form>
+                </div>
+            @endif
         </div>
     </section>
 
     <div class="mt-4">
         @include('partials.alert-success-error')
     </div>
-
-    <div>
-        <!-- @php
-        $index = 0;
-        $counter = 0;
-
-        foreach ($report->details as $detail)
-        {
-            if($detail->do_num !== null)
-            {
-                $index += 1;
-                $counter += 1;
-            }
-            else{
-                $counter += 1;
-            }
-        }
-        @endphp
-        @if($index === $counter)
-        <button type="button" class="btn btn-primary">Generate Me for your detail</button>  
-        @endif -->
-        @php
-            $isNull = false;
-            foreach ($report->details as $detail)
-            {
-                if($detail->do_num === null)
-                {
-                    $isNull = true;
-                }
-            }
-        @endphp
-        <a href="{{ route('adjust.index', ['reports' => $report]) }}">
-        <button type="button" class="btn btn-primary {{ $isNull ? 'd-none' : '' }}">Adjust Form</button>  
-        </a>
-
-        <form action="{{ route('adjustview') }}" method="get" class="{{ $isNull ? 'd-none' : '' }}">
-            <input type="hidden" name="report_id" value="{{$report->id}}">
-            <button type="submit" class="btn btn-success" id="finishBtn">View Adjust Form </button>
-        </form>
-
-    </div>
-
 
     <section aria-label="header" class="container">
         <div class="row text-center mt-5">
@@ -186,6 +169,9 @@
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
                                 <th rowspan="2">DO Number</th>
+                                @if ($report->is_approve)
+                                    <th rowspan="2">Action</th>
+                                @endif
                             </tr>
                             <tr>
                                 <th>Quantity</th>
@@ -243,6 +229,14 @@
                                     <td width="15%"> @currency($detail->price) </td>
                                     <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
                                     <td> {{ $detail->do_num }} </td>
+                                    @if ($report->is_approve)
+                                        @include('partials.edit-do-number')
+                                        <td>
+                                            <button data-bs-target="#edit-do-number-{{ $detail->id }}"
+                                                data-bs-toggle="modal" class="btn btn-primary btn-sm">Edit
+                                                DO Number</button>
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <td colspan="14">No data</td>

@@ -63,6 +63,35 @@ class DeliveryScheduleController extends Controller
         return $dataTable->render("business.rawdelsched");
     }
 
+
+	public function averageschedule()
+	{
+		$data = SapDelsched::all();
+		// Mengelompokkan data berdasarkan bulan dan item_code, kemudian menghitung total quantity
+
+		$itemCounts = $data->groupBy(function($item) {
+			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
+		})->map(function($group) {
+			return $group->groupBy('item_code')->map(function($itemGroup) {
+				// Menghitung jumlah item code yang unik
+				return $itemGroup->count();
+			});
+		});
+
+		// dd($itemCounts);
+		$totalQuantities = $data->groupBy(function($item) {
+			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
+		})->map(function($group) {
+			return $group->groupBy('item_code')->map(function($itemGroup) {
+				return $itemGroup->sum('delivery_qty');
+			});
+		});
+
+		// dd($totalQuantities);
+
+		return view("business.averageschedule", compact('data','itemCounts', 'totalQuantities'));
+	}
+
     public function step1()
     {
         DB::table('delsched_final')->truncate();
