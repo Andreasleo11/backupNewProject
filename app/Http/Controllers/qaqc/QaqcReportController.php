@@ -13,6 +13,7 @@ use App\Models\File;
 use App\Models\Report;
 use App\Models\Detail;
 use App\Models\DefectCategory;
+use App\Models\HeaderFormAdjust;
 use App\Models\MasterDataPartNumberPrice;
 use App\Models\MasterDataRogCustomerName;
 use App\Models\MasterDataRogPartName;
@@ -105,7 +106,8 @@ class QaqcReportController extends Controller
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
         $files = File::where('doc_id', $report->doc_num)->get();
-        return view('qaqc.reports.detail', compact('report','user','autographNames', 'files'));
+        $adjustForm = HeaderFormAdjust::where('report_id', $report->id)->first();
+        return view('qaqc.reports.detail', compact('report','user','autographNames', 'files', 'adjustForm'));
     }
 
     public function edit(Request $request, $id)
@@ -148,7 +150,9 @@ class QaqcReportController extends Controller
         // Retrieve the existing report from the session
         $report = $request->session()->get('header_edit');
 
-        $report->update();
+        if($report){
+            $report->update();
+        }
 
         $details_data = Detail::where('report_id', $id)->get();
         $request->session()->put('details_edit', $details_data);
@@ -727,5 +731,14 @@ class QaqcReportController extends Controller
     public function exportFormAdjustToExcel()
     {
         return Excel::download(new FormAdjustExport(), 'formadjust-all-data.xlsx');
+    }
+
+    public function updateDoNumber(Request $request, $id)
+    {
+        Detail::find($id)->update([
+            'do_num' => $request->do_num
+        ]);
+
+        return redirect()->back()->with('success', 'Update do number berhasil!');
     }
 }
