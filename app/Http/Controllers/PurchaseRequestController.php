@@ -183,7 +183,14 @@ class PurchaseRequestController extends Controller
 
     public function insert(Request $request)
     {
-        // dd(preg_replace("/[^0-9]/", "",$request->items[0]['price']));
+        $items = $request->input('items', []);
+
+        // Process each item
+        $processedItems = array_map(function ($item) {
+            $item['price'] = $this->parsePrice($item['price']);
+            return $item;
+        }, $items);
+
         $userIdCreate = Auth::id();
         // Define common data
         $commonData = [
@@ -216,7 +223,7 @@ class PurchaseRequestController extends Controller
         $purchaseRequest->update(['pr_no' => $prNo]);
 
         // update revisi 26 februari
-        $this->verifyAndInsertItems($request, $purchaseRequest->id);
+        $this->verifyAndInsertItems($processedItems, $purchaseRequest->id);
         // $this->executeSendPRNotificationCommand();
 
         // update revisi 26 februari
@@ -224,13 +231,22 @@ class PurchaseRequestController extends Controller
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
-    private function verifyAndInsertItems($request, $id){
-        if ($request->has('items') && is_array($request->input('items'))) {
-            foreach ($request->input('items') as $itemData) {
+    private function parsePrice($price)
+    {
+        // Remove any non-numeric characters except for comma and period
+        $cleanedPrice = preg_replace('/[^\d,]/', '', $price);
+        // Replace comma with dot for float conversion
+        $normalizedPrice = str_replace(',', '.', $cleanedPrice);
+        return (float) $normalizedPrice;
+    }
+
+    private function verifyAndInsertItems($items, $id){
+        if (isset($items) && is_array($items)) {
+            foreach ($items as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
-                $price = preg_replace("/[^0-9]/", "", $itemData['price']);
+                $price = $itemData['price'];
                 $uom = strtoupper($itemData['uom']);
                 $currency = $itemData['currency'];
 
