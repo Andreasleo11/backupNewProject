@@ -42,7 +42,8 @@
             <th>Quantity</th>
             <th>Count</th>
             <th>Average with Count</th>
-            <th>Average per month</th>
+            <th>In Stock</th>
+            <!-- <th>Day In Stock / Average</th> -->
         </tr>
     </thead>
     <tbody>
@@ -57,9 +58,15 @@
                     @php
                         $averageWithCount = ($quantity / $itemCounts[$month][$itemCode]) ?? 0;
                         $averagePerMonth = $quantity / 30; // Assuming 30 days in a month
+                        $inStock = 0;
+
+                        $inStock = floor($result[$month][$itemCode] ?? 0);
+
+                        $newColumnValue = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
                     @endphp
                     <td>{{ $averageWithCount }}</td>
-                    <td>{{ $averagePerMonth }}</td>
+                    <td>{{ $inStock }}</td>
+                    <!-- <td>{{ $newColumnValue }}</td> -->
                 </tr>
             @endforeach
         @endforeach

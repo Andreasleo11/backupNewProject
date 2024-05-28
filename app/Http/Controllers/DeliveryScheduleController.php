@@ -17,6 +17,7 @@ use App\Models\delsched_solist;
 use App\Models\delsched_stock;
 use App\Models\delsched_stockwip;
 use App\Models\SapDelsched;
+use App\Models\SapInventoryMtr;
 
 use App\Models\DelschedFinal;
 use App\Models\DelschedFinalWip;
@@ -69,6 +70,7 @@ class DeliveryScheduleController extends Controller
 		$data = SapDelsched::all();
 		// Mengelompokkan data berdasarkan bulan dan item_code, kemudian menghitung total quantity
 
+
 		$itemCounts = $data->groupBy(function($item) {
 			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
 		})->map(function($group) {
@@ -78,6 +80,26 @@ class DeliveryScheduleController extends Controller
 			});
 		});
 
+
+		// Step 2: Fetch the SapInventoryMtr data
+		$inventoryData = SapInventoryMtr::all();
+
+		// Step 3: Map the inventory data based on fg_code
+		$inventoryMap = $inventoryData->keyBy('fg_code');
+
+		// Step 4: Combine the grouped data with the inventory data
+		$result = $itemCounts->map(function($group) use ($inventoryMap) {
+			return $group->map(function($count, $itemCode) use ($inventoryMap) {
+				// Get the corresponding inventory data
+				$inventory = $inventoryMap->get($itemCode);
+	
+				// If inventory data exists, return the in_stock value
+				return $inventory ? $inventory->in_stock : null;
+			});
+		});
+
+		
+		
 		// dd($itemCounts);
 		$totalQuantities = $data->groupBy(function($item) {
 			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
@@ -89,7 +111,10 @@ class DeliveryScheduleController extends Controller
 
 		// dd($totalQuantities);
 
-		return view("business.averageschedule", compact('data','itemCounts', 'totalQuantities'));
+		
+		
+
+		return view("business.averageschedule", compact('data','itemCounts', 'totalQuantities', 'result'));
 	}
 
     public function step1()
@@ -218,7 +243,8 @@ class DeliveryScheduleController extends Controller
 			$val_delivery_qty = $delsched_final->delivery_qty;
 
 			$tab_solist = DB::table('delsched_solist')->where('so_number',$val_so_number)->first();
-			$val_so_status = $tab_solist->so_status;
+			// dd($tab_solist->so_status);
+			$val_so_status = $tab_solist->so_status ?? null;
 
 			if($val_so_status == 'C'){
 
