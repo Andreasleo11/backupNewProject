@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\foremindFinal;
+use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchasingContact;
@@ -13,7 +14,39 @@ class PurchasingController extends Controller
 {
     public function index()
     {
-        return view('purchasing.purchasing_landing');
+        $statuses = [
+            'approved' => 4,
+            'rejected' => 5,
+            'waitingDeptHead' => 1,
+            'waitingPurchaser' => 6,
+            'waitingGm' => 7,
+            'waitingVerificator' => 2,
+            'waitingDirector' => 3,
+        ];
+
+        $data = [];
+
+        foreach ($statuses as $key => $status) {
+            $data[$key] = PurchaseRequest::where('status', $status)
+                                        ->where('to_department', 'Purchasing')
+                                        ->whereHas('createdBy', function($query){
+                                            $query->orWhere('id', auth()->user()->id);
+                                        })
+                                        ->orWhere('from_department', 'Purchasing')
+                                        ->get()->count();
+        }
+
+        $twoDaysAgo = Carbon::now()->subDays(2);
+
+        $prOver2Days = PurchaseRequest::where('status', $status)
+            ->where('to_department', 'Purchasing')
+            ->whereHas('createdBy', function($query){
+                $query->orWhere('id', auth()->user()->id);
+            })
+            ->whereDate('created_at', '<=', $twoDaysAgo)
+            ->get();
+
+        return view('purchasing.purchasing_landing', compact('data', 'prOver2Days'));
     }
 
     public function indexhome()
@@ -22,7 +55,7 @@ class PurchasingController extends Controller
          $forecasts = ForemindFinal::all();
          $transformedData = [];
          $contacts = PurchasingContact::all();
-        
+
          // Get unique months from all forecasts
          $allMonths = [];
 
