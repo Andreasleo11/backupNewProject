@@ -134,7 +134,7 @@
                                                         <td style="background-color: transparent; width:33%;">
                                                             {{ $defect->quantity }}</td>
                                                         <td style="background-color: transparent">
-                                                            {{ $defect->category->name }}</td>
+                                                            {{ $defect->category->name ?? '' }}</td>
                                                         <td style="background-color: transparent"> {{ $defect->remarks }}
                                                         </td>
                                                     </tbody>
@@ -150,7 +150,7 @@
                                                         <td style="background-color: transparent; width:33%;">
                                                             {{ $defect->quantity }}</td>
                                                         <td style="background-color: transparent">
-                                                            {{ $defect->category->name }}</td>
+                                                            {{ $defect->category->name ?? '' }}</td>
                                                         <td style="background-color: transparent"> {{ $defect->remarks }}
                                                         </td>
                                                     </tbody>
@@ -177,7 +177,7 @@
 
     <section aria-label="approval" class="container mt-5 mb-8">
         @if ($report->is_approve === 2)
-            @include('partials.reject-modal', ['id' => $report->id])
+            @include('partials.reject-modal', ['id' => $report->id, 'route' => 'director.qaqc.reject'])
 
             <div class="container text-center">
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"

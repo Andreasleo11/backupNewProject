@@ -23,14 +23,17 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
+
         Blade::directive('currency', function ($expression) {
-            return $expression != null ? "<?php echo 'Rp. ' . number_format($expression, 0, ',', '.'); ?>" : "";
+            return "<?php echo $expression !== null ? 'Rp. ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
+
         Blade::directive('currencyUSD', function ($expression) {
-            return $expression != null ? "<?php echo '$' . number_format($expression, 0, ',', '.'); ?>" : "";
+            return "<?php echo $expression !== null ? '$' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
+
         Blade::directive('currencyCNY', function ($expression) {
-            return $expression != null ? "<?php echo '¥' . number_format($expression, 0, ',', '.'); ?>" : "";
+            return "<?php echo $expression !== null ? '¥' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
         Blade::directive('formatDate', function ($expression) {

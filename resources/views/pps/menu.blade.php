@@ -16,6 +16,7 @@
                                 <option value="injection">Plastic Injection</option>
                                 <option value="second">Second Process</option>
                                 <option value="assembly">Assembly</option>
+                                <option value="karawang">Karawang</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-primary">Pilih</button>

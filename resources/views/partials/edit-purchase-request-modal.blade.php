@@ -33,7 +33,7 @@
 </style>
 
 <div class="modal fade" id="edit-purchase-request-modal-{{ $pr->id }}" tabindex="-1">
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <div class="modal-body">
                 <div class="text-end">
@@ -435,14 +435,22 @@
             document.getElementById('items').appendChild(newItemContainer);
 
             quantityInput.addEventListener('input', function() {
-                const unitPrice = unitPriceInput.value.replace(/[^\d]/g, '');
-                subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
+                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9,]/g, '').replace(',',
+                    '.')); // Convert to float for calculation
+                const quantity = parseFloat(quantityInput.value);
+                const subtotal = (quantity * unitPrice).toFixed(2).toString().replace('.',
+                    ','); // Convert back to string with comma
+                subtotalInput.value = subtotal;
                 formatPrice(subtotalInput, currencyInput.value);
             });
 
             unitPriceInput.addEventListener('input', function() {
-                const unitPrice = unitPriceInput.value.replace(/[^\d]/g, '');
-                subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
+                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9,]/g, '').replace(',',
+                    '.')); // Convert to float for calculation
+                const quantity = parseFloat(quantityInput.value);
+                const subtotal = (quantity * unitPrice).toFixed(2).toString().replace('.',
+                    ','); // Convert back to string with comma
+                subtotalInput.value = subtotal;
                 formatPrice(unitPriceInput, currencyInput.value);
                 formatPrice(subtotalInput, currencyInput.value);
             });
@@ -466,17 +474,17 @@
                 const countGroup = item.querySelector('.count-group');
                 countGroup.textContent = index + 1;
 
-                const subtotalInput = item.querySelector('.subtotal-input');
-                const unitPriceInput = item.querySelector('.unit-price-input');
-                const quantityInput = item.querySelector('.quantity-input');
-                formatPrice(subtotalInput, document.querySelector('.form-select').value);
-                formatPrice(unitPriceInput, document.querySelector('.form-select').value);
+                // const subtotalInput = item.querySelector('.subtotal-input');
+                // const unitPriceInput = item.querySelector('.unit-price-input');
+                // const quantityInput = item.querySelector('.quantity-input');
+                // formatPrice(subtotalInput, document.querySelector('.form-select').value);
+                // formatPrice(unitPriceInput, document.querySelector('.form-select').value);
             });
         }
 
         function formatPrice(input, currency) {
-            let price = input.value.replace(/\D/g, ''); // Remove non-digit characters
-            price = parseInt(price); // Convert string to integer
+            // Replace non-numeric characters except comma
+            let price = input.value.replace(/[^0-9,]/g, '');
 
             let currencySymbol = '';
             if (currency === 'IDR') {
@@ -487,11 +495,19 @@
                 currencySymbol = '$';
             }
 
-            if (!isNaN(price)) {
-                const formattedPrice = currencySymbol + price.toLocaleString('id-ID');
-                input.value = formattedPrice;
+            if (price.includes(',')) {
+                // Handle decimal values
+                let parts = price.split(',');
+                let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Add thousand separators
+                let decimalPart = parts[1];
+                if (decimalPart.length > 2) {
+                    decimalPart = decimalPart.substring(0, 2); // Limit to 2 decimal places
+                }
+                input.value = currencySymbol + integerPart + ',' + decimalPart;
             } else {
-                input.value = '';
+                // Handle integer values
+                let formattedPrice = price.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                input.value = currencySymbol + formattedPrice;
             }
         }
 

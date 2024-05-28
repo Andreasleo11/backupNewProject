@@ -50,8 +50,33 @@
                         <i class='bx bx-upload'></i> Upload
                     </button>
                 @endif
+
                 @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
             </div>
+
+            @php
+                $isNull = false;
+                foreach ($report->details as $detail) {
+                    if ($detail->do_num === null) {
+                        $isNull = true;
+                    }
+                }
+            @endphp
+
+            <div class="col-auto">
+                <a href="{{ route('adjust.index', ['reports' => $report]) }}">
+                    <button type="button" class="btn btn-outline-primary {{ $isNull ? 'd-none' : '' }}">Adjust
+                        Form</button>
+                </a>
+            </div>
+            @if ($adjustForm)
+                <div class="col-auto">
+                    <form action="{{ route('adjustview') }}" method="get" class="{{ $isNull ? 'd-none' : '' }}">
+                        <input type="hidden" name="report_id" value="{{ $report->id }}">
+                        <button type="submit" class="btn btn-outline-success" id="finishBtn">View Adjust Form </button>
+                    </form>
+                </div>
+            @endif
         </div>
     </section>
 
@@ -73,7 +98,7 @@
                 }
             }
         @endphp
-            @if ($index === $counter)
+                @if ($index === $counter)
     <button type="button" class="btn btn-primary">Generate Me for your detail</button>
     @endif -->
         @php
@@ -181,6 +206,9 @@
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
                                 <th rowspan="2">DO Number</th>
+                                @if ($report->is_approve)
+                                    <th rowspan="2">Action</th>
+                                @endif
                             </tr>
                             <tr>
                                 <th>Quantity</th>
@@ -240,8 +268,8 @@
                                     <td> {{ $detail->do_num }} </td>
                                     @include('partials.edit-do-number')
                                     <td>
-                                        <button data-bs-target="#edit-do-number-{{ $detail->id }}" data-bs-toggle="modal"
-                                            class="btn btn-primary btn-sm">Edit
+                                        <button data-bs-target="#edit-do-number-{{ $detail->id }}"
+                                            data-bs-toggle="modal" class="btn btn-primary btn-sm">Edit
                                             DO Number</button>
                                     </td>
                                 </tr>

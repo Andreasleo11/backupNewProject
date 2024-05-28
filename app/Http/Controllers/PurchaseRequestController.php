@@ -24,6 +24,7 @@ class PurchaseRequestController extends Controller
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
         $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
+        $isHead = $user->is_head === 1;
         $isPurchaser = $user->specification->name === "PURCHASER";
         $isGM = $user->is_gm === 1;
 
@@ -34,19 +35,17 @@ class PurchaseRequestController extends Controller
         if ($isHRDHead) {
             // If the user is HRD Head, filter requests with specific conditions
             $purchaseRequestsQuery->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
-                ->whereNotNull('autograph_5')
-                ->whereNull('autograph_3')
-                ->orWhereNotNull('autograph_3')
-                ->where(function($query) {
-                    $query->where(function($query) {
-                            $query->where('to_department', 'Personnel')
-                                  ->where('type', 'office');
-                        })
-                        ->orWhere(function($query) {
-                            $query->where('to_department', 'Computer');
-                        });
-                });
+            ->whereNotNull('autograph_2')
+            ->whereNotNull('autograph_5')
+            ->where(function($query) {
+                $query->whereNull('autograph_3')
+                      ->orWhereNotNull('autograph_3')
+                      ->where(function($query) {
+                          $query->where('to_department', 'Personnel')
+                                ->where('type', 'office')
+                                ->orWhere('to_department', 'Computer');
+                      });
+            });
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
@@ -55,30 +54,33 @@ class PurchaseRequestController extends Controller
                     $query->where('type', 'factory');
                     // Additional condition for users where is_gm is 1 and department is 'MOULDING'
                     if ($user->is_gm && $userDepartmentName === 'MOULDING') {
-                        $query->orWhere(function ($query) {
-                            $query->where('from_department', 'MOULDING');
-                        });
+                        $query->orWhere('from_department', 'MOULDING');
                     }
                 });
+        } elseif ($isHead) {
+            // same as else
+            $purchaseRequestsQuery->where(function ($query) use ($userDepartmentName) {
+                $query->where('from_department', $userDepartmentName);
+            });
+
+            if($userDepartmentName === 'PURCHASING'){
+                $purchaseRequestsQuery->orWhere('to_department', ucwords(strtolower($userDepartmentName)));
+            }
         } elseif ($isPurchaser) {
             // If the user is a purchaser, filter requests with specific conditions
-
             if($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING'){
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
             } elseif ($user->email === 'nur@daijo.co.id'){
-                $purchaseRequestsQuery->where('to_department', 'Maintenance');
-            } elseif($userDepartmentName === 'PERSONALIA'){
-                $purchaseRequestsQuery->where('to_department', 'Personnel');
+                $purchaseRequestsQuery->where(function($query){
+                    $query->where('to_department', 'Maintenance')
+                            ->orWhere('to_department', 'Personnel');
+                });
             }
 
             $purchaseRequestsQuery->whereNotNull('autograph_1');
-
         } else {
             // Otherwise, filter requests based on user department
-            $purchaseRequestsQuery->where(function ($query) use ($userDepartmentName, $user) {
-                $query->where('from_department', $userDepartmentName)
-                    ->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
-            });
+            $purchaseRequestsQuery->where('from_department', $userDepartmentName);
         }
 
         // Custom Filter
@@ -123,15 +125,13 @@ class PurchaseRequestController extends Controller
                 case 3:
                     $purchaseRequestsQuery->where(function ($query) {
                         $query->where('status', 2)->where('type', 'office')
-                        ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
+                                ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
                     });
                     break;
                 // Waiting for Director
                 case 7:
                     $purchaseRequestsQuery->where(function ($query) {
-                        $query->where('status', 3)->whereNot(function($query){
-                            $query->where('to_department', 'Computer')->where('type', 'factory');
-                        });
+                        $query->where('status', 3)->whereNot->where('to_department', 'Computer')->where('type', 'factory');
                     });
                     break;
 
@@ -145,6 +145,7 @@ class PurchaseRequestController extends Controller
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('updated_at', 'desc')
+            ->orWhere('user_id_create', $user->id) // Assuming 'created_by' is the foreign key for the user who created the request
             // ->orderByRaw("
             //             CASE
             //                 WHEN status = 1 THEN 0
@@ -182,7 +183,14 @@ class PurchaseRequestController extends Controller
 
     public function insert(Request $request)
     {
-        // dd(preg_replace("/[^0-9]/", "",$request->items[0]['price']));
+        $items = $request->input('items', []);
+
+        // Process each item
+        $processedItems = array_map(function ($item) {
+            $item['price'] = $this->parsePrice($item['price']);
+            return $item;
+        }, $items);
+
         $userIdCreate = Auth::id();
         // Define common data
         $commonData = [
@@ -215,7 +223,7 @@ class PurchaseRequestController extends Controller
         $purchaseRequest->update(['pr_no' => $prNo]);
 
         // update revisi 26 februari
-        $this->verifyAndInsertItems($request, $purchaseRequest->id);
+        $this->verifyAndInsertItems($processedItems, $purchaseRequest->id);
         // $this->executeSendPRNotificationCommand();
 
         // update revisi 26 februari
@@ -223,13 +231,22 @@ class PurchaseRequestController extends Controller
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
-    private function verifyAndInsertItems($request, $id){
-        if ($request->has('items') && is_array($request->input('items'))) {
-            foreach ($request->input('items') as $itemData) {
+    private function parsePrice($price)
+    {
+        // Remove any non-numeric characters except for comma and period
+        $cleanedPrice = preg_replace('/[^\d,]/', '', $price);
+        // Replace comma with dot for float conversion
+        $normalizedPrice = str_replace(',', '.', $cleanedPrice);
+        return (float) $normalizedPrice;
+    }
+
+    private function verifyAndInsertItems($items, $id){
+        if (isset($items) && is_array($items)) {
+            foreach ($items as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
-                $price = preg_replace("/[^0-9]/", "", $itemData['price']);
+                $price = $itemData['price'];
                 $uom = strtoupper($itemData['uom']);
                 $currency = $itemData['currency'];
 
@@ -390,7 +407,7 @@ class PurchaseRequestController extends Controller
 
         $timestamp = strtotime($purchaseRequest->created_at);
         $formattedDate = date("Ymd", $timestamp);
-        $doc_id = 'PR/' . $purchaseRequest->id . '/' .$formattedDate;
+        $doc_id = $purchaseRequest->doc_num;
 
         $files = File::where('doc_id', $doc_id)->get();
 

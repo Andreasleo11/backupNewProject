@@ -15,6 +15,10 @@
 
     <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a>
 
+    @if($user->department_id === 7 || $user->department_id === 22)
+        <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a></a>
+    @endif
+
  
     <div class="row align-items-center">
         <div class="col-auto">

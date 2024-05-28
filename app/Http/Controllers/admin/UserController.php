@@ -10,6 +10,7 @@ use App\Models\Specification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class UserController extends Controller
@@ -34,7 +35,7 @@ class UserController extends Controller
             'specification' => 'nullable|int',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->name . '1234'),
@@ -42,6 +43,14 @@ class UserController extends Controller
             'department_id' => $request->department,
             'specification_id' => $request->specification,
         ]);
+
+        $role = Role::findOrFail($request->role);
+        $user->roles()->sync([$role->id]);
+
+        // Debugging role assignment
+        // Log::info('Assigned roles to user', ['user_id' => $user->id, 'role_id' => $role->id]);
+
+        $user->syncPermissions();
 
         return redirect()->route('superadmin.users')->with(['success' => 'User added successfully!']);
     }
@@ -65,6 +74,14 @@ class UserController extends Controller
             'department_id' => $request->department,
             'specification_id' => $request->specification,
         ]);
+
+        $role = Role::findOrFail($request->role);
+        $user->roles()->sync([$role->id]);
+
+        // Debugging role assignment
+        // Log::info('Assigned roles to user', ['user_id' => $user->id, 'role_id' => $role->id]);
+
+        $user->syncPermissions();
 
         return redirect()->route('superadmin.users')->with(['success' => 'User updated successfully!']);
 
