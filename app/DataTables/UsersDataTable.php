@@ -25,7 +25,7 @@ class UsersDataTable extends DataTable
 
             ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-user-modal{{$id}}"><i class="bx bx-edit"></i></button>
                                     <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal{{$id}}"><i class="bx bx-trash"></i></button>
-                                    <a href="{{ route(\'users.reset.password\', $id) }}" class="btn btn-secondary">Reset Password</a>
+                                    <a href="{{ route(\'superadmin.users.reset.password\', $id) }}" class="btn btn-secondary">Reset Password</a>
                                     ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}" />')
             ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
