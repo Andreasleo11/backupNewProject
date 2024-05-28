@@ -169,7 +169,7 @@
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
                                 <th rowspan="2">DO Number</th>
-                                @if ($report->is_approve)
+                                @if ($report->is_approve !== 0 && $report->is_approve !== 1)
                                     <th rowspan="2">Action</th>
                                 @endif
                             </tr>
@@ -229,14 +229,13 @@
                                     <td width="15%"> @currency($detail->price) </td>
                                     <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
                                     <td> {{ $detail->do_num }} </td>
-                                    @if ($report->is_approve)
-                                        @include('partials.edit-do-number')
-                                        <td>
-                                            <button data-bs-target="#edit-do-number-{{ $detail->id }}"
-                                                data-bs-toggle="modal" class="btn btn-primary btn-sm">Edit
-                                                DO Number</button>
-                                        </td>
-                                    @endif
+                                    @include('partials.edit-do-number')
+                                    <td>
+                                        <button data-bs-target="#edit-do-number-{{ $detail->id }}"
+                                            data-bs-toggle="modal"
+                                            class="btn btn-primary btn-sm @if ($report->is_approve === 1 || $report->is_approve === 0) d-none @endif">Edit
+                                            DO Number</button>
+                                    </td>
                                 </tr>
                             @empty
                                 <td colspan="14">No data</td>
