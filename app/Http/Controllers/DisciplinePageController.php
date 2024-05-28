@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 use App\DataTables\DisciplineTableDataTable;
+use App\DataTables\AllDisciplineTableDataTable;
 use App\Exports\DesciplineDataExp;
 use App\Imports\DesciplineDataImport;
 use App\Models\EvaluationData;
@@ -71,6 +72,15 @@ class DisciplinePageController extends Controller
             ->get();
 
          
+        }
+
+        elseif($user->email === "ani_apriani@daijo.co.id")
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '310');
+            })
+            ->get();
+
         }
 
         elseif($user->is_head == 1 && $user->department_id == 5)
@@ -215,11 +225,18 @@ class DisciplinePageController extends Controller
             return redirect()->back();
         }else{
            
-        return $dataTable->render("setting.disciplineindex", compact("employees"));
+        
+        return $dataTable->render("setting.disciplineindex", compact("employees", "user"));
         }
         // return view("setting.disciplineindex", compact("employees"));
     }
 
+    public function allindex(AllDisciplineTableDataTable $dataTable)
+    {
+        $employees = EvaluationData::with('karyawan')->get();
+
+        return $dataTable->render("setting.alldisciplineindex", compact("employees"));
+    }
 
     public function setFilterValue(Request $request)
     {
@@ -669,6 +686,7 @@ class DisciplinePageController extends Controller
             //    dd($employee);
             }
         }
+
 
         elseif($user->is_head == 1 && $user->department_id == 5)
         {

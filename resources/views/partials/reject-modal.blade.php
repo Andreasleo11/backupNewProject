@@ -1,7 +1,7 @@
 <div class="modal fade" id="rejectModal">
     <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form action="{{route('director.qaqc.reject', $id)}}" method="post">
+                <form action="{{route($route, $id)}}" method="post">
                     @method('PUT')
                     @csrf
                     <div class="modal-header">
