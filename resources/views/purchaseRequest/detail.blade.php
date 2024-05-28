@@ -185,12 +185,17 @@
                                     <td>{{ $detail->uom }}</td>
                                     <td>{{ $detail->purpose }}</td>
                                     <td>
-                                        @if ($detail->currency === 'USD')
-                                            @currencyUSD($detail->master->price)
-                                        @elseif($detail->currency === 'CNY')
-                                            @currencyCNY($detail->master->price)
+                                        @if ($detail->master)
+                                            @if ($detail->currency === 'USD')
+                                                @currencyUSD($detail->master->price)
+                                            @elseif($detail->currency === 'CNY')
+                                                @currencyCNY($detail->master->price)
+                                            @else
+                                                @currency($detail->master->price)
+                                            @endif
                                         @else
-                                            @currency($detail->master->price) @endif
+                                            {{ 'N/A' }} <!-- Or handle null master object as appropriate -->
+                                        @endif
                                     </td>
                                     <td>
                                         @if ($detail->currency === 'USD')
@@ -200,13 +205,16 @@
                                         @else
                                             @currency($detail->price) @endif
                                     </td>
+                                    @php
+                                        $subtotal = $detail->quantity * $detail->price;
+                                    @endphp
                                     <td>
                                         @if ($detail->currency === 'USD')
-                                            @currencyUSD($detail->quantity * $detail->price)
+                                            @currencyUSD($subtotal)
                                         @elseif($detail->currency === 'CNY')
-                                            @currencyCNY($detail->quantity * $detail->price)
+                                            @currencyCNY($subtotal)
                                         @else
-                                            @currency($detail->quantity * $detail->price) @endif
+                                            @currency($subtotal) @endif
                                     </td>
 
                                     {{-- Logic for total --}}
@@ -214,25 +222,25 @@
                                         if ($purchaseRequest->status === 6 || $purchaseRequest->status === 7) {
                                             if (!is_null($detail->is_approve_by_head)) {
                                                 if ($detail->is_approve_by_head) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                    $totalall += $subtotal;
                                                 }
                                             } else {
-                                                $totalall += $detail->quantity * $detail->price;
+                                                $totalall += $subtotal;
                                             }
                                         } elseif ($purchaseRequest->status === 2) {
                                             if (!is_null($detail->is_approve_by_verificator)) {
                                                 if ($detail->is_approve_by_verificator) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                    $totalall += $subtotal;
                                                 }
                                             } else {
                                                 if ($detail->is_approve_by_head) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                    $totalall += $subtotal;
                                                 }
                                             }
                                         } elseif ($purchaseRequest->status === 3) {
                                             if (!is_null($detail->is_approve)) {
                                                 if ($detail->is_approve) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                    $totalall += $subtotal;
                                                 }
                                             } else {
                                                 if (
@@ -241,23 +249,23 @@
                                                         $purchaseRequest->type === 'factory')
                                                 ) {
                                                     if ($detail->is_approve_by_verificator) {
-                                                        $totalall += $detail->quantity * $detail->price;
+                                                        $totalall += $subtotal;
                                                     }
                                                 } elseif ($detail->is_approve_by_gm) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                    $totalall += $subtotal;
                                                 }
                                             }
                                         } elseif ($purchaseRequest->status === 4) {
                                             if ($detail->is_approve) {
-                                                $totalall += $detail->quantity * $detail->price;
+                                                $totalall += $subtotal;
                                             }
                                         } elseif ($purchaseRequest->status === 1) {
                                             if (!is_null($detail->is_approve_by_head)) {
                                                 if ($detail->is_approve_by_head) {
-                                                    $totalall += $detail->quantity * $detail->price;
+                                                    $totalall += $subtotal;
                                                 }
                                             } else {
-                                                $totalall += $detail->quantity * $detail->price;
+                                                $totalall += $subtotal;
                                             }
                                         } else {
                                             $totalall += 0;
