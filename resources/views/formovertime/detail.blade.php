@@ -42,6 +42,10 @@
             
             @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fery')
                 <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc Supervisor</button>
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
+               
             @endif
         </div>
 
@@ -52,8 +56,11 @@
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2" id="autographuser3"></div>
         
-        @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fang')
+        @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fang' && $header->autograph_2)
             <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>
     @else
@@ -62,8 +69,11 @@
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2" id="autographuser3"></div>
         
-        @if(Auth::check() &&  $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'ong')
+        @if(Auth::check() &&  $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'ong' && $header->autograph_2)
             <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>  
 
@@ -74,8 +84,11 @@
         <div class="autograph-box container" id="autographBox4"></div>
         <div class="container mt-2" id="autographuser4"></div>
         
-        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR')
+        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
             <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>
 
@@ -91,6 +104,9 @@
         
         @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name  && $currentUser->is_head === 1)
             <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc Dept Head</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>
 
@@ -101,8 +117,11 @@
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2" id="autographuser3"></div>
         
-        @if(Auth::check() &&  $currentUser->is_gm === 1)
+        @if(Auth::check() &&  $currentUser->is_gm === 1 && $header->autograph_2)
             <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>
 
@@ -111,8 +130,11 @@
         <div class="autograph-box container" id="autographBox4"></div>
         <div class="container mt-2" id="autographuser4"></div>
         
-        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR')
+        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
             <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>
 
@@ -123,8 +145,11 @@
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2" id="autographuser3"></div>
         
-        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR')
+        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_2)
             <button id="btn4" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc Director</button>
+            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                    data-bs-target="#rejectModal">Reject</button>
         @endif
     </div>
     

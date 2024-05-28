@@ -258,18 +258,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
             formGroupJobdescInput.appendChild(jobdescInput);
 
-            const formGroupMakanInput = document.createElement('div')
-            formGroupMakanInput.classList.add('col-md-1')
+            const formGroupMakanInput = document.createElement('div');
+            formGroupMakanInput.classList.add('col-md-1');
 
-            const makanInput = document.createElement('input');
-            makanInput.classList.add('form-control');
-            makanInput.value = 'Y';
-            makanInput.setAttribute('required', 'required');
-            makanInput.type = 'text';
-            makanInput.name = `items[${itemIdCounter}][makan]`;
-            makanInput.placeholder = 'Y';
+            const makanSelect = document.createElement('select');
+            makanSelect.classList.add('form-control');
+            makanSelect.setAttribute('required', 'required');
+            makanSelect.name = `items[${itemIdCounter}][makan]`;
 
-            formGroupMakanInput.appendChild(makanInput);
+            // Create and append the 'Y' option
+            const optionY = document.createElement('option');
+            optionY.value = 'Y';
+            optionY.text = 'Y';
+            makanSelect.appendChild(optionY);
+
+            // Create and append the 'N' option
+            const optionN = document.createElement('option');
+            optionN.value = 'N';
+            optionN.text = 'N';
+            makanSelect.appendChild(optionN);
+
+            formGroupMakanInput.appendChild(makanSelect);
 
             const formGroupStartDateInput = document.createElement('div')
             formGroupStartDateInput.classList.add('col-md-1');

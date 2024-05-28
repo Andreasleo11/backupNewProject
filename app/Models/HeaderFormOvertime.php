@@ -21,6 +21,7 @@ class HeaderFormOvertime extends Model
         'is_approve',
         'status',
         'is_design',
+        'description',
     ];
 
     public function Relationuser()

@@ -50,6 +50,16 @@ class FormOvertimeController extends Controller
     {
         // dd($request->all());
         $userIdCreate = Auth::id();
+        $deptId = $request->input('from_department');
+
+        $department = Department::find($deptId);
+
+        $status = 1;
+
+        if ($department && $department->name === 'MOULDING') {
+            $status = 6;
+        }
+
 
         
         $headerData = [
@@ -57,7 +67,7 @@ class FormOvertimeController extends Controller
             'dept_id' => $request->input('from_department'),
             'create_date' => $request->input('date_form_overtime'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
-            'status' => 1,
+            'status' => $status,
             'is_design' => $request->input('design')
         ];
         
@@ -126,6 +136,88 @@ class FormOvertimeController extends Controller
                 "autograph_{$section}" => $imagePath
             ]);
 
+        $this->updateStatus($id);
+
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
+
+
+
+
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'description' => 'required'
+        ]);
+
+        $data = HeaderFormOvertime::find($id);
+        HeaderFormOvertime::find($id)->update([
+                'description' => $request->description,
+                'is_approve' => false,
+            ]);
+        
+        
+
+        return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
+    }
+
+    
+    public function updateStatus($id)
+    {
+        $headerForm = HeaderFormOvertime::find($id);
+
+        if (!$headerForm) {
+            return response()->json(['error' => 'HeaderFormOvertime not found'], 404);
+        }
+
+        $department = $headerForm->Relationdepartement;
+
+        if (!$department) {
+            return response()->json(['error' => 'Related department not found'], 404);
+        }
+
+        if ($department->is_office) {
+            // Case 1: is_office is true
+            $headerForm->status = 1;
+            if (!empty($headerForm->autograph_2)) {
+                $headerForm->status = 2;
+            }
+            if (!empty($headerForm->autograph_3)) {
+                $headerForm->status = 5;
+                $headerForm->is_approve = 1;
+            }
+        } elseif ($department->name === 'MOULDING') {
+            // Case 2: department name is MOULDING
+            $headerForm->status = 6;
+            if (!empty($headerForm->autograph_2)) {
+                $headerForm->status = 1;
+            }
+            if (!empty($headerForm->autograph_3)) {
+                $headerForm->status = 2;
+            }
+            if (!empty($headerForm->autograph_4)) {
+                $headerForm->status = 5;
+                $headerForm->is_approve = 1;
+            }
+        } else {
+            // Case 3: is_office is false
+            $headerForm->status = 1;
+            if (!empty($headerForm->autograph_2)) {
+                $headerForm->status = 3;
+            }
+            if (!empty($headerForm->autograph_3)) {
+                $headerForm->status = 2;
+            }
+            if (!empty($headerForm->autograph_4)) {
+                $headerForm->status = 5;
+                $headerForm->is_approve = 1;
+            }
+        }
+
+        $headerForm->save();
+
+        return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
+    }
+
+
 }
