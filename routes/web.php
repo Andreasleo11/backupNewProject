@@ -74,6 +74,8 @@ use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
+use App\Http\Controllers\FormOvertimeController;
+
 
 
 use App\Http\Controllers\AdjustFormQcController;
@@ -201,6 +203,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock')->middleware('permission:lock-vqc-report');
         Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports')->middleware('permission:export-to-excel-vqc-report');
         Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts')->middleware();
+
+        Route::put('/qaqc/reports/{id}/updateDoNumber', [QaQcReportController::class, 'updateDoNumber'])->name('update.do.number');
 
 
         Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
@@ -545,7 +549,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
 
+    Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
+
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
     Route::get('/get-filter-value', [DisciplinePageController::class, 'getFilterValue']);
     Route::put("/edit/discipline/{id}", [DisciplinePageController::class, "update"])->name('editdiscipline');
@@ -555,5 +561,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
+
+
+    Route::get("/formovertime/index", [FormOvertimeController::class, 'index'])->name("formovertime.index");
+    Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
+    Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
+    Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
+    Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class,'saveAutographOtPath']);
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+
+
+    Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
 
 });
