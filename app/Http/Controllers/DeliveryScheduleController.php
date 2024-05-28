@@ -92,14 +92,14 @@ class DeliveryScheduleController extends Controller
 			return $group->map(function($count, $itemCode) use ($inventoryMap) {
 				// Get the corresponding inventory data
 				$inventory = $inventoryMap->get($itemCode);
-	
+
 				// If inventory data exists, return the in_stock value
 				return $inventory ? $inventory->in_stock : null;
 			});
 		});
 
-		
-		
+
+
 		// dd($itemCounts);
 		$totalQuantities = $data->groupBy(function($item) {
 			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
@@ -111,8 +111,8 @@ class DeliveryScheduleController extends Controller
 
 		// dd($totalQuantities);
 
-		
-		
+
+
 
 		return view("business.averageschedule", compact('data','itemCounts', 'totalQuantities', 'result'));
 	}
@@ -243,7 +243,6 @@ class DeliveryScheduleController extends Controller
 			$val_delivery_qty = $delsched_final->delivery_qty;
 
 			$tab_solist = DB::table('delsched_solist')->where('so_number',$val_so_number)->first();
-			// dd($tab_solist->so_status);
 			$val_so_status = $tab_solist->so_status ?? null;
 
 			if($val_so_status == 'C'){
@@ -619,8 +618,8 @@ class DeliveryScheduleController extends Controller
 
 		$now = new DateTime();
 		$now->modify('+420 minutes');
-	
-		$tb_datelist = DB::table('uti_date_list')->where('id','14')->update([			
+
+		$tb_datelist = DB::table('uti_date_list')->where('id','14')->update([
 			'updated_at' => $now,
 		]);
 

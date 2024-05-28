@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping, WithMultipleSheets
-{   
+{
 
     protected $month;
     protected $year;
@@ -44,7 +44,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
             foreach ($report->details as $detail) {
                 foreach ($detail->defects as $defect) {
                     $customer = $report->customer;
-                    $category = $defect->category->name;
+                    $category = $defect->category->name ?? '-';
 
                     if (!isset($this->summaryData[$customer][$category])) {
                         $this->summaryData[$customer][$category] = 0;
