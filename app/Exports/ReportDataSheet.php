@@ -63,7 +63,7 @@ class ReportDataSheet implements FromCollection, WithHeadings, WithMapping
                     $detail->price,
                     $totalPrice,
                     $defect->quantity,
-                    $defect->category->name,
+                    $defect->category->name ?? '-',
                     $defect->remarks
                 ];
             }

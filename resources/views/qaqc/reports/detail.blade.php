@@ -84,6 +84,43 @@
         @include('partials.alert-success-error')
     </div>
 
+    <div>
+        <!-- @php
+            $index = 0;
+            $counter = 0;
+
+            foreach ($report->details as $detail) {
+                if ($detail->do_num !== null) {
+                    $index += 1;
+                    $counter += 1;
+                } else {
+                    $counter += 1;
+                }
+            }
+        @endphp
+                @if ($index === $counter)
+    <button type="button" class="btn btn-primary">Generate Me for your detail</button>
+    @endif -->
+        @php
+            $isNull = false;
+            foreach ($report->details as $detail) {
+                if ($detail->do_num === null) {
+                    $isNull = true;
+                }
+            }
+        @endphp
+        <a href="{{ route('adjust.index', ['reports' => $report]) }}">
+            <button type="button" class="btn btn-primary {{ $isNull ? 'd-none' : '' }}">Adjust Form</button>
+        </a>
+
+        <form action="{{ route('adjustview') }}" method="get" class="{{ $isNull ? 'd-none' : '' }}">
+            <input type="hidden" name="report_id" value="{{ $report->id }}">
+            <button type="submit" class="btn btn-success" id="finishBtn">View Adjust Form </button>
+        </form>
+
+    </div>
+
+
     <section aria-label="header" class="container">
         <div class="row text-center mt-5">
             <div class="col">
@@ -229,14 +266,12 @@
                                     <td width="15%"> @currency($detail->price) </td>
                                     <td width="15%"> @currency($detail->price * $detail->rec_quantity) </td>
                                     <td> {{ $detail->do_num }} </td>
-                                    @if ($report->is_approve)
-                                        @include('partials.edit-do-number')
-                                        <td>
-                                            <button data-bs-target="#edit-do-number-{{ $detail->id }}"
-                                                data-bs-toggle="modal" class="btn btn-primary btn-sm">Edit
-                                                DO Number</button>
-                                        </td>
-                                    @endif
+                                    @include('partials.edit-do-number')
+                                    <td>
+                                        <button data-bs-target="#edit-do-number-{{ $detail->id }}"
+                                            data-bs-toggle="modal" class="btn btn-primary btn-sm">Edit
+                                            DO Number</button>
+                                    </td>
                                 </tr>
                             @empty
                                 <td colspan="14">No data</td>

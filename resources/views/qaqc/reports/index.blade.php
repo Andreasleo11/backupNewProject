@@ -13,24 +13,36 @@
             <div class="col">
                 <h1 class="h1">Verification Reports</h1>
             </div>
-            <div class="col text-end">
-                @php
-                    $currentUser = Auth::user();
-                @endphp
-                @if ($currentUser->department->name == 'QC' && $currentUser->specification->name == 'INSPECTOR')
-                    <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">
-                        <i class='bx bx-plus'></i> Add <span class="d-none d-sm-inline">Report</span>
-                    </a>
-                @endif
-                <a href="{{ route('qaqc.summarymonth') }}" class="btn btn-outline-primary">
-                    Summary Per Month
-                </a>
-                <a href="{{ route('export.reports') }}" class="btn btn-outline-primary">
-                    Export All To Excel
-                </a>
-                <a href="{{ route('export.formadjusts') }}" class="btn btn-outline-primary">
-                    Export all Form Adjust To Excel
-                </a>
+            <div class="col-auto">
+                <div class="row">
+                    <div class="col-auto mb-2">
+                        <a href="{{ route('qaqc.summarymonth') }}" class="btn btn-outline-primary">
+                            Summary Per Month
+                        </a>
+                    </div>
+                    <div class="col-auto mb-2">
+                        <a href="{{ route('export.formadjusts') }}" class="btn btn-outline-primary">
+                            Export all Form Adjust To Excel
+                        </a>
+                    </div>
+                    <div class="col-auto mb-2">
+                        <a href="{{ route('export.reports') }}" class="btn btn-outline-primary">
+                            Export All To Excel
+                        </a>
+
+                    </div>
+
+                    @php
+                        $currentUser = Auth::user();
+                    @endphp
+                    @if ($currentUser->department->name == 'QC' && $currentUser->specification->name == 'INSPECTOR')
+                        <div class="col-auto mb-2">
+                            <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">
+                                <i class='bx bx-plus'></i> Add <span class="d-none d-sm-inline">Report</span>
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </section>
