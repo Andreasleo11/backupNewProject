@@ -456,7 +456,6 @@
                 formatPrice(subtotalInput, currencyInput.value);
             });
 
-
             // Increment the item ID counter
             itemIdCounter++;
 
