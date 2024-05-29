@@ -489,7 +489,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/purchaserequest/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
     Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
-    // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
+
+    Route::post('/purchaseRequest/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
+    Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
 
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home')->middleware('permission:get-form-cuti');

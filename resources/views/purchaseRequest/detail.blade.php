@@ -133,6 +133,10 @@
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
+                                @if ($purchaseRequest->status === 4)
+                                    <th rowspan="2" class="align-middle">Received Qty</th>
+                                    <th rowspan="2" class="align-middle">Action</th>
+                                @endif
                                 @if (
                                     $user->department->name === 'DIRECTOR' ||
                                         $user->specification->name == 'VERIFICATOR' ||
@@ -308,6 +312,27 @@
                                             @else
                                                 {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
                                             @endif
+                                        </td>
+                                    @endif
+                                    @php
+                                        $receivedTdColor = '';
+                                        if ($detail->quantity > 1 && $detail->quantity && $detail->is_approve === 1) {
+                                            if ($detail->received_quantity === $detail->quantity) {
+                                                $receivedTdColor = 'table-success';
+                                            } else {
+                                                $receivedTdColor = 'table-warning';
+                                            }
+                                        }
+                                    @endphp
+                                    @if ($purchaseRequest->status === 4)
+                                        <td class="{{ $receivedTdColor }}">
+                                            {{ $detail->received_quantity }} of {{ $detail->quantity }}
+                                        </td>
+                                        <td>
+                                            @include('partials.edit-purchase-request-received-modal')
+                                            <button data-bs-target="#edit-purchase-request-received-{{ $detail->id }}"
+                                                data-bs-toggle="modal"
+                                                class="btn btn-primary {{ $detail->is_approve !== 1 ? 'disabled' : '' }}">Edit</button>
                                         </td>
                                     @endif
                                 </tr>

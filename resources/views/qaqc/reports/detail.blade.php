@@ -98,7 +98,7 @@
                 }
             }
         @endphp
-                @if ($index === $counter)
+                        @if ($index === $counter)
     <button type="button" class="btn btn-primary">Generate Me for your detail</button>
     @endif -->
         @php
@@ -206,7 +206,7 @@
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
                                 <th rowspan="2">DO Number</th>
-                                @if ($report->is_approve)
+                                @if ($report->is_approve !== 0 && $report->is_approve !== 1)
                                     <th rowspan="2">Action</th>
                                 @endif
                             </tr>
@@ -269,7 +269,8 @@
                                     @include('partials.edit-do-number')
                                     <td>
                                         <button data-bs-target="#edit-do-number-{{ $detail->id }}"
-                                            data-bs-toggle="modal" class="btn btn-primary btn-sm">Edit
+                                            data-bs-toggle="modal"
+                                            class="btn btn-primary btn-sm @if ($report->is_approve === 1 || $report->is_approve === 0) d-none @endif">Edit
                                             DO Number</button>
                                     </td>
                                 </tr>

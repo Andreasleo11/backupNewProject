@@ -21,7 +21,8 @@ class DetailPurchaseRequest extends Model
         'is_approve',
         'is_approve_by_gm',
         'uom',
-        'currency'
+        'currency',
+        'received_quantity'
     ];
 
     public function itemDetail()
