@@ -132,7 +132,7 @@ class DirectorQaqcReportsDataTable extends DataTable
                 ->renderRaw('function(data, type, row, meta){
                     if (type === \'display\') {
                         if (data === null) {
-                            return \'Not approved yet\';
+                            return \'-\';
                         }
                     }
                     return data; // Return the original data for other types
