@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DetailPurchaseRequest;
+use App\Models\PurchaseRequest;
 use Illuminate\Http\Request;
 class DetailPurchaseRequestController extends Controller
 {
@@ -71,5 +72,26 @@ class DetailPurchaseRequestController extends Controller
             return response()->json(['success' => 'Detail updated successfully!']);
         }
         // return redirect()->back()->with(['success' => 'Detail updated successfully!']);
+    }
+
+    public function updateReceivedQuantity(Request $request, $id)
+    {
+        DetailPurchaseRequest::find($id)->update([
+            'received_quantity' => $request->received_quantity,
+        ]);
+
+        return redirect()->back()->with('success', 'Update received successfully!');
+    }
+
+    public function updateAllReceivedQuantity($id)
+    {
+
+        $pr = PurchaseRequest::find($id);
+
+        DetailPurchaseRequest::where('report_id', $id)->update([
+            'received_quantity' => $pr->quantity
+        ]);
+
+        return redirect()->back()->with('success', 'Update all received successfully!');
     }
 }

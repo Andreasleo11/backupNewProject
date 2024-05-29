@@ -98,7 +98,7 @@
                 }
             }
         @endphp
-                    @if ($index === $counter)
+                        @if ($index === $counter)
     <button type="button" class="btn btn-primary">Generate Me for your detail</button>
     @endif -->
         @php
