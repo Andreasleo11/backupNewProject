@@ -134,7 +134,7 @@
                                                         <td style="background-color: transparent; width:33%;">
                                                             {{ $defect->quantity }}</td>
                                                         <td style="background-color: transparent">
-                                                            {{ $defect->category->name ?? '' }}</td>
+                                                            {{ $defect->category->name ?? '-' }}</td>
                                                         <td style="background-color: transparent"> {{ $defect->remarks }}
                                                         </td>
                                                     </tbody>
@@ -150,7 +150,7 @@
                                                         <td style="background-color: transparent; width:33%;">
                                                             {{ $defect->quantity }}</td>
                                                         <td style="background-color: transparent">
-                                                            {{ $defect->category->name ?? '' }}</td>
+                                                            {{ $defect->category->name ?? '-' }}</td>
                                                         <td style="background-color: transparent"> {{ $defect->remarks }}
                                                         </td>
                                                     </tbody>

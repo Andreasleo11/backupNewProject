@@ -13,19 +13,9 @@ use PhpParser\Node\Stmt\Foreach_;
 
 class ReportController extends Controller
 {
-    public function index(DirectorQaqcReportsDataTable $dataTable, Request $request)
+    public function index(DirectorQaqcReportsDataTable $dataTable)
     {
-        // $reports = Report::whereNotNull('autograph_1')
-        //     ->whereNotNull('autograph_2')
-        //     ->whereNotNull('autograph_3')
-        //     ->get();
-
-        // return view('director.qaqc.index', compact('reports'));
-
-
-        return $dataTable
-            // ->with('filter_status', $request->filter_status)
-            ->render('director.qaqc.index');
+        return $dataTable->render('director.qaqc.index');
     }
 
     public function detail($id)
@@ -54,11 +44,11 @@ class ReportController extends Controller
 
     public function approve($id)
     {
-        Report::where('id', $id)->update([
+        Report::find($id)->update([
             'is_approve' => true,
             'description' => null,
+            'approved_at' => now()
         ]);
-        Report::find($id)->update(['is_approve' => true]);
         return redirect()->route('director.qaqc.index')->with('success', 'Report approved!');
     }
 
@@ -68,33 +58,25 @@ class ReportController extends Controller
             'description' => 'required'
         ]);
 
-        $report = Report::find($id);
-        if(!$report->first_reject){
-            Report::find($id)->update([
-                'autograph_1' => null,
-                'autograph_2' => null,
-                'autograph_3' => null,
-                'autograph_user_1' => null,
-                'autograph_user_2' => null,
-                'autograph_user_3' => null,
-                'is_approve' => false,
-                'description' => $request->description,
-                'first_reject' => true,
-                'rejected_at' => Date::now(),
-            ]);
-        } else {
-            Report::find($id)->update([
-                'autograph_1' => null,
-                'autograph_2' => null,
-                'autograph_3' => null,
-                'autograph_user_1' => null,
-                'autograph_user_2' => null,
-                'autograph_user_3' => null,
-                'is_approve' => false,
-                'description' => $request->description,
-            ]);
+        $report = Report::findOrFail($id);
+
+        $updateData = [
+            'autograph_1' => null,
+            'autograph_2' => null,
+            'autograph_3' => null,
+            'autograph_user_1' => null,
+            'autograph_user_2' => null,
+            'autograph_user_3' => null,
+            'is_approve' => false,
+            'description' => $request->description,
+        ];
+
+        if (!$report->first_reject) {
+            $updateData['first_reject'] = true;
+            $updateData['rejected_at'] = now();
         }
 
+        $report->update($updateData);
 
         return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
     }
@@ -108,7 +90,11 @@ class ReportController extends Controller
 
         try {
             foreach ($ids as $id) {
-                Report::find($id)->update(['is_approve' => true]);
+                Report::find($id)->update([
+                    'is_approve' => true,
+                    'description' => null,
+                    'approved_at' => now()
+                ]);
             }
             return response()->json(['message'=>'selected records approved successfully. (server)']);
         } catch (\Throwable $th) {
@@ -127,10 +113,25 @@ class ReportController extends Controller
 
         try {
             foreach ($ids as $id) {
-                Report::find($id)->update([
+                $report = Report::findOrFail($id);
+
+                $updateData = [
+                    'autograph_1' => null,
+                    'autograph_2' => null,
+                    'autograph_3' => null,
+                    'autograph_user_1' => null,
+                    'autograph_user_2' => null,
+                    'autograph_user_3' => null,
                     'is_approve' => false,
-                    'description' => $rejectionReason
-                ]);
+                    'description' => $rejectionReason,
+                ];
+
+                if (!$report->first_reject) {
+                    $updateData['first_reject'] = true;
+                    $updateData['rejected_at'] = now();
+                }
+
+                $report->update($updateData);
             }
             return response()->json(['message'=>'selected records rejected successfully. (server)']);
         } catch (\Throwable $th) {
