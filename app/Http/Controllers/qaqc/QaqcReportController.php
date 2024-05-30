@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\qaqc;
 
+use App\DataTables\VqcReportsDataTable;
 use App\Exports\ReportsExport;
 use App\Exports\FormAdjustExport;
 use App\Exports\MonthlyReportsExport;
@@ -40,40 +41,9 @@ class QaqcReportController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request)
+    public function index(Request $request, VqcReportsDataTable $dataTable)
     {
         $this->resetEditSessions();
-
-        /*
-        * if want to sorted by status priorities
-        *
-        */
-        // $sortedReports = Report::orderBy('updated_at', 'desc')->get()->sortBy(function ($report) {
-        //     $hoursDifference = Date::now()->diffInHours($report->rejected_at);
-        //     if ($report->is_approve === 1) {
-        //         return 1; // Priority for approved
-        //     } elseif ($report->is_approve === 0) {
-        //         return 2; // Priority for rejected
-        //     } elseif ($report->rejected_at != null && $hoursDifference < 24) {
-        //         if ($report->autograph_3 != null) {
-        //             return 3; // Priority for waiting on approval
-        //         } else {
-        //             return 4; // Priority for revision
-        //         }
-        //     } elseif (($report->autograph_1 || $report->autograph_2) && $report->autograph_3) {
-        //         return 3; // Priority for waiting on approval
-        //     } else {
-        //         return 5; // Priority for waiting signature
-        //     }
-        // });
-
-        // $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        // $perPage = 9;
-        // $currentPageItems = $sortedReports->slice(($currentPage - 1) * $perPage, $perPage);
-        // $paginator = new LengthAwarePaginator($currentPageItems, $sortedReports->count(), $perPage);
-        // $paginator->setPath(route('qaqc.report.index'));
-
-        // $reports = $paginator;
 
         $status = $request->status;
 
@@ -96,7 +66,9 @@ class QaqcReportController extends Controller
         } else {
             $reports = Report::orderBy('updated_at', 'desc')->paginate(9);
         }
-        return view('qaqc.reports.index', compact('reports', 'status'));
+        // return view('qaqc.reports.index', compact('reports', 'status'));
+
+        return $dataTable->with('status', $status)->render('qaqc.reports.index', compact('reports', 'status'));
     }
 
     public function detail($id)
