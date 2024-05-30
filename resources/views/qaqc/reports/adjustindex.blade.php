@@ -1,8 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-
-<div class="container mt-3">
+    <div class="container mt-3">
         <div class="row justify-content-center">
             <div class="col">
                 <div class="card">
@@ -10,13 +9,11 @@
                         <div class="container">
                             <div class="row justify-content-center">
                                 <div class="col-flex-grow-1 border-bottom p-0">
-                                    <div class="p-4">
-                                        
-                                    </div>
-                                    <div class="border-top pt-4 px-4">
+                                    <div class="pt-4 px-4">
                                         <div class="mb-4">
                                             <span class="h3">Add Part Defects</span>
-                                            <p class="text-secondary mt-2">Tambahkan Raw Material yang bisa diadjust untuk FG Berikut</p>
+                                            <p class="text-secondary mt-2">Tambahkan Raw Material yang bisa diadjust untuk
+                                                FG berikut</p>
                                         </div>
                                     </div>
                                 </div>
@@ -43,29 +40,30 @@
                                                     </div>
                                                     <div class="col-auto">
                                                         @php
-                                                        $ename = explode("/", $detail->part_name);
-                                                        $final = $ename[0];
+                                                            $ename = explode('/', $detail->part_name);
+                                                            $final = $ename[0];
                                                         @endphp
 
-                                                        @foreach($masterDataCollection as $masterData)
-                                                            @if($masterData->fg_code == $final)
-                                                                
-                                                            @endif    
+                                                        @foreach ($masterDataCollection as $masterData)
+                                                            @if ($masterData->fg_code == $final)
+                                                            @endif
                                                         @endforeach
                                                         @include('partials.add_fgwarehouse_modal')
-                                                        <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
-                                                                data-bs-target="#add-fgwarehouse-modal-{{ $detail->id }}">
-                                                                + Add FG Warehouse
-                                                            </button>
+                                                        <button class="btn btn-outline-primary btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#add-fgwarehouse-modal-{{ $detail->id }}">
+                                                            + Add FG Warehouse
+                                                        </button>
                                                         @include('partials.add_rawmaterial_modal')
-                                                            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
-                                                                data-bs-target="#add-rawmaterial-modal-{{ $detail->id }}">
-                                                                + Add Raw Material
-                                                            </button>
-                                                                              
+                                                        <button class="btn btn-outline-primary btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#add-rawmaterial-modal-{{ $detail->id }}">
+                                                            + Add Raw Material
+                                                        </button>
+
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="table-responsive">
                                                     <table class="table table-striped table-bordered table-sm">
                                                         <thead class="text-center align-middle">
@@ -75,18 +73,18 @@
                                                                 <th>Raw Material Description</th>
                                                                 <th>Quantity</th>
                                                                 <th>Measure</th>
-                                                              </tr>
+                                                            </tr>
                                                         </thead>
                                                         <tbody>
-                                                        @forelse($detail->adjustdetail as $adjust)
+                                                            @forelse($detail->adjustdetail as $adjust)
                                                                 <tr class="text-center align-middle">
                                                                     <td>{{ $loop->iteration }}</td>
-                                                                        <td>{{ $adjust->rm_code }}</td>
-                                                                        <td>{{ $adjust->rm_description}}
-                                                                        </td>
-                                                                        <td>{{number_format($adjust->rm_quantity, 5)}}
-                                                                        </td>
-                                                                        <td>{{ $adjust->rm_measure}}</td>
+                                                                    <td>{{ $adjust->rm_code }}</td>
+                                                                    <td>{{ $adjust->rm_description }}
+                                                                    </td>
+                                                                    <td>{{ number_format($adjust->rm_quantity, 5) }}
+                                                                    </td>
+                                                                    <td>{{ $adjust->rm_measure }}</td>
                                                                 </tr>
                                                             @empty
                                                                 <tr>
@@ -108,7 +106,7 @@
 
                                     <div class="d-flex">
                                         <form action="{{ route('adjustview') }}" method="get">
-                                            <input type="hidden" name="report_id" value="{{$datas->id}}">
+                                            <input type="hidden" name="report_id" value="{{ $datas->id }}">
                                             <button type="submit" class="btn btn-success" id="finishBtn">Finish</button>
                                         </form>
                                     </div>
@@ -120,5 +118,4 @@
             </div>
         </div>
     </div>
-
 @endsection

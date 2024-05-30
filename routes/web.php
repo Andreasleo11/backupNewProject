@@ -128,7 +128,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
             Route::post('/users/store', [UserController::class, 'store'])->name('users.store')->middleware('permission:store-users');
             Route::put('/users/update/{id}', [UserController::class, 'update'])->name('users.update')->middleware('permission:update-users');
             Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete')->middleware('permission:delete-users');
-            Route::post('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password')->middleware('permission:reset-password-users');
+            Route::get('/users/reset/{id}', [UserController::class, 'resetPassword'])->name('users.reset.password')->middleware('permission:reset-password-users');
             Route::delete('/users/delete-selected', [UserController::class, 'deleteSelected'])->name('users.deleteSelected')->middleware('permission:delete-selected-users');
 
             Route::get('/departments', [DepartmentController::class, 'index'])->name('departments')->middleware('permission:get-departments');
