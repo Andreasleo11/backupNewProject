@@ -51,49 +51,91 @@ class UpdateDailyController extends Controller
         if ($selectedOption === 'sap_bom_wip') {
             DB::table('sap_bom_wip')->truncate();
             $excelFileName = $this->processBomWipFiles($uploadedFiles);
-            $this->importBomWipFile($excelFileName);
+            try {
+                $this->importBomWipFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;"
+                return redirect()->back()->with(['error' => 'Failed to Import Sap Bom Wip']);             
+            }
+           
             return Redirect::route('indexupdatepage');
         }
 
         elseif ($selectedOption === 'sap_delactual') {
             DB::table('sap_delactual')->truncate();
             $excelFileName = $this->processDelactualFiles($uploadedFiles);
-            $this->importDelactualFile($excelFileName);
+            try {
+                $this->importDelactualFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap Delactual']);    
+            }
+            
             return Redirect::route('indexupdatepage');
         }
 
         elseif ($selectedOption === 'sap_delsched') {
             DB::table('sap_delsched')->truncate();
             $excelFileName = $this->processDelschedFiles($uploadedFiles);
-            $this->importDelschedFile($excelFileName);
+            try {
+                $this->importDelschedFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap Delsched']);   
+            }
+            
             return Redirect::route('indexupdatepage');
         }
 
         elseif ($selectedOption === 'sap_delso') {
             DB::table('sap_delso')->truncate();
             $excelFileName = $this->processDelsoFiles($uploadedFiles);
-            $this->importDelsoFile($excelFileName);
+            try {
+                $this->importDelsoFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap Delso']);
+            }
+           
             return Redirect::route('indexupdatepage');
         }
 
         elseif ($selectedOption === 'sap_inventoryfg') {
             DB::table('sap_inventory_fg')->truncate();
             $excelFileName = $this->processInventoryfgFiles($uploadedFiles);
-            $this->importInventoryfgFile($excelFileName);
+            try {
+                $this->importInventoryfgFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap InventoryFg']);
+            }
+            
             return Redirect::route('indexupdatepage');
         }
 
         elseif ($selectedOption === 'sap_inventorymtr') {
             DB::table('sap_inventory_mtr')->truncate();
             $excelFileName = $this->processInventorymtrFiles($uploadedFiles);
-            $this->importInventoryMtrFile($excelFileName);
+            try {
+                $this->importInventoryMtrFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap InventoryMtr']);
+            }
+            
             return Redirect::route('indexupdatepage');
         }
 
         elseif ($selectedOption === 'sap_lineproduction') {
             DB::table('sap_lineproduction')->truncate();
             $excelFileName = $this->processLineproductionFiles($uploadedFiles);
-            $this->importLineProductionFile($excelFileName);
+            try {
+                $this->importLineProductionFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap LineProduction']);
+            }
+            
             return Redirect::route('indexupdatepage');
         }
     }

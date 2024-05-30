@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
 use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
+
+
+use App\Exports\OvertimeExport;
+use Maatwebsite\Excel\Facades\Excel;
+
+
+
 use Illuminate\Support\Facades\Auth;
 
 class FormOvertimeController extends Controller
@@ -217,6 +224,23 @@ class FormOvertimeController extends Controller
         $headerForm->save();
 
         return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
+    }
+
+
+
+
+    public function exportOvertime($headerId)
+    {
+        $header = HeaderFormOvertime::with('Relationdepartement')->find($headerId);
+        $datas = DetailFormOvertime::where('header_id', $headerId)->get();
+
+        $departmentName = $header->Relationdepartement->name;
+        $currentDate = Carbon::now()->format('d-m-y'); // or any format you prefer
+    
+        $fileName = "overtime_{$departmentName}_{$currentDate}.xlsx";
+    
+
+        return Excel::download(new OvertimeExport($header, $datas), $fileName);
     }
 
 
