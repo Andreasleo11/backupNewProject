@@ -9,8 +9,8 @@
         <ul id="file-list"></ul>
     </div>
 
-    <a href="/storage/AutomateFile/databomwip.xlsx"> DOWNLOAD BOMWIP </a><br>
-    <a href="/storage/AutomateFile/delactual.xlsx"> DOWNLOAD Delactual </a>
+    <!-- <a href="/storage/AutomateFile/databomwip.xlsx"> DOWNLOAD BOMWIP </a><br>
+    <a href="/storage/AutomateFile/delactual.xlsx"> DOWNLOAD Delactual </a> -->
 
 <form method="POST" action="{{ route('updatedata') }}" enctype="multipart/form-data">
         @csrf

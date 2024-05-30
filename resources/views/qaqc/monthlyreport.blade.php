@@ -53,6 +53,7 @@
                 <thead>
                     <tr>
                         <th>Customer</th>
+                        <th>Total Cannot Use</th>
                         <th>Total Rec Quantity</th>
                         <th>Total Price (IDR)</th>
                     </tr>
@@ -61,6 +62,7 @@
                     @foreach ($customers as $customerId => $customerData)
                         <tr>
                             <td>{{ $customerId }}</td>
+                            <td>{{  $customerData['cant_use'] }}</td>
                             <td>{{ $customerData['total_rec_quantity'] }}</td>
                             <td>{{ 'IDR ' . number_format($customerData['total_price'], 0, ',', '.') }}</td>
                         </tr>
