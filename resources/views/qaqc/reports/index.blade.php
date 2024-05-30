@@ -63,128 +63,55 @@
         </div>
     @endif
 
-    <section class="content">
-        <div class="card mt-5">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped text-center mb-0">
-                        <thead>
-                            <tr class="align-middle fw-semibold fs-5">
-                                <th class="p-3">Doc. Number</th>
-                                <th>Invoice No</th>
-                                <th>Customer</th>
-                                <th>Rec Date</th>
-                                <th>Verify Date</th>
-                                <th>Action</th>
-                                <th>Status</th>
-                                <th>Description</th>
-                                <th>Approved Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($reports as $report)
-                                <tr class="align-middle">
-                                    <td>{{ $report->doc_num }}</td>
-                                    <td>{{ $report->invoice_no }}</td>
-                                    <td>{{ $report->customer }}</td>
-                                    <td> @formatDate($report->rec_date)</td>
-                                    <td> @formatDate($report->verify_date)</td>
-                                    <td>
-                                        <a href="{{ route('qaqc.report.detail', $report->id) }}"
-                                            class="btn btn-secondary my-1 me-1 ">
-                                            <i class='bx bx-info-circle'></i> <span
-                                                class="d-none d-sm-inline ">Detail</span>
-                                        </a>
-
-                                        {{-- DEV ONLY --}}
-                                        {{-- <a href="{{ route('qaqc.report.preview', $report->id) }}"
-                                            class="btn btn-primary">preview</a> --}}
-
-                                        @php
-                                            $hoursDifference = Date::now()->diffInHours($report->rejected_at);
-                                        @endphp
-
-                                        <form class="d-none" action="{{ route('qaqc.report.rejectAuto', $report->id) }}"
-                                            method="get" id="form-reject-report-{{ $report->id }}"><input
-                                                type="hidden" name="description"
-                                                value="Automatically rejected after 24 hours"></form>
-
-                                        <script>
-                                            @if ($hoursDifference > 24 && $report->is_approve === 2 && $report->is_locked == false)
-                                                document.getElementById('form-reject-report-{{ $report->id }}').submit();
-                                            @endif
-                                        </script>
-
-                                        <a href="{{ route('qaqc.report.edit', $report->id) }}"
-                                            class="btn btn-primary my-1 me-1 @if (
-                                                $report->created_by !== Auth::user()->name ||
-                                                    $hoursDifference > 24 ||
-                                                    $report->is_approve == 1 ||
-                                                    $report->is_locked) d-none @endif">
-                                            <i class='bx bx-edit'></i> <span class="d-none d-sm-inline">Edit</span>
-                                        </a>
 
 
-                                        @include('partials.delete-report-modal')
-                                        <button
-                                            class="btn btn-danger my-1 me-1 @if (
-                                                $report->created_by !== Auth::user()->name ||
-                                                    $hoursDifference > 24 ||
-                                                    $report->autograph_3 ||
-                                                    $report->is_approve == 1 ||
-                                                    $report->is_locked) d-none @endif"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#delete-report-modal{{ $report->id }}">
-                                            <i class='bx bx-trash-alt'></i> <span class="d-none d-sm-inline">Delete</span>
-                                        </button>
+    <div class="row">
+        <div class="col-md-3">
 
-                                        @include('partials.lock-report-confirmation-modal')
-
-                                        <div class="btn-group" role="group">
-
-                                            <button type="button"
-                                                class="btn text-success border border-success dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                                More
-                                            </button>
-
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <a href="{{ route('qaqc.report.download', $report->id) }}"
-                                                        class="btn btn-success my-1 dropdown-item">
-                                                        <i class='bx bxs-file-pdf'></i> <span
-                                                            class="d-none d-sm-inline">Export PDF</span>
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    <a class="btn btn-success dropdown-item @if ($report->is_locked || $report->is_approve) disabled @endif"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#lock-report-modal-confirmation-{{ $report->id }}">
-                                                        <i class='bx bxs-lock'></i>
-                                                        Lock
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @include('partials.vqc-status-badge')
-                                    </td>
-                                    <td>{{ $report->description ?? '-' }}</td>
-                                    <td>@formatDate($report->approved_at)</td>
-                                </tr>
-                            @empty
-                                <td colspan="9">No data</td>
-                            @endforelse
-                        </tbody>
-                    </table>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-body">
+            <div class="row d-flex mb-3 align-items-center justify-content-end">
+                Filter by month
+                <div class="col-auto">
+                    <input type="text" id="monthPicker" class="form-control" placeholder="Select Month">
                 </div>
             </div>
-        </div>
-        @if ($reports != null)
-            <div class="d-flex justify-content-end mt-3">
-                {{ $reports->appends(['status' => $status])->links() }}
+            <div class="table-responsive">
+                {{ $dataTable->table() }}
             </div>
-        @endif
-    </section>
+        </div>
+    </div>
 @endsection
+
+@push('extraJs')
+    {{ $dataTable->scripts() }}
+
+    <script type="module">
+        // Initialize the month picker
+        $('#monthPicker').datepicker({
+            format: "mm-yyyy",
+            startView: "months",
+            minViewMode: "months",
+            autoclose: true
+        });
+
+        // Reload DataTable on month change
+        $('#monthPicker').on('change', function() {
+            window.LaravelDataTables["vqcreports-table"].draw();
+        });
+
+        // Extend DataTable with month filter
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                var selectedMonth = $('#monthPicker').val();
+                if (!selectedMonth) return true;
+
+                var date = new Date(data[0]); // Assuming the date is in the first column
+                var month = ('0' + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear();
+                return month === selectedMonth;
+            }
+        );
+    </script>
+@endpush

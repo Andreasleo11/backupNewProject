@@ -16,6 +16,8 @@ import select2 from 'select2';
 window.$ = $;
 select2();
 
+import datepicker from "bootstrap-datepicker";
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
