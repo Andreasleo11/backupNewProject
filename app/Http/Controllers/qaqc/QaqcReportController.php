@@ -773,6 +773,7 @@ class QaqcReportController extends Controller
                         'total_price' => 0,
                         'daijo_defect' => 0,
                         'customer_defect' => 0,
+                        'cant_use' => 0,
                         'details' => []
                     ];
                 }
@@ -792,6 +793,8 @@ class QaqcReportController extends Controller
                 }
 
                 $result[$month][$customerId]['total_rec_quantity'] += $detail->rec_quantity;
+
+                $result[$month][$customerId]['cant_use'] += $detail->cant_use;
 
                 $result[$month][$customerId]['total_price'] += $detail->verify_quantity * $detail->price;
 
