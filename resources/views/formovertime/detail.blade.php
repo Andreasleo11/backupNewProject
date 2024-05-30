@@ -14,6 +14,14 @@
             border: 1px solid #ccc;
             /* Add border for better visibility */
         }
+
+        .rejection-textarea {
+        background-color: #ffe6e6;
+        border: 1px solid #ff0000;
+        font-size: 1rem;
+        padding: 10px;
+        resize: none;
+    }
     </style>
 @endpush
 
@@ -42,10 +50,11 @@
             
             @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fery')
                 <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc Supervisor</button>
+                @if($header->autograph_2 === null)
                 @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
-               
+                @endif
             @endif
         </div>
 
@@ -57,10 +66,12 @@
         <div class="container mt-2" id="autographuser3"></div>
         
         @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fang' && $header->autograph_2)
-            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc DeptHead</button>
+            @if($header->autograph_3 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>
     @else
@@ -70,10 +81,12 @@
         <div class="container mt-2" id="autographuser3"></div>
         
         @if(Auth::check() &&  $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'ong' && $header->autograph_2)
-            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc DeptHead</button>
+            @if($header->autograph_3 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>  
 
@@ -86,9 +99,11 @@
         
         @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
             <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+            @if($header->autograph_4 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>
 
@@ -104,9 +119,11 @@
         
         @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name  && $currentUser->is_head === 1)
             <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc Dept Head</button>
+            @if($header->autograph_2 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>
 
@@ -119,9 +136,11 @@
         
         @if(Auth::check() &&  $currentUser->is_gm === 1 && $header->autograph_2)
             <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+            @if($header->autograph_3 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>
 
@@ -132,9 +151,11 @@
         
         @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
             <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+            @if($header->autograph_4 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>
 
@@ -146,10 +167,12 @@
         <div class="container mt-2" id="autographuser3"></div>
         
         @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_2)
-            <button id="btn4" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc Director</button>
+            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc Director</button>
+            @if($header->autograph_3 === null)
             @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
                 <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
                     data-bs-target="#rejectModal">Reject</button>
+            @endif
         @endif
     </div>
     
@@ -158,6 +181,9 @@
     @endif
 
 </div>
+
+
+<a href="{{ route('export.overtime', $header->id) }}" class="btn btn-success">Export to Excel</a>
 
 
 
@@ -234,6 +260,14 @@
                         </tbody>
                     </table>
 
+
+
+                    @if ($header->is_approve == 0)
+                        <div class="alert alert-danger" role="alert">
+                            <h4 class="alert-heading">Alasan Ditolak</h4>
+                            <textarea class="form-control rejection-textarea" rows="5" readonly>{{ $header->description }}</textarea>
+                        </div>
+                    @endif
 
 
                     <script>
