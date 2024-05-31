@@ -75,7 +75,7 @@ use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormOvertimeController;
-
+use App\Http\Controllers\StockTintaController;
 
 
 use App\Http\Controllers\AdjustFormQcController;
@@ -574,5 +574,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
+
+    Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
+
 
 });
