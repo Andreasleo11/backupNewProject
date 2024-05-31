@@ -339,6 +339,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         //KarawangRoute
         Route::get("/pps/karawang", [PPSKarawangController::class, "index"])->name('indexkarawang');
+        Route::post('/pps/process-karawang-form', [PPSKarawangController::class, 'processKarawangForm'])->name('processKarawangForm');
 
         Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
         Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
