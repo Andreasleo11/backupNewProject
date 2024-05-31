@@ -19,6 +19,20 @@
         <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a></a>
     @endif
 
+
+
+
+<form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
+        @csrf
+        <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
+        <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
+        <br>
+        <br>
+    <div class="button-container">
+        <button type="submit" class="animated-button" require>SUBMIT EXCEL FILE</button>
+    </div>
+    </form>
+
  
     <div class="row align-items-center">
         <div class="col-auto">
@@ -46,6 +60,7 @@
         <div class="col text-end" id="filtered-employees">
             <!-- Filtered employees will be displayed here --> 
         </div>
+        <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
     </div>
 
 <section class="content">
@@ -65,6 +80,7 @@
 {{ $dataTable->scripts() }}
 
 <script type="module">
+    
     $(function() {
     // Check if the filtered month is stored in localStorage
     let selectedMonth = localStorage.getItem('selectedMonth');
