@@ -13,7 +13,7 @@
     @include('partials.info-discipline-page-modal')
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal" > Info </a>
 
-    <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a>
+    <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
     @if($user->department_id === 7 || $user->department_id === 22)
         <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a></a>
