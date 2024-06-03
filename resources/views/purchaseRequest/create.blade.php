@@ -258,7 +258,6 @@
 
                         // Populate dropdown with fetched item names
                         if (data.length > 0) {
-                            // console.log(data);
                             data.forEach(item => {
                                 const option = document.createElement('option');
                                 option.classList.add('dropdown-item')
@@ -268,15 +267,12 @@
                                     itemNameInput.value = item.name;
                                     currencyInput.value = item.currency;
 
-                                    if (item.latest_price === null) {
-                                        unitPriceInput.value = item.price;
-                                    } else {
-                                        unitPriceInput.value = item.latest_price;
-                                    }
+                                    unitPriceInput.value = item.latest_price === null ? item
+                                        .price : item.latest_price;
 
                                     formatPrice(unitPriceInput, currencyInput.value);
-                                    const unitPrice = unitPriceInput.value.replace(/[^\d]/g,
-                                        '');
+                                    const unitPrice = unitPriceInput.value.replace(/[^\d,]/g,
+                                        '').replace(',', '.');
                                     subtotalInput.value = parseFloat(quantityInput.value) *
                                         unitPrice;
                                     formatPrice(subtotalInput, currencyInput.value);
@@ -298,7 +294,6 @@
             document.addEventListener('click', function(event) {
                 if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
                     itemDropdown.style.display = 'none';
-                    // console.log(itemNameInput.value);
                 }
             });
 
@@ -436,21 +431,19 @@
             document.getElementById('items').appendChild(newItemContainer);
 
             quantityInput.addEventListener('input', function() {
-                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9,]/g, '').replace(',',
-                    '.')); // Convert to float for calculation
+                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9.]/g,
+                    '')); // Convert to float for calculation
                 const quantity = parseFloat(quantityInput.value);
-                const subtotal = (quantity * unitPrice).toFixed(2).toString().replace('.',
-                    ','); // Convert back to string with comma
+                const subtotal = (quantity * unitPrice).toFixed(2);
                 subtotalInput.value = subtotal;
                 formatPrice(subtotalInput, currencyInput.value);
             });
 
             unitPriceInput.addEventListener('input', function() {
-                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9,]/g, '').replace(',',
-                    '.')); // Convert to float for calculation
+                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9.]/g,
+                    '')); // Convert to float for calculation
                 const quantity = parseFloat(quantityInput.value);
-                const subtotal = (quantity * unitPrice).toFixed(2).toString().replace('.',
-                    ','); // Convert back to string with comma
+                const subtotal = (quantity * unitPrice).toFixed(2);
                 subtotalInput.value = subtotal;
                 formatPrice(unitPriceInput, currencyInput.value);
                 formatPrice(subtotalInput, currencyInput.value);
@@ -479,7 +472,6 @@
         function updateItemCount() {
             // Get all elements with the added-item class
             const addedItems = document.querySelectorAll('.added-item');
-            console.log(addedItems);
 
             // Loop through each added item and update the count
             addedItems.forEach((item, index) => {
@@ -488,54 +480,36 @@
 
                 // Update the text content of the countGroup element
                 countGroup.textContent = index + 1; // Add 1 because item ID starts from 0
-
-                // const subtotalInput = item.querySelector('.subtotal-input');
-                // const unitPriceInput = item.querySelector('.unit-price-input');
-                // const quantityInput = item.querySelector('.quantity-input');
-                // formatPrice(subtotalInput, item.querySelector('select[name*="[currency]"]'));
-                // formatPrice(unitPriceInput, item.querySelector('select[name*="[currency]"]'));
-
-                // unitPriceInput.addEventListener('input', function(event) {
-                //     let price = event.target.value.replace(/\D/g, ''); // Remove non-digit characters
-                //     price = parseInt(price); // Convert string to integer
-                //     if (!isNaN(price)) {
-                //         // Format the price with thousand separators and add currency symbol
-                //         const formattedPrice = 'Rp. ' + price.toLocaleString('id-ID');
-                //         event.target.value = formattedPrice;
-                //     } else {
-                //         event.target.value = ''; // Clear the input if it's not a valid number
-                //     }
-                // });
             });
         }
 
         addNewItem();
 
         function formatPrice(input, currency) {
-            // Replace non-numeric characters except comma
-            let price = input.value.replace(/[^0-9,]/g, '');
+            // Replace non-numeric characters except period
+            let price = input.value.replace(/[^0-9.]/g, '');
 
             let currencySymbol = '';
             if (currency === 'IDR') {
-                currencySymbol = 'Rp. ';
+                currencySymbol = 'Rp ';
             } else if (currency === 'CNY') {
-                currencySymbol = '¥';
+                currencySymbol = '¥ ';
             } else if (currency === 'USD') {
-                currencySymbol = '$';
+                currencySymbol = '$ ';
             }
 
-            if (price.includes(',')) {
+            if (price.includes('.')) {
                 // Handle decimal values
-                let parts = price.split(',');
-                let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Add thousand separators
+                let parts = price.split('.');
+                let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Add thousand separators with comma
                 let decimalPart = parts[1];
                 if (decimalPart.length > 2) {
                     decimalPart = decimalPart.substring(0, 2); // Limit to 2 decimal places
                 }
-                input.value = currencySymbol + integerPart + ',' + decimalPart;
+                input.value = currencySymbol + integerPart + '.' + decimalPart;
             } else {
                 // Handle integer values
-                let formattedPrice = price.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                let formattedPrice = price.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Add thousand separators with comma
                 input.value = currencySymbol + formattedPrice;
             }
         }
