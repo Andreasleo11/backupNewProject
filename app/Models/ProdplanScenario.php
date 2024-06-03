@@ -17,6 +17,8 @@ class ProdplanScenario extends Model
         'val_vc_snd',
         'val_int_asm',
         'val_vc_asm',
+        'val_int+kri',
+        'val_vc_kri',
     ];
     
 }

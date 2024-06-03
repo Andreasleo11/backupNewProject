@@ -187,7 +187,7 @@ class PurchaseRequestController extends Controller
 
         // Process each item
         $processedItems = array_map(function ($item) {
-            $item['price'] = $this->parsePrice($item['price']);
+            $item['price'] = $this->convertFormattedPriceToDecimal($item['price']);
             return $item;
         }, $items);
 
@@ -231,22 +231,14 @@ class PurchaseRequestController extends Controller
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
-    private function parsePrice($price)
+    private function verifyAndInsertItems($items, $id)
     {
-        // Remove any non-numeric characters except for comma and period
-        $cleanedPrice = preg_replace('/[^\d,]/', '', $price);
-        // Replace comma with dot for float conversion
-        $normalizedPrice = str_replace(',', '.', $cleanedPrice);
-        return (float) $normalizedPrice;
-    }
-
-    private function verifyAndInsertItems($items, $id){
         if (isset($items) && is_array($items)) {
             foreach ($items as $itemData) {
                 $itemName = $itemData['item_name'];
                 $quantity = $itemData['quantity'];
                 $purpose = $itemData['purpose'];
-                $price = $itemData['price'];
+                $price = $this->convertFormattedPriceToDecimal($itemData['price']);
                 $uom = strtoupper($itemData['uom']);
                 $currency = $itemData['currency'];
 
@@ -270,62 +262,18 @@ class PurchaseRequestController extends Controller
                         'currency' => $currency,
                         'price' => $price, // Store the initial price
                     ]);
-
-                    // Create the DetailPurchaseRequest record
-                    DetailPurchaseRequest::create($commonData);
                 } else {
                     // Case 2: Item available in MasterDataPr
-
-                    // ngecek harga yang sudah ada di latest price = null
-                    if ($existingItem->latest_price === null){
-                        // Check if the price is different
-                        if ($existingItem->price != $price) {
-
-                            if ($existingItem->latest_price === null) {
-                                // Update the latest price if it's null
-                                $existingItem->update(['latest_price' => $price]);
-
-                                    // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create($commonData);
-                            } else {
-                                // Move the latest price to the price column
-                                $existingItem->update(['price' => $existingItem->latest_price]);
-
-                                // Update the latest price
-                                $existingItem->update(['latest_price' => $price]);
-
-                                // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create($commonData);
-                            }
-                        } else{
-                            DetailPurchaseRequest::create($commonData);
-                        }
-                    }else{
-                        // ngecek karena sudah ada latest price, maka acuan harga yang dilihat latest_price
-                        if ($existingItem->latest_price != $price) {
-
-                            if ($existingItem->latest_price === null) {
-                                // Update the latest price if it's null
-                                $existingItem->update(['latest_price' => $price]);
-
-                                    // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create($commonData);
-                            } else {
-
-                                // Move the latest price to the price column
-                                $existingItem->update(['price' => $existingItem->latest_price]);
-
-                                // Update the latest price
-                                $existingItem->update(['latest_price' => $price]);
-
-                                // Create the DetailPurchaseRequest record
-                                DetailPurchaseRequest::create($commonData);
-                            }
-                        } else {
-                            DetailPurchaseRequest::create($commonData);
-                        }
+                    if ($existingItem->latest_price !== $price) {
+                        $existingItem->update([
+                            'price' => $existingItem->latest_price,
+                            'latest_price' => $price,
+                        ]);
                     }
                 }
+
+                // Create the DetailPurchaseRequest record
+                DetailPurchaseRequest::create($commonData);
             }
         }
     }
@@ -627,7 +575,7 @@ class PurchaseRequestController extends Controller
         $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
-        $this->verifyAndInsertItems($request, $id);
+        $this->verifyAndInsertItems($request->items, $id);
 
         $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
 
@@ -649,6 +597,28 @@ class PurchaseRequestController extends Controller
         }
 
         return redirect()->back()->with(['success' => 'Purchase request updated successfully!']);
+    }
+
+    /**
+     * Convert formatted price string to a decimal value.
+     *
+     * @param string $formattedPrice
+     * @return float
+     */
+    private function convertFormattedPriceToDecimal($formattedPrice)
+    {
+        // Remove currency symbols and thousand separators
+        $cleanedPrice = preg_replace('/[^\d,.]/', '', $formattedPrice);
+
+        // Replace comma with dot if it is used as a decimal separator
+        if (strpos($cleanedPrice, ',') !== false && strpos($cleanedPrice, '.') !== false) {
+            $cleanedPrice = str_replace(',', '', $cleanedPrice);
+        } elseif (strpos($cleanedPrice, ',') !== false) {
+            $cleanedPrice = str_replace(',', '.', $cleanedPrice);
+        }
+
+        // Convert the cleaned price to a float
+        return (float)$cleanedPrice;
     }
 
     public function destroy($id){

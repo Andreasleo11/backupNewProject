@@ -445,6 +445,8 @@ class DisciplinePageController extends Controller
         $import = new DesciplineDataImport();
         $data = Excel::toArray($import, 'public/Evaluation/DisciplineData.xlsx')[0];
       
+
+       
         // Extract unique NIKs from the imported data
         $uniqueNIKs = array_unique(array_column($data, 1)); // Assuming NIK is at index 1
         // dd($uniqueNIKs);
@@ -461,148 +463,60 @@ class DisciplinePageController extends Controller
        
         $i = 0;
         $j = 0;
-        $total = 40;
+        $maxpoint = 40; // Set the maxpoint value
+
+        
         foreach ($data as $row) {
+            
             foreach ($existingRecords as $record) {
-                $j +=1;
-              
-                $total = 40 - (($row[3] * 10) + ($row[4] * 0.5) + ($row[5]*2) + ($row[6]));
-                if($row[7] === "A")
-                {
-                    $total += 10;   
-                }
-                elseif($row[7] === "B")
-                {
-                    $total += 7.5;   
-                }
-                elseif($row[7] === "C")
-                {
-                    $total += 5;   
-                }
-                elseif($row[7] === "D")
-                {
-                    $total += 2.5;   
-                }
-                elseif($row[7] === "E")
-                {
-                    $total += 0;   
-                }
-                if($row[8] === "A")
-                {
-                    $total += 10;   
-                }
-                elseif($row[8] === "B")
-                {
-                    $total += 7.5;   
-                }
-                elseif($row[8] === "C")
-                {
-                    $total += 5;   
-                }
-                elseif($row[8] === "D")
-                {
-                    $total += 2.5;   
-                }
-                elseif($row[8] === "E")
-                {
-                    $total += 0;   
-                }
-        
-                if($row[9] === "A")
-                {
-                    $total += 10;   
-                }
-                elseif($row[9] === "B")
-                {
-                    $total += 7.5;   
-                }
-                elseif($row[9] === "C")
-                {
-                    $total += 5;   
-                }
-                elseif($row[9] === "D")
-                {
-                    $total += 2.5;   
-                }
-                elseif($row[9] === "E")
-                {
-                    $total += 0;   
-                }
-        
-                if($row[10] === "A")
-                {
-                    $total += 10;   
-                }
-                elseif($row[10] === "B")
-                {
-                    $total += 7.5;   
-                }
-                elseif($row[10] === "C")
-                {
-                    $total += 5;   
-                }
-                elseif($row[10] === "D")
-                {
-                    $total += 2.5;   
-                }
-                elseif($row[10] === "E")
-                {
-                    $total += 0;   
-                }
-        
-                if($row[11] === "A")
-                {
-                    $total += 10;   
-                }
-                elseif($row[11] === "B")
-                {
-                    $total += 7.5;   
-                }
-                elseif($row[11] === "C")
-                {
-                    $total += 5;   
-                }
-                elseif($row[11] === "D")
-                {
-                    $total += 2.5;   
-                }
-                elseif($row[11] === "E")
-                {
-                    $total += 0;   
-                }
-        
-                if($row[12] === "A")
-                {
-                    $total += 10;   
-                }
-                elseif($row[12] === "B")
-                {
-                    $total += 7.5;   
-                }
-                elseif($row[12] === "C")
-                {
-                    $total += 5;   
-                }
-                elseif($row[12] === "D")
-                {
-                    $total += 2.5;   
-                }
-                elseif($row[12] === "E")
-                {
-                    $total += 0;   
-                }
-               
                 if ($record->NIK === $row[1] && $record->Month === $row[2]) { // Check if NIK matches
+                    // Fetch the values for alpha, izin, sakit, and terlambat from the database
+                    $alpha = $record->Alpha;
+                    $izin = $record->Izin;
+                    $sakit = $record->Sakit;
+                    $terlambat = $record->Telat;
+    
+                    // Calculate the points
+                    $calculatedPoints = ($alpha * 10) + ($izin * 2) + ($sakit * 1) + ($terlambat * 0.5);
+                    $totalPoints = $maxpoint - $calculatedPoints;
+                    // dd($totalPoints);
+                    // Calculate other totals
+                    $total = 0; // Reset total for each row
+    
+                    // Calculate the total based on other columns in the row
+                    for ($k = 3; $k <= 8; $k++) {
+                        switch ($row[$k]) {
+                            case "A":
+                                $total += 10;
+                                break;
+                            case "B":
+                                $total += 7.5;
+                                break;
+                            case "C":
+                                $total += 5;
+                                break;
+                            case "D":
+                                $total += 2.5;
+                                break;
+                            case "E":
+                                $total += 0;
+                                break;
+                        }
+                    }
+    
+                    // Add the calculated totalPoints to the total
+                    $total += $totalPoints;
+    
                     // Update the attributes with new values
-                   EvaluationData::where('id', $record->id)->update([
-                    'kerajinan_kerja'=> $row[7], 
-                    'kerapian_pakaian' => $row[8],
-                    'kerapian_rambut' => $row[9],
-                    'kerapian_sepatu'=> $row[10],
-                    'prestasi' => $row[11],
-                    'loyalitas' =>  $row[12],
-                    'total' => $total,
-                   ]);
+                    EvaluationData::where('id', $record->id)->update([
+                        'kerajinan_kerja' => $row[3],
+                        'kerapian_pakaian' => $row[4],
+                        'kerapian_rambut' => $row[5],
+                        'kerapian_sepatu' => $row[6],
+                        'prestasi' => $row[7],
+                        'loyalitas' => $row[8],
+                        'total' => $total,
+                    ]);
                     $i += 1;
                 }
             }
