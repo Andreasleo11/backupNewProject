@@ -104,6 +104,8 @@
                                             onclick="addNewItem()">Add
                                             Item</button>
                                     @endif
+                                    <div id="emailHelp" class="form-text">Pastikan semua kolom terinput dan harga
+                                        menggunakan .00 harga tidak memiliki desimal.</div>
                                 </div>
                             </div>
 
@@ -435,21 +437,19 @@
             document.getElementById('items').appendChild(newItemContainer);
 
             quantityInput.addEventListener('input', function() {
-                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9,]/g, '').replace(',',
-                    '.')); // Convert to float for calculation
+                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9.]/g,
+                    '')); // Convert to float for calculation
                 const quantity = parseFloat(quantityInput.value);
-                const subtotal = (quantity * unitPrice).toFixed(2).toString().replace('.',
-                    ','); // Convert back to string with comma
+                const subtotal = (quantity * unitPrice).toFixed(2);
                 subtotalInput.value = subtotal;
                 formatPrice(subtotalInput, currencyInput.value);
             });
 
             unitPriceInput.addEventListener('input', function() {
-                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9,]/g, '').replace(',',
-                    '.')); // Convert to float for calculation
+                const unitPrice = parseFloat(unitPriceInput.value.replace(/[^0-9.]/g,
+                    '')); // Convert to float for calculation
                 const quantity = parseFloat(quantityInput.value);
-                const subtotal = (quantity * unitPrice).toFixed(2).toString().replace('.',
-                    ','); // Convert back to string with comma
+                const subtotal = (quantity * unitPrice).toFixed(2);
                 subtotalInput.value = subtotal;
                 formatPrice(unitPriceInput, currencyInput.value);
                 formatPrice(subtotalInput, currencyInput.value);
@@ -473,40 +473,34 @@
             addedItems.forEach((item, index) => {
                 const countGroup = item.querySelector('.count-group');
                 countGroup.textContent = index + 1;
-
-                // const subtotalInput = item.querySelector('.subtotal-input');
-                // const unitPriceInput = item.querySelector('.unit-price-input');
-                // const quantityInput = item.querySelector('.quantity-input');
-                // formatPrice(subtotalInput, document.querySelector('.form-select').value);
-                // formatPrice(unitPriceInput, document.querySelector('.form-select').value);
             });
         }
 
         function formatPrice(input, currency) {
-            // Replace non-numeric characters except comma
-            let price = input.value.replace(/[^0-9,]/g, '');
+            // Replace non-numeric characters except period
+            let price = input.value.replace(/[^0-9.]/g, '');
 
             let currencySymbol = '';
             if (currency === 'IDR') {
-                currencySymbol = 'Rp. ';
+                currencySymbol = 'Rp ';
             } else if (currency === 'CNY') {
-                currencySymbol = '¥';
+                currencySymbol = '¥ ';
             } else if (currency === 'USD') {
-                currencySymbol = '$';
+                currencySymbol = '$ ';
             }
 
-            if (price.includes(',')) {
+            if (price.includes('.')) {
                 // Handle decimal values
-                let parts = price.split(',');
-                let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Add thousand separators
+                let parts = price.split('.');
+                let integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Add thousand separators with comma
                 let decimalPart = parts[1];
                 if (decimalPart.length > 2) {
                     decimalPart = decimalPart.substring(0, 2); // Limit to 2 decimal places
                 }
-                input.value = currencySymbol + integerPart + ',' + decimalPart;
+                input.value = currencySymbol + integerPart + '.' + decimalPart;
             } else {
                 // Handle integer values
-                let formattedPrice = price.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                let formattedPrice = price.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // Add thousand separators with comma
                 input.value = currencySymbol + formattedPrice;
             }
         }
