@@ -360,10 +360,14 @@ class DisciplineTableDataTable extends DataTable
                 ->searchable(false)
                 ->addClass('align-middle')->orderable(false),
             Column::make('Month'),
-            Column::make('Alpha'),
-            Column::make('Telat'),
-            Column::make('Izin'),
-            Column::make('Sakit'),
+            Column::make('Alpha')
+                ->exportable(false),
+            Column::make('Telat')
+                ->exportable(false),
+            Column::make('Izin')
+                ->exportable(false),
+            Column::make('Sakit')
+                ->exportable(false),
             Column::make('totalkehadiran')
                 ->name('Total Nilai Kehadiran')
                 ->searchable(false)
