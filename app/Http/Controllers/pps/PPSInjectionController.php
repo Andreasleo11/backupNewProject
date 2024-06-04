@@ -120,6 +120,7 @@ class PPSInjectionController extends Controller
 		
 		$tab_delsched_final = DB::table('delsched_final')->where('outstanding_stk','>',0)->whereBetween('delivery_date',[$val_past_date , $val_advanced_date_fg])->get();
 		
+
 		foreach($tab_delsched_final as $delsched_final){
 			
 			$val_id_fg = $delsched_final->id;
@@ -616,7 +617,7 @@ class PPSInjectionController extends Controller
 			}
 		}
 		// dd($dates);
-
+		// dd($data);
 		foreach ($data as $item) {
 			foreach ($dates as $date) {
 				$lineCap = new ProdplanInjLinecap();
