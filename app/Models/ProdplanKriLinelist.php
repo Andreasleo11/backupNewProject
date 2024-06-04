@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProdplanKriLinelist extends Model
 {
     use HasFactory;
+    protected $table = 'prodplan_kri_linelists';
     public $timestamps = false;
     protected $fillable = [
         'area',
