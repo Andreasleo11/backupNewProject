@@ -92,11 +92,11 @@ class DirectorPurchaseRequestDataTable extends DataTable
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     //->dom('Bfrtip')
-                    ->orderBy(6, 'asc')
+                    ->orderBy(7, 'asc')
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
-                        // Button::make('pdf'),
+                        Button::make('pdf'),
                         Button::make('print'),
                         // Button::make('reset'),
                         // Button::make('reload')
@@ -120,6 +120,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
                 ->addClass('text-center align-middle'),
             Column::make('pr_no')->addClass('text-center align-middle'),
             Column::make('date_pr')->addClass('text-center align-middle'),
+            Column::make('from_department')->addClass('text-center align-middle'),
             Column::make('to_department')->addClass('text-center align-middle'),
             Column::make('supplier')->addClass('text-center align-middle'),
             Column::computed('action')

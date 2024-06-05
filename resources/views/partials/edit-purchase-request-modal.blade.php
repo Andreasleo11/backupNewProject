@@ -74,7 +74,7 @@
                                     </label>
                                 </div>
 
-                                <div class="form-text">Jenis PR termasuk Import atau Export (Khusus MOULDING)</div>
+                                <div class="form-text">Jenis PR termasuk Local atau Import (Khusus MOULDING)</div>
                             </div>
 
                             <div class="form-group mt-3 col">
@@ -99,13 +99,17 @@
                                     <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3">
                                     </div>
+                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">Notes: </div>
+                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">- Unit Price
+                                        tambahkan .00 jika harga tidak memiliki desimal. Contoh -> IDR 1,200.00 </div>
+                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">- Pastikan semua kolom
+                                        terinput
+                                    </div>
                                     @if (Auth::user()->specification->name === 'PURCHASER')
                                         <button class="btn btn-secondary btn-sm" type="button"
                                             onclick="addNewItem()">Add
                                             Item</button>
                                     @endif
-                                    <div id="emailHelp" class="form-text">Pastikan semua kolom terinput dan harga
-                                        menggunakan .00 harga tidak memiliki desimal.</div>
                                 </div>
                             </div>
 
