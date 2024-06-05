@@ -63,6 +63,18 @@
                                 <div class="form-text">Ubah hanya jika ingin membuat PR diluar dari departemen sendiri</div>
                             </div>
 
+                            <div class="form-group mt-5 col">
+                                <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
+                                <select class="form-select" name="to_department" id="toDepartmentDropdown" required>
+                                    <option value="" selected disabled>Select to department..</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Purchasing">Purchasing</option>
+                                    <option value="Personnel">Personnel</option>
+                                    <option value="Computer">Computer</option>
+                                </select>
+                                <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
+                            </div>
+
                             <div class="form-group mt-5 col d-none" id="localImportFormGroup">
                                 <label class="form-label fs-5 fw-bold">Local/Import</label>
                                 <div class="form-check">
@@ -80,37 +92,32 @@
                                     </label>
                                 </div>
 
-                                <div class="form-text">Jenis PR termasuk Import atau Export (Khusus MOULDING)</div>
+                                <div class="form-text">Jenis PR termasuk Local atau Import (Khusus MOULDING)</div>
                             </div>
 
-                            <div class="form-group mt-5 col">
-                                <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
-                                <select class="form-select" name="to_department" id="toDepartmentDropdown" required
-                                    onchange="updateTypeDropdown()">
-                                    <option value="" selected disabled>Select to department..</option>
-                                    <option value="Maintenance">Maintenance</option>
-                                    <option value="Purchasing">Purchasing</option>
-                                    <option value="Personnel">Personnel</option>
-                                    <option value="Computer">Computer</option>
-                                </select>
-                                <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
-                            </div>
-
-                            <div class="form-group mt-5 col">
+                            {{-- <div class="form-group mt-5 col">
                                 <label class="form-label fs-5 fw-bold" for="type">Type</label>
                                 <select class="form-select" name="type" id="typeDropdown" required>
                                     <option value="" selected disabled>Select Type..</option>
+                                    <option value="factory">Factory</option>
+                                    <option value="office">Office</option>
                                 </select>
                                 <div class="form-text">Pilih Tipe dari PR</div>
-                            </div>
+                            </div> --}}
 
                             <div class="form-group mt-3">
                                 <div id="itemsContainer">
                                     <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
-                                    <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
+                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">Notes: </div>
+                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">- Unit Price
+                                        tambahkan .00 jika harga tidak memiliki desimal. Contoh -> IDR 1,200.00 </div>
+                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">- Pastikan semua kolom terinput
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm mt-3" type="button" onclick="addNewItem()">Add
                                         Item</button>
                                 </div>
+
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
@@ -151,9 +158,25 @@
         document.addEventListener("DOMContentLoaded", function() {
             var fromDepartmentDropdown = document.getElementById("fromDepartmentDropdown");
             var localImportFormGroup = document.getElementById("localImportFormGroup");
+            var toDepartmentDropdown = document.getElementById("toDepartmentDropdown");
 
-            fromDepartmentDropdown.addEventListener("change", function() {
-                if (fromDepartmentDropdown.value === "MOULDING") {
+            // fromDepartmentDropdown.addEventListener("change", function() {
+            //     if (fromDepartmentDropdown.value === "MOULDING") {
+            //         localImportFormGroup.classList.remove("d-none");
+            //         localImportFormGroup.querySelectorAll("input").forEach(function(input) {
+            //             input.disabled = false;
+            //         });
+            //     } else {
+            //         localImportFormGroup.classList.add("d-none");
+            //         localImportFormGroup.querySelectorAll("input").forEach(function(input) {
+            //             input.disabled = true;
+            //         });
+            //     }
+            // });
+
+            toDepartmentDropdown.addEventListener("change", function() {
+                if (fromDepartmentDropdown.value === "MOULDING" && toDepartmentDropdown.value ===
+                    "Purchasing") {
                     localImportFormGroup.classList.remove("d-none");
                     localImportFormGroup.querySelectorAll("input").forEach(function(input) {
                         input.disabled = false;
@@ -172,26 +195,26 @@
             }
         });
 
-        function updateTypeDropdown() {
-            // Get Selected value of the type dropdown
-            var selectedValue = document.getElementById('toDepartmentDropdown').value;
+        // function updateTypeDropdown() {
+        //     // Get Selected value of the type dropdown
+        //     var selectedValue = document.getElementById('toDepartmentDropdown').value;
 
-            var typeDropdown = document.getElementById('typeDropdown');
+        //     var typeDropdown = document.getElementById('typeDropdown');
 
-            typeDropdown.innerHTML = "";
+        //     typeDropdown.innerHTML = "";
 
-            if (selectedValue === "Maintenance") {
-                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
-            } else if (selectedValue === "Purchasing") {
-                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
-            } else if (selectedValue === "Personnel") {
-                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
-                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
-            } else {
-                typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
-                typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
-            }
-        }
+        //     if (selectedValue === "Maintenance") {
+        //         typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+        //     } else if (selectedValue === "Purchasing") {
+        //         typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+        //     } else if (selectedValue === "Personnel") {
+        //         typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+        //         typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+        //     } else {
+        //         typeDropdown.innerHTML += "<option value=\"factory\">Factory</option>";
+        //         typeDropdown.innerHTML += "<option value=\"office\">Office</option>";
+        //     }
+        // }
 
         // Counter for creating unique IDs for items
         let itemIdCounter = 0;

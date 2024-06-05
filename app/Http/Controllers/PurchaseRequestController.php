@@ -49,12 +49,13 @@ class PurchaseRequestController extends Controller
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
-                ->whereNotNull('autograph_5')
-                ->where(function ($query) use ($user, $userDepartmentName) {
+                ->where(function ($query) use ($userDepartmentName) {
                     $query->where('type', 'factory');
                     // Additional condition for users where is_gm is 1 and department is 'MOULDING'
-                    if ($user->is_gm && $userDepartmentName === 'MOULDING') {
-                        $query->orWhere('from_department', 'MOULDING');
+                    if ($userDepartmentName === 'MOULDING') {
+                        $query->where('from_department', 'MOULDING');
+                    } else {
+                        $query->where('from_department', '!=', 'MOULDING');
                     }
                 });
         } elseif ($isHead) {
@@ -68,12 +69,24 @@ class PurchaseRequestController extends Controller
             }
         } elseif ($isPurchaser) {
             // If the user is a purchaser, filter requests with specific conditions
-            if($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING'){
+            $purchaseRequestsQuery->where(function($query) {
+                $query->where('from_department', '!=', 'MOULDING')
+                    ->where('type', 'factory')
+                    ->whereNotNull('autograph_6')
+                    ->orWhere(function($query) {
+                        $query->where('from_department', 'MOULDING')
+                                ->orWhere('type', '!=', 'factory');
+                    });
+            });
+
+            if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
-            } elseif ($user->email === 'nur@daijo.co.id'){
-                $purchaseRequestsQuery->where(function($query){
+            } elseif ($userDepartmentName === "PERSONALIA") {
+                $purchaseRequestsQuery->where('to_department', 'Personnel');
+            } elseif ($user->email === 'nur@daijo.co.id') {
+                $purchaseRequestsQuery->where(function($query) {
                     $query->where('to_department', 'Maintenance')
-                            ->orWhere('to_department', 'Personnel');
+                        ->orWhere('to_department', 'Personnel');
                 });
             }
 
@@ -146,15 +159,6 @@ class PurchaseRequestController extends Controller
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('updated_at', 'desc')
             ->orWhere('user_id_create', $user->id) // Assuming 'created_by' is the foreign key for the user who created the request
-            // ->orderByRaw("
-            //             CASE
-            //                 WHEN status = 1 THEN 0
-            //                 WHEN status = 6 THEN 1
-            //                 WHEN status = 2 THEN 2
-            //                 WHEN status = 3 THEN 3
-            //                 WHEN status = 4 THEN 4
-            //                 ELSE 5
-            //             END")
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
@@ -216,17 +220,18 @@ class PurchaseRequestController extends Controller
             }
         }
 
+        $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
+        if(in_array($request->from_department, $officeDepartments)){
+            $commonData['type'] = "office";
+        } else {
+            $commonData['type'] = "factory";
+        }
+
         // Create the purchase request
         $purchaseRequest = PurchaseRequest::create($commonData);
 
-        $prNo = substr($request->input('to_department'), 0, 4) . '-' . $purchaseRequest->id;
-        $purchaseRequest->update(['pr_no' => $prNo]);
-
-        // update revisi 26 februari
         $this->verifyAndInsertItems($processedItems, $purchaseRequest->id);
         // $this->executeSendPRNotificationCommand();
-
-        // update revisi 26 februari
 
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
@@ -288,62 +293,44 @@ class PurchaseRequestController extends Controller
         $user =  Auth::user();
         $userCreatedBy = $purchaseRequest->createdBy;
 
-        $computerFactory = $purchaseRequest->type === 'factory' && $purchaseRequest->to_department === 'Computer';
-
         // If PR not Rejected
         if($purchaseRequest->status !== 5){
-            // Dept Head Autograph
+            // after Dept Head Autograph
             if ($purchaseRequest->autograph_2 !== null) {
-                // status when purchaser has not signed
-                $purchaseRequest->status = 6;
-            }
-
-            // SPECIAL CASE IF IT'S MOULDING
-            if($purchaseRequest->from_department === 'MOULDING'){
-                if($purchaseRequest->autograph_7 !== null){
-                    if($purchaseRequest->autograph_2 !== null){
-                        $purchaseRequest->status = 6;
-                    }
-                } else {
-                    $purchaseRequest->status = 1;
+                if ($purchaseRequest->from_department === 'MOULDING' || $purchaseRequest->type === 'office') {
+                    // if it's moulding then direct to purchaser
+                    $purchaseRequest->status = 6;
+                } elseif($purchaseRequest->type === 'factory'){
+                    // status when GM has not signed
+                    $purchaseRequest->status = 7;
                 }
             }
 
-            // Purchaser Autograph
+            // after GM Autograph
+            if ($purchaseRequest->autograph_6 !== null) {
+                // waiting for purchaser
+                $purchaseRequest->status = 6;
+            }
+
+            // after Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
-                if($purchaseRequest->from_department === 'MOULDING') {
+                if($purchaseRequest->to_department == 'Purchasing' && $purchaseRequest->type === 'factory' ||
+                $purchaseRequest->to_department == 'Maintenance' && $purchaseRequest->type === 'factory') {
                     // direct to Director
                     $purchaseRequest->status = 3;
-                } elseif($purchaseRequest->type === 'factory' || $computerFactory){
-                    // status when gm has not signed
-                    $purchaseRequest->status = 7;
-                } else {
+                } elseif($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel'){
                     // status when verificator has not signed
                     $purchaseRequest->status = 2;
                 }
             }
 
-            // GM Autograph
-            if($purchaseRequest->type === 'factory' ){
-                if ($purchaseRequest->autograph_6 !== null) {
-                    // status when director has not signed
-                    $purchaseRequest->status = 3;
-                    if($computerFactory){
-                        // status when verificator has not signed
-                        $purchaseRequest->status = 2;
-                    }
-                }
+            // after Verificator Autograph
+            if ($purchaseRequest->autograph_3 !== null) {
+                // status when director has not signed
+                $purchaseRequest->status = 3;
             }
 
-            // Verificator Autograph
-            if($purchaseRequest->type === 'office' || $computerFactory){
-                if ($purchaseRequest->autograph_3 !== null) {
-                    // status when director has not signed
-                    $purchaseRequest->status = 3;
-                }
-            }
-
-            // Director Autograph
+            // after Director Autograph
             if ($purchaseRequest->autograph_4 !== null) {
                 // status when PR approved
                 $purchaseRequest->status = 4;
