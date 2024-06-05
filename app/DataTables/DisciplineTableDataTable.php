@@ -171,6 +171,28 @@ class DisciplineTableDataTable extends DataTable
         }
         
         @endphp {{ $total }}')
+
+        ->addColumn('grade', '
+        @php
+            
+        if($total >= 91)
+        {
+            $grade = "A";
+        }
+        elseif($total >=71 && $total <=90)
+        {
+            $grade = "B";
+        }
+        elseif($total >= 61 && $total <=70)
+        {
+            $grade = "C";
+        }
+        else
+        {
+            $grade = "D";
+        }
+        @endphp
+        {{ $grade }}')
         ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-edit"></i></button>
         ')
         ->setRowId('id');
@@ -369,7 +391,7 @@ class DisciplineTableDataTable extends DataTable
             Column::make('Sakit')
                 ->exportable(false),
             Column::make('totalkehadiran')
-                ->name('Total Nilai Kehadiran')
+                ->title('Total Nilai Kehadiran')
                 ->searchable(false)
                 ->exportable(false)
                 ->addClass('align-middle')->orderable(false),
@@ -380,13 +402,17 @@ class DisciplineTableDataTable extends DataTable
             Column::make('prestasi'),
             Column::make('loyalitas'),
             Column::make('totaldiscipline')
-            ->name('Total Nilai Kedisiplinan')
+            ->title('Total Nilai Kedisiplinan')
             ->searchable(false)
             ->exportable(false)
             ->addClass('align-middle')->orderable(false),
             Column::make('total')
             ->exportable(false),
-
+            Column::make('grade')
+            ->title('Grade')
+            ->searchable(false)
+            ->exportable(false)
+            ->addClass('align-middle')->orderable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
