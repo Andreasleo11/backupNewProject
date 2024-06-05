@@ -23,8 +23,6 @@
         data-bs-target="#upload-excel-file-discipline-modal">Upload File
         Excel</button>
 
-
-    <div class="row align-items-center mt-4">
         <div class="col-auto">
             <div class="form-label">Filter Bulan</div>
         </div>
@@ -50,8 +48,16 @@
         <div class="col text-end" id="filtered-employees">
             <!-- Filtered employees will be displayed here -->
         </div>
+
+        @if($user->name === 'timotius')
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Export Yayasan</button>
+        </div>
+        @endif
         <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
     </div>
+</form>
+
 
     <section class="content">
         <div class="card mt-3">
