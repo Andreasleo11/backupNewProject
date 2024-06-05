@@ -224,6 +224,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
           Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
 
           Route::get('listformadjust/all',[AdjustFormQcController::class,'listformadjust'])->name('listformadjust');
+
+          Route::get('formadjust/{id}/savePdf', [AdjustFormQcController::class, 'savePdf'])->name('formadjust.savePdf');
+
+          Route::get('form-adjust/{id}/download', [AdjustFormQcController::class, 'exportToPdf'])->name('formadjust.download');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {

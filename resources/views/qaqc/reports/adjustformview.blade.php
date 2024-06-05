@@ -17,7 +17,7 @@
 
 @section('content')
 
-
+<a href="{{ route('formadjust.download', ['id' => $datas->id]) }}" class="btn btn-primary">Export PDF</a>
 
 <section aria-label="header" class="container">
         <div class="row text-center mt-5">

@@ -12,6 +12,10 @@ use App\Models\HeaderFormAdjust;
 use App\Models\FormAdjustMaster;
 use App\Models\Detail;
 
+use Illuminate\Support\Facades\Storage;
+
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class AdjustFormQcController extends Controller
 {
     public function index(Request $request)
@@ -146,6 +150,52 @@ class AdjustFormQcController extends Controller
 
         // dd($groupedData);
         return view("qaqc.reports.adjustformview", compact('datas'));
+    }
+
+
+
+    public function savePdf($id)
+    {
+
+        $headerFormAdjust = HeaderFormAdjust::find($id);
+
+        $reportid = $headerFormAdjust->report_id;
+
+
+        $datas = HeaderFormAdjust::with('report', 'report.details', 'report.details.adjustdetail')->where('report_id', $reportid)->find($id);
+        $user =  Auth::user();
+
+        $pdf = Pdf::loadView('pdf/form-adjust-pdf', compact('datas', 'user'))
+            ->setPaper('a4', 'landscape');
+
+        // Define the file path and name
+        $fileName = 'form-adjust-' . $datas->id . '.pdf';
+        $filePath = 'pdfs/' . $fileName; // Adjust the directory structure as needed
+
+        // Save the PDF file to the public storage
+        Storage::disk('public')->put($filePath, $pdf->output());
+
+        // Optionally, you can return a response indicating that the PDF has been saved
+        return redirect()->back()->with(['message' => 'PDF saved successfully', 'file_path' => $filePath]);
+    }
+
+
+    public function exportToPdf($id)
+    {
+       
+        $headerFormAdjust = HeaderFormAdjust::find($id);
+
+        $reportid = $headerFormAdjust->report_id;
+
+
+        $datas = HeaderFormAdjust::with('report', 'report.details', 'report.details.adjustdetail')->where('report_id', $reportid)->find($id);
+        $user =  Auth::user();
+       
+
+        $pdf = Pdf::loadView('pdf/form-adjust-pdf', compact('datas', 'user'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('Form-Adjust'. $datas->id . '.pdf');
     }
 
     public function addremarkadjust(Request $request)
