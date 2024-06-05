@@ -39,17 +39,28 @@ class FormOvertimeController extends Controller
     public function getEmployeeNik(Request $request)
     {
         $nik = $request->query('nik');
+        $deptid = $request->query('deptid');
        
         info('AJAX request received for item name: ' . $nik);
+        info('AJAX request received for dept id: ' . $deptid);
+
+        $department = Department::where('id', $deptid)->first();
+        $dept_no = $department ? $department->dept_no : null;
+
 
         // Fetch item names and prices from the database based on user input
-        $pegawais = Employee::where('NIK', 'like', "%" . $nik . "%")
-        ->select('NIK', 'nama')
-        ->get();
+            if ($dept_no) {
+            // Fetch employees based on NIK and department number
+            $pegawais = Employee::where('NIK', 'like', "%" . $nik . "%")
+                ->where('Dept', $dept_no)
+                ->select('NIK', 'nama')
+                ->get();
 
-
-        
-        return response()->json($pegawais);
+            return response()->json($pegawais);
+        } else {
+            // If department number does not exist, return an empty response or handle error
+            return response()->json([], 404);
+        }
     }
 
 
@@ -190,6 +201,9 @@ class FormOvertimeController extends Controller
                 $headerForm->status = 2;
             }
             if (!empty($headerForm->autograph_3)) {
+                $headerForm->status = 9;
+            }
+            if (!empty($headerForm->autograph_4)) {
                 $headerForm->status = 5;
                 $headerForm->is_approve = 1;
             }
@@ -222,7 +236,6 @@ class FormOvertimeController extends Controller
         }
 
         $headerForm->save();
-
         return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
     }
 

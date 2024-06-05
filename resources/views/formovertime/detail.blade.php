@@ -58,124 +58,139 @@
             @endif
         </div>
 
-
-    @if($header->is_design === 1)
-    <div class="col my-2">
-        <h2>Dept Head Design (FANG)</h2>
-        <div class="autograph-box container" id="autographBox3"></div>
-        <div class="container mt-2" id="autographuser3"></div>
-        
-        @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fang' && $header->autograph_2)
-            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc DeptHead</button>
-            @if($header->autograph_3 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
+    
+        @if($header->is_design === 1)
+        <div class="col my-2">
+            <h2>Dept Head Design (FANG)</h2>
+            <div class="autograph-box container" id="autographBox3"></div>
+            <div class="container mt-2" id="autographuser3"></div>
+            
+            @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'fang' && $header->autograph_2)
+                <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc DeptHead</button>
+                @if($header->autograph_3 === null)
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">Reject</button>
+                @endif
             @endif
-        @endif
-    </div>
-    @else
-    <div class="col my-2">
-        <h2>Dept Head (ONG)</h2>
-        <div class="autograph-box container" id="autographBox3"></div>
-        <div class="container mt-2" id="autographuser3"></div>
-        
-        @if(Auth::check() &&  $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'ong' && $header->autograph_2)
-            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc DeptHead</button>
-            @if($header->autograph_3 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
+        </div>
+        @else
+        <div class="col my-2">
+            <h2>Dept Head (ONG)</h2>
+            <div class="autograph-box container" id="autographBox3"></div>
+            <div class="container mt-2" id="autographuser3"></div>
+            
+            @if(Auth::check() &&  $currentUser->department->name === $header->Relationdepartement->name && $currentUser->name === 'ong' && $header->autograph_2)
+                <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc DeptHead</button>
+                @if($header->autograph_3 === null)
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">Reject</button>
+                @endif
             @endif
+        </div>  
+
         @endif
-    </div>  
 
-    @endif
-
-    <div class="col my-2">
-        <h2>Director</h2>
-        <div class="autograph-box container" id="autographBox4"></div>
-        <div class="container mt-2" id="autographuser4"></div>
-        
-        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
-            <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
-            @if($header->autograph_4 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
+        <div class="col my-2">
+            <h2>Director</h2>
+            <div class="autograph-box container" id="autographBox4"></div>
+            <div class="container mt-2" id="autographuser4"></div>
+            
+            @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
+                <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+                @if($header->autograph_4 === null)
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">Reject</button>
+                @endif
             @endif
-        @endif
-    </div>
+        </div>`
 
     @endif
 
 
     @if($header->Relationdepartement->name !== 'MOULDING')
 
-    <div class="col my-2">
-        <h2>Dept Head</h2>
-        <div class="autograph-box container" id="autographBox2"></div>
-        <div class="container mt-2" id="autographuser2"></div>
-        
-        @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name  && $currentUser->is_head === 1)
-            <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc Dept Head</button>
-            @if($header->autograph_2 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
+        <div class="col my-2">
+            <h2>Dept Head</h2>
+            <div class="autograph-box container" id="autographBox2"></div>
+            <div class="container mt-2" id="autographuser2"></div>
+            
+            @if(Auth::check() && $currentUser->department->name === $header->Relationdepartement->name  && $currentUser->is_head === 1)
+                <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc Dept Head</button>
+                @if($header->autograph_2 === null)
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">Reject</button>
+                @endif
             @endif
-        @endif
-    </div>
+        </div>
 
-    @if($header->Relationdepartement->is_office === 0)
-    
-    <div class="col my-2">
-        <h2>GM</h2>
-        <div class="autograph-box container" id="autographBox3"></div>
-        <div class="container mt-2" id="autographuser3"></div>
+        @if($header->Relationdepartement->is_office === 0)
         
-        @if(Auth::check() &&  $currentUser->is_gm === 1 && $header->autograph_2)
-            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
-            @if($header->autograph_3 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
-            @endif
-        @endif
-    </div>
+            <div class="col my-2">
+                <h2>GM</h2>
+                <div class="autograph-box container" id="autographBox3"></div>
+                <div class="container mt-2" id="autographuser3"></div>
+                
+                @if(Auth::check() &&  $currentUser->is_gm === 1 && $header->autograph_2)
+                    <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+                    @if($header->autograph_3 === null)
+                    @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                        <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                            data-bs-target="#rejectModal">Reject</button>
+                    @endif
+                @endif
+            </div>
 
-    <div class="col my-2">
-        <h2>Director</h2>
-        <div class="autograph-box container" id="autographBox4"></div>
-        <div class="container mt-2" id="autographuser4"></div>
-        
-        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
-            <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
-            @if($header->autograph_4 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
-            @endif
-        @endif
-    </div>
+            <div class="col my-2">
+                <h2>Director</h2>
+                <div class="autograph-box container" id="autographBox4"></div>
+                <div class="container mt-2" id="autographuser4"></div>
+                
+                @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
+                    <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+                    @if($header->autograph_4 === null)
+                    @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                        <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                            data-bs-target="#rejectModal">Reject</button>
+                    @endif
+                @endif
+            </div>
 
     
     @else
         <div class="col my-2">
-        <h2>Director</h2>
-        <div class="autograph-box container" id="autographBox3"></div>
-        <div class="container mt-2" id="autographuser3"></div>
-        
-        @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_2)
-            <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc Director</button>
-            @if($header->autograph_3 === null)
-            @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
-                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                    data-bs-target="#rejectModal">Reject</button>
+            <h2>Verificator</h2>
+            <div class="autograph-box container" id="autographBox3"></div>
+            <div class="container mt-2" id="autographuser3"></div>
+            
+            @if(Auth::check() && $currentUser->name === 'Bernadett' && $header->autograph_2)
+                <button id="btn3" class="btn btn-primary" onclick="addAutograph(3 , {{ $header->id }})">Acc Verificator</button>
+                @if($header->autograph_3 === null)
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">Reject</button>
+                @endif
             @endif
-        @endif
-    </div>
+        </div>
     
+
+        <div class="col my-2">
+            <h2>Director</h2>
+            <div class="autograph-box container" id="autographBox4"></div>
+            <div class="container mt-2" id="autographuser4"></div>
+            
+            @if(Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
+                <button id="btn4" class="btn btn-primary" onclick="addAutograph(4 , {{ $header->id }})">Acc Director</button>
+                @if($header->autograph_4 === null)
+                @include('partials.reject-modal', ['id' => $header->id, 'route' => 'overtime.reject'])
+                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                        data-bs-target="#rejectModal">Reject</button>
+                @endif
+            @endif
+        </div>
     @endif
 
     @endif
@@ -260,9 +275,9 @@
                         </tbody>
                     </table>
 
+                    
 
-
-                    @if ($header->is_approve == 0)
+                    @if($header->is_approve === 0)
                         <div class="alert alert-danger" role="alert">
                             <h4 class="alert-heading">Alasan Ditolak</h4>
                             <textarea class="form-control rejection-textarea" rows="5" readonly>{{ $header->description }}</textarea>
