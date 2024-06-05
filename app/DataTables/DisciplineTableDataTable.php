@@ -26,7 +26,7 @@ class DisciplineTableDataTable extends DataTable
         return (new EloquentDataTable($query))
         ->addColumn('totalkehadiran', '
         @php
-        
+
         $total = 40;
 
         $countalpha = $Alpha * 10;
@@ -34,142 +34,142 @@ class DisciplineTableDataTable extends DataTable
         $counttelat = $Telat * 0.5;
 
         $all = $total - ($countalpha + $countizin + $counttelat + $Sakit);
-        
+
         if($all < 0)
         {
             $all = 0;
         }
         @endphp
         {{ $all }}')
-        ->addColumn('totaldiscipline', '@php 
-        
-        $total = 0; 
+        ->addColumn('totaldiscipline', '@php
+
+        $total = 0;
 
         if($kerajinan_kerja === "A")
         {
-            $total += 10;   
+            $total += 10;
         }
         elseif($kerajinan_kerja === "B")
         {
-            $total += 7.5;   
+            $total += 7.5;
         }
         elseif($kerajinan_kerja === "C")
         {
-            $total += 5;   
+            $total += 5;
         }
         elseif($kerajinan_kerja === "D")
         {
-            $total += 2.5;   
+            $total += 2.5;
         }
         elseif($kerajinan_kerja === "E")
         {
-            $total += 0;   
+            $total += 0;
         }
         if($kerapian_pakaian === "A")
         {
-            $total += 10;   
+            $total += 10;
         }
         elseif($kerapian_pakaian === "B")
         {
-            $total += 7.5;   
+            $total += 7.5;
         }
         elseif($kerapian_pakaian === "C")
         {
-            $total += 5;   
+            $total += 5;
         }
         elseif($kerapian_pakaian === "D")
         {
-            $total += 2.5;   
+            $total += 2.5;
         }
         elseif($kerapian_pakaian === "E")
         {
-            $total += 0;   
+            $total += 0;
         }
 
         if($kerapian_rambut === "A")
         {
-            $total += 10;   
+            $total += 10;
         }
         elseif($kerapian_rambut === "B")
         {
-            $total += 7.5;   
+            $total += 7.5;
         }
         elseif($kerapian_rambut === "C")
         {
-            $total += 5;   
+            $total += 5;
         }
         elseif($kerapian_rambut === "D")
         {
-            $total += 2.5;   
+            $total += 2.5;
         }
         elseif($kerapian_rambut === "E")
         {
-            $total += 0;   
+            $total += 0;
         }
 
         if($kerapian_sepatu === "A")
         {
-            $total += 10;   
+            $total += 10;
         }
         elseif($kerapian_sepatu === "B")
         {
-            $total += 7.5;   
+            $total += 7.5;
         }
         elseif($kerapian_sepatu === "C")
         {
-            $total += 5;   
+            $total += 5;
         }
         elseif($kerapian_sepatu === "D")
         {
-            $total += 2.5;   
+            $total += 2.5;
         }
         elseif($kerapian_sepatu === "E")
         {
-            $total += 0;   
+            $total += 0;
         }
 
         if($prestasi === "A")
         {
-            $total += 10;   
+            $total += 10;
         }
         elseif($prestasi === "B")
         {
-            $total += 7.5;   
+            $total += 7.5;
         }
         elseif($prestasi === "C")
         {
-            $total += 5;   
+            $total += 5;
         }
         elseif($prestasi === "D")
         {
-            $total += 2.5;   
+            $total += 2.5;
         }
         elseif($prestasi === "E")
         {
-            $total += 0;   
+            $total += 0;
         }
 
         if($loyalitas === "A")
         {
-            $total += 10;   
+            $total += 10;
         }
         elseif($loyalitas === "B")
         {
-            $total += 7.5;   
+            $total += 7.5;
         }
         elseif($loyalitas === "C")
         {
-            $total += 5;   
+            $total += 5;
         }
         elseif($loyalitas === "D")
         {
-            $total += 2.5;   
+            $total += 2.5;
         }
         elseif($loyalitas === "E")
         {
-            $total += 0;   
+            $total += 0;
         }
-        
+
         @endphp {{ $total }}')
         ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-edit"></i></button>
         ')
@@ -336,7 +336,7 @@ class DisciplineTableDataTable extends DataTable
                         Button::make('reload')
                     ]);
 
-                    
+
     }
 
     /**
@@ -359,6 +359,16 @@ class DisciplineTableDataTable extends DataTable
                 ->data('karyawan.Dept')
                 ->searchable(false)
                 ->addClass('align-middle')->orderable(false),
+            Column::make('start_date')
+                ->title('Start Date')
+                ->data('karyawan.start_date')
+                ->searchable(false)
+                ->addClass('align-middle')->orderable(false),
+            Column::make('status')
+                ->title('Status')
+                ->data('karyawan.status')
+                ->searchable(false)
+                ->addClass('align-middle')->orderable(false),
             Column::make('Month'),
             Column::make('Alpha')
                 ->exportable(false),
@@ -369,7 +379,7 @@ class DisciplineTableDataTable extends DataTable
             Column::make('Sakit')
                 ->exportable(false),
             Column::make('totalkehadiran')
-                ->name('Total Nilai Kehadiran')
+                ->title('Total Nilai Kehadiran')
                 ->searchable(false)
                 ->exportable(false)
                 ->addClass('align-middle')->orderable(false),
@@ -380,7 +390,7 @@ class DisciplineTableDataTable extends DataTable
             Column::make('prestasi'),
             Column::make('loyalitas'),
             Column::make('totaldiscipline')
-            ->name('Total Nilai Kedisiplinan')
+            ->title('Total Nilai Kedisiplinan')
             ->searchable(false)
             ->exportable(false)
             ->addClass('align-middle')->orderable(false),

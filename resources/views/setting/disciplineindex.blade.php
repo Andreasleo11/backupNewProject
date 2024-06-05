@@ -1,40 +1,30 @@
 @extends('layouts.app')
 
 @section('content')
-
-<!-- <form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
-        @csrf
-        <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
-        <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
-        <br>
-        <button type="submit">Submit</button>
-    </form> -->
+    <!-- <form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
+                                                            @csrf
+                                                            <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
+                                                            <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
+                                                            <br>
+                                                            <button type="submit">Submit</button>
+                                                        </form> -->
 
     @include('partials.info-discipline-page-modal')
-    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal" > Info </a>
+    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal"> Info </a>
 
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
-    @if($user->department_id === 7 || $user->department_id === 22)
+    @if ($user->department_id === 7 || $user->department_id === 22)
         <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a></a>
     @endif
 
+    @include('partials.upload-excel-file-discipline-modal')
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+        data-bs-target="#upload-excel-file-discipline-modal">Upload File
+        Excel</button>
 
 
-
-<form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
-        @csrf
-        <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
-        <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
-        <br>
-        <br>
-    <div class="button-container">
-        <button type="submit" class="animated-button" require>SUBMIT EXCEL FILE</button>
-    </div>
-    </form>
-
- 
-    <div class="row align-items-center">
+    <div class="row align-items-center mt-4">
         <div class="col-auto">
             <div class="form-label">Filter Bulan</div>
         </div>
@@ -58,13 +48,13 @@
             <?php echo date('Y'); ?>
         </div>
         <div class="col text-end" id="filtered-employees">
-            <!-- Filtered employees will be displayed here --> 
+            <!-- Filtered employees will be displayed here -->
         </div>
         <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
     </div>
 
-<section class="content">
-        <div class="card mt-5">
+    <section class="content">
+        <div class="card mt-3">
             <div class="card-body">
                 <div class="table-responsive">
                     {{ $dataTable->table() }}
@@ -73,189 +63,193 @@
         </div>
     </section>
 
-    @foreach($employees as $employee)
-            @include('partials.edit-discipline-modal')
+    @foreach ($employees as $employee)
+        @include('partials.edit-discipline-modal')
     @endforeach
 
-{{ $dataTable->scripts() }}
+    {{ $dataTable->scripts() }}
 
-<script type="module">
-    
-    $(function() {
-    // Check if the filtered month is stored in localStorage
-    let selectedMonth = localStorage.getItem('selectedMonth');
+    <script type="module">
+        $(function() {
+            // Check if the filtered month is stored in localStorage
+            let selectedMonth = localStorage.getItem('selectedMonth');
 
-    // Initialize DataTable and apply initial filter if the month is stored
-    let dataTable = window.LaravelDataTables["disciplinetable-table"];
-    if (selectedMonth) {
-        $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
-        applyFilter(selectedMonth); // Apply the filter
-    }
-
-    // Event listener for filter select element
-    $('#status-filter').change(function() {
-        let selectedMonth = $(this).val();
-        console.log("Selected month:", selectedMonth); // Output the selected month to console
-
-        // Store the selected month in localStorage
-        localStorage.setItem('selectedMonth', selectedMonth);
-
-        applyFilter(selectedMonth); // Apply the filter
-    });
-
-    // Function to apply filter to DataTable
-    function applyFilter(selectedMonth) {
-        // Extract the month part from the date format (yyyy-mm-dd)
-        let formattedMonth = selectedMonth.padStart(2, '0'); // Pad single-digit months with 0
-        console.log("Formatted month:", formattedMonth);
-
-        filterAndDisplayEmployees(formattedMonth);
-
-        // Filter by month column
-        dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
-    }
-});
-    
-    function setFilterValue(filterValue) {
-        fetch('/set-filter-value', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            },
-            body: JSON.stringify({ filterValue: filterValue }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Filter value set in session:', data.filterValue);
-        })
-        .catch(error => {
-            console.error('Error setting filter value:', error);
-        });
-    }
-
-    // Function to restore filter value from session
-    function restoreFilterValue() {
-        fetch('/get-filter-value')
-        .then(response => response.json())
-        .then(data => {
-            if (data.filterValue) {
-                document.getElementById('status-filter').value = data.filterValue;
+            // Initialize DataTable and apply initial filter if the month is stored
+            let dataTable = window.LaravelDataTables["disciplinetable-table"];
+            if (selectedMonth) {
+                $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
+                applyFilter(selectedMonth); // Apply the filter
             }
-        })
-        .catch(error => {
-            console.error('Error getting filter value:', error);
-        });
-    }
 
-    // Call restoreFilterValue() when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        restoreFilterValue();
-    });
+            // Event listener for filter select element
+            $('#status-filter').change(function() {
+                let selectedMonth = $(this).val();
+                console.log("Selected month:", selectedMonth); // Output the selected month to console
 
-    // Event listener for filter select element
-    document.getElementById('status-filter').addEventListener('change', function() {
-        var filterValue = this.value;
-        setFilterValue(filterValue);
-    });
+                // Store the selected month in localStorage
+                localStorage.setItem('selectedMonth', selectedMonth);
 
-    document.getElementById('status-filter').addEventListener('change', function() {
-    var selectedMonth = this.value;
-    var employees = @json($employees);
+                applyFilter(selectedMonth); // Apply the filter
+            });
 
-    // Filter employees based on the selected month
-    var filteredEmployees = employees.filter(function(employee) {
-        var month = employee.Month.split('-')[1]; // Extract the month part from the date
-        return month === selectedMonth;
-    });
+            // Function to apply filter to DataTable
+            function applyFilter(selectedMonth) {
+                // Extract the month part from the date format (yyyy-mm-dd)
+                let formattedMonth = selectedMonth.padStart(2, '0'); // Pad single-digit months with 0
+                console.log("Formatted month:", formattedMonth);
 
-    // Find the highest total among the filtered employees
-    var highestTotal = Math.max(...filteredEmployees.map(employee => employee.total));
+                filterAndDisplayEmployees(formattedMonth);
 
-    // Filter employees with the highest total for the selected month
-    var highestTotalEmployees = filteredEmployees.filter(employee => employee.total === highestTotal);
-
-    // Filter out employees with total === 0 before calculating the lowest total
-    var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
-
-    // Find the lowest total among the non-zero filtered employees
-    var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee => employee.total)) : 0;
-
-    // Filter employees with the lowest total for the selected month
-    var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
-
-    // Display filtered employees with the highest and lowest total
-    var filteredEmployeesContainer = document.getElementById('filtered-employees');
-    filteredEmployeesContainer.innerHTML = ''; // Clear previous content
-
-    if (filteredEmployees.length === 0) {
-        filteredEmployeesContainer.textContent = 'No employees found for selected month';
-    } else {
-        highestTotalEmployees.forEach(function(employee) {
-            var employeeInfo = document.createElement('div');
-            employeeInfo.textContent = 'Karyawan Terbaik : ' + employee.karyawan.Nama + ' - Total: ' + employee.total;
-            filteredEmployeesContainer.appendChild(employeeInfo);
+                // Filter by month column
+                dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
+            }
         });
 
-        lowestTotalEmployees.forEach(function(employee) {
-            var employeeInfo = document.createElement('div');
-            employeeInfo.textContent = 'Karyawan Terburuk: ' + employee.karyawan.Nama + ' - Total: ' + employee.total;
-            filteredEmployeesContainer.appendChild(employeeInfo);
-        });
-    }
-});
+        function setFilterValue(filterValue) {
+            fetch('/set-filter-value', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        filterValue: filterValue
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Filter value set in session:', data.filterValue);
+                })
+                .catch(error => {
+                    console.error('Error setting filter value:', error);
+                });
+        }
 
+        // Function to restore filter value from session
+        function restoreFilterValue() {
+            fetch('/get-filter-value')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.filterValue) {
+                        document.getElementById('status-filter').value = data.filterValue;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting filter value:', error);
+                });
+        }
 
-// Function to filter and display highest and lowest total employees
-function filterAndDisplayEmployees(month) {
-    var employees = @json($employees);
-
-    // Filter employees based on the selected month
-    var filteredEmployees = employees.filter(function(employee) {
-        var employeeMonth = employee.Month.split('-')[1]; // Extract the month part from the date
-        return employeeMonth === month;
-    });
-
-    // Filter out employees with total === 0
-    var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
-
-    // Find the highest total among the filtered employees
-    var highestTotal = nonZeroEmployees.length > 0 ? Math.max(...nonZeroEmployees.map(employee => employee.total)) : 0;
-
-    // Filter employees with the highest total for the selected month
-    var highestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === highestTotal);
-
-    // Find the lowest total among the non-zero filtered employees
-    var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee => employee.total)) : 0;
-
-    // Filter employees with the lowest total for the selected month
-    var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
-
-    // Display filtered employees with the highest and lowest total
-    var filteredEmployeesContainer = document.getElementById('filtered-employees');
-    filteredEmployeesContainer.innerHTML = ''; // Clear previous content
-
-    if (nonZeroEmployees.length === 0) {
-        filteredEmployeesContainer.textContent = 'No employees found for selected month';
-    } else {
-        highestTotalEmployees.forEach(function(employee) {
-            var employeeInfo = document.createElement('div');
-            employeeInfo.textContent = 'Karyawan Tertinggi : ' + employee.karyawan.Nama + ' - Poin: ' + employee.total;
-            employeeInfo.style.color = 'green';
-            filteredEmployeesContainer.appendChild(employeeInfo);
+        // Call restoreFilterValue() when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            restoreFilterValue();
         });
 
-        lowestTotalEmployees.forEach(function(employee) {
-            var employeeInfo = document.createElement('div');
-            employeeInfo.textContent = 'Karyawan Terbawah: ' + employee.karyawan.Nama + ' - Poin: ' + employee.total;
-            employeeInfo.style.color = 'red';
-            filteredEmployeesContainer.appendChild(employeeInfo);
+        // Event listener for filter select element
+        document.getElementById('status-filter').addEventListener('change', function() {
+            var filterValue = this.value;
+            setFilterValue(filterValue);
         });
-    }
-}
+
+        document.getElementById('status-filter').addEventListener('change', function() {
+            var selectedMonth = this.value;
+            var employees = @json($employees);
+
+            // Filter employees based on the selected month
+            var filteredEmployees = employees.filter(function(employee) {
+                var month = employee.Month.split('-')[1]; // Extract the month part from the date
+                return month === selectedMonth;
+            });
+
+            // Find the highest total among the filtered employees
+            var highestTotal = Math.max(...filteredEmployees.map(employee => employee.total));
+
+            // Filter employees with the highest total for the selected month
+            var highestTotalEmployees = filteredEmployees.filter(employee => employee.total === highestTotal);
+
+            // Filter out employees with total === 0 before calculating the lowest total
+            var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
+
+            // Find the lowest total among the non-zero filtered employees
+            var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee => employee
+                .total)) : 0;
+
+            // Filter employees with the lowest total for the selected month
+            var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
+
+            // Display filtered employees with the highest and lowest total
+            var filteredEmployeesContainer = document.getElementById('filtered-employees');
+            filteredEmployeesContainer.innerHTML = ''; // Clear previous content
+
+            if (filteredEmployees.length === 0) {
+                filteredEmployeesContainer.textContent = 'No employees found for selected month';
+            } else {
+                highestTotalEmployees.forEach(function(employee) {
+                    var employeeInfo = document.createElement('div');
+                    employeeInfo.textContent = 'Karyawan Terbaik : ' + employee.karyawan.Nama +
+                        ' - Total: ' + employee.total;
+                    filteredEmployeesContainer.appendChild(employeeInfo);
+                });
+
+                lowestTotalEmployees.forEach(function(employee) {
+                    var employeeInfo = document.createElement('div');
+                    employeeInfo.textContent = 'Karyawan Terburuk: ' + employee.karyawan.Nama +
+                        ' - Total: ' + employee.total;
+                    filteredEmployeesContainer.appendChild(employeeInfo);
+                });
+            }
+        });
 
 
-</script>
+        // Function to filter and display highest and lowest total employees
+        function filterAndDisplayEmployees(month) {
+            var employees = @json($employees);
 
+            // Filter employees based on the selected month
+            var filteredEmployees = employees.filter(function(employee) {
+                var employeeMonth = employee.Month.split('-')[1]; // Extract the month part from the date
+                return employeeMonth === month;
+            });
 
+            // Filter out employees with total === 0
+            var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
+
+            // Find the highest total among the filtered employees
+            var highestTotal = nonZeroEmployees.length > 0 ? Math.max(...nonZeroEmployees.map(employee => employee.total)) :
+                0;
+
+            // Filter employees with the highest total for the selected month
+            var highestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === highestTotal);
+
+            // Find the lowest total among the non-zero filtered employees
+            var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee => employee.total)) :
+                0;
+
+            // Filter employees with the lowest total for the selected month
+            var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
+
+            // Display filtered employees with the highest and lowest total
+            var filteredEmployeesContainer = document.getElementById('filtered-employees');
+            filteredEmployeesContainer.innerHTML = ''; // Clear previous content
+
+            if (nonZeroEmployees.length === 0) {
+                filteredEmployeesContainer.textContent = 'No employees found for selected month';
+            } else {
+                highestTotalEmployees.forEach(function(employee) {
+                    var employeeInfo = document.createElement('div');
+                    employeeInfo.textContent = 'Karyawan Tertinggi : ' + employee.karyawan.Nama + ' - Poin: ' +
+                        employee.total;
+                    employeeInfo.style.color = 'green';
+                    filteredEmployeesContainer.appendChild(employeeInfo);
+                });
+
+                lowestTotalEmployees.forEach(function(employee) {
+                    var employeeInfo = document.createElement('div');
+                    employeeInfo.textContent = 'Karyawan Terbawah: ' + employee.karyawan.Nama + ' - Poin: ' +
+                        employee.total;
+                    employeeInfo.style.color = 'red';
+                    filteredEmployeesContainer.appendChild(employeeInfo);
+                });
+            }
+        }
+    </script>
 @endsection
