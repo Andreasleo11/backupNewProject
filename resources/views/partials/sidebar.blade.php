@@ -360,7 +360,7 @@
                     <li class="sidebar-item">
                         <a href="{{ route('listformadjust') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            LIST FORM ADJUST
+                            Form Adjust
                         </a>
                     </li>
 

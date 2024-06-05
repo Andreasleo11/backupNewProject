@@ -5,11 +5,12 @@ namespace App\Models;
 use App\Console\Commands\SendPREmailNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Bus;
 
 class PurchaseRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id_create',
@@ -97,6 +98,9 @@ class PurchaseRequest extends Model
     {
         static::created(function ($purchaseRequest) {
             // Dispatch the job to send the email notification
+            $prNo = substr($purchaseRequest->to_department, 0, 4) . '-' . $purchaseRequest->id;
+            $purchaseRequest->update(['pr_no' => $prNo]);
+
             Bus::dispatch(new SendPREmailNotification($purchaseRequest));
         });
 

@@ -29,15 +29,17 @@
     <span class="badge head-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT
         HEAD</span>
     {{-- After the dept head signed --}}
-@elseif($pr->status === 6)
-    <span class="badge purchaser-bg-warning px-3 py-2 fs-6">WAITING FOR PURCHASER</span>
-    {{-- After the purchaser signed --}}
 @elseif ($pr->status === 7)
     <span class="badge gm-bg-warning px-3 py-2 fs-6">WAITING FOR
         GM</span>
+    {{-- After the GM signed --}}
+@elseif($pr->status === 6)
+    <span class="badge purchaser-bg-warning px-3 py-2 fs-6">WAITING FOR PURCHASER</span>
+    {{-- After the purchaser signed --}}
 @elseif($pr->status === 2)
     <span class="badge verificator-bg-warning px-3 py-2 fs-6">WAITING FOR
         VERIFICATOR</span>
+    {{-- After the verificator signed --}}
 @elseif($pr->status === 3)
     <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR
         DIRECTOR</span>

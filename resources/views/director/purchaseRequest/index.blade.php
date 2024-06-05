@@ -61,7 +61,7 @@
                 let status = $(this).val();
                 console.log("Selected status:", status); // Output the selected status to console
 
-                dataTable.column(6).search(status).draw(); // Filter by status column
+                dataTable.column(7).search(status).draw(); // Filter by status column
             });
         });
     </script>

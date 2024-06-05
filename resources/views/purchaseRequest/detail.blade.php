@@ -62,7 +62,8 @@
                     class="p-2 {{ ($purchaseRequest->user_id_create === $user->id && $purchaseRequest->status === 1) ||
                     ($purchaseRequest->status === 1 && $user->is_head) ||
                     ($purchaseRequest->status === 6 && $user->specification->name === 'PURCHASER') ||
-                    ($purchaseRequest->status === 2 && $user->department->name === 'HRD')
+                    (($purchaseRequest->status === 2 && $user->department->name === 'HRD') ||
+                        ($purchaseRequest->status === 7 && $user->is_gm))
                         ? ''
                         : 'd-none' }}">
                     @include('partials.edit-purchase-request-modal', [
@@ -133,15 +134,28 @@
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
-                                @if ($purchaseRequest->status === 4)
-                                    <th rowspan="2" class="align-middle">Received Qty</th>
-                                    <th rowspan="2" class="align-middle">Action</th>
-                                @endif
-                                @if (
+                                @if ($purchaseRequest->is_import)
+                                    @php
+                                        $mouldingApprovalCase =
+                                            ($purchaseRequest->is_import === 1 &&
+                                                $user->email === 'fang@daijo.co.id') ||
+                                            ($purchaseRequest->is_import === 0 && $user->email === 'ong@daijo.co.id');
+
+                                        $purchaseRequest->is_import;
+                                    @endphp
+
+                                    <th rowspan="2" class="align-middle {{ $mouldingApprovalCase ? '' : 'd-none' }}">Is
+                                        Approve
+                                    </th>
+                                @elseif (
                                     $user->department->name === 'DIRECTOR' ||
                                         $user->specification->name == 'VERIFICATOR' ||
-                                        ($user->department == $userCreatedBy->department && $user->is_head == 1))
+                                        ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1))
                                     <th rowspan="2" class="align-middle">Is Approve</th>
+                                @endif
+                                @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
+                                    <th rowspan="2" class="align-middle">Received Qty</th>
+                                    <th rowspan="2" class="align-middle">Action</th>
                                 @endif
                             </tr>
                             <tr>
@@ -277,10 +291,18 @@
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
-                                    @if (
-                                        $user->department->name === $purchaseRequest->from_department &&
-                                            $user->is_head == 1 &&
-                                            $user->specification->name != 'DESIGN')
+                                    @if ($purchaseRequest->is_import)
+                                        <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
+                                            @if ($detail->is_approve_by_head === null)
+                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                    class="btn btn-danger">Reject</a>
+                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                    class="btn btn-success">Approve</a>
+                                            @else
+                                                {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                            @endif
+                                        </td>
+                                    @elseif ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1)
                                         <td>
                                             @if ($detail->is_approve_by_head === null)
                                                 <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
@@ -324,7 +346,7 @@
                                             }
                                         }
                                     @endphp
-                                    @if ($purchaseRequest->status === 4)
+                                    @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
                                         <td class="{{ $receivedTdColor }}">
                                             {{ $detail->received_quantity }} of {{ $detail->quantity }}
                                         </td>
@@ -332,7 +354,8 @@
                                             @include('partials.edit-purchase-request-received-modal')
                                             <button data-bs-target="#edit-purchase-request-received-{{ $detail->id }}"
                                                 data-bs-toggle="modal"
-                                                class="btn btn-primary {{ $detail->is_approve !== 1 ? 'disabled' : '' }}">Edit</button>
+                                                class="btn btn-primary {{ $detail->is_approve !== 1 ? 'disabled' : '' }}">Edit
+                                                Received Qty</button>
                                         </td>
                                     @endif
                                 </tr>

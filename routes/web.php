@@ -340,6 +340,22 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         //KarawangRoute
         Route::get("/pps/karawang", [PPSKarawangController::class, "index"])->name('indexkarawang');
         Route::post('/pps/process-karawang-form', [PPSKarawangController::class, 'processKarawangForm'])->name('processKarawangForm');
+        Route::get("pps/karawang/process1", [PPSKarawangController::class, 'process1'])->name('karawangprocess1');
+        Route::get("pps/karawang/process2", [PPSKarawangController::class, 'process2'])->name('karawangprocess2');
+        Route::get("pps/karawang/process3", [PPSKarawangController::class, 'process3'])->name('karawangprocess3');
+
+        Route::get("/pps/karawang/delivery", [PPSKarawangController::class, "karawanginjection"])->name("karawanginjection");
+        Route::get("pps/karawang/process4", [PPSKarawangController::class, 'process4'])->name("karawangprocess4");
+        Route::get("pps/karawang/process5", [PPSKarawangController::class, 'process5'])->name("karawangprocess5");
+        Route::get("pps/karawang/process6", [PPSKarawangController::class, 'process6'])->name("karawangprocess6");
+
+
+        Route::get("/pps/karawang/items", [PPSKarawangController::class, "itemkarawang"])->name("itemkarawang");
+
+        Route::get("/pps/karawang/line", [PPSKarawangController::class, "linekarawang"])->name("linekarawang");
+
+        Route::get("pps/karawanginjectionfinal",  [PPSKarawangController::class, "finalresultkarawanginjection"])->name("finalkarawanginjectionpps");
+
 
         Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
         Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
@@ -552,6 +568,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
+    Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
+
+
 
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
     Route::get('/get-filter-value', [DisciplinePageController::class, 'getFilterValue']);
