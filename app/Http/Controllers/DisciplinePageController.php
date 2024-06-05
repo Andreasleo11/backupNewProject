@@ -14,12 +14,17 @@ use App\Imports\DesciplineDataImport;
 use App\Models\EvaluationData;
 use App\Models\Employee;
 
+use Carbon\Carbon;
+
 
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Sheet;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+
+use App\Exports\YayasanDisciplineExport;
+
 
 class DisciplinePageController extends Controller
 {
@@ -765,5 +770,69 @@ class DisciplinePageController extends Controller
     public function step2()
     {
         return view("setting.disciplineindexstep2");
+    }
+
+
+    public function exportYayasan(Request $request)
+    {
+        $selectedMonth = $request->input('filter_status');
+      
+        $employees = EvaluationData::with('karyawan')
+        ->whereHas('karyawan', function ($query) {
+            $query->where('status', 'YAYASAN');
+        })
+        ->whereMonth('month', $selectedMonth)
+        ->get();
+
+        
+
+        $result = [];
+
+        foreach ($employees as $data) {
+            $employeeId = $data->karyawan->NIK;
+            
+        
+            if (!isset($result[$employeeId])) {
+                $result[$employeeId] = [
+                    'employee_id' => $employeeId,
+                    'nilai_A' => 0,
+                    'nilai_B' => 0
+                ];
+            }
+
+            $total = $data->total;
+            if ($total >= 91) {
+                $result[$employeeId]['nilai_A'] = 1;
+                $result[$employeeId]['nilai_B'] = 0; // Ensure nilai_B is set to 0
+            } elseif ($total >= 71 && $total <= 90) {
+                $result[$employeeId]['nilai_A'] = 0; // Ensure nilai_A is set to 0
+                $result[$employeeId]['nilai_B'] = 1;
+            } else {
+                $result[$employeeId]['nilai_A'] = 0;
+                $result[$employeeId]['nilai_B'] = 0;
+            }
+            
+            // Initialize nilai_A and nilai_B if not already set
+            if (!isset($result[$employeeId]['nilai_A'])) {
+                $result[$employeeId]['nilai_A'] = 0;
+            }
+            if (!isset($result[$employeeId]['nilai_B'])) {
+                $result[$employeeId]['nilai_B'] = 0;
+            }
+        }
+        
+        // Convert the result associative array to a sequential array
+        $result = array_values($result);
+        
+        // Output the result
+        // dd($result);
+
+
+        $currentDate = Carbon::now()->format('d-m-y'); // or any format you prefer
+    
+        $fileName = "DataYayasan_{$currentDate}.xlsx";
+    
+
+        return Excel::download(new YayasanDisciplineExport($result), $fileName);
     }
 }
