@@ -2,12 +2,12 @@
 
 @section('content')
     <!-- <form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
-                                                            @csrf
-                                                            <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
-                                                            <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
-                                                            <br>
-                                                            <button type="submit">Submit</button>
-                                                        </form> -->
+                                                                                @csrf
+                                                                                <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
+                                                                                <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
+                                                                                <br>
+                                                                                <button type="submit">Submit</button>
+                                                                            </form> -->
 
     @include('partials.info-discipline-page-modal')
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal"> Info </a>
@@ -15,7 +15,7 @@
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
     @if ($user->department_id === 7 || $user->department_id === 22)
-        <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a></a>
+        <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a>
     @endif
 
     @include('partials.upload-excel-file-discipline-modal')
@@ -23,44 +23,46 @@
         data-bs-target="#upload-excel-file-discipline-modal">Upload File
         Excel</button>
 
-        <div class="col-auto">
-            <div class="form-label">Filter Bulan</div>
-        </div>
-        <div class="col-auto">
-            <select name="filter_status" id="status-filter" class="form-select">
-                <option value="01" selected>January</option>
-                <option value="02">February</option>
-                <option value="03">March</option>
-                <option value="04">April</option>
-                <option value="05">May</option>
-                <option value="06">June</option>
-                <option value="07">July</option>
-                <option value="08">August</option>
-                <option value="09">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-            </select>
-        </div>
-        <div class="col-auto">
-            <?php echo date('Y'); ?>
-        </div>
-        <div class="col text-end" id="filtered-employees">
-            <!-- Filtered employees will be displayed here -->
-        </div>
+    <form method="GET" action="{{ route('export.yayasan') }}">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <div class="form-label">Filter Bulan</div>
+            </div>
+            <div class="col-auto">
+                <select name="filter_status" id="status-filter" class="form-select">
+                    <option value="01" selected>January</option>
+                    <option value="02">February</option>
+                    <option value="03">March</option>
+                    <option value="04">April</option>
+                    <option value="05">May</option>
+                    <option value="06">June</option>
+                    <option value="07">July</option>
+                    <option value="08">August</option>
+                    <option value="09">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <?php echo date('Y'); ?>
+            </div>
+            <div class="col text-end" id="filtered-employees">
+                <!-- Filtered employees will be displayed here -->
+            </div>
 
-        @if($user->name === 'timotius')
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Export Yayasan</button>
+            @if ($user->name === 'timotius')
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Export Yayasan</button>
+                </div>
+            @endif
+            <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
         </div>
-        @endif
-        <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
-    </div>
-</form>
+    </form>
 
 
     <section class="content">
-        <div class="card mt-3">
+        <div class="card mt-5">
             <div class="card-body">
                 <div class="table-responsive">
                     {{ $dataTable->table() }}
