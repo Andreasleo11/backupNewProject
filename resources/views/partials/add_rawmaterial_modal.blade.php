@@ -2,13 +2,14 @@
     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Add Raw Material</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{{ route('save.rawmaterial', $detail->id) }}">
+        <form method="POST" action="{{ route('save.rawmaterial', $detail->id) }}">
                     @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add Raw Material</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                    
                     <div class="mb-3">
                         <input type="hidden" name="detail_id" value="{{ $detail->id }}">
                         <!-- Include the detail ID -->
@@ -75,12 +76,13 @@
                             <option value="WOS">WOS</option>
                         </select>
                     </div>
-                </form>
+               
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
+            </form>
         </div>
     </div>
 </div>

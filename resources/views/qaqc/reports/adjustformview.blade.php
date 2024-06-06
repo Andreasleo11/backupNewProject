@@ -19,6 +19,14 @@
 
 <a href="{{ route('formadjust.download', ['id' => $datas->id]) }}" class="btn btn-primary">Export PDF</a>
 
+<button class="btn btn-outline-primary me-2"
+                        data-bs-target="#send-mail-modal"
+                        data-bs-toggle="modal">
+                        <i class='bx bx-envelope'></i> Send mail
+                    </button>
+@include('partials.send-mail-adjust-modal', ['datas' => $datas])
+                    @include('partials.send-mail-confirmation')
+
 <section aria-label="header" class="container">
         <div class="row text-center mt-5">
             <div class="col">

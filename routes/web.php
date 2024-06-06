@@ -204,6 +204,9 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports')->middleware('permission:export-to-excel-vqc-report');
         Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts')->middleware();
 
+
+        Route::delete('/qaqc/adjustform/{id}/deletematerialk', [AdjustFormQcController::class, 'deletematerial'])->name('qaqc.adjust.deletematerial');
+
         Route::put('/qaqc/reports/{id}/updateDoNumber', [QaQcReportController::class, 'updateDoNumber'])->name('update.do.number');
 
         Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
@@ -228,6 +231,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
           Route::get('formadjust/{id}/savePdf', [AdjustFormQcController::class, 'savePdf'])->name('formadjust.savePdf');
 
           Route::get('form-adjust/{id}/download', [AdjustFormQcController::class, 'exportToPdf'])->name('formadjust.download');
+
+          Route::post('form-adjust/report/{id}/sendEmail', [AdjustFormQcController::class, 'sendEmail'])->name('formadjust.report.sendEmail');
     });
 
     Route::middleware(['checkDepartment:HRD'])->group(function() {

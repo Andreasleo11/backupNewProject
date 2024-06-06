@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\QaqcMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Report;
@@ -180,6 +182,35 @@ class AdjustFormQcController extends Controller
     }
 
 
+    public function sendEmail($id, Request $request)
+    {
+        $this->savePdf($id);
+
+        $headerFormAdjust = HeaderFormAdjust::find($id);
+        $reportid = $headerFormAdjust->report_id;
+        $datas = HeaderFormAdjust::with('report', 'report.details', 'report.details.adjustdetail')->where('report_id', $reportid)->find($id);
+
+
+        $pdfName = 'pdfs/Form-Adjust-' . $datas->id . '.pdf';
+        $pdfPath = Storage::url($pdfName);
+
+        $filePaths[] = $pdfPath;
+
+        $mailData = [
+            'to' =>  array_filter(array_map('trim', explode(';', $request->to))) ?? 'raymondlay023@gmail.com',
+            'cc' =>  array_filter(array_map('trim', explode(';', $request->cc))) ?? ['andreasleonardo.al@gmail.com', 'raymondlay034@gmail.com'],
+            'subject' => $request->subject ?? 'QAQC Verification Form Adjust Report Mail',
+            'body' => $request->body ?? 'Mail from ' . env('APP_NAME') ,
+            'file_paths' => $filePaths
+        ];
+
+        Mail::send(new QaqcMail($mailData));
+
+        return redirect()->back()->with(['success' => 'Email sent successfully!']);
+    }
+
+
+
     public function exportToPdf($id)
     {
        
@@ -232,5 +263,12 @@ class AdjustFormQcController extends Controller
         // dd($datas);
        
         return view('qaqc.formadjustlistall', compact('datas'));
+    }
+
+
+    public function deletematerial($id)
+    {
+        FormAdjustMaster::find($id)->delete();
+        return redirect()->back()->with(['success' => 'Defect deleted successfully!']);
     }
 }

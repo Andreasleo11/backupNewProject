@@ -73,6 +73,7 @@
                                                                 <th>Raw Material Description</th>
                                                                 <th>Quantity</th>
                                                                 <th>Measure</th>
+                                                                <th>Action</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -85,6 +86,18 @@
                                                                     <td>{{ number_format($adjust->rm_quantity, 5) }}
                                                                     </td>
                                                                     <td>{{ $adjust->rm_measure }}</td>
+                                                                    <td>
+                                                                        <form
+                                                                            action="{{ route('qaqc.adjust.deletematerial', $adjust->id) }}"
+                                                                            method="post">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit"
+                                                                                class="btn btn-danger btn-sm">
+                                                                                <i class='bx bx-trash-alt'></i>
+                                                                            </button>
+                                                                        </form>
+                                                                    </td>
                                                                 </tr>
                                                             @empty
                                                                 <tr>
