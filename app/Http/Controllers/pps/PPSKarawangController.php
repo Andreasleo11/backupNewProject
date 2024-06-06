@@ -489,6 +489,9 @@ class PPSKarawangController extends Controller
 			$val_prod_min = $tab_inventory_fg->production_min_qty;
 			$val_cavity = $tab_inventory_fg->cavity;
 			$val_safety_stock = $tab_inventory_fg->safety_stock;
+			$cycle_time = $val_cycle_time_raw / $val_cavity;
+			$man_power = $tab_inventory_fg->man_power == 0 ? 1 : $tab_inventory_fg->man_power;
+			$setup_time = $tab_inventory_fg->setup_time;
 			
 			//Update data di tabel items
 			DB::table('prodplan_kri_items')->where('id',$val_items_id)->update([							
@@ -498,6 +501,9 @@ class PPSKarawangController extends Controller
 				'prod_min' => $val_prod_min,
 				'cycle_time_raw' => $val_cycle_time_raw,
 				'cavity' => $val_cavity,
+				'cycle_time' => $cycle_time,
+				'man_power'  => $man_power,
+				'setup_time'  => $setup_time,
 			]);
 		}	
 
