@@ -623,7 +623,85 @@ class DeliveryScheduleController extends Controller
 			'updated_at' => $now,
 		]);
 
+		$this->statusFinish();
+
 		return redirect()->route('indexfinalwip');
     }
+
+
+
+
+
+	public function statusFinish()
+	{
+		 // Retrieve all records from the delsched_final table
+		 $datas = delsched_final::get();
+
+		 $datas2 = delsched_finalwip::get();
+
+		 $today = Carbon::today();
+		//  dd($today);
+
+		 foreach ($datas as $data) {
+			 // Check if doc_status is 'C' or if delivery_qty is equal to delivered
+			 if ($data->doc_status === 'C') {
+				 // Update the status to 'Finish'
+				 $data->status = 'Finish';
+				 if($data->delivery_qty === $data->delivered) {
+					// Update the status to 'Finish'
+					$data->status = 'Finish';
+				}
+			 }
+			
+			if($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == 2) {
+				// Update the status to 'Danger'
+				$data->status = 'Danger';
+			}
+
+			if($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == -2) {
+				// Update the status to 'Warning'
+				$data->status = 'Warning';
+			}
+			
+	
+
+			$data->save();
+		 }
+
+
+		 foreach ($datas2 as $dataw) {
+			// Check if doc_status is 'C' or if delivery_qty is equal to delivered
+
+			if($dataw->balance_wip < 0) {
+				// Update the status to 'Finish'
+			   $dataw->status = 'Warning';
+		   	}
+
+			if($dataw->balance_wip > 0) {
+				 // Update the status to 'Finish'
+				$dataw->status = 'Finish';
+			}
+
+			if($dataw->balance_wip < 0 && $today->diffInDays($dataw->delivery_date, false) == 5) {
+				// Update the status to 'Danger'
+				$dataw->status = 'Danger';
+			}
+			
+			
+		//    if($today->diffInDays($dataw->delivery_date, false) == -5) {
+		// 	   // Update the status to 'Warning'
+		// 	   $dataw->status = 'Warning';
+		//    }
+		   
+   
+
+		   $dataw->save();
+		}
+	 
+		 
+	 
+		 // Output the updated data for verification
+		 return redirect()->route('indexfinalwip');
+	}
 }
 

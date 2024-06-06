@@ -49,10 +49,13 @@
                                                     <span class="badge bg-warning text-dark">Waiting for Dept Head</span>
                                                     @break
                                                 @case(2)
-                                                    <span class="badge bg-warning text-dark">Waiting for Director</span>
+                                                    <span class="badge bg-warning text-dark">Waiting for Verificator</span>
                                                     @break
                                                 @case(3)
                                                     <span class="badge bg-warning text-dark">Waiting for GM</span>
+                                                    @break
+                                                @case(9)
+                                                    <span class="badge bg-warning text-dark">Waiting Director</span>
                                                     @break
                                                 @case(6)
                                                     <span class="badge bg-info text-dark">Waiting for Supervisor</span>

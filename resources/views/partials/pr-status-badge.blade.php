@@ -20,10 +20,25 @@
         background-color: rgba(255, 193, 7, 0.7);
         color: #000;
     }
+
+    .director-bg {
+        background-color: rgb(255, 191, 0);
+        color: #000;
+    }
+
+    .approved-bg {
+        background-color: rgb(20, 128, 72);
+        color: #fff;
+    }
+
+    .rejected-bg {
+        background-color: rgb(221, 47, 47);
+        color: #fff;
+    }
 </style>
 
 @if ($pr->status === 5)
-    <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
+    <span class="badge rejected-bg px-3 py-2 fs-6">REJECTED</span>
     {{-- After the maker signed --}}
 @elseif($pr->status === 1)
     <span class="badge head-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT
@@ -41,8 +56,8 @@
         VERIFICATOR</span>
     {{-- After the verificator signed --}}
 @elseif($pr->status === 3)
-    <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING FOR
+    <span class="badge director-bg px-3 py-2 fs-6">WAITING FOR
         DIRECTOR</span>
 @elseif($pr->status === 4)
-    <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
+    <span class="badge approved-bg px-3 py-2 fs-6">APPROVED</span>
 @endif

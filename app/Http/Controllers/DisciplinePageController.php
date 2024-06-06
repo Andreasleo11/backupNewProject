@@ -777,9 +777,19 @@ class DisciplinePageController extends Controller
     {
         $selectedMonth = $request->input('filter_status');
       
+        $currentYear = Carbon::now()->year;
+    
+        // Create a Carbon instance for the selected month and year
+        $selectedDate = Carbon::createFromDate($currentYear, $selectedMonth, 1);
+        
+        // Calculate the cutoff date, 6 months before the selected month
+        $cutoffDate = $selectedDate->copy()->subMonths(6)->startOfMonth();
+        
+
         $employees = EvaluationData::with('karyawan')
-        ->whereHas('karyawan', function ($query) {
-            $query->where('status', 'YAYASAN');
+        ->whereHas('karyawan', function ($query) use ($cutoffDate) {
+            $query->where('status', 'YAYASAN')
+                  ->where('start_date', '<', $cutoffDate);
         })
         ->whereMonth('month', $selectedMonth)
         ->get();

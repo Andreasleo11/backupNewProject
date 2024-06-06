@@ -14,6 +14,7 @@ use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Artisan;
 
 class PurchaseRequestController extends Controller
@@ -642,5 +643,35 @@ class PurchaseRequestController extends Controller
             return response()->json(['success' => 'All detail approved successfully!']);
         }
         return response()->json(['error' => 'Something went wrong!']);
+    }
+
+    public function exportToPdf($id)
+    {
+        $user =  Auth::user();
+        $purchaseRequest = PurchaseRequest::with('itemDetail', 'createdBy')->find($id);
+        $userCreatedBy = $purchaseRequest->createdBy;
+
+        // Filter itemDetail based on user role
+        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
+            if ($user->department->name === "DIRECTOR") {
+                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                    return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_gm && $detail->is_approve_by_head);
+                }
+                return $detail->is_approve || ($detail->is_approve_by_verificator || $detail->is_approve_by_gm && $detail->is_approve_by_head);
+            } elseif ($user->specification->name === "VERIFICATOR") {
+                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm || $detail->is_approve_by_verificator;
+                }
+                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+            } else {
+                return true; // Include all details for other roles
+            }
+        })->values(); // Ensure that the result is an array;
+
+        $pdf = Pdf::loadView('pdf/pr-pdf', compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'))
+            ->setPaper('a4', 'landscape');
+
+        // return view('pdf.pr-pdf', compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'));
+        return $pdf->download('Purchase Request-' . $purchaseRequest->id . ' (' . $purchaseRequest->pr_no . ')' .'.pdf');
     }
 }

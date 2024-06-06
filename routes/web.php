@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\accounting\AccountingHomeController;
+use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AssemblyHomeController;
@@ -311,6 +312,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:ACCOUNTING'])->group(function(){
         Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
+        Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
     });
 
     Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function(){
@@ -510,6 +512,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/purchaseRequest/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
     Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
 
+    Route::get('/purchaseRequest/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
+
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home')->middleware('permission:get-form-cuti');
     Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create')->middleware('permission:create-form-cuti');
@@ -597,4 +601,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
 
+
+    Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
 });

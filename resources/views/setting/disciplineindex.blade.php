@@ -22,6 +22,7 @@
     <button type="button" class="btn btn-primary" data-bs-toggle="modal"
         data-bs-target="#upload-excel-file-discipline-modal">Upload File
         Excel</button>
+        
 
     <form method="GET" action="{{ route('export.yayasan') }}">
         <div class="row align-items-center">
@@ -109,7 +110,7 @@
                 filterAndDisplayEmployees(formattedMonth);
 
                 // Filter by month column
-                dataTable.column(4).search('-' + formattedMonth + '-', true, false).draw();
+                dataTable.column(6).search('-' + formattedMonth + '-', true, false).draw();
             }
         });
 

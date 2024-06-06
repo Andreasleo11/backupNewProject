@@ -104,6 +104,25 @@
                                                     class="d-none d-sm-inline">Delete</span>
                                             </button>
                                         @endif
+
+                                        <div class="btn-group" role="group">
+
+                                            <button type="button"
+                                                class="btn text-success border border-success dropdown-toggle"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                More
+                                            </button>
+
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a href="{{ route('purchaserequest.exportToPdf', $pr->id) }}"
+                                                        class="btn btn-success my-1 dropdown-item">
+                                                        <i class='bx bxs-file-pdf'></i> <span
+                                                            class="d-none d-sm-inline">Export PDF</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </td>
                                     <td>
                                         @include('partials.pr-status-badge')

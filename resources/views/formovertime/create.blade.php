@@ -51,6 +51,9 @@
                                 </select>
                             </div>
 
+                            
+
+
                             <div id="designFieldContainer"></div>
 
                             <div class="form-group mt-3 col-md-6">
@@ -92,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         departmentDropdown.addEventListener('change', function () {
             // Clear the design field container
             designFieldContainer.innerHTML = '';
-
+          
             // Check if the selected department is Moulding
             const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex].text;
             if (selectedDepartment === 'MOULDING') {
@@ -186,11 +189,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Add event listener for keyup event
             itemNameInput.addEventListener('keyup', function() {
+
+                const departmentDropdown = document.getElementById('fromDepartmentDropdown');
                 const inputValue = itemNameInput.value.trim();
                 
                 if (inputValue.length > 0) {
                     // Fetch item names from server based on user input
-                    fetch(`/get-nik-names?nik=${inputValue}`)
+                    fetch(`/get-nik-names?nik=${inputValue}&deptid=${departmentDropdown.value}`)
                         .then(response => response.json())
                         .then(data => {
                             // Clear previous dropdown options
