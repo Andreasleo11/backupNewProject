@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\accounting\AccountingHomeController;
+use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\AssemblyHomeController;
@@ -311,6 +312,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:ACCOUNTING'])->group(function(){
         Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
+        Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
     });
 
     Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function(){

@@ -244,8 +244,8 @@
                 </a>
                 <ul id="accountingitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-accounting">
-                        <a href="#" class="sidebar-link">
-                            COMING SOON
+                        <a href="{{ route('accounting.purchase-request') }}" class="sidebar-link">
+                            Approved Purchase Requests
                         </a>
                     </li>
                 </ul>
