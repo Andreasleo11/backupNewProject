@@ -652,6 +652,11 @@ class DeliveryScheduleController extends Controller
 					$data->status = 'Finish';
 				}
 			 }
+
+			 if($data->delivery_qty === $data->delivered) {
+				// Update the status to 'Finish'
+				$data->status = 'Finish';
+			}
 			
 			if($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == 2) {
 				// Update the status to 'Danger'
