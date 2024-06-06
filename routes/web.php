@@ -510,6 +510,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/purchaseRequest/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
     Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
 
+    Route::get('/purchaseRequest/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
+
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti.home')->middleware('permission:get-form-cuti');
     Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create')->middleware('permission:create-form-cuti');
