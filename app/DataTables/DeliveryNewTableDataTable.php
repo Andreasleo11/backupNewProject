@@ -71,15 +71,13 @@ class DeliveryNewTableDataTable extends DataTable
         return [
             Column::make('status')->data('status')->renderRaw('function(data, type, row, meta){
                 if (type === \'display\') {
-                    if (data === "light") {
-                        return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium"> Aman </span>\';
-                    } else if (data === "danger" ) {
+                    if (data === "Finish") {
+                        return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium"> Finish </span>\';
+                    } else if (data === "Danger" ) {
                         return \'<span class="badge rounded-pill text-bg-danger px-3 py-2 fs-6 fw-medium">Danger</span>\';
-                    } else if (data === "warning"){
+                    } else if (data === "Warning"){
                         return \'<span class="badge rounded-pill text-bg-warning px-3 py-2 fs-6 f w-medium">Warning</span>\';
-                    } else if (data === "success"){
-                        return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 f w-medium">Selesai</span>\';
-                    } 
+                    }
                 }
                 return data; // Return the original data for other types
             }'),
