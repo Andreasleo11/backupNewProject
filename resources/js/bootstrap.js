@@ -17,6 +17,8 @@ window.$ = $;
 select2();
 
 import datepicker from "bootstrap-datepicker";
+import introJs from 'intro.js';
+window.introJs = introJs;
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
