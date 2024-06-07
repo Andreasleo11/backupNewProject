@@ -43,6 +43,7 @@
             <th>Count</th>
             <th>Average with Count</th>
             <th>In Stock</th>
+            <th>Days</th>
             <!-- <th>Day In Stock / Average</th> -->
         </tr>
     </thead>
@@ -64,8 +65,12 @@
 
                         $newColumnValue = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
                     @endphp
-                    <td>{{ $averageWithCount }}</td>
+                    <td>{{ round($averageWithCount) }}</td>
                     <td>{{ $inStock }}</td>
+                    @php
+                    $days = floor($inStock / $averageWithCount);
+                    @endphp
+                    <td>{{$days}}</td>
                     <!-- <td>{{ $newColumnValue }}</td> -->
                 </tr>
             @endforeach

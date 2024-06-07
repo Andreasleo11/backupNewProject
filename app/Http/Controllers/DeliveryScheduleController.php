@@ -644,22 +644,17 @@ class DeliveryScheduleController extends Controller
 
 		 foreach ($datas as $data) {
 			 // Check if doc_status is 'C' or if delivery_qty is equal to delivered
-			 if ($data->doc_status === 'C') {
-				 // Update the status to 'Finish'
-				 $data->status = 'Finish';
-				 if($data->delivery_qty === $data->delivered) {
-					// Update the status to 'Finish'
-					$data->status = 'Finish';
-				}
-			 }
-			
-			if($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == 2) {
-				// Update the status to 'Danger'
+			 if ($data->doc_status === 'C' || $data->delivery_qty === $data->delivered) {
+				// Update the status to 'Finish' if the doc_status is 'C' or if delivery_qty equals delivered
+				$data->status = 'Finish';
+			} elseif ($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == 2) {
+				// Update the status to 'Danger' if the doc_status is 'O' and the delivery_date is 2 days from today
 				$data->status = 'Danger';
-			}
-
-			if($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == -2) {
-				// Update the status to 'Warning'
+			} elseif ($data->doc_status === 'O' && $today->diffInDays($data->delivery_date, false) == -2) {
+				// Update the status to 'Warning' if the doc_status is 'O' and the delivery_date was 2 days ago
+				$data->status = 'Warning';
+			} else {
+				// For all other conditions, set the status to 'Warning'
 				$data->status = 'Warning';
 			}
 			
