@@ -174,7 +174,7 @@ class DisciplineTableDataTable extends DataTable
 
         ->addColumn('grade', '
         @php
-            
+
         if($total >= 91)
         {
             $grade = "A";
@@ -350,14 +350,29 @@ class DisciplineTableDataTable extends DataTable
                     ->orderBy(1,'asc')
                     ->selectStyleSingle()
                     ->buttons([
-                        Button::make('excel')->addClass('animated-button'),
+                        Button::make('excel'),
                         Button::make('csv'),
                         Button::make('pdf'),
                         Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
+                    ])
+                    ->parameters([
+                        'initComplete' => 'function() {
+                            introJs().setOptions({
+                                steps: [{
+                                    title: "Welcome",
+                                    intro: "Welcome to the Discipline Evalution Page",
+                                },
+                                {
+                                    element: document.querySelector(".buttons-excel"),
+                                    intro: "The first step you need to upload this"
+                                },
+                                {
+                                    element: document.querySelector(".btn-upload"),
+                                    intro: "Then upload the excel file that filled with grades"
+                                }]
+                            }).start();
+                        }'
                     ]);
-
 
     }
 
@@ -370,8 +385,7 @@ class DisciplineTableDataTable extends DataTable
     {
         return [
             Column::make('id')
-                ->visible(false)
-                ->exportable(true),
+                ->visible(false),
             Column::make('NIK'),
             Column::make('Name')
                 ->data('karyawan.Nama')
@@ -385,10 +399,12 @@ class DisciplineTableDataTable extends DataTable
                 ->title('Start Date')
                 ->data('karyawan.start_date')
                 ->searchable(false)
+                ->exportable(false)
                 ->addClass('align-middle')->orderable(false),
             Column::make('status')
                 ->title('Status')
                 ->data('karyawan.status')
+                ->exportable(false)
                 ->searchable(false)
                 ->addClass('align-middle')->orderable(false),
             Column::make('Month'),
