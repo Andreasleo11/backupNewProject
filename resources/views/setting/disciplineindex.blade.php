@@ -7,8 +7,8 @@
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
     @if ($user->department_id === 7 || $user->department_id === 22)
-        <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a>
     @endif
+    <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Department</a>
 
     @include('partials.upload-excel-file-discipline-modal')
     <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"

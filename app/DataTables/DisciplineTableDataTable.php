@@ -201,7 +201,7 @@ class DisciplineTableDataTable extends DataTable
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\EvaluationData $mod   el
+     * @param \App\Models\EvaluationData $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(EvaluationData $model): QueryBuilder
@@ -304,7 +304,6 @@ class DisciplineTableDataTable extends DataTable
                     $query->where('Dept', '310');
                 })->newQuery();
         }
-
         elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 8) {
             // Get data for department 340
             return $model::with('karyawan')
@@ -348,7 +347,7 @@ class DisciplineTableDataTable extends DataTable
                     ->minifiedAjax()
                     ->dom('Bfrtip')
                     ->orderBy(1,'asc')
-                    ->selectStyleSingle()
+                    // ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -360,16 +359,24 @@ class DisciplineTableDataTable extends DataTable
                             introJs().setOptions({
                                 steps: [{
                                     title: "Welcome",
-                                    intro: "Welcome to the Discipline Evalution Page",
+                                    intro: "Welcome to the Discipline Evaluation Page",
                                 },
                                 {
                                     element: document.querySelector(".buttons-excel"),
-                                    intro: "The first step you need to upload this"
+                                    title: "First Step",
+                                    intro: "You need to <b>export the data</b> using by clicking this export button",
+                                    position: "top",
                                 },
                                 {
                                     element: document.querySelector(".btn-upload"),
-                                    intro: "Then upload the excel file that filled with grades"
-                                }]
+                                    title: "Last but not least",
+                                    intro: "Upload the excel file that <b>filled with grades</b>. Voila!",
+                                    position: "right",
+                                }],
+                                dontShowAgain: true,
+                                disableInteraction: true,
+                                showBullets: false,
+                                dontShowAgainCookieDays: 30,
                             }).start();
                         }'
                     ]);
@@ -386,64 +393,64 @@ class DisciplineTableDataTable extends DataTable
         return [
             Column::make('id')
                 ->visible(false),
-            Column::make('NIK'),
+            Column::make('NIK')->title('NIK')->addClass('align-middle text-center'),
             Column::make('Name')
                 ->data('karyawan.Nama')
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
+                ->addClass('align-middle text-center')->orderable(false),
             Column::make('Department')
                 ->data('karyawan.Dept')
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
+                ->addClass('align-middle text-center')->orderable(false),
             Column::make('start_date')
                 ->title('Start Date')
                 ->data('karyawan.start_date')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
+                ->addClass('align-middle text-center')->orderable(false),
             Column::make('status')
                 ->title('Status')
                 ->data('karyawan.status')
                 ->exportable(false)
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('Month'),
+                ->addClass('align-middle text-center')->orderable(false),
+            Column::make('Month')->addClass('align-middle text-center'),
             Column::make('Alpha')
-                ->exportable(false),
+                ->exportable(false)->addClass('align-middle text-center'),
             Column::make('Telat')
-                ->exportable(false),
+                ->exportable(false)->addClass('align-middle text-center'),
             Column::make('Izin')
-                ->exportable(false),
+                ->exportable(false)->addClass('align-middle text-center'),
             Column::make('Sakit')
-                ->exportable(false),
+                ->exportable(false)->addClass('align-middle text-center'),
             Column::make('totalkehadiran')
                 ->title('Total Nilai Kehadiran')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('kerajinan_kerja'),
-            Column::make('kerapian_pakaian'),
-            Column::make('kerapian_rambut'),
-            Column::make('kerapian_sepatu'),
-            Column::make('prestasi'),
-            Column::make('loyalitas'),
+                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
+            Column::make('kerajinan_kerja')->addClass('align-middle text-center'),
+            Column::make('kerapian_pakaian')->addClass('align-middle text-center'),
+            Column::make('kerapian_rambut')->addClass('align-middle text-center'),
+            Column::make('kerapian_sepatu')->addClass('align-middle text-center'),
+            Column::make('prestasi')->addClass('align-middle text-center'),
+            Column::make('loyalitas')->addClass('align-middle text-center'),
             Column::make('totaldiscipline')
-            ->title('Total Nilai Kedisiplinan')
-            ->searchable(false)
-            ->exportable(false)
-            ->addClass('align-middle')->orderable(false),
+                ->title('Total Nilai Kedisiplinan')
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
             Column::make('total')
-            ->exportable(false),
+                ->exportable(false)
+                ->addClass('align-middle text-center'),
             Column::make('grade')
-            ->title('Grade')
-            ->searchable(false)
-            ->exportable(false)
-            ->addClass('align-middle')->orderable(false),
+                ->title('Grade')
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass('align-middle text-center')->orderable(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center')
-                ->addClass('align-middle'),
+                ->addClass('align-middle text-center'),
         ];
     }
 
