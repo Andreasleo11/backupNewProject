@@ -31,7 +31,7 @@
     @endphp
 
     <div class="text-end container mb-5">
-        @if ($user->id == $userCreatedBy->id || $user->specification->name === 'PURCHASER')
+        @if ($user->id == $userCreatedBy->id || $user->specification->name === 'PURCHASER' || $user->is_head === 1)
             <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
                 <i class='bx bx-upload'></i> Upload
             </button>
