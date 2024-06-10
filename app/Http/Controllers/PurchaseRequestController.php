@@ -82,13 +82,12 @@ class PurchaseRequestController extends Controller
 
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
-            } elseif ($userDepartmentName === "PERSONALIA") {
-                $purchaseRequestsQuery->where('to_department', 'Personnel');
             } elseif ($user->email === 'nur@daijo.co.id') {
                 $purchaseRequestsQuery->where(function($query) {
-                    $query->where('to_department', 'Maintenance')
-                        ->orWhere('to_department', 'Personnel');
+                    $query->where('to_department', 'Maintenance');
                 });
+            } elseif ($userDepartmentName === "PERSONALIA") {
+                $purchaseRequestsQuery->where('to_department', 'Personnel');
             }
 
             $purchaseRequestsQuery->whereNotNull('autograph_1');
@@ -316,7 +315,7 @@ class PurchaseRequestController extends Controller
             // after Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
                 if($purchaseRequest->to_department == 'Purchasing' && $purchaseRequest->type === 'factory' ||
-                $purchaseRequest->to_department == 'Maintenance' && $purchaseRequest->type === 'factory') {
+                $purchaseRequest->to_department == 'Maintenance') {
                     // direct to Director
                     $purchaseRequest->status = 3;
                 } elseif($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel'){
