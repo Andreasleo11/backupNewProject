@@ -120,7 +120,10 @@ class SendPREmailNotification extends Command
             }
 
         $newPr->status !== 1 ? $title = "There's PR Changed!" : $title = "There's a New PR!";
-        $cc = $newPr->createdBy->email;
+        $cc = [$newPr->createdBy->email];
+        if($newPr->to_department === 'Maintenance'){
+            array_push($cc, 'nur@daijo.co.id');
+        }
         $status = $this->checkStatus($newPr->status);
         $from = 'pt.daijoindustrial@daijo.co.id';
         $url = 'http://116.254.114.93:2420/' . 'purchaserequest/detail/' . $newPr->id;
