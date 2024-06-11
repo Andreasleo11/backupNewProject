@@ -22,26 +22,34 @@ class FormOvertimeController extends Controller
 {
     public function index()
     {
-        $dataheader = HeaderFormOvertime::with('Relationuser','Relationdepartement')->get();
-        // dd($dataheader);
-        return view("formovertime.index", compact("dataheader"));
+       // Get the authenticated user
+       $user = Auth::user();
+
+       // Filter the data based on the user's departement_id
+       $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
+           ->where('dept_id', $user->department_id)
+           ->get();
+
+       return view("formovertime.index", compact("dataheader"));
     }
 
     public function create()
     {
         $employees = Employee::get();
         $departements = Department::get();
-        
+
         return view("formovertime.create", compact("employees", "departements"));
     }
 
 
-    public function getEmployeeNik(Request $request)
+    public function getEmployees(Request $request)
     {
         $nama = $request->query('name');
+        $nik = $request->query('nik');
         $deptid = $request->query('deptid');
-       
+
         info('AJAX request received for item name: ' . $nama);
+        info('AJAX request received for nik: ' . $nik);
         info('AJAX request received for dept id: ' . $deptid);
 
         $department = Department::where('id', $deptid)->first();
@@ -49,13 +57,21 @@ class FormOvertimeController extends Controller
 
 
         // Fetch item names and prices from the database based on user input
-            if ($dept_no) {
-            // Fetch employees based on NIK and department number
-            $pegawais = Employee::where('Nama', 'like', '%' . $nama . '%')
-                ->where('Dept', $dept_no)
-                ->select('NIK', 'nama')
-                ->get();
+        if ($dept_no) {
+            if($nik){
+                // Fetch employees based on NIK and department number
+                $pegawais = Employee::where('NIK', 'like', '%' . $nama . '%')
+                    ->where('Dept', $dept_no)
+                    ->select('NIK', 'nama')
+                    ->get();
 
+            } elseif($nama) {
+                // Fetch employees based on Nama and department number
+                $pegawais = Employee::where('Nama', 'like', '%' . $nama . '%')
+                    ->where('Dept', $dept_no)
+                    ->select('NIK', 'nama')
+                    ->get();
+            }
             return response()->json($pegawais);
         } else {
             // If department number does not exist, return an empty response or handle error
@@ -79,7 +95,7 @@ class FormOvertimeController extends Controller
         }
 
 
-        
+
         $headerData = [
             'user_id' => $userIdCreate,
             'dept_id' => $request->input('from_department'),
@@ -88,12 +104,12 @@ class FormOvertimeController extends Controller
             'status' => $status,
             'is_design' => $request->input('design')
         ];
-        
+
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
 
         $this->detailOvertimeInsert($request, $headerovertime->id);
-        
+
         return redirect()->route('formovertime.index');
     }
 
@@ -135,7 +151,7 @@ class FormOvertimeController extends Controller
     public function detail($id)
     {
         $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
-        
+
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
 
 
@@ -148,7 +164,7 @@ class FormOvertimeController extends Controller
     public function saveAutographOtPath(Request $request, $id, $section)
     {
         $username = Auth::user()->name;
-        // Log::info('Username:', ['username' => $username]); 
+        // Log::info('Username:', ['username' => $username]);
         $imagePath = $username . '.png';
         // Log::info('imagepath : ', $imagePath);
 
@@ -177,13 +193,13 @@ class FormOvertimeController extends Controller
                 'description' => $request->description,
                 'is_approve' => false,
             ]);
-        
-        
+
+
 
         return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
     }
 
-    
+
     public function updateStatus($id)
     {
         $headerForm = HeaderFormOvertime::find($id);
@@ -253,9 +269,9 @@ class FormOvertimeController extends Controller
 
         $departmentName = $header->Relationdepartement->name;
         $currentDate = Carbon::now()->format('d-m-y'); // or any format you prefer
-    
+
         $fileName = "overtime_{$departmentName}_{$currentDate}.xlsx";
-    
+
 
         return Excel::download(new OvertimeExport($header, $datas), $fileName);
     }
@@ -263,7 +279,7 @@ class FormOvertimeController extends Controller
     public function edit($id)
     {
         $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
-        
+
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
 
         $employees = Employee::get();
@@ -277,6 +293,7 @@ class FormOvertimeController extends Controller
         $data = $request->all();
         // dd($data);
 
+        DetailFormOvertime::where('header_id', $id)->delete();
 
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $employeedata) {
@@ -291,25 +308,6 @@ class FormOvertimeController extends Controller
                 $break = $employeedata['break'];
                 $remark = $employeedata['remark'];
 
-                $detailData = DetailFormOvertime::where('header_id', $id)
-                ->where('NIK', $nik)
-                ->first();
-
-            if ($detailData) {
-                // If the record exists, update it
-                $detailData->update([
-                    'nama' => $nama,
-                    'is_makan' => $makan,
-                    'job_desc' => $jobdesc,
-                    'start_date' => $startdate,
-                    'start_time' => $starttime,
-                    'end_date' => $enddate,
-                    'end_time' => $endtime,
-                    'break' => $break,
-                    'remarks' => $remark
-                ]);
-            } else {
-                // If the record does not exist, create a new one
                 DetailFormOvertime::create([
                     'header_id' => $id,
                     'NIK' => $nik,
@@ -323,8 +321,6 @@ class FormOvertimeController extends Controller
                     'break' => $break,
                     'remarks' => $remark
                 ]);
-            }
-               
             }
         }
 

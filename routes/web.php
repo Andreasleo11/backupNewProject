@@ -594,9 +594,11 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class,'saveAutographOtPath']);
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
 
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
-    Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
+    Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
