@@ -567,7 +567,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
         }
-        
+
         elseif($user->is_head == 1 && $user->department_id == 24){
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '331')
@@ -583,7 +583,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
         }
-        
+
         elseif($user->is_head == 1 && $user->department_id == 17){
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '330')
@@ -591,7 +591,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
         }
-        
+
         elseif($user->is_head == 1 && $user->department_id == 25){
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '351')
@@ -640,8 +640,8 @@ class DisciplinePageController extends Controller
     {
         $evaluationData = EvaluationData::find($id);
 
-        
-        
+
+
         // Update the specific fields for this user
         $evaluationData->update([
             'kemampuan_kerja' => $request->kemampuan_kerja,
@@ -656,8 +656,8 @@ class DisciplinePageController extends Controller
             // Add other fields you want to update
         ]);
 
-        
-    
+
+
         // Calculate total score
         $scoreMaps = [
             'kemampuan_kerja' => ['A' => 17, 'B' => 14, 'C' => 11, 'D' => 8, 'E' => 0],
@@ -670,20 +670,20 @@ class DisciplinePageController extends Controller
             'relawan' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
             'integritas' => ['A' => 8, 'B' => 6, 'C' => 5, 'D' => 3, 'E' => 0]
         ];
-    
+
         $total = 0;
-    
+
         foreach ($request->only(array_keys($scoreMaps)) as $field => $value) {
             $total += $scoreMaps[$field][$value] ?? 0;
         }
-    
+
         // Subtract penalties
         $total -= (($evaluationData->Alpha * 10) + ($evaluationData->Izin * 2) + ($evaluationData->Sakit) + ($evaluationData->Telat * 0.5));
-        
+
         // dd($evaluationData);
         // Update total score for the user
         $evaluationData->update(['total' => $total]);
-    
+
         return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
     }
 
@@ -698,7 +698,7 @@ class DisciplinePageController extends Controller
 
         // dd($deptNo);
         $filterMonth = $request->input('filter_month');
-        
+
         // dd($filterMonth);
         $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
             $query->where('Dept', $deptNo);
@@ -720,7 +720,7 @@ class DisciplinePageController extends Controller
         $filterMonth = $request->input('filter_month');
 
         $deptNo = Auth::user()->department->dept_no;
-        
+
 
         $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
             $query->where('Dept', $deptNo);
