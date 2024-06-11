@@ -1,31 +1,24 @@
 @extends('layouts.app')
 
 @section('content')
-    <!-- <form method="POST" action="{{ route('discipline.import') }}" enctype="multipart/form-data">
-                                                                                @csrf
-                                                                                <label for="excel_files">Upload File Excel yang sudah diisi dengan point point kedisiplinan disini dalam bentuk EXCEL (.xlsx):</label>
-                                                                                <input type="file" name="excel_files[]" id="excel_files" onchange="displayUploadedFiles()" multiple>
-                                                                                <br>
-                                                                                <button type="submit">Submit</button>
-                                                                            </form> -->
-
     @include('partials.info-discipline-page-modal')
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal"> Info </a>
 
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
     @if ($user->department_id === 7 || $user->department_id === 22)
-        <a href="{{ route('alldiscipline.index') }}" class="btn btn-primary">List All Department</a>
     @endif
+    <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Department</a>
 
     @include('partials.upload-excel-file-discipline-modal')
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-        data-bs-target="#upload-excel-file-discipline-modal">Upload File
+    <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
+        data-bs-target="#upload-excel-file-discipline-modal">Upload
+        File
         Excel</button>
-        
+
 
     <form method="GET" action="{{ route('export.yayasan') }}">
-        <div class="row align-items-center">
+        <div class="row align-items-center mt-3">
             <div class="col-auto">
                 <div class="form-label">Filter Bulan</div>
             </div>
@@ -75,7 +68,18 @@
     @foreach ($employees as $employee)
         @include('partials.edit-discipline-modal')
     @endforeach
+@endsection
 
+@push('extraJs')
+    <script type="module">
+        introJs().start();
+        introJs(".btn-upload").start();
+        $(document).ready(function() {
+            $('buttons-excel').on('click', function() {
+                console.log('cliekd!');
+            });
+        });
+    </script>
     {{ $dataTable->scripts() }}
 
     <script type="module">
@@ -261,4 +265,4 @@
             }
         }
     </script>
-@endsection
+@endpush

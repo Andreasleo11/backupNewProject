@@ -30,6 +30,13 @@
                     <li>- D = 2.5 poin</li>
                     <li>- E = 0 poin </li>
                 </ul>
+                4. Untuk Grade dinilai dengan ketentuan sebagai berikut:
+                <ul>
+                    <li>- A : 91-100</li>
+                    <li>- B : 71-90</li>
+                    <li>- C : 61-70</li>
+                    <li>- D : dibawah 60 </li>
+                </ul>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
