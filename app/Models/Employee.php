@@ -17,6 +17,7 @@ class Employee extends Model
         'Dept',
         'start_date',
         'status',
+        'level',
     ];
 
     public function evaluationData()

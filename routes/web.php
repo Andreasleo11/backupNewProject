@@ -574,6 +574,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
 
+    Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
+
 
 
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
@@ -582,6 +584,11 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
     Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
     Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
+
+    Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
+
+    Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
+    Route::put('/edit/yayasandiscipline/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('updateyayasan');
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
@@ -593,10 +600,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
     Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class,'saveAutographOtPath']);
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+
+
+
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
 
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
-    Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
+    Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 

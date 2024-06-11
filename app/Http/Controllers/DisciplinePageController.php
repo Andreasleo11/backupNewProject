@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 use App\DataTables\DisciplineTableDataTable;
+use App\DataTables\DisciplineYayasanTableDataTable;
 use App\DataTables\AllDisciplineTableDataTable;
 use App\Exports\DesciplineDataExp;
 use App\Imports\DesciplineDataImport;
@@ -37,112 +38,128 @@ class DisciplinePageController extends Controller
         if($user->is_head == 1 && $user->department_id == 2)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '340');
+                $query->where('Dept', '340')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 1)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '341');
+                $query->where('Dept', '341')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 3)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '100');
+                $query->where('Dept', '100')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 8)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '200');
+                $query->where('Dept', '200')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 7)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '310');
+                $query->where('Dept', '310')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->email === "ani_apriani@daijo.co.id")
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '310');
+                $query->where('Dept', '310')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 5)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '320');
+                $query->where('Dept', '320')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 17)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '330');
+                $query->where('Dept', '330')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 24)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '331');
+                $query->where('Dept', '331')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 18)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '350');
+                $query->where('Dept', '350')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 19)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '361');
+                $query->where('Dept', '361')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 20)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '362');
+                $query->where('Dept', '362')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 16)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '363');
+                $query->where('Dept', '363')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 11)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '390');
+                $query->where('Dept', '390')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 9)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '500');
+                $query->where('Dept', '500')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
         elseif($user->is_head == 1 && $user->department_id == 15)
         {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                $query->where('Dept', '600');
+                $query->where('Dept', '600')
+                ->where('status', '!=', 'YAYASAN');
             })
             ->get();
         }
@@ -160,6 +177,7 @@ class DisciplinePageController extends Controller
             })
             ->get();
         }
+
         return $dataTable->render("setting.disciplineindex", compact("employees", "user"));
         // return view("setting.disciplineindex", compact("employees"));
     }
@@ -528,5 +546,189 @@ class DisciplinePageController extends Controller
         $fileName = "DataYayasan_{$currentDate}.xlsx";
 
         return Excel::download(new YayasanDisciplineExport($result), $fileName);
+    }
+
+    public function indexyayasan(DisciplineYayasanTableDataTable $dataTable)
+    {
+        $user = Auth::user();
+
+        if($user->is_head == 1 && $user->department_id == 2)
+        {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '340')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+        elseif($user->is_head == 1 && $user->department_id == 11){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '390')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 24){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '331')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 16){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '363')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 17){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '330')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 25){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '351')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 19){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '361')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 20){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '362')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 18){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '350')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        elseif($user->is_head == 1 && $user->department_id == 6){
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '311')
+                ->where('status', 'YAYASAN');
+            })
+            ->get();
+        }
+
+        return $dataTable->render("setting.disciplineyayasanindex", compact( "employees","user"));
+    }
+
+
+    public function updateyayasan(Request $request, $id)
+    {
+        $evaluationData = EvaluationData::find($id);
+
+
+
+        // Update the specific fields for this user
+        $evaluationData->update([
+            'kemampuan_kerja' => $request->kemampuan_kerja,
+            'kecerdasan_kerja' => $request->kecerdasan_kerja,
+            'qualitas_kerja' => $request->qualitas_kerja,
+            'disiplin_kerja' => $request->disiplin_kerja,
+            'kepatuhan_kerja' => $request->kepatuhan_kerja,
+            'lembur' => $request->lembur,
+            'efektifitas_kerja' => $request->efektifitas_kerja,
+            'relawan' => $request->relawan,
+            'integritas' => $request->integritas,
+            // Add other fields you want to update
+        ]);
+
+
+
+        // Calculate total score
+        $scoreMaps = [
+            'kemampuan_kerja' => ['A' => 17, 'B' => 14, 'C' => 11, 'D' => 8, 'E' => 0],
+            'kecerdasan_kerja' => ['A' => 16, 'B' => 13, 'C' => 10, 'D' => 7, 'E' => 0],
+            'qualitas_kerja' => ['A' => 11, 'B' => 9, 'C' => 7, 'D' => 4, 'E' => 0],
+            'disiplin_kerja' => ['A' => 8, 'B' => 6, 'C' => 5, 'D' => 3, 'E' => 0],
+            'kepatuhan_kerja' => ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'lembur' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'efektifitas_kerja' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'relawan' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'integritas' => ['A' => 8, 'B' => 6, 'C' => 5, 'D' => 3, 'E' => 0]
+        ];
+
+        $total = 0;
+
+        foreach ($request->only(array_keys($scoreMaps)) as $field => $value) {
+            $total += $scoreMaps[$field][$value] ?? 0;
+        }
+
+        // Subtract penalties
+        $total -= (($evaluationData->Alpha * 10) + ($evaluationData->Izin * 2) + ($evaluationData->Sakit) + ($evaluationData->Telat * 0.5));
+
+        // dd($evaluationData);
+        // Update total score for the user
+        $evaluationData->update(['total' => $total]);
+
+        return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
+    }
+
+
+
+    public function lockdata(Request $request)
+    {
+        // dd($request->all());
+        $filterMonth = $request->filter_month ;
+        // dd($filterMonth);
+        $deptNo = Auth::user()->department->dept_no;
+
+        // dd($deptNo);
+        $filterMonth = $request->input('filter_month');
+
+        // dd($filterMonth);
+        $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
+            $query->where('Dept', $deptNo);
+        })
+        ->whereMonth('Month', $filterMonth)
+        ->get();
+
+        foreach ($employees as $employee) {
+            $employee->is_lock = true;
+            $employee->save();
+        }
+
+        return redirect()->back();
+    }
+
+    public function fetchFilteredEmployees(Request $request)
+    {
+        // Get the filter month from the request
+        $filterMonth = $request->input('filter_month');
+
+        $deptNo = Auth::user()->department->dept_no;
+
+
+        $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
+            $query->where('Dept', $deptNo);
+        })
+        ->whereMonth('Month', $filterMonth)
+        ->get();
+
+        // Return the filtered employee data as JSON response
+        return response()->json($employees);
     }
 }

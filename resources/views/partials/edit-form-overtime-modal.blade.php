@@ -1,100 +1,173 @@
-@extends('layouts.app')
+<style>
+    /* Style for displaying added items */
+    .added-item {
+        margin-bottom: 10px;
+    }
 
-@section('content')
-    <style>
-        /* Style for displaying added items */
-        .added-item {
-            margin-bottom: 10px;
-        }
+    #itemDropdown {
+        max-height: 200px;
+        /* Set maximum height for the dropdown */
+        overflow-y: auto;
+        /* Enable vertical scrolling */
+        border: 1px solid #ccc;
+        /* Optional: Add border for visual clarity */
+        position: absolute;
+        /* Position the dropdown absolutely */
+        z-index: 999;
+        /* Ensure dropdown is above other elements */
+        background-color: #fff;
+        /* Set background color to white */
+        opacity: 1;
+        /* Adjust opacity to ensure dropdown is not transparent */
 
-        #itemDropdown {
-            max-height: 200px;
-            /* Set maximum height for the dropdown */
-            overflow-y: auto;
-            /* Enable vertical scrolling */
-            border: 1px solid #ccc;
-            /* Optional: Add border for visual clarity */
-            position: absolute;
-            /* Position the dropdown absolutely */
-            z-index: 999;
-            /* Ensure dropdown is above other elements */
-            background-color: #fff;
-            /* Set background color to white */
-            opacity: 1;
-            /* Adjust opacity to ensure dropdown is not transparent */
+    }
 
-        }
+    .dropdown-item {
+        padding: 5px;
+        cursor: pointer;
+    }
 
-        .dropdown-item {
-            padding: 5px;
-            cursor: pointer;
-        }
+    .dropdown-item:hover {
+        background-color: #f0f0f0;
+    }
+</style>
 
-        .dropdown-item:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
 
-    <div class="  px-2 py-5">
-        <form action="{{ route('formovertime.insert') }}" method="POST">
-            @csrf
+<div class="modal fade" id="edit-form-overtime-modal-{{ $header->id }}" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="  px-2 py-5">
+                    <div class="h2 text-center fw-semibold">Edit Form Overtime</div>
+                    <form action="{{ route('formovertime.update', $header->id) }}" method="POST" class="row "
+                        id="form-overtime-edit">
+                        @method('PUT')
+                        @csrf
 
-            <div class="row justify-content-center">
-                <div class="col-md-11">
-                    <div class="card">
-                        <div class="h2 text-center fw-semibold mt-3">Create Form Overtime</div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
-                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
-                                    <option value="" selected disabled>Select from department..</option>
-                                    @foreach ($departements as $department)
+                        <div class="form-group mt-3 col">
+                            <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
+                            <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
+                                <option value="" selected>Select from department..</option>
+                                @foreach ($departements as $department)
+                                    @if ($department->id === $header->dept_id)
+                                        <option value="{{ $department->id }}" selected>{{ $department->name }}
+                                        </option>
+                                    @else
                                         <option value="{{ $department->id }}">{{ $department->name }}
                                         </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div id="designFieldContainer"></div>
-
-                            <div class="form-group mt-3">
-                                <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Overtime
-                                    Create</label>
-                                <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime"
-                                    required>
-                            </div>
-
-
-                            <div class="form-group mt-3">
-                                <div id="itemsContainer">
-                                    <label class="form-label fs-5 fw-bold">List of Employee</label>
-                                    <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
-                                    <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
-                                        Employee</button>
-                                </div>
-                            </div>
-
-                            <button class="btn btn-primary mt-3" type="submit">Submit</button>
+                                    @endif
+                                @endforeach
+                            </select>
                         </div>
-                    </div>
+
+
+
+
+                        <div id="designFieldContainer"></div>
+
+                        <div class="form-group mt-3 col-md-6">
+                            <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Overtime
+                                Create</label>
+                            <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime"
+                                required value="{{ $header->create_date }}">
+                        </div>
+
+
+                        <div class="form-group mt-3">
+                            <div id="itemsContainer">
+                                <label class="form-label fs-5 fw-bold">List of Items</label>
+                                <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
+                                <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
+                                    Employee</button>
+                            </div>
+                        </div>
+
+
+                    </form>
                 </div>
+                </body>
             </div>
-        </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary"
+                    onclick="document.getElementById('form-overtime-edit').submit()">Save changes</button>
+            </div>
+        </div>
     </div>
-    </body>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
             const departmentDropdown = document.getElementById('fromDepartmentDropdown');
             const designFieldContainer = document.getElementById('designFieldContainer');
+
+
+            let header = {!! json_encode($header) !!};
+            let datas = {!! json_encode($datas) !!};
+
+            console.log(header.is_design);
+
+            const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex].text;
+            if (selectedDepartment === 'MOULDING') {
+                // Create the Design field
+                const designFormGroup = document.createElement('div');
+                designFormGroup.classList.add('form-group', 'mt-3', 'col');
+
+                const designLabel = document.createElement('label');
+                designLabel.classList.add('form-label', 'fs-5', 'fw-bold');
+                designLabel.setAttribute('for', 'design');
+                designLabel.textContent = 'Design';
+
+                const designSelect = document.createElement('select');
+                designSelect.classList.add('form-select');
+                designSelect.setAttribute('name', 'design');
+                designSelect.setAttribute('id', 'design');
+                designSelect.value = header?.is_design ?? "";
+                designSelect.required = true;
+
+                const yesOption = document.createElement('option');
+                yesOption.value = '1';
+                yesOption.textContent = 'Yes';
+
+                const noOption = document.createElement('option');
+                noOption.value = '0';
+                noOption.textContent = 'No';
+
+
+                // Set the selected value based on header.is_design
+                if (header?.is_design !== undefined) {
+                    designSelect.value = header.is_design;
+
+                    if (header.is_design === 1) {
+                        yesOption.selected = true;
+                    } else if (header.is_design === 0) {
+                        noOption.selected = true;
+                    }
+                }
+
+                designSelect.appendChild(yesOption);
+                designSelect.appendChild(noOption);
+
+                designFormGroup.appendChild(designLabel);
+                designFormGroup.appendChild(designSelect);
+
+                // Append the Design field to the container
+                designFieldContainer.appendChild(designFormGroup);
+            }
 
             departmentDropdown.addEventListener('change', function() {
                 // Clear the design field container
                 designFieldContainer.innerHTML = '';
 
+
+
                 // Check if the selected department is Moulding
                 const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex]
                     .text;
+                console.log("test : ", selectedDepartment);
                 if (selectedDepartment === 'MOULDING') {
                     // Create the Design field
                     const designFormGroup = document.createElement('div');
@@ -111,6 +184,8 @@
                     designSelect.setAttribute('id', 'design');
                     designSelect.required = true;
 
+
+
                     const yesOption = document.createElement('option');
                     yesOption.value = '1';
                     yesOption.textContent = 'Yes';
@@ -119,6 +194,18 @@
                     noOption.value = '0';
                     noOption.textContent = 'No';
 
+
+                    designSelect.value = header?.is_design ?? "";
+
+                    if (header?.is_design !== undefined) {
+                        designSelect.value = header.is_design;
+
+                        if (header.is_design === 1) {
+                            yesOption.selected = true;
+                        } else if (header.is_design === 0) {
+                            noOption.selected = true;
+                        }
+                    }
                     designSelect.appendChild(yesOption);
                     designSelect.appendChild(noOption);
 
@@ -131,11 +218,21 @@
             });
         });
 
+        let header = {!! json_encode($header) !!};
+        let datas = {!! json_encode($datas) !!};
+
+
+        console.log("ini data :", datas);
+
         // Counter for creating unique IDs for items
         let itemIdCounter = 0;
         let isFirstCall = true; // Flag to track the first call
 
-        function addNewItem() {
+        datas.forEach(datas => {
+            addNewItem(datas)
+        });
+
+        function addNewItem($datas = null) {
             // Create a new item container
             const newItemContainer = document.createElement('div');
             newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center');
@@ -179,7 +276,10 @@
             itemNameInput.classList.add('form-control');
             itemNameInput.setAttribute('required', 'required');
             itemNameInput.type = 'text';
+            itemNameInput.value = $datas?.NIK ?? "";
+
             itemNameInput.name = `items[${itemIdCounter}][NIK]`;
+
             itemNameInput.placeholder = 'Item Name';
 
             const itemNameDropdown = document.createElement('div');
@@ -237,12 +337,14 @@
             namaInput.setAttribute('required', 'required');
             namaInput.type = 'text';
             namaInput.name = `items[${itemIdCounter}][nama]`;
+            namaInput.value = $datas?.nama ?? "";
             namaInput.placeholder = 'Nama';
 
             formGroupNamaInput.appendChild(namaInput);
 
             // Add event listener for keyup event
             namaInput.addEventListener('keyup', function() {
+
                 const departmentDropdown = document.getElementById('fromDepartmentDropdown');
                 const inputValue = namaInput.value.trim();
 
@@ -288,6 +390,9 @@
                 }
             });
 
+
+
+
             const formGroupJobdescInput = document.createElement('div')
             formGroupJobdescInput.classList.add('col-md-1');
 
@@ -296,6 +401,7 @@
             jobdescInput.setAttribute('required', 'required');
             jobdescInput.type = 'text';
             jobdescInput.name = `items[${itemIdCounter}][jobdesc]`;
+            jobdescInput.value = $datas?.job_desc ?? "";
             jobdescInput.placeholder = 'jobdesc';
 
             formGroupJobdescInput.appendChild(jobdescInput);
@@ -306,7 +412,10 @@
             const makanSelect = document.createElement('select');
             makanSelect.classList.add('form-control');
             makanSelect.setAttribute('required', 'required');
+            makanSelect.type = 'text';
             makanSelect.name = `items[${itemIdCounter}][makan]`;
+
+
 
             // Create and append the 'Y' option
             const optionY = document.createElement('option');
@@ -320,6 +429,23 @@
             optionN.text = 'N';
             makanSelect.appendChild(optionN);
 
+
+            makanSelect.value = $datas?.is_makan ?? "";
+            console.log("makan : ", makanSelect.value);
+
+            if ($datas?.is_makan !== undefined) {
+                makanSelect.value = $datas?.is_makan ?? "";
+                console.log("makan makan : ", makanSelect.value);
+                console.log(makanSelect.value);
+                if (datas.is_makan === 'Y') {
+                    optionY.selected = true;
+                } else if (header.is_design === 'N') {
+                    optionN.selected = true;
+                }
+            }
+
+
+
             formGroupMakanInput.appendChild(makanSelect);
 
             const formGroupStartDateInput = document.createElement('div')
@@ -330,6 +456,7 @@
             startdateInput.setAttribute('required', 'required');
             startdateInput.type = 'date';
             startdateInput.name = `items[${itemIdCounter}][startdate]`;
+            startdateInput.value = $datas?.start_date ?? "";
 
             formGroupStartDateInput.appendChild(startdateInput);
 
@@ -342,6 +469,7 @@
             starttimeInput.type = 'time';
             starttimeInput.name = `items[${itemIdCounter}][starttime]`;
             starttimeInput.placeholder = 'Unit Price';
+            starttimeInput.value = $datas?.start_time ?? "";
 
             formGroupStartTimeInput.appendChild(starttimeInput);
 
@@ -353,6 +481,7 @@
             enddateInput.setAttribute('required', 'required');
             enddateInput.type = 'date';
             enddateInput.name = `items[${itemIdCounter}][enddate]`;
+            enddateInput.value = $datas?.end_date ?? "";
 
             formGroupEndDateInput.appendChild(enddateInput);
 
@@ -365,6 +494,7 @@
             endtimeInput.type = 'time';
             endtimeInput.name = `items[${itemIdCounter}][endtime]`;
             endtimeInput.placeholder = 'Unit Price';
+            endtimeInput.value = $datas?.end_time ?? "";
 
             formGroupEndTimeInput.appendChild(endtimeInput);
 
@@ -378,6 +508,7 @@
             breakInput.type = 'text';
             breakInput.name = `items[${itemIdCounter}][break]`;
             breakInput.placeholder = '45';
+            breakInput.value = $datas?.break ?? "";
 
             formGroupBreakInput.appendChild(breakInput);
 
@@ -390,6 +521,7 @@
             remarkInput.setAttribute('required', 'required');
             remarkInput.type = 'text';
             remarkInput.name = `items[${itemIdCounter}][remark]`;
+            remarkInput.value = $datas?.remark ?? "";
             remarkInput.placeholder = 'Keterangan';
 
             formGroupRemarkInput.appendChild(remarkInput);
@@ -458,8 +590,6 @@
                 countGroup.textContent = index + 1; // Add 1 because item ID starts from 0
             });
         }
-
-
-        addNewItem();
     </script>
-@endsection
+
+</div>
