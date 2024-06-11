@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     @push('extraCss')
         <style>
             .autograph-box {
@@ -37,7 +36,7 @@
         </div>
     </div>
 
-    <section aria-label="autographs" class="container">
+    <section aria-label="autographs" class="container mt-3">
 
         <div class="row text-center">
             {{-- PREPARATION AUTOGRAPH --}}
@@ -170,24 +169,45 @@
 
                 @if ($header->Relationdepartement->is_office === 0)
 
-                    <div class="col my-2">
-                        <h2>GM</h2>
-                        <div class="autograph-box container" id="autographBox3"></div>
-                        <div class="container mt-2" id="autographuser3"></div>
+                    @if ($header->Relationdepartement->name === 'QA' || $header->Relationdepartement->name === 'QC')
+                        <div class="col my-2">
+                            <h2>Verificator</h2>
+                            <div class="autograph-box container" id="autographBox3"></div>
+                            <div class="container mt-2" id="autographuser3"></div>
 
-                        @if (Auth::check() && $currentUser->is_gm === 1 && $header->autograph_2)
-                            <button id="btn3" class="btn btn-primary"
-                                onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
-                            @if ($header->autograph_3 === null)
-                                @include('partials.reject-modal', [
-                                    'id' => $header->id,
-                                    'route' => 'overtime.reject',
-                                ])
-                                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
-                                    data-bs-target="#rejectModal">Reject</button>
+                            @if (Auth::check() && $currentUser->name === 'Bernadett' && $header->autograph_2)
+                                <button id="btn3" class="btn btn-primary"
+                                    onclick="addAutograph(3 , {{ $header->id }})">Acc Verificator</button>
+                                @if ($header->autograph_3 === null)
+                                    @include('partials.reject-modal', [
+                                        'id' => $header->id,
+                                        'route' => 'overtime.reject',
+                                    ])
+                                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal">Reject</button>
+                                @endif
                             @endif
-                        @endif
-                    </div>
+                        </div>
+                    @else
+                        <div class="col my-2">
+                            <h2>GM</h2>
+                            <div class="autograph-box container" id="autographBox3"></div>
+                            <div class="container mt-2" id="autographuser3"></div>
+
+                            @if (Auth::check() && $currentUser->is_gm === 1 && $header->autograph_2)
+                                <button id="btn3" class="btn btn-primary"
+                                    onclick="addAutograph(3 , {{ $header->id }})">Acc GM</button>
+                                @if ($header->autograph_3 === null)
+                                    @include('partials.reject-modal', [
+                                        'id' => $header->id,
+                                        'route' => 'overtime.reject',
+                                    ])
+                                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal">Reject</button>
+                                @endif
+                            @endif
+                        </div>
+                    @endif
 
                     <div class="col my-2">
                         <h2>Director</h2>
@@ -441,7 +461,4 @@
                 checkAutographStatus({{ $header->id }});
             };
         </script>
-
-
-
     @endsection
