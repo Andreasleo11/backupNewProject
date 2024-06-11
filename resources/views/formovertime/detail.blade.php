@@ -25,6 +25,15 @@
     </style>
 @endpush
 
+<div>
+    @include('partials.edit-form-overtime-modal', [
+        'prheader' => $header,
+        'datas' => $datas,
+    ])
+<button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal" 
+class="btn btn-primary"><i class='bx bx-edit'></i> Edit</button>
+</div>
+
 
 <section aria-label="autographs" class="container">
 

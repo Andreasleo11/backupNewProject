@@ -38,10 +38,10 @@ class FormOvertimeController extends Controller
 
     public function getEmployeeNik(Request $request)
     {
-        $nik = $request->query('nik');
+        $nama = $request->query('name');
         $deptid = $request->query('deptid');
        
-        info('AJAX request received for item name: ' . $nik);
+        info('AJAX request received for item name: ' . $nama);
         info('AJAX request received for dept id: ' . $deptid);
 
         $department = Department::where('id', $deptid)->first();
@@ -51,7 +51,7 @@ class FormOvertimeController extends Controller
         // Fetch item names and prices from the database based on user input
             if ($dept_no) {
             // Fetch employees based on NIK and department number
-            $pegawais = Employee::where('NIK', 'like', "%" . $nik . "%")
+            $pegawais = Employee::where('Nama', 'like', '%' . $nama . '%')
                 ->where('Dept', $dept_no)
                 ->select('NIK', 'nama')
                 ->get();
@@ -137,8 +137,12 @@ class FormOvertimeController extends Controller
         $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
         
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
+
+
+        $employees = Employee::get();
+        $departements = Department::get();
         // dd($header);
-        return view("formovertime.detail", compact("header", "datas"));
+        return view("formovertime.detail", compact("header", "datas", "employees", "departements"));
     }
 
     public function saveAutographOtPath(Request $request, $id, $section)
@@ -256,5 +260,75 @@ class FormOvertimeController extends Controller
         return Excel::download(new OvertimeExport($header, $datas), $fileName);
     }
 
+    public function edit($id)
+    {
+        $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
+        
+        $datas = DetailFormOvertime::Where('header_id', $id)->get();
 
+        $employees = Employee::get();
+        $departements = Department::get();
+
+        return view("formovertime.edit", compact("header", "datas", "employees", "departements"));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $data = $request->all();
+        // dd($data);
+
+
+        if ($request->has('items') && is_array($request->input('items'))) {
+            foreach ($request->input('items') as $employeedata) {
+                $nik = $employeedata['NIK'];
+                $nama = $employeedata['nama'];
+                $jobdesc = $employeedata['jobdesc'];
+                $makan = $employeedata['makan'];
+                $startdate = $employeedata['startdate'];
+                $starttime = $employeedata['starttime'];
+                $enddate = $employeedata['enddate'];
+                $endtime = $employeedata['endtime'];
+                $break = $employeedata['break'];
+                $remark = $employeedata['remark'];
+
+                $detailData = DetailFormOvertime::where('header_id', $id)
+                ->where('NIK', $nik)
+                ->first();
+
+            if ($detailData) {
+                // If the record exists, update it
+                $detailData->update([
+                    'nama' => $nama,
+                    'is_makan' => $makan,
+                    'job_desc' => $jobdesc,
+                    'start_date' => $startdate,
+                    'start_time' => $starttime,
+                    'end_date' => $enddate,
+                    'end_time' => $endtime,
+                    'break' => $break,
+                    'remarks' => $remark
+                ]);
+            } else {
+                // If the record does not exist, create a new one
+                DetailFormOvertime::create([
+                    'header_id' => $id,
+                    'NIK' => $nik,
+                    'nama' => $nama,
+                    'is_makan' => $makan,
+                    'job_desc' => $jobdesc,
+                    'start_date' => $startdate,
+                    'start_time' => $starttime,
+                    'end_date' => $enddate,
+                    'end_time' => $endtime,
+                    'break' => $break,
+                    'remarks' => $remark
+                ]);
+            }
+               
+            }
+        }
+
+        return redirect()->route('formovertime.detail', ['id' => $id])
+        ->with('success', 'Form Overtime updated successfully.');
+    }
 }
