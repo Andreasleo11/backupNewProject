@@ -11,7 +11,7 @@ class EvaluationData extends Model
     protected $table = 'evaluation_datas';
     public $timestamps = false;
     public $incrementing = false;
-    protected $primaryKey = null;
+  
     
     protected $fillable = [
         'NIK',
@@ -26,6 +26,15 @@ class EvaluationData extends Model
         'kerapian_sepatu',
         'prestasi',
         'loyalitas',
+        'kemampuan_kerja',
+        'kecerdasan_kerja',
+        'qualitas_kerja',
+        'disiplin_kerja',
+        'kepatuhan_kerja',
+        'lembur',
+        'efektifitas_kerja',
+        'relawan',
+        'integritas',
         'total',
     ];
 
