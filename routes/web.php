@@ -605,9 +605,11 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
 
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
-    Route::get('/get-nik-names', [FormOvertimeController::class, 'getEmployeeNik']);
+    Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 

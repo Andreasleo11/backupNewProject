@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
+    <style>
         /* Style for displaying added items */
         .added-item {
             margin-bottom: 10px;
@@ -35,36 +35,39 @@
         }
     </style>
 
-<div class="  px-2 py-5">
-                        <div class="h2 text-center fw-semibold">Create Form Overtime</div>
-                        <form action="{{ route('formovertime.insert') }}" method="POST" class="row ">
-                            @csrf
+    <div class="  px-2 py-5">
+        <form action="{{ route('formovertime.insert') }}" method="POST">
+            @csrf
 
-                            <div class="form-group mt-3 col">
+            <div class="row justify-content-center">
+                <div class="col-md-11">
+                    <div class="card">
+                        <div class="h2 text-center fw-semibold mt-3">Create Form Overtime</div>
+                        <div class="card-body">
+                            <div class="form-group">
                                 <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
                                 <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
                                     <option value="" selected disabled>Select from department..</option>
                                     @foreach ($departements as $department)
-                                            <option value="{{ $department->id }}">{{ $department->name }}
-                                            </option>
+                                        <option value="{{ $department->id }}">{{ $department->name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
 
-                            
-
-
                             <div id="designFieldContainer"></div>
 
-                            <div class="form-group mt-3 col-md-6">
-                                <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of FormOvertime Create</label>
-                                <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime" required>
+                            <div class="form-group mt-3">
+                                <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Overtime
+                                    Create</label>
+                                <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime"
+                                    required>
                             </div>
 
-                    
+
                             <div class="form-group mt-3">
                                 <div id="itemsContainer">
-                                    <label class="form-label fs-5 fw-bold">List of Items</label>
+                                    <label class="form-label fs-5 fw-bold">List of Employee</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
                                     <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
                                         Employee</button>
@@ -72,67 +75,61 @@
                             </div>
 
                             <button class="btn btn-primary mt-3" type="submit">Submit</button>
-                        </form>
+                        </div>
                     </div>
-
-    <!-- <div class="container">
-        <div class="row justify-content-center">
-            <div class="col">
-                <div class="card">
-                    
                 </div>
             </div>
-        </div>
-    </div> -->
+        </form>
+    </div>
     </body>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const departmentDropdown = document.getElementById('fromDepartmentDropdown');
+            const designFieldContainer = document.getElementById('designFieldContainer');
 
-document.addEventListener('DOMContentLoaded', function () {
-        const departmentDropdown = document.getElementById('fromDepartmentDropdown');
-        const designFieldContainer = document.getElementById('designFieldContainer');
+            departmentDropdown.addEventListener('change', function() {
+                // Clear the design field container
+                designFieldContainer.innerHTML = '';
 
-        departmentDropdown.addEventListener('change', function () {
-            // Clear the design field container
-            designFieldContainer.innerHTML = '';
-          
-            // Check if the selected department is Moulding
-            const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex].text;
-            if (selectedDepartment === 'MOULDING') {
-                // Create the Design field
-                const designFormGroup = document.createElement('div');
-                designFormGroup.classList.add('form-group', 'mt-3', 'col');
+                // Check if the selected department is Moulding
+                const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex]
+                    .text;
+                if (selectedDepartment === 'MOULDING') {
+                    // Create the Design field
+                    const designFormGroup = document.createElement('div');
+                    designFormGroup.classList.add('form-group', 'mt-3', 'col');
 
-                const designLabel = document.createElement('label');
-                designLabel.classList.add('form-label', 'fs-5', 'fw-bold');
-                designLabel.setAttribute('for', 'design');
-                designLabel.textContent = 'Design';
+                    const designLabel = document.createElement('label');
+                    designLabel.classList.add('form-label', 'fs-5', 'fw-bold');
+                    designLabel.setAttribute('for', 'design');
+                    designLabel.textContent = 'Design';
 
-                const designSelect = document.createElement('select');
-                designSelect.classList.add('form-select');
-                designSelect.setAttribute('name', 'design');
-                designSelect.setAttribute('id', 'design');
-                designSelect.required = true;
+                    const designSelect = document.createElement('select');
+                    designSelect.classList.add('form-select');
+                    designSelect.setAttribute('name', 'design');
+                    designSelect.setAttribute('id', 'design');
+                    designSelect.required = true;
 
-                const yesOption = document.createElement('option');
-                yesOption.value = '1';
-                yesOption.textContent = 'Yes';
+                    const yesOption = document.createElement('option');
+                    yesOption.value = '1';
+                    yesOption.textContent = 'Yes';
 
-                const noOption = document.createElement('option');
-                noOption.value = '0';
-                noOption.textContent = 'No';
+                    const noOption = document.createElement('option');
+                    noOption.value = '0';
+                    noOption.textContent = 'No';
 
-                designSelect.appendChild(yesOption);
-                designSelect.appendChild(noOption);
+                    designSelect.appendChild(yesOption);
+                    designSelect.appendChild(noOption);
 
-                designFormGroup.appendChild(designLabel);
-                designFormGroup.appendChild(designSelect);
+                    designFormGroup.appendChild(designLabel);
+                    designFormGroup.appendChild(designSelect);
 
-                // Append the Design field to the container
-                designFieldContainer.appendChild(designFormGroup);
-            }
+                    // Append the Design field to the container
+                    designFieldContainer.appendChild(designFormGroup);
+                }
+            });
         });
-    });
 
         // Counter for creating unique IDs for items
         let itemIdCounter = 0;
@@ -145,10 +142,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'NIK ', 'Name ','Job desc', 'Makan', 'Start Date', 'Start Time', 'End Date', 'End Time', 'Break (Minute)', 'Remarks', 
+                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc', 'Makan', 'Start Date', 'Start Time', 'End Date',
+                    'End Time', 'Break (Minute)', 'Remarks',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1',
+                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1',
+                    'col-md-1',
                     'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1'
                 ];
 
@@ -172,14 +171,13 @@ document.addEventListener('DOMContentLoaded', function () {
             countGroup.classList.add('count-group', 'col-md-1', 'text-center');
             countGroup.textContent = itemIdCounter + 1;
 
-                        // Create input fields for item details
+            // Create input fields for item details
             const formGroupName = document.createElement('div');
             formGroupName.classList.add('col-md-1');
 
             const itemNameInput = document.createElement('input');
             itemNameInput.classList.add('form-control');
             itemNameInput.setAttribute('required', 'required');
-            itemNameInput.setAttribute('readonly','readonly');
             itemNameInput.type = 'text';
             itemNameInput.name = `items[${itemIdCounter}][NIK]`;
             itemNameInput.placeholder = 'Item Name';
@@ -188,7 +186,45 @@ document.addEventListener('DOMContentLoaded', function () {
             itemNameDropdown.id = `itemDropdown`;
             itemNameDropdown.classList.add('dropdown-content');
 
+            // Add event listener for keyup event
+            itemNameInput.addEventListener('keyup', function() {
+                const departmentDropdown = document.getElementById('fromDepartmentDropdown');
+                const inputValue = itemNameInput.value.trim();
 
+                if (inputValue.length > 0) {
+                    // Fetch item names from server based on user input
+                    fetch(`/get-employees?nik=${inputValue}&deptid=${departmentDropdown.value}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear previous dropdown options
+                            itemNameDropdown.innerHTML = '';
+                            // Populate dropdown with fetched item names
+                            if (data.length > 0) {
+                                data.forEach(pegawai => {
+                                    const option = document.createElement('div');
+                                    option.classList.add('dropdown-item');
+                                    option.textContent = `${pegawai.NIK} - ${pegawai.nama}`;
+                                    option.addEventListener('click', function() {
+                                        itemNameInput.value = pegawai.NIK;
+                                        namaInput.value = pegawai.nama;
+
+                                        itemNameDropdown.innerHTML = '';
+                                        itemNameDropdown.style.display = 'none';
+                                    });
+                                    itemNameDropdown.appendChild(option);
+                                });
+                                itemNameDropdown.style.display = 'block';
+                            } else {
+                                itemNameDropdown.style.display = 'none';
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                } else {
+                    itemNameDropdown.innerHTML = '';
+                    itemNameDropdown.style.display = 'none';
+                }
+            });
+            //ajax for dropdown item
 
             formGroupName.appendChild(itemNameInput);
             formGroupName.appendChild(itemNameDropdown);
@@ -207,13 +243,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Add event listener for keyup event
             namaInput.addEventListener('keyup', function() {
-
                 const departmentDropdown = document.getElementById('fromDepartmentDropdown');
                 const inputValue = namaInput.value.trim();
-                
+
                 if (inputValue.length > 0) {
                     // Fetch item names from server based on user input
-                    fetch(`/get-nik-names?name=${inputValue}&deptid=${departmentDropdown.value}`)
+                    fetch(`/get-employees?name=${inputValue}&deptid=${departmentDropdown.value}`)
                         .then(response => response.json())
                         .then(data => {
                             // Clear previous dropdown options
@@ -252,9 +287,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     // console.log(itemNameInput.value);
                 }
             });
-
-           
-
 
             const formGroupJobdescInput = document.createElement('div')
             formGroupJobdescInput.classList.add('col-md-1');
@@ -429,7 +461,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         addNewItem();
-
-      
     </script>
 @endsection
