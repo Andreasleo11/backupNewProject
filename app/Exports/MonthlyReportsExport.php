@@ -15,6 +15,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
     protected $year;
 
     protected $summaryData = [];
+    protected $defectData = [];
 
     public function __construct($month, $year)
     {
@@ -33,6 +34,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
         ->get();
 
         $this->calculateSummary($reports);
+        $this->calculateDefect($reports);
 
         return $reports;
     }
@@ -51,6 +53,43 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
                     }
 
                     $this->summaryData[$customer][$category] += $defect->quantity;
+                }
+            }
+        }
+    }
+
+    protected function calculateDefect($reports)
+    {
+        foreach ($reports as $report) {
+            foreach ($report->details as $detail) {
+                $partName = $detail->part_name;
+
+                if (!isset($this->defectData[$partName])) {
+                    // Initialize the defectData for this part_name
+                    $this->defectData[$partName] = [
+                        'part_name' => $partName,
+                        'rec_quantity' => 0,
+                        'defects' => []
+                    ];
+                }
+
+                // Sum the rec_quantity
+                $this->defectData[$partName]['rec_quantity'] += $detail->rec_quantity;
+
+                foreach ($detail->defects as $defect) {
+                    $categoryName = $defect->category->name;
+                    $quantity = $defect->quantity; // Assuming 'quantity' is a field in the defect model
+
+                    if (!isset($this->defectData[$partName]['defects'][$categoryName])) {
+                        // Initialize the defects defectData for this part_name
+                        $this->defectData[$partName]['defects'][$categoryName] = [
+                            'category_name' => $categoryName,
+                            'quantity' => 0
+                        ];
+                    }
+
+                    // Sum the quantity for each defect category
+                    $this->defectData[$partName]['defects'][$categoryName]['quantity'] += $quantity;
                 }
             }
         }
@@ -110,7 +149,8 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
 
         $sheets[] = new ReportDataSheet($this->month, $this->year, $this->collection());
         $sheets[] = new SummarySheet($this->summaryData);
-
+        $sheets[] = new DefectReportSheet($this->defectData);
+ 
         return $sheets;
     }
 }
