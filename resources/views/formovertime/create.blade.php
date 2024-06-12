@@ -33,10 +33,69 @@
         .dropdown-item:hover {
             background-color: #f0f0f0;
         }
+
+        /* Custom toggle switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+
+        .slider.round:before {
+            border-radius: 50%;
+        }
     </style>
 
     <div class="  px-2 py-5">
-        <form action="{{ route('formovertime.insert') }}" method="POST">
+        <form action="{{ route('formovertime.insert') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <div class="row justify-content-center">
@@ -64,8 +123,24 @@
                                     required>
                             </div>
 
-
                             <div class="form-group mt-3">
+                                <label class="form-label fs-5 fw-bold">Input Method</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="inputMethodToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                                <span id="inputMethodLabel" class="ms-2">Import from Excel</span>
+                            </div>
+
+                            <div class="form-group mt-3" id="fileUploadSection">
+                                <label class="form-label fs-5 fw-bold" for="excel_file">Import Employees from
+                                    Excel</label>
+                                <input class="form-control" type="file" id="excel_file" name="excel_file"
+                                    accept=".xlsx,.xls">
+                            </div>
+
+
+                            <div class="form-group mt-3" id="manualInputSection">
                                 <div id="itemsContainer">
                                     <label class="form-label fs-5 fw-bold">List of Employee</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
@@ -84,6 +159,47 @@
     </body>
 
     <script>
+  document.addEventListener('DOMContentLoaded', function() {
+            const inputMethodToggle = document.getElementById('inputMethodToggle');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const manualInputSection = document.getElementById('manualInputSection');
+            const inputMethodLabel = document.getElementById('inputMethodLabel');
+            const manualInputFields = manualInputSection.querySelectorAll('input, select, textarea');
+
+            fileUploadSection.style.display = 'none';
+            document.getElementById('excel_file').disabled = true;
+            // Add event listener to the toggle switch
+            inputMethodToggle.addEventListener('change', function() {
+                if (inputMethodToggle.checked) {
+                    // If the toggle switch is checked (import from Excel), hide the manual input section
+                    manualInputSection.style.display = 'none';
+                    // Show the file upload section
+                    fileUploadSection.style.display = 'block';
+
+                    document.getElementById('excel_file').disabled = false;
+                    // Disable manual input fields
+                    manualInputFields.forEach(function(field) {
+                        field.disabled = true;
+                    });
+                    // Update the input method label
+                    inputMethodLabel.textContent = 'Import from Excel';
+                } else {
+                    // If the toggle switch is not checked (manual input), hide the file upload section
+                    fileUploadSection.style.display = 'none';
+                    // Show the manual input section
+                    manualInputSection.style.display = 'block';
+                    // Update the input method label
+                    manualInputFields.forEach(function(field) {
+                    field.disabled = false;
+                    });
+                    // Disable file upload field
+                    document.getElementById('excel_file').disabled = true;
+                    inputMethodLabel.textContent = 'Manual Input';
+                }
+            });
+        });
+
+
         document.addEventListener('DOMContentLoaded', function() {
             const departmentDropdown = document.getElementById('fromDepartmentDropdown');
             const designFieldContainer = document.getElementById('designFieldContainer');
@@ -142,11 +258,11 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc', 'Makan', 'Start Date', 'Start Time', 'End Date',
+                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc', 'Start Date', 'Start Time', 'End Date',
                     'End Time', 'Break (Minute)', 'Remarks',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1',
+                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1','col-md-2', 'col-md-1', 'col-md-1',
                     'col-md-1',
                     'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1'
                 ];
@@ -289,7 +405,7 @@
             });
 
             const formGroupJobdescInput = document.createElement('div')
-            formGroupJobdescInput.classList.add('col-md-1');
+            formGroupJobdescInput.classList.add('col-md-2');
 
             const jobdescInput = document.createElement('input');
             jobdescInput.classList.add('form-control');
@@ -299,28 +415,6 @@
             jobdescInput.placeholder = 'jobdesc';
 
             formGroupJobdescInput.appendChild(jobdescInput);
-
-            const formGroupMakanInput = document.createElement('div');
-            formGroupMakanInput.classList.add('col-md-1');
-
-            const makanSelect = document.createElement('select');
-            makanSelect.classList.add('form-control');
-            makanSelect.setAttribute('required', 'required');
-            makanSelect.name = `items[${itemIdCounter}][makan]`;
-
-            // Create and append the 'Y' option
-            const optionY = document.createElement('option');
-            optionY.value = 'Y';
-            optionY.text = 'Y';
-            makanSelect.appendChild(optionY);
-
-            // Create and append the 'N' option
-            const optionN = document.createElement('option');
-            optionN.value = 'N';
-            optionN.text = 'N';
-            makanSelect.appendChild(optionN);
-
-            formGroupMakanInput.appendChild(makanSelect);
 
             const formGroupStartDateInput = document.createElement('div')
             formGroupStartDateInput.classList.add('col-md-1');
@@ -410,7 +504,6 @@
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupNamaInput);
             newItemContainer.appendChild(formGroupJobdescInput);
-            newItemContainer.appendChild(formGroupMakanInput);
             newItemContainer.appendChild(formGroupStartDateInput);
             newItemContainer.appendChild(formGroupStartTimeInput);
             newItemContainer.appendChild(formGroupEndDateInput);

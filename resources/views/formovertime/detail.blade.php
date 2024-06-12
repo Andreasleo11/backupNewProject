@@ -291,7 +291,6 @@
                     <th class="align-middle">No</th>
                     <th class="align-middle">NIK</th>
                     <th class="align-middle">Nama</th>
-                    <th class="align-middle">Makan</th>
                     <th class="align-middle">Job Description</th>
                     <th class="align-middle">Start Date</th>
                     <th class="align-middle">Start Time</th>
@@ -309,7 +308,6 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $data->NIK }}</td>
                         <td>{{ $data->nama }}</td>
-                        <td>{{ $data->is_makan }}</td>
                         <td>{{ $data->job_desc }}</td>
                         <td>{{ $data->start_date }}</td>
                         <td>{{ $data->start_time }}</td>
