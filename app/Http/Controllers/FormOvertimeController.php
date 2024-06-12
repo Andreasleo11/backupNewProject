@@ -11,6 +11,20 @@ use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
 
 
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Redirect;
+
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+use Maatwebsite\Excel\Sheet;
+use Maatwebsite\Excel\Concerns\ToCollection;
+use Illuminate\Support\Facades\Storage;
+
+
+
+use App\Imports\OvertimeImport;
 use App\Exports\OvertimeExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -82,7 +96,8 @@ class FormOvertimeController extends Controller
 
     public function insert(Request $request)
     {
-        // dd($request->all());
+        $uploadedFiles = $request->file('excel_file');
+
         $userIdCreate = Auth::id();
         $deptId = $request->input('from_department');
 
@@ -93,8 +108,6 @@ class FormOvertimeController extends Controller
         if ($department && $department->name === 'MOULDING') {
             $status = 6;
         }
-
-
 
         $headerData = [
             'user_id' => $userIdCreate,
@@ -108,9 +121,25 @@ class FormOvertimeController extends Controller
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
 
-        $this->detailOvertimeInsert($request, $headerovertime->id);
+        if ($uploadedFiles) {
+        
+            $this->importFromExcel($request, $headerovertime->id);
+
+        }else{
+            $this->detailOvertimeInsert($request, $headerovertime->id);
+
+        }
 
         return redirect()->route('formovertime.index');
+    }
+
+
+    public function importFromExcel($request, $headerOvertimeId)
+    {
+        $path = $request->file('excel_file')->store('temp');
+        $import = new OvertimeImport($headerOvertimeId);
+        Excel::import($import, $path);
+        
     }
 
     public function detailOvertimeInsert($request, $id)
@@ -120,7 +149,6 @@ class FormOvertimeController extends Controller
                 $nik = $employeedata['NIK'];
                 $nama = $employeedata['nama'];
                 $jobdesc = $employeedata['jobdesc'];
-                $makan = $employeedata['makan'];
                 $startdate = $employeedata['startdate'];
                 $starttime = $employeedata['starttime'];
                 $enddate = $employeedata['enddate'];
@@ -132,7 +160,6 @@ class FormOvertimeController extends Controller
                     'header_id' => $id,
                     'NIK' => $nik,
                     'nama' => $nama,
-                    'is_makan' => $makan,
                     'job_desc' => $jobdesc,
                     'start_date' => $startdate,
                     'start_time' => $starttime,
@@ -300,7 +327,6 @@ class FormOvertimeController extends Controller
                 $nik = $employeedata['NIK'];
                 $nama = $employeedata['nama'];
                 $jobdesc = $employeedata['jobdesc'];
-                $makan = $employeedata['makan'];
                 $startdate = $employeedata['startdate'];
                 $starttime = $employeedata['starttime'];
                 $enddate = $employeedata['enddate'];
@@ -312,7 +338,6 @@ class FormOvertimeController extends Controller
                     'header_id' => $id,
                     'NIK' => $nik,
                     'nama' => $nama,
-                    'is_makan' => $makan,
                     'job_desc' => $jobdesc,
                     'start_date' => $startdate,
                     'start_time' => $starttime,
@@ -327,4 +352,7 @@ class FormOvertimeController extends Controller
         return redirect()->route('formovertime.detail', ['id' => $id])
         ->with('success', 'Form Overtime updated successfully.');
     }
+
+
+
 }
