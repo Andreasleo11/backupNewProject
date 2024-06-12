@@ -239,11 +239,11 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc', 'Makan', 'Start Date', 'Start Time', 'End Date',
+                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc','Start Date', 'Start Time', 'End Date',
                     'End Time', 'Break (Minute)', 'Remarks',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1',
+                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-1', 'col-md-1',
                     'col-md-1',
                     'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1'
                 ];
@@ -394,7 +394,7 @@
 
 
             const formGroupJobdescInput = document.createElement('div')
-            formGroupJobdescInput.classList.add('col-md-1');
+            formGroupJobdescInput.classList.add('col-md-2');
 
             const jobdescInput = document.createElement('input');
             jobdescInput.classList.add('form-control');
@@ -405,48 +405,6 @@
             jobdescInput.placeholder = 'jobdesc';
 
             formGroupJobdescInput.appendChild(jobdescInput);
-
-            const formGroupMakanInput = document.createElement('div');
-            formGroupMakanInput.classList.add('col-md-1');
-
-            const makanSelect = document.createElement('select');
-            makanSelect.classList.add('form-control');
-            makanSelect.setAttribute('required', 'required');
-            makanSelect.type = 'text';
-            makanSelect.name = `items[${itemIdCounter}][makan]`;
-
-
-
-            // Create and append the 'Y' option
-            const optionY = document.createElement('option');
-            optionY.value = 'Y';
-            optionY.text = 'Y';
-            makanSelect.appendChild(optionY);
-
-            // Create and append the 'N' option
-            const optionN = document.createElement('option');
-            optionN.value = 'N';
-            optionN.text = 'N';
-            makanSelect.appendChild(optionN);
-
-
-            makanSelect.value = $datas?.is_makan ?? "";
-            console.log("makan : ", makanSelect.value);
-
-            if ($datas?.is_makan !== undefined) {
-                makanSelect.value = $datas?.is_makan ?? "";
-                console.log("makan makan : ", makanSelect.value);
-                console.log(makanSelect.value);
-                if (datas.is_makan === 'Y') {
-                    optionY.selected = true;
-                } else if (header.is_design === 'N') {
-                    optionN.selected = true;
-                }
-            }
-
-
-
-            formGroupMakanInput.appendChild(makanSelect);
 
             const formGroupStartDateInput = document.createElement('div')
             formGroupStartDateInput.classList.add('col-md-1');
@@ -542,7 +500,6 @@
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupNamaInput);
             newItemContainer.appendChild(formGroupJobdescInput);
-            newItemContainer.appendChild(formGroupMakanInput);
             newItemContainer.appendChild(formGroupStartDateInput);
             newItemContainer.appendChild(formGroupStartTimeInput);
             newItemContainer.appendChild(formGroupEndDateInput);

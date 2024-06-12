@@ -613,7 +613,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
-
-
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
 });
