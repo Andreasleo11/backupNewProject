@@ -77,7 +77,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
                 $this->defectData[$partName]['rec_quantity'] += $detail->rec_quantity;
 
                 foreach ($detail->defects as $defect) {
-                    $categoryName = $defect->category->name;
+                    $categoryName = $defect->category->name ?? '-';
                     $quantity = $defect->quantity; // Assuming 'quantity' is a field in the defect model
 
                     if (!isset($this->defectData[$partName]['defects'][$categoryName])) {
