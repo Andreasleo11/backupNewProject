@@ -22,4 +22,9 @@ class DetailFormOvertime extends Model
         'break',
         'remarks',
     ];
+
+    public function header()
+    {
+        return $this->belongsTo(HeaderFormOvertime::class, 'header_id', 'id');
+    }
 }
