@@ -35,9 +35,9 @@ class OvertimeImport implements ToCollection
                     'overtime_date' => $this->parseDate($row[1]),
                     'job_desc' => $row[2],
                     'start_date' => $this->parseDate($row[3]),
-                    'start_time' => $row[4],
+                    'start_time' => $this->parseTime($row[4]),
                     'end_date' => $this->parseDate($row[5]),
-                    'end_time' => $row[6],
+                    'end_time' => $this->parseTime($row[6]),
                     'break' => $row[7],
                     'remarks' => $row[8],
                 ]);
@@ -53,6 +53,30 @@ class OvertimeImport implements ToCollection
         } else {
             // Assume the value is a standard date string
             return \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+        }
+    }
+
+    private function parseTime($value)
+    {
+        try {
+            // Check if the value is a numeric time (Excel time format)
+            if (is_numeric($value)) {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('H:i:s');
+            } else {
+                // Attempt to parse various time formats
+                $formats = ['H:i', 'H:i:s', 'g:i A', 'g:i:s A', 'H.i'];
+                foreach ($formats as $format) {
+                    $parsedTime = Carbon::createFromFormat($format, $value);
+                    if ($parsedTime !== false) {
+                        return $parsedTime->format('H:i:s');
+                    }
+                }
+                // If none of the formats match, return null or handle the error as needed
+                return null;
+            }
+        } catch (\Exception $e) {
+            // Handle the exception if the format is invalid
+            return null;
         }
     }
 }

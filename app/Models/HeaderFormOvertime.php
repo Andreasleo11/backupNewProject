@@ -33,4 +33,9 @@ class HeaderFormOvertime extends Model
     {
         return $this->hasone(Department::class, 'id', 'dept_id');
     }
+
+    public function details()
+    {
+        return $this->hasMany(DetailFormOvertime::class, 'header_id', 'id');
+    }
 }
