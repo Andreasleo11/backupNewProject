@@ -5,6 +5,7 @@ namespace App\Imports;
 
 use App\Models\Employee;
 use App\Models\DetailFormOvertime;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Support\Collection;
 
@@ -22,7 +23,7 @@ class OvertimeImport implements ToCollection
         // Skip the first three rows (headers)
         $dataRows = $rows->slice(3);
 
-        foreach ($dataRows as $row) 
+        foreach ($dataRows as $row)
         {
             $employeeId = $row[0];
             $employee = Employee::where('NIK', $employeeId)->first();

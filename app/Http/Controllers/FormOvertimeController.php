@@ -40,16 +40,29 @@ class FormOvertimeController extends Controller
        $user = Auth::user();
 
        // Filter the data based on the user's departement_id
-       $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
-           ->where('dept_id', $user->department_id)
-           ->whereHas('details', function ($query) {
-            // Condition to filter out headers without valid details
-            $query->whereNotNull('start_date')
-                  ->whereNotNull('end_date')
-                  ->where('start_date', '<>', '0000-00-00')
-                  ->where('end_date', '<>', '0000-00-00');
-        })
-           ->get();
+       if($user->specification->name === 'VERIFICATOR') {
+            $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
+            ->whereNotNull('autograph_2')
+            ->whereHas('Relationdepartement', function ($query) {
+                    $query->where('is_office', true);
+                })
+            ->orWhere('user_id', auth()->user()->id)
+            ->get();
+       } elseif($user->is_gm) {
+        $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
+               ->where('dept_id', $user->department_id)
+               ->whereNotNull('autograph_2')
+               ->whereHas('Relationdepartement', function ($query) {
+                $query->where('is_office', false);
+               })
+               ->orWhere('user_id', auth()->user()->id)
+               ->get();
+       } else {
+            $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
+            ->where('dept_id', $user->department_id)
+            ->orWhere('user_id', auth()->user()->id)
+            ->get();
+       }
 
        return view("formovertime.index", compact("dataheader"));
     }
@@ -129,7 +142,7 @@ class FormOvertimeController extends Controller
         $headerovertime = HeaderFormOvertime::create($headerData);
 
         if ($uploadedFiles) {
-        
+
             $this->importFromExcel($request, $headerovertime->id);
 
         }else{
@@ -146,7 +159,7 @@ class FormOvertimeController extends Controller
         $path = $request->file('excel_file')->store('temp');
         $import = new OvertimeImport($headerOvertimeId);
         Excel::import($import, $path);
-        
+
     }
 
     public function detailOvertimeInsert($request, $id)
@@ -248,7 +261,20 @@ class FormOvertimeController extends Controller
             return response()->json(['error' => 'Related department not found'], 404);
         }
 
-        if ($department->is_office) {
+        if ($department->name === 'MOULDING') {
+            // Case 2: department name is MOULDING
+            $headerForm->status = 6;
+            if (!empty($headerForm->autograph_2)) {
+                $headerForm->status = 1;
+            }
+            if (!empty($headerForm->autograph_3)) {
+                $headerForm->status = 9;
+            }
+            if (!empty($headerForm->autograph_4)) {
+                $headerForm->status = 5;
+                $headerForm->is_approve = 1;
+            }
+        } else if ($department->is_office === 1) {
             // Case 1: is_office is true
             $headerForm->status = 1;
             if (!empty($headerForm->autograph_2)) {
@@ -261,19 +287,6 @@ class FormOvertimeController extends Controller
                 $headerForm->status = 5;
                 $headerForm->is_approve = 1;
             }
-        } elseif ($department->name === 'MOULDING') {
-            // Case 2: department name is MOULDING
-            $headerForm->status = 6;
-            if (!empty($headerForm->autograph_2)) {
-                $headerForm->status = 1;
-            }
-            if (!empty($headerForm->autograph_3)) {
-                $headerForm->status = 2;
-            }
-            if (!empty($headerForm->autograph_4)) {
-                $headerForm->status = 5;
-                $headerForm->is_approve = 1;
-            }
         } else {
             // Case 3: is_office is false
             $headerForm->status = 1;
@@ -281,7 +294,7 @@ class FormOvertimeController extends Controller
                 $headerForm->status = 3;
             }
             if (!empty($headerForm->autograph_3)) {
-                $headerForm->status = 2;
+                $headerForm->status = 9;
             }
             if (!empty($headerForm->autograph_4)) {
                 $headerForm->status = 5;
