@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     <div class="row d-flex">
         <div class="col">
             <h1 class="h1">Form Overtime List</h1>
@@ -47,19 +46,24 @@
                                             @switch($fot->status)
                                                 @case(1)
                                                     <span class="badge bg-warning text-dark">Waiting for Dept Head</span>
-                                                    @break
+                                                @break
+
                                                 @case(2)
                                                     <span class="badge bg-warning text-dark">Waiting for Verificator</span>
-                                                    @break
+                                                @break
+
                                                 @case(3)
                                                     <span class="badge bg-warning text-dark">Waiting for GM</span>
-                                                    @break
+                                                @break
+
                                                 @case(9)
                                                     <span class="badge bg-warning text-dark">Waiting Director</span>
-                                                    @break
+                                                @break
+
                                                 @case(6)
                                                     <span class="badge bg-info text-dark">Waiting for Supervisor</span>
-                                                    @break
+                                                @break
+
                                                 @default
                                                     <span class="badge bg-secondary">Unknown</span>
                                             @endswitch
@@ -72,16 +76,15 @@
                                         </a>
                                     </td>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="10">No Data</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                @empty
+                                    <tr>
+                                        <td colspan="10">No Data</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-@endsection
+        </section>
+    @endsection

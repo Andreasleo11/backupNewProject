@@ -72,15 +72,15 @@
             border-radius: 50%;
         }
 
-        input:checked + .slider {
+        input:checked+.slider {
             background-color: #2196F3;
         }
 
-        input:focus + .slider {
+        input:focus+.slider {
             box-shadow: 0 0 1px #2196F3;
         }
 
-        input:checked + .slider:before {
+        input:checked+.slider:before {
             transform: translateX(26px);
         }
 
@@ -159,7 +159,7 @@
     </body>
 
     <script>
-  document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const inputMethodToggle = document.getElementById('inputMethodToggle');
             const fileUploadSection = document.getElementById('fileUploadSection');
             const manualInputSection = document.getElementById('manualInputSection');
@@ -190,7 +190,7 @@
                     manualInputSection.style.display = 'block';
                     // Update the input method label
                     manualInputFields.forEach(function(field) {
-                    field.disabled = false;
+                        field.disabled = false;
                     });
                     // Disable file upload field
                     document.getElementById('excel_file').disabled = true;
@@ -262,7 +262,7 @@
                     'End Time', 'Break (Minute)', 'Remarks',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1','col-md-2', 'col-md-1', 'col-md-1',
+                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-1', 'col-md-1',
                     'col-md-1',
                     'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1'
                 ];
@@ -306,6 +306,9 @@
             itemNameInput.addEventListener('keyup', function() {
                 const departmentDropdown = document.getElementById('fromDepartmentDropdown');
                 const inputValue = itemNameInput.value.trim();
+                if (departmentDropdown.value == "") {
+                    alert('Please select the from department name first!');
+                }
 
                 if (inputValue.length > 0) {
                     // Fetch item names from server based on user input
@@ -361,6 +364,10 @@
             namaInput.addEventListener('keyup', function() {
                 const departmentDropdown = document.getElementById('fromDepartmentDropdown');
                 const inputValue = namaInput.value.trim();
+
+                if (departmentDropdown.value == "") {
+                    alert('Please select the from department name first!');
+                }
 
                 if (inputValue.length > 0) {
                     // Fetch item names from server based on user input
