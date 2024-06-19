@@ -262,7 +262,7 @@ class DisciplineYayasanTableDataTable extends DataTable
      */
     public function query(EvaluationData $model): QueryBuilder
     {
-        if (Auth::user()->is_head == 1 && Auth::user()->department_id == 25) {
+        if (Auth::user()->department_id == 25) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -270,7 +270,14 @@ class DisciplineYayasanTableDataTable extends DataTable
                         ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 6) {
+        elseif (Auth::user()->is_gm) {
+            // Get data for department 340
+            return $model::with('karyawan')
+                ->whereHas('karyawan', function ($query) {
+                    $query->where('status', 'YAYASAN');
+                })->newQuery();
+        }
+        elseif (Auth::user()->department_id == 6) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -278,15 +285,15 @@ class DisciplineYayasanTableDataTable extends DataTable
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 11) {
+        elseif (Auth::user()->department_id == 11) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '390')
+                    $query->where('dept', '390')
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 16) {
+        elseif (Auth::user()->department_id == 16) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -294,7 +301,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 20) {
+        elseif (Auth::user()->department_id == 20) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -302,7 +309,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 19) {
+        elseif (Auth::user()->department_id == 19) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -310,7 +317,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 18) {
+        elseif (Auth::user()->department_id == 18) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -318,7 +325,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 24) {
+        elseif (Auth::user()->department_id == 24) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -327,7 +334,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                 })->newQuery();
         }
         
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 17) {
+        elseif (Auth::user()->department_id == 17) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -336,7 +343,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                 })->newQuery();
         }
         
-        elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 2) {
+        elseif (Auth::user()->department_id == 2) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -361,7 +368,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                     ->minifiedAjax()
                     //->dom('Bfrtip')
                     ->orderBy(1)
-                    ->selectStyleSingle()
+                   
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
@@ -388,10 +395,8 @@ class DisciplineYayasanTableDataTable extends DataTable
                 ->data('karyawan.Nama')
                 ->searchable(false)
                 ->addClass('align-middle')->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.Dept')
-                ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
+            Column::make('dept')
+                ->addClass('align-middle'),
             Column::make('start_date')
                 ->title('Start Date')
                 ->data('karyawan.start_date')
@@ -429,6 +434,11 @@ class DisciplineYayasanTableDataTable extends DataTable
             ->exportable(false),
             Column::make('grade')
             ->title('Grade')
+            ->searchable(false)
+            ->exportable(false)
+            ->addClass('align-middle')->orderable(false),
+            Column::make('pengawas')
+            ->title('Approved By')
             ->searchable(false)
             ->exportable(false)
             ->addClass('align-middle')->orderable(false),

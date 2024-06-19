@@ -15,6 +15,7 @@ class EvaluationData extends Model
     
     protected $fillable = [
         'NIK',
+        'dept',
         'Month',
         'Alpha',
         'Telat',
@@ -36,6 +37,9 @@ class EvaluationData extends Model
         'relawan',
         'integritas',
         'total',
+        'pengawas',
+        'depthead',
+        'generalmanager',
     ];
 
     public function karyawan()

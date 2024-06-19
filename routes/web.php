@@ -569,14 +569,15 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
-
+//
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
 
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
-
+    Route::post("/approve-data-yayasan/depthead", [DisciplinePageController::class, 'approve_depthead'])->name('approve.data.depthead');
+    Route::post("/approve-data-yayasan/gm", [DisciplinePageController::class, 'approve_gm'])->name('approve.data.gm');
 
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
     Route::get('/get-filter-value', [DisciplinePageController::class, 'getFilterValue']);
@@ -586,13 +587,21 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
 
     Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
+    Route::get('/fetch/filtered/yayasan-employees', [DisciplinePageController::class, 'fetchFilteredYayasanEmployees'])->name('fetch.filtered.yayasan.employees');
+
+    Route::get('/fetch/filtered/yayasan-employees-GM', [DisciplinePageController::class, 'fetchFilteredEmployeesGM']);
 
     Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
     Route::put('/edit/yayasandiscipline/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('updateyayasan');
+    Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
+
+    Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
+
+//
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
-
+//
 
     Route::get("/formovertime/index", [FormOvertimeController::class, 'index'])->name("formovertime.index");
     Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
@@ -610,8 +619,15 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
+//
 
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
+
+
+
+    Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);  
+
+    
 });

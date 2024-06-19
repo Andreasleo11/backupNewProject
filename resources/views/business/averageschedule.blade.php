@@ -4,14 +4,26 @@
 
 <H1>Average Delivery Schedule Per Month</H1>
 
-<label for="monthFilter">Filter by Month:</label>
-<select id="monthFilter">
-    <option value="all">All Months</option>
-    @foreach($totalQuantities as $month => $items)
-        <option value="{{ $month }}">{{ $month }}</option>
-    @endforeach
-</select>
+<div style="margin-bottom: 20px;">
+    <label for="daysFilter">Filter by Days:</label>
+    <select id="daysFilter" class="custom-select">
+        <option value="all">All</option>
+        <option value="small">0 - 1 (Small)</option>
+        <option value="middle">2 - 7 (Middle)</option>
+        <option value="huge">8+ (Huge)</option>
+    </select>
+</div>
 
+<div style="margin-bottom: 20px;">
+    <label for="itemCodeFilter">Filter by Item Code:</label>
+    <select id="itemCodeFilter" multiple="multiple" class="custom-select" style="width: 100%;">
+        @foreach($totalQuantities as $month => $items)
+            @foreach($items as $itemCode => $quantity)
+                <option value="{{ $itemCode }}">{{ $itemCode }}</option>
+            @endforeach
+        @endforeach
+    </select>
+</div>
 
 <style>
     table {
@@ -44,7 +56,6 @@
             <th>Average with Count</th>
             <th>In Stock</th>
             <th>Days</th>
-            <!-- <th>Day In Stock / Average</th> -->
         </tr>
     </thead>
     <tbody>
@@ -58,46 +69,62 @@
                     <td>{{ $itemCounts[$month][$itemCode] ?? 0 }}</td>
                     @php
                         $averageWithCount = ($quantity / $itemCounts[$month][$itemCode]) ?? 0;
-                        $averagePerMonth = $quantity / 30; // Assuming 30 days in a month
-                        $inStock = 0;
-
                         $inStock = floor($result[$month][$itemCode] ?? 0);
-
-                        $newColumnValue = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
+                        $days = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
                     @endphp
                     <td>{{ round($averageWithCount) }}</td>
                     <td>{{ $inStock }}</td>
-                    @php
-                    $days = floor($inStock / $averageWithCount);
-                    @endphp
-                    <td>{{$days}}</td>
-                    <!-- <td>{{ $newColumnValue }}</td> -->
+                    <td>{{ $days }}</td>
                 </tr>
             @endforeach
         @endforeach
     </tbody>
 </table>
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var monthFilter = document.getElementById('monthFilter');
+        // Initialize Select2
+        $('#itemCodeFilter').select2({
+            placeholder: "Select Item Code(s)",
+            allowClear: true
+        });
+
+        var daysFilter = document.getElementById('daysFilter');
+        var itemCodeFilter = $('#itemCodeFilter');  // jQuery object for Select2
         var deliveryTable = document.getElementById('deliveryTable').querySelector('tbody');
         var allRows = deliveryTable.querySelectorAll('tr');
 
-        monthFilter.addEventListener('change', function() {
-            var selectedMonth = monthFilter.value;
+        function filterRows() {
+            var selectedDays = daysFilter.value;
+            var selectedItems = itemCodeFilter.val(); // Get the selected values from Select2
 
             allRows.forEach(function(row) {
-                var monthColumn = row.cells[0].textContent; // Get the content of the first cell (Month column)
-                if (selectedMonth === 'all' || monthColumn === selectedMonth) {
+                var days = parseInt(row.cells[6].textContent); // Get the content of the Days column
+                var itemCode = row.cells[1].textContent; // Get the content of the Item Code column
+
+                var daysMatch = selectedDays === 'all' ||
+                    (selectedDays === 'small' && days >= 0 && days <= 1) ||
+                    (selectedDays === 'middle' && days >= 2 && days <= 7) ||
+                    (selectedDays === 'huge' && days >= 8);
+
+                var itemCodeMatch = selectedItems.length === 0 || selectedItems.includes(itemCode);
+
+                if (daysMatch && itemCodeMatch) {
                     row.style.display = 'table-row';
                 } else {
                     row.style.display = 'none';
                 }
             });
-        });
+        }
+
+        // Add event listeners to filter the table based on selected filters
+        daysFilter.addEventListener('change', filterRows);
+        itemCodeFilter.on('change', filterRows);  // Use jQuery's 'on' method for Select2
+
+        // Automatically trigger filtering when the page loads
+        filterRows();
     });
 </script>
+
+
 
 @endsection

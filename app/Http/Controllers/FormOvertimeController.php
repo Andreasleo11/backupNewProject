@@ -42,6 +42,13 @@ class FormOvertimeController extends Controller
        // Filter the data based on the user's departement_id
        $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
            ->where('dept_id', $user->department_id)
+           ->whereHas('details', function ($query) {
+            // Condition to filter out headers without valid details
+            $query->whereNotNull('start_date')
+                  ->whereNotNull('end_date')
+                  ->where('start_date', '<>', '0000-00-00')
+                  ->where('end_date', '<>', '0000-00-00');
+        })
            ->get();
 
        return view("formovertime.index", compact("dataheader"));
@@ -74,7 +81,7 @@ class FormOvertimeController extends Controller
         if ($dept_no) {
             if($nik){
                 // Fetch employees based on NIK and department number
-                $pegawais = Employee::where('NIK', 'like', '%' . $nama . '%')
+                $pegawais = Employee::where('NIK', 'like', '%' . $nik . '%')
                     ->where('Dept', $dept_no)
                     ->select('NIK', 'nama')
                     ->get();
