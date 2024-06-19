@@ -55,11 +55,11 @@
         <tr>
             <th>Month</th>
             <th>Item Code</th>
-            <th>Quantity</th>
+            <th>Item Name</th>
             <th>Count</th>
             <th>Average with Count</th>
             <th>In Stock</th>
-            <th>Item Name</th>
+            <th>Quantity</th>
             <th>Days</th>
         </tr>
     </thead>
