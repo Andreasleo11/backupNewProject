@@ -2,7 +2,7 @@
 
 @section('content')
 
-<H1>Average Delivery Schedule Per Month</H1>
+<h1>Average Delivery Schedule Per Month</h1>
 
 <div style="margin-bottom: 20px;">
     <label for="daysFilter">Filter by Days:</label>
@@ -19,7 +19,11 @@
     <select id="itemCodeFilter" multiple="multiple" class="custom-select" style="width: 100%;">
         @foreach($totalQuantities as $month => $items)
             @foreach($items as $itemCode => $quantity)
-                <option value="{{ $itemCode }}">{{ $itemCode }}</option>
+                @php
+                    $itemName = isset($result[$month][$itemCode]['item_name']) ? $result[$month][$itemCode]['item_name'] : '';
+                    $optionText = $itemCode . ' - ' . $itemName;
+                @endphp
+                <option value="{{ $itemCode }}">{{ $optionText }}</option>
             @endforeach
         @endforeach
     </select>
@@ -55,24 +59,27 @@
             <th>Count</th>
             <th>Average with Count</th>
             <th>In Stock</th>
+            <th>Item Name</th>
             <th>Days</th>
         </tr>
     </thead>
     <tbody>
         @foreach($totalQuantities as $month => $items)
-        @php $first = true; @endphp
             @foreach($items as $itemCode => $quantity)
+                @php
+                    $count = $itemCounts[$month][$itemCode] ?? 0;
+                    $averageWithCount = $count > 0 ? round($quantity / $count) : 0;
+                    $inStock = isset($result[$month][$itemCode]['in_stock']) ? $result[$month][$itemCode]['in_stock'] : 0;
+                    $itemName = isset($result[$month][$itemCode]['item_name']) ? $result[$month][$itemCode]['item_name'] : '';
+                    $days = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
+                @endphp
                 <tr>
                     <td>{{ $month }}</td>
                     <td>{{ $itemCode }}</td>
+                    <td>{{ $itemName }}</td>
                     <td>{{ $quantity }}</td>
-                    <td>{{ $itemCounts[$month][$itemCode] ?? 0 }}</td>
-                    @php
-                        $averageWithCount = ($quantity / $itemCounts[$month][$itemCode]) ?? 0;
-                        $inStock = floor($result[$month][$itemCode] ?? 0);
-                        $days = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
-                    @endphp
-                    <td>{{ round($averageWithCount) }}</td>
+                    <td>{{ $count }}</td>
+                    <td>{{ $averageWithCount }}</td>
                     <td>{{ $inStock }}</td>
                     <td>{{ $days }}</td>
                 </tr>
@@ -80,6 +87,7 @@
         @endforeach
     </tbody>
 </table>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize Select2
@@ -98,7 +106,7 @@
             var selectedItems = itemCodeFilter.val(); // Get the selected values from Select2
 
             allRows.forEach(function(row) {
-                var days = parseInt(row.cells[6].textContent); // Get the content of the Days column
+                var days = parseInt(row.cells[7].textContent); // Get the content of the Days column
                 var itemCode = row.cells[1].textContent; // Get the content of the Item Code column
 
                 var daysMatch = selectedDays === 'all' ||
@@ -124,7 +132,5 @@
         filterRows();
     });
 </script>
-
-
 
 @endsection

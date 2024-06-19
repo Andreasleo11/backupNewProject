@@ -18,6 +18,7 @@ use App\Models\delsched_stock;
 use App\Models\delsched_stockwip;
 use App\Models\SapDelsched;
 use App\Models\SapInventoryMtr;
+use App\Models\SapInventoryFg;
 
 use App\Models\DelschedFinal;
 use App\Models\DelschedFinalWip;
@@ -88,23 +89,35 @@ class DeliveryScheduleController extends Controller
 			});
 
 			// Fetch the SapInventoryMtr data
-			$inventoryData = SapInventoryMtr::all();
-
+			$inventoryData = SapInventoryFg::all();
+		
 			// Map the inventory data based on fg_code
-			$inventoryMap = $inventoryData->keyBy('fg_code');
-
+			$inventoryMap = $inventoryData->keyBy('item_code');
+			
 			// Combine the grouped data with the inventory data
 			$result = $itemCounts->map(function($group) use ($inventoryMap) {
 				return $group->map(function($count, $itemCode) use ($inventoryMap) {
-					// Get the corresponding inventory data
 					$inventory = $inventoryMap->get($itemCode);
 
-					// If inventory data exists, return the in_stock value
-					return $inventory ? $inventory->in_stock : null;
+					// Initialize an array to hold stock and item_name
+					$inventoryInfo = [
+						'in_stock' => null,
+						'item_name' => null,
+					];
+			
+					// If inventory data exists, populate stock and item_name
+					if ($inventory) {
+						$inventoryInfo['in_stock'] = $inventory->stock;
+						// Assuming item_name is a field in the inventory model or related model
+						$inventoryInfo['item_name'] = $inventory->item_name; // Adjust as per your actual field name
+					}
+			
+					return $inventoryInfo;
 				});
 			});
 
-			// Calculate total quantities for the current month
+			// dd($result);
+			// // Calculate total quantities for the current month
 			$totalQuantities = $data->groupBy(function($item) {
 				return Carbon::parse($item->delivery_date)->format('Y-m');
 			})->map(function($group) {
@@ -114,7 +127,7 @@ class DeliveryScheduleController extends Controller
 			});
 
 
-
+			// dd($totalQuantities);
 
 		return view("business.averageschedule", compact('data','itemCounts', 'totalQuantities', 'result'));
 	}
