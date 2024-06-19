@@ -69,47 +69,49 @@ class DeliveryScheduleController extends Controller
 	{
 		$data = SapDelsched::all();
 		// Mengelompokkan data berdasarkan bulan dan item_code, kemudian menghitung total quantity
+		$today = now();
+		$currentMonth = $today->format('Y-m');
 
-
-		$itemCounts = $data->groupBy(function($item) {
-			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
-		})->map(function($group) {
-			return $group->groupBy('item_code')->map(function($itemGroup) {
-				// Menghitung jumlah item code yang unik
-				return $itemGroup->count();
+		// Filter the data to only include the current month
+			$data = $data->filter(function($item) use ($currentMonth) {
+				return Carbon::parse($item->delivery_date)->format('Y-m') === $currentMonth;
 			});
-		});
 
-
-		// Step 2: Fetch the SapInventoryMtr data
-		$inventoryData = SapInventoryMtr::all();
-
-		// Step 3: Map the inventory data based on fg_code
-		$inventoryMap = $inventoryData->keyBy('fg_code');
-
-		// Step 4: Combine the grouped data with the inventory data
-		$result = $itemCounts->map(function($group) use ($inventoryMap) {
-			return $group->map(function($count, $itemCode) use ($inventoryMap) {
-				// Get the corresponding inventory data
-				$inventory = $inventoryMap->get($itemCode);
-
-				// If inventory data exists, return the in_stock value
-				return $inventory ? $inventory->in_stock : null;
+			// Group the data by month and item_code, then calculate total quantity
+			$itemCounts = $data->groupBy(function($item) {
+				return Carbon::parse($item->delivery_date)->format('Y-m');
+			})->map(function($group) {
+				return $group->groupBy('item_code')->map(function($itemGroup) {
+					// Count unique item codes
+					return $itemGroup->count();
+				});
 			});
-		});
 
+			// Fetch the SapInventoryMtr data
+			$inventoryData = SapInventoryMtr::all();
 
+			// Map the inventory data based on fg_code
+			$inventoryMap = $inventoryData->keyBy('fg_code');
 
-		// dd($itemCounts);
-		$totalQuantities = $data->groupBy(function($item) {
-			return \Carbon\Carbon::parse($item->delivery_date)->format('Y-m');
-		})->map(function($group) {
-			return $group->groupBy('item_code')->map(function($itemGroup) {
-				return $itemGroup->sum('delivery_qty');
+			// Combine the grouped data with the inventory data
+			$result = $itemCounts->map(function($group) use ($inventoryMap) {
+				return $group->map(function($count, $itemCode) use ($inventoryMap) {
+					// Get the corresponding inventory data
+					$inventory = $inventoryMap->get($itemCode);
+
+					// If inventory data exists, return the in_stock value
+					return $inventory ? $inventory->in_stock : null;
+				});
 			});
-		});
 
-		// dd($totalQuantities);
+			// Calculate total quantities for the current month
+			$totalQuantities = $data->groupBy(function($item) {
+				return Carbon::parse($item->delivery_date)->format('Y-m');
+			})->map(function($group) {
+				return $group->groupBy('item_code')->map(function($itemGroup) {
+					return $itemGroup->sum('delivery_qty');
+				});
+			});
 
 
 
