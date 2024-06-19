@@ -289,7 +289,7 @@ class DisciplineYayasanTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '390')
+                    $query->where('dept', '390')
                     ->where('status', 'YAYASAN');
                 })->newQuery();
         }
@@ -395,10 +395,8 @@ class DisciplineYayasanTableDataTable extends DataTable
                 ->data('karyawan.Nama')
                 ->searchable(false)
                 ->addClass('align-middle')->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.Dept')
-                ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
+            Column::make('dept')
+                ->addClass('align-middle'),
             Column::make('start_date')
                 ->title('Start Date')
                 ->data('karyawan.start_date')

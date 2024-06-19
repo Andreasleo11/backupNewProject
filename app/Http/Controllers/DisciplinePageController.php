@@ -765,19 +765,23 @@ class DisciplinePageController extends Controller
 
     public function approve_gm(Request $request)
     {
-        
+        // dd($request->all());
         $filterMonth = $request->filter_month ;
         // dd($filterMonth);
-        $deptNo = Auth::user()->is_gm;
+        // dd($filterMonth);
+        $deptNo = $request->filter_dept;
 
         // dd($deptNo);
         $filterMonth = $request->input('filter_month');
 
-        $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
-            $query->where('status', 'YAYASAN');
+        $employees =EvaluationData::whereHas('karyawan', function ($query) use($deptNo){
+            $query->where('Dept', $deptNo)
+            ->where('status', 'YAYASAN');
         })
         ->whereMonth('Month', $filterMonth)
         ->get();
+
+        // dd($employees);
 
         foreach ($employees as $employee) {
             $employee->generalmanager = Auth::user()->name;
@@ -794,9 +798,27 @@ class DisciplinePageController extends Controller
 
         $deptNo = Auth::user()->department->dept_no;
 
-
         $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
             $query->where('Dept', $deptNo);
+        })
+        ->whereMonth('Month', $filterMonth)
+        ->get();
+
+        // Return the filtered employee data as JSON response
+        return response()->json($employees);
+    }
+
+
+    public function fetchFilteredEmployeesGM(Request $request)
+    {
+        // Get the filter month from the request
+        $filterMonth = $request->input('filter_month');
+
+        $deptNo = $request->input('filter_dept');
+
+        $employees =EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
+            $query->where('status', 'YAYASAN')
+            ->where('Dept', $deptNo);
         })
         ->whereMonth('Month', $filterMonth)
         ->get();
@@ -992,5 +1014,26 @@ class DisciplinePageController extends Controller
         return 'Excel file imported successfully.';
 
     }
+
+    // function untuk update isi dept di Evaluation Data dari data employee master 
+    public function updateDeptColumn()
+    {
+        // Fetch all EvaluationData records
+        $evaluationDataRecords = EvaluationData::all();
+
+        foreach ($evaluationDataRecords as $evaluationData) {
+            // Fetch the corresponding Employee record
+            $employee = Employee::where('NIK', $evaluationData->NIK)->first();
+
+            if ($employee) {
+                // Update the dept column with the dept from Employee model
+                $evaluationData->dept = $employee->Dept;
+                $evaluationData->save();
+            }
+        }
+
+        return response()->json(['message' => 'Dept column updated successfully.']);
+    }
+
 
 }

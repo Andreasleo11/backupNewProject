@@ -15,6 +15,7 @@ class EvaluationData extends Model
     
     protected $fillable = [
         'NIK',
+        'dept',
         'Month',
         'Alpha',
         'Telat',
