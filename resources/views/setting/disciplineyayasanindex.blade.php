@@ -2,12 +2,15 @@
 
 @section('content')
 
+
+@if(!$user->is_head && !$user->is_gm)
 @include('partials.upload-excel-file-discipline-yayasan-modal')
     <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
         data-bs-target="#upload-excel-file-discipline-yayasan-modal">Upload
         File
         Excel</button>
 
+@endif
 @php
 
 foreach($employees as $employee)
@@ -221,15 +224,14 @@ foreach($employees as $employee)
                         // Update button status based on the user role
                         if (isGm) {
                             if (checkifGmReady(employees)) {
+                                if(checkapprovedbygm(employees)){
+                                gmApprovalDataBtn.disabled = true;
+                                }
+                                else{
                                 gmApprovalDataBtn.disabled = false;
+                                }
                             } else {
                                 gmApprovalDataBtn.disabled = true;
-                            }
-                        } else {
-                            if (checkIfAllLocked(employees)) {
-                                lockDataBtn.disabled = false;
-                            } else {
-                                lockDataBtn.disabled = true;
                             }
                         }
                     } else {
