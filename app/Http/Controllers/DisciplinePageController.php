@@ -757,6 +757,7 @@ class DisciplinePageController extends Controller
 
         foreach ($employees as $employee) {
             $employee->depthead = Auth::user()->name;
+            $employee->is_lock = 1;
             $employee->save();
         }
 

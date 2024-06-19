@@ -249,7 +249,7 @@ class DisciplineYayasanTableDataTable extends DataTable
         }
         @endphp
         {{ $grade }}')
-        ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-yayasan-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-edit"></i></button>
+        ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-yayasan-modal-{{str_replace(\' \', \'\',$id)}}"  {{ ($is_lock === 1) ? "disabled" : ""  }}><i class="bx bx-edit"></i></button>
         ')
         ->setRowId('id');
     }
