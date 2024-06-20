@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            SpecificationSeeder::class
+        ]);
+
         $adminRole = Role::firstOrCreate(['name' => 'SUPERADMIN']);
         $staffRole = Role::firstOrCreate(['name' => 'STAFF']);
         $userRole = Role::firstOrCreate(['name' => 'USER']);
