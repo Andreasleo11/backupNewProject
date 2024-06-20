@@ -179,11 +179,13 @@
                     data-bs-target="#director" aria-expanded="false" aria-controls="director">
                     <i class='bx bx-badge-check'></i>
                     <span>Quality</span>
+                    <span>Quality</span>
                 </a>
                 <ul id="director" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
                         <a href="{{ route('director.qaqc.index') }}" class="sidebar-link">
                             <i class='bx bxs-report'></i>
+                            VQC Reports
                             VQC Reports
                         </a>
                     </li>
@@ -322,32 +324,26 @@
                         </a>
                     </li>
 
-<<<<<<< Updated upstream
-                    <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('yayasan.table') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Discipline Evaluation Yayasan
-                            </a>
-                        </li>
-                    </ul>
-
-                    <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                        <li class="sidebar-item">
-                            <a href="{{ route('formovertime.index') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Form Overtime
-                            </a>
-                        </li>
-                    </ul>
-=======
                     <li class="sidebar-item">
-                        <a href="{{ route('stocktinta') }}" class="sidebar-link">
+                        <a href="{{ route('discipline.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Stock Tinta
+                            Discipline Evaluation
                         </a>
                     </li>
->>>>>>> Stashed changes
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Overtime
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('yayasan.table') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Discipline Evaluation Yayasan
+                        </a>
+                    </li>
 
                     <li class="sidebar-item">
                         <a href="{{ route('indexds') }}" class="sidebar-link">
@@ -410,6 +406,7 @@
                             Monthly Budget Reports
                         </a>
                     </li>
+
                 </ul>
             </ul>
         </li>
