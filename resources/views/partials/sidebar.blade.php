@@ -374,6 +374,7 @@
                         </li>
                     </ul>
 
+<<<<<<< Updated upstream
                     <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                         <li class="sidebar-item">
                             <a href="{{ route('yayasan.table') }}" class="sidebar-link">
@@ -391,6 +392,28 @@
                             </a>
                         </li>
                     </ul>
+=======
+                    <li class="sidebar-item">
+                        <a href="{{ route('yayasan.table') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Discipline Evaluation Yayasan
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Overtime
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('stocktinta') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Stock Tinta
+                        </a>
+                    </li>
+>>>>>>> Stashed changes
 
                     <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                         <li class="sidebar-item">
