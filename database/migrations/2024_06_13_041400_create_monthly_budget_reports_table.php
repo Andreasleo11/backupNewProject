@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('monthly_budget_reports', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('department_id');
-            $table->integer('month');
-            $table->string('autograph_1');
-            $table->string('autograph_2');
-            $table->string('autograph_3');
+            $table->integer('dept_no');
+            $table->date('report_date'); // Stores month and year report
+            $table->string('created_autograph')->nullable();
+            $table->string('is_known_autograph')->nullable();
+            $table->string('approved_autograph')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
