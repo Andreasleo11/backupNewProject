@@ -80,12 +80,12 @@ use App\Http\Controllers\StockTintaController;
 
 
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\MonthlyBudgetReportController;
+use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
-use App\Models\Department;
-use App\Models\DetailPurchaseRequest;
-use App\Models\Role;
+use App\Models\MonthlyBudgetSummaryReport;
 
 /*
 |--------------------------------------------------------------------------
@@ -627,7 +627,19 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
 
 
-    Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);  
+    Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
 
-    
+
+    Route::get('monthlyBudgetSummaryReport/', [MonthlyBudgetSummaryReportController::class, 'index'])->name('monthly.budget.summary.report.index');
+    Route::post('monthlyBudgetSummaryReport/store', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
+    Route::delete('monthlyBudgetSummaryReport/{$id}/delete', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
+
+    Route::get('monthlyBudgetReports/', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
+    Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
+    Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.detail');
+    Route::post('monthlyBudgetReport/store', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
+    Route::delete('monthlyBudgetReport/{$id}/delete', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
+    Route::put('save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
+    Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
+
 });

@@ -11,11 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('monthly_budget_report_details', function (Blueprint $table) {
+        Schema::create('monthly_budget_report_summary_details', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('header_id');
             $table->string('name');
-            $table->string('uom');
+            $table->integer('dept_no');
             $table->integer('quantity');
+            $table->string('uom');
+            $table->string('supplier');
+            $table->double('cost_per_unit');
             $table->string('remark');
             $table->timestamps();
         });
@@ -26,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('monthly_budget_report_details');
+        Schema::dropIfExists('monthly_budget_report_summary_details');
     }
 };
