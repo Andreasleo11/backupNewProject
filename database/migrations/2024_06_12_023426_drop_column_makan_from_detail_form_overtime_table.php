@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('detail_form_overtime', function (Blueprint $table) {
-            //
+            $table->string('is_makan');
         });
     }
 };
