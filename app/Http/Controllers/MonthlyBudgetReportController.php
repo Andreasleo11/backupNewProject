@@ -16,7 +16,31 @@ class MonthlyBudgetReportController extends Controller
 {
     public function index()
     {
-        $reports = Report::all();
+        $authUser = auth()->user();
+        $isHead = $authUser->is_head === 1;
+        $isGm = $authUser->is_gm === 1;
+        $isVerificator = $authUser->specification->name === 'VERIFICATOR';
+        $isDirector = $authUser->department->name === 'DIRECTOR';
+
+        $reportsQuery = Report::with('department', 'details');
+
+        if($isDirector){
+            $reportsQuery = Report::whereNotNull('created_autograph')->whereNotNull('is_known_autograph');
+        } elseif ($isGm){
+            $reportsQuery = Report::whereHas('department', function($query){
+                $query->where('is_office', 0);
+            })->whereNotNull('created_autograph')->whereNotNull('is_known_autograph');
+        } elseif ($isVerificator){
+            $reportsQuery = Report::whereNotNull('created_autograph')->whereNotNull('is_known_autograph');
+        } elseif ($isHead){
+            $reportsQuery = Report::whereNotNull('created_autograph')->whereNotNull('is_known_autograph');
+        } else {
+            $reportsQuery->whereHas('department', function($query) use($authUser) {
+                $query->where('id', $authUser->department->id)->orWhere('creator_id', $authUser->id);
+            });
+        }
+        $reports = $reportsQuery->get();
+        // dd($reports);
         return view('monthly_budget_report.index', compact('reports'));
     }
 
@@ -31,6 +55,7 @@ class MonthlyBudgetReportController extends Controller
         // Validate the request
         $request->validate([
             'dept_no' => 'required|integer',
+            'creator_id' => 'nullable|integer',
             'report_date' => 'required|date',
             'created_autograph' => 'nullable|string',
             'is_known_autograph' => 'nullable|string',
@@ -54,6 +79,7 @@ class MonthlyBudgetReportController extends Controller
                 // Create the main report entry
                 $report = Report::create([
                     'dept_no' => $request->dept_no,
+                    'creator_id' => $request->creator_id,
                     'report_date' => $request->report_date,
                     'created_autograph' => $request->created_autograph,
                     'is_known_autograph' => $request->is_known_autograph,
@@ -95,6 +121,7 @@ class MonthlyBudgetReportController extends Controller
             // Create the main report entry
             $report = Report::create([
                 'dept_no' => $request->dept_no,
+                'creator_id' => $request->creator_id,
                 'report_date' => $request->report_date,
                 'created_autograph' => $request->created_autograph,
                 'is_known_autograph' => $request->is_known_autograph,

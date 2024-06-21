@@ -13,6 +13,7 @@ class MonthlyBudgetReport extends Model
 
     protected $fillable = [
         'dept_no',
+        'creator_id',
         'report_date',
         'created_autograph',
         'is_known_autograph',
