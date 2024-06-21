@@ -177,15 +177,15 @@
                                         @forelse ($report->details as $detail)
                                             <tr>
                                                 <td>{{ $detail->name }}</td>
-                                                <td>{{ $detail->spec }}</td>
                                                 @if ($report->dept_no == 363)
-                                                    <td>{{ $detail->uom }}</td>
+                                                    <td>{{ $detail->spec }}</td>
                                                 @endif
-                                                <td>{{ $detail->last_recorded_stock }}</td>
+                                                <td>{{ $detail->uom }}</td>
                                                 @if ($report->dept_no == 363)
+                                                    <td>{{ $detail->last_recorded_stock }}</td>
                                                     <td>{{ $detail->usage_per_month }}</td>
-                                                    <td>{{ $detail->quantity }}</td>
                                                 @endif
+                                                <td>{{ $detail->quantity }}</td>
                                                 <td>{{ $detail->remark }}</td>
                                             </tr>
                                         @empty

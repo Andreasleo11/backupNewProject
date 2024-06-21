@@ -139,6 +139,7 @@ class MonthlyBudgetReportController extends Controller
     public function destroy($id)
     {
         Report::find($id)->delete();
+        Detail::where('header_id', $id)->delete();
         return redirect()->back()->with('status', 'Monthly Budget Report successfully deleted!');
     }
 

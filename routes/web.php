@@ -612,33 +612,26 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
 
-
-
-    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
-
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 //
-
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
 
-
-
     Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
-
 
     Route::get('monthlyBudgetSummaryReport/', [MonthlyBudgetSummaryReportController::class, 'index'])->name('monthly.budget.summary.report.index');
     Route::post('monthlyBudgetSummaryReport/store', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
     Route::delete('monthlyBudgetSummaryReport/{$id}/delete', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
 
-    Route::get('monthlyBudgetReports/', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
+    Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
     Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
-    Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.detail');
-    Route::post('monthlyBudgetReport/store', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
-    Route::delete('monthlyBudgetReport/{$id}/delete', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
+    Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
+    Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
+    Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
+
     Route::put('save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
