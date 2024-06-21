@@ -17,4 +17,8 @@ class MonthlyBudgetSummaryReport extends Model
         'approved_autograph'
     ];
 
+    public function details()
+    {
+        return $this->hasMany(MonthlyBudgetReportSummaryDetails::class, 'header_id');
+    }
 }

@@ -103,7 +103,7 @@ class MonthlyBudgetReportController extends Controller
                  // Log the error (check laravel.log for details)
                 Log::error('Error importing Excel file: ' . $e->getMessage());
 
-                return redirect()->back()->with('error', 'Error importing Excel file: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Error importing Excel file!');
             }
         } else {
             // Handle manual input data

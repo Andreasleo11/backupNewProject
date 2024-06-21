@@ -622,9 +622,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
 
-    Route::get('monthlyBudgetSummaryReport/', [MonthlyBudgetSummaryReportController::class, 'index'])->name('monthly.budget.summary.report.index');
-    Route::post('monthlyBudgetSummaryReport/store', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
-    Route::delete('monthlyBudgetSummaryReport/{$id}/delete', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
+    Route::get('monthlyBudgetSummaryReport', [MonthlyBudgetSummaryReportController::class, 'index'])->name('monthly.budget.summary.report.index');
+    Route::get('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
+    Route::post('monthlyBudgetSummaryReport', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
+    Route::delete('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
 
     Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
     Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');

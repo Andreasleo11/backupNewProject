@@ -407,6 +407,13 @@
                         </a>
                     </li>
 
+                    <li class="sidebar-item">
+                        <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Summary Monthly Budget
+                        </a>
+                    </li>
+
                 </ul>
             </ul>
         </li>
