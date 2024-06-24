@@ -13,6 +13,7 @@ class MonthlyBudgetReport extends Model
 
     protected $fillable = [
         'dept_no',
+        'creator_id',
         'report_date',
         'created_autograph',
         'is_known_autograph',
@@ -27,5 +28,10 @@ class MonthlyBudgetReport extends Model
     public function department()
     {
         return $this->hasOne(Department::class, 'dept_no', 'dept_no');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
     }
 }

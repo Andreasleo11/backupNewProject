@@ -19,12 +19,15 @@
                             enctype="multipart/form-data" class="row gx-3">
                             @csrf
                             <input type="hidden" name="created_autograph" value="{{ ucwords(auth()->user()->name) }}">
+                            <input type="hidden" name="creator_id" value="{{ auth()->user()->id }}">
                             <div class="form-group mt-1 col">
                                 <label class="form-label fs-5 fw-bold">Dept No</label>
                                 <select name="dept_no" id="dept_no" required>
                                     @foreach ($departments as $department)
                                         @if ($department->name !== 'DIRECTOR')
-                                            <option value="{{ $department->dept_no }}">{{ $department->name }}</option>
+                                            <option value="{{ $department->dept_no }}"
+                                                {{ auth()->user()->department->id === $department->id ? 'selected' : '' }}>
+                                                {{ $department->name }}</option>
                                         @endif
                                     @endforeach
                                 </select>
@@ -41,11 +44,6 @@
                                     id="downloadExcelTemplateButton"
                                     onclick="document.getElementById('formExcelTemplate').submit()">Download Excel
                                     Template</button>
-                                {{-- <a href="{{ route('monthly.budget.download.excel.template') }}"
-                                    class="btn btn-sm btn-outline-secondary" style="display: none;"
-                                    id="downloadExcelTemplateButton">Download Excel
-                                    Template</a> --}}
-
                             </div>
                             <div id="manualInputSection">
                                 <div class="form-group mt-4">

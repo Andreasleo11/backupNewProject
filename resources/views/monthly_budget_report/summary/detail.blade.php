@@ -4,7 +4,8 @@
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('monthly.budget.report.index') }}">Monthly Budget Reports</a>
+                <li class="breadcrumb-item"><a href="{{ route('monthly.budget.summary.report.index') }}">Monthly Budget
+                        Summary Reports</a>
                 </li>
                 <li class="breadcrumb-item active">Detail</li>
             </ol>
@@ -18,6 +19,12 @@
             background-size: contain;
             background-repeat: no-repeat;
             border: 1px solid #ccc;
+        }
+
+        /* Optional: Add styling for merged rows */
+        .merged-row {
+            font-style: italic;
+            color: #888;
         }
     </style>
 
@@ -35,6 +42,41 @@
                         <h2>Dibuat</h2>
                         <div class="autograph-box container" id="autographBox1"></div>
                         <div class="container mt-2" id="autographUser1"></div>
+
+                        @php
+                            $showCreatedAutograph = false;
+                            if (!$report->created_autograph) {
+                                if ($report->creator_id === auth()->user()->id) {
+                                    $showCreatedAutograph = true;
+                                }
+                            }
+                        @endphp
+
+                        @if ($showCreatedAutograph)
+                            <div class="row px-4 d-flex justify-content-center">
+                                <div class="col-auto me-2">
+                                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                        class="btn btn-danger">Reject</button>
+                                </div>
+                                <div class="col-auto">
+                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                        method="POST" id="formIsKnownAutograph">
+                                        @csrf @method('PUT')
+                                        <input type="hidden" name="is_known_autograph"
+                                            value="{{ ucwords($authUser->name) }}">
+                                    </form>
+                                    @include('partials.approve-confirmation-modal2', [
+                                        'id' => '1',
+                                        'title' => 'Approval Confirmation',
+                                        'body' => 'Are you sure want to approve this report?',
+                                        'submitButton' =>
+                                            '<button class="btn btn-success" onclick="document.getElementById(\'formIsKnownAutograph\').submit()">Confirm</button>',
+                                    ])
+                                    <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
+                                        class="btn btn-success">Approve</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- IS KNOWN AUTOGRAPH --}}
@@ -44,15 +86,9 @@
                         <div class="container mt-2 border-1" id="autographUser2"></div>
                         @php
                             $showIsKnownAutograph = false;
-                            if (!$report->is_known_autograph) {
-                                if ($report->department->name === 'MOULDING') {
-                                    if ($authUser->is_head && $authUser->specification->name === 'DESIGN') {
-                                        $showIsKnownAutograph = true;
-                                    }
-                                } elseif (!$report->department->is_office) {
-                                    if ($authUser->is_head) {
-                                        $showIsKnownAutograph = true;
-                                    }
+                            if ($report->created_autograph && !$report->is_known_autograph) {
+                                if ($authUser->is_gm) {
+                                    $showIsKnownAutograph = true;
                                 }
                             }
                         @endphp
@@ -64,8 +100,8 @@
                                         class="btn btn-danger">Reject</button>
                                 </div>
                                 <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.save.autograph', $report->id) }}" method="POST"
-                                        id="formIsKnownAutograph">
+                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                        method="POST" id="formIsKnownAutograph">
                                         @csrf @method('PUT')
                                         <input type="hidden" name="is_known_autograph"
                                             value="{{ ucwords($authUser->name) }}">
@@ -91,19 +127,13 @@
                         <div class="container mt-2 border-1" id="autographUser3"></div>
                         @php
                             $showApprovedAutograph = false;
-                            if (!$report->approved_autograph) {
-                                if ($report->department->name === 'MOULDING') {
-                                    if ($authUser->is_head && $authUser->specification->name !== 'DESIGN') {
-                                        $showApprovedAutograph = true;
-                                    }
-                                } elseif ($report->department->name === 'QC' || $report->department->name === 'QA') {
-                                    if ($authUser->department->name === 'DIRECTOR') {
-                                        $showApprovedAutograph = true;
-                                    }
-                                } elseif (!$report->department->is_office) {
-                                    if ($authUser->is_gm) {
-                                        $showApprovedAutograph = true;
-                                    }
+                            if (
+                                $report->created_autograph &&
+                                $report->is_known_autograph &&
+                                !$report->approved_autograph
+                            ) {
+                                if ($authUser->department->name === 'DIRECTOR') {
+                                    $showApprovedAutograph = true;
                                 }
                             }
                         @endphp
@@ -114,8 +144,8 @@
                                         class="btn btn-danger">Reject</button>
                                 </div>
                                 <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.save.autograph', $report->id) }}" method="POST"
-                                        id="formApprovedAutograph">
+                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                        method="POST" id="formApprovedAutograph">
                                         @csrf @method('PUT')
                                         <input type="hidden" name="approved_autograph"
                                             value="{{ ucwords($authUser->name) }}">
@@ -143,22 +173,12 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="h2 fw-bold mt-4">Monthly Budget Report</div>
+                            <div class="h2 fw-bold mt-4">Monthly Budget Summary Report</div>
                             <div class="fs-6 mt-2">
-                                <div class="fs-6 text-secondary">From Department : {{ $report->department->name }}
-                                    ({{ $report->dept_no }})</div>
+                                <div class="fs-6 text-secondary">Created At : {{ $formattedCreatedAt }}</div>
+                                <div class="fs-6 text-secondary">Month : {{ $monthYear }} </div>
                                 <div class="mt-1">
-                                    @if ($report->approved_autograph)
-                                        <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
-                                    @elseif($report->is_known_autograph)
-                                        @if ($report->department->name === 'QA' || $report->department->name === 'QC')
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting Director</span>
-                                        @else
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting GM</span>
-                                        @endif
-                                    @elseif($report->created_autograph)
-                                        <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting Dept Head</span>
-                                    @endif
+                                    @include('partials.monthly-budget-summary-report-status')
                                 </div>
                             </div>
                         </div>
@@ -168,39 +188,57 @@
                                 <table class="table text-center">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>Name</th>
-                                            @if ($report->dept_no == 363)
-                                                <th>Spec</th>
-                                            @endif
-                                            <th>UoM</th>
-                                            @if ($report->dept_no == 363)
-                                                <th>Last Recorded Stock</th>
-                                                <th>Usage Per Month</th>
-                                            @endif
+                                            <th>Dept</th>
                                             <th>Quantity</th>
+                                            <th>UoM</th>
+                                            <th>Supplier</th>
+                                            <th>Cost Per Unit</th>
+                                            <th>Total Cost</th>
                                             <th>Remark</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @forelse ($report->details as $detail)
+                                        @php
+                                            $rowIndex = 0; // Initialize row index
+                                        @endphp
+                                        @foreach ($groupedDetails as $index => $group)
+                                            @php
+                                                $rowspanCount = count($group['items']); // Calculate rowspan for the name column
+                                            @endphp
+                                            @foreach ($group['items'] as $itemIndex => $item)
+                                                @php
+                                                    $totalCost = $item['quantity'] * $item['cost_per_unit'];
+                                                @endphp
+                                                <tr>
+                                                    {{-- Render rowspan for the first row of each group --}}
+                                                    @if ($itemIndex === 0)
+                                                        <td rowspan="{{ $rowspanCount }}">{{ ++$rowIndex }}</td>
+                                                        <td rowspan="{{ $rowspanCount }}">{{ $group['name'] }}</td>
+                                                    @endif
+                                                    <td>{{ $item['dept_no'] }}</td>
+                                                    <td>{{ $item['quantity'] }}</td>
+                                                    <td>{{ $item['uom'] }}</td>
+                                                    <td>{{ $item['supplier'] ?? '-' }}</td>
+                                                    <td>@currency($item['cost_per_unit'])</td>
+                                                    <td>@currency($totalCost)</td>
+                                                    <td>{{ $item['remark'] }}</td>
+                                                    <td>
+                                                        @include('partials.edit-monthly-budget-report-summary-detail')
+                                                        <button class="btn btn-primary"
+                                                            data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
+                                                            data-bs-toggle="modal">Edit</button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endforeach
+                                        @if (empty($groupedDetails))
                                             <tr>
-                                                <td>{{ $detail->name }}</td>
-                                                @if ($report->dept_no == 363)
-                                                    <td>{{ $detail->spec }}</td>
-                                                @endif
-                                                <td>{{ $detail->uom }}</td>
-                                                @if ($report->dept_no == 363)
-                                                    <td>{{ $detail->last_recorded_stock }}</td>
-                                                    <td>{{ $detail->usage_per_month }}</td>
-                                                @endif
-                                                <td>{{ $detail->quantity }}</td>
-                                                <td>{{ $detail->remark }}</td>
+                                                <td colspan="10">No Data</td>
                                             </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="{{ $report->dept_no == 363 ? '7' : '4' }}">No data</td>
-                                            </tr>
-                                        @endforelse
+                                        @endif
                                     </tbody>
                                 </table>
                             </div>

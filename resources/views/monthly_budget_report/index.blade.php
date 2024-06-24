@@ -66,8 +66,16 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('monthly.budget.report.detail', $report->id) }}"
+                                    <a href="{{ route('monthly.budget.report.show', $report->id) }}"
                                         class="btn btn-secondary">Detail</a>
+                                    @include('partials.delete-confirmation-modal', [
+                                        'id' => $report->id,
+                                        'route' => 'monthly.budget.report.delete',
+                                        'title' => 'Delete report confirmation',
+                                        'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
+                                    ])
+                                    <button class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
                                 </td>
                             </tr>
                         @empty

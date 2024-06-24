@@ -27,7 +27,7 @@ class MonthlyBudgetReportImport implements ToCollection
                 continue;
             }
 
-            if($this->deptNo == 361){
+            if($this->deptNo == 363){
                 // Assuming your Excel columns are in order:
                 $name = $row[0];
                 $spec = $row[1];
@@ -66,7 +66,6 @@ class MonthlyBudgetReportImport implements ToCollection
                     'remark' => $remark,
                 ]);
             }
-
         }
     }
 }
