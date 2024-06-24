@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport as Report;
-use App\Models\MonthlyBudgetReportSummaryDetails as Detail;
+use App\Models\MonthlyBudgetReportSummaryDetail as Detail;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -106,6 +106,7 @@ class MonthlyBudgetSummaryReportController extends Controller
             // If not found, add a new item
             if (!$found) {
                 $groupedDetails[$name]['items'][] = [
+                    'id' => $detail->id,
                     'dept_no' => $deptNo,
                     'quantity' => $detail->quantity,
                     'uom' => $detail->uom,

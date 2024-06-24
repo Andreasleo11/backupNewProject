@@ -81,10 +81,12 @@ use App\Http\Controllers\StockTintaController;
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
+use App\Http\Controllers\MonthlyBudgetReportSummaryDetailController;
 use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
+use App\Models\MonthlyBudgetReportSummaryDetails;
 use App\Models\MonthlyBudgetSummaryReport;
 
 /*
@@ -626,6 +628,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
     Route::post('monthlyBudgetSummaryReport', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
     Route::delete('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
+
+    Route::put('monthlyBudgetReportSummaryDetail,{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
 
     Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
     Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');

@@ -19,6 +19,6 @@ class MonthlyBudgetSummaryReport extends Model
 
     public function details()
     {
-        return $this->hasMany(MonthlyBudgetReportSummaryDetails::class, 'header_id');
+        return $this->hasMany(MonthlyBudgetReportSummaryDetail::class, 'header_id');
     }
 }

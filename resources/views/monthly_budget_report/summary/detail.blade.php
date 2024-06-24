@@ -164,6 +164,7 @@
                                             <th>Cost Per Unit</th>
                                             <th>Total Cost</th>
                                             <th>Remark</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -175,6 +176,9 @@
                                                 $rowspanCount = count($group['items']); // Calculate rowspan for the name column
                                             @endphp
                                             @foreach ($group['items'] as $itemIndex => $item)
+                                                @php
+                                                    $totalCost = $item['quantity'] * $item['cost_per_unit'];
+                                                @endphp
                                                 <tr>
                                                     {{-- Render rowspan for the first row of each group --}}
                                                     @if ($itemIndex === 0)
@@ -185,15 +189,21 @@
                                                     <td>{{ $item['quantity'] }}</td>
                                                     <td>{{ $item['uom'] }}</td>
                                                     <td>{{ $item['supplier'] ?? '-' }}</td>
-                                                    <td>{{ $item['cost_per_unit'] ?? '-' }}</td>
-                                                    <td>{{ $item['quantity'] * ($item['cost_per_unit'] ?? 0) }}</td>
+                                                    <td>@currency($item['cost_per_unit'])</td>
+                                                    <td>@currency($totalCost)</td>
                                                     <td>{{ $item['remark'] }}</td>
+                                                    <td>
+                                                        @include('partials.edit-monthly-budget-report-summary-detail')
+                                                        <button class="btn btn-primary"
+                                                            data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
+                                                            data-bs-toggle="modal">Edit</button>
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                         @endforeach
                                         @if (empty($groupedDetails))
                                             <tr>
-                                                <td colspan="9">No Data</td>
+                                                <td colspan="10">No Data</td>
                                             </tr>
                                         @endif
                                     </tbody>
