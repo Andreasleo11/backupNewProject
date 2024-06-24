@@ -25,7 +25,9 @@
                                 <select name="dept_no" id="dept_no" required>
                                     @foreach ($departments as $department)
                                         @if ($department->name !== 'DIRECTOR')
-                                            <option value="{{ $department->dept_no }}">{{ $department->name }}</option>
+                                            <option value="{{ $department->dept_no }}"
+                                                {{ auth()->user()->department->id === $department->id ? 'selected' : '' }}>
+                                                {{ $department->name }}</option>
                                         @endif
                                     @endforeach
                                 </select>
