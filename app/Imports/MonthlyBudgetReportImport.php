@@ -66,7 +66,6 @@ class MonthlyBudgetReportImport implements ToCollection
                     'remark' => $remark,
                 ]);
             }
-
         }
     }
 }
