@@ -29,4 +29,9 @@ class MonthlyBudgetReport extends Model
     {
         return $this->hasOne(Department::class, 'dept_no', 'dept_no');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
 }

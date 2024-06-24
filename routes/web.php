@@ -86,8 +86,10 @@ use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
+use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetReportSummaryDetails;
 use App\Models\MonthlyBudgetSummaryReport;
+use App\Notifications\MonthlyBudgetReportRequestSign;
 
 /*
 |--------------------------------------------------------------------------
@@ -637,7 +639,23 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
     Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
 
-    Route::put('save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
+    Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
+    // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
+    Route::get('/notification', function () {
+        $report = MonthlyBudgetReport::find(5);
+
+        $detail = [
+            'greeting' => 'Monthly Budget Report Notification',
+            'body' => 'We waiting for your sign!',
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'monthlyBudgetReport/' . $report->id,
+        ];
+
+        $detail['userName'] = $report->user->name;
+
+        return (new MonthlyBudgetReportRequestSign($report, $detail))
+                    ->toMail($report->user);
+    });
 });

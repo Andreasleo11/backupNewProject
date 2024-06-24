@@ -45,7 +45,11 @@
                         @php
                             $showIsKnownAutograph = false;
                             if (!$report->is_known_autograph) {
-                                if (!$report->department->is_office) {
+                                if ($report->department->name === 'MOULDING') {
+                                    if ($authUser->is_head && $authUser->specification->name === 'DESIGN') {
+                                        $showIsKnownAutograph = true;
+                                    }
+                                } elseif (!$report->department->is_office) {
                                     if ($authUser->is_head) {
                                         $showIsKnownAutograph = true;
                                     }
@@ -88,7 +92,11 @@
                         @php
                             $showApprovedAutograph = false;
                             if (!$report->approved_autograph) {
-                                if ($report->department->name === 'QC' || $report->department->name === 'QA') {
+                                if ($report->department->name === 'MOULDING') {
+                                    if ($authUser->is_head && $authUser->specification->name !== 'DESIGN') {
+                                        $showApprovedAutograph = true;
+                                    }
+                                } elseif ($report->department->name === 'QC' || $report->department->name === 'QA') {
                                     if ($authUser->department->name === 'DIRECTOR') {
                                         $showApprovedAutograph = true;
                                     }
