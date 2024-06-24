@@ -201,7 +201,7 @@ class MonthlyBudgetReportController extends Controller
             'greeting' => 'Monthly Budget Report Notification',
             'body' => 'We waiting for your sign!',
             'actionText' => 'Click to see the detail',
-            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'monthlyBudgetReport/detail/' . $report->id,
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'monthlyBudgetReport/' . $report->id,
         ];
 
         // $creator = User::find($report->creator_id)->notify(new MonthlyBudgetReportRequestSign($report, $detail));

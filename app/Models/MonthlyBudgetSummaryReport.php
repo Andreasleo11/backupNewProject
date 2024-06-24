@@ -12,6 +12,7 @@ class MonthlyBudgetSummaryReport extends Model
 
     protected $fillable = [
         'report_date',
+        'creator_id',
         'created_autograph',
         'is_known_autograph',
         'approved_autograph'
@@ -20,5 +21,10 @@ class MonthlyBudgetSummaryReport extends Model
     public function details()
     {
         return $this->hasMany(MonthlyBudgetReportSummaryDetail::class, 'header_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'creator_id');
     }
 }

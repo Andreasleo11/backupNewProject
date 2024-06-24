@@ -2,13 +2,13 @@
 
 namespace App\Notifications;
 
-use App\Models\MonthlyBudgetReport;
+use App\Models\MonthlyBudgetSummaryReport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
+class MonthlyBudgetSummaryReportRequestSign extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,7 +18,7 @@ class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(MonthlyBudgetReport $report, $detail)
+    public function __construct(MonthlyBudgetSummaryReport $report, $detail)
     {
         $this->report = $report;
         $this->detail = $detail;
@@ -31,7 +31,7 @@ class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail'];
     }
 
     /**
@@ -40,11 +40,11 @@ class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->cc('nur@daijo.co.id')
-                    ->greeting($this->detail['greeting'])
-                    ->line($this->detail['body'])
-                    ->line('We waiting for Mr/Mrs.' . ucwords($this->detail['userName']) . ' to sign the report.')
-                    ->action($this->detail['actionText'], $this->detail['actionURL']);
+                ->cc('nur@daijo.co.id')
+                ->greeting($this->detail['greeting'])
+                ->line($this->detail['body'])
+                ->line('We waiting for Mr/Mrs.' . ucwords($this->detail['userName']) . ' to sign the report.')
+                ->action($this->detail['actionText'], $this->detail['actionURL']);
     }
 
     /**
@@ -55,7 +55,7 @@ class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'data' =>' Monthly Budget Report of '. $this->report->id.' needs your sign'
+            'data' =>' Monthly Budget Summary Report of '. $this->report->id.' needs your sign'
         ];
     }
 }

@@ -42,6 +42,41 @@
                         <h2>Dibuat</h2>
                         <div class="autograph-box container" id="autographBox1"></div>
                         <div class="container mt-2" id="autographUser1"></div>
+
+                        @php
+                            $showCreatedAutograph = false;
+                            if (!$report->created_autograph) {
+                                if ($report->creator_id === auth()->user()->id) {
+                                    $showCreatedAutograph = true;
+                                }
+                            }
+                        @endphp
+
+                        @if ($showCreatedAutograph)
+                            <div class="row px-4 d-flex justify-content-center">
+                                <div class="col-auto me-2">
+                                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                        class="btn btn-danger">Reject</button>
+                                </div>
+                                <div class="col-auto">
+                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                        method="POST" id="formIsKnownAutograph">
+                                        @csrf @method('PUT')
+                                        <input type="hidden" name="is_known_autograph"
+                                            value="{{ ucwords($authUser->name) }}">
+                                    </form>
+                                    @include('partials.approve-confirmation-modal2', [
+                                        'id' => '1',
+                                        'title' => 'Approval Confirmation',
+                                        'body' => 'Are you sure want to approve this report?',
+                                        'submitButton' =>
+                                            '<button class="btn btn-success" onclick="document.getElementById(\'formIsKnownAutograph\').submit()">Confirm</button>',
+                                    ])
+                                    <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
+                                        class="btn btn-success">Approve</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- IS KNOWN AUTOGRAPH --}}
@@ -51,7 +86,7 @@
                         <div class="container mt-2 border-1" id="autographUser2"></div>
                         @php
                             $showIsKnownAutograph = false;
-                            if (!$report->is_known_autograph) {
+                            if ($report->created_autograph && !$report->is_known_autograph) {
                                 if ($authUser->is_gm) {
                                     $showIsKnownAutograph = true;
                                 }
@@ -65,8 +100,8 @@
                                         class="btn btn-danger">Reject</button>
                                 </div>
                                 <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.save.autograph', $report->id) }}" method="POST"
-                                        id="formIsKnownAutograph">
+                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                        method="POST" id="formIsKnownAutograph">
                                         @csrf @method('PUT')
                                         <input type="hidden" name="is_known_autograph"
                                             value="{{ ucwords($authUser->name) }}">
@@ -92,7 +127,11 @@
                         <div class="container mt-2 border-1" id="autographUser3"></div>
                         @php
                             $showApprovedAutograph = false;
-                            if (!$report->approved_autograph) {
+                            if (
+                                $report->created_autograph &&
+                                $report->is_known_autograph &&
+                                !$report->approved_autograph
+                            ) {
                                 if ($authUser->department->name === 'DIRECTOR') {
                                     $showApprovedAutograph = true;
                                 }
@@ -105,8 +144,8 @@
                                         class="btn btn-danger">Reject</button>
                                 </div>
                                 <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.save.autograph', $report->id) }}" method="POST"
-                                        id="formApprovedAutograph">
+                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                        method="POST" id="formApprovedAutograph">
                                         @csrf @method('PUT')
                                         <input type="hidden" name="approved_autograph"
                                             value="{{ ucwords($authUser->name) }}">
@@ -139,13 +178,7 @@
                                 <div class="fs-6 text-secondary">Created At : {{ $formattedCreatedAt }}</div>
                                 <div class="fs-6 text-secondary">Month : {{ $monthYear }} </div>
                                 <div class="mt-1">
-                                    @if ($report->approved_autograph)
-                                        <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
-                                    @elseif($report->is_known_autograph)
-                                        <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting Director</span>
-                                    @elseif($report->created_autograph)
-                                        <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting Dept Head</span>
-                                    @endif
+                                    @include('partials.monthly-budget-summary-report-status')
                                 </div>
                             </div>
                         </div>

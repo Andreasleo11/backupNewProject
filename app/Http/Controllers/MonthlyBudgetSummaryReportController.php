@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport as Report;
 use App\Models\MonthlyBudgetReportSummaryDetail as Detail;
+use App\Models\User;
+use App\Notifications\MonthlyBudgetSummaryReportRequestSign;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MonthlyBudgetSummaryReportController extends Controller
 {
@@ -29,7 +32,7 @@ class MonthlyBudgetSummaryReportController extends Controller
 
         $report = Report::create([
             'report_date' => $date,
-            'created_autograph' => $request->created_autograph,
+            'creator_id' => auth()->user()->id
         ]);
 
         $monthYear = $request->month;
@@ -39,8 +42,7 @@ class MonthlyBudgetSummaryReportController extends Controller
                         ->whereYear('report_date', $year)
                         ->whereMonth('report_date', $month)
                         ->get();
-        // dd($monthlyBudgetReports);
-        $monthlyBudgetReportDetails = $monthlyBudgetReports->pluck('details')->flatten();
+
         // Extract details with dept_no
         $detailsWithDeptNo = [];
         foreach ($monthlyBudgetReports as $monthlyBudgetReport) {
@@ -134,6 +136,57 @@ class MonthlyBudgetSummaryReportController extends Controller
         // Format the date as dd-mm-yyyy
         $formattedCreatedAt = $carbonDate->format('d/m/Y (H:i:s)'); // Output: dd-mm-yyyy
 
-        return view('monthly_budget_report.summary.detail', compact('groupedDetails','report', 'monthYear', 'formattedCreatedAt'));
+        return view('monthly_budget_report.summary.detail', compact('groupedDetails', 'report', 'monthYear', 'formattedCreatedAt'));
+    }
+
+    public function saveAutograph(Request $request, $id)
+    {
+        $report = Report::find($id)->update($request->all());
+
+        $this->sendNotification($report);
+
+        return redirect()->back()->with('status', 'Monthly Budget Summary Report successfully approved!');
+    }
+
+    private function sendNotification($report)
+    {
+        $detail = [
+            'greeting' => 'Monthly Budget Report Notification',
+            'body' => 'We waiting for your sign!',
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . '/monthlyBudgetSummaryReport/' . $report->id,
+        ];
+
+        // $creator = User::find($report->creator_id)->notify(new MonthlyBudgetReportRequestSign($report, $detail));
+
+        if($report->created_autograph && !$report->is_known_autograph && !$report->approved_autograph){
+            $user = User::where('is_gm', 1)->first();
+        } elseif($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph){
+           $user = User::with('specification')->whereHas('specification', function($query){
+                $query->where('name', 'DIRECTOR');
+            })->first();
+        } elseif($report->created_autograph && $report->is_known_autograph && $report->approved_autograph){
+            $user = User::where('email', 'nur@daijo.co.id')->first();
+            $detail['body'] = "Monthly Budget Report signed!";
+
+            // notify the creator if already signed all
+            $report->user->notify(new MonthlyBudgetSummaryReportRequestSign($report, $detail));
+        }
+
+        if($user){
+            try {
+                $detail['userName'] = $user->name;
+                $user->notify(new MonthlyBudgetSummaryReportRequestSign($report, $detail));
+
+                return redirect()->back()->with('success', 'Notification sent successfully!');
+            } catch (\Exception $e) {
+                // Log the error (check laravel.log for details)
+                Log::error('Error when sending the notification : ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Send notification failed!');
+            }
+        } else {
+            Log::error('Error when sending the notification. User not found! : ');
+            return redirect()->back()->with('error', 'Send notification failed! (User not found)');
+        }
     }
 }
