@@ -298,7 +298,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
         Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
-        Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('averagemonth');
 
 
         Route::get("delsched/start1", [DeliveryScheduleController::class, "step1"])->name("deslsched.step1");
@@ -475,6 +474,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function(){
         Route::get('mu/home', [MUHomeController::class, 'index'])->name('mu.home');
+    });
+
+    Route::middleware(['checkDepartment:BUSINESS,QA'])->group(function (){
+        Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     });
 
 });
