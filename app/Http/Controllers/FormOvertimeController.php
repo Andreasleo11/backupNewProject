@@ -411,6 +411,10 @@ class FormOvertimeController extends Controller
         ->with('success', 'Form Overtime updated successfully.');
     }
 
-
-
+    public function destroy($id)
+    {
+        HeaderFormOvertime::find($id)->delete();
+        DetailFormOvertime::where('header_id', $id)->delete();
+        return redirect()->back()->with('success', 'Form Overtime Deleted successfully!');
+    }
 }
