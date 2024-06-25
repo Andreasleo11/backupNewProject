@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Storage;
 
 use App\Imports\OvertimeImport;
 use App\Exports\OvertimeExport;
+use App\Models\User;
+use App\Notifications\FormOvertimeNotification;
 use Maatwebsite\Excel\Facades\Excel;
 
 
@@ -140,6 +142,7 @@ class FormOvertimeController extends Controller
 
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
+        $this->sendNotification($headerovertime);
 
         if ($uploadedFiles) {
 
@@ -226,9 +229,6 @@ class FormOvertimeController extends Controller
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
-
-
-
     public function reject(Request $request, $id)
     {
         $request->validate([
@@ -240,8 +240,6 @@ class FormOvertimeController extends Controller
                 'description' => $request->description,
                 'is_approve' => false,
             ]);
-
-
 
         return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
     }
@@ -303,7 +301,47 @@ class FormOvertimeController extends Controller
         }
 
         $headerForm->save();
+        $this->sendNotification($headerForm);
         return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
+    }
+
+    private function sendNotification($report)
+    {
+        $details = [
+            'greeting' => 'Form Overtime Notification',
+            'body' => 'We waiting for your sign',
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
+        ];
+
+        switch ($report->status) {
+            // Send to Dept Head
+            case 1:
+                $user = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
+                break;
+            // Send to Verificator
+            case 2:
+                $user = User::where('specification_id', 15)->first();
+                break;
+            // Send to GM
+            case 3:
+                $user = User::where('is_gm', 1)->where('department_id', $report->dept_id)->first();
+                break;
+            // Send to Director
+            case 9:
+                $user = User::where('department_id', 4)->first();
+                break;
+            // Send to Supervisor
+            case 6:
+                // $user = User::where('specification_id',)
+                break;
+            default:
+                # code...
+                break;
+        }
+        // $user = User::find(5);
+
+        $user->notify(new FormOvertimeNotification($report, $details));
     }
 
 

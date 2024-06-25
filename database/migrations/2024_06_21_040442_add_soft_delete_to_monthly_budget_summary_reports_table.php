@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('detail_form_overtime', function (Blueprint $table) {
-            $table->dropColumn('is_makan');
+        Schema::table('monthly_budget_summary_reports', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('detail_form_overtime', function (Blueprint $table) {
-            $table->string('is_makan');
+        Schema::table('monthly_budget_summary_reports', function (Blueprint $table) {
+            $table->dropSoftDeletes();
         });
     }
 };

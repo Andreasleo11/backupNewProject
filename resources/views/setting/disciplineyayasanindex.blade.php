@@ -2,12 +2,15 @@
 
 @section('content')
 
+
+@if(!$user->is_head && !$user->is_gm)
 @include('partials.upload-excel-file-discipline-yayasan-modal')
     <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
         data-bs-target="#upload-excel-file-discipline-yayasan-modal">Upload
         File
         Excel</button>
 
+@endif
 @php
 
 foreach($employees as $employee)
@@ -37,6 +40,7 @@ foreach($employees as $employee)
 <form method="POST" action="{{ route('approve.data.gm') }}" id="lock-form">
         @csrf
         <input type="hidden" name="filter_month" id="filter-month-input">
+        <input type="hidden" name="filter_dept" id="filter-dept-input">
         <!-- If there are employees that are not locked, show the button -->
         <button type="submit" class="btn btn-danger" id="approve-gm-data-btn"><i class='bx bxs-lock'></i> Approve GM </button>
     </form>
@@ -123,6 +127,7 @@ foreach($employees as $employee)
         const statusFilterDropdown = document.getElementById('status-filter');
         const deptFilterDropdown = document.getElementById('dept-filter');
         const filterMonthInput = document.getElementById('filter-month-input');
+        const filterDeptInput = document.getElementById('filter-dept-input');
         const lockDataBtn = document.getElementById('approve-data-btn');
         const gmApprovalDataBtn = document.getElementById('approve-gm-data-btn');
         const triggerbutton = document.getElementById('trigger-script-btn');
@@ -219,15 +224,14 @@ foreach($employees as $employee)
                         // Update button status based on the user role
                         if (isGm) {
                             if (checkifGmReady(employees)) {
+                                if(checkapprovedbygm(employees)){
+                                gmApprovalDataBtn.disabled = true;
+                                }
+                                else{
                                 gmApprovalDataBtn.disabled = false;
+                                }
                             } else {
                                 gmApprovalDataBtn.disabled = true;
-                            }
-                        } else {
-                            if (checkIfAllLocked(employees)) {
-                                lockDataBtn.disabled = false;
-                            } else {
-                                lockDataBtn.disabled = true;
                             }
                         }
                     } else {
@@ -256,6 +260,7 @@ foreach($employees as $employee)
             const selectedFilterMonth = statusFilterDropdown.value;
             filterMonthInput.value = selectedFilterMonth;
             const selectedDepartment = deptFilterDropdown ? deptFilterDropdown.value : null;
+            filterDeptInput.value = selectedDepartment;
 
             if(isGm) {
                 fetchFilteredEmployeeGM(selectedFilterMonth, selectedDepartment); // Call GM specific function
@@ -267,7 +272,10 @@ foreach($employees as $employee)
         if (deptFilterDropdown) {
             deptFilterDropdown.addEventListener('change', () => {
                 const selectedFilterMonth = statusFilterDropdown.value;
+                filterMonthInput.value = selectedFilterMonth;
                 const selectedDepartment = deptFilterDropdown.value;
+                filterDeptInput.value = selectedDepartment;
+
                 fetchFilteredEmployeeGM(selectedFilterMonth, selectedDepartment);
             });
         }

@@ -1,4 +1,5 @@
 @extends('layouts.app')
+
 @push('extraCss')
     <style>
         .autograph-box {

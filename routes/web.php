@@ -80,12 +80,16 @@ use App\Http\Controllers\StockTintaController;
 
 
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\MonthlyBudgetReportController;
+use App\Http\Controllers\MonthlyBudgetReportSummaryDetailController;
+use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
-use App\Models\Department;
-use App\Models\DetailPurchaseRequest;
-use App\Models\Role;
+use App\Models\MonthlyBudgetReport;
+use App\Models\MonthlyBudgetReportSummaryDetails;
+use App\Models\MonthlyBudgetSummaryReport;
+use App\Notifications\MonthlyBudgetReportRequestSign;
 
 /*
 |--------------------------------------------------------------------------
@@ -612,22 +616,48 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
 
-
-
-    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
-
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 //
-
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
 
+    Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
 
+    Route::get('monthlyBudgetSummaryReports', [MonthlyBudgetSummaryReportController::class, 'index'])->name('monthly.budget.summary.report.index');
+    Route::get('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
+    Route::post('monthlyBudgetSummaryReport', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
+    Route::delete('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
 
-    Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);  
+    Route::put('monthlyBudgetSummaryReport/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
 
-    
+    Route::put('monthlyBudgetReportSummaryDetail,{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
+
+    Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
+    Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
+    Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
+    Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
+    Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
+
+    Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
+    Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
+
+    // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
+    Route::get('/notification', function () {
+        $report = MonthlyBudgetReport::find(5);
+
+        $detail = [
+            'greeting' => 'Monthly Budget Report Notification',
+            'body' => 'We waiting for your sign!',
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'monthlyBudgetReport/' . $report->id,
+        ];
+
+        $detail['userName'] = $report->user->name;
+
+        return (new MonthlyBudgetReportRequestSign($report, $detail))
+                    ->toMail($report->user);
+    });
 });
