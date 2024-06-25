@@ -1,28 +1,37 @@
 @extends('layouts.app')
 
-@section('content')
-    @push('extraCss')
-        <style>
-            .autograph-box {
-                width: 200px;
-                /* Adjust the width as needed */
-                height: 100px;
-                /* Adjust the height as needed */
-                background-size: contain;
-                background-repeat: no-repeat;
-                border: 1px solid #ccc;
-                /* Add border for better visibility */
-            }
+@push('extraCss')
+    <style>
+        .autograph-box {
+            width: 200px;
+            /* Adjust the width as needed */
+            height: 100px;
+            /* Adjust the height as needed */
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: 1px solid #ccc;
+            /* Add border for better visibility */
+        }
 
-            .rejection-textarea {
-                background-color: #ffe6e6;
-                border: 1px solid #ff0000;
-                font-size: 1rem;
-                padding: 10px;
-                resize: none;
-            }
-        </style>
-    @endpush
+        .rejection-textarea {
+            background-color: #ffe6e6;
+            border: 1px solid #ff0000;
+            font-size: 1rem;
+            padding: 10px;
+            resize: none;
+        }
+    </style>
+@endpush
+
+@section('content')
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a>
+            </li>
+            <li class="breadcrumb-item active">Detail</li>
+        </ol>
+    </nav>
 
     @include('partials.edit-form-overtime-modal', [
         'prheader' => $header,

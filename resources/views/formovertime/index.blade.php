@@ -2,9 +2,16 @@
 
 @section('content')
     @include('partials.alert-success-error')
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a>
+            </li>
+            <li class="breadcrumb-item active">List</li>
+        </ol>
+    </nav>
     <div class="row d-flex">
         <div class="col">
-            <h1 class="h1">Form Overtime List</h1>
+            <h1 class="h1 fw-bold">Form Overtime List</h1>
         </div>
         <div class="col-auto">
             @if (Auth::user()->department->name !== 'DIRECTOR')
