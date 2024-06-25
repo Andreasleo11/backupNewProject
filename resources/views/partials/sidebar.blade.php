@@ -78,6 +78,15 @@
                         </a>
                     </li>
                 </ul>
+                <ul id="qaqc" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Average Delivery Schedule
+                        </a>
+                    </li>
+                </ul>
+
             </li>
         @endif
         @if (
@@ -406,7 +415,6 @@
                             Summary Monthly Budget
                         </a>
                     </li>
-
                 </ul>
             </ul>
         </li>
