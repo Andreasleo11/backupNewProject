@@ -32,12 +32,24 @@
                     $thereIsApprovedItem = true;
                 }
             }
-        @endphp
-        @if (
-            $user->department->name === $purchaseRequest->from_department &&
+
+            $showDeptHeadApprovalButtons =
+                $user->department->name === $purchaseRequest->from_department &&
                 $user->is_head == 1 &&
                 $purchaseRequest->status == 1 &&
-                $isApproveNotEmpty)
+                $isApproveNotEmpty;
+
+            if (
+                $user->is_head == 1 &&
+                $user->department->name === 'LOGISTIC' &&
+                $purchaseRequest->from_department === 'STORE' &&
+                $purchaseRequest->status == 1 &&
+                $isApproveNotEmpty
+            ) {
+                $showDeptHeadApprovalButtons = true;
+            }
+        @endphp
+        @if ($showDeptHeadApprovalButtons)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div

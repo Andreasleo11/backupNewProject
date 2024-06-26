@@ -60,6 +60,12 @@ class SendPREmailNotification extends Command
                             ->pluck('email')
                             ->toArray();
                     }
+                } elseif($newPr->from_department === 'STORE') {
+                    $user = User::where('is_head', 1)->whereHas('department', function($query){
+                        $query->where('name', 'LOGISTIC');
+                    })->first();
+
+                    $to = $user ? $user->email : $newPr->created->email;
                 } else {
                     $user = User::where('is_head', 1)
                     ->whereHas('department', function($query) use ($newPr) {
