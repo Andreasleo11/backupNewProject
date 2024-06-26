@@ -151,7 +151,8 @@
                                 @elseif (
                                     $user->department->name === 'DIRECTOR' ||
                                         $user->specification->name == 'VERIFICATOR' ||
-                                        ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1))
+                                        (($user->department->name === $purchaseRequest->from_department && $user->is_head == 1) ||
+                                            ($user->is_head == 1 && $purchaseRequest->from_department == 'STORE')))
                                     <th rowspan="2" class="align-middle">Is Approve</th>
                                 @endif
                                 @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
@@ -291,6 +292,15 @@
                                         }
                                     @endphp
 
+                                    @php
+                                        $showDeptHeadItemApprove =
+                                            $user->department->name === $purchaseRequest->from_department &&
+                                            $user->is_head == 1;
+                                        if ($user->is_head == 1 && $purchaseRequest->from_department === 'STORE') {
+                                            $showDeptHeadItemApprove = true;
+                                        }
+                                    @endphp
+
                                     {{-- Button approve reject per item --}}
                                     @if ($purchaseRequest->is_import)
                                         <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
@@ -303,7 +313,7 @@
                                                 {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
                                             @endif
                                         </td>
-                                    @elseif ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1)
+                                    @elseif ($showDeptHeadItemApprove)
                                         <td>
                                             @if ($detail->is_approve_by_head === null)
                                                 <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"

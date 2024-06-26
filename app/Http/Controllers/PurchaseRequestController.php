@@ -67,6 +67,8 @@ class PurchaseRequestController extends Controller
 
             if($userDepartmentName === 'PURCHASING'){
                 $purchaseRequestsQuery->orWhere('to_department', ucwords(strtolower($userDepartmentName)));
+            } elseif($userDepartmentName === 'LOGISTIC'){
+                $purchaseRequestsQuery->orWhere('from_department', 'STORE');
             }
         } elseif ($isPurchaser) {
             // If the user is a purchaser, filter requests with specific conditions
@@ -218,6 +220,9 @@ class PurchaseRequestController extends Controller
             } else {
                 $commonData['is_import'] = false;
             }
+        } elseif($commonData['from_department'] === 'PERSONALIA'){
+            $commonData['autograph_2'] = 'Bernadett.png';
+            $commonData['autograph_user_2'] = 'Bernadett';
         }
 
         $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
@@ -230,13 +235,13 @@ class PurchaseRequestController extends Controller
         // Create the purchase request
         $purchaseRequest = PurchaseRequest::create($commonData);
 
-        $this->verifyAndInsertItems($processedItems, $purchaseRequest->id);
+        $this->verifyAndInsertItems($processedItems, $purchaseRequest);
         // $this->executeSendPRNotificationCommand();
 
         return redirect()->route('purchaserequest.home')->with('success', 'Purchase request created successfully');
     }
 
-    private function verifyAndInsertItems($items, $id)
+    private function verifyAndInsertItems($items, $purchaseRequest)
     {
         if (isset($items) && is_array($items)) {
             foreach ($items as $itemData) {
@@ -248,7 +253,7 @@ class PurchaseRequestController extends Controller
                 $currency = $itemData['currency'];
 
                 $commonData = [
-                    'purchase_request_id' => $id,
+                    'purchase_request_id' => $purchaseRequest->id,
                     'item_name' => $itemName,
                     'quantity' => $quantity,
                     'purpose' => $purpose,
@@ -277,7 +282,9 @@ class PurchaseRequestController extends Controller
                     }
                 }
 
-                // Create the DetailPurchaseRequest record
+                if($purchaseRequest->from_department == 'PERSONALIA'){
+                    $commonData['is_approve_by_head'] = 1;
+                }
                 DetailPurchaseRequest::create($commonData);
             }
         }
