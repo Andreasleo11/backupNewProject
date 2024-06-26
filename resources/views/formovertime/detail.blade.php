@@ -152,6 +152,19 @@
 
             @endif
 
+            @php
+                $showDeptHeadApprovalButton = false;
+                if (Auth::check() && $currentUser->is_head === 1) {
+                    if ($currentUser->department->name === $header->Relationdepartement->name) {
+                        $showDeptHeadApprovalButton = true;
+                    } elseif (
+                        $currentUser->department->name === 'LOGISTIC' &&
+                        $header->Relationdepartement->name === 'STORE'
+                    ) {
+                        $showDeptHeadApprovalButton = true;
+                    }
+                }
+            @endphp
 
             @if ($header->Relationdepartement->name !== 'MOULDING')
 
@@ -160,9 +173,7 @@
                     <div class="autograph-box container" id="autographBox2"></div>
                     <div class="container mt-2" id="autographuser2"></div>
 
-                    @if (Auth::check() &&
-                            $currentUser->department->name === $header->Relationdepartement->name &&
-                            $currentUser->is_head === 1)
+                    @if ($showDeptHeadApprovalButton)
                         <button id="btn2" class="btn btn-primary" onclick="addAutograph(2 , {{ $header->id }})">Acc
                             Dept Head</button>
                         @if ($header->autograph_2 === null)
