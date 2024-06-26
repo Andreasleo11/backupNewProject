@@ -43,7 +43,7 @@ class MonthlyBudgetReportRequestSign extends Notification implements ShouldQueue
                     ->cc('nur@daijo.co.id')
                     ->greeting($this->detail['greeting'])
                     ->line($this->detail['body'])
-                    ->line('We waiting for Mr/Mrs.' . ucwords($this->detail['userName']) . ' to sign the report.')
+                    // ->line('We waiting for Mr/Mrs.' . ucwords($this->detail['userName']) . ' to sign the report.')
                     ->action($this->detail['actionText'], $this->detail['actionURL']);
     }
 

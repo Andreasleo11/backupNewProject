@@ -409,12 +409,14 @@
                         </a>
                     </li>
 
-                    <li class="sidebar-item">
-                        <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Summary Monthly Budget
-                        </a>
-                    </li>
+                    @if ($user->email === 'nur@daijo.co.id' || $user->role->name === 'SUPERADMIN')
+                        <li class="sidebar-item">
+                            <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Summary Monthly Budget
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </ul>
         </li>

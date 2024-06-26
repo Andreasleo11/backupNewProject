@@ -26,7 +26,6 @@ class MonthlyBudgetSummaryReportController extends Controller
             'created_autograph' => 'nullable|string',
         ]);
 
-        // Convert "06-2024" to "2024-06-01"
         $monthYear = $request->input('month');
         $date = Carbon::createFromFormat('m-Y', $monthYear)->startOfMonth()->toDateString(); // "2024-06-01"
 

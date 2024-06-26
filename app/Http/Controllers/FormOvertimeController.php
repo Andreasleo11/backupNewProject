@@ -41,30 +41,45 @@ class FormOvertimeController extends Controller
        // Get the authenticated user
        $user = Auth::user();
 
+       $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
+
        // Filter the data based on the user's departement_id
        if($user->specification->name === 'VERIFICATOR') {
-            $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
-            ->whereNotNull('autograph_2')
-            ->whereHas('Relationdepartement', function ($query) {
-                    $query->where('is_office', true);
-                })
-            ->orWhere('user_id', auth()->user()->id)
-            ->get();
+            $dataheaderQuery
+                ->whereNotNull('autograph_2')
+                ->whereHas('Relationdepartement',
+                    function ($query) {
+                        $query->where('is_office', true);
+                    });
        } elseif($user->is_gm) {
-        $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
+            $dataheaderQuery
                ->where('dept_id', $user->department_id)
                ->whereNotNull('autograph_2')
-               ->whereHas('Relationdepartement', function ($query) {
-                $query->where('is_office', false);
-               })
-               ->orWhere('user_id', auth()->user()->id)
-               ->get();
+               ->whereHas('Relationdepartement',
+                    function ($query) {
+                        $query->where('is_office', false);
+                    });
+       } elseif($user->is_head) {
+            $dataheaderQuery
+                ->where('dept_id', $user->department->id)
+                ->whereNotNull('autograph_1');
+
+            if($user->department->name === 'LOGISTIC'){
+                $dataheaderQuery->orWhere(function($query){
+                    $query->whereHas('Relationdepartement',
+                    function($query){
+                        $query->where('name', 'STORE');
+                    });
+                });
+            }
        } else {
-            $dataheader = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')
-            ->where('dept_id', $user->department_id)
+            $dataheaderQuery
+                ->where('dept_id', $user->department_id);
+       }
+
+       $dataheader = $dataheaderQuery
             ->orWhere('user_id', auth()->user()->id)
             ->get();
-       }
 
        return view("formovertime.index", compact("dataheader"));
     }
@@ -317,7 +332,13 @@ class FormOvertimeController extends Controller
         switch ($report->status) {
             // Send to Dept Head
             case 1:
-                $user = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
+                if($report->Relationdepartement->name === 'STORE'){
+                    $user = User::where('is_head', 1)->whereHas('department', function($query){
+                        $query->where('name', 'LOGISTIC');
+                    })->first();
+                } else {
+                    $user = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
+                }
                 break;
             // Send to Verificator
             case 2:
