@@ -60,17 +60,11 @@
                     <tbody>
                         @forelse ($reports as $report)
                             @php
-                                // Extract the month name
                                 $reportDate = Carbon\Carbon::parse($report->report_date);
-                                $monthName = $reportDate->format('F'); // Full month name
-                                $year = $reportDate->format('Y'); // Year
-                                $monthYear = $monthName . ' ' . $year;
+                                $monthYear = $reportDate->format('F Y');
 
-                                $dateString = $report->created_at;
-                                // Parse the date string into a Carbon instance
-                                $carbonDate = Carbon\Carbon::parse($dateString);
-                                // Format the date as dd-mm-yyyy
-                                $formattedCreatedAt = $carbonDate->format('d/m/Y (H:i:s)'); // Output: dd-mm-yyyy
+                                $createdAt = Carbon\Carbon::parse($report->created_at);
+                                $formattedCreatedAt = $createdAt->format('d/m/Y (H:i:s)');
                             @endphp
                             <tr>
                                 <td>{{ $report->id }}</td>

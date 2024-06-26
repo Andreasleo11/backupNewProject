@@ -26,16 +26,25 @@ class MonthlyBudgetReportController extends Controller
         $reportsQuery = Report::with('department', 'details');
 
         if($authUser->email == 'nur@daijo.co.id'){
-            $reportsQuery = Report::whereNotNull('created_autograph')->whereNotNull('is_known_autograph')->whereNotNull('approved_autograph');
+            $reportsQuery = Report::whereNotNull('created_autograph')
+                ->whereNotNull('is_known_autograph')
+                ->whereNotNull('approved_autograph');
         } elseif($isDirector){
-            $reportsQuery = Report::whereNotNull('created_autograph')->whereNotNull('is_known_autograph')->whereHas('department', function($query){
-                $query->where('name', 'QA')->orWhere('name', 'QC');
-            });
-        } elseif($isGm){
-            $reportsQuery = Report::whereNotNull('created_autograph')->whereNotNull('is_known_autograph')->whereHas('department', function($query){
-                $query->whereNot(function($query){
-                    $query->where('name', 'QA')->orWhere('name', 'QC')->orWhere('name', 'MOULDING');
+            $reportsQuery = Report::whereNotNull('created_autograph')
+                ->whereNotNull('is_known_autograph')
+                ->whereHas('department', function($query){
+                    $query->where('name', 'QA')
+                        ->orWhere('name', 'QC');
                 });
+        } elseif($isGm){
+            $reportsQuery = Report::whereNotNull('created_autograph')
+                ->whereNotNull('is_known_autograph')
+                ->whereHas('department', function($query){
+                    $query->whereNot(function($query){
+                        $query->where('name', 'QA')
+                            ->orWhere('name', 'QC')
+                            ->orWhere('name', 'MOULDING');
+                    });
             });
         } elseif($isHead){
             $reportsQuery = Report::whereNotNull('created_autograph');
@@ -46,6 +55,14 @@ class MonthlyBudgetReportController extends Controller
             $reportsQuery->whereHas('department', function($query) use($authUser) {
                 $query->where('id', $authUser->department->id)->orWhere('creator_id', $authUser->id);
             });
+
+            if($isHead && $authUser->department->name === 'LOGISTIC'){
+                $reportsQuery->orWhere(function($query){
+                    $query->whereHas('department', function($query){
+                        $query->where('name', 'STORE');
+                    });
+                });
+            }
         }
 
         $reports = $reportsQuery->get();
@@ -212,6 +229,10 @@ class MonthlyBudgetReportController extends Controller
                     $query->where('name', 'MOULDING');
                 })->where('is_head', 1)->whereHas('specification', function($query){
                     $query->where('name', 'design');
+                })->first();
+            } elseif($report->department->name === 'STORE') {
+                $user = User::where('is_head', 1)->whereHas('department', function($query){
+                    $query->where('name', 'LOGISTIC');
                 })->first();
             } else {
                 $user = User::where('department_id', $report->department->id)->where('is_head', 1)->first();

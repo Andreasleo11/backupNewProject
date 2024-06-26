@@ -48,10 +48,14 @@
                     </thead>
                     <tbody>
                         @forelse ($reports as $report)
+                            @php
+                                $reportDate = Carbon\Carbon::parse($report->report_date);
+                                $formatedDate = $reportDate->format('F Y');
+                            @endphp
                             <tr>
                                 <td>{{ $report->id }}</td>
                                 <td>{{ $report->dept_no }}</td>
-                                <td>{{ $report->report_date }}</td>
+                                <td>{{ $formatedDate }}</td>
                                 <td>
                                     @if ($report->approved_autograph)
                                         <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
