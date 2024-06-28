@@ -42,7 +42,8 @@ class PurchaseRequest extends Model
         'pic',
         'type',
         'from_department',
-        'is_import'
+        'is_import',
+        'is_cancel'
     ];
 
 

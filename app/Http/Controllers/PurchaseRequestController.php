@@ -680,4 +680,14 @@ class PurchaseRequestController extends Controller
         // return view('pdf.pr-pdf', compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'));
         return $pdf->download('Purchase Request-' . $purchaseRequest->id . ' (' . $purchaseRequest->pr_no . ')' .'.pdf');
     }
+
+    public function cancel(Request $request, $id)
+    {
+        PurchaseRequest::find($id)->update([
+            'is_cancel' => true,
+            'description' => $request->description,
+        ]);
+
+        return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+    }
 }
