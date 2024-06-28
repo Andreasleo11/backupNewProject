@@ -6,8 +6,8 @@
             <div class="col">
                 <h1 class="h1">DELIVERY SCHEDULE</h1>
             </div>
-            <div class="col-auto"> 
-                <a href="{{ route('averagemonth') }}" class="btn btn-secondary"> Average PerMonth</a>
+            <div class="col-auto">
+                <a href="{{ route('delsched.averagemonth') }}" class="btn btn-secondary"> Average PerMonth</a>
                 <a href="{{ route('deslsched.step1') }}" class="btn btn-primary"> Update</a>
             </div>
         </div>

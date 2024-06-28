@@ -49,7 +49,7 @@
                 $showDeptHeadApprovalButtons = true;
             }
         @endphp
-        @if ($showDeptHeadApprovalButtons)
+        @if ($showDeptHeadApprovalButtons && $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -103,7 +103,7 @@
                     }
                 }
             @endphp
-            @if ($user->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
+            @if ($user->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty && $purchaseRequest->is_cancel === 0)
                 @if ($count === $countItemHasApprovalStatus)
                     <div class="row px-4 d-flex justify-content-center">
                         <div
@@ -155,7 +155,7 @@
                     : ($showApprovalButtons = false);
             }
         @endphp
-        @if ($showApprovalButtons && $purchaseRequest->status === 6)
+        @if ($showApprovalButtons && $purchaseRequest->status === 6 && $purchaseRequest->is_cancel === 0)
             <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-2">
                     <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
@@ -208,7 +208,12 @@
                 }
             }
         @endphp
-        @if ($user->department->name == 'HRD' && $user->is_head == 1 && $purchaseRequest->status == 2 && $isApproveNotEmpty)
+        @if (
+            $user->department->name == 'HRD' &&
+                $user->is_head == 1 &&
+                $purchaseRequest->status == 2 &&
+                $isApproveNotEmpty &&
+                $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -264,7 +269,11 @@
                 }
             }
         @endphp
-        @if ($user->department->name == 'DIRECTOR' && $purchaseRequest->status == 3 && $isApproveNotEmpty)
+        @if (
+            $user->department->name == 'DIRECTOR' &&
+                $purchaseRequest->status == 3 &&
+                $isApproveNotEmpty &&
+                $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div

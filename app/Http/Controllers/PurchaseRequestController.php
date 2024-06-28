@@ -500,7 +500,7 @@ class PurchaseRequestController extends Controller
     }
 
     public function update(Request $request, $id){
-        // dd($request->all());
+        // dd($id);
         $validated = $request->validate([
             'date_pr' => 'date',
             'date_required' => 'date',
@@ -535,12 +535,12 @@ class PurchaseRequestController extends Controller
 
             $pr->update($dataToUpdate);
         } elseif($pr->status === 6) {
-            if($isHead){
-                $additionalData['autograph_2'] = null;
-                $additionalData['autograph_user_2'] = null;
-            } elseif($isPurchaser) {
+            if($isPurchaser) {
                 $additionalData['autograph_6'] = null;
                 $additionalData['autograph_user_6'] = null;
+            } elseif($isHead){
+                $additionalData['autograph_2'] = null;
+                $additionalData['autograph_user_2'] = null;
             }
             $additionalData['status'] = 6;
 
@@ -569,7 +569,7 @@ class PurchaseRequestController extends Controller
         $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
 
-        $this->verifyAndInsertItems($request->items, $id);
+        $this->verifyAndInsertItems($request->items, $pr);
 
         $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
 
