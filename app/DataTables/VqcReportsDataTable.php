@@ -92,7 +92,7 @@ class VqcReportsDataTable extends DataTable
                         'month' => 'function() {return $("#monthPicker").val(); }'
                     ])
                     ->dom('Bfrtip')
-                    ->orderBy(1)
+                    ->orderBy(4)
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),

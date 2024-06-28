@@ -188,13 +188,11 @@
                     data-bs-target="#director" aria-expanded="false" aria-controls="director">
                     <i class='bx bx-badge-check'></i>
                     <span>Quality</span>
-                    <span>Quality</span>
                 </a>
                 <ul id="director" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
                         <a href="{{ route('director.qaqc.index') }}" class="sidebar-link">
                             <i class='bx bxs-report'></i>
-                            VQC Reports
                             VQC Reports
                         </a>
                     </li>
