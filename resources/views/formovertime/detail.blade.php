@@ -77,7 +77,7 @@
                                 'id' => $header->id,
                                 'route' => 'overtime.reject',
                             ])
-                            <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                            <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                 data-bs-target="#rejectModal">Reject</button>
                         @endif
                     @endif
@@ -101,7 +101,7 @@
                                     'id' => $header->id,
                                     'route' => 'overtime.reject',
                                 ])
-                                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                     data-bs-target="#rejectModal">Reject</button>
                             @endif
                         @endif
@@ -123,7 +123,7 @@
                                     'id' => $header->id,
                                     'route' => 'overtime.reject',
                                 ])
-                                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                     data-bs-target="#rejectModal">Reject</button>
                             @endif
                         @endif
@@ -144,7 +144,7 @@
                                 'id' => $header->id,
                                 'route' => 'overtime.reject',
                             ])
-                            <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                            <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                 data-bs-target="#rejectModal">Reject</button>
                         @endif
                     @endif
@@ -154,7 +154,11 @@
 
             @php
                 $showDeptHeadApprovalButton = false;
-                if (Auth::check() && $currentUser->is_head === 1) {
+                if ($header->Relationdepartement->name === 'SECOND PROCESS') {
+                    if (Auth::check() && $currentUser->email === 'imano@daijo.co.id') {
+                        $showDeptHeadApprovalButton = true;
+                    }
+                } elseif (Auth::check() && $currentUser->is_head === 1) {
                     if ($currentUser->department->name === $header->Relationdepartement->name) {
                         $showDeptHeadApprovalButton = true;
                     } elseif (
@@ -181,7 +185,7 @@
                                 'id' => $header->id,
                                 'route' => 'overtime.reject',
                             ])
-                            <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                            <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                 data-bs-target="#rejectModal">Reject</button>
                         @endif
                     @endif
@@ -203,7 +207,7 @@
                                         'id' => $header->id,
                                         'route' => 'overtime.reject',
                                     ])
-                                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                    <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                         data-bs-target="#rejectModal">Reject</button>
                                 @endif
                             @endif
@@ -222,7 +226,7 @@
                                         'id' => $header->id,
                                         'route' => 'overtime.reject',
                                     ])
-                                    <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                    <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                         data-bs-target="#rejectModal">Reject</button>
                                 @endif
                             @endif
@@ -242,7 +246,7 @@
                                     'id' => $header->id,
                                     'route' => 'overtime.reject',
                                 ])
-                                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                     data-bs-target="#rejectModal">Reject</button>
                             @endif
                         @endif
@@ -261,7 +265,7 @@
                                     'id' => $header->id,
                                     'route' => 'overtime.reject',
                                 ])
-                                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                     data-bs-target="#rejectModal">Reject</button>
                             @endif
                         @endif
@@ -281,7 +285,7 @@
                                     'id' => $header->id,
                                     'route' => 'overtime.reject',
                                 ])
-                                <button class="btn btn-danger btn-lg me-4" data-bs-toggle="modal"
+                                <button class="btn btn-danger me-4" data-bs-toggle="modal"
                                     data-bs-target="#rejectModal">Reject</button>
                             @endif
                         @endif

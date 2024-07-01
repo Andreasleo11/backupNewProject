@@ -336,6 +336,8 @@ class FormOvertimeController extends Controller
                     $user = User::where('is_head', 1)->whereHas('department', function($query){
                         $query->where('name', 'LOGISTIC');
                     })->first();
+                } elseif($report->Relationdepartement->name === 'SECOND PROCESS') {
+                    $user = User::where('email', 'imano@daijo.co.id')->first();
                 } else {
                     $user = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
                 }
