@@ -31,6 +31,7 @@ class DirectorPurchaseRequestDataTable extends DataTable
 
                                 ')
             ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}-{{$status}}-{{$doc_num}}" />')
+            ->editColumn('approved_at', '{{ $approved_at ? \Carbon\Carbon::parse($approved_at)->timezone(\'Asia/Bangkok\')->format(\'d-m-Y (h:i:s)\') : \'\' }}')
             ->setRowId('id');
     }
 
