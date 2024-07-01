@@ -80,7 +80,8 @@
                 <span class="h1 fw-semibold">Purchase Requisition</span> <br>
                 <div class="fs-6 mt-2">
                     <span class="fs-6 text-secondary">Created By : </span> {{ $userCreatedBy->name }} <br>
-                    <span class="fs-6 text-secondary">From Department : </span> {{ $purchaseRequest->from_department }}
+                    <span class="fs-6 text-secondary">From Department : </span>
+                    {{ $purchaseRequest->from_department . " ($fromDeptNo)" }}
                     <br>
                     <span class="fs-6 text-secondary">Doc num : </span> {{ $purchaseRequest->doc_num }}
                     <div class="mt-2">

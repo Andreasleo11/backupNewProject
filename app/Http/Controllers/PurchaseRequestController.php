@@ -297,6 +297,7 @@ class PurchaseRequestController extends Controller
         foreach ($purchaseRequest->itemDetail as $detail) {
             $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
         }
+        $fromDeptNo = Department::where('name', $purchaseRequest->from_department)->first()->dept_no;
         $user =  Auth::user();
         $userCreatedBy = $purchaseRequest->createdBy;
 
@@ -370,7 +371,7 @@ class PurchaseRequestController extends Controller
             }
         })->values(); // Ensure that the result is an array;
 
-        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments'));
+        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
     }
 
     public function saveImagePath(Request $request, $prId, $section)
