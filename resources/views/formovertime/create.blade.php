@@ -108,7 +108,9 @@
                                 <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
                                     <option value="" selected disabled>Select from department..</option>
                                     @foreach ($departements as $department)
-                                        <option value="{{ $department->id }}">{{ $department->name }}
+                                        <option value="{{ $department->id }}"
+                                            {{ $department->id === auth()->user()->department->id ? 'selected' : '' }}>
+                                            {{ $department->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -160,6 +162,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize TomSelect for dropdown
+            new TomSelect('#fromDepartmentDropdown', {
+                plugins: ['dropdown_input'],
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+
             const inputMethodToggle = document.getElementById('inputMethodToggle');
             const fileUploadSection = document.getElementById('fileUploadSection');
             const manualInputSection = document.getElementById('manualInputSection');
