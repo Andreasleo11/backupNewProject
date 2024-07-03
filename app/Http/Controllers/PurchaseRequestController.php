@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Artisan;
 
 class PurchaseRequestController extends Controller
 {
-    public function index(DirectorPurchaseRequestDataTable $datatable, Request $request)
+    public function index(Request $request)
     {
         // Get user information
         $user = Auth::user();
@@ -28,7 +28,6 @@ class PurchaseRequestController extends Controller
         $isHead = $user->is_head === 1;
         $isPurchaser = $user->specification->name === "PURCHASER";
         $isGM = $user->is_gm === 1;
-
 
         // Determine conditions based on user department and role
         $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');

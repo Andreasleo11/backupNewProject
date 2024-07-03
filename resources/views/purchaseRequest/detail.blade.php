@@ -136,14 +136,22 @@
                                 <th rowspan="2" class="align-middle">Purpose</th>
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
-                                @if ($purchaseRequest->is_import)
+                                @if ($purchaseRequest->from_department === 'MOULDING')
                                     @php
+                                        $mouldingApprovalCase = false;
                                         $mouldingApprovalCase =
                                             ($purchaseRequest->is_import === 1 &&
-                                                $user->email === 'fang@daijo.co.id') ||
-                                            ($purchaseRequest->is_import === 0 && $user->email === 'ong@daijo.co.id');
+                                                $user->specification->name !== 'DESIGN') ||
+                                            (!$purchaseRequest->is_import && $user->specification->name !== 'DESIGN') ||
+                                            ($purchaseRequest->is_import === 0 &&
+                                                $user->specification->name === 'DESIGN') ||
+                                            (!$purchaseRequest->is_import && $user->specification->name === 'DESIGN');
 
-                                        $purchaseRequest->is_import;
+                                        if ($purchaseRequest->to_department === 'Maintenance') {
+                                            $mouldingApprovalCase =
+                                                $mouldingApprovalCase &&
+                                                $purchaseRequest->to_department === 'Maintenance';
+                                        }
                                     @endphp
 
                                     <th rowspan="2" class="align-middle {{ $mouldingApprovalCase ? '' : 'd-none' }}">Is
@@ -303,7 +311,7 @@
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
-                                    @if ($purchaseRequest->is_import)
+                                    @if ($purchaseRequest->from_department === 'MOULDING')
                                         <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
                                             @if ($detail->is_approve_by_head === null)
                                                 <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
