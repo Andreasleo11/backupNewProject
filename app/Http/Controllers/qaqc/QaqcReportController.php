@@ -793,7 +793,7 @@ class QaqcReportController extends Controller
                          ->whereYear('verify_date', $year)
                          ->get();
 
-        $reports = Report::with(['details', 'details.defects', 'details.defects.category'])                 
+        $reports = Report::with(['details', 'details.defects', 'details.defects.category'])
                             ->whereMonth('verify_date', $month)
                             ->whereYear('verify_date', $year)
                             ->get();
@@ -803,7 +803,7 @@ class QaqcReportController extends Controller
                             foreach ($reports as $report) {
                                 foreach ($report->details as $detail) {
                                     $partName = $detail->part_name;
-                        
+
                                     if (!isset($summary[$partName])) {
                                         // Initialize the summary for this part_name
                                         $summary[$partName] = [
@@ -812,14 +812,14 @@ class QaqcReportController extends Controller
                                             'defects' => []
                                         ];
                                     }
-                        
+
                                     // Sum the rec_quantity
                                     $summary[$partName]['rec_quantity'] += $detail->rec_quantity;
-                        
+
                                     foreach ($detail->defects as $defect) {
                                         $categoryName = $defect->category->name;
                                         $quantity = $defect->quantity; // Assuming 'quantity' is a field in the defect model
-                        
+
                                         if (!isset($summary[$partName]['defects'][$categoryName])) {
                                             // Initialize the defects summary for this part_name
                                             $summary[$partName]['defects'][$categoryName] = [
@@ -827,19 +827,19 @@ class QaqcReportController extends Controller
                                                 'quantity' => 0
                                             ];
                                         }
-                        
+
                                         // Sum the quantity for each defect category
                                         $summary[$partName]['defects'][$categoryName]['quantity'] += $quantity;
                                     }
                                 }
                             }
-                            
-                            // Convert the summary array to a collection for easier manipulation if needed
-                            return collect($summary)->values();
-                            dd($summary);
-                      
 
-                        
+                            // Convert the summary array to a collection for easier manipulation if needed
+                            // return collect($summary)->values();
+                            // dd($summary);
+
+
+
         return view('qaqc.monthlyreportdetail',compact('reports'));
     }
 

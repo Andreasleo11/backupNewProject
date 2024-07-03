@@ -68,11 +68,11 @@
                         <th>Month</th>
                         <th>Item Code</th>
                         <th>Item Name</th>
-                        <th>Count</th>
-                        <th>Average with Count</th>
+                        <th>Total Delivery</th>
+                        <th>Delivery Freq</th>
+                        <th>Avg Per Delivery</th>
                         <th>In Stock</th>
-                        <th>Quantity</th>
-                        <th>Days</th>
+                        <th>Stock Days</th>
                     </tr>
                 </thead>
                 <tbody>
