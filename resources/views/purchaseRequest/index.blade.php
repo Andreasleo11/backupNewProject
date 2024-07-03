@@ -134,12 +134,16 @@
                                                             <i class='bx bxs-file-pdf'></i> <span
                                                                 class="d-none d-sm-inline">Export PDF</span>
                                                         </a>
-                                                        <button
-                                                            data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}"
-                                                            data-bs-toggle="modal"
-                                                            class="btn btn-danger my-1 dropdown-item"><i
-                                                                class='bx bxs-file-pdf'></i> <span
-                                                                class="d-none d-sm-inline">Cancel</span></button>
+                                                        @if (
+                                                            ($user->id === $pr->user_id_create && $pr->status === 1) ||
+                                                                ($user->department->name === 'COMPUTER' && $user->is_head && $pr->status === 4))
+                                                            <button
+                                                                data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}"
+                                                                data-bs-toggle="modal"
+                                                                class="btn btn-danger my-1 dropdown-item"><i
+                                                                    class='bx bxs-file-pdf'></i> <span
+                                                                    class="d-none d-sm-inline">Cancel</span></button>
+                                                        @endif
                                                     </li>
                                                 </ul>
                                             </div>
