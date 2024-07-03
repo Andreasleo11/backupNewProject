@@ -329,9 +329,12 @@
             const quantityInput = document.createElement('input');
             quantityInput.classList.add('form-control');
             quantityInput.setAttribute('required', 'required');
-            quantityInput.type = 'number';
+            quantityInput.type = 'text';
             quantityInput.name = `items[${itemIdCounter}][quantity]`;
             quantityInput.placeholder = 'Qty';
+            quantityInput.addEventListener('input', function() {
+                validateNumber(quantityInput);
+            });
             quantityInput.addEventListener('change', function() {
                 formatPrice(unitPriceInput, currencyInput.value);
             });
@@ -476,6 +479,15 @@
             itemIdCounter++;
 
             updateItemCount();
+        }
+
+        // Function to validate the input
+        function validateNumber(input) {
+            const value = input.value;
+            const regex = /^[+-]?(\d*\.)?\d*$/;
+            if (!regex.test(value)) {
+                input.value = value.slice(0, -1);
+            }
         }
 
         function removeItem() {
