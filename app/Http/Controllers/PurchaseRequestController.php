@@ -50,6 +50,7 @@ class PurchaseRequestController extends Controller
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
+                ->whereNull('autograph_6')
                 ->where(function ($query) use ($userDepartmentName) {
                     $query->where('type', 'factory');
                     // Additional condition for users where is_gm is 1 and department is 'MOULDING'
@@ -159,7 +160,7 @@ class PurchaseRequestController extends Controller
         }
 
         $purchaseRequests = $purchaseRequestsQuery
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->orWhere('user_id_create', $user->id) // Assuming 'created_by' is the foreign key for the user who created the request
             ->paginate(10);
 
@@ -294,53 +295,65 @@ class PurchaseRequestController extends Controller
     {
         $departments = Department::all();
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
+
+        if (!$purchaseRequest) {
+            // Handle the case where the purchase request is not found
+            abort(404, 'Purchase request not found');
+        }
+
         foreach ($purchaseRequest->itemDetail as $detail) {
             $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
         }
-        $fromDeptNo = Department::where('name', $purchaseRequest->from_department)->first()->dept_no;
-        $user =  Auth::user();
+
+        $fromDepartment = Department::where('name', $purchaseRequest->from_department)->first();
+        if (!$fromDepartment) {
+            // Handle the case where the department is not found
+            abort(404, 'Department not found');
+        }
+        $fromDeptNo = $fromDepartment->dept_no;
+        $user = Auth::user();
         $userCreatedBy = $purchaseRequest->createdBy;
 
         // If PR not Rejected
-        if($purchaseRequest->status !== 5){
-            // after Dept Head Autograph
+        if ($purchaseRequest->status !== 5) {
+            // After Dept Head Autograph
             if ($purchaseRequest->autograph_2 !== null) {
                 if ($purchaseRequest->from_department === 'MOULDING' || $purchaseRequest->type === 'office') {
-                    // if it's moulding then direct to purchaser
+                    // If it's moulding then direct to purchaser
                     $purchaseRequest->status = 6;
-                } elseif($purchaseRequest->type === 'factory'){
-                    // status when GM has not signed
+                } elseif ($purchaseRequest->type === 'factory') {
+                    // Status when GM has not signed
                     $purchaseRequest->status = 7;
                 }
             }
 
-            // after GM Autograph
+            // After GM Autograph
             if ($purchaseRequest->autograph_6 !== null) {
-                // waiting for purchaser
+                // Waiting for purchaser
                 $purchaseRequest->status = 6;
             }
 
-            // after Purchaser Autograph
+            // After Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
-                if($purchaseRequest->to_department == 'Purchasing' && $purchaseRequest->type === 'factory' ||
-                $purchaseRequest->to_department == 'Maintenance') {
-                    // direct to Director
+                if (($purchaseRequest->to_department === 'Purchasing' && $purchaseRequest->type === 'factory') ||
+                    $purchaseRequest->to_department === 'Maintenance') {
+                    // Direct to Director
                     $purchaseRequest->status = 3;
-                } elseif($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel'){
-                    // status when verificator has not signed
+                } elseif ($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel') {
+                    // Status when verificator has not signed
                     $purchaseRequest->status = 2;
                 }
             }
 
-            // after Verificator Autograph
+            // After Verificator Autograph
             if ($purchaseRequest->autograph_3 !== null) {
-                // status when director has not signed
+                // Status when director has not signed
                 $purchaseRequest->status = 3;
             }
 
-            // after Director Autograph
+            // After Director Autograph
             if ($purchaseRequest->autograph_4 !== null) {
-                // status when PR approved
+                // Status when PR approved
                 $purchaseRequest->status = 4;
             }
         }
@@ -357,19 +370,19 @@ class PurchaseRequestController extends Controller
         // Filter itemDetail based on user role
         $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
             if ($user->department->name === "DIRECTOR") {
-                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
                     return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_gm && $detail->is_approve_by_head);
                 }
                 return $detail->is_approve || ($detail->is_approve_by_verificator || $detail->is_approve_by_gm && $detail->is_approve_by_head);
             } elseif ($user->specification->name === "VERIFICATOR") {
-                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
+                if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
                     return $detail->is_approve_by_head && $detail->is_approve_by_gm || $detail->is_approve_by_verificator;
                 }
                 return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
             } else {
                 return true; // Include all details for other roles
             }
-        })->values(); // Ensure that the result is an array;
+        })->values(); // Ensure that the result is an array
 
         return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
     }

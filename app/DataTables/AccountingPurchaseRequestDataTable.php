@@ -25,6 +25,11 @@ class AccountingPurchaseRequestDataTable extends DataTable
                                         <a href="{{ route("purchaserequest.detail", ["id" => $id]) }}" class="btn btn-secondary me-2">
                                             <i class="bx bx-info-circle" ></i> Detail
                                         </a>
+                                        <a href="{{ route("purchaserequest.exportToPdf", $id) }}"
+                                                            class="btn btn-outline-success my-1">
+                                                            <i class=\'bx bxs-file-pdf\'></i> <span
+                                                                class="d-none d-sm-inline">Export PDF</span>
+                                                        </a>
                                     ')
             ->setRowId('id');
     }
