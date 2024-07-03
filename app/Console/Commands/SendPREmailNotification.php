@@ -44,15 +44,8 @@ class SendPREmailNotification extends Command
                 if($newPr->from_department === 'MOULDING'){
                     if ($newPr->is_import === 1) {
                         $to = 'fang@daijo.co.id';
-                    } else if($newPr->is_import === 0) {
-                        // if is_import == false or local, notification will sent to fang and ong
-                        $to = User::where('is_head', 1)
-                            ->whereHas('department', function($query) use ($newPr) {
-                                $query->where('name', $newPr->from_department);
-                            })
-                            ->pluck('email')
-                            ->toArray();
                     } else {
+                        // if is_import is false or null, notification will sent to fang and ong
                         $to = User::where('is_head', 1)
                             ->whereHas('department', function($query) use ($newPr) {
                                 $query->where('name', $newPr->from_department);
