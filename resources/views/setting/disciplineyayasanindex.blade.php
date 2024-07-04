@@ -255,21 +255,23 @@ foreach($employees as $employee)
         }
 
         fetchFilteredEmployeesAndUpdateButton(selectedMonth);
+        console.log('bulan pertama di ajax' , selectedMonth);
 
         statusFilterDropdown.addEventListener('change', () => {
             const selectedFilterMonth = statusFilterDropdown.value;
             filterMonthInput.value = selectedFilterMonth;
+            fetchFilteredEmployeesAndUpdateButton(selectedFilterMonth)
             const selectedDepartment = deptFilterDropdown ? deptFilterDropdown.value : null;
             filterDeptInput.value = selectedDepartment;
 
             if(isGm) {
                 fetchFilteredEmployeeGM(selectedFilterMonth, selectedDepartment); // Call GM specific function
-            } else {
+            }else {
                 fetchFilteredEmployeesAndUpdateButton(selectedFilterMonth); // Default fetch function
             }
         });
 
-        if (deptFilterDropdown) {
+        if(deptFilterDropdown){
             deptFilterDropdown.addEventListener('change', () => {
                 const selectedFilterMonth = statusFilterDropdown.value;
                 filterMonthInput.value = selectedFilterMonth;

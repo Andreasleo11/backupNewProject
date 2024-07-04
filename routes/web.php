@@ -77,7 +77,7 @@ use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
-
+use App\Http\Controllers\BarcodeController;
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -648,6 +648,22 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
+
+
+
+    Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
+    Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
+    Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
+    Route::post('barcode/missing/generate', [BarcodeController::class, 'missingbarcodegenerator'])->name('generateBarcodeMissing');
+    
+    Route::post('barcode/process/save', [BarcodeController::class, 'processInAndOut'])->name('process.in.and.out');
+
+    Route::post('process/inandoutbarcode', [BarcodeController::class, 'storeInAndOut'])->name('processbarcodeinandout');
+    Route::get('indexbarcode', [BarcodeController::class, 'indexBarcode'])->name('barcodeindex');
+    Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
+
+    Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
+    Route::get('barcode/latest/item',[BarcodeController::class, 'latestitemdetails'] )->name('updated.barcode.item.position');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

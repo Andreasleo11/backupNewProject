@@ -18,6 +18,8 @@
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.3",
         "maatwebsite/excel": "^3.1",
+        "milon/barcode": "^11.0",
+        "ramsey/uuid": "^4.7",
         "spatie/laravel-permission": "^6.3",
         "twbs/bootstrap": "^5.3",
         "wemersonjanuario/wkhtmltopdf-windows": "0.12.2.3",
