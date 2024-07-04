@@ -109,6 +109,11 @@ class SendPREmailNotification extends Command
                 break;
             case 4:
                 $to = $newPr->createdBy->email;
+                $purchasingUsers = User::with('department')
+                    ->whereHas('department', function($query){
+                        $query->where('name', 'PURCHASING');
+                    })->get();
+                array_push($cc, $purchasingUsers);
                 break;
             case 5:
                 $to = $newPr->createdBy->email;

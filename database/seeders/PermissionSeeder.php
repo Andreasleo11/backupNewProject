@@ -171,6 +171,7 @@ class PermissionSeeder extends Seeder
             'edit-vqc-report',
             'detail-vqc-reports',
             'get-vqc-reports',
+            'cancel-purchase-request'
         ];
 
         $this->createAndAssignPermissions($adminPermissions, $adminRole);
