@@ -374,6 +374,13 @@
                         </a>
                     </li>
 
+                    <li class="sidebar-item">
+                        <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Barcode Feature
+                        </a>
+                    </li>
+
                     @if ($department === 'QA' || $department === 'QC')
                         <li class="sidebar-item">
                             <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
