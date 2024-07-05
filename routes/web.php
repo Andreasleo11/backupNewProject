@@ -665,6 +665,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
     Route::get('barcode/latest/item',[BarcodeController::class, 'latestitemdetails'] )->name('updated.barcode.item.position');
 
+    
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
         $report = MonthlyBudgetReport::find(5);
