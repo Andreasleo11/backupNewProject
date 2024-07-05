@@ -109,7 +109,6 @@ class SendPREmailNotification extends Command
                 break;
             case 4:
                 $to = $newPr->createdBy->email;
-
                 break;
             case 5:
                 $to = $newPr->createdBy->email;
@@ -119,7 +118,6 @@ class SendPREmailNotification extends Command
                 break;
             }
 
-            $to = 'raymondlay023@gmail.com';
         $newPr->status !== 1 ? $title = "There's PR Changed!" : $title = "There's a New PR!";
         $cc = [$newPr->createdBy->email];
         if($newPr->to_department === 'Maintenance'){

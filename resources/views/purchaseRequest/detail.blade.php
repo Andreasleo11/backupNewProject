@@ -311,26 +311,16 @@
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
-                                    @if ($purchaseRequest->from_department === 'MOULDING')
-                                        <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
-                                            @if ($detail->is_approve_by_head === null)
-                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
-                                                    class="btn btn-danger">Reject</a>
-                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
-                                                    class="btn btn-success">Approve</a>
-                                            @else
-                                                {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
-                                            @endif
-                                        </td>
-                                    @elseif ($showDeptHeadItemApprove)
+
+                                    @if ($user->department->name === 'DIRECTOR')
                                         <td>
-                                            @if ($detail->is_approve_by_head === null)
-                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                            @if ($detail->is_approve === null)
+                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
                                                     class="btn btn-danger">Reject</a>
-                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
                                                     class="btn btn-success">Approve</a>
                                             @else
-                                                {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
                                             @endif
                                         </td>
                                     @elseif ($user->specification->name == 'VERIFICATOR')
@@ -344,17 +334,30 @@
                                                 {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
                                             @endif
                                         </td>
-                                    @elseif ($user->department->name === 'DIRECTOR')
-                                        <td>
-                                            @if ($detail->is_approve === null)
-                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
-                                                    class="btn btn-danger">Reject</a>
-                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
-                                                    class="btn btn-success">Approve</a>
-                                            @else
-                                                {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
-                                            @endif
-                                        </td>
+                                    @elseif ($showDeptHeadItemApprove)
+                                        @if ($purchaseRequest->from_department === 'MOULDING')
+                                            <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
+                                                @if ($detail->is_approve_by_head === null)
+                                                    <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                        class="btn btn-danger">Reject</a>
+                                                    <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                        class="btn btn-success">Approve</a>
+                                                @else
+                                                    {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                @endif
+                                            </td>
+                                        @else
+                                            <td>
+                                                @if ($detail->is_approve_by_head === null)
+                                                    <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                        class="btn btn-danger">Reject</a>
+                                                    <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                        class="btn btn-success">Approve</a>
+                                                @else
+                                                    {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                @endif
+                                            </td>
+                                        @endif
                                     @endif
                                     @php
                                         $receivedTdColor = '';

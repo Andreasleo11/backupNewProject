@@ -422,6 +422,15 @@
                             </a>
                         </li>
                     @endif
+
+                    @if (($user->is_head === 1 && $user->department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
+                        <li class="sidebar-item">
+                            <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Employee Master
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </ul>
         </li>
