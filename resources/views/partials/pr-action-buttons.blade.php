@@ -19,7 +19,7 @@
     @endif --}}
 
     {{-- Delete Feature --}}
-    @if ($pr->user_id_create === Auth::user()->id)
+    {{-- @if ($pr->user_id_create === Auth::user()->id)
         @include('partials.delete-pr-modal', [
             'id' => $pr->id,
             'doc_num' => $pr->doc_num,
@@ -28,6 +28,14 @@
             data-bs-target="#delete-pr-modal-{{ $pr->id }}">
             <i class='bx bx-trash-alt'></i> <span class="d-none d-sm-inline">Delete</span>
         </button>
+    @endif --}}
+
+    @if (
+        ($user->id === $pr->user_id_create && $pr->status === 1) ||
+            ($user->department->name === 'COMPUTER' && $user->is_head && $pr->status === 4))
+        <button data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}" data-bs-toggle="modal"
+            class="my-1 btn btn-danger my-1"><i class='bx bx-x-circle'></i> <span
+                class="d-none d-sm-inline">Cancel</span></button>
     @endif
 
     @include('partials.cancel-pr-confirmation-modal')
@@ -48,13 +56,7 @@
                 </a>
             </li>
             <li>
-                @if (
-                    ($user->id === $pr->user_id_create && $pr->status === 1) ||
-                        ($user->department->name === 'COMPUTER' && $user->is_head && $pr->status === 4))
-                    <button data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}" data-bs-toggle="modal"
-                        class="my-1 btn btn-danger my-1 dropdown-item"><i class='bx bxs-file-pdf'></i> <span
-                            class="d-none d-sm-inline">Cancel</span></button>
-                @endif
+
             </li>
             <li>
                 @if ($pr->status === 4 && $user->specification->name === 'PURCHASER')
