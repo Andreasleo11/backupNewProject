@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <div class="mx-5 mt-4">
         <h1>Average Delivery Schedule Per Month</h1>
 
@@ -39,11 +39,10 @@
                 </select>
             </div>
         </div>
-
         <!-- GOD TIER EXCEL EXPORT -->
         <button onclick="exportToExcel()" class="btn btn-primary mb-3">Export Data to Excel</button>
         <!-- GOD TIER EXCEL EXPORT -->
-         
+
         <style>
             table {
                 width: 100%;
@@ -162,14 +161,16 @@
         });
 
         function exportToExcel() {
-        // Select the table to export (here 'deliveryTable')
-        var table = document.getElementById('deliveryTable');
-        
-        // Prepare data from the table
-        var wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
-        
-        // Generate Excel file and trigger download
-        XLSX.writeFile(wb, 'filtered_data.xlsx');
-    }
+            // Select the table to export (here 'deliveryTable')
+            var table = document.getElementById('deliveryTable');
+
+            // Prepare data from the table
+            var wb = XLSX.utils.table_to_book(table, {
+                sheet: "Sheet1"
+            });
+
+            // Generate Excel file and trigger download
+            XLSX.writeFile(wb, 'filtered_data.xlsx');
+        }
     </script>
 @endsection
