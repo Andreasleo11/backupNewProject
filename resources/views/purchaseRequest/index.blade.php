@@ -55,17 +55,17 @@
                     <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr>
-                                <th class="fw-semibold fs-5">No</th>
-                                <th class="fw-semibold fs-5">Doc Num</th>
-                                <th class="fw-semibold fs-5">Date PR</th>
-                                <th class="fw-semibold fs-5">From Department</th>
-                                <th class="fw-semibold fs-5">To Department</th>
-                                <th class="fw-semibold fs-5">PR No </th>
-                                <th class="fw-semibold fs-5">Supplier</th>
-                                <th class="fw-semibold fs-5">Action</th>
-                                <th class="fw-semibold fs-5">Status</th>
-                                <th class="fw-semibold fs-5">Description</th>
-                                <th class="fw-semibold fs-5">Approved Date</th>
+                                <th class="fw-semibold align-content-center fs-5">No</th>
+                                <th class="fw-semibold align-content-center fs-5">Doc Num</th>
+                                <th class="fw-semibold align-content-center fs-5">Date PR</th>
+                                <th class="fw-semibold align-content-center fs-5">From Department</th>
+                                <th class="fw-semibold align-content-center fs-5">To Department</th>
+                                <th class="fw-semibold align-content-center fs-5">PR No </th>
+                                <th class="fw-semibold align-content-center fs-5">Supplier</th>
+                                <th class="fw-semibold align-content-center fs-5">Action</th>
+                                <th class="fw-semibold align-content-center fs-5">Status</th>
+                                <th class="fw-semibold align-content-center fs-5">Approved Date</th>
+                                <th class="fw-semibold align-content-center fs-5">PO Number</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -87,10 +87,8 @@
                                     <td>
                                         @include('partials.pr-status-badge')
                                     </td>
-                                    <td>
-                                        {{ $pr->description ?? '-' }}
-                                    </td>
                                     <td>@formatDate($pr->approved_at)</td>
+                                    <td>{{ $pr->po_number }}</td>
                                 </tr>
                             @empty
                                 <tr>

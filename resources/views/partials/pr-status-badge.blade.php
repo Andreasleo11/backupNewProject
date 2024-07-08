@@ -39,9 +39,15 @@
 
 @if ($pr->is_cancel === 1)
     <span class="badge rejected-bg px-3 py-2 fs-6">CANCELED</span>
+    <button data-bs-toggle="tooltip" data-bs-title="Cancel Reason: {{ $pr->description ?? '-' }}"
+        class="btn btn-secondary btn-sm align-items-center">
+        <i class='bx bx-info-circle'></i></button>
 @else
     @if ($pr->status === 5)
         <span class="badge rejected-bg px-3 py-2 fs-6">REJECTED</span>
+        <button data-bs-toggle="tooltip" data-bs-title="Reject Reason: {{ $pr->description ?? '-' }}"
+            class="btn btn-secondary btn-sm align-items-center">
+            <i class='bx bx-info-circle'></i></button>
         {{-- After the maker signed --}}
     @elseif($pr->status === 1)
         <span class="badge head-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT
@@ -65,3 +71,7 @@
         <span class="badge approved-bg px-3 py-2 fs-6">APPROVED</span>
     @endif
 @endif
+<script type="module">
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+</script>

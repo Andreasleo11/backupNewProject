@@ -109,11 +109,6 @@ class SendPREmailNotification extends Command
                 break;
             case 4:
                 $to = $newPr->createdBy->email;
-                $purchasingUsers = User::with('department')
-                    ->whereHas('department', function($query){
-                        $query->where('name', 'PURCHASING');
-                    })->get();
-                array_push($cc, $purchasingUsers);
                 break;
             case 5:
                 $to = $newPr->createdBy->email;
@@ -127,6 +122,12 @@ class SendPREmailNotification extends Command
         $cc = [$newPr->createdBy->email];
         if($newPr->to_department === 'Maintenance'){
             array_push($cc, 'nur@daijo.co.id');
+        } elseif($newPr->status === 4){
+            $purchasingUsers = User::with('department')
+            ->whereHas('department', function($query){
+                $query->where('name', 'PURCHASING');
+            })->pluck('email')->toArray();
+            $cc = array_merge($cc, $purchasingUsers);
         }
         $status = $this->checkStatus($newPr->status);
         $from = 'pt.daijoindustrial@daijo.co.id';

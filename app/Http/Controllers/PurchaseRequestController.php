@@ -368,6 +368,7 @@ class PurchaseRequestController extends Controller
 
         // Filter itemDetail based on user role
         $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
+            $detail->quantity = $this->formatDecimal($detail->quantity);
             if ($user->department->name === "DIRECTOR") {
                 if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
                     return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_gm && $detail->is_approve_by_head);
@@ -384,6 +385,18 @@ class PurchaseRequestController extends Controller
         })->values(); // Ensure that the result is an array
 
         return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
+    }
+
+    private function formatDecimal($value)
+    {
+        // Check if the number has no decimal part (i.e., is an integer)
+        if (floor($value) == $value) {
+            // If it's an integer, cast it to int to remove the decimal point
+            return (int)$value;
+        } else {
+            // If it has a decimal part, return it as is
+            return $value;
+        }
     }
 
     public function saveImagePath(Request $request, $prId, $section)
@@ -702,5 +715,14 @@ class PurchaseRequestController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+    }
+
+    public function updatePoNumber(Request $request, $id)
+    {
+        PurchaseRequest::find($id)->update([
+            'po_number' => $request->po_number,
+        ]);
+
+        return redirect()->back()->with('success', 'Purchase request PO Number updated successfully!');
     }
 }
