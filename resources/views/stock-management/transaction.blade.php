@@ -16,94 +16,124 @@
             </div>
         </div>
 
-        <div class="row mt-4">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <div class="form-group ">
-                                    <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
-                                    <select name="type" id="type" class="form-select" required>
-                                        <option value="" selected disabled>--Select Type--</option>
-                                        <option value="">Type 1</option>
-                                        <option value="">Type 2</option>
-                                        <option value="">Etc</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group mt-3">
-                                    <label for="type" class="form-label">Transaction Type <span
-                                            class="text-danger">*</span></label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="transaction_type"
-                                            id="in">
-                                        <label class="form-check-label" for="in">
-                                            In
-                                        </label>
+        <form action="" method="post">
+            @csrf
+            <div class="row mt-4">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="form-group ">
+                                        <label for="type" class="fw-semibold form-label">Type <span
+                                                class="text-danger">*</span></label>
+                                        <select name="type" id="type" class="form-select" required>
+                                            <option value="" selected disabled>--Select Type--</option>
+                                            @foreach ($types as $type)
+                                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="transaction_type"
-                                            id="out" checked>
-                                        <label class="form-check-label" for="out">
-                                            Out
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <div class="form-group mt-3">
-                                    <label for="department" class="form-label">Department <span
-                                            class="text-danger">*</span></label>
-                                    <select name="department" id="department" class="form-select" required>
-                                        <option value="" selected disabled>--Select Department--</option>
-                                        <option value="">Type 1</option>
-                                        <option value="">Type 2</option>
-                                        <option value="">Etc</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col">
-                                <div class="form-group mt-3">
-                                    <label for="pic" class="form-label">PIC <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="pic" name="pic" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group mt-3">
-                            <label for="remark" class="form-label">Remark <span class="text-danger">*</span></label>
-                            <textarea name="remark" id="remark" cols="30" rows="5" placeholder="Your remark here"
-                                class="form-control" required></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <label for="type" class="form-label">List Items<span class="text-danger">*</span></label>
-                        <div id="item-container">
-                            <div class="row align-items-center my-2 mx-3 item-row">
-                                <div class="col-auto">
-                                    <label for="staticEmail2" class="visually-hidden">No</label>
-                                    <input type="text" readonly class="form-control-plaintext item-no" value="1">
                                 </div>
                                 <div class="col">
-                                    <label for="item_name_1" class="visually-hidden">Item Name</label>
-                                    <input type="text" class="form-control item-name" id="item_name_1" name="item_name_1"
-                                        placeholder="Item Name">
+                                    <div class="form-group mt-3">
+                                        <label for="type" class="fw-semibold form-label">Transaction Type <span
+                                                class="text-danger">*</span></label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="transaction_type"
+                                                id="in">
+                                            <label class="form-check-label" for="in">
+                                                In
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="transaction_type"
+                                                id="out" checked>
+                                            <label class="form-check-label" for="out">
+                                                Out
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="form-group mt-3">
+                                        <label for="department" class="fw-semibold form-label">Department <span
+                                                class="text-danger">*</span></label>
+                                        <select name="department" id="department" class="form-select" required>
+                                            <option value="" selected disabled>--Select Department--</option>
+                                            @foreach ($departments as $department)
+                                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group mt-3">
+                                        <label for="pic" class="fw-semibold form-label">PIC <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="pic" name="pic" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-3">
+                                <label for="remark" class="fw-semibold form-label">Remark <span
+                                        class="text-danger">*</span></label>
+                                <textarea name="remark" id="remark" cols="30" rows="5" placeholder="Your remark here"
+                                    class="form-control" required></textarea>
+                            </div>
                         </div>
-                        <button id="add-item-btn" class="btn btn-primary mt-3">Add Item</button>
+                    </div>
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <label for="type" class="fw-semibold form-label">List Items<span
+                                    class="text-danger">*</span></label>
+                            <div id="item-container">
+                                <div class="row align-items-center my-2 mx-3 item-row">
+                                    <div class="col-auto">
+                                        <label for="staticEmail2" class="visually-hidden">No</label>
+                                        <input type="text" readonly class="form-control-plaintext item-no"
+                                            value="1">
+                                    </div>
+                                    <div class="col">
+                                        <label for="item_name_1" class="visually-hidden">Item Name</label>
+                                        <input type="text" class="form-control item-name" id="item_name_1"
+                                            name="item_name_1" placeholder="Item Name">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="add-item-btn" class="btn btn-sm btn-outline-secondary mt-3">Add Item</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
     </div>
+@endsection
 
+@push('extraJs')
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize TomSelect for dropdown
+            new TomSelect('#department', {
+                plugins: ['dropdown_input'],
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+
+            // Add event listener for toggle input method
+            document.getElementById('inputToggle').addEventListener('change', toggleInputMethod);
+        });
+    </script>
     <script>
         document.getElementById('add-item-btn').addEventListener('click', addItem);
 
@@ -171,4 +201,4 @@
         // Initial toggle based on the default selection
         toggleFields();
     </script>
-@endsection
+@endpush
