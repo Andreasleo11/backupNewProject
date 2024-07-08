@@ -13,8 +13,8 @@
                 <select id="daysFilter" class="custom-select form-select">
                     <option value="all">All</option>
                     <option value="small">0 - 1 (Small)</option>
-                    <option value="middle">2 - 7 (Middle)</option>
-                    <option value="huge">8+ (Huge)</option>
+                    <option value="middle">2 - 5 (Middle)</option>
+                    <option value="huge">6+ (Huge)</option>
                 </select>
             </div>
         </div>
@@ -72,11 +72,14 @@
                         <th>Month</th>
                         <th>Item Code</th>
                         <th>Item Name</th>
+                        <th>Warehouse</th>
                         <th>Total Delivery</th>
                         <th>Delivery Freq</th>
                         <th>Avg Per Delivery</th>
                         <th>In Stock</th>
                         <th>Stock Days</th>
+                        <th>Min Stock (2 Days)</th>
+                        <th>Max Stock (5 Days)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -91,17 +94,23 @@
                                 $itemName = isset($result[$month][$itemCode]['item_name'])
                                     ? $result[$month][$itemCode]['item_name']
                                     : '';
+                                $warehouse = $result[$month][$itemCode]['warehouse'] ?? '';
                                 $days = $averageWithCount > 0 ? floor($inStock / $averageWithCount) : 0;
+                                $minStock = $averageWithCount * 2;
+                                $maxStock = $averageWithCount * 5;
                             @endphp
                             <tr>
                                 <td>{{ $month }}</td>
                                 <td>{{ $itemCode }}</td>
                                 <td>{{ $itemName }}</td>
+                                <td>{{ $warehouse }}</td>
                                 <td>{{ $quantity }}</td>
                                 <td>{{ $count }}</td>
                                 <td>{{ $averageWithCount }}</td>
                                 <td>{{ $inStock }}</td>
                                 <td>{{ $days }}</td>
+                                <td>{{ $minStock }}</td>
+                                <td>{{ $maxStock }}</td>
                             </tr>
                         @endforeach
                     @empty
@@ -139,8 +148,8 @@
 
                     var daysMatch = selectedDays === 'all' ||
                         (selectedDays === 'small' && days >= 0 && days <= 1) ||
-                        (selectedDays === 'middle' && days >= 2 && days <= 7) ||
-                        (selectedDays === 'huge' && days >= 8);
+                        (selectedDays === 'middle' && days >= 2 && days <= 5) ||
+                        (selectedDays === 'huge' && days >= 6);
 
                     var itemCodeMatch = selectedItems.length === 0 || selectedItems.includes(itemCode);
 
