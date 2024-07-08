@@ -4,6 +4,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <div class="mx-5 mt-4">
         <h1>Average Delivery Schedule Per Month</h1>
+        
+        <button onclick="openInNewTab('{{ route('indexds') }}')">Delivery Schedule For Verification</button>
 
         <div class="mb-2 mt-4 row">
             <div class="col-auto align-content-end">
@@ -126,6 +128,11 @@
     </div>
 
     <script>
+
+    function openInNewTab(url) {
+            var win = window.open(url, '_blank');
+            win.focus();
+        }
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Select2
             $('#itemCodeFilter').select2({
