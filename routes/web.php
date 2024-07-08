@@ -78,6 +78,9 @@ use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\MasterTintaController;
+
+
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -665,6 +668,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
     Route::get('barcode/latest/item',[BarcodeController::class, 'latestitemdetails'] )->name('updated.barcode.item.position');
 
+
+    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
+    Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
+    
     
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
