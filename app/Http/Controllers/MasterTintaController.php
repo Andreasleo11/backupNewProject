@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\MasterStock;
 
 class MasterTintaController extends Controller
 {
     public function index()
     {
+        $datas = MasterStock::with('stocktype')->get();
+        dd($datas);
         return view('index stock tinta ?');
     }
 

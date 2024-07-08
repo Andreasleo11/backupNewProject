@@ -17,4 +17,5 @@ class StockRequest extends Model
         'remark',
         // Add other fields as needed
     ];
+    
 }
