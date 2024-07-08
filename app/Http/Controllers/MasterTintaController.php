@@ -9,16 +9,16 @@ class MasterTintaController extends Controller
 {
     public function index()
     {
-        return view('index stock tinta ?');
+        return view('stock-management.index');
     }
 
     public function transactiontintaview()
     {
-        return view('index untuk transaction tinta');
+        return view('stock-management.transaction');
     }
 
     public function storetransaction()
     {
-        //function untuk store in / out stock tinta 
+        //function untuk store in / out stock tinta
     }
 }

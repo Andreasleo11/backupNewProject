@@ -422,6 +422,12 @@
                             </a>
                         </li>
                     @endif
+                    <li class="sidebar-item">
+                        <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Stock Management
+                        </a>
+                    </li>
                 </ul>
             </ul>
         </li>
