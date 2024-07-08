@@ -14,4 +14,9 @@ class StockType extends Model
         'name',
         // Add other fields as needed
     ];
+
+    public function masterStocks()
+    {
+        return $this->hasMany(MasterStock::class, 'stock_type_id');
+    }
 }

@@ -21,4 +21,9 @@ class StockTransaction extends Model
         'out_time',
         // Add other fields as needed
     ];
+
+    public function historyTransaction()
+    {
+        return $this->belongsTo(MasterStock::class, 'stock_id');
+    }
 }
