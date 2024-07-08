@@ -105,7 +105,9 @@
     </div>
 
     <script>
-        document.getElementById('add-item-btn').addEventListener('click', addItem);
+         document.getElementById('add-item-btn').addEventListener('click', addItem);
+
+        let inputTimeout;
 
         function addItem() {
             const container = document.getElementById('item-container');
@@ -123,17 +125,23 @@
             container.appendChild(newItemRow);
 
             // Add event listener to the new input field
-            itemNameInput.addEventListener('change', handleInput);
+            itemNameInput.addEventListener('input', handleInput);
         }
 
         function handleInput(event) {
-            if (event.target.value) {
-                addItem();
-                const itemRows = document.querySelectorAll('.item-row');
-                const nextInput = itemRows[itemRows.length - 1].querySelector('.item-name');
-                nextInput.focus();
-            }
+            clearTimeout(inputTimeout);
+            inputTimeout = setTimeout(() => {
+                if (event.target.value) {
+                    addItem();
+                    const itemRows = document.querySelectorAll('.item-row');
+                    const nextInput = itemRows[itemRows.length - 1].querySelector('.item-name');
+                    nextInput.focus();
+                }
+            }, 300); // Adjust the delay as needed (e.g., 300ms)
         }
+
+        // Initial setup for the first input field
+        document.getElementById('item_name_1').addEventListener('input', handleInput);
 
         // Add initial event listener
         document.querySelector('.item-name').addEventListener('input', handleInput);

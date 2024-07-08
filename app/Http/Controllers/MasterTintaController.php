@@ -5,22 +5,27 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\MasterStock;
+use App\Models\StockTransaction;
 
 class MasterTintaController extends Controller
 {
     public function index()
     {
         $datas = MasterStock::with('stocktype')->get();
-        return view('stock-management.index');
+        dd($datas);
+        return view('index stock tinta ?');
     }
 
     public function transactiontintaview()
     {
-        return view('stock-management.transaction');
+        return view('index untuk transaction tinta');
     }
 
-    public function storetransaction()
+    public function storetransaction(Request $request)
     {
-        //function untuk store in / out stock tinta
+        //function untuk store in / out stock tinta 
+        dd($request->all());
+        $datas = $request->all();
+
     }
 }
