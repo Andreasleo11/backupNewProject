@@ -315,10 +315,13 @@
             const quantityInput = document.createElement('input');
             quantityInput.classList.add('form-control', 'quantity-input');
             quantityInput.setAttribute('required', 'required');
-            quantityInput.type = 'number';
+            quantityInput.type = 'text';
             quantityInput.name = `items[${itemIdCounter}][quantity]`;
             quantityInput.placeholder = 'Qty';
             quantityInput.value = $detail?.quantity ?? "";
+            quantityInput.addEventListener('input', function() {
+                validateNumber(quantityInput);
+            });
 
             formGroupQuantityInput.appendChild(quantityInput);
 
@@ -461,6 +464,15 @@
 
             itemIdCounter++;
             updateItemCount();
+        }
+
+         // Function to validate the input
+         function validateNumber(input) {
+            const value = input.value;
+            const regex = /^[+-]?(\d*\.)?\d*$/;
+            if (!regex.test(value)) {
+                input.value = value.slice(0, -1);
+            }
         }
 
         function removeItem(event) {
