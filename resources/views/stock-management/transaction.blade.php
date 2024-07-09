@@ -12,11 +12,11 @@
 
         <div class="row d-flex">
             <div class="col">
-                <h2 class="fw-bold">Edit Management Stock</h1>
+                <h2 class="fw-bold">Edit Management Stock</h2>
             </div>
         </div>
 
-        <form action="" method="post">
+        <form id="stock-form" action="{{ route('mastertinta.process') }}" method="post">
             @csrf
             <div class="row mt-4">
                 <div class="col">
@@ -41,14 +41,14 @@
                                                 class="text-danger">*</span></label>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="transaction_type"
-                                                id="in">
+                                                id="in" value="in">
                                             <label class="form-check-label" for="in">
                                                 In
                                             </label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="radio" name="transaction_type"
-                                                id="out" checked>
+                                                id="out" value="out" checked>
                                             <label class="form-check-label" for="out">
                                                 Out
                                             </label>
@@ -105,7 +105,7 @@
                                 </div>
                             </div>
                             <div>
-                                <button id="add-item-btn" class="btn btn-sm btn-outline-secondary mt-3">Add Item</button>
+                                <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-secondary mt-3">Add Item</button>
                             </div>
                         </div>
                     </div>
@@ -135,10 +135,10 @@
         });
     </script>
     <script>
-         document.getElementById('add-item-btn').addEventListener('click', addItem);
+        document.getElementById('add-item-btn').addEventListener('click', addItem);
 
         let inputTimeout;
-
+       
         function addItem() {
             const container = document.getElementById('item-container');
             const itemRows = document.querySelectorAll('.item-row');
@@ -208,5 +208,13 @@
 
         // Initial toggle based on the default selection
         toggleFields();
+
+        // Add event listener to form submit event to remove the last item row
+        document.getElementById('stock-form').addEventListener('submit', function(event) {
+            const itemRows = document.querySelectorAll('.item-row');
+            if (itemRows.length > 0) {
+                itemRows[itemRows.length - 1].remove();
+            }
+        });
     </script>
 @endpush

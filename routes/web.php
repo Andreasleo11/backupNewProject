@@ -671,7 +671,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
     Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
-    
+    Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
     
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
