@@ -237,84 +237,43 @@ class DisciplinePageController extends Controller
         {
             $total += 0;
         }
-        if($request->kerapian_pakaian === "A")
+        
+        if($request->kerapian_kerja === "A")
         {
             $total += 10;
         }
-        elseif($request->kerapian_pakaian === "B")
+        elseif($request->kerapian_kerja === "B")
         {
             $total += 7.5;
         }
-        elseif($request->kerapian_pakaian === "C")
+        elseif($request->kerapian_kerja === "C")
         {
             $total += 5;
         }
-        elseif($request->kerapian_pakaian === "D")
+        elseif($request->kerapian_kerja === "D")
         {
             $total += 2.5;
         }
-        elseif($request->kerapian_pakaian === "E")
-        {
-            $total += 0;
-        }
-
-        if($request->kerapian_rambut === "A")
-        {
-            $total += 10;
-        }
-        elseif($request->kerapian_rambut === "B")
-        {
-            $total += 7.5;
-        }
-        elseif($request->kerapian_rambut === "C")
-        {
-            $total += 5;
-        }
-        elseif($request->kerapian_rambut === "D")
-        {
-            $total += 2.5;
-        }
-        elseif($request->kerapian_rambut === "E")
-        {
-            $total += 0;
-        }
-
-        if($request->kerapian_sepatu === "A")
-        {
-            $total += 10;
-        }
-        elseif($request->kerapian_sepatu === "B")
-        {
-            $total += 7.5;
-        }
-        elseif($request->kerapian_sepatu === "C")
-        {
-            $total += 5;
-        }
-        elseif($request->kerapian_sepatu === "D")
-        {
-            $total += 2.5;
-        }
-        elseif($request->kerapian_sepatu === "E")
+        elseif($request->kerapian_kerja === "E")
         {
             $total += 0;
         }
 
         if($request->prestasi === "A")
         {
-            $total += 10;
+            $total += 20;
         }
         elseif($request->prestasi === "B")
         {
-            $total += 7.5;
+            $total += 15;
         }
         elseif($request->prestasi === "C")
         {
-            $total += 5;
+            $total += 10;
         }
         elseif($request->prestasi === "D")
         {
-            $total += 2.5;
+            $total += 5;
         }
         elseif($request->prestasi === "E")
         {
@@ -342,14 +301,34 @@ class DisciplinePageController extends Controller
             $total += 0;
         }
 
+        if($request->perilaku_kerja === "A")
+        {
+            $total += 10;
+        }
+        elseif($request->perilaku_kerja === "B")
+        {
+            $total += 7.5;
+        }
+        elseif($request->perilaku_kerja === "C")
+        {
+            $total += 5;
+        }
+        elseif($request->perilaku_kerja === "D")
+        {
+            $total += 2.5;
+        }
+        elseif($request->perilaku_kerja === "E")
+        {
+            $total += 0;
+        }
+
         $di->where('id', $request->id)->update(
             [
                 'kerajinan_kerja' =>$request->kerajinan_kerja,
-                'kerapian_pakaian' =>$request->kerapian_pakaian,
-                'kerapian_rambut' =>$request->kerapian_rambut,
-                'kerapian_sepatu' =>$request->kerapian_sepatu,
+                'kerapian_kerja' =>$request->kerapian_kerja,
                 'prestasi' =>$request->prestasi,
                 'loyalitas' =>$request->loyalitas,
+                'perilaku_kerja'=>$request->perilaku_kerja,
                 'total' => $total,
             ]);
 
@@ -359,7 +338,7 @@ class DisciplinePageController extends Controller
     public function import(Request $request)
     {
         $uploadedFiles = $request->file('excel_files');
-
+        
         $excelFileName = $this->processExcelFile($uploadedFiles);
         $this->importExcelFile($excelFileName);
         return redirect()->route('discipline.index')->with('success', 'Line added successfully');
@@ -367,7 +346,6 @@ class DisciplinePageController extends Controller
 
     public function processExcelFile($files)
     {
-
         $allData = [];
         foreach ($files as $file) {
             // Read the XLS file
@@ -441,23 +419,43 @@ class DisciplinePageController extends Controller
                     $total = 0; // Reset total for each row
 
                     // Calculate the total based on other columns in the row
-                    for ($k = 3; $k <= 8; $k++) {
-                        switch ($row[$k]) {
-                            case "A":
-                                $total += 10;
-                                break;
-                            case "B":
-                                $total += 7.5;
-                                break;
-                            case "C":
-                                $total += 5;
-                                break;
-                            case "D":
-                                $total += 2.5;
-                                break;
-                            case "E":
-                                $total += 0;
-                                break;
+                    for ($k = 3; $k <= 7; $k++) {
+                        if ($k == 7) { // Special case for $k == 7
+                            switch ($row[$k]) {
+                                case "A":
+                                    $total += 20;
+                                    break;
+                                case "B":
+                                    $total += 15;
+                                    break;
+                                case "C":
+                                    $total += 10;
+                                    break;
+                                case "D":
+                                    $total += 5;
+                                    break;
+                                case "E":
+                                    $total += 0;
+                                    break;
+                            }
+                        } else {
+                            switch ($row[$k]) {
+                                case "A":
+                                    $total += 10;
+                                    break;
+                                case "B":
+                                    $total += 7.5;
+                                    break;
+                                case "C":
+                                    $total += 5;
+                                    break;
+                                case "D":
+                                    $total += 2.5;
+                                    break;
+                                case "E":
+                                    $total += 0;
+                                    break;
+                            }
                         }
                     }
 
@@ -467,11 +465,10 @@ class DisciplinePageController extends Controller
                     // Update the attributes with new values
                     EvaluationData::where('id', $record->id)->update([
                         'kerajinan_kerja' => $row[3],
-                        'kerapian_pakaian' => $row[4],
-                        'kerapian_rambut' => $row[5],
-                        'kerapian_sepatu' => $row[6],
+                        'kerapian_kerja' => $row[4],
+                        'loyalitas' => $row[5],
+                        'perilaku_kerja' => $row[6],
                         'prestasi' => $row[7],
-                        'loyalitas' => $row[8],
                         'total' => $total,
                     ]);
                     $i += 1;

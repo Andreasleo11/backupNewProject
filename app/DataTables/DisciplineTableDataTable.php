@@ -65,84 +65,42 @@ class DisciplineTableDataTable extends DataTable
         {
             $total += 0;
         }
-        if($kerapian_pakaian === "A")
+        if($kerapian_kerja === "A")
         {
             $total += 10;
         }
-        elseif($kerapian_pakaian === "B")
+        elseif($kerapian_kerja === "B")
         {
             $total += 7.5;
         }
-        elseif($kerapian_pakaian === "C")
+        elseif($kerapian_kerja === "C")
         {
             $total += 5;
         }
-        elseif($kerapian_pakaian === "D")
+        elseif($kerapian_kerja === "D")
         {
             $total += 2.5;
         }
-        elseif($kerapian_pakaian === "E")
-        {
-            $total += 0;
-        }
-
-        if($kerapian_rambut === "A")
-        {
-            $total += 10;
-        }
-        elseif($kerapian_rambut === "B")
-        {
-            $total += 7.5;
-        }
-        elseif($kerapian_rambut === "C")
-        {
-            $total += 5;
-        }
-        elseif($kerapian_rambut === "D")
-        {
-            $total += 2.5;
-        }
-        elseif($kerapian_rambut === "E")
-        {
-            $total += 0;
-        }
-
-        if($kerapian_sepatu === "A")
-        {
-            $total += 10;
-        }
-        elseif($kerapian_sepatu === "B")
-        {
-            $total += 7.5;
-        }
-        elseif($kerapian_sepatu === "C")
-        {
-            $total += 5;
-        }
-        elseif($kerapian_sepatu === "D")
-        {
-            $total += 2.5;
-        }
-        elseif($kerapian_sepatu === "E")
+        elseif($kerapian_kerja === "E")
         {
             $total += 0;
         }
 
         if($prestasi === "A")
         {
-            $total += 10;
+            $total += 20;
         }
         elseif($prestasi === "B")
         {
-            $total += 7.5;
+            $total += 15;
         }
         elseif($prestasi === "C")
         {
-            $total += 5;
+            $total += 10;
         }
         elseif($prestasi === "D")
         {
-            $total += 2.5;
+            $total += 5;
         }
         elseif($prestasi === "E")
         {
@@ -166,6 +124,27 @@ class DisciplineTableDataTable extends DataTable
             $total += 2.5;
         }
         elseif($loyalitas === "E")
+        {
+            $total += 0;
+        }
+
+        if($perilaku_kerja === "A")
+        {
+            $total += 10;
+        }
+        elseif($perilaku_kerja === "B")
+        {
+            $total += 7.5;
+        }
+        elseif($perilaku_kerja === "C")
+        {
+            $total += 5;
+        }
+        elseif($perilaku_kerja === "D")
+        {
+            $total += 2.5;
+        }
+        elseif($perilaku_kerja === "E")
         {
             $total += 0;
         }
@@ -466,11 +445,10 @@ class DisciplineTableDataTable extends DataTable
                 ->exportable(false)
                 ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
             Column::make('kerajinan_kerja')->addClass('align-middle text-center'),
-            Column::make('kerapian_pakaian')->addClass('align-middle text-center'),
-            Column::make('kerapian_rambut')->addClass('align-middle text-center'),
-            Column::make('kerapian_sepatu')->addClass('align-middle text-center'),
-            Column::make('prestasi')->addClass('align-middle text-center'),
+            Column::make('kerapian_kerja')->addClass('align-middle text-center'),
             Column::make('loyalitas')->addClass('align-middle text-center'),
+            Column::make('perilaku_kerja')->addClass('align-middle text-center'),
+            Column::make('prestasi')->addClass('align-middle text-center'),
             Column::make('totaldiscipline')
                 ->title('Total Nilai Kedisiplinan')
                 ->searchable(false)
