@@ -1,5 +1,29 @@
 @extends('layouts.app')
 
+@push('extraCss')
+    <style>
+        #dropdown-container {
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            width: 50%;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #dropdown-container .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        #dropdown-container .dropdown-item:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="container">
         <nav aria-label="breadcrumb">
@@ -27,10 +51,10 @@
                                     <div class="form-group ">
                                         <label for="stock_id" class="fw-semibold form-label">Stock Type<span
                                                 class="text-danger">*</span></label>
-                                        <select name="stock_id" id="stock_id" class="form-select" required>
-                                            <option value="" selected disabled>--Select Stock Type--</option>
-                                            @foreach ($datas as $data)
-                                                <option value="{{ $data->id }}">{{ $data->stock_code }}</option>
+                                        <select name="stock_id" id="stock_id" class="form-select" required name="stock_id">
+                                            <option value="" selected disabled>--Select Master Stock--</option>
+                                            @foreach ($masterStocks as $stock)
+                                                <option value="{{ $stock->id }}">{{ $stock->stock_code }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -100,15 +124,19 @@
                                     <div class="col">
                                         <label for="item_name_1" class="visually-hidden">Item Name</label>
                                         <input type="text" class="form-control item-name" id="item_name_1"
-                                            name="item_name_1" placeholder="Item Name" required>
+                                            name="item_name_1" placeholder="Item Name">
+                                        <div class="dropdown-menu" style="display: none;"></div>
+                                        <!-- Dropdown container for item_name_1 -->
                                     </div>
                                     <div class="col-auto">
-                                        <button type="button" class="btn btn-danger btn-sm remove-item-btn">Remove</button>
+                                        <button type="button"
+                                            class="btn btn-danger btn-sm remove-item-btn">Remove</button>
                                     </div>
                                 </div>
                             </div>
                             <div>
-                                <button type="button" id="add-item-btn" class="btn btn-sm btn-outline-secondary mt-3">Add Item</button>
+                                <button type="button" id="add-item-btn"
+                                    class="btn btn-sm btn-outline-secondary mt-3">Add Item</button>
                             </div>
                         </div>
                     </div>
@@ -132,111 +160,122 @@
                     direction: "asc"
                 }
             });
-
-            // Add event listener for toggle input method
-            document.getElementById('inputToggle').addEventListener('change', toggleInputMethod);
         });
     </script>
     <script>
-       document.getElementById('add-item-btn').addEventListener('click', addItem);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listener for Add Item button
+            document.getElementById('add-item-btn').addEventListener('click', addItem);
 
-let inputTimeout;
-
-function addItem() {
-    const container = document.getElementById('item-container');
-    const itemRows = document.querySelectorAll('.item-row');
-    const newItemRow = itemRows[0].cloneNode(true);
-    const newItemIndex = itemRows.length + 1;
-
-    newItemRow.querySelector('.item-no').value = newItemIndex;
-
-    const itemNameInput = newItemRow.querySelector('.item-name');
-    itemNameInput.id = 'item_name_' + newItemIndex;
-    itemNameInput.name = 'item_name_' + newItemIndex;
-    itemNameInput.value = '';
-
-    // Add required attribute
-    itemNameInput.required = true;
-
-    // Add remove button
-    const removeButton = newItemRow.querySelector('.remove-item-btn');
-    removeButton.addEventListener('click', function() {
-        removeItem(newItemRow);
-    });
-
-    container.appendChild(newItemRow);
-
-    // Add event listener to the new input field
-    itemNameInput.addEventListener('input', handleInput);
-}
-
-function removeItem(row) {
-    row.remove();
-
-    // Update item numbers
-    const itemRows = document.querySelectorAll('.item-row');
-    itemRows.forEach((row, index) => {
-        row.querySelector('.item-no').value = index + 1;
-    });
-}
-
-        function handleInput(event) {
-            clearTimeout(inputTimeout);
-            inputTimeout = setTimeout(() => {
-                if (event.target.value) {
-                    addItem();
-                    const itemRows = document.querySelectorAll('.item-row');
-                    const nextInput = itemRows[itemRows.length - 1].querySelector('.item-name');
-                    nextInput.focus();
+            // Handle input events for all item-name inputs
+            document.addEventListener('input', function(event) {
+                if (event.target.classList.contains('item-name')) {
+                    handleInput(event.target);
                 }
-            }, 1000); // Adjust the delay as needed (e.g., 300ms)
-        }
+            });
 
-// Initial setup for the first input field
-document.getElementById('item_name_1').addEventListener('input', handleInput);
+            // Function to add a new item row
+            function addItem() {
+                const container = document.getElementById('item-container');
+                const itemRows = document.querySelectorAll('.item-row');
+                const newItemRow = itemRows[0].cloneNode(true); // Clone the first row
+                const newItemIndex = itemRows.length + 1;
 
-// Add initial event listener
-document.querySelector('.item-name').addEventListener('input', handleInput);
+                // Update the item number
+                newItemRow.querySelector('.item-no').value = newItemIndex;
 
-const transactionTypeInputs = document.querySelectorAll('input[name="transaction_type"]');
-const departmentField = document.getElementById('department');
-const picField = document.getElementById('pic');
-const remarkField = document.getElementById('remark');
+                // Update the input field properties
+                const itemNameInput = newItemRow.querySelector('.item-name');
+                itemNameInput.id = 'item_name_' + newItemIndex;
+                itemNameInput.name = 'item_name_' + newItemIndex;
+                itemNameInput.value = '';
 
-function toggleFields() {
-    if (document.getElementById('in').checked) {
-        departmentField.disabled = true;
-        picField.disabled = true;
-        remarkField.disabled = true;
+                // Add remove button functionality
+                const removeButton = newItemRow.querySelector('.remove-item-btn');
+                removeButton.addEventListener('click', function() {
+                    removeItem(newItemRow);
+                });
 
-        departmentField.closest('.form-group').style.display = 'none';
-        picField.closest('.form-group').style.display = 'none';
-        remarkField.closest('.form-group').style.display = 'none';
-    } else {
-        departmentField.disabled = false;
-        picField.disabled = false;
-        remarkField.disabled = false;
+                // Append the new item row to the container
+                container.appendChild(newItemRow);
 
-        departmentField.closest('.form-group').style.display = 'block';
-        picField.closest('.form-group').style.display = 'block';
-        remarkField.closest('.form-group').style.display = 'block';
-    }
-}
+                // Focus on the new item input
+                itemNameInput.focus();
+            }
 
-// Add event listeners to radio buttons
-transactionTypeInputs.forEach(input => {
-    input.addEventListener('change', toggleFields);
-});
+            // Function to remove an item row
+            function removeItem(row) {
+                row.remove();
 
-// Initial toggle based on the default selection
-toggleFields();
+                // Update item numbers after removal
+                const itemRows = document.querySelectorAll('.item-row');
+                itemRows.forEach((row, index) => {
+                    row.querySelector('.item-no').value = index + 1;
+                });
+            }
 
-// Add event listener to form submit event to remove the last item row
-document.getElementById('stock-form').addEventListener('submit', function(event) {
-    const itemRows = document.querySelectorAll('.item-row');
-    if (itemRows.length > 0) {
-        itemRows[itemRows.length - 1].remove();
-    }
-});
+            // Function to handle input events in the item-name field
+            function handleInput(input) {
+                const inputValue = input.value.trim();
+                if (inputValue) {
+                    const masterStockId = document.getElementById('stock_id').value;
+                    const transactionType = document.querySelector('input[name="transaction_type"]:checked').value;
+
+                    if (transactionType === 'out') {
+                        fetch(`/masterstock/get-items/${masterStockId}?name=${inputValue}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const dropdownContainer = input.nextElementSibling; // Dropdown container
+                                dropdownContainer.innerHTML = ''; // Clear existing options
+
+                                data.forEach(item => {
+                                    const dropdownItem = document.createElement('div');
+                                    dropdownItem.className = 'dropdown-item';
+                                    dropdownItem.textContent = item.unique_code;
+                                    dropdownItem.addEventListener('click', function() {
+                                        input.value = item.unique_code;
+                                        dropdownContainer.style.display = 'none';
+                                    });
+                                    dropdownContainer.appendChild(dropdownItem);
+                                });
+
+                                dropdownContainer.style.display = 'block';
+                            })
+                            .catch(error => console.error('Error fetching items:', error));
+                    }
+                }
+            }
+
+            // Handle stock_id change event
+            document.getElementById('stock_id').addEventListener('change', function() {
+                const itemInputs = document.querySelectorAll('.item-name');
+                itemInputs.forEach(input => {
+                    input.value = ''; // Clear existing values
+                    handleInput(input); // Trigger handleInput for each input
+                });
+            });
+
+            // Toggle fields based on transaction type
+            const transactionTypeInputs = document.querySelectorAll('input[name="transaction_type"]');
+            const departmentField = document.getElementById('department');
+            const picField = document.getElementById('pic');
+            const remarkField = document.getElementById('remark');
+
+            const toggleFields = () => {
+                const isOut = document.getElementById('out').checked;
+                const displayStyle = isOut ? 'block' : 'none';
+
+                departmentField.closest('.form-group').style.display = displayStyle;
+                picField.closest('.form-group').style.display = displayStyle;
+                remarkField.closest('.form-group').style.display = displayStyle;
+
+                departmentField.disabled = !isOut;
+                picField.disabled = !isOut;
+                remarkField.disabled = !isOut;
+            };
+
+            transactionTypeInputs.forEach(input => input.addEventListener('change', toggleFields));
+            toggleFields(); // Initial call to set initial state
+        });
     </script>
 @endpush

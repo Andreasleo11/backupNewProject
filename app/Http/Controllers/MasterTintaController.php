@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\MasterStock;
 use App\Models\StockTransaction;
 use App\Models\StockType;
+use Illuminate\Support\Facades\Log;
 
 class MasterTintaController extends Controller
 {
@@ -19,20 +20,18 @@ class MasterTintaController extends Controller
 
     public function transactiontintaview()
     {
-        $types = StockType::all();
         $departments = Department::all();
-        $datas = MasterStock::with('stocktype')->get();
-        return view('stock-management.transaction', compact('types', 'departments', 'datas'));
+        $masterStocks = MasterStock::with('stocktype')->get();
+        return view('stock-management.transaction', compact('departments', 'masterStocks'));
     }
 
     public function storetransaction(Request $request)
     {
-        //function untuk store in / out stock tinta 
+        //function untuk store in / out stock tinta
         $datas = $request->all();
-    
         // Extract the stock ID
         $stockId = $datas['stock_id'];
-    
+
         // Filter and organize the item names
         $itemNames = [];
         foreach ($datas as $key => $value) {
@@ -55,6 +54,12 @@ class MasterTintaController extends Controller
         MasterStock::where('id', $stockId)->increment('stock_quantity', $itemsCount);
 
         return response()->json(['message' => 'Stock transactions stored successfully']);
-        
+    }
+
+    public function getItems($masterStockId)
+    {
+        $items = StockTransaction::with('historyTransaction')->where('stock_id', $masterStockId)->get();
+        Log::info("items : $items");
+        return response()->json($items);
     }
 }
