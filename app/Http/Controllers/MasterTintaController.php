@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\MasterStock;
+use App\Models\StockTransaction;
 use App\Models\StockType;
 
 class MasterTintaController extends Controller
@@ -20,14 +21,40 @@ class MasterTintaController extends Controller
     {
         $types = StockType::all();
         $departments = Department::all();
-        return view('stock-management.transaction', compact('types', 'departments'));
+        $datas = MasterStock::with('stocktype')->get();
+        return view('stock-management.transaction', compact('types', 'departments', 'datas'));
     }
 
     public function storetransaction(Request $request)
     {
         //function untuk store in / out stock tinta 
-        dd($request->all());
         $datas = $request->all();
+    
+        // Extract the stock ID
+        $stockId = $datas['stock_id'];
+    
+        // Filter and organize the item names
+        $itemNames = [];
+        foreach ($datas as $key => $value) {
+            if (strpos($key, 'item_name_') === 0) {
+                $itemNames[] = $value;
+            }
+        }
 
+        foreach ($itemNames as $itemName) {
+            StockTransaction::create([
+                'stock_id' => $stockId,
+                'in_time' =>  now(),
+                'unique_code' => $itemName, // Assuming unique_code is the same as item_name
+                // Add other necessary fields here
+            ]);
+        }
+
+        $itemsCount = count($itemNames);
+
+        MasterStock::where('id', $stockId)->increment('stock_quantity', $itemsCount);
+
+        return response()->json(['message' => 'Stock transactions stored successfully']);
+        
     }
 }

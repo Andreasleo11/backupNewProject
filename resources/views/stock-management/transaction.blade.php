@@ -25,12 +25,12 @@
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="form-group ">
-                                        <label for="type" class="fw-semibold form-label">Type <span
+                                        <label for="stock_id" class="fw-semibold form-label">Stock Type<span
                                                 class="text-danger">*</span></label>
-                                        <select name="type" id="type" class="form-select" required>
-                                            <option value="" selected disabled>--Select Type--</option>
-                                            @foreach ($types as $type)
-                                                <option value="{{ $type->id }}">{{ $type->name }}</option>
+                                        <select name="stock_id" id="stock_id" class="form-select" required>
+                                            <option value="" selected disabled>--Select Stock Type--</option>
+                                            @foreach ($datas as $data)
+                                                <option value="{{ $data->id }}">{{ $data->stock_code }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -167,7 +167,7 @@
                     const nextInput = itemRows[itemRows.length - 1].querySelector('.item-name');
                     nextInput.focus();
                 }
-            }, 300); // Adjust the delay as needed (e.g., 300ms)
+            }, 1000); // Adjust the delay as needed (e.g., 300ms)
         }
 
         // Initial setup for the first input field

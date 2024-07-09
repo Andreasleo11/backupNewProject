@@ -10,7 +10,7 @@ class StockTransaction extends Model
     protected $table = 'stock_transaction';
 
     protected $fillable = [
-        'barcode_string',
+        'unique_code',
         'stock_id',
         'dept_id',
         'in_time',
