@@ -28,5 +28,10 @@ class MasterStock extends Model
     {
         return $this->hasMany(StockTransaction::class, 'id');
     }
-    
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'dept_id');
+    }
+
 }

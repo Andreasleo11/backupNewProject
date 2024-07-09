@@ -431,5 +431,20 @@
                 </ul>
             </ul>
         </li>
+        <li class="sidebar-item" id="sidebar-item-stock-management">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
+                <i class='bx bx-dots-horizontal-rounded'></i>
+                <span>Stock Management</span>
+            </a>
+            <ul id="stock-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Master Stock
+                    </a>
+                </li>
+            </ul>
+        </li>
     </ul>
 </aside>

@@ -38,13 +38,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @foreach ($datas as $data)
                                     <tr>
-                                        <td>test2</td>
-                                        <td>test3</td>
-                                        <td>test3</td>
-                                        <td>test3</td>
-                                        <td>test3</td>
+                                        <td>{{ $data->stockType->name }}</td>
+                                        <td>{{ $data->department->dept_no }}</td>
+                                        <td>{{ $data->stock_code }}</td>
+                                        <td>{{ $data->stock_description }}</td>
+                                        <td>{{ $data->stock_quantity }}</td>
                                     </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>

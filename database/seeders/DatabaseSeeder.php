@@ -15,7 +15,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             SpecificationSeeder::class,
-            PermissionSeeder::class
+            PermissionSeeder::class,
+            StockTypeSeeder::class,
         ]);
 
         // fix purchase requests

@@ -13,6 +13,7 @@ class StockTypeSeeder extends Seeder
      */
     public function run(): void
     {
+        StockType::truncate();
         StockType::create([
             'name' => 'Tinta',
         ]);
