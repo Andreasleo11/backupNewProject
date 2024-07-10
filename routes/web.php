@@ -650,8 +650,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
-
-
     Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
     Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
     Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
@@ -664,6 +662,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
 
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
+    Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item',[BarcodeController::class, 'latestitemdetails'] )->name('updated.barcode.item.position');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION

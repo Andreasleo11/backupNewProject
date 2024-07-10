@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,40 +18,52 @@
             text-align: left;
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Barcode Data</h1>
 
-    @foreach ($result as $item)
-        <h2>Date Scan: {{ $item['dateScan'] }}</h2>
-        <p>No Dokumen: {{ $item['noDokumen'] }}</p>
-        <p>Tipe Barcode: {{ strtoupper($item['tipeBarcode']) }}</p>
-        <p>Location: {{ strtoupper($item['location']) }}</p>    
-        <table>
-            <thead>
-                <tr>
-                    <th>Part No</th>
-                    <th>Label</th>
-                    <th>Position</th>
-                    <th>Scan Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($item[$item['noDokumen']] as $detail)
-                    <tr>
-                        <td>{{ $detail['partNo'] }}</td>
-                        <td>{{ $detail['label'] }}</td>
-                        <td>{{ $detail['position'] }}</td>
-                        <td>{{ $detail['scantime'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <form id="filterForm">
+        <label for="tipeBarcode">Tipe Barcode:</label>
+        <select name="tipeBarcode" id="tipeBarcode">
+            <option value="">All</option>
+            <option value="IN">IN</option>
+            <option value="OUT">OUT</option>
+        </select>
 
-        <hr>
-    @endforeach
+        <label for="location">Location:</label>
+        <select name="location" id="location">
+            <option value="">All</option>
+            <option value="JAKARTA">JAKARTA</option>
+            <option value="KARAWANG">KARAWANG</option>
+        </select>
+
+        <button type="button" id="filterButton">Filter</button>
+    </form>
+
+    <div id="barcodeData">
+        @include('barcodeinandout.partials.barcode_table', ['result' => $result])
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#filterButton').on('click', function() {
+                var tipeBarcode = $('#tipeBarcode').val();
+                var location = $('#location').val();
+                $.ajax({
+                    url: '{{ route("barcode.filter") }}',
+                    method: 'GET',
+                    data: {
+                        tipeBarcode: tipeBarcode,
+                        location: location
+                    },
+                    success: function(response) {
+                        $('#barcodeData').html(response);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
-
-
 @endsection

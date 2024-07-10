@@ -294,6 +294,51 @@
         </li>
 
 
+        <li class="sidebar-item" id="sidebar-item-list">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#storeoption" aria-expanded="false" aria-controls="setting">
+                <i class='bx bxs-component'></i>
+                <span>Store</span>
+            </a>
+            <ul id="storeoption" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-list">
+                    <a href="{{ route('barcodeindex') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Create Barcode 
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('inandout.index') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Scan Barcode
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('missingbarcode.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Missing Barcode Generator
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('list.barcode') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Report History
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        List All Item Barcode 
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#other" aria-expanded="false" aria-controls="other">
