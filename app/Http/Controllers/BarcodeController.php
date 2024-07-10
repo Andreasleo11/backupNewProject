@@ -128,13 +128,18 @@ class BarcodeController extends Controller
     
        
         // Use $spkNumber in the filename
-        $filename =  $partNumber . '-'. $startnum .'.png';
-       
+        $filename = preg_replace('/[()#,.\\s&]+(?<!png)/i', '', $partNumber) . '-' . $startnum . '.png';
+        $filename = preg_replace('/"/', '-', $filename);
+        $filename = preg_replace('/-+/', '-', $filename);
+        
         $lowercaseFilename = strtolower($filename);
-    
+        // dd($lowercaseFilename);
+
+            
+        
        
         // Save the barcode as a PNG image inside the barcodes folder
-        $barcode->getBarcodePNGPath($barcodeData, 'C128', 2, 70, [0, 0, 0], false, $filename);
+        $barcode->getBarcodePNGPath($barcodeData, 'C128', 2, 70, [0, 0, 0], false);
 
 
         // Generate the HTML for the barcode
@@ -150,7 +155,7 @@ class BarcodeController extends Controller
             'quantity' => $quantity,
             'startnum' => $startnum,
             'barcodeHtml' => $barcodeHtml,
-            'barcodeUrl' => $barcodeUrl,          
+            'barcodeUrl' => $barcodeUrl,      
         ];
         
         $startnum += 1;
