@@ -26,4 +26,10 @@ class StockTransaction extends Model
     {
         return $this->belongsTo(MasterStock::class, 'stock_id');
     }
+
+    public function deptRelation()
+    {
+        return $this->belongsTo(Department::class, 'dept_id');
+    }
+
 }

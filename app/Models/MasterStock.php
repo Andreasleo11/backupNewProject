@@ -34,4 +34,9 @@ class MasterStock extends Model
         return $this->belongsTo(Department::class, 'dept_id');
     }
 
+    public function requestRelation()
+    {
+        return $this->hasMany(StockRequest::class, 'stock_id', 'id');
+    }
+
 }

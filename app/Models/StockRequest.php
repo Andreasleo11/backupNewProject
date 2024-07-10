@@ -13,9 +13,19 @@ class StockRequest extends Model
         'dept_id',
         'stock_id',
         'request_quantity',
+        'quantity_available',
         'month',
         'remark',
         // Add other fields as needed
     ];
     
+    public function deptRelation()
+    {
+        return $this->belongsTo(Department::class, 'dept_id');
+    }
+
+    public function stockRelation()
+    {
+        return $this->belongsTo(MasterStock::class, 'stock_id');
+    }
 }
