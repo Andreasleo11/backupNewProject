@@ -13,7 +13,8 @@ class SendPREmailNotification extends Command
 {
     public $purchaseRequest;
 
-    public function __construct(PurchaseRequest $purchaseRequest) {
+    public function __construct(PurchaseRequest $purchaseRequest)
+    {
         parent::__construct();
         $this->purchaseRequest = $purchaseRequest;
     }
@@ -41,30 +42,30 @@ class SendPREmailNotification extends Command
 
         switch ($newPr->status) {
             case 1:
-                if($newPr->from_department === 'MOULDING'){
+                if ($newPr->from_department === 'MOULDING') {
                     if ($newPr->is_import === 1) {
                         $to = 'fang@daijo.co.id';
                     } else {
                         // if is_import is false or null, notification will sent to fang and ong
                         $to = User::where('is_head', 1)
-                            ->whereHas('department', function($query) use ($newPr) {
+                            ->whereHas('department', function ($query) use ($newPr) {
                                 $query->where('name', $newPr->from_department);
                             })
                             ->pluck('email')
                             ->toArray();
                     }
-                } elseif($newPr->from_department === 'STORE') {
-                    $user = User::where('is_head', 1)->whereHas('department', function($query){
+                } elseif ($newPr->from_department === 'STORE') {
+                    $user = User::where('is_head', 1)->whereHas('department', function ($query) {
                         $query->where('name', 'LOGISTIC');
                     })->first();
 
                     $to = $user ? $user->email : $newPr->created->email;
                 } else {
                     $user = User::where('is_head', 1)
-                    ->whereHas('department', function($query) use ($newPr) {
-                        $query->where('name', $newPr->from_department);
-                    })
-                    ->first();
+                        ->whereHas('department', function ($query) use ($newPr) {
+                            $query->where('name', $newPr->from_department);
+                        })
+                        ->first();
                     $to = $user ? $user->email : $newPr->createdBy->email;
                 }
                 break;
@@ -72,17 +73,17 @@ class SendPREmailNotification extends Command
                 $user = User::whereHas('department', function ($query) {
                     $query->where('name', '!=', 'MOULDING')->where('is_gm', 1);
                 })
-                ->first();
+                    ->first();
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 6:
-                if($newPr->to_department === "Computer"){
+                if ($newPr->to_department === "Computer") {
                     $purchaser = 'vicky@daijo.co.id';
-                } elseif($newPr->to_department === "Purchasing") {
+                } elseif ($newPr->to_department === "Purchasing") {
                     $purchaser = 'dian@daijo.co.id';
-                } elseif($newPr->to_department === "Maintenance") {
+                } elseif ($newPr->to_department === "Maintenance") {
                     $purchaser = 'nur@daijo.co.id';
-                } elseif($newPr->to_department === "Personnel") {
+                } elseif ($newPr->to_department === "Personnel") {
                     $purchaser = 'ani_apriani@daijo.co.id';
                 } else {
                     $purchaser = $newPr->createBy->email;
@@ -92,19 +93,19 @@ class SendPREmailNotification extends Command
                 break;
             case 2:
                 $user = User::with('specification')
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'VERIFICATOR');
-                        })
-                        ->where('is_head', 1)
-                        ->first();
+                    ->whereHas('specification', function ($query) {
+                        $query->where('name', 'VERIFICATOR');
+                    })
+                    ->where('is_head', 1)
+                    ->first();
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 3:
                 $user = User::with('department')
-                        ->whereHas('department', function ($query) {
-                            $query->where('name', 'DIRECTOR');
-                        })
-                        ->first();
+                    ->whereHas('department', function ($query) {
+                        $query->where('name', 'DIRECTOR');
+                    })
+                    ->first();
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 4:
@@ -116,17 +117,17 @@ class SendPREmailNotification extends Command
             default:
                 $to = $newPr->createdBy->email;
                 break;
-            }
+        }
 
         $newPr->status !== 1 ? $title = "There's PR Changed!" : $title = "There's a New PR!";
         $cc = [$newPr->createdBy->email];
-        if($newPr->to_department === 'Maintenance'){
+        if ($newPr->to_department === 'Maintenance') {
             array_push($cc, 'nur@daijo.co.id');
-        } elseif($newPr->status === 4){
+        } elseif ($newPr->status === 4) {
             $purchasingUsers = User::with('department')
-            ->whereHas('department', function($query){
-                $query->where('name', 'PURCHASING');
-            })->pluck('email')->toArray();
+                ->whereHas('department', function ($query) {
+                    $query->where('name', 'PURCHASING');
+                })->pluck('email')->toArray();
             $cc = array_merge($cc, $purchasingUsers);
         }
         $status = $this->checkStatus($newPr->status);
@@ -157,7 +158,8 @@ class SendPREmailNotification extends Command
         // $this->info('PR notification sent successfully.');
     }
 
-    private function checkStatus($statusNum){
+    private function checkStatus($statusNum)
+    {
         switch ($statusNum) {
             case 5:
                 $status = "REJECTED";
