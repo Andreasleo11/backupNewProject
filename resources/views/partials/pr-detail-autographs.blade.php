@@ -16,7 +16,7 @@
             !$purchaseRequest->is_import &&
             $purchaseRequest->to_department === 'Maintenance')
         <div class="col my-2">
-            <h2>Head Design</h2>
+            <h2>Dept Head</h2>
             <div class="autograph-box container" id="autographBox7"></div>
             <div class="container mt-2 border-1" id="autographuser7"></div>
             @php
@@ -81,7 +81,7 @@
 
     {{-- DEPT HEAD AUTOGRAPH --}}
     <div class="col my-2">
-        <h2>Dept Head</h2>
+        <h2> {{ $purchaseRequest->from_department === 'MOULDING' ? 'Head Design' : 'Dept Head' }} </h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographuser2"></div>
         @php
