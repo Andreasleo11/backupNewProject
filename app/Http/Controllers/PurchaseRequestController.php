@@ -133,9 +133,11 @@ class PurchaseRequestController extends Controller
             $request->session()->put('status', $status);
             switch ($status) {
                     // Waiting for GM
+                    // Waiting for GM
                 case 2:
                     $purchaseRequestsQuery->where('type', 'factory')->where('status', 2);
                     break;
+                    // Waiting for Verificator
                     // Waiting for Verificator
                 case 3:
                     $purchaseRequestsQuery->where(function ($query) {
@@ -143,6 +145,7 @@ class PurchaseRequestController extends Controller
                             ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
                     });
                     break;
+                    // Waiting for Director
                     // Waiting for Director
                 case 7:
                     $purchaseRequestsQuery->where(function ($query) {
@@ -228,6 +231,9 @@ class PurchaseRequestController extends Controller
         $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
         if (in_array($request->from_department, $officeDepartments)) {
             $commonData['type'] = "office";
+            if ($request->from_department === 'PE') {
+                $commonData['type'] = "factory";
+            }
         } else {
             $commonData['type'] = "factory";
         }
@@ -285,6 +291,7 @@ class PurchaseRequestController extends Controller
                 if ($purchaseRequest->from_department == 'PERSONALIA') {
                     $commonData['is_approve_by_head'] = 1;
                 }
+
                 DetailPurchaseRequest::create($commonData);
             }
         }
@@ -383,7 +390,7 @@ class PurchaseRequestController extends Controller
                 if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
                     return $detail->is_approve_by_head && $detail->is_approve_by_gm;
                 }
-                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+                return $detail->is_approve_by_head;
             } else {
                 return true; // Include all details for other roles
             }
@@ -473,6 +480,7 @@ class PurchaseRequestController extends Controller
         $monthlist = MonhtlyPR::get();
 
         return view('purchaseRequest.monthlylist', compact('monthlist'));
+        return view('purchaseRequest.monthlylist', compact('monthlist'));
     }
 
 
@@ -480,6 +488,7 @@ class PurchaseRequestController extends Controller
     {
         $monthdetail = MonhtlyPR::find($id);
 
+        // Extract year and month from the selected month input
         // Extract year and month from the selected month input
         // $year = date('Y', strtotime($monthdetail->year));
         // $month = date('m', strtotime($monthdetail->month));
@@ -493,6 +502,7 @@ class PurchaseRequestController extends Controller
             ->get();
 
         // dd($monthdetail);
+        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
         return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
     }
 
@@ -510,10 +520,17 @@ class PurchaseRequestController extends Controller
         $monthpr->update([
             "autograph_user_{$section}" => $username
         ]);
+        $monthpr->update([
+            "autograph_{$section}" => $imagePath
+        ]);
+        $monthpr->update([
+            "autograph_user_{$section}" => $username
+        ]);
 
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
+    // REVISI PR DROPDOWN ITEM + PRICE
     // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {
@@ -589,7 +606,6 @@ class PurchaseRequestController extends Controller
             $dataToUpdate = array_merge($validated, $additionalData);
 
             // dd($dataToUpdate);
-
             $pr->update($dataToUpdate);
         } else {
             $pr->update($additionalData);
@@ -616,6 +632,12 @@ class PurchaseRequestController extends Controller
                     $detail->update([
                         'is_approve_by_head' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_head,
                     ]);
+
+                    if ($pr->type === 'factory') {
+                        $detail->update([
+                            'is_approve_by_gm' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_gm,
+                        ]);
+                    }
                 }
             }
         }
