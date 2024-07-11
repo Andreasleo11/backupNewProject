@@ -376,9 +376,14 @@ class PurchaseRequestController extends Controller
             $detail->quantity = $this->formatDecimal($detail->quantity);
             if ($user->specification->name === "VERIFICATOR") {
                 if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
-                    return $detail->is_approve_by_head && $detail->is_approve_by_gm || $detail->is_approve_by_verificator;
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
                 }
-                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+                return $detail->is_approve_by_head;
+            } elseif ($user->specification->name === 'PURCHASER') {
+                if ($purchaseRequest->type === 'factory') {
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
+                }
+                return $detail->is_approve_by_head;
             } else {
                 return true; // Include all details for other roles
             }
@@ -611,6 +616,12 @@ class PurchaseRequestController extends Controller
                     $detail->update([
                         'is_approve_by_head' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_head,
                     ]);
+
+                    if ($pr->type === 'factory') {
+                        $detail->update([
+                            'is_approve_by_gm' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_gm,
+                        ]);
+                    }
                 }
             }
         }
