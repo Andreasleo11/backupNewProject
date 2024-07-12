@@ -355,10 +355,11 @@ class FormOvertimeController extends Controller
                 break;
                 // Send to Supervisor
             case 6:
-                $user = User::whereHas('specification', function ($query) {
+
+
+                $user = User::whereHas('specification', function($query){
                     $query->where('name', 'SUPERVISOR');
                 })->first();
-                $status = 'Unknown';
                 break;
             default:
                 abort(500, 'User not found!');
