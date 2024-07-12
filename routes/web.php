@@ -78,6 +78,9 @@ use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\MasterTintaController;
+
+
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -86,10 +89,6 @@ use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
-use App\Models\MonthlyBudgetReport;
-use App\Models\MonthlyBudgetReportSummaryDetails;
-use App\Models\MonthlyBudgetSummaryReport;
-use App\Notifications\MonthlyBudgetReportRequestSign;
 
 /*
 |--------------------------------------------------------------------------
@@ -115,7 +114,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
-Route::get('/change-password', [PasswordChangeController::class,'showChangePasswordForm'])->name('change.password.show');
+Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
 
 
@@ -153,7 +152,6 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
             Route::post('/permissions/store', [PermissionController::class, 'store'])->name('permissions.store')->middleware('permission:store-permissions');
             Route::put('/permissions/{permission}', [PermissionController::class, 'update'])->name('permissions.update')->middleware('permission:update-permissions');
             Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])->name('permissions.destroy')->middleware('permission:delete-permissions');
-
         });
     });
 });
@@ -163,19 +161,19 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
-        Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class,'saveImagePath']);
+        Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
         Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
         Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
         Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index')->middleware('permission:get-vqc-reports');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail')->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{id}/edit',[QaQcReportController::class, 'edit'])->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
-        Route::post('/qaqc/report/{id}/updateheader',[QaQcReportController::class, 'updateHeader'])->name('qaqc.report.updateHeader');
-        Route::get('/qaqc/report/{id}/editdetail',[QaQcReportController::class, 'editDetail'])->name('qaqc.report.editDetail');
-        Route::delete('/qaqc/report/{id}/deletedetail',[QaQcReportController::class, 'destroyDetail'])->name('qaqc.report.deleteDetail');
-        Route::post('/qaqc/report/{id}/updatedetail',[QaQcReportController::class, 'updateDetail'])->name('qaqc.report.updateDetail');
-        Route::get('/qaqc/report/{id}/editDefect',[QaQcReportController::class, 'editDefect'])->name('qaqc.report.editDefect');
-        Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update' ])->name('qaqc.report.update')->middleware('permission:update-vqc-report');
+        Route::get('/qaqc/report/{id}/edit', [QaQcReportController::class, 'edit'])->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
+        Route::post('/qaqc/report/{id}/updateheader', [QaQcReportController::class, 'updateHeader'])->name('qaqc.report.updateHeader');
+        Route::get('/qaqc/report/{id}/editdetail', [QaQcReportController::class, 'editDetail'])->name('qaqc.report.editDetail');
+        Route::delete('/qaqc/report/{id}/deletedetail', [QaQcReportController::class, 'destroyDetail'])->name('qaqc.report.deleteDetail');
+        Route::post('/qaqc/report/{id}/updatedetail', [QaQcReportController::class, 'updateDetail'])->name('qaqc.report.updateDetail');
+        Route::get('/qaqc/report/{id}/editDefect', [QaQcReportController::class, 'editDefect'])->name('qaqc.report.editDefect');
+        Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update'])->name('qaqc.report.update')->middleware('permission:update-vqc-report');
         Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create')->middleware('permission:create-vqc-report');
         Route::post('/qaqc/reports/createHeader', [QaqcReportController::class, 'postCreateHeader'])->name('qaqc.report.createheader');
         Route::get('/qaqc/reports/createdetail', [QaqcReportController::class, 'createDetail'])->name('qaqc.report.createdetail');
@@ -214,24 +212,23 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
         Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
         Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
-
     });
 
 
     Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
 
         //FORM ADJUST SECITON
-          Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
-          Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
-          Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
-          Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
-          Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
-          Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class,'saveAutographPath']);
+        Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
+        Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
+        Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
+        Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
+        Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
+        Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class, 'saveAutographPath']);
 
-          Route::get('listformadjust/all',[AdjustFormQcController::class,'listformadjust'])->name('listformadjust');
+        Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
     });
 
-    Route::middleware(['checkDepartment:HRD'])->group(function() {
+    Route::middleware(['checkDepartment:HRD'])->group(function () {
         Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
 
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index')->middleware('permission:get-important-docs');
@@ -243,7 +240,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete')->middleware('permission:delete-important-doc');
     });
 
-    Route::middleware(['checkDepartment:DIRECTOR'])->group(function() {
+    Route::middleware(['checkDepartment:DIRECTOR'])->group(function () {
 
         Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index')->middleware('permission:get-vqc-reports-director');
@@ -258,7 +255,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected')->middleware('permission:reject-selected-director');
     });
 
-    Route::middleware(['checkDepartment:PE,PPIC'])->group(function(){
+    Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
         Route::get('pe/home', [PEHomeController::class, 'index'])->name('pe.home');
 
         Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
@@ -268,15 +265,15 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
     });
 
-    Route::middleware(['checkDepartment:PURCHASING'])->group(function(){
+    Route::middleware(['checkDepartment:PURCHASING'])->group(function () {
 
         Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.home');
 
         Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
-        Route::get('/insert-material_prediction', [materialPredictionController::class,'processForemindFinalData'])->name('material_prediction');
+        Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
         Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
         Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
-        Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class,'indexcustomer']);
+        Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class, 'indexcustomer']);
 
         Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
         Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
@@ -286,17 +283,16 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get("purchasing/requirement", [PurchasingRequirementController::class, "index"])->name("purchasingrequirement.index");
         Route::get("purchasing/requirement/detail", [PurchasingRequirementController::class, "detail"])->name("purchasingrequirement.detail");
-
     });
 
     Route::middleware(['checkDepartment:COMPUTER', 'checkSessionId'])->group(function () {
         Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
     });
 
-    Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function(){
+    Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
-        Route::get("deliveryschedule/raw",[DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
+        Route::get("deliveryschedule/raw", [DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
 
 
@@ -309,16 +305,16 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("delsched/wip/step2", [DeliveryScheduleController::class, "step2wip"])->name("delschedwip.step2");
     });
 
-    Route::middleware(['checkDepartment:BUSINESS'])->group(function(){
+    Route::middleware(['checkDepartment:BUSINESS'])->group(function () {
         Route::get('business/home', [BusinessHomeController::class, 'index'])->name('business.home');
     });
 
-    Route::middleware(['checkDepartment:ACCOUNTING'])->group(function(){
+    Route::middleware(['checkDepartment:ACCOUNTING'])->group(function () {
         Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
         Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
     });
 
-    Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function(){
+    Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
         Route::get('production/home', [ProductionHomeController::class, 'index'])->name('production.home');
 
         Route::get("/production/capacity-forecast", [CapacityByForecastController::class, "index"])->name('capacityforecastindex');
@@ -427,7 +423,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("pps/assembly",  [PPSAssemblyController::class, "finalresultassembly"])->name("finalresultassembly");
     });
 
-    Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function(){
+    Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
         Route::get('maintenance/home', [MaintenanceHomeController::class, 'index'])->name('maintenance.home');
 
         Route::get("maintenance/mould-repair", [MouldDownController::class, "index"])->name("moulddown.index")->middleware('permission:get-mould-down-index');
@@ -436,65 +432,64 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::post("/add/line/down", [LineDownController::class, "addlinedown"])->name('addlinedown');
     });
 
-    Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function(){
+    Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function () {
         Route::get('pi/home', [PIHomeController::class, 'index'])->name('pi.home');
     });
 
-    Route::middleware(['checkDepartment:MOULDING'])->group(function(){
+    Route::middleware(['checkDepartment:MOULDING'])->group(function () {
         Route::get('moulding/home', [MouldingHomeController::class, 'index'])->name('moulding.home');
     });
 
-    Route::middleware(['checkDepartment:STORE'])->group(function(){
+    Route::middleware(['checkDepartment:STORE'])->group(function () {
         Route::get('store/home', [StoreHomeController::class, 'index'])->name('store.home');
     });
 
-    Route::middleware(['checkDepartment:SECOND PROCESS'])->group(function(){
+    Route::middleware(['checkDepartment:SECOND PROCESS'])->group(function () {
         Route::get('sp/home', [SPHomeController::class, 'index'])->name('sp.home');
     });
 
-    Route::middleware(['checkDepartment:ASSEMBLY'])->group(function(){
+    Route::middleware(['checkDepartment:ASSEMBLY'])->group(function () {
         Route::get('assembly/home', [AssemblyHomeController::class, 'index'])->name('assembly.home');
     });
 
-    Route::middleware(['checkDepartment:PERSONALIA'])->group(function(){
+    Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
         Route::get('personalia/home', [PersonaliaHomeController::class, 'index'])->name('personalia.home');
     });
 
-    Route::middleware(['checkDepartment:MANAGEMENT'])->group(function(){
+    Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
         Route::get('management/home', [ManagementHomeController::class, 'index'])->name('management.home');
     });
 
-    Route::middleware(['checkDepartment:LOGISTIC'])->group(function(){
+    Route::middleware(['checkDepartment:LOGISTIC'])->group(function () {
         Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
     });
 
-    Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function(){
+    Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function () {
         Route::get('mm/home', [MMHomeController::class, 'index'])->name('mm.home');
     });
 
-    Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function(){
+    Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function () {
         Route::get('mu/home', [MUHomeController::class, 'index'])->name('mu.home');
     });
 
-    Route::middleware(['checkDepartment:BUSINESS,QA'])->group(function (){
+    Route::middleware(['checkDepartment:BUSINESS,QA'])->group(function () {
         Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     });
-
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
     Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
 });
 
-Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
+Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () {
 
     Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
     Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 
     // PR
-    Route::get('/purchaseRequest', [PurchaseRequestController::class,'index'])->name('purchaserequest.home')->middleware('permission:get-purchase-requests');
-    Route::get('/purchaseRequest/create', [PurchaseRequestController::class,'create'])->name('purchaserequest.create')->middleware('permission:create-purchase-request');
-    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class,'insert'])->name('purchaserequest.insert')->middleware('permission:store-purchase-request');
+    Route::get('/purchaseRequest', [PurchaseRequestController::class, 'index'])->name('purchaserequest.home')->middleware('permission:get-purchase-requests');
+    Route::get('/purchaseRequest/create', [PurchaseRequestController::class, 'create'])->name('purchaserequest.create')->middleware('permission:create-purchase-request');
+    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class, 'insert'])->name('purchaserequest.insert')->middleware('permission:store-purchase-request');
     Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail')->middleware('permission:detail-purchase-request');
     Route::get('/purchaserequest/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject')->middleware('permission:reject-purchase-request');
     Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update')->middleware('permission:update-purchase-request');
@@ -505,10 +500,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     // PR MONTHLY
     Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
     Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
-    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class,'saveImagePathMonthly']);
+    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class, 'saveImagePathMonthly']);
     Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
     Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
-    Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class,'saveImagePath']);
+    Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveImagePath']);
     // Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
     Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
 
@@ -528,14 +523,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create')->middleware('permission:create-form-cuti');
     Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert')->middleware('permission:store-form-cuti');
     Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail')->middleware('permission:detail-form-cuti');
-    Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class,'saveImagePath']);
+    Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class, 'saveImagePath']);
 
     // FORM KELUAR
     Route::get('/form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar.home')->middleware('permission:get-form-keluar');
     Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create')->middleware('permission:create-form-keluar');
     Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert')->middleware('permission:store-form-keluar');
     Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail')->middleware('permission:detail-form-keluar');
-    Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class,'saveImagePath']);
+    Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
 
     Route::get('/inventory/fg', [InventoryFgController::class, "index"])->name('inventoryfg')->middleware('permission:get-inventory-fg');
     Route::get('/inventory/mtr',  [InventoryMtrController::class, "index"])->name('inventorymtr')->middleware('permission:get-inventory-mtr');
@@ -578,7 +573,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
-//
+    //
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
@@ -606,18 +601,18 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
 
-//
+    //
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
-//
+    //
 
     Route::get("/formovertime/index", [FormOvertimeController::class, 'index'])->name("formovertime.index");
     Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
     Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
     Route::delete("formovertime/{id}", [FormOvertimeController::class, 'destroy'])->name("formovertime.delete");
-    Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class,'saveAutographOtPath']);
+    Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
@@ -625,7 +620,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
-//
+    //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
@@ -654,7 +649,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
     Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
     Route::post('barcode/missing/generate', [BarcodeController::class, 'missingbarcodegenerator'])->name('generateBarcodeMissing');
-    
+
     Route::post('barcode/process/save', [BarcodeController::class, 'processInAndOut'])->name('process.in.and.out');
 
     Route::post('process/inandoutbarcode', [BarcodeController::class, 'storeInAndOut'])->name('processbarcodeinandout');
@@ -662,12 +657,32 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
     Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
 
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
+
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
+
+    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
+   
+    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
+
+    Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
+
+    Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
+
+    Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
+    Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
+    Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
+
+    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
+
+
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
-    Route::get('barcode/latest/item',[BarcodeController::class, 'latestitemdetails'] )->name('updated.barcode.item.position');
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
-        $report = MonthlyBudgetReport::find(5);
+        $report = App\Models\MonthlyBudgetReport::find(5);
 
         $detail = [
             'greeting' => 'Monthly Budget Report Notification',
@@ -678,7 +693,32 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function(){
 
         $detail['userName'] = $report->user->name;
 
-        return (new MonthlyBudgetReportRequestSign($report, $detail))
-                    ->toMail($report->user);
+
+        return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
+            ->toMail($report->user);
+    });
+
+    // FOR DEBUG ONLY: VIEWING OT NOTIFICATION
+    Route::get('/ot/notification', function () {
+        $report = App\Models\HeaderFormOvertime::find(2);
+        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $details = [
+            'greeting' => 'Form Overtime Notification',
+            'body' => "We waiting for your sign for this report : <br>
+                    - Report ID : $report->id <br>
+                    - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
+                    - Create Date : {$formattedCreateDate} <br>
+                    - Created By : {$report->Relationuser->name} <br>
+                        ",
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
+        ];
+
+
+        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->Relationuser);
+
+        // $user = App\Models\User::find(30);
+        // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
+
     });
 });
