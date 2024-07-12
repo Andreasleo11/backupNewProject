@@ -128,13 +128,18 @@ class BarcodeController extends Controller
     
        
         // Use $spkNumber in the filename
-        $filename =  $partNumber . '-'. $startnum .'.png';
-       
+        $filename = preg_replace('/[()#,.\\s&]+(?<!png)/i', '', $partNumber) . '-' . $startnum . '.png';
+        $filename = preg_replace('/"/', '-', $filename);
+        $filename = preg_replace('/-+/', '-', $filename);
+        
         $lowercaseFilename = strtolower($filename);
-    
+        // dd($lowercaseFilename);
+
+            
+        
        
         // Save the barcode as a PNG image inside the barcodes folder
-        $barcode->getBarcodePNGPath($barcodeData, 'C128', 2, 70, [0, 0, 0], false, $filename);
+        $barcode->getBarcodePNGPath($barcodeData, 'C128', 2, 70, [0, 0, 0], false);
 
 
         // Generate the HTML for the barcode
@@ -150,7 +155,7 @@ class BarcodeController extends Controller
             'quantity' => $quantity,
             'startnum' => $startnum,
             'barcodeHtml' => $barcodeHtml,
-            'barcodeUrl' => $barcodeUrl,          
+            'barcodeUrl' => $barcodeUrl,      
         ];
         
         $startnum += 1;
@@ -164,6 +169,17 @@ class BarcodeController extends Controller
     
     public function inandoutpage()
     {
+        $masters = BarcodePackagingMaster::with('detailBarcode')->get();
+
+        // Loop through each master record
+        foreach ($masters as $master) {
+            // Check if the detailBarcode relationship is empty
+            if ($master->detailBarcode->isEmpty()) {
+                // Delete the master record if it has no detailBarcode
+                $master->delete();
+            }
+        }
+
         return view('barcodeinandout.inandoutpage');
     }
 
@@ -261,17 +277,30 @@ class BarcodeController extends Controller
         
         $counter = 1;
         while (isset($data["partno" . $counter])) {
-            BarcodePackagingDetail::create([
-                'masterId' => $idmaster,
-                'noDokumen' => $data['noDokumen'],
-                'partNo' => $data["partno" . $counter],
-                'label' => $data["label" . $counter],
-                'position' => $data['position'],
-                'scantime' => \Carbon\Carbon::parse($data["scantime" . $counter])->format('Y-m-d H:i:s'),
-            ]);
+
+            $partNo = $data["partno" . $counter];
+            $label = $data["label" . $counter];
+    
+            // Check for duplicates
+            $exists = BarcodePackagingDetail::where('masterId', $idmaster)
+                        ->where('partNo', $partNo)
+                        ->where('label', $label)
+                        ->exists();
+
+            
+            if (!$exists) {
+                BarcodePackagingDetail::create([
+                    'masterId' => $idmaster,
+                    'noDokumen' => $data['noDokumen'],
+                    'partNo' => $partNo,
+                    'label' => $label,
+                    'position' => $data['position'],
+                    'scantime' => \Carbon\Carbon::parse($data["scantime" . $counter])->format('Y-m-d H:i:s'),
+                    ]);
+                }
             $counter++;
         }
-        return redirect()->route('barcode.base.index')->with('success', 'Data added successfully');
+        return redirect()->route('inandout.index')->with('success', 'Data added successfully');
     }
 
 
@@ -320,6 +349,39 @@ class BarcodeController extends Controller
         
         return view('barcodeinandout.listfinishbarcode', compact('result'));
     }
+
+    public function filter(Request $request)
+{
+    $query = BarcodePackagingMaster::with('detailBarcode');
+
+    if ($request->filled('tipeBarcode')) {
+        $query->where('tipeBarcode', $request->tipeBarcode);
+    }
+
+    if ($request->filled('location')) {
+        $query->where('location', $request->location);
+    }
+
+    $result = $query->get()->map(function ($item) {
+        return [
+            'dateScan' => $item->dateScan,
+            'noDokumen' => $item->noDokumen,
+            'tipeBarcode' => $item->tipeBarcode,
+            'location' => $item->location,
+            $item->noDokumen => $item->detailBarcode->map(function ($detail) {
+                return [
+                    'partNo' => $detail->partNo,
+                    'label' => $detail->label,
+                    'position' => $detail->position,
+                    'scantime' => $detail->scantime,
+                ];
+            }),
+        ];
+    });
+
+    return view('barcodeinandout.partials.barcode_table', ['result' => $result]);
+}
+
 
 
     public function latestitemdetails()

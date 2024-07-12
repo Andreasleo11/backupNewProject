@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
-use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\Artisan;
 
 class PurchaseRequestController extends Controller
 {
@@ -35,17 +33,17 @@ class PurchaseRequestController extends Controller
         if ($isHRDHead) {
             // If the user is HRD Head, filter requests with specific conditions
             $purchaseRequestsQuery->whereNotNull('autograph_1')
-            ->whereNotNull('autograph_2')
-            ->whereNotNull('autograph_5')
-            ->where(function($query) {
-                $query->whereNull('autograph_3')
-                      ->orWhereNotNull('autograph_3')
-                      ->where(function($query) {
-                          $query->where('to_department', 'Personnel')
+                ->whereNotNull('autograph_2')
+                ->whereNotNull('autograph_5')
+                ->where(function ($query) {
+                    $query->whereNull('autograph_3')
+                        ->orWhereNotNull('autograph_3')
+                        ->where(function ($query) {
+                            $query->where('to_department', 'Personnel')
                                 ->where('type', 'office')
                                 ->orWhere('to_department', 'Computer');
-                      });
-            });
+                        });
+                });
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
@@ -65,27 +63,27 @@ class PurchaseRequestController extends Controller
                 $query->where('from_department', $userDepartmentName);
             });
 
-            if($userDepartmentName === 'PURCHASING'){
+            if ($userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->orWhere('to_department', ucwords(strtolower($userDepartmentName)));
-            } elseif($userDepartmentName === 'LOGISTIC'){
+            } elseif ($userDepartmentName === 'LOGISTIC') {
                 $purchaseRequestsQuery->orWhere('from_department', 'STORE');
             }
         } elseif ($isPurchaser) {
             // If the user is a purchaser, filter requests with specific conditions
-            $purchaseRequestsQuery->where(function($query) {
+            $purchaseRequestsQuery->where(function ($query) {
                 $query->where('from_department', '!=', 'MOULDING')
                     ->where('type', 'factory')
                     ->whereNotNull('autograph_6')
-                    ->orWhere(function($query) {
+                    ->orWhere(function ($query) {
                         $query->where('from_department', 'MOULDING')
-                                ->orWhere('type', '!=', 'factory');
+                            ->orWhere('type', '!=', 'factory');
                     });
             });
 
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
             } elseif ($user->email === 'nur@daijo.co.id') {
-                $purchaseRequestsQuery->where(function($query) {
+                $purchaseRequestsQuery->where(function ($query) {
                     $query->where('to_department', 'Maintenance');
                 });
             } elseif ($userDepartmentName === "PERSONALIA") {
@@ -129,21 +127,24 @@ class PurchaseRequestController extends Controller
         }
 
         // Filtering based on the status
-        if($status){
+        if ($status) {
             $request->session()->put('status', $status);
             switch ($status) {
-                // Waiting for GM
+                    // Waiting for GM
+                    // Waiting for GM
                 case 2:
                     $purchaseRequestsQuery->where('type', 'factory')->where('status', 2);
                     break;
-                // Waiting for Verificator
+                    // Waiting for Verificator
+                    // Waiting for Verificator
                 case 3:
                     $purchaseRequestsQuery->where(function ($query) {
                         $query->where('status', 2)->where('type', 'office')
-                                ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
+                            ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
                     });
                     break;
-                // Waiting for Director
+                    // Waiting for Director
+                    // Waiting for Director
                 case 7:
                     $purchaseRequestsQuery->where(function ($query) {
                         $query->where('status', 3)->whereNot->where('to_department', 'Computer')->where('type', 'factory');
@@ -214,20 +215,23 @@ class PurchaseRequestController extends Controller
             'status' => 1
         ];
 
-        if($commonData['from_department'] === 'MOULDING' && $request->has('is_import')){
-            if($request->is_import === 'true'){
+        if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
+            if ($request->is_import === 'true') {
                 $commonData['is_import'] = true;
             } else {
                 $commonData['is_import'] = false;
             }
-        } elseif($commonData['from_department'] === 'PERSONALIA'){
+        } elseif ($commonData['from_department'] === 'PERSONALIA') {
             $commonData['autograph_2'] = 'Bernadett.png';
             $commonData['autograph_user_2'] = 'Bernadett';
         }
 
         $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
-        if(in_array($request->from_department, $officeDepartments)){
+        if (in_array($request->from_department, $officeDepartments)) {
             $commonData['type'] = "office";
+            if ($request->from_department === 'PE') {
+                $commonData['type'] = "factory";
+            }
         } else {
             $commonData['type'] = "factory";
         }
@@ -282,9 +286,10 @@ class PurchaseRequestController extends Controller
                     }
                 }
 
-                if($purchaseRequest->from_department == 'PERSONALIA'){
+                if ($purchaseRequest->from_department == 'PERSONALIA') {
                     $commonData['is_approve_by_head'] = 1;
                 }
+
                 DetailPurchaseRequest::create($commonData);
             }
         }
@@ -335,7 +340,8 @@ class PurchaseRequestController extends Controller
             // After Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
                 if (($purchaseRequest->to_department === 'Purchasing' && $purchaseRequest->type === 'factory') ||
-                    $purchaseRequest->to_department === 'Maintenance') {
+                    $purchaseRequest->to_department === 'Maintenance'
+                ) {
                     // Direct to Director
                     $purchaseRequest->status = 3;
                 } elseif ($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel') {
@@ -368,22 +374,39 @@ class PurchaseRequestController extends Controller
 
         // Filter itemDetail based on user role
         $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
+            $detail->quantity = $this->formatDecimal($detail->quantity);
             if ($user->department->name === "DIRECTOR") {
-                if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
-                    return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_gm && $detail->is_approve_by_head);
+                if ($purchaseRequest->type === 'factory') {
+                    if ($purchaseRequest->to_department === 'Computer') {
+                        return $detail->is_approve_by_head && $detail->is_approve_by_gm && $detail->is_approve_by_verificator;
+                    }
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
+                } else {
+                    return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
                 }
-                return $detail->is_approve || ($detail->is_approve_by_verificator || $detail->is_approve_by_gm && $detail->is_approve_by_head);
             } elseif ($user->specification->name === "VERIFICATOR") {
                 if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
-                    return $detail->is_approve_by_head && $detail->is_approve_by_gm || $detail->is_approve_by_verificator;
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
                 }
-                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+                return $detail->is_approve_by_head;
             } else {
                 return true; // Include all details for other roles
             }
         })->values(); // Ensure that the result is an array
 
         return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
+    }
+
+    private function formatDecimal($value)
+    {
+        // Check if the number has no decimal part (i.e., is an integer)
+        if (floor($value) == $value) {
+            // If it's an integer, cast it to int to remove the decimal point
+            return (int)$value;
+        } else {
+            // If it has a decimal part, return it as is
+            return $value;
+        }
     }
 
     public function saveImagePath(Request $request, $prId, $section)
@@ -394,7 +417,7 @@ class PurchaseRequestController extends Controller
         // Save $imagePath to the database for the specified $reportId and $section
         $pr = PurchaseRequest::find($prId);
 
-        if(Auth::user()->department->name === 'DIRECTOR'){
+        if (Auth::user()->department->name === 'DIRECTOR') {
             $pr->update([
                 "autograph_{$section}" => $imagePath,
                 "autograph_user_{$section}" => $username,
@@ -416,7 +439,6 @@ class PurchaseRequestController extends Controller
         $purchaseRequests = PurchaseRequest::with('itemDetail')->get();
 
         return view('purchaseRequest.monthly', compact('purchaseRequests'));
-
     }
 
 
@@ -455,7 +477,8 @@ class PurchaseRequestController extends Controller
     {
         $monthlist = MonhtlyPR::get();
 
-        return view ('purchaseRequest.monthlylist', compact('monthlist'));
+        return view('purchaseRequest.monthlylist', compact('monthlist'));
+        return view('purchaseRequest.monthlylist', compact('monthlist'));
     }
 
 
@@ -463,7 +486,8 @@ class PurchaseRequestController extends Controller
     {
         $monthdetail = MonhtlyPR::find($id);
 
-         // Extract year and month from the selected month input
+        // Extract year and month from the selected month input
+        // Extract year and month from the selected month input
         // $year = date('Y', strtotime($monthdetail->year));
         // $month = date('m', strtotime($monthdetail->month));
 
@@ -471,12 +495,13 @@ class PurchaseRequestController extends Controller
         $month = $monthdetail->month;
 
         $purchaseRequests = PurchaseRequest::with('itemDetail')
-        ->whereYear('date_pr', $year)
-        ->whereMonth('date_pr', $month)
-        ->get();
+            ->whereYear('date_pr', $year)
+            ->whereMonth('date_pr', $month)
+            ->get();
 
         // dd($monthdetail);
-         return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
+        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
+        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
     }
 
 
@@ -487,18 +512,24 @@ class PurchaseRequestController extends Controller
 
         // Save $imagePath to the database for the specified $reportId and $section
         $monthpr = MonhtlyPR::find($monthprId);
-            $monthpr->update([
-                "autograph_{$section}" => $imagePath
-            ]);
-            $monthpr->update([
-                "autograph_user_{$section}" => $username
-            ]);
+        $monthpr->update([
+            "autograph_{$section}" => $imagePath
+        ]);
+        $monthpr->update([
+            "autograph_user_{$section}" => $username
+        ]);
+        $monthpr->update([
+            "autograph_{$section}" => $imagePath
+        ]);
+        $monthpr->update([
+            "autograph_user_{$section}" => $username
+        ]);
 
         return response()->json(['success' => 'Autograph saved successfully!']);
-
     }
 
-// REVISI PR DROPDOWN ITEM + PRICE
+    // REVISI PR DROPDOWN ITEM + PRICE
+    // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {
         $itemName = $request->query('itemName');
@@ -512,7 +543,8 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         // dd($id);
         $validated = $request->validate([
             'date_pr' => 'date',
@@ -527,7 +559,7 @@ class PurchaseRequestController extends Controller
             'updated_at' => now(),
         ];
 
-        if($request->is_import === 'true'){
+        if ($request->is_import === 'true') {
             $additionalData['is_import'] = true;
         } else {
             $additionalData['is_import'] = false;
@@ -538,8 +570,8 @@ class PurchaseRequestController extends Controller
         $isHead = Auth::user()->is_head === 1;
 
         // dept head update
-        if($pr->status === 1) {
-            if($isHead){
+        if ($pr->status === 1) {
+            if ($isHead) {
                 $additionalData['autograph_2'] = null;
                 $additionalData['autograph_user_2'] = null;
             }
@@ -547,11 +579,11 @@ class PurchaseRequestController extends Controller
             $dataToUpdate = array_merge($validated, $additionalData);
 
             $pr->update($dataToUpdate);
-        } elseif($pr->status === 6) {
-            if($isPurchaser) {
+        } elseif ($pr->status === 6) {
+            if ($isPurchaser) {
                 $additionalData['autograph_6'] = null;
                 $additionalData['autograph_user_6'] = null;
-            } elseif($isHead){
+            } elseif ($isHead) {
                 $additionalData['autograph_2'] = null;
                 $additionalData['autograph_user_2'] = null;
             }
@@ -562,8 +594,8 @@ class PurchaseRequestController extends Controller
             // dd($dataToUpdate);
             $pr->update($dataToUpdate);
 
-        // verificator update
-        } else if($pr->status === 3){
+            // verificator update
+        } else if ($pr->status === 3) {
             $additionalData['autograph_3'] = null;
             $additionalData['autograph_user_3'] = null;
             $additionalData['status'] = 3;
@@ -572,7 +604,6 @@ class PurchaseRequestController extends Controller
             $dataToUpdate = array_merge($validated, $additionalData);
 
             // dd($dataToUpdate);
-
             $pr->update($dataToUpdate);
         } else {
             $pr->update($additionalData);
@@ -589,7 +620,7 @@ class PurchaseRequestController extends Controller
         foreach ($details as $detail) {
             foreach ($oldDetails as $oldDetail) {
                 // If the current detail name equal with the old detail name than it will replaced with the old one
-                if($detail->item_name === $oldDetail->item_name){
+                if ($detail->item_name === $oldDetail->item_name) {
                     $detail->update([
                         'is_approve_by_head' => $oldDetail->is_approve_by_head,
                         'is_approve_by_gm' => $oldDetail->is_approve_by_gm,
@@ -599,6 +630,12 @@ class PurchaseRequestController extends Controller
                     $detail->update([
                         'is_approve_by_head' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_head,
                     ]);
+
+                    if ($pr->type === 'factory') {
+                        $detail->update([
+                            'is_approve_by_gm' => auth()->user()->specification->name === "PURCHASER" ? 1 : $oldDetail->is_approve_by_gm,
+                        ]);
+                    }
                 }
             }
         }
@@ -628,7 +665,8 @@ class PurchaseRequestController extends Controller
         return (float)$cleanedPrice;
     }
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
         DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
         PurchaseRequest::find($id)->delete();
@@ -651,10 +689,11 @@ class PurchaseRequestController extends Controller
         return redirect()->back()->with(['success' => 'Purchase Request rejected']);
     }
 
-    public function approveAllDetailItems($prId, $type){
+    public function approveAllDetailItems($prId, $type)
+    {
         if ($type === 'GM') {
             $details = DetailPurchaseRequest::where('purchase_request_id', $prId)
-                        ->where('is_approve_by_head', true)->get();
+                ->where('is_approve_by_head', true)->get();
 
             foreach ($details as $detail) {
                 $detail->update(['is_approve_by_gm' => true]);
@@ -672,26 +711,31 @@ class PurchaseRequestController extends Controller
 
         // Filter itemDetail based on user role
         $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
+            $detail->quantity = $this->formatDecimal($detail->quantity);
             if ($user->department->name === "DIRECTOR") {
-                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
-                    return $detail->is_approve || ($detail->is_approve_by_verificator && $detail->is_approve_by_gm && $detail->is_approve_by_head);
+                if ($purchaseRequest->type === 'factory') {
+                    if ($purchaseRequest->to_department === 'Computer') {
+                        return $detail->is_approve_by_head && $detail->is_approve_by_gm && $detail->is_approve_by_verificator;
+                    }
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
+                } else {
+                    return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
                 }
-                return $detail->is_approve || ($detail->is_approve_by_verificator || $detail->is_approve_by_gm && $detail->is_approve_by_head);
             } elseif ($user->specification->name === "VERIFICATOR") {
-                if($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory'){
-                    return $detail->is_approve_by_head && $detail->is_approve_by_gm || $detail->is_approve_by_verificator;
+                if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
                 }
-                return $detail->is_approve_by_head || $detail->is_approve_by_verificator;
+                return $detail->is_approve_by_head;
             } else {
                 return true; // Include all details for other roles
             }
-        })->values(); // Ensure that the result is an array;
+        })->values(); // Ensure that the result is an array
 
         $pdf = Pdf::loadView('pdf/pr-pdf', compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'))
             ->setPaper('a4', 'landscape');
 
         // return view('pdf.pr-pdf', compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'));
-        return $pdf->download('Purchase Request-' . $purchaseRequest->id . ' (' . $purchaseRequest->pr_no . ')' .'.pdf');
+        return $pdf->download('Purchase Request-' . $purchaseRequest->id . ' (' . $purchaseRequest->pr_no . ')' . '.pdf');
     }
 
     public function cancel(Request $request, $id)
@@ -702,5 +746,14 @@ class PurchaseRequestController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+    }
+
+    public function updatePoNumber(Request $request, $id)
+    {
+        PurchaseRequest::find($id)->update([
+            'po_number' => $request->po_number,
+        ]);
+
+        return redirect()->back()->with('success', 'Purchase request PO Number updated successfully!');
     }
 }

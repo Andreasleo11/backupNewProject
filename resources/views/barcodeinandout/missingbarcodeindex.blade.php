@@ -56,7 +56,7 @@
         </div>
         <div class="form-group">
             <label for="missingnumber" class="tooltip">Input Missing Label Numbers:
-                <span class="tooltiptext">Enter the missing label numbers separated by commas (e.g., 4, 7, 90)</span>
+                <span class="tooltiptext">Enter the missing label numbers separated by commas (e.g., 4, 7, 90, 10A)</span>
             </label>
             <input type="text" id="missingnumber" name="missingnumber" required>
         </div>
@@ -74,7 +74,8 @@
         new TomSelect('#missingnumber', {
             persist: false,
             create: function(input) {
-                if (/^\d+$/.test(input)) {
+                // Allow alphanumeric inputs
+                if (/^[a-zA-Z0-9]+$/.test(input)) {
                     return {
                         value: input,
                         text: input

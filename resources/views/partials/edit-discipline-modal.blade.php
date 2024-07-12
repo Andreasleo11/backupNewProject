@@ -27,47 +27,11 @@
                     <div class="form-group">
                         <div class="row">
                             <div class="col-sm-4 col-form-label">
-                                <label for="kerapian_pakaian" class="form-label">Kerapian Pakaian</label>
+                                <label for="kerapian_kerja" class="form-label">Kerapian Kerja</label>
                             </div>
                             <div class="col-sm-8">
-                                <input type="text" name="kerapian_pakaian" class="form-control" id="kerapian_pakaian"
-                                    pattern="[A-E]" maxlength="1" value="{{ $employee->kerapian_pakaian }}" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="kerapian_rambut" class="form-label">Kerapian Rambut</label>
-                            </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="kerapian_rambut" class="form-control" id="kerapian_rambut"
-                                    pattern="[A-E]" maxlength="1" value="{{ $employee->kerapian_rambut }}" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="kerapian_sepatu" class="form-label">Kerapian Sepatu</label>
-                            </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="kerapian_sepatu" class="form-control" id="kerapian_sepatu"
-                                    pattern="[A-E]" maxlength="1" value="{{ $employee->kerapian_sepatu }}" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="prestasi" class="form-label">Prestasi</label>
-                            </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="prestasi" class="form-control" id="prestasi"
-                                    pattern="[A-E]" maxlength="1" value="{{ $employee->prestasi }}" required
+                                <input type="text" name="kerapian_kerja" class="form-control" id="kerapian_kerja"
+                                    pattern="[A-E]" maxlength="1" value="{{ $employee->kerapian_kerja }}" required
                                     oninput="this.value = this.value.toUpperCase()">
                             </div>
                         </div>
@@ -80,6 +44,30 @@
                             <div class="col-sm-8">
                                 <input type="text" name="loyalitas" class="form-control" id="loyalitas"
                                     pattern="[A-E]" maxlength="1" value="{{ $employee->loyalitas }}" required
+                                    oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-sm-4 col-form-label">
+                                <label for="perilaku_kerja" class="form-label">Perilaku Kerja</label>
+                            </div>
+                            <div class="col-sm-8">
+                                <input type="text" name="perilaku_kerja" class="form-control" id="perilaku_kerja"
+                                    pattern="[A-E]" maxlength="1" value="{{ $employee->perilaku_kerja }}" required
+                                    oninput="this.value = this.value.toUpperCase()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-sm-4 col-form-label">
+                                <label for="prestasi" class="form-label">Prestasi</label>
+                            </div>
+                            <div class="col-sm-8">
+                                <input type="text" name="prestasi" class="form-control" id="prestasi"
+                                    pattern="[A-E]" maxlength="1" value="{{ $employee->prestasi }}" required
                                     oninput="this.value = this.value.toUpperCase()">
                             </div>
                         </div>

@@ -89,10 +89,6 @@ use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
-use App\Models\MonthlyBudgetReport;
-use App\Models\MonthlyBudgetReportSummaryDetails;
-use App\Models\MonthlyBudgetSummaryReport;
-use App\Notifications\MonthlyBudgetReportRequestSign;
 
 /*
 |--------------------------------------------------------------------------
@@ -499,6 +495,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update')->middleware('permission:update-purchase-request');
     Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete')->middleware('permission:delete-purchase-request');
     Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel')->middleware('permission:cancel-purchase-request');
+    Route::put('purchaserequest/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
 
     // PR MONTHLY
     Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
@@ -648,8 +645,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
-
-
     Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
     Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
     Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
@@ -662,6 +657,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
 
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
+
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
 
@@ -680,9 +676,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
 
 
+    Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
+  
+
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
-        $report = MonthlyBudgetReport::find(5);
+        $report = App\Models\MonthlyBudgetReport::find(5);
 
         $detail = [
             'greeting' => 'Monthly Budget Report Notification',
@@ -693,7 +694,32 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         $detail['userName'] = $report->user->name;
 
-        return (new MonthlyBudgetReportRequestSign($report, $detail))
+
+        return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
             ->toMail($report->user);
+    });
+
+    // FOR DEBUG ONLY: VIEWING OT NOTIFICATION
+    Route::get('/ot/notification', function () {
+        $report = App\Models\HeaderFormOvertime::find(2);
+        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $details = [
+            'greeting' => 'Form Overtime Notification',
+            'body' => "We waiting for your sign for this report : <br>
+                    - Report ID : $report->id <br>
+                    - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
+                    - Create Date : {$formattedCreateDate} <br>
+                    - Created By : {$report->Relationuser->name} <br>
+                        ",
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
+        ];
+
+
+        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->Relationuser);
+
+        // $user = App\Models\User::find(30);
+        // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
+
     });
 });
