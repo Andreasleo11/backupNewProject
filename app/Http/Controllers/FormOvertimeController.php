@@ -38,50 +38,56 @@ class FormOvertimeController extends Controller
 {
     public function index()
     {
-       // Get the authenticated user
-       $user = Auth::user();
+        // Get the authenticated user
+        $user = Auth::user();
 
-       $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
+        $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
 
-       // Filter the data based on the user's departement_id
-       if($user->specification->name === 'VERIFICATOR') {
+        // Filter the data based on the user's departement_id
+        if ($user->specification->name === 'VERIFICATOR') {
             $dataheaderQuery
                 ->whereNotNull('autograph_2')
-                ->whereHas('Relationdepartement',
+                ->whereHas(
+                    'Relationdepartement',
                     function ($query) {
                         $query->where('is_office', true);
-                    });
-       } elseif($user->is_gm) {
+                    }
+                );
+        } elseif ($user->is_gm) {
             $dataheaderQuery
-               ->where('dept_id', $user->department_id)
-               ->whereNotNull('autograph_2')
-               ->whereHas('Relationdepartement',
+                ->where('dept_id', $user->department_id)
+                ->whereNotNull('autograph_2')
+                ->whereHas(
+                    'Relationdepartement',
                     function ($query) {
                         $query->where('is_office', false);
-                    });
-       } elseif($user->is_head) {
+                    }
+                );
+        } elseif ($user->is_head) {
             $dataheaderQuery
                 ->where('dept_id', $user->department->id)
                 ->whereNotNull('autograph_1');
 
-            if($user->department->name === 'LOGISTIC'){
-                $dataheaderQuery->orWhere(function($query){
-                    $query->whereHas('Relationdepartement',
-                    function($query){
-                        $query->where('name', 'STORE');
-                    });
+            if ($user->department->name === 'LOGISTIC') {
+                $dataheaderQuery->orWhere(function ($query) {
+                    $query->whereHas(
+                        'Relationdepartement',
+                        function ($query) {
+                            $query->where('name', 'STORE');
+                        }
+                    );
                 });
             }
-       } else {
+        } else {
             $dataheaderQuery
                 ->where('dept_id', $user->department_id);
-       }
+        }
 
-       $dataheader = $dataheaderQuery
+        $dataheader = $dataheaderQuery
             ->orWhere('user_id', auth()->user()->id)
             ->get();
 
-       return view("formovertime.index", compact("dataheader"));
+        return view("formovertime.index", compact("dataheader"));
     }
 
     public function create()
@@ -109,14 +115,13 @@ class FormOvertimeController extends Controller
 
         // Fetch item names and prices from the database based on user input
         if ($dept_no) {
-            if($nik){
+            if ($nik) {
                 // Fetch employees based on NIK and department number
                 $pegawais = Employee::where('NIK', 'like', '%' . $nik . '%')
                     ->where('Dept', $dept_no)
                     ->select('NIK', 'nama')
                     ->get();
-
-            } elseif($nama) {
+            } elseif ($nama) {
                 // Fetch employees based on Nama and department number
                 $pegawais = Employee::where('Nama', 'like', '%' . $nama . '%')
                     ->where('Dept', $dept_no)
@@ -162,10 +167,8 @@ class FormOvertimeController extends Controller
         if ($uploadedFiles) {
 
             $this->importFromExcel($request, $headerovertime->id);
-
-        }else{
+        } else {
             $this->detailOvertimeInsert($request, $headerovertime->id);
-
         }
 
         return redirect()->route('formovertime.index');
@@ -177,7 +180,6 @@ class FormOvertimeController extends Controller
         $path = $request->file('excel_file')->store('temp');
         $import = new OvertimeImport($headerOvertimeId);
         Excel::import($import, $path);
-
     }
 
     public function detailOvertimeInsert($request, $id)
@@ -215,7 +217,7 @@ class FormOvertimeController extends Controller
 
     public function detail($id)
     {
-        $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
+        $header = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')->find($id);
 
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
 
@@ -235,9 +237,9 @@ class FormOvertimeController extends Controller
 
         // Save $imagePath to the database for the specified $reportId and $section
         $report = HeaderFormOvertime::find($id);
-            $report->update([
-                "autograph_{$section}" => $imagePath
-            ]);
+        $report->update([
+            "autograph_{$section}" => $imagePath
+        ]);
 
         $this->updateStatus($id);
 
@@ -252,9 +254,9 @@ class FormOvertimeController extends Controller
 
         $data = HeaderFormOvertime::find($id);
         HeaderFormOvertime::find($id)->update([
-                'description' => $request->description,
-                'is_approve' => false,
-            ]);
+            'description' => $request->description,
+            'is_approve' => false,
+        ]);
 
         return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
     }
@@ -322,49 +324,60 @@ class FormOvertimeController extends Controller
 
     private function sendNotification($report)
     {
-        $details = [
-            'greeting' => 'Form Overtime Notification',
-            'body' => 'We waiting for your sign',
-            'actionText' => 'Click to see the detail',
-            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
-        ];
-
         switch ($report->status) {
-            // Send to Dept Head
+                // Send to Dept Head
             case 1:
-                if($report->Relationdepartement->name === 'STORE'){
-                    $user = User::where('is_head', 1)->whereHas('department', function($query){
+                if ($report->Relationdepartement->name === 'STORE') {
+                    $user = User::where('is_head', 1)->whereHas('department', function ($query) {
                         $query->where('name', 'LOGISTIC');
                     })->first();
-                } elseif($report->Relationdepartement->name === 'SECOND PROCESS') {
+                } elseif ($report->Relationdepartement->name === 'SECOND PROCESS') {
                     $user = User::where('email', 'imano@daijo.co.id')->first();
                 } else {
                     $user = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
                 }
+                $status = 'Waiting for Dept Head';
                 break;
-            // Send to Verificator
+                // Send to Verificator
             case 2:
                 $user = User::where('specification_id', 15)->first();
+                $status = 'Waiting to Verificator';
                 break;
-            // Send to GM
+                // Send to GM
             case 3:
                 $user = User::where('is_gm', 1)->where('department_id', $report->dept_id)->first();
+                $status = 'Waiting to Director';
                 break;
-            // Send to Director
+                // Send to Director
             case 9:
                 $user = User::where('department_id', 4)->first();
+                $status = 'Waiting for Supervisor';
                 break;
-            // Send to Supervisor
+                // Send to Supervisor
             case 6:
-                $user = User::whereHas('specification', function($query){
+                $user = User::whereHas('specification', function ($query) {
                     $query->where('name', 'SUPERVISOR');
                 })->first();
+                $status = 'Unknown';
                 break;
             default:
                 abort(500, 'User not found!');
                 break;
         }
-        // $user = User::find(5);
+
+        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $details = [
+            'greeting' => 'Form Overtime Notification',
+            'body' => "We waiting for your sign for this report : <br>
+                    - Report ID : $report->id <br>
+                    - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
+                    - Create Date : {$formattedCreateDate} <br>
+                    - Created By : {$report->Relationuser->name} <br>
+                    - Status : {$status} <br>
+                        ",
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
+        ];
 
         $user->notify(new FormOvertimeNotification($report, $details));
     }
@@ -385,7 +398,7 @@ class FormOvertimeController extends Controller
 
     public function edit($id)
     {
-        $header = HeaderFormOvertime::with('Relationuser','Relationdepartement')->find($id);
+        $header = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')->find($id);
 
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
 
@@ -430,7 +443,7 @@ class FormOvertimeController extends Controller
         }
 
         return redirect()->route('formovertime.detail', ['id' => $id])
-        ->with('success', 'Form Overtime updated successfully.');
+            ->with('success', 'Form Overtime updated successfully.');
     }
 
     public function destroy($id)
