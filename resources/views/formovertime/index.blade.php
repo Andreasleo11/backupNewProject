@@ -42,36 +42,7 @@
                                     <td>{{ $fot->Relationdepartement->name }}</td>
                                     <td> @formatDate($fot->create_date) </td>
                                     <td>
-                                        @if ($fot->is_approve === 0)
-                                            <span class="badge bg-danger">Rejected</span>
-                                        @elseif ($fot->is_approve === 1)
-                                            <span class="badge bg-success">Approved</span>
-                                        @else
-                                            @switch($fot->status)
-                                                @case(1)
-                                                    <span class="badge bg-warning text-dark">Waiting for Dept Head</span>
-                                                @break
-
-                                                @case(2)
-                                                    <span class="badge bg-warning text-dark">Waiting for Verificator</span>
-                                                @break
-
-                                                @case(3)
-                                                    <span class="badge bg-warning text-dark">Waiting for GM</span>
-                                                @break
-
-                                                @case(9)
-                                                    <span class="badge bg-warning text-dark">Waiting Director</span>
-                                                @break
-
-                                                @case(6)
-                                                    <span class="badge bg-info text-dark">Waiting for Supervisor</span>
-                                                @break
-
-                                                @default
-                                                    <span class="badge bg-secondary">Unknown</span>
-                                            @endswitch
-                                        @endif
+                                        @include('partials.formovertime-status', ['fot' => $fot])
                                     </td>
                                     <td>
                                         <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"
@@ -89,15 +60,15 @@
                                             class="btn btn-danger">Delete</button>
                                     </td>
                                 </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="10">No Data</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                            @empty
+                                <tr>
+                                    <td colspan="10">No Data</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </section>
-    @endsection
+        </div>
+    </section>
+@endsection

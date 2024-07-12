@@ -45,28 +45,23 @@ class FormOvertimeController extends Controller
 
         // Filter the data based on the user's departement_id
         if ($user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery
-                ->whereNotNull('autograph_2')
-                ->whereHas(
-                    'Relationdepartement',
-                    function ($query) {
-                        $query->where('is_office', true);
-                    }
-                );
+            $dataheaderQuery->where('is_approve', 1);
+        } elseif ($user->department->name === 'DIRECTOR') {
+            $dataheaderQuery->where('status', 9);
         } elseif ($user->is_gm) {
             $dataheaderQuery
-                ->where('dept_id', $user->department_id)
                 ->whereNotNull('autograph_2')
                 ->whereHas(
                     'Relationdepartement',
                     function ($query) {
-                        $query->where('is_office', false);
+                        $query->where('is_office', false)->where(function ($query) {
+                            $query->where('name', '!=', 'QA')
+                                ->where('name', '!=', 'QC');
+                        });
                     }
                 );
         } elseif ($user->is_head) {
-            $dataheaderQuery
-                ->where('dept_id', $user->department->id)
-                ->whereNotNull('autograph_1');
+            $dataheaderQuery->where('dept_id', $user->department->id);
 
             if ($user->department->name === 'LOGISTIC') {
                 $dataheaderQuery->orWhere(function ($query) {
@@ -78,6 +73,8 @@ class FormOvertimeController extends Controller
                     );
                 });
             }
+
+            $dataheaderQuery->where('status', 1);
         } else {
             $dataheaderQuery
                 ->where('dept_id', $user->department_id);
@@ -293,12 +290,9 @@ class FormOvertimeController extends Controller
             // Case 1: is_office is true
             $headerForm->status = 1;
             if (!empty($headerForm->autograph_2)) {
-                $headerForm->status = 2;
-            }
-            if (!empty($headerForm->autograph_3)) {
                 $headerForm->status = 9;
             }
-            if (!empty($headerForm->autograph_4)) {
+            if (!empty($headerForm->autograph_3)) {
                 $headerForm->status = 5;
                 $headerForm->is_approve = 1;
             }
@@ -307,6 +301,9 @@ class FormOvertimeController extends Controller
             $headerForm->status = 1;
             if (!empty($headerForm->autograph_2)) {
                 $headerForm->status = 3;
+                if ($department->name === 'QA' || $department->name === 'QC') {
+                    $headerForm->status = 9;
+                }
             }
             if (!empty($headerForm->autograph_3)) {
                 $headerForm->status = 9;
@@ -324,6 +321,22 @@ class FormOvertimeController extends Controller
 
     private function sendNotification($report)
     {
+        $director = User::whereHas('department', function ($query) {
+            $query->where('name', 'DIRECTOR');
+        })->first();
+
+        $verificator = User::whereHas('specification', function ($query) {
+            $query->where('name', 'VERIFICATOR');
+        })->first();
+
+        $gm = User::where('is_gm', 1)->first();
+
+        $supervisor = User::whereHas('specification', function ($query) {
+            $query->where('name', 'SUPERVISOR');
+        })->first();
+
+        $deptHead = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
+
         switch ($report->status) {
                 // Send to Dept Head
             case 1:
@@ -334,38 +347,43 @@ class FormOvertimeController extends Controller
                 } elseif ($report->Relationdepartement->name === 'SECOND PROCESS') {
                     $user = User::where('email', 'imano@daijo.co.id')->first();
                 } else {
-                    $user = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
+                    $user = $deptHead;
                 }
                 $status = 'Waiting for Dept Head';
                 break;
                 // Send to Verificator
             case 2:
-                $user = User::where('specification_id', 15)->first();
+                $user = $verificator;
                 $status = 'Waiting to Verificator';
                 break;
                 // Send to GM
             case 3:
-                $user = User::where('is_gm', 1)->where('department_id', $report->dept_id)->first();
-                $status = 'Waiting to Director';
+                $user = $gm;
+                $status = 'Waiting for GM';
                 break;
                 // Send to Director
             case 9:
-                $user = User::where('department_id', 4)->first();
-                $status = 'Waiting for Supervisor';
+                $user = $director;
+                $status = 'Waiting for Director';
                 break;
                 // Send to Supervisor
             case 6:
-                $user = User::whereHas('specification', function ($query) {
-                    $query->where('name', 'SUPERVISOR');
-                })->first();
-                $status = 'Unknown';
+                $user = $supervisor;
+                $status = 'Waiting for Supervisor';
                 break;
             default:
-                abort(500, 'User not found!');
+                abort(500, 'Failed to send notification!');
                 break;
         }
 
         $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $cc = [$report->Relationuser->email];
+
+        if ($report->is_approve === 1 || $report->is_approve === 0) {
+            $user = $report->Relationuser;
+            array_push($cc, $verificator);
+        }
+
         $details = [
             'greeting' => 'Form Overtime Notification',
             'body' => "We waiting for your sign for this report : <br>
@@ -375,6 +393,7 @@ class FormOvertimeController extends Controller
                     - Created By : {$report->Relationuser->name} <br>
                     - Status : {$status} <br>
                         ",
+            'cc' => $cc,
             'actionText' => 'Click to see the detail',
             'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
         ];

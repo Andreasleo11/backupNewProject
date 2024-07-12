@@ -41,6 +41,7 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             // ->from(env('MAIL_FROM_ADDRESS', 'pt.daijoindustrial@daijo.co.id'))
+            ->cc($this->details['cc'])
             ->greeting($this->details['greeting'])
             ->line(new \Illuminate\Support\HtmlString($this->details['body']))
             ->action($this->details['actionText'], $this->details['actionURL']);
