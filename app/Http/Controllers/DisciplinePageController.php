@@ -165,7 +165,7 @@ class DisciplinePageController extends Controller
                 })
                 ->get();
             }
-            elseif($user->department_id == 6)
+            elseif($user->department_id == 17)
             {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')->where('level', 5);

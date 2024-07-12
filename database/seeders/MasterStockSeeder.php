@@ -25,8 +25,8 @@ class MasterStockSeeder extends Seeder
         MasterStock::create([
             'stock_type_id' => 1,
             'dept_id' => 15,
-            'stock_code' => '810-color',
-            'stock_description' => 'Tinta 810-Color',
+            'stock_code' => '811-color',
+            'stock_description' => 'Tinta 811-Color',
             'stock_quantity' => 0,
             // Add other fields as needed
         ]);
@@ -43,8 +43,8 @@ class MasterStockSeeder extends Seeder
         MasterStock::create([
             'stock_type_id' => 1,
             'dept_id' => 15,
-            'stock_code' => '690-color',
-            'stock_description' => 'Tinta 690-color',
+            'stock_code' => '680-color',
+            'stock_description' => 'Tinta 680-color',
             'stock_quantity' => 0,
             // Add other fields as needed
         ]);

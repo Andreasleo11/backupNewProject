@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StockRequest extends Model
 {
-    protected $table = 'stock_request';
+    protected $table = 'stock_requests';
 
     protected $fillable = [
         'dept_id',

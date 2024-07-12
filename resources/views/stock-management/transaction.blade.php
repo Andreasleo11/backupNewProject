@@ -8,7 +8,7 @@
             border: 1px solid #ccc;
             width: 50%;
             display: none;
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
             z-index: 1000;
         }
@@ -108,6 +108,16 @@
                                 <textarea name="remark" id="remark" cols="30" rows="5" placeholder="Your remark here"
                                     class="form-control" required></textarea>
                             </div>
+
+                            <div class="row align-items-center mt-3">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="available_quantity" class="fw-semibold form-label">Available Quantity</label>
+                                        <input type="text" class="form-control" id="available_quantity" name="available_quantity" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                     <div class="card mt-4">
@@ -174,6 +184,23 @@
                 }
             });
 
+
+            function fetchAvailableQuantity() {
+                const stockId = document.getElementById('stock_id').value;
+                const departmentId = document.getElementById('department').value;
+
+                if (stockId && departmentId) {
+                    fetch(`/stock/get-available-quantity/${stockId}/${departmentId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('available_quantity').value = data.available_quantity;
+                        })
+                        .catch(error => console.error('Error fetching available quantity:', error));
+                        document.getElementById('available_quantity').value = '0';
+                }
+            }
+
+
             // Function to add a new item row
             function addItem() {
                 const container = document.getElementById('item-container');
@@ -221,13 +248,16 @@
                     const masterStockId = document.getElementById('stock_id').value;
                     const transactionType = document.querySelector('input[name="transaction_type"]:checked').value;
 
+
+                    
                     if (transactionType === 'out') {
                         fetch(`/masterstock/get-items/${masterStockId}?name=${inputValue}`)
                             .then(response => response.json())
                             .then(data => {
                                 const dropdownContainer = input.nextElementSibling; // Dropdown container
                                 dropdownContainer.innerHTML = ''; // Clear existing options
-
+                                dropdownContainer.style.maxHeight = '100px'; // Adjust this value as needed
+                                dropdownContainer.style.overflowY = 'auto';
                                 data.forEach(item => {
                                     const dropdownItem = document.createElement('div');
                                     dropdownItem.className = 'dropdown-item';
@@ -255,6 +285,7 @@
                 });
             });
 
+          
             // Toggle fields based on transaction type
             const transactionTypeInputs = document.querySelectorAll('input[name="transaction_type"]');
             const departmentField = document.getElementById('department');
@@ -276,6 +307,9 @@
 
             transactionTypeInputs.forEach(input => input.addEventListener('change', toggleFields));
             toggleFields(); // Initial call to set initial state
+              // Handle stock_id and department change events
+            document.getElementById('stock_id').addEventListener('change', fetchAvailableQuantity);
+            document.getElementById('department').addEventListener('change', fetchAvailableQuantity);
         });
     </script>
 @endpush

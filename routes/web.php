@@ -666,9 +666,18 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
+   
+    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
+
+    Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
+
+    Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
+
     Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
     Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
     Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
+
+    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
 
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION

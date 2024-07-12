@@ -16,8 +16,12 @@
             </div>
             <div class="col-auto">
                 @if (Auth::user()->department->name !== 'DIRECTOR')
+                    <a href="{{ route('transaction.list') }}" class="btn btn-primary">List Transaction</a>
+                    <a href="{{ route('testing.request') }}" class="btn btn-primary">Request Stock</a>
                     <a href="{{ route('mastertinta.transaction.index') }}" class="btn btn-primary">Edit Stock</a>
+                    
                 @endif
+
             </div>
         </div>
 
