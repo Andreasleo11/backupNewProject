@@ -78,6 +78,9 @@ use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\MasterTintaController;
+
+
 
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -654,8 +657,28 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
 
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
+
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
+
+    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
+   
+    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
+
+    Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
+
+    Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
+
+    Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
+    Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
+    Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
+
+    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
+
+
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
@@ -669,6 +692,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         ];
 
         $detail['userName'] = $report->user->name;
+
 
         return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
             ->toMail($report->user);
@@ -695,5 +719,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         // $user = App\Models\User::find(30);
         // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
+
     });
 });
