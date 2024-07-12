@@ -132,8 +132,9 @@ class DisciplinePageController extends Controller
                     $query->where('Dept', '600')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
-                    ->get();
-            } elseif ($user->department_id == 21) {
+                ->get();
+            }
+            elseif ($user->department_id == 21) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')->where('level', 5);
                 })
