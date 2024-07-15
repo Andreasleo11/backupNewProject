@@ -266,26 +266,6 @@ class PurchaseRequestController extends Controller
                     'currency' => $currency
                 ];
 
-                // Check if the item exists in MasterDataPr
-                $existingItem = MasterDataPr::where('name', $itemName)->first();
-
-                if (!$existingItem) {
-                    // Case 1: Item not available in MasterDataPr
-                    MasterDataPr::create([
-                        'name' => $itemName,
-                        'currency' => $currency,
-                        'price' => $price, // Store the initial price
-                    ]);
-                } else {
-                    // Case 2: Item available in MasterDataPr
-                    if ($existingItem->latest_price !== $price) {
-                        $existingItem->update([
-                            'price' => $existingItem->latest_price,
-                            'latest_price' => $price,
-                        ]);
-                    }
-                }
-
                 if ($purchaseRequest->from_department == 'PERSONALIA') {
                     $commonData['is_approve_by_head'] = 1;
                 }
@@ -305,28 +285,6 @@ class PurchaseRequestController extends Controller
 
         // Return the sanitized input
         return $input;
-    }
-
-    /**
-     * Convert formatted price string to a decimal value.
-     *
-     * @param string $formattedPrice
-     * @return float
-     */
-    private function convertFormattedPriceToDecimal($formattedPrice)
-    {
-        // Remove currency symbols and thousand separators
-        $cleanedPrice = preg_replace('/[^\d,.]/', '', $formattedPrice);
-
-        // Replace comma with dot if it is used as a decimal separator
-        if (strpos($cleanedPrice, ',') !== false && strpos($cleanedPrice, '.') !== false) {
-            $cleanedPrice = str_replace(',', '', $cleanedPrice);
-        } elseif (strpos($cleanedPrice, ',') !== false) {
-            $cleanedPrice = str_replace(',', '.', $cleanedPrice);
-        }
-
-        // Convert the cleaned price to a float
-        return (float)$cleanedPrice;
     }
 
     public function detail($id)
@@ -428,7 +386,40 @@ class PurchaseRequestController extends Controller
             }
         })->values(); // Ensure that the result is an array
 
+        $this->updateMasterPRItems($filteredItemDetail);
+
         return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
+    }
+
+    private function updateMasterPRItems($items)
+    {
+        if (isset($items) && is_array($items)) {
+            foreach ($items as $itemData) {
+                $itemName = $itemData['item_name'];
+                $price = $this->sanitizeCurrencyInput($itemData['price']);
+                $currency = $itemData['currency'];
+
+                // Check if the item exists in MasterDataPr
+                $existingItem = MasterDataPr::where('name', $itemName)->first();
+
+                if (!$existingItem) {
+                    // Case 1: Item not available in MasterDataPr
+                    MasterDataPr::create([
+                        'name' => $itemName,
+                        'currency' => $currency,
+                        'price' => $price, // Store the initial price
+                    ]);
+                } else {
+                    // Case 2: Item available in MasterDataPr
+                    if ($existingItem->latest_price !== $price) {
+                        $existingItem->update([
+                            'price' => $existingItem->latest_price,
+                            'latest_price' => $price,
+                        ]);
+                    }
+                }
+            }
+        }
     }
 
     private function formatDecimal($value)
