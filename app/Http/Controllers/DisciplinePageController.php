@@ -473,6 +473,14 @@ class DisciplinePageController extends Controller
 
     public function indexyayasan(DisciplineYayasanTableDataTable $dataTable)
     {
+        // $countalpha = $Alpha * 10;
+        // $countizin = $Izin * 2;
+        // $counttelat = $Telat * 0.5;
+        // $totalakhir = 0;
+        // $totalakhir = $total -  ($countalpha + $countizin + $counttelat + $Sakit);
+        // code jika di datatable butuh absensi untuk nilai 
+
+
         $user = Auth::user();
         try {
 
@@ -544,11 +552,25 @@ class DisciplinePageController extends Controller
             }
 
 
-
+            
             return $dataTable->render("setting.disciplineyayasanindex", compact("employees", "user"));
         } catch (\Throwable $th) {
             abort(403, 'Departement anda tidak ada yayasan ');
         }
+    }
+
+    public function updateDept()
+    {
+        $datas = EvaluationData::with('karyawan')->get();
+      
+        foreach ($datas as $data) {
+            if ($data->karyawan) {
+                $data->dept = $data->karyawan->Dept;
+                $data->save();
+            }
+        }
+
+        return redirect()->route('home')->with('success', 'Data updated successfully');;
     }
 
 

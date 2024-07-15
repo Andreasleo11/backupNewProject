@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+
+    @include('partials.info-discipline-page-yayasan-modal')
+    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal"> Info </a>
+
+
     @if (!$user->is_head && !$user->is_gm)
         @include('partials.upload-excel-file-discipline-yayasan-modal')
         <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
