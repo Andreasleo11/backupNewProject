@@ -384,43 +384,67 @@ class BarcodeController extends Controller
 
 
 
-    public function latestitemdetails()
+    public function latestitemdetails(Request $request)
     {
+        // Fetch distinct part numbers for the dropdown
+        $partNumbers = BarcodePackagingDetail::select('partNo')->distinct()->get();
+
+        // Fetch all items
         $items = BarcodePackagingDetail::all();
 
         // Create an associative array to hold the latest records
         $latestItems = [];
-    
+
         // Iterate over each item
         foreach ($items as $item) {
             $key = $item->partNo . '|' . $item->label;
-    
+
             // If the key doesn't exist or the current item's scantime is later, update the array
             if (!isset($latestItems[$key]) || $item->scantime > $latestItems[$key]->scantime) {
                 $latestItems[$key] = $item;
             }
         }
-    
+
         // Extract the values to get the final collection
         $latestItems = array_values($latestItems);
 
         // Group by partNo and sort by label within each group
-    $groupedItems = [];
-    foreach ($latestItems as $item) {
-        $groupedItems[$item->partNo][] = $item;
-    }
+        $groupedItems = [];
+        foreach ($latestItems as $item) {
+            $groupedItems[$item->partNo][] = $item;
+        }
 
-    // Sort each group by label
-    foreach ($groupedItems as &$group) {
-        usort($group, function($a, $b) {
-            return $a->label <=> $b->label;
-        });
-    }
+        // Sort each group by label
+        foreach ($groupedItems as &$group) {
+            usort($group, function($a, $b) {
+                return $a->label <=> $b->label;
+            });
+        }
 
-    // Flatten the groups into a single array
-    $sortedItems = array_merge(...array_values($groupedItems));
+        // Flatten the groups into a single array
+        $sortedItems = array_merge(...array_values($groupedItems));
 
-        return view('barcodeinandout.latestbarcodeitem', compact('sortedItems'));
+        // Apply filters
+        if ($request->filled('partNo')) {
+            $sortedItems = array_filter($sortedItems, function($item) use ($request) {
+                return $item->partNo == $request->input('partNo');
+            });
+        }
+
+        if ($request->filled('scantime')) {
+            $sortedItems = array_filter($sortedItems, function($item) use ($request) {
+                return $item->scantime == $request->input('scantime');
+            });
+        }
+
+        if ($request->filled('position')) {
+            $sortedItems = array_filter($sortedItems, function($item) use ($request) {
+                return $item->position == $request->input('position');
+            });
+        }
+        
+
+        return view('barcodeinandout.latestbarcodeitem', compact('sortedItems', 'partNumbers'));
 
     }
 }
