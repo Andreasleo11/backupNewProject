@@ -687,7 +687,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
     Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
-
+    Route::post('/spkkomputer/input', [SuratPerintahKerjaKomputerController::class, 'inputprocess'])->name('spk.input');
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
         $report = App\Models\MonthlyBudgetReport::find(5);

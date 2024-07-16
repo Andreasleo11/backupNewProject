@@ -27,30 +27,30 @@
             </div>
         </div>
 
-        <div class="rol">
+        <div class="row">
             <div class="col">
-                <form action="" method="post">
+                <form action="{{ route('spk.input') }}" method="post">
+                    @csrf
                     <div class="card mt-2">
                         <div class="card-body">
                             <div class="form-group row">
                                 <label for="no_dokumen" class="col-form-label col-sm-2">No Dokumen</label>
                                 <div class="col-sm-10">
-                                    <input type="text" name="no_dokumen" id="no_dokumen" value="testnodokumenrandom"
+                                    <input type="text" name="no_dokumen" id="no_dokumen" value="{{ $docnum }}"
                                         readonly class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
                             <div class="form-group row mt-3">
                                 <label for="pelapor" class="col-form-label col-sm-2">Pelapor</label>
                                 <div class="col-sm-10">
-                                    <input type="text" name="pelapor" id="pelapor" value="testnodokumenrandom" readonly
+                                    <input type="text" name="pelapor" id="pelapor" value="{{ $username }}" readonly
                                         class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
                             <div class="form-group row mt-3">
-                                <label for="pelapor" class="col-form-label col-sm-2">Tanggal Lapor</label>
+                                <label for="tanggallapor" class="col-form-label col-sm-2">Tanggal Lapor</label>
                                 <div class="col-sm-10">
-                                    <input type="date" name="pelapor" id="pelapor" value="" readonly
-                                        class="form-control bg-secondary-subtle">
+                                    <input type="date" name="tanggallapor" id="tanggallapor" readonly class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
                         </div>
@@ -105,4 +105,15 @@
             }
         });
     </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const dd = String(today.getDate()).padStart(2, '0');
+        const formattedToday = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('tanggallapor').value = formattedToday;
+    });
+</script>
 @endpush
