@@ -27,13 +27,15 @@
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-md-8">
-                        <form action="{{ route('spk.update', $report->id) }}" method="POST">
-                            @csrf
+                        <form action="{{ route('spk.update', $report->id) }}" method="post">
                             @method('PUT')
+                            @csrf
                             <div class="card mt-2">
                                 <div class="card-body">
                                     <div class="text-end">
-                                        <button type="button" class="btn btn-outline-primary" id="editButton">Edit</button>
+                                        @if ($authUser->department->name === 'COMPUTER')
+                                            <button type="button" class="btn btn-primary" id="editButton">Edit</button>
+                                        @endif
                                     </div>
                                     <div class="text-center my-3">
                                         <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
@@ -47,21 +49,23 @@
                                         <label for="no_dokumen" class="fw-semibold col-form-label col">No Dokumen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="no_dokumen" id="no_dokumen"
-                                                value="{{ $report->no_dokumen }}" readonly disabled class="form-control">
+                                                value="{{ $report->no_dokumen }}"
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="pelapor" class="fw-semibold col-form-label col">Pelapor</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="pelapor" id="pelapor"
-                                                value="{{ $report->pelapor }}" readonly disabled class="form-control">
+                                                value="{{ $report->pelapor }}"
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
-                                                readonly disabled class="form-control">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -69,14 +73,14 @@
                                             Laporan</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="judul_laporan" id="judul_laporan"
-                                                value="{{ $report->judul_laporan }}" readonly disabled class="form-control">
+                                                value="{{ $report->judul_laporan }}" class="form-control">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="no_dokumen" class="fw-semibold col-form-label col">Keterangan
                                             Laporan</label>
                                         <div class="col-sm-9 mt-2">
-                                            <textarea name="keterangan_laporan" id="keterangan_laporan" readonly disabled class="form-control" rows="5">{{ $report->keterangan_laporan }}
+                                            <textarea name="keterangan_laporan" id="keterangan_laporan" class="form-control" rows="5">{{ $report->keterangan_laporan }}
                                     </textarea>
                                         </div>
                                     </div>
@@ -84,14 +88,14 @@
                                         <label for="pic" class="fw-semibold col-form-label col">PIC</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="pic" id="pic"
-                                                value="{{ $report->pic ?? '-' }}" readonly disabled class="form-control">
+                                                value="{{ $report->pic ?? '-' }}" class="form-control">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="keterangan_pic" class="fw-semibold col-form-label col">Keterangan
                                             PIC</label>
                                         <div class="col-sm-9 mt-2">
-                                            <textarea name="keterangan_pic" id="keterangan_pic" readonly disabled class="form-control" rows="5">{{ $report->keterangan_pic ?? '-' }}
+                                            <textarea name="keterangan_pic" id="keterangan_pic" class="form-control" rows="5">{{ $report->keterangan_pic ?? '-' }}
                                     </textarea>
                                         </div>
                                     </div>
@@ -99,23 +103,23 @@
                                         <label for="tanggal_selesai" class="fw-semibold col-form-label col">Tanggal
                                             Selesai</label>
                                         <div class="col-sm-9">
-                                            <input type="text" name="tanggal_selesai" id="tanggal_selesai"
-                                                value="{{ $report->tanggal_selesai ?? '-' }}" readonly disabled
-                                                class="form-control">
+                                            <input type="date" name="tanggal_selesai" id="tanggal_selesai"
+                                                class="form-control"
+                                                value="{{ $report->tanggal_selesai ? date('Y-m-d', strtotime($report->tanggal_selesai)) : '' }}">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="tanggal_estimasi" class="fw-semibold col-form-label col">Tanggal
                                             Estimasi</label>
                                         <div class="col-sm-9">
-                                            <input type="text" name="tanggal_estimasi" id="tanggal_estimasi"
-                                                value="{{ $report->tanggal_estimasi ?? '-' }}" readonly disabled
-                                                class="form-control">
+                                            <input type="date" name="tanggal_estimasi" id="tanggal_estimasi"
+                                                class="form-control"
+                                                value="{{ $report->tanggal_estimasi ? date('Y-m-d', strtotime($report->tanggal_estimasi)) : '' }}">
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-3 text-end d-none" id="saveChangesButtonContainer">
+                            <div class="mt-3 text-end " id="saveChangesButtonContainer">
                                 <button type="submit" class="btn btn-primary">Save changes</button>
                             </div>
                         </form>
@@ -128,19 +132,19 @@
 @endsection
 @push('extraJs')
     <script>
-        document.getElementById('editButton').addEventListener('click', function() {
-            // Get all inputs and textareas
+        // Function to handle the edit button click
+        handleEditButtonClick();
+
+        function handleEditButtonClick() {
+            // Get all inputs and textareas except those with specific IDs
+            const ignoredInputs = ['no_dokumen', 'pelapor', 'dept'];
             const inputs = document.querySelectorAll('input, textarea');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
 
-            // Toggle readonly and disabled attributes from inputs and textareas
             inputs.forEach(input => {
-                if (input.hasAttribute('readonly') || input.hasAttribute('disabled')) {
-                    input.removeAttribute('readonly');
-                    input.removeAttribute('disabled');
-                } else {
-                    input.setAttribute('readonly', true);
-                    input.setAttribute('disabled', true);
+                if (!ignoredInputs.includes(input.id)) {
+                    input.readOnly = !input.readOnly;
+                    input.disabled = !input.disabled;
                 }
             });
 
@@ -148,8 +152,21 @@
             saveChangesButtonContainer.classList.toggle('d-none');
 
             // Toggle the button class between btn-outline-primary and btn-primary
-            this.classList.toggle('btn-outline-primary');
-            this.classList.toggle('btn-primary');
+            const editButton = document.getElementById('editButton');
+            editButton.classList.toggle('btn-outline-primary');
+            editButton.classList.toggle('btn-primary');
+        }
+
+        // Ensure the DOM is fully loaded before adding event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const editButton = document.getElementById('editButton');
+
+            // Check if editButton exists before adding event listener
+            if (editButton) {
+                editButton.addEventListener('click', handleEditButtonClick);
+            } else {
+                console.error('Edit button not found. Ensure the editButton ID is correct.');
+            }
         });
     </script>
 @endpush
