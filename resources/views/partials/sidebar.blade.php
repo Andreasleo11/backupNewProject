@@ -304,7 +304,7 @@
                 <li class="sidebar-list">
                     <a href="{{ route('barcodeindex') }}" class="sidebar-link">
                         <i class='bx bx-cube'></i>
-                        Create Barcode 
+                        Create Barcode
                     </a>
                 </li>
 
@@ -332,7 +332,7 @@
                 <li class="sidebar-list">
                     <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
-                        List All Item Barcode 
+                        List All Item Barcode
                     </a>
                 </li>
             </ul>
@@ -473,6 +473,13 @@
                         <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Stock Management
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            SPK
                         </a>
                     </li>
 
