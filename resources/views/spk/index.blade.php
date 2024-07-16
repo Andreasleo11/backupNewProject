@@ -43,15 +43,21 @@
                             <th>Pelapor</th>
                             <th>Tanggal Lapor</th>
                             <th>Judul Laporan</th>
+                            <th>PIC</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($reports as $report)
                             <tr>
-                                <td>{{ $report->no_dokumen }}</td>
-                                <td>{{ $report->pelapor }}</td>
-                                <td>{{ $report->tanggal_lapor }}</td>
-                                <td>{{ $report->judul_laporan }}</td>
+                                <td class="align-content-center">{{ $report->no_dokumen }}</td>
+                                <td class="align-content-center">{{ $report->pelapor }}</td>
+                                <td class="align-content-center">@formatDate($report->tanggal_lapor)</td>
+                                <td class="align-content-center">{{ $report->judul_laporan }}</td>
+                                <td class="align-content-center">{{ $report->pic ?? 'Not Assigned' }}</td>
+                                <td class="align-content-center">@include('partials.spk-status')</td>
+                                <td class="align-content-center">@include('partials.spk-actions')</td>
                             </tr>
                         @empty
                             <tr>

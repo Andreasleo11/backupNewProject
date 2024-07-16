@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateSuratPerintahKerjaKomputerRequest;
 use Illuminate\Http\Request;
 use App\Models\SuratPerintahKerjaKomputer;
 use App\Models\User;
 use App\Models\Department;
+use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 
@@ -56,5 +59,43 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         // Optionally, you can return a response or redirect
         return redirect()->route('spk.index')->with('success', 'Data successfully inserted.');
+    }
+
+    public function detail($id)
+    {
+        $report = SuratPerintahKerjaKomputer::find($id);
+        return view('spk.detail', compact('report'));
+    }
+
+    public function update(UpdateSuratPerintahKerjaKomputerRequest $request, $id)
+    {
+        // The request is already validated at this point.
+
+        // Find the record to update
+        $report = SuratPerintahKerjaKomputer::findOrFail($id);
+
+        // Update the record with validated data
+        $report->update($request->validated());
+
+        // Redirect back with success message
+        return redirect()->back()->with('success', 'SPK updated successfully!');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        try {
+            $report = SuratPerintahKerjaKomputer::findOrFail($id);
+            $report->delete();
+
+            return redirect()->back()->with('success', 'SPK deleted successfully!');
+        } catch (Exception $e) {
+            // Log the exception message for debugging
+            Log::error('Failed to delete SPK: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Failed to delete SPK. Please try again later.');
+        }
     }
 }

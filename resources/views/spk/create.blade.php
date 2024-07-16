@@ -34,23 +34,24 @@
                     <div class="card mt-2">
                         <div class="card-body">
                             <div class="form-group row">
-                                <label for="no_dokumen" class="col-form-label col-sm-2">No Dokumen</label>
+                                <label for="no_dokumen" class="fw-semibold col-form-label col-sm-2">No Dokumen</label>
                                 <div class="col-sm-10">
                                     <input type="text" name="no_dokumen" id="no_dokumen" value="{{ $docnum }}"
                                         readonly class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
                             <div class="form-group row mt-3">
-                                <label for="pelapor" class="col-form-label col-sm-2">Pelapor</label>
+                                <label for="pelapor" class="fw-semibold col-form-label col-sm-2">Pelapor</label>
                                 <div class="col-sm-10">
                                     <input type="text" name="pelapor" id="pelapor" value="{{ $username }}" readonly
                                         class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
                             <div class="form-group row mt-3">
-                                <label for="tanggallapor" class="col-form-label col-sm-2">Tanggal Lapor</label>
+                                <label for="tanggallapor" class="fw-semibold col-form-label col-sm-2">Tanggal Lapor</label>
                                 <div class="col-sm-10">
-                                    <input type="date" name="tanggallapor" id="tanggallapor" readonly class="form-control bg-secondary-subtle">
+                                    <input type="date" name="tanggallapor" id="tanggallapor" readonly
+                                        class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
                         </div>
@@ -59,7 +60,8 @@
                     <div class="card mt-4">
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="departmentDropdown" class="col-form-label col-sm-2">Department</label>
+                                <label for="departmentDropdown"
+                                    class="fw-semibold col-form-label col-sm-2">Department</label>
                                 <select class="form-select" name="dept" id="departmentDropdown" required>
                                     <option value="" selected disabled>Select from department..</option>
                                     @foreach ($departments as $department)
@@ -74,12 +76,12 @@
                                 </select>
                             </div>
                             <div class="form-group mt-3">
-                                <label for="keterangan_laporan" class="form-label">Judul Laporan</label>
+                                <label for="keterangan_laporan" class="fw-semibold form-label">Judul Laporan</label>
                                 <input type="text" name="judul_laporan" id="judul_laporan" value="" required
                                     class="form-control">
                             </div>
                             <div class="form-group mt-3">
-                                <label for="keterangan_laporan" class="form-label">Keterangan Laporan</label>
+                                <label for="keterangan_laporan" class="fw-semibold form-label">Keterangan Laporan</label>
                                 <textarea name="keterangan_laporan" id="keterangan_laporan" cols="30" rows="10" class="form-control" required></textarea>
                             </div>
                         </div>
@@ -107,13 +109,13 @@
     </script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const dd = String(today.getDate()).padStart(2, '0');
-        const formattedToday = `${yyyy}-${mm}-${dd}`;
-        document.getElementById('tanggallapor').value = formattedToday;
-    });
-</script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            const dd = String(today.getDate()).padStart(2, '0');
+            const formattedToday = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('tanggallapor').value = formattedToday;
+        });
+    </script>
 @endpush
