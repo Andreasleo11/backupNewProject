@@ -79,6 +79,8 @@ use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\MasterTintaController;
+use App\Http\Controllers\SuratPerintahKerjaKomputerController;
+
 
 
 
@@ -683,6 +685,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
+    Route::get('/index/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index']);
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
