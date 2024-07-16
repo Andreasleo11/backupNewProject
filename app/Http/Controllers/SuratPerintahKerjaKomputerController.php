@@ -13,14 +13,14 @@ class SuratPerintahKerjaKomputerController extends Controller
 {
     public function index()
     {
-        return view('view');
+        $reports = SuratPerintahKerjaKomputer::all();
+        return view('spk.index', compact('reports'));
     }
 
     public function createpage()
     {
-        $username = auth()->user()->name;
-        $department = Department::all();
+        $departments = Department::all();
 
-        return view('view', compact('username', 'department'));
+        return view('spk.create', compact('departments'));
     }
 }

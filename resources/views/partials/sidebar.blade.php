@@ -477,7 +477,7 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="#" class="sidebar-link">
+                        <a href="{{ route('spk.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             SPK
                         </a>

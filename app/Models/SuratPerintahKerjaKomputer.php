@@ -26,7 +26,6 @@ class SuratPerintahKerjaKomputer extends Model
 
     public function deptRelation()
     {
-        return $this->belongsTo(Departement::class);
+        return $this->belongsTo(Department::class);
     }
-    
 }

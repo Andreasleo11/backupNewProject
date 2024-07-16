@@ -1,6 +1,13 @@
 @extends('layouts.app')
 @section('content')
     @include('partials.alert-success-error')
+
+    {{-- GLOBAL VARIABLE --}}
+    @php
+        $authUser = auth()->user();
+    @endphp
+    {{-- END GLOBAL VARIABLE --}}
+
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -22,7 +29,7 @@
                     }
                 @endphp
                 @if ($showCreateButton)
-                    <a href="#" class="btn btn-primary">New Report</a>
+                    <a href="{{ route('spk.create') }}" class="btn btn-primary">New Report</a>
                 @endif
             </div>
         </div>
@@ -32,13 +39,25 @@
                 <table class="table table-border text-center mb-0">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>test</th>
+                            <th>No. Dokumen</th>
+                            <th>Pelapor</th>
+                            <th>Tanggal Lapor</th>
+                            <th>Judul Laporan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <td>1</td>
-                        <td>test</td>
+                        @forelse ($reports as $report)
+                            <tr>
+                                <td>{{ $report->no_dokumen }}</td>
+                                <td>{{ $report->pelapor }}</td>
+                                <td>{{ $report->tanggal_lapor }}</td>
+                                <td>{{ $report->judul_laporan }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9">No data</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

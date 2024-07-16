@@ -668,7 +668,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
-   
+
     Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
 
     Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
@@ -685,7 +685,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
-    Route::get('/index/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index']);
+    Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
+    Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
