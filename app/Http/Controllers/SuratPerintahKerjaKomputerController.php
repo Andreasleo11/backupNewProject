@@ -17,6 +17,9 @@ class SuratPerintahKerjaKomputerController extends Controller
 {
     public function index()
     {
+
+        $this->updatestatus();
+
         $reports = SuratPerintahKerjaKomputer::all();
         return view('spk.index', compact('reports'));
     }
@@ -98,4 +101,28 @@ class SuratPerintahKerjaKomputerController extends Controller
             return redirect()->back()->with('error', 'Failed to delete SPK. Please try again later.');
         }
     }
+
+    public function updatestatus()
+    {
+        $reports = SuratPerintahKerjaKomputer::all();
+        
+        foreach ($reports as $report) {
+            // Initialize status_laporan as 0
+            $report->status_laporan = 0;
+    
+            // Check if tanggal_selesai is not null
+            if ($report->tanggal_selesai !== null) {
+                $report->status_laporan = 2;
+            }
+            // Check if pic, keterangan_pic, and tanggal_estimasi are not null
+            elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null) {
+                $report->status_laporan = 1;
+            }
+    
+            // Save the updated report
+            $report->save();
+        }
+        return;
+    }
+
 }
