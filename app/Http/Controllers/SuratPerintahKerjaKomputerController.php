@@ -66,6 +66,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function detail($id)
     {
+        $this->updatestatus();
         $report = SuratPerintahKerjaKomputer::find($id);
         return view('spk.detail', compact('report'));
     }
