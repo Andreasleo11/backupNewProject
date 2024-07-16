@@ -616,7 +616,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
-
+    Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
@@ -662,7 +662,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
-   
+
     Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
 
     Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');

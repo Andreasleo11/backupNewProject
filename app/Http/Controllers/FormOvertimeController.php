@@ -9,29 +9,11 @@ use App\Models\Employee;
 use App\Models\Department;
 use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
-
-
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Redirect;
-
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
-use Maatwebsite\Excel\Sheet;
-use Maatwebsite\Excel\Concerns\ToCollection;
-use Illuminate\Support\Facades\Storage;
-
-
-
 use App\Imports\OvertimeImport;
 use App\Exports\OvertimeExport;
 use App\Models\User;
 use App\Notifications\FormOvertimeNotification;
 use Maatwebsite\Excel\Facades\Excel;
-
-
-
 use Illuminate\Support\Facades\Auth;
 
 class FormOvertimeController extends Controller
@@ -81,6 +63,7 @@ class FormOvertimeController extends Controller
         }
 
         $dataheader = $dataheaderQuery
+            ->orderBy('id', 'desc')
             ->orWhere('user_id', auth()->user()->id)
             ->get();
 
@@ -210,7 +193,6 @@ class FormOvertimeController extends Controller
             }
         }
     }
-
 
     public function detail($id)
     {
@@ -469,6 +451,12 @@ class FormOvertimeController extends Controller
     {
         HeaderFormOvertime::find($id)->delete();
         DetailFormOvertime::where('header_id', $id)->delete();
-        return redirect()->back()->with('success', 'Form Overtime Deleted successfully!');
+        return redirect()->back()->with('success', 'Form Overtime deleted successfully!');
+    }
+
+    public function destroyDetail($id)
+    {
+        DetailFormOvertime::find($id)->delete();
+        return redirect()->back()->with('success', 'Form Overtime Detail deleted successfully!');
     }
 }

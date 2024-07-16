@@ -304,7 +304,7 @@
                 <li class="sidebar-list">
                     <a href="{{ route('barcodeindex') }}" class="sidebar-link">
                         <i class='bx bx-cube'></i>
-                        Create Barcode 
+                        Create Barcode
                     </a>
                 </li>
 
@@ -332,12 +332,27 @@
                 <li class="sidebar-list">
                     <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
-                        List All Item Barcode 
+                        List All Item Barcode
                     </a>
                 </li>
             </ul>
         </li>
 
+        <li class="sidebar-item" id="sidebar-item-stock-management">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
+                <i class='bx bxs-component'></i>
+                <span>Stock Management</span>
+            </a>
+            <ul id="stock-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Master Stock
+                    </a>
+                </li>
+            </ul>
+        </li>
 
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
@@ -468,14 +483,6 @@
                         </li>
                     @endif
 
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Stock Management
-                        </a>
-                    </li>
-
                     @if (($user->is_head === 1 && $user->department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
                         <li class="sidebar-item">
                             <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
@@ -486,21 +493,6 @@
                     @endif
 
                 </ul>
-            </ul>
-        </li>
-        <li class="sidebar-item" id="sidebar-item-stock-management">
-            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
-                <i class='bx bx-dots-horizontal-rounded'></i>
-                <span>Stock Management</span>
-            </a>
-            <ul id="stock-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Master Stock
-                    </a>
-                </li>
             </ul>
         </li>
     </ul>
