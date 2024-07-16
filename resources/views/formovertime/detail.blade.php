@@ -24,6 +24,13 @@
 @endpush
 
 @section('content')
+    {{-- GLOBAL VARIABLE --}}
+    @php
+        $authUser = auth()->user();
+    @endphp
+    {{-- END GLOBAL VARIABLE --}}
+
+    @include('partials.alert-success-error')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a>
@@ -38,9 +45,13 @@
     ])
     <div class="row">
         <div class="col text-end">
-            <button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal"
-                class="btn btn-primary"><i class='bx bx-edit'></i> Edit</button>
-            @if (auth()->user()->specification->name === 'Verificator')
+            @if (
+                ($header->status === 1 && $authUser->id === $header->Relationuser->id) ||
+                    ($header->status === 5 && $authUser->specification->name === 'VERIFICATOR'))
+                <button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal"
+                    class="btn btn-primary"><i class='bx bx-edit'></i> Edit</button>
+            @endif
+            @if ($header->status === 5 && $authUser->specification->name === 'VERIFICATOR')
                 <a href="{{ route('export.overtime', $header->id) }}" class="btn btn-success">Export to Excel</a>
             @endif
         </div>
@@ -88,6 +99,9 @@
                                     <th class="align-middle">Lama OT</th>
                                     </th>
                                     <th class="align-middle">Remark</th>
+                                    @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+                                        <th class="align-middle">Action</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -129,11 +143,22 @@
                                             @endphp
                                         </td>
                                         <td>{{ $data->remarks }}</td>
-
+                                        @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+                                            <td> @include('partials.delete-confirmation-modal', [
+                                                'id' => $data->id,
+                                                'route' => 'formovertime.destroyDetail',
+                                                'title' => 'Delete item detail',
+                                                'body' => 'Are you sure want to delete this?',
+                                            ])
+                                                <button class="btn btn-danger btn-sm"
+                                                    data-bs-target="#delete-confirmation-modal-{{ $data->id }}"
+                                                    data-bs-toggle="modal">Delete</button>
+                                            </td>
+                                        @endif
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8">No Data</td>
+                                    <td colspan="12">No Data</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -144,12 +169,11 @@
         </div>
     </div>
 
-
-
     @if ($header->is_approve === 0)
-        <div class="alert alert-danger" role="alert">
+        <div class="alert alert-danger mt-3" role="alert">
             <h4 class="alert-heading">Alasan Ditolak</h4>
-            <textarea class="form-control rejection-textarea" rows="5" readonly>{{ $header->description }}</textarea>
+            <textarea class="form-control-plaintext rounded-2 border border-danger p-2" rows="5" readonly>
+                {{ $header->description }}</textarea>
         </div>
     @endif
 
@@ -186,6 +210,7 @@
                     location.reload();
                 })
                 .catch(error => {
+                    location.reload();
                     console.error('Error:', error);
                 });
 
@@ -220,10 +245,6 @@
                 var autographInput = document.getElementById('autographInput' + i);
                 var autographNameBox = document.getElementById('autographuser' + i);
                 var btnId = document.getElementById('btn' + i);
-                console.log('testbox:', autographInput);
-
-
-
 
                 // Check if autograph status is present in the database
                 if (autographs['autograph_' + i]) {
