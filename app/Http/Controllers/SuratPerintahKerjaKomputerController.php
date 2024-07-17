@@ -20,7 +20,23 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         $this->updatestatus();
 
-        $reports = SuratPerintahKerjaKomputer::all();
+        $authUser = auth()->user();
+
+        $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
+        // dd($reportsQuery->get());
+
+        if ($authUser->department->name !== 'COMPUTER') {
+            $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
+                $query->where('id', $authUser->department->id);
+            });
+
+            $reportsQuery->orWhere('pelapor', $authUser->name);
+        }
+
+        $reports = $reportsQuery
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('spk.index', compact('reports'));
     }
 
@@ -106,11 +122,11 @@ class SuratPerintahKerjaKomputerController extends Controller
     public function updatestatus()
     {
         $reports = SuratPerintahKerjaKomputer::all();
-        
+
         foreach ($reports as $report) {
             // Initialize status_laporan as 0
             $report->status_laporan = 0;
-    
+
             // Check if tanggal_selesai is not null
             if ($report->tanggal_selesai !== null) {
                 $report->status_laporan = 2;
@@ -119,11 +135,10 @@ class SuratPerintahKerjaKomputerController extends Controller
             elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null) {
                 $report->status_laporan = 1;
             }
-    
+
             // Save the updated report
             $report->save();
         }
         return;
     }
-
 }

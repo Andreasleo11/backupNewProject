@@ -26,6 +26,11 @@ class SuratPerintahKerjaKomputer extends Model
 
     public function deptRelation()
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'dept', 'name');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'pelapor', 'name');
     }
 }
