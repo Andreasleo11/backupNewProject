@@ -293,7 +293,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
-        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
         Route::get("deliveryschedule/raw", [DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
 
@@ -472,10 +471,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function () {
         Route::get('mu/home', [MUHomeController::class, 'index'])->name('mu.home');
-    });
-
-    Route::middleware(['checkDepartment:BUSINESS,QA'])->group(function () {
-        Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     });
 });
 
@@ -681,7 +676,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
 
-
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
@@ -691,6 +685,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'detail'])->name('spk.detail');
     Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
     Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
+
+    Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
+    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
+
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

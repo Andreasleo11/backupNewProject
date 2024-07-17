@@ -85,7 +85,7 @@
                 <div class="autograph-box container" id="autographBox4"></div>
                 <div class="container mt-2" id="autographuser4"></div>
 
-                @if (Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
+                @if (Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_4)
                     <button id="btn4" class="btn btn-primary"
                         onclick="addAutograph(4 , {{ $header->id }})">Accept</button>
                     @if ($header->autograph_4 === null)
