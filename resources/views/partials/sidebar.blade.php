@@ -483,6 +483,20 @@
                         </li>
                     @endif
 
+                    <li class="sidebar-item">
+                        <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Stock Management
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('spk.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            SPK
+                        </a>
+                    </li>
+
                     @if (($user->is_head === 1 && $user->department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
                         <li class="sidebar-item">
                             <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
