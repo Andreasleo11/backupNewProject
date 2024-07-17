@@ -82,15 +82,17 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function detail($id)
     {
+        $users = User::where('department_id', 15)->get();
+
         $this->updatestatus();
         $report = SuratPerintahKerjaKomputer::find($id);
-        return view('spk.detail', compact('report'));
+        return view('spk.detail', compact('report', 'users'));
     }
 
     public function update(UpdateSuratPerintahKerjaKomputerRequest $request, $id)
     {
         // The request is already validated at this point.
-
+        // dd($request->all());
         // Find the record to update
         $report = SuratPerintahKerjaKomputer::findOrFail($id);
 
