@@ -183,9 +183,9 @@ class PurchaseRequestController extends Controller
 
     public function create()
     {
-        $master = MasterDataPr::get();
+        $items = MasterDataPr::get();
         $departments = Department::all();
-        return view('purchaseRequest.create', compact('master', 'departments'));
+        return view('purchaseRequest.create', compact('items', 'departments'));
     }
 
     public function insert(Request $request)
@@ -562,8 +562,7 @@ class PurchaseRequestController extends Controller
 
         // Fetch item names and prices from the database based on user input
         $items = MasterDataPr::where('name', 'like', "%$itemName%")
-            ->select('name', 'currency', 'price', 'latest_price')
-            ->get();
+            ->get(['id', 'name', 'currency', 'price', 'latest_price']);
 
         return response()->json($items);
     }
