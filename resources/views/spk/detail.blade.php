@@ -42,6 +42,8 @@
                                         <div class="text-secondary">
                                             <div>Pelapor : {{ $report->pelapor }}</div>
                                             <div class="mb-2">Tanggal Lapor : @formatDate($report->tanggal_lapor)</div>
+                                            <div class="mb-2">Dibuat Pada : {{ \Carbon\Carbon::parse($report->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                            <div class="mb-2">Diupdate Pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
                                         </div>
                                         @include('partials.spk-status')
                                     </div>
@@ -87,8 +89,14 @@
                                     <div class="form-group row mt-3">
                                         <label for="pic" class="fw-semibold col-form-label col">PIC</label>
                                         <div class="col-sm-9">
-                                            <input type="text" name="pic" id="pic"
-                                                value="{{ $report->pic ?? '-' }}" class="form-control">
+                                            <select name="pic" id="pic" class="form-control">
+                                                <option value="" disabled selected>{{$report->pic ?? '-' }} </option>
+                                                @foreach($users as $user)
+                                                    <option value="{{ $user->name }}" {{ isset($report->pic) && $report->pic == $user->id ? 'selected' : '' }}>
+                                                        {{ $user->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -138,7 +146,7 @@
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
             const ignoredInputs = ['no_dokumen', 'pelapor', 'dept'];
-            const inputs = document.querySelectorAll('input, textarea');
+            const inputs = document.querySelectorAll('input, textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
 
             inputs.forEach(input => {
