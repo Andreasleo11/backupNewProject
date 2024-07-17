@@ -35,8 +35,17 @@ class DisciplinePageController extends Controller
         $user = Auth::user();
 
         $employees = null;
+
+        if ($user->id == 120) {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '341')->orWhere('Dept', '340')
+                    ->where('status', '!=', 'YAYASAN')->where('level', 5);
+            })
+                ->get();
+        }
+
         //PEER LOGIC UNTUK HANDLE ORANG ORANG DIBAWAH DEPT HEADNYA SAJA - HARUS DIHANDLE MANUAL
-        if ($user->is_head == 1) {
+        elseif ($user->is_head == 1) {
             if ($user->department_id == 2) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '340')
@@ -87,7 +96,7 @@ class DisciplinePageController extends Controller
                     ->get();
             } elseif ($user->department_id == 24) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '331')
+                    $query->where('Dept', '331')->orWhere('Dept', '330')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
@@ -133,9 +142,8 @@ class DisciplinePageController extends Controller
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
 
-                ->get();
-            }
-             elseif ($user->department_id == 21) {
+                    ->get();
+            } elseif ($user->department_id == 21) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')->where('level', 5);
                 })
@@ -478,7 +486,7 @@ class DisciplinePageController extends Controller
         // $counttelat = $Telat * 0.5;
         // $totalakhir = 0;
         // $totalakhir = $total -  ($countalpha + $countizin + $counttelat + $Sakit);
-        // code jika di datatable butuh absensi untuk nilai 
+        // code jika di datatable butuh absensi untuk nilai
 
 
         $user = Auth::user();
@@ -503,7 +511,7 @@ class DisciplinePageController extends Controller
                     ->get();
             } elseif ($user->department_id == 24) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '331')
+                    $query->where('Dept', '331')->orWhere('Dept', '330')
                         ->where('status', 'YAYASAN');
                 })
                     ->get();
@@ -552,7 +560,7 @@ class DisciplinePageController extends Controller
             }
 
 
-            
+
             return $dataTable->render("setting.disciplineyayasanindex", compact("employees", "user"));
         } catch (\Throwable $th) {
             abort(403, 'Departement anda tidak ada yayasan ');
@@ -562,7 +570,7 @@ class DisciplinePageController extends Controller
     public function updateDept()
     {
         $datas = EvaluationData::with('karyawan')->get();
-      
+
         foreach ($datas as $data) {
             if ($data->karyawan) {
                 $data->dept = $data->karyawan->Dept;
