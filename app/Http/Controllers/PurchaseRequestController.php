@@ -591,7 +591,7 @@ class PurchaseRequestController extends Controller
         }
 
         $pr = PurchaseRequest::find($id);
-        $isPurchaser = Auth::user()->specification === "PURCHASER";
+        $isPurchaser = Auth::user()->specification->name === "PURCHASER";
         $isHead = Auth::user()->is_head === 1;
 
         // dept head update
@@ -606,8 +606,8 @@ class PurchaseRequestController extends Controller
             $pr->update($dataToUpdate);
         } elseif ($pr->status === 6) {
             if ($isPurchaser) {
-                $additionalData['autograph_6'] = null;
-                $additionalData['autograph_user_6'] = null;
+                $additionalData['autograph_5'] = null;
+                $additionalData['autograph_user_5'] = null;
             } elseif ($isHead) {
                 $additionalData['autograph_2'] = null;
                 $additionalData['autograph_user_2'] = null;
