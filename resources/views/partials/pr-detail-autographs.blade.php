@@ -47,11 +47,11 @@
             @endphp
             @if ($showDeptHeadDesignApprovalButtons)
                 @if ($count === $countItemHasApprovalStatus)
-                    <div class="row d-flex justify-content-center">
+                    <div class="row px-4 d-flex justify-content-center">
                         <div
                             class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                class="my-1 btn btn-danger">Reject</button>
+                                class="btn btn-danger">Reject</button>
                         </div>
                         <div
                             class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_head) || !$thereIsApprovedItem ? 'd-none' : '' }}">
@@ -70,7 +70,7 @@
                                 ],
                             ])
                             <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                                class="my-1 btn btn-success">Approve</button>
+                                class="btn btn-success">Approve</button>
                         </div>
                     </div>
                 @endif
@@ -80,7 +80,8 @@
 
     {{-- DEPT HEAD AUTOGRAPH --}}
     <div class="col my-2">
-        <h2> {{ $purchaseRequest->from_department === 'MOULDING' ? 'Head Design' : 'Dept Head' }} </h2>
+        <h2> {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department === 'Maintenance' ? 'Head Design' : 'Dept Head' }}
+        </h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographuser2"></div>
         @php
@@ -134,11 +135,11 @@
         @endphp
         @if ($showDeptHeadApprovalButtons)
             @if ($count === $countItemHasApprovalStatus)
-                <div class="row d-flex justify-content-center">
+                <div class="row px-4 d-flex justify-content-center">
                     <div
                         class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
                         <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                            class="my-1 btn btn-danger">Reject</button>
+                            class="btn btn-danger">Reject</button>
                     </div>
                     <div
                         class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_head) || !$thereIsApprovedItem ? 'd-none' : '' }}">
@@ -154,7 +155,7 @@
                             ],
                         ])
                         <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                            class="my-1 btn btn-success">Approve</button>
+                            class="btn btn-success">Approve</button>
                     </div>
                 </div>
             @endif
@@ -190,11 +191,11 @@
             @endphp
             @if ($user->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty && $purchaseRequest->is_cancel === 0)
                 @if ($count === $countItemHasApprovalStatus)
-                    <div class="row d-flex justify-content-center">
+                    <div class="row px-4 d-flex justify-content-center">
                         <div
                             class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
                             <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                class="my-1 btn btn-danger">Reject</button>
+                                class="btn btn-danger">Reject</button>
                         </div>
                         <div
                             class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_head) || !$thereIsApprovedItem ? 'd-none' : '' }}">
@@ -213,7 +214,7 @@
                                 ],
                             ])
                             <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                                class="my-1 btn btn-success">Approve</button>
+                                class="btn btn-success">Approve</button>
                         </div>
                     </div>
                 @endif
@@ -241,10 +242,10 @@
             }
         @endphp
         @if ($showApprovalButtons && $purchaseRequest->status === 6 && $purchaseRequest->is_cancel === 0)
-            <div class="row d-flex justify-content-center">
+            <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-2">
                     <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                        class="my-1 btn btn-danger">Reject</button>
+                        class="btn btn-danger">Reject</button>
                 </div>
                 <div class="col-auto">
                     @include('partials.approve-pr-confirmation-modal', [
@@ -259,7 +260,7 @@
                         ],
                     ])
                     <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                        class="my-1 btn btn-success">Approve</button>
+                        class="btn btn-success">Approve</button>
                 </div>
             </div>
         @endif
@@ -300,11 +301,11 @@
                 $isApproveNotEmpty &&
                 $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
-                <div class="row d-flex justify-content-center">
+                <div class="row px-4 d-flex justify-content-center">
                     <div
                         class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_verificator) || $thereIsApprovedItem ? 'd-none' : '' }}">
                         <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                            class="my-1 btn btn-danger">Reject</button>
+                            class="btn btn-danger">Reject</button>
                     </div>
                     <div
                         class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_verificator) || !$thereIsApprovedItem ? 'd-none' : '' }}">
@@ -320,7 +321,7 @@
                             ],
                         ])
                         <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                            class="my-1 btn btn-success">Approve</button>
+                            class="btn btn-success">Approve</button>
                     </div>
                 </div>
             @endif
@@ -360,11 +361,11 @@
                 $isApproveNotEmpty &&
                 $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
-                <div class="row d-flex justify-content-center">
+                <div class="row px-4 d-flex justify-content-center">
                     <div
                         class="col-auto me-2 {{ ($count === 1 && $detailObj->is_approve) || $thereIsApprovedItem ? 'd-none' : '' }}">
                         <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                            class="my-1 btn btn-danger">Reject</button>
+                            class="btn btn-danger">Reject</button>
                     </div>
                     <div
                         class="col-auto {{ ($count === 1 && !$detailObj->is_approve) || !$thereIsApprovedItem ? 'd-none' : '' }}">
@@ -380,7 +381,7 @@
                             ],
                         ])
                         <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
-                            class="my-1 btn btn-success">Approve</button>
+                            class="btn btn-success">Approve</button>
 
                     </div>
                 </div>
