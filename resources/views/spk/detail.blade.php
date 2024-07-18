@@ -33,7 +33,7 @@
                             <div class="card mt-2">
                                 <div class="card-body">
                                     <div class="text-end">
-                                        @if ($authUser->department->name === 'COMPUTER')
+                                        @if ($authUser->department->name === 'COMPUTER' && $report->tanggal_selesai === null)
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
@@ -52,7 +52,7 @@
                                         <div class="col-sm-9">
                                             <input type="text" name="no_dokumen" id="no_dokumen"
                                                 value="{{ $report->no_dokumen }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -60,14 +60,14 @@
                                         <div class="col-sm-9">
                                             <input type="text" name="pelapor" id="pelapor"
                                                 value="{{ $report->pelapor }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
