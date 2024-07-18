@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DataTables\DirectorPurchaseRequestDataTable;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePurchaseRequest;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
@@ -188,7 +189,7 @@ class PurchaseRequestController extends Controller
         return view('purchaseRequest.create', compact('items', 'departments'));
     }
 
-    public function insert(Request $request)
+    public function insert(StorePurchaseRequest $request)
     {
         $items = $request->input('items', []);
 

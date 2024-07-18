@@ -1,37 +1,3 @@
-<style>
-    /* Style for displaying added items */
-    .added-item {
-        margin-bottom: 10px;
-    }
-
-    #itemDropdown {
-        max-height: 200px;
-        /* Set maximum height for the dropdown */
-        overflow-y: auto;
-        /* Enable vertical scrolling */
-        border: 1px solid #ccc;
-        /* Optional: Add border for visual clarity */
-        position: absolute;
-        /* Position the dropdown absolutely */
-        z-index: 999;
-        /* Ensure dropdown is above other elements */
-        background-color: #fff;
-        /* Set background color to white */
-        opacity: 1;
-        /* Adjust opacity to ensure dropdown is not transparent */
-
-    }
-
-    .dropdown-item {
-        padding: 5px;
-        cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f0f0f0;
-    }
-</style>
-
 <div class="modal fade" id="edit-purchase-request-modal-{{ $pr->id }}" tabindex="-1">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
@@ -98,12 +64,6 @@
                                 <div id="itemsContainer">
                                     <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3">
-                                    </div>
-                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">Notes: </div>
-                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">- Unit Price
-                                        tambahkan .00 jika harga tidak memiliki desimal. Contoh -> IDR 1,200.00 </div>
-                                    <div id="itemsHelp" class="h6 text-secondary fw-bold">- Pastikan semua kolom
-                                        terinput
                                     </div>
                                     @if (Auth::user()->specification->name === 'PURCHASER')
                                         <button class="btn btn-secondary btn-sm" type="button"
@@ -253,61 +213,13 @@
             itemNameInput.setAttribute('required', 'required');
             itemNameInput.type = 'text';
             itemNameInput.name = `items[${itemIdCounter}][item_name]`;
+            itemNameInput.id = `itemNameInput_${itemIdCounter}`;
             itemNameInput.placeholder = 'Item Name';
             itemNameInput.value = $detail?.item_name ?? "";
-
-            const itemNameDropdown = document.createElement('div');
-            itemNameDropdown.id = 'itemDropdown';
-            itemNameDropdown.classList.add('dropdown-content');
-
-            itemNameInput.addEventListener('keyup', function() {
-                const inputValue = itemNameInput.value.trim();
-                fetch(`/get-item-names?itemName=${inputValue}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        itemNameDropdown.innerHTML = '';
-                        if (data.length > 0) {
-                            console.log(data);
-                            data.forEach(item => {
-                                const option = document.createElement('option');
-                                option.classList.add('dropdown-item');
-                                option.value = item.id;
-                                option.textContent = item.name;
-                                option.addEventListener('click', function() {
-                                    itemNameInput.value = item.name;
-                                    currencyInput.value = item.currency;
-
-                                    unitPriceInput.value = item.latest_price === null ? item
-                                        .price : item.latest_price;
-
-                                    formatPrice(unitPriceInput, currencyInput.value);
-                                    const unitPrice = unitPriceInput.value.replace(/[^\d]/g,
-                                        '');
-                                    subtotalInput.value = parseFloat(quantityInput.value) *
-                                        unitPrice;
-                                    formatPrice(subtotalInput, currencyInput.value);
-
-                                    itemDropdown.innerHTML = '';
-                                    itemNameDropdown.style.display = 'none';
-                                });
-                                itemNameDropdown.appendChild(option);
-                            });
-                            itemNameDropdown.style.display = 'block';
-                        } else {
-                            itemNameDropdown.style.display = 'none';
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            });
-
-            document.addEventListener('click', function(event) {
-                if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
-                    itemDropdown.style.display = 'none';
-                }
-            });
+            itemNameInput.required = true;
 
             formGroupName.appendChild(itemNameInput);
-            formGroupName.appendChild(itemNameDropdown);
+            // formGroupName.appendChild(itemNameDropdown);
 
             const formGroupQuantityInput = document.createElement('div');
             formGroupQuantityInput.classList.add('col-md-1');
@@ -318,6 +230,7 @@
             quantityInput.type = 'text';
             quantityInput.name = `items[${itemIdCounter}][quantity]`;
             quantityInput.placeholder = 'Qty';
+            quantityInput.required = true;
             quantityInput.value = $detail?.quantity ?? "";
             quantityInput.addEventListener('input', function() {
                 validateNumber(quantityInput);
@@ -335,6 +248,7 @@
             uomInput.type = 'text';
             uomInput.name = `items[${itemIdCounter}][uom]`;
             uomInput.placeholder = 'UoM';
+            uomInput.required = true;
 
             formGroupUomInput.appendChild(uomInput);
 
@@ -344,6 +258,7 @@
             const currencyInput = document.createElement('select');
             currencyInput.classList.add('form-select');
             currencyInput.name = `items[${itemIdCounter}][currency]`;
+            currencyInput.required = true;
 
             var options = [{
                     value: 'IDR',
@@ -392,6 +307,7 @@
             unitPriceInput.type = 'text';
             unitPriceInput.name = `items[${itemIdCounter}][price]`;
             unitPriceInput.placeholder = 'Unit Price';
+            unitPriceInput.required = true;
             unitPriceInput.value = $detail?.price ?? "";
 
             formGroupUnitPriceInput.appendChild(unitPriceInput);
@@ -403,6 +319,7 @@
             subtotalInput.classList.add('form-control', 'subtotal-input');
             subtotalInput.type = 'text';
             subtotalInput.disabled = true;
+            subtotalInput.required = true;
             subtotalInput.id = `subtotal-${itemIdCounter}`;
             subtotalInput.value = parseFloat(quantityInput.value) * parseFloat(unitPriceInput.value);
 
@@ -417,6 +334,7 @@
             purposeInput.type = 'text';
             purposeInput.name = `items[${itemIdCounter}][purpose]`;
             purposeInput.placeholder = 'Purpose';
+            purposeInput.required = true;
             purposeInput.value = $detail?.purpose ?? "";
 
             formGroupPurposeInput.appendChild(purposeInput);
@@ -425,8 +343,8 @@
             actionGroup.classList.add('col-md-1');
 
             const removeButton = document.createElement('a');
-            removeButton.classList.add('btn', 'btn-danger', 'btn-sm');
-            removeButton.textContent = "remove";
+            removeButton.classList.add('btn', 'btn-danger');
+            removeButton.innerHTML = `<i class='bx bx-trash-alt'></i>`;
             removeButton.addEventListener('click', removeItem);
 
             actionGroup.appendChild(removeButton);
@@ -464,10 +382,49 @@
 
             itemIdCounter++;
             updateItemCount();
+
+            document.addEventListener("DOMContentLoaded", function() {
+                // Initialize TomSelect for the newly added item name input with AJAX
+                new TomSelect(`#itemNameInput_${itemIdCounter - 1}`, {
+                    valueField: 'name',
+                    labelField: 'name',
+                    searchField: 'name',
+                    load: function(query, callback) {
+                        if (!query.length) return callback();
+                        fetch(`/get-item-names?itemName=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                callback(data);
+                            }).catch(() => {
+                                callback();
+                            });
+                    },
+                    render: {
+                        option: function(item, escape) {
+                            return `<div class="dropdown-item" data-id="${item.id}">
+                                <span>${escape(item.name)}</span>
+                            </div>`;
+                        }
+                    },
+                    onItemAdd: function(value, $item) {
+                        const selectedItem = this.options[value];
+                        currencyInput.value = selectedItem.currency;
+                        unitPriceInput.value = selectedItem.latest_price === null ? selectedItem.price :
+                            selectedItem.latest_price;
+                        formatPrice(unitPriceInput, currencyInput.value);
+                        const unitPrice = unitPriceInput.value.replace(/[^\d,]/g, '').replace(',', '.');
+                        subtotalInput.value = parseFloat(quantityInput.value) * unitPrice;
+                        formatPrice(subtotalInput, currencyInput.value);
+                    },
+                    maxItems: 1,
+                    closeAfterSelect: true,
+                    create: true,
+                });
+            });
         }
 
-         // Function to validate the input
-         function validateNumber(input) {
+        // Function to validate the input
+        function validateNumber(input) {
             const value = input.value;
             const regex = /^[+-]?(\d*\.)?\d*$/;
             if (!regex.test(value)) {

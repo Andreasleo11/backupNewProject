@@ -1,40 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-    <style>
-        /* Style for displaying added items */
-        .added-item {
-            margin-bottom: 10px;
-        }
+    @php
+        $authUser = auth()->user();
+    @endphp
 
-        #itemDropdown {
-            max-height: 200px;
-            /* Set maximum height for the dropdown */
-            overflow-y: auto;
-            /* Enable vertical scrolling */
-            border: 1px solid #ccc;
-            /* Optional: Add border for visual clarity */
-            position: absolute;
-            /* Position the dropdown absolutely */
-            z-index: 999;
-            /* Ensure dropdown is above other elements */
-            background-color: #fff;
-            /* Set background color to white */
-            opacity: 1;
-            /* Adjust opacity to ensure dropdown is not transparent */
-
-        }
-
-        .dropdown-item {
-            padding: 5px;
-            cursor: pointer;
-        }
-
-        .dropdown-item:hover {
-            background-color: #f0f0f0;
-        }
-    </style>
-
+    @include('partials.alert-success-error')
 
     <div class="row justify-content-center">
         <div class="col-md-10">
@@ -47,15 +18,12 @@
                         <div class="form-group mt-5 col">
                             <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
                             <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
-                                <option value="" selected disabled>Select from department..</option>
+                                <option value="" disabled>Select from department..</option>
                                 @foreach ($departments as $department)
-                                    @if ($department->id === Auth::user()->department->id)
-                                        <option value="{{ $department->name }}" selected>{{ $department->name }}
-                                        </option>
-                                    @elseif ($department->name === 'HRD' || $department->name === 'DIRECTOR')
-                                    @else
-                                        <option value="{{ $department->name }}">{{ $department->name }}</option>
-                                    @endif
+                                    <option value="{{ $department->name }}"
+                                        {{ old('from_department', $authUser->department->name) === $department->name ? 'selected' : '' }}>
+                                        {{ $department->name }}
+                                    </option>
                                 @endforeach
                             </select>
                             <div class="form-text">Ubah hanya jika ingin membuat PR diluar dari departemen sendiri</div>
@@ -64,11 +32,15 @@
                         <div class="form-group mt-5 col">
                             <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
                             <select class="form-select" name="to_department" id="toDepartmentDropdown" required>
-                                <option value="" selected disabled>Select to department..</option>
-                                <option value="Maintenance">Maintenance</option>
-                                <option value="Purchasing">Purchasing</option>
-                                <option value="Personnel">Personnel</option>
-                                <option value="Computer">Computer</option>
+                                <option value="" disabled>Select to department..</option>
+                                <option value="Maintenance" {{ old('to_department') == 'Maintenance' ? 'selected' : '' }}>
+                                    Maintenance</option>
+                                <option value="Purchasing" {{ old('to_department') == 'Purchasing' ? 'selected' : '' }}>
+                                    Purchasing</option>
+                                <option value="Personnel" {{ old('to_department') == 'Personnel' ? 'selected' : '' }}>
+                                    Personnel</option>
+                                <option value="Computer" {{ old('to_department') == 'Computer' ? 'selected' : '' }}>
+                                    Computer</option>
                             </select>
                             <div class="form-text">Pilih departemen yang dituju. Eg. Computer</div>
                         </div>
@@ -76,15 +48,15 @@
                         <div class="form-group mt-5 col d-none" id="localImportFormGroup">
                             <label class="form-label fs-5 fw-bold">Local/Import</label>
                             <div class="form-check">
-                                <input class="form-check-input disabled" type="radio" name="is_import" id="localRadio"
-                                    value="false">
+                                <input class="form-check-input" type="radio" name="is_import" id="localRadio"
+                                    value="false" {{ old('is_import') == 'false' ? 'checked' : '' }}>
                                 <label class="form-check-label" for="localRadio">
                                     Local
                                 </label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input disabled" type="radio" name="is_import" id="importRadio"
-                                    value="true">
+                                <input class="form-check-input" type="radio" name="is_import" id="importRadio"
+                                    value="true" {{ old('is_import') == 'true' ? 'checked' : '' }}>
                                 <label class="form-check-label" for="importRadio">
                                     Import
                                 </label>
@@ -96,41 +68,40 @@
                         <div class="form-group mt-3">
                             <div id="itemsContainer">
                                 <label class="form-label fs-5 fw-bold">List of Items</label>
-                                <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
-                                <div id="itemsHelp" class="h6 text-secondary fw-bold">Notes: </div>
-                                <div id="itemsHelp" class="h6 text-secondary fw-bold">- Unit Price
-                                    tambahkan .00 jika harga tidak memiliki desimal. Contoh -> IDR 1,200.00 </div>
-                                <div id="itemsHelp" class="h6 text-secondary fw-bold">- Pastikan semua kolom terinput
+                                <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3">
+                                    <!-- Item rows will be dynamically added here -->
                                 </div>
                                 <button class="btn btn-secondary btn-sm mt-3" type="button" onclick="addNewItem()">Add
                                     Item</button>
                             </div>
-
                         </div>
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label fs-5 fw-bold" for="date_of_pr">Date of PR</label>
-                            <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required>
+                            <input class="form-control" type="date" id="date_of_pr" name="date_of_pr"
+                                value="{{ old('date_of_pr') }}" required>
                         </div>
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label fs-5 fw-bold" for="date_of_required">Date of Required</label>
-                            <input class="form-control" type="date" name="date_of_required" required>
+                            <input class="form-control" type="date" name="date_of_required"
+                                value="{{ old('date_of_required') }}" required>
                         </div>
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label fs-5 fw-bold col-sm-2" for="supplier">Supplier</label>
-                            <input class="form-control" type="text" name="supplier" required>
+                            <input class="form-control" type="text" name="supplier" value="{{ old('supplier') }}"
+                                required>
                         </div>
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label fs-5 fw-bold col-sm-2" for="pic">PIC</label>
-                            <input class="form-control" type="text" name="pic" required>
+                            <input class="form-control" type="text" name="pic" value="{{ old('pic') }}" required>
                         </div>
 
                         <div class="form-group mt-3">
                             <label class="form-label fs-5 fw-bold" for="remark">Remark</label>
-                            <textarea class="form-control" name="remark" rows="4" cols="50" required></textarea>
+                            <textarea class="form-control" name="remark" rows="4" required>{{ old('remark') }}</textarea>
                         </div>
 
                         <button class="btn btn-primary mt-3" type="submit">Submit</button>
@@ -171,10 +142,17 @@
         let itemIdCounter = 0;
         let isFirstCall = true; // Flag to track the first call
 
+        var oldItemsData = {!! json_encode(old('items')) !!};
+        if (oldItemsData) {
+            for (let index = 0; index <= oldItemsData.length; index++) {
+                addNewItem();
+            }
+        }
+
         function addNewItem() {
             // Create a new item container
             const newItemContainer = document.createElement('div');
-            newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center');
+            newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center', 'my-1');
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
@@ -220,61 +198,6 @@
             itemNameInput.id = `itemNameInput_${itemIdCounter}`;
             itemNameInput.placeholder = 'Item Name';
             itemNameInput.required = true;
-
-            // const itemNameDropdown = document.createElement('div');
-            // itemNameDropdown.id = 'itemDropdown';
-            // itemNameDropdown.classList.add('dropdown-content');
-
-            // //ajax for dropdown item
-            // itemNameInput.addEventListener('keyup', function() {
-            //     const inputValue = itemNameInput.value.trim();
-            //     // Fetch item names from server based on user input
-            //     fetch(`/get-item-names?itemName=${inputValue}`)
-            //         .then(response => response.json())
-            //         .then(data => {
-            //             // Clear previous dropdown options
-            //             itemNameDropdown.innerHTML = '';
-
-            //             // Populate dropdown with fetched item names
-            //             if (data.length > 0) {
-            //                 data.forEach(item => {
-            //                     const option = document.createElement('option');
-            //                     option.classList.add('dropdown-item')
-            //                     option.value = item.id;
-            //                     option.textContent = item.name;
-            //                     option.addEventListener('click', function() {
-            //                         itemNameInput.value = item.name;
-            //                         currencyInput.value = item.currency;
-
-            //                         unitPriceInput.value = item.latest_price === null ? item
-            //                             .price : item.latest_price;
-
-            //                         formatPrice(unitPriceInput, currencyInput.value);
-            //                         const unitPrice = unitPriceInput.value.replace(/[^\d,]/g,
-            //                             '').replace(',', '.');
-            //                         subtotalInput.value = parseFloat(quantityInput.value) *
-            //                             unitPrice;
-            //                         formatPrice(subtotalInput, currencyInput.value);
-
-            //                         itemDropdown.innerHTML = '';
-            //                         itemNameDropdown.style.display = 'none';
-            //                     });
-            //                     itemNameDropdown.appendChild(option);
-            //                 });
-            //                 itemNameDropdown.style.display = 'block';
-            //             } else {
-            //                 itemNameDropdown.style.display = 'none';
-            //             }
-            //         })
-            //         .catch(error => console.error('Error:', error));
-            // });
-            // //ajax for dropdown item
-
-            // document.addEventListener('click', function(event) {
-            //     if (!itemNameInput.contains(event.target) && !itemDropdown.contains(event.target)) {
-            //         itemDropdown.style.display = 'none';
-            //     }
-            // });
 
             formGroupName.appendChild(itemNameInput);
             // formGroupName.appendChild(itemNameDropdown);
@@ -439,7 +362,6 @@
 
             // Increment the item ID counter
             itemIdCounter++;
-
             // Initialize TomSelect for the newly added item name input with AJAX
             new TomSelect(`#itemNameInput_${itemIdCounter - 1}`, {
                 valueField: 'name',
@@ -478,6 +400,40 @@
             });
 
             updateItemCount();
+
+            if (oldItemsData && oldItemsData.length > 0) {
+                const itemData = oldItemsData[itemIdCounter - 1];
+
+                const {
+                    item_name,
+                    quantity,
+                    uom,
+                    currency,
+                    price,
+                    purpose
+                } = itemData;
+
+                // DEBUG
+                // console.log(`item_name : ${item_name}`);
+                // console.log(`quantity : ${quantity}`);
+                // console.log(`uom : ${uom}`);
+                // console.log(`currency : ${currency}`);
+                // console.log(`price : ${price}`);
+                // console.log(`purpose : ${purpose}`);
+
+                itemNameInput.value = item_name;
+                quantityInput.value = quantity;
+                uomInput.value = uom;
+                currencyInput.value = currency;
+                unitPriceInput.value = price;
+                purposeInput.value = purpose;
+
+                // Calculate subtotal if quantity and unit price are provided
+                if (itemData.quantity && itemData.price) {
+                    const subtotal = (parseFloat(itemData.quantity) * parseFloat(itemData.price)).toFixed(2);
+                    subtotalInput.value = subtotal;
+                }
+            }
         }
 
         // Function to validate the input
