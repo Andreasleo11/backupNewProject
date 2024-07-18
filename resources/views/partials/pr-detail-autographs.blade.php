@@ -42,7 +42,6 @@
                     $user->department->name === $purchaseRequest->from_department &&
                     $user->is_head == 1 &&
                     $user->specification->name === 'DESIGN' &&
-                    $purchaseRequest->status == 1 &&
                     $purchaseRequest->is_cancel === 0;
 
             @endphp

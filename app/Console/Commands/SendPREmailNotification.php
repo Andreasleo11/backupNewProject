@@ -123,7 +123,7 @@ class SendPREmailNotification extends Command
         $cc = [$newPr->createdBy->email];
         if ($newPr->to_department === 'Maintenance') {
             array_push($cc, 'nur@daijo.co.id');
-        } elseif ($newPr->status === 4) {
+        } elseif ($newPr->status === 4 && $newPr->to_department === 'Purchasing') {
             $purchasingUsers = User::with('department')
                 ->whereHas('department', function ($query) {
                     $query->where('name', 'PURCHASING');

@@ -79,6 +79,8 @@ use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\MasterTintaController;
+use App\Http\Controllers\SuratPerintahKerjaKomputerController;
+
 
 
 
@@ -291,7 +293,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
-        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
         Route::get("deliveryschedule/raw", [DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
 
@@ -471,10 +472,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function () {
         Route::get('mu/home', [MUHomeController::class, 'index'])->name('mu.home');
     });
-
-    Route::middleware(['checkDepartment:BUSINESS,QA'])->group(function () {
-        Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
-    });
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
@@ -590,6 +587,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
     Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
 
+
+    Route::get("/updatedept",  [DisciplinePageController::class, 'updateDept'])->name('update.dept');
+
+
     Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
     Route::get('/fetch/filtered/yayasan-employees', [DisciplinePageController::class, 'fetchFilteredYayasanEmployees'])->name('fetch.filtered.yayasan.employees');
 
@@ -616,7 +617,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
-
+    Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
@@ -662,7 +663,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
-   
+
     Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
 
     Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
@@ -675,9 +676,18 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
 
-
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
+    Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
+    Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
+    Route::post('/spkkomputer/input', [SuratPerintahKerjaKomputerController::class, 'inputprocess'])->name('spk.input');
+    Route::get('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'detail'])->name('spk.detail');
+    Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
+    Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
+
+    Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
+    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
 
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION

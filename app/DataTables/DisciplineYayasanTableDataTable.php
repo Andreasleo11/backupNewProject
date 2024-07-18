@@ -218,12 +218,8 @@ class DisciplineYayasanTableDataTable extends DataTable
             $total += 0;
         }
 
-
-        $countalpha = $Alpha * 10;
-        $countizin = $Izin * 2;
-        $counttelat = $Telat * 0.5;
         $totalakhir = 0;
-        $totalakhir = $total -  ($countalpha + $countizin + $counttelat + $Sakit);
+        $totalakhir = $total;
 
 
         @endphp {{ $totalakhir }}')

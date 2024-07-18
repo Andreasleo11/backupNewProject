@@ -2,6 +2,8 @@
 
 @section('content')
 
+@include('partials.alert-success-error')
+
 <div class="container">
     <h1>Insert Warehouse Barcode Form</h1>
     <form action="{{ route('process.in.and.out') }}" method="POST">
