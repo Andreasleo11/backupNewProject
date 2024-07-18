@@ -393,7 +393,7 @@ class FormOvertimeController extends Controller
 
         $fileName = "overtime_{$departmentName}_{$currentDate}.xlsx";
 
-
+        $header->update(['is_export' => true]);
         return Excel::download(new OvertimeExport($header, $datas), $fileName);
     }
 

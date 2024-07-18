@@ -45,9 +45,7 @@
     ])
     <div class="row">
         <div class="col text-end">
-            @if (
-                ($header->status === 1 && $authUser->id === $header->Relationuser->id) ||
-                    ($header->status === 5 && $authUser->specification->name === 'VERIFICATOR'))
+            @if ($header->status === 1 && $authUser->id === $header->Relationuser->id)
                 <button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal"
                     class="btn btn-primary"><i class='bx bx-edit'></i> Edit</button>
             @endif
