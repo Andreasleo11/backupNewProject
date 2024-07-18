@@ -488,6 +488,7 @@
                 </ul>
             </ul>
         </li>
+<<<<<<< Updated upstream
         <li class="sidebar-item" id="sidebar-item-stock-management">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
@@ -503,5 +504,7 @@
                 </li>
             </ul>
         </li>
+=======
+>>>>>>> Stashed changes
     </ul>
 </aside>
