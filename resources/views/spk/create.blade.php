@@ -50,7 +50,7 @@
                             <div class="form-group row mt-3">
                                 <label for="tanggallapor" class="fw-semibold col-form-label col-sm-2">Tanggal Lapor</label>
                                 <div class="col-sm-10">
-                                    <input type="date" name="tanggallapor" id="tanggallapor" readonly
+                                    <input type="datetime-local" name="tanggallapor" id="tanggallapor" readonly
                                         class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
@@ -108,14 +108,17 @@
         });
     </script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-            const dd = String(today.getDate()).padStart(2, '0');
-            const formattedToday = `${yyyy}-${mm}-${dd}`;
-            document.getElementById('tanggallapor').value = formattedToday;
-        });
-    </script>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const dd = String(today.getDate()).padStart(2, '0');
+        const hh = String(today.getHours()).padStart(2, '0');
+        const min = String(today.getMinutes()).padStart(2, '0');
+        const ss = String(today.getSeconds()).padStart(2, '0');
+        const formattedToday = `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+        document.getElementById('tanggallapor').value = formattedToday;
+    });
+</script>
 @endpush
