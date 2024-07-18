@@ -20,6 +20,7 @@ class SuratPerintahKerjaKomputer extends Model
         'pic',
         'keterangan_pic',
         'status_laporan',
+        'tanggal_terima',
         'tanggal_selesai',
         'tanggal_estimasi',
     ];

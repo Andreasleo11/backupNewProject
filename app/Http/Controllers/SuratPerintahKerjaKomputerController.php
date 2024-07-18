@@ -11,7 +11,9 @@ use App\Models\Department;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use DateTime;
 
+use Carbon\Carbon;
 
 class SuratPerintahKerjaKomputerController extends Controller
 {
@@ -54,6 +56,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function inputprocess(Request $request)
     {
+        
         // Validate the request data
         $validatedData = $request->validate([
             'no_dokumen' => 'required|string|max:255',
@@ -63,6 +66,11 @@ class SuratPerintahKerjaKomputerController extends Controller
             'judul_laporan' => 'required|string|max:255',
             'keterangan_laporan' => 'required|string',
         ]);
+
+        // Replace the 'T' with a space in tanggallapor
+        if (isset($validatedData['tanggallapor'])) {
+            $validatedData['tanggallapor'] = str_replace('T', ' ', $validatedData['tanggallapor']);
+        }
 
         // Create a new instance of SuratPerintahKerjaKomputer and populate it with the validated data
         $spk = new SuratPerintahKerjaKomputer();
@@ -134,7 +142,7 @@ class SuratPerintahKerjaKomputerController extends Controller
                 $report->status_laporan = 2;
             }
             // Check if pic, keterangan_pic, and tanggal_estimasi are not null
-            elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null) {
+            elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null && $report->tanggal_terima !== null) {
                 $report->status_laporan = 1;
             }
 
@@ -142,5 +150,83 @@ class SuratPerintahKerjaKomputerController extends Controller
             $report->save();
         }
         return;
+    }
+
+    public function monthlyreport(Request $request)
+    {
+        // Fetch all SuratPerintahKerjaKomputer records
+         // Get current month and year from request or set default
+        $month = $request->input('month', date('m'));
+        $year = $request->input('year', date('Y'));
+
+        // Fetch all SuratPerintahKerjaKomputer records filtered by month and year
+        $reports = SuratPerintahKerjaKomputer::whereYear('tanggal_lapor', $year)
+                                            ->whereMonth('tanggal_lapor', $month)
+                                            ->get();
+
+        // Initialize an array to store formatted report data
+        $monthlyReport = [];
+
+        // Process each report to extract required fields and calculate durations
+        foreach ($reports as $report) {
+            // Calculate duration between tanggal_selesai and tanggal_lapor
+            $dateMulai = null;
+            $dateEstimasi = null;
+            $estimasiFormatted = '';
+            $menitEstimasi = 0;
+            $menitDurasi = 0;
+            
+            $dateLapor = new DateTime($report->tanggal_lapor);
+            $durasiFormatted = '';
+
+            if (!empty($report->tanggal_selesai)) {
+                $dateSelesai = new DateTime($report->tanggal_selesai);
+                $durasi = $dateLapor->diff($dateSelesai);
+                $durasiFormatted = sprintf('%d hari, %d jam, %d menit', $durasi->days, $durasi->h, $durasi->i);
+                $menitDurasi = $durasi->days * 24 * 60 + $durasi->h * 60 + $durasi->i;
+            } else {
+                // Handle case where tanggal_selesai is not filled
+                $durasiFormatted = 'Belum selesai'; // Or any default message you prefer
+            }
+
+            // Calculate estimasi_kesepakatan based on your logic
+            $dateMulai = new DateTime($report->tanggal_terima);
+            $dateEstimasi = new DateTime($report->tanggal_estimasi);
+            $estimasi = $dateMulai->diff($dateEstimasi);
+            $estimasiFormatted = sprintf('%d hari, %d jam, %d menit', $estimasi->days, $estimasi->h, $estimasi->i);
+
+            // Convert durations to minutes
+          
+            $menitEstimasi = $estimasi->days * 24 * 60 + $estimasi->h * 60 + $estimasi->i;
+
+
+            $presentase = ($menitEstimasi !== null && $menitDurasi !== null && $menitEstimasi != 0)
+            ? min(1, $menitEstimasi / $menitDurasi ) * 100
+            : 0;
+
+            // Prepare the data for the monthly report
+            $monthlyReport[] = [
+                'no_dokumen' => $report->no_dokumen,
+                'pelapor' => $report->pelapor,
+                'dept' => $report->dept,
+                'judul' => $report->judul_laporan,
+                'keterangan_laporan' => $report->keterangan_laporan,
+                'pic' => $report->pic,
+                'keterangan_pic' => $report->keterangan_pic,
+                'tanggal_lapor' => $report->tanggal_lapor,
+                'tanggal_terima' => $report->tanggal_terima,
+                'tanggal_selesai' => $report->tanggal_selesai,
+                'durasi' => $durasiFormatted,
+                'estimasi_kesepakatan' => $estimasiFormatted,
+                'menit_estimasi' => $menitEstimasi,
+                'menit_durasi' => $menitDurasi ?? 0,
+                'presentase' => $presentase ?? 0,
+            ];
+        }
+        
+        // Output or return the formatted monthly report
+        
+        return view('spk.monthlyreport', ['monthlyReport' => $monthlyReport, 'month' => $month,
+        'year' => $year,]);
     }
 }

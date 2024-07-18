@@ -80,7 +80,8 @@
 
     {{-- DEPT HEAD AUTOGRAPH --}}
     <div class="col my-2">
-        <h2> {{ $purchaseRequest->from_department === 'MOULDING' ? 'Head Design' : 'Dept Head' }} </h2>
+        <h2> {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department === 'Maintenance' ? 'Head Design' : 'Dept Head' }}
+        </h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographuser2"></div>
         @php

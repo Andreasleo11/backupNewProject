@@ -33,7 +33,7 @@
                             <div class="card mt-2">
                                 <div class="card-body">
                                     <div class="text-end">
-                                        @if ($authUser->department->name === 'COMPUTER')
+                                        @if ($authUser->department->name === 'COMPUTER' && $report->tanggal_selesai === null)
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
@@ -41,9 +41,12 @@
                                         <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
                                         <div class="text-secondary">
                                             <div>Pelapor : {{ $report->pelapor }}</div>
-                                            <div class="mb-2">Tanggal Lapor : @formatDate($report->tanggal_lapor)</div>
+                                            <div class="mb-2">Tanggal Lapor : {{ \Carbon\Carbon::parse($report->tanggal_lapor)->translatedFormat('d F Y H:i:s') }}</div>
                                             <div class="mb-2">Dibuat Pada : {{ \Carbon\Carbon::parse($report->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
                                             <div class="mb-2">Diupdate Pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                            @if ($report->tanggal_selesai !== null)
+                                                <div class="mb-2">Selesai pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                            @endif
                                         </div>
                                         @include('partials.spk-status')
                                     </div>
@@ -52,7 +55,7 @@
                                         <div class="col-sm-9">
                                             <input type="text" name="no_dokumen" id="no_dokumen"
                                                 value="{{ $report->no_dokumen }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -60,14 +63,14 @@
                                         <div class="col-sm-9">
                                             <input type="text" name="pelapor" id="pelapor"
                                                 value="{{ $report->pelapor }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2 readonly">
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -108,21 +111,30 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="tanggal_selesai" class="fw-semibold col-form-label col">Tanggal
-                                            Selesai</label>
+                                        <label for="tanggal_terima" class="fw-semibold col-form-label col">Tanggal
+                                            Terima</label>
                                         <div class="col-sm-9">
-                                            <input type="date" name="tanggal_selesai" id="tanggal_selesai"
+                                            <input type="datetime-local" name="tanggal_terima" id="tanggal_terima"
                                                 class="form-control"
-                                                value="{{ $report->tanggal_selesai ? date('Y-m-d', strtotime($report->tanggal_selesai)) : '' }}">
+                                                value="{{ $report->tanggal_terima}}">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="tanggal_estimasi" class="fw-semibold col-form-label col">Tanggal
                                             Estimasi</label>
                                         <div class="col-sm-9">
-                                            <input type="date" name="tanggal_estimasi" id="tanggal_estimasi"
+                                            <input type="datetime-local" name="tanggal_estimasi" id="tanggal_estimasi"
                                                 class="form-control"
-                                                value="{{ $report->tanggal_estimasi ? date('Y-m-d', strtotime($report->tanggal_estimasi)) : '' }}">
+                                                value="{{ $report->tanggal_estimasi}}">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mt-3">
+                                        <label for="tanggal_selesai" class="fw-semibold col-form-label col">Tanggal
+                                            Selesai</label>
+                                        <div class="col-sm-9">
+                                            <input type="datetime-local" name="tanggal_selesai" id="tanggal_selesai"
+                                                class="form-control"
+                                                value="{{ $report->tanggal_selesai}}">
                                         </div>
                                     </div>
                                 </div>
