@@ -44,6 +44,9 @@
                                             <div class="mb-2">Tanggal Lapor : @formatDate($report->tanggal_lapor)</div>
                                             <div class="mb-2">Dibuat Pada : {{ \Carbon\Carbon::parse($report->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
                                             <div class="mb-2">Diupdate Pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                            @if ($report->tanggal_selesai !== null)
+                                                <div class="mb-2">Selesai pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                            @endif
                                         </div>
                                         @include('partials.spk-status')
                                     </div>
