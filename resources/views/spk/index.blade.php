@@ -31,6 +31,7 @@
                 @if ($showCreateButton)
                     <a href="{{ route('spk.create') }}" class="btn btn-primary">New Report</a>
                 @endif
+                <a href="{{ route('spk.monthlyreport') }}" class="btn btn-primary">Monthly Report</a>
             </div>
         </div>
 
