@@ -269,7 +269,7 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc', 'Start Date', 'Start Time', 'End Date',
+                const headerLabels = ['#', 'NIK ', 'Name ', 'Job desc', 'Start Date', 'Start Time', 'End Date',
                     'End Time', 'Break (Minute)', 'Remarks',
                     'Action'
                 ];
