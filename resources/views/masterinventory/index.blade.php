@@ -21,12 +21,16 @@
 </style>
 <div class="container">
     <h1>Master Inventory List</h1>
+    
 
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
+    <div class="mb-3">
+        <a href="{{ route('masterinventory.createpage') }}" class="btn btn-primary">Add New Inventory</a>
+    </div>
 
     <table class="table table-bordered">
         <thead>
