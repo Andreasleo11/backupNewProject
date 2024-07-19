@@ -88,7 +88,7 @@ class MasterInventoryController extends Controller
             }
         }
 
-        return redirect()->route('masterinventory.createpage')->with('success', 'Master Inventory created successfully.');
+        return redirect()->route('masterinventory.index')->with('success', 'Master Inventory created successfully.');
     }
     
 }
