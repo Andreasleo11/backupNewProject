@@ -818,13 +818,18 @@ class DisciplinePageController extends Controller
                 unset($row[3]); // Remove cell D (index 3)
                 unset($row[4]);
                 unset($row[5]);
+
+                unset($row[7]);
+                unset($row[8]);
+                unset($row[9]);
+                unset($row[10]);
                 // Re-index the array after removing cells
                 $row = array_values($row);
             }
 
             $allData = array_merge($allData, $data[0]);
         }
-
+        dd($allData);
 
         $excelFileName = 'DisciplineDataYayasan.xlsx';
         $excelFilePath = public_path($excelFileName);
