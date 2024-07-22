@@ -340,7 +340,7 @@
             formGroupPurposeInput.appendChild(purposeInput);
 
             const actionGroup = document.createElement('div');
-            actionGroup.classList.add('col-md-1');
+            actionGroup.classList.add('col-md-1', 'text-center');
 
             const removeButton = document.createElement('a');
             removeButton.classList.add('btn', 'btn-danger');
