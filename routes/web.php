@@ -80,6 +80,7 @@ use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaKomputerController;
+use App\Http\Controllers\MasterInventoryController;
 
 
 
@@ -693,6 +694,11 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
 
 
+
+    Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
+    Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
+    Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
+        
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
         $report = App\Models\MonthlyBudgetReport::find(5);
