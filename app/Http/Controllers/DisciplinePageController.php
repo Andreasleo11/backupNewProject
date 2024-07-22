@@ -847,7 +847,7 @@ class DisciplinePageController extends Controller
 
             $allData = array_merge($allData, $data[0]);
         }
-        dd($allData);
+       
 
         $excelFileName = 'DisciplineDataYayasan.xlsx';
         $excelFilePath = public_path($excelFileName);
