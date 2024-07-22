@@ -44,7 +44,8 @@ class PurchaseRequest extends Model
         'from_department',
         'is_import',
         'is_cancel',
-        'po_number'
+        'po_number',
+        'doc_num'
     ];
 
 
