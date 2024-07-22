@@ -200,7 +200,7 @@ class SuratPerintahKerjaKomputerController extends Controller
             $menitEstimasi = $estimasi->days * 24 * 60 + $estimasi->h * 60 + $estimasi->i;
 
 
-            $presentase = ($menitEstimasi !== null && $menitDurasi !== null && $menitEstimasi != 0)
+            $presentase = ($menitEstimasi !== 0 && $menitDurasi !== 0 && $menitDurasi !== 0)
             ? min(1, $menitEstimasi / $menitDurasi ) * 100
             : 0;
 
