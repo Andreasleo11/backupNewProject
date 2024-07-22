@@ -58,27 +58,9 @@ class PurchaseRequest extends Model
         return $this->belongsTo(User::class, 'user_id_create');
     }
 
-    public function files(){
-        return $this->hasMany(File::class, 'doc_id', 'doc_num');
-    }
-
-    protected static function boot()
+    public function files()
     {
-        parent::boot();
-
-        static::creating(function ($model) {
-            // Get the current record's position in the table
-            $position = static::count() + 1;
-
-            // Get the date portion
-            $date = now()->format('Ymd'); // Assuming you want the current date
-
-            // Build the custom ID
-            $customId = "PR/{$position}/{$date}";
-
-            // Assign the custom ID to the model
-            $model->doc_num = $customId;
-        });
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
     }
 
     public function scopeApproved($query)
@@ -99,10 +81,17 @@ class PurchaseRequest extends Model
     protected static function booted()
     {
         static::created(function ($purchaseRequest) {
-            // Dispatch the job to send the email notification
-            $prNo = substr($purchaseRequest->to_department, 0, 4) . '-' . $purchaseRequest->id;
-            $purchaseRequest->update(['pr_no' => $prNo]);
+            // Get the date portion
+            $date = now()->format('Ymd'); // Assuming you want the current date
 
+            // Build the docNum
+            $docNum = "PR/{$purchaseRequest->id}/{$date}";
+
+            $prNo = substr($purchaseRequest->to_department, 0, 4) . '-' . $purchaseRequest->id;
+
+            $purchaseRequest->update(['pr_no' => $prNo, 'doc_num' => $docNum]);
+
+            // Dispatch the job to send the email notification
             Bus::dispatch(new SendPREmailNotification($purchaseRequest));
         });
 
@@ -119,5 +108,4 @@ class PurchaseRequest extends Model
             }
         });
     }
-
 }

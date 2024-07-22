@@ -36,12 +36,12 @@ class StorePurchaseRequest extends FormRequest
             'remark' => 'nullable|string|max:255',
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
-            'type' => [
-                'nullable',
-                'string',
-                Rule::in(['factory', 'office'])
-            ],
-            'is_import' => 'nullable|boolean',
+            // 'type' => [
+            //     'nullable',
+            //     'string',
+            //     Rule::in(['factory', 'office'])
+            // ],
+            // 'is_import' => 'nullable|boolean',
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
             'items.*.price' => ['required', new SanitizedNumeric],

@@ -486,6 +486,13 @@
                     </a>
                 </li>
 
+                <li class="sidebar-item">
+                    <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Inventory Master Komputer
+                    </a>
+                </li>
+
                 @if (($user->is_head === 1 && $user->department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
                     <li class="sidebar-item">
                         <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">

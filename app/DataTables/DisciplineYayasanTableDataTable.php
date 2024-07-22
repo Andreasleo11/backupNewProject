@@ -303,7 +303,9 @@ class DisciplineYayasanTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '361')
+                    $query->where(function ($query) {
+                        $query->where('Dept', '361')->orWhere('Dept', '362');
+                    })
                         ->where('status', 'YAYASAN');
                 })->newQuery();
         } elseif (Auth::user()->department_id == 18) {
@@ -317,22 +319,38 @@ class DisciplineYayasanTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '331')
+                    $query->where(function ($query) {
+                        $query->where('Dept', '331')->orWhere('Dept', '330');
+                    })
                         ->where('status', 'YAYASAN');
                 })->newQuery();
         } elseif (Auth::user()->department_id == 17) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '330')
-                        ->where('status', 'YAYASAN');
+                    $query->where('status', 'YAYASAN');
+
+                    if (Auth::user()->name === 'catur') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '331')->orWhere('Dept', '330');
+                        });
+                    } else {
+                        $query->where('Dept', '330');
+                    }
                 })->newQuery();
         } elseif (Auth::user()->department_id == 2) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '340')
-                        ->where('status', 'YAYASAN');
+                    $query->where('status', 'YAYASAN');
+
+                    if (auth()->user()->name === 'yuli') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '340')->orWhere('Dept', '341');
+                        });
+                    } else {
+                        $query->where('Dept', '340');
+                    }
                 })->newQuery();
         }
     }
@@ -390,14 +408,10 @@ class DisciplineYayasanTableDataTable extends DataTable
                 ->searchable(false)
                 ->addClass('align-middle')->orderable(false),
             Column::make('Month'),
-            Column::make('Alpha')
-                ->exportable(false),
-            Column::make('Telat')
-                ->exportable(false),
-            Column::make('Izin')
-                ->exportable(false),
-            Column::make('Sakit')
-                ->exportable(false),
+            Column::make('Alpha'),
+            Column::make('Telat'),
+            Column::make('Izin'),
+            Column::make('Sakit'),
             Column::make('kemampuan_kerja'),
             Column::make('kecerdasan_kerja'),
             Column::make('qualitas_kerja'),
