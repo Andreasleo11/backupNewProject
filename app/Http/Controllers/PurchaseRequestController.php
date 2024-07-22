@@ -82,9 +82,9 @@ class PurchaseRequestController extends Controller
                     });
             });
 
-            $purchaseRequestsQuery->where(function ($query) use ($user) {
-                $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
-            });
+            // $purchaseRequestsQuery->where(function ($query) use ($user) {
+            //     $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
+            // });
 
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
@@ -142,6 +142,7 @@ class PurchaseRequestController extends Controller
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
+            ->orWhere('user_id_create', $user->id)
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
@@ -549,6 +550,7 @@ class PurchaseRequestController extends Controller
 
     public function update(UpdatePurchaseRequest $request, $id)
     {
+        $validated = $request->validated();
         // Define the additional attribute and its value
         $additionalData = [
             'updated_at' => now(),
@@ -571,7 +573,7 @@ class PurchaseRequestController extends Controller
                 $additionalData['autograph_user_2'] = null;
             }
             $additionalData['status'] = 1;
-            $dataToUpdate = array_merge($request, $additionalData);
+            $dataToUpdate = array_merge($validated, $additionalData);
 
             $pr->update($dataToUpdate);
         } elseif ($pr->status === 6) {
@@ -584,8 +586,8 @@ class PurchaseRequestController extends Controller
             }
             $additionalData['status'] = 6;
 
-            // Merge the request data with the additional data
-            $dataToUpdate = array_merge($request, $additionalData);
+            // Merge the validated data with the additional data
+            $dataToUpdate = array_merge($validated, $additionalData);
             // dd($dataToUpdate);
             $pr->update($dataToUpdate);
 
@@ -595,8 +597,8 @@ class PurchaseRequestController extends Controller
             $additionalData['autograph_user_3'] = null;
             $additionalData['status'] = 3;
 
-            // Merge the request data with the additional data
-            $dataToUpdate = array_merge($request, $additionalData);
+            // Merge the validated data with the additional data
+            $dataToUpdate = array_merge($validated, $additionalData);
 
             // dd($dataToUpdate);
             $pr->update($dataToUpdate);
