@@ -413,14 +413,6 @@
                     purpose
                 } = itemData;
 
-                // DEBUG
-                // console.log(`item_name : ${item_name}`);
-                // console.log(`quantity : ${quantity}`);
-                // console.log(`uom : ${uom}`);
-                // console.log(`currency : ${currency}`);
-                // console.log(`price : ${price}`);
-                // console.log(`purpose : ${purpose}`);
-
                 itemNameInput.value = item_name;
                 quantityInput.value = quantity;
                 uomInput.value = uom;

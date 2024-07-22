@@ -494,8 +494,15 @@ class DisciplinePageController extends Controller
 
             if ($user->department_id == 2) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '340')
-                        ->where('status', 'YAYASAN');
+                    $query->where('status', 'YAYASAN');
+
+                    if (auth()->user()->name === 'yuli') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '340')->orWhere('Dept', '341');
+                        });
+                    } else {
+                        $query->where('Dept', '340');
+                    }
                 })
                     ->get();
             } elseif ($user->is_gm) {
@@ -523,8 +530,15 @@ class DisciplinePageController extends Controller
                     ->get();
             } elseif ($user->department_id == 17) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '330')
-                        ->where('status', 'YAYASAN');
+                    $query->where('status', 'YAYASAN');
+
+                    if (auth()->user()->name === 'catur') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '330')->orWhere('Dept', '331');
+                        });
+                    } else {
+                        $query->where('Dept', '330');
+                    }
                 })
                     ->get();
             } elseif ($user->department_id == 25) {
@@ -535,10 +549,16 @@ class DisciplinePageController extends Controller
                     ->get();
             } elseif ($user->department_id == 19) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '361')
-                        ->where('status', 'YAYASAN');
-                })
-                    ->get();
+                    $query->where('status', 'YAYASAN');
+
+                    if (auth()->user()->name === 'popon') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '361')->orWhere('Dept', '362');
+                        });
+                    } else {
+                        $query->where('Dept', '361');
+                    }
+                })->get();
             } elseif ($user->department_id == 20) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
@@ -558,8 +578,6 @@ class DisciplinePageController extends Controller
                 })
                     ->get();
             }
-
-
 
             return $dataTable->render("setting.disciplineyayasanindex", compact("employees", "user"));
         } catch (\Throwable $th) {

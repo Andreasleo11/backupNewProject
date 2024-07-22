@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\DirectorPurchaseRequestDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePurchaseRequest;
+use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
@@ -546,17 +547,8 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePurchaseRequest $request, $id)
     {
-        // dd($id);
-        $validated = $request->validate([
-            'date_pr' => 'date',
-            'date_required' => 'date',
-            'pic' => 'string',
-            'remark' => 'string',
-            'supplier' => 'string',
-        ]);
-
         // Define the additional attribute and its value
         $additionalData = [
             'updated_at' => now(),
@@ -579,7 +571,7 @@ class PurchaseRequestController extends Controller
                 $additionalData['autograph_user_2'] = null;
             }
             $additionalData['status'] = 1;
-            $dataToUpdate = array_merge($validated, $additionalData);
+            $dataToUpdate = array_merge($request, $additionalData);
 
             $pr->update($dataToUpdate);
         } elseif ($pr->status === 6) {
@@ -592,8 +584,8 @@ class PurchaseRequestController extends Controller
             }
             $additionalData['status'] = 6;
 
-            // Merge the validated data with the additional data
-            $dataToUpdate = array_merge($validated, $additionalData);
+            // Merge the request data with the additional data
+            $dataToUpdate = array_merge($request, $additionalData);
             // dd($dataToUpdate);
             $pr->update($dataToUpdate);
 
@@ -603,8 +595,8 @@ class PurchaseRequestController extends Controller
             $additionalData['autograph_user_3'] = null;
             $additionalData['status'] = 3;
 
-            // Merge the validated data with the additional data
-            $dataToUpdate = array_merge($validated, $additionalData);
+            // Merge the request data with the additional data
+            $dataToUpdate = array_merge($request, $additionalData);
 
             // dd($dataToUpdate);
             $pr->update($dataToUpdate);

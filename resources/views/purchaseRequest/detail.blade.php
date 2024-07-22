@@ -16,6 +16,7 @@
 @endpush
 
 @section('content')
+    @include('partials.alert-success-error')
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -40,12 +41,6 @@
             @include('partials.upload-files-modal', ['doc_id' => $purchaseRequest->doc_num])
         @endif
     </div>
-
-    <div class="mt-4">
-        @include('partials.alert-success-error')
-    </div>
-
-
 
     <section aria-label="autographs" class="container">
 
