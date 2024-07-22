@@ -115,7 +115,9 @@
             // }
 
             if ($user->is_head == 1 && $purchaseRequest->status == 1 && $isApproveNotEmpty) {
-                if ($user->department->name === 'LOGISTIC' && $purchaseRequest->from_department === 'STORE') {
+                if ($user->department->name === 'HRD' && $purchaseRequest->from_department === 'PERSONALIA') {
+                    $showDeptHeadApprovalButtons = true;
+                } elseif ($user->department->name === 'LOGISTIC' && $purchaseRequest->from_department === 'STORE') {
                     $showDeptHeadApprovalButtons = true;
                 } elseif ($purchaseRequest->from_department === 'MOULDING') {
                     if ($purchaseRequest->to_department === 'Maintenance') {
@@ -270,7 +272,7 @@
 
     {{-- VERIFICATOR AUTOGRAPH --}}
     <div
-        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel' ? '' : 'd-none' }}">
+        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel' || ($purchaseRequest->from_department === 'COMPUTER' && $purchaseRequest->to_department === 'Maintenance') ? '' : 'd-none' }}">
         <h2>Verificator</h2>
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2 border-1" id="autographuser3"></div>

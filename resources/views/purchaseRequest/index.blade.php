@@ -29,10 +29,10 @@
                 <select class="form-select" name="status">
                     <option value="0" {{ session('status') === null ? 'selected' : '' }}>All Status</option>
                     <option value="1" {{ session('status') == 1 ? 'selected' : '' }}>Waiting for Dept Head</option>
+                    <option value="7" {{ session('status') == 7 ? 'selected' : '' }}>Waiting for GM</option>
                     <option value="6" {{ session('status') == 6 ? 'selected' : '' }}>Waiting for Purchaser</option>
-                    <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>Waiting for GM</option>
-                    <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>Waiting for Verificator</option>
-                    <option value="7" {{ session('status') == 7 ? 'selected' : '' }}>Waiting for Director</option>
+                    <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>Waiting for Verificator</option>
+                    <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>Waiting for Director</option>
                     <option value="5" {{ session('status') == 5 ? 'selected' : '' }}>Rejected</option>
                     <option value="4" {{ session('status') == 4 ? 'selected' : '' }}>Approved</option>
                 </select>

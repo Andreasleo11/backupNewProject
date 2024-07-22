@@ -44,7 +44,7 @@ class PurchaseRequestController extends Controller
                                 ->where('type', 'office')
                                 ->orWhere('to_department', 'Computer');
                         });
-                });
+                })->orWhere('from_department', 'PERSONALIA');
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
@@ -79,6 +79,10 @@ class PurchaseRequestController extends Controller
                         $query->where('from_department', 'MOULDING')
                             ->orWhere('type', '!=', 'factory');
                     });
+            });
+
+            $purchaseRequestsQuery->where(function ($query) use ($user) {
+                $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
             });
 
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
@@ -130,39 +134,13 @@ class PurchaseRequestController extends Controller
         // Filtering based on the status
         if ($status) {
             $request->session()->put('status', $status);
-            switch ($status) {
-                    // Waiting for GM
-                    // Waiting for GM
-                case 2:
-                    $purchaseRequestsQuery->where('type', 'factory')->where('status', 2);
-                    break;
-                    // Waiting for Verificator
-                    // Waiting for Verificator
-                case 3:
-                    $purchaseRequestsQuery->where(function ($query) {
-                        $query->where('status', 2)->where('type', 'office')
-                            ->orWhere('status', 3)->where('to_department', 'Computer')->where('type', 'factory');
-                    });
-                    break;
-                    // Waiting for Director
-                    // Waiting for Director
-                case 7:
-                    $purchaseRequestsQuery->where(function ($query) {
-                        $query->where('status', 3)->whereNot->where('to_department', 'Computer')->where('type', 'factory');
-                    });
-                    break;
-
-                default:
-                    $purchaseRequestsQuery->where('status', $status);
-                    break;
-            }
+            $purchaseRequestsQuery->where('status', $status);
         } else {
             $request->session()->forget('status', $status);
         }
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
-            ->orWhere('user_id_create', $user->id) // Assuming 'created_by' is the foreign key for the user who created the request
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));

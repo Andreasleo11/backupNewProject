@@ -188,7 +188,7 @@
                     'col-md-1', 'col-md-1'
                 ];
                 const headerRow = document.createElement('div');
-                headerRow.classList.add('row', 'gy-2', 'gx-2', 'align-items-center', 'header-row');
+                headerRow.classList.add('row', 'gy-2', 'gx-2', 'my-1', 'align-items-center', 'header-row');
 
                 headerLabels.forEach((label, index) => {
                     const headerLabel = document.createElement('div');
