@@ -34,7 +34,7 @@
         </div>
 
         <div class="card mt-5">
-            <div class=card-body>
+            <div class="card-body pb-0 pb-1">
                 <table class="table table-border text-center mb-0">
                     <thead>
                         <tr>
@@ -80,6 +80,9 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            {{ $reports->links() }}
         </div>
     </div>
 @endsection

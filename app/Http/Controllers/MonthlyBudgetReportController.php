@@ -51,10 +51,10 @@ class MonthlyBudgetReportController extends Controller
             });
         }
 
-        $reportsQuery
-            ->orderBy('created_at', 'desc');
-        $reports = $reportsQuery->get();
-        // dd($reports);
+        $reports = $reportsQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return view('monthly_budget_report.index', compact('reports'));
     }
 
