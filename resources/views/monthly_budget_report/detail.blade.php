@@ -35,6 +35,38 @@
                         <h2>Dibuat</h2>
                         <div class="autograph-box container" id="autographBox1"></div>
                         <div class="container mt-2" id="autographUser1"></div>
+                        @php
+                            $showCreatedAutograph = false;
+                            if (!$report->created_autograph) {
+                                $showCreatedAutograph = true;
+                            }
+                        @endphp
+
+                        @if ($showCreatedAutograph)
+                            <div class="row px-4 d-flex justify-content-center">
+                                <div class="col-auto me-2">
+                                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                        class="btn btn-danger">Reject</button>
+                                </div>
+                                <div class="col-auto">
+                                    <form action="{{ route('monthly.budget.save.autograph', $report->id) }}" method="POST"
+                                        id="formCreatedAutograph">
+                                        @csrf @method('PUT')
+                                        <input type="hidden" name="created_autograph"
+                                            value="{{ ucwords($authUser->name) }}">
+                                    </form>
+                                    @include('partials.approve-confirmation-modal2', [
+                                        'id' => '1',
+                                        'title' => 'Approval Confirmation',
+                                        'body' => 'Are you sure want to approve this report?',
+                                        'submitButton' =>
+                                            '<button class="btn btn-success" onclick="document.getElementById(\'formCreatedAutograph\').submit()">Confirm</button>',
+                                    ])
+                                    <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
+                                        class="btn btn-success">Approve</button>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                     {{-- IS KNOWN AUTOGRAPH --}}
@@ -147,6 +179,7 @@
                             <div class="fs-6 mt-2">
                                 <div class="fs-6 text-secondary">From Department : {{ $report->department->name }}
                                     ({{ $report->dept_no }})</div>
+                                <div class="fs-6 text-secondary">Created By : {{ $report->user->name }}</div>
                                 <div class="mt-1">
                                     @if ($report->approved_autograph)
                                         <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>

@@ -7,26 +7,27 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('monthly.budget.report.index') }}">Monthly Budget Reports</a>
                 </li>
-                <li class="breadcrumb-item active">Create</li>
+                <li class="breadcrumb-item active">Edit</li>
             </ol>
         </nav>
-        <div class="h2 fw-bold">Create Monthly Budget Report</div>
+        <div class="h2 fw-bold">Edit Monthly Budget Report</div>
         <div class="row justify-content-center mt-4">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('monthly.budget.report.store') }}" method="post"
-                            enctype="multipart/form-data" class="row gx-3">
+                        <form action="{{ route('monthly.budget.report.update', $report->id) }}" method="post"
+                            class="row gx-3">
                             @csrf
-                            {{-- <input type="hidden" name="created_autograph" value="{{ ucwords(auth()->user()->name) }}"> --}}
-                            <input type="hidden" name="creator_id" value="{{ auth()->user()->id }}">
+                            @method('PUT')
+                            {{-- <input type="hidden" name="created_autograph" value="{{ ucwords(auth()->user()->name) }}">
+                            <input type="hidden" name="creator_id" value="{{ auth()->user()->id }}"> --}}
                             <div class="form-group mt-1 col">
                                 <label class="form-label fs-5 fw-bold">Dept No</label>
                                 <select name="dept_no" id="dept_no" required>
                                     @foreach ($departments as $department)
                                         @if ($department->name !== 'DIRECTOR')
                                             <option value="{{ $department->dept_no }}"
-                                                {{ auth()->user()->department->id === $department->id ? 'selected' : '' }}>
+                                                {{ $report->department->id === $department->id ? 'selected' : '' }}>
                                                 {{ $department->name }}</option>
                                         @endif
                                     @endforeach
@@ -34,17 +35,10 @@
                             </div>
                             <div class="form-group mt-1 col">
                                 <label class="form-label fs-5 fw-bold">Report Date</label>
-                                <input class="form-control" type="date" name="report_date" required>
+                                <input class="form-control" type="date" name="report_date"
+                                    value="{{ $report->report_date }}" required>
                             </div>
-                            <div class="form-group mt-4">
-                                <label class="form-label fs-5 fw-bold">Input Method</label><br>
-                                <input type="checkbox" id="inputToggle" name="input_method" value="excel">
-                                <label for="inputToggle"> Use Excel Input</label>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" style="display: none;"
-                                    id="downloadExcelTemplateButton"
-                                    onclick="document.getElementById('formExcelTemplate').submit()">Download Excel
-                                    Template</button>
-                            </div>
+
                             <div id="manualInputSection">
                                 <div class="form-group mt-4">
                                     <label class="form-label fs-5 fw-bold">List of Items</label>
@@ -52,12 +46,6 @@
                                 </div>
                                 <button class="btn btn-outline-secondary mt-3 btn-sm" type="button"
                                     onclick="addNewItem()">+ Add Item</button>
-                            </div>
-                            <div id="fileInputSection" style="display: none;">
-                                <div class="form-group mt-4">
-                                    <label class="form-label fs-5 fw-bold">Upload Excel File</label>
-                                    <input class="form-control" type="file" name="excel_file">
-                                </div>
                             </div>
 
                             <div class="form-group mt-4">
@@ -79,7 +67,10 @@
 
 @push('extraJs')
     <script>
+        let details = {!! $report->details !!};
+        console.log(details);
         const deptNoSelect = document.getElementById('dept_no');
+        const deptNoFormExcelTemplate = document.getElementById('deptNoFormExcelTemplate');
         // Initial Value
         deptNoFormExcelTemplate.value = deptNoSelect.value;
         // Change deptNoFormExcelTemplate value based on the deptNoSelect value
@@ -97,49 +88,20 @@
                 }
             });
 
-            // Add event listener for toggle input method
-            document.getElementById('inputToggle').addEventListener('change', toggleInputMethod);
+            // Populate existing details
+            if (details.length > 0) {
+                details.forEach(detail => {
+                    addNewItem(detail);
+                });
+            } else {
+                addNewItem(); // Initialize with one item if no details
+            }
         });
 
         let itemIdCounter = 0;
         let isFirstCall = true;
 
-        function toggleInputMethod() {
-            const manualInputSection = document.getElementById('manualInputSection');
-            const fileInputSection = document.getElementById('fileInputSection');
-            const inputToggle = document.getElementById('inputToggle');
-            const downloadExcelTemplateButton = document.getElementById('downloadExcelTemplateButton');
-
-            if (inputToggle.checked) {
-                manualInputSection.style.display = 'none';
-                fileInputSection.style.display = 'block';
-                downloadExcelTemplateButton.style.display = 'inline';
-                disableManualInputs(); // Disable manual input fields
-            } else {
-                manualInputSection.style.display = 'block';
-                fileInputSection.style.display = 'none';
-                downloadExcelTemplateButton.style.display = 'none';
-                enableManualInputs(); // Enable manual input fields
-            }
-        }
-
-        function enableManualInputs() {
-            const manualInputs = document.querySelectorAll('#items input');
-            manualInputs.forEach(input => {
-                input.removeAttribute('disabled');
-                input.setAttribute('required', 'required');
-            });
-        }
-
-        function disableManualInputs() {
-            const manualInputs = document.querySelectorAll('#items input');
-            manualInputs.forEach(input => {
-                input.setAttribute('disabled', 'disabled');
-                input.removeAttribute('required');
-            });
-        }
-
-        function addNewItem() {
+        function addNewItem(detail = {}) {
             const newItemContainer = document.createElement('div');
             newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center', 'mt-1');
 
@@ -175,47 +137,53 @@
                     size: columnSizes[1],
                     name: `items[${itemIdCounter}][name]`,
                     placeholder: 'Name',
-                    type: 'text'
+                    type: 'text',
+                    value: detail.name || ''
                 },
                 {
                     size: columnSizes[2],
                     name: `items[${itemIdCounter}][spec]`,
                     placeholder: 'Spec',
                     type: 'text',
-                    class: 'spec'
+                    class: 'spec',
+                    value: detail.spec || ''
                 },
                 {
                     size: columnSizes[3],
                     name: `items[${itemIdCounter}][uom]`,
                     placeholder: 'UoM',
                     type: 'text',
-                    value: 'PCS'
+                    value: detail.uom || 'PCS'
                 },
                 {
                     size: columnSizes[4],
                     name: `items[${itemIdCounter}][last_recorded_stock]`,
                     placeholder: 'Last Recorded Stock',
                     type: 'number',
-                    class: 'stock'
+                    class: 'stock',
+                    value: detail.last_recorded_stock || ''
                 },
                 {
                     size: columnSizes[5],
                     name: `items[${itemIdCounter}][usage_per_month]`,
                     placeholder: 'Usage Per Month',
                     type: 'text',
-                    class: 'usage'
+                    class: 'usage',
+                    value: detail.usage_per_month || ''
                 },
                 {
                     size: columnSizes[6],
                     name: `items[${itemIdCounter}][quantity]`,
                     placeholder: 'Qty',
-                    type: 'number'
+                    type: 'number',
+                    value: detail.quantity || ''
                 },
                 {
                     size: columnSizes[7],
                     name: `items[${itemIdCounter}][remark]`,
                     placeholder: 'Remark',
-                    type: 'text'
+                    type: 'text',
+                    value: detail.remark || ''
                 }
             ];
 
@@ -239,6 +207,15 @@
                 formGroup.appendChild(input);
                 newItemContainer.appendChild(formGroup);
             });
+
+            // Add hidden input for detail id
+            if (detail.id) {
+                const hiddenIdInput = document.createElement('input');
+                hiddenIdInput.type = 'hidden';
+                hiddenIdInput.name = `items[${itemIdCounter}][id]`;
+                hiddenIdInput.value = detail.id;
+                newItemContainer.appendChild(hiddenIdInput);
+            }
 
             const actionGroup = document.createElement('div');
             actionGroup.classList.add(columnSizes[8], 'text-center');
@@ -351,7 +328,5 @@
         document.getElementById('dept_no').addEventListener('change', function() {
             applyDepartmentRules(this.value);
         });
-
-        addNewItem(); // Initialize with one item
     </script>
 @endpush
