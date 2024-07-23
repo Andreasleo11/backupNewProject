@@ -75,6 +75,16 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <div class="form-group">
+                                <label for="departmentDropdown"
+                                    class="fw-semibold col-form-label col-sm-2"> ToDepartment</label>
+                                <select class="form-select" name="to_department" id="departmentDropdown" required>
+                                    <option value="" selected disabled>Select to department..</option>
+                                    <option value="COMPUTER">COMPUTER</option>
+                                    <option value="MAINTENANCE">MAINTENANCE</option>
+                                </select>
+                            </div>
                             <div class="form-group mt-3">
                                 <label for="keterangan_laporan" class="fw-semibold form-label">Judul Laporan</label>
                                 <input type="text" name="judul_laporan" id="judul_laporan" value="" required

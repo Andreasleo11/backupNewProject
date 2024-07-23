@@ -1,6 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
+
+<style>
+    .autograph-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 100px; /* Adjust height as needed */
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+    background-color: #f9f9f9;
+}
+</style>
     @include('partials.alert-success-error')
 
     {{-- GLOBAL VARIABLE --}}
@@ -25,6 +37,29 @@
                 {{-- Upcoming feature? --}}
             </div>
             <div class="container">
+                            @if($report->status_laporan == 2)
+                                    <div class="row mt-4">
+                                        <div class="col-md-4">
+                                            <label for="pelapor_autograph" class="fw-semibold col-form-label">Pelapor Autograph</label>
+                                            <div class="autograph-box" id="pelapor_autograph">
+                                            <img src="{{ asset($report->pelapor . '.png') }}" alt="Pelapor Autograph" style="width: 100px; height: auto;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="petugas_autograph" class="fw-semibold col-form-label">Petugas Autograph</label>
+                                            <div class="autograph-box" id="petugas_autograph">
+                                            <img src="{{ asset($report->pic . '.png') }}" alt="Pelapor Autograph" style="width: 100px; height: auto;">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="depthead_autograph" class="fw-semibold col-form-label">DeptHead Autograph</label>
+                                            <div class="autograph-box" id="depthead_autograph">
+                                            <img src="{{ asset($depthead->name . '.png') }}" alt="Pelapor Autograph" style="width: 100px; height: auto;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
                 <div class="row justify-content-center">
                     <div class="col-md-8">
                         <form action="{{ route('spk.update', $report->id) }}" method="post">
@@ -49,6 +84,8 @@
                                             @endif
                                         </div>
                                         @include('partials.spk-status')
+
+
                                     </div>
                                     <div class="form-group row mt-5">
                                         <label for="no_dokumen" class="fw-semibold col-form-label col">No Dokumen</label>
@@ -70,6 +107,14 @@
                                         <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row mt-3">
+                                        <label for="deto_departmentpt" class="fw-semibold col-form-label col">To Departemen</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" name="to_department" id="to_department" value="{{ $report->to_department }}"
                                                 class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
                                         </div>
                                     </div>
@@ -110,9 +155,34 @@
                                     </textarea>
                                         </div>
                                     </div>
+
+                                    <div class="form-group row mt-3">
+                                        <label class="fw-semibold col-form-label col">Remarks</label>
+                                        <div class="col-sm-9 mt-2">
+                                            @if($report->spkRemarks->isEmpty())
+                                                <p>No remarks available.</p>
+                                            @else
+                                                <ul class="list-group">
+                                                    @foreach($report->spkRemarks as $remark)
+                                                        <li class="list-group-item">
+                                                        @if ($remark->status === 1)
+                                                            <span class="badge bg-primary px-3 py-2 fs-6">IN PROGRESS</span>
+                                                        @elseif ($remark->status === 2)
+                                                            <span class="badge bg-success px-3 py-2 fs-6">DONE</span>
+                                                            @endif
+                                                            <br>
+                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                            <strong>Date:</strong>
+                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </div>
+                                    </div>
                                     <div class="form-group row mt-3">
                                         <label for="tanggal_terima" class="fw-semibold col-form-label col">Tanggal
-                                            Terima</label>
+                                            Mulai</label>
                                         <div class="col-sm-9">
                                             <input type="datetime-local" name="tanggal_terima" id="tanggal_terima"
                                                 class="form-control"
@@ -157,7 +227,7 @@
 
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
-            const ignoredInputs = ['no_dokumen', 'pelapor', 'dept'];
+            const ignoredInputs = ['no_dokumen', 'pelapor', 'dept', 'to_department'];
             const inputs = document.querySelectorAll('input, textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
 

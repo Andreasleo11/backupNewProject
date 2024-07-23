@@ -14,6 +14,7 @@ class SuratPerintahKerjaKomputer extends Model
         'no_dokumen',
         'pelapor',
         'dept',
+        'to_department',
         'tanggal_lapor',
         'judul_laporan',
         'keterangan_laporan',
@@ -33,5 +34,10 @@ class SuratPerintahKerjaKomputer extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'pelapor', 'name');
+    }
+
+    public function spkRemarks()
+    {
+        return $this->hasMany(SpkRemark::class, 'spk_id');
     }
 }

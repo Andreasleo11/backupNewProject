@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateSuratPerintahKerjaKomputerRequest;
 use Illuminate\Http\Request;
 use App\Models\SuratPerintahKerjaKomputer;
 use App\Models\User;
+use App\Models\SpkRemark;
 use App\Models\Department;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -55,8 +56,8 @@ class SuratPerintahKerjaKomputerController extends Controller
     }
 
     public function inputprocess(Request $request)
-    {
-        
+    {  
+     
         // Validate the request data
         $validatedData = $request->validate([
             'no_dokumen' => 'required|string|max:255',
@@ -65,6 +66,7 @@ class SuratPerintahKerjaKomputerController extends Controller
             'dept' => 'required|string|max:255',
             'judul_laporan' => 'required|string|max:255',
             'keterangan_laporan' => 'required|string',
+            'to_department' => 'required|string',
         ]);
 
         // Replace the 'T' with a space in tanggallapor
@@ -78,6 +80,7 @@ class SuratPerintahKerjaKomputerController extends Controller
         $spk->pelapor = $validatedData['pelapor'];
         $spk->tanggal_lapor = $validatedData['tanggallapor'];
         $spk->dept = $validatedData['dept'];
+        $spk->to_department = $validatedData['to_department'];
         $spk->judul_laporan = $validatedData['judul_laporan'];
         $spk->keterangan_laporan = $validatedData['keterangan_laporan'];
 
@@ -93,8 +96,16 @@ class SuratPerintahKerjaKomputerController extends Controller
         $users = User::where('department_id', 15)->get();
 
         $this->updatestatus();
-        $report = SuratPerintahKerjaKomputer::find($id);
-        return view('spk.detail', compact('report', 'users'));
+        $report = SuratPerintahKerjaKomputer::with('spkRemarks')->find($id);
+        // dd($report);
+
+        $dept = $report->dept;
+        $depthead = User::whereHas('department', function ($query) use ($dept) {
+            $query->where('name', $dept);
+        })->where('is_head', true)
+        ->first();
+        
+        return view('spk.detail', compact('report', 'users', 'depthead'));
     }
 
     public function update(UpdateSuratPerintahKerjaKomputerRequest $request, $id)
@@ -103,9 +114,27 @@ class SuratPerintahKerjaKomputerController extends Controller
         // dd($request->all());
         // Find the record to update
         $report = SuratPerintahKerjaKomputer::findOrFail($id);
-
         // Update the record with validated data
         $report->update($request->validated());
+        if ($report->tanggal_selesai !== null) {
+            $report->status_laporan = 2;
+        }
+        // Check if pic, keterangan_pic, and tanggal_estimasi are not null
+        elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null && $report->tanggal_terima !== null) {
+            $report->status_laporan = 1;
+        }
+
+        // Save the updated report
+        $report->save();
+        $remarks = $request->keterangan_pic;
+        $status = $report->status_laporan;
+        $reportid = $report->id;
+        // dd($status);
+        SpkRemark::create([
+            'spk_id' => $reportid, 
+            'status' => $status,
+            'remarks' => $remarks,
+        ]);
 
         // Redirect back with success message
         return redirect()->back()->with('success', 'SPK updated successfully!');
