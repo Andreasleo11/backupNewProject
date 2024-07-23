@@ -294,6 +294,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
+        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
+
         Route::get("deliveryschedule/raw", [DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
 
@@ -640,6 +642,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
     Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
+    Route::get('monthlyBudgetReport/{id}/edit', [MonthlyBudgetReportController::class, 'edit'])->name('monthly.budget.report.edit');
+    Route::put('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'update'])->name('monthly.budget.report.update');
     Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
     Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
     Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
@@ -712,8 +716,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         $detail['userName'] = $report->user->name;
 
-
-        return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
+      return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
             ->toMail($report->user);
     });
 
@@ -738,6 +741,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         // $user = App\Models\User::find(30);
         // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
-
     });
 });
