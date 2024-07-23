@@ -179,13 +179,11 @@
                     data-bs-target="#director" aria-expanded="false" aria-controls="director">
                     <i class='bx bx-badge-check'></i>
                     <span>Quality</span>
-                    <span>Quality</span>
                 </a>
                 <ul id="director" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-item">
                         <a href="{{ route('director.qaqc.index') }}" class="sidebar-link">
                             <i class='bx bxs-report'></i>
-                            VQC Reports
                             VQC Reports
                         </a>
                     </li>
@@ -287,6 +285,66 @@
         </li>
 
 
+        <li class="sidebar-item" id="sidebar-item-list">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#storeoption" aria-expanded="false" aria-controls="setting">
+                <i class='bx bxs-component'></i>
+                <span>Store</span>
+            </a>
+            <ul id="storeoption" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-list">
+                    <a href="{{ route('barcodeindex') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Create Barcode
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('inandout.index') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Scan Barcode
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('missingbarcode.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Missing Barcode Generator
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('list.barcode') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Report History
+                    </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        List All Item Barcode
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        <li class="sidebar-item" id="sidebar-item-stock-management">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
+                <i class='bx bxs-component'></i>
+                <span>Stock Management</span>
+            </a>
+            <ul id="stock-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Master Stock
+                    </a>
+                </li>
+            </ul>
+        </li>
+
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#other" aria-expanded="false" aria-controls="other">
@@ -301,120 +359,155 @@
                         Purchase Request
                     </a>
                 </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('listformadjust') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Adjust
+                    </a>
+                </li>
 
-                <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                    <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Discipline Evaluation
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Overtime
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Discipline Evaluation
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('yayasan.table') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Discipline Evaluation Yayasan
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('indexds') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Delivery Schedule
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Monthly PR
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('formcuti.home') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Cuti
+                    </a>
+                </li>
+
+
+                <li class="sidebar-item">
+                    <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Keluar
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Barcode Feature
+                    </a>
+                </li>
+
+                @if ($department === 'QA' || $department === 'QC')
                     <li class="sidebar-item">
-                        <a href="{{ route('listformadjust') }}" class="sidebar-link">
+                        <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Form Adjust
+                            Defect Categories
+                        </a>
+                    </li>
+                @endif
+
+                @if ($user->role->name === 'SUPERADMIN')
+                    <li class="sidebar-item">
+                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Change Default Email QC
                         </a>
                     </li>
 
-                    <li class="sidebar-item">
-                        <a href="{{ route('discipline.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Discipline Evaluation
-                        </a>
-                    </li>
 
                     <li class="sidebar-item">
-                        <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                        <a href="{{ route('pt.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Form Overtime
+                            Project Tracker
                         </a>
                     </li>
+                @endif
 
-                    <li class="sidebar-item">
-                        <a href="{{ route('discipline.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Discipline Evaluation
-                        </a>
-                    </li>
+                <li class="sidebar-item">
+                    <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Monthly Budget Reports
+                    </a>
+                </li>
 
-                    <li class="sidebar-item">
-                        <a href="{{ route('formovertime.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Form Overtime
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('yayasan.table') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Discipline Evaluation Yayasan
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('indexds') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Delivery Schedule
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Monthly PR
-                        </a>
-                    </li>
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('formcuti.home') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Form Cuti
-                        </a>
-                    </li>
-
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Form Keluar
-                        </a>
-                    </li>
-
-                    @if ($department === 'QA' || $department === 'QC')
-                        <li class="sidebar-item">
-                            <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Defect Categories
-                            </a>
-                        </li>
-                    @endif
-
-                    @if ($user->role->name === 'SUPERADMIN')
-                        <li class="sidebar-item">
-                            <a href="{{ route('changeemail.page') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Change Default Email QC
-                            </a>
-                        </li>
-
-
-                        <li class="sidebar-item">
-                            <a href="{{ route('pt.index') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Project Tracker
-                            </a>
-                        </li>
-                    @endif
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Monthly Budget Reports
-                        </a>
-                    </li>
-
+                @if ($user->email === 'nur@daijo.co.id' || $user->role->name === 'SUPERADMIN')
                     <li class="sidebar-item">
                         <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Summary Monthly Budget
                         </a>
                     </li>
+                @endif
 
-                </ul>
+                <li class="sidebar-item">
+                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Stock Management
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('spk.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        SPK
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Inventory Master Komputer
+                    </a>
+                </li>
+
+                @if (($user->is_head === 1 && $user->department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
+                    <li class="sidebar-item">
+                        <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Employee Master
+                        </a>
+                    </li>
+                @endif
+
+                <li class="sidebar-item">
+                    <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        FG Stock Monitoring
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

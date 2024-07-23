@@ -29,10 +29,10 @@
                 <select class="form-select" name="status">
                     <option value="0" {{ session('status') === null ? 'selected' : '' }}>All Status</option>
                     <option value="1" {{ session('status') == 1 ? 'selected' : '' }}>Waiting for Dept Head</option>
+                    <option value="7" {{ session('status') == 7 ? 'selected' : '' }}>Waiting for GM</option>
                     <option value="6" {{ session('status') == 6 ? 'selected' : '' }}>Waiting for Purchaser</option>
-                    <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>Waiting for GM</option>
-                    <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>Waiting for Verificator</option>
-                    <option value="7" {{ session('status') == 7 ? 'selected' : '' }}>Waiting for Director</option>
+                    <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>Waiting for Verificator</option>
+                    <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>Waiting for Director</option>
                     <option value="5" {{ session('status') == 5 ? 'selected' : '' }}>Rejected</option>
                     <option value="4" {{ session('status') == 4 ? 'selected' : '' }}>Approved</option>
                 </select>
@@ -55,82 +55,40 @@
                     <table class="table table-bordered table-hover table-striped text-center mb-0">
                         <thead>
                             <tr>
-                                <th class="fw-semibold fs-5">No</th>
-                                <th class="fw-semibold fs-5">Date PR</th>
-                                <th class="fw-semibold fs-5">From Department</th>
-                                <th class="fw-semibold fs-5">To Department</th>
-                                <th class="fw-semibold fs-5">PR No </th>
-                                <th class="fw-semibold fs-5">Supplier</th>
-                                <th class="fw-semibold fs-5">Action</th>
-                                <th class="fw-semibold fs-5">Status</th>
-                                <th class="fw-semibold fs-5">Description</th>
-                                <th class="fw-semibold fs-5">Approved Date</th>
+                                <th class="fw-semibold align-content-center fs-5">No</th>
+                                <th class="fw-semibold align-content-center fs-5">Doc Num</th>
+                                <th class="fw-semibold align-content-center fs-5">Date PR</th>
+                                <th class="fw-semibold align-content-center fs-5">From Department</th>
+                                <th class="fw-semibold align-content-center fs-5">To Department</th>
+                                <th class="fw-semibold align-content-center fs-5">PR No </th>
+                                <th class="fw-semibold align-content-center fs-5">Supplier</th>
+                                <th class="fw-semibold align-content-center fs-5">Action</th>
+                                <th class="fw-semibold align-content-center fs-5">Status</th>
+                                <th class="fw-semibold align-content-center fs-5">Approved Date</th>
+                                <th class="fw-semibold align-content-center fs-5">PO Number</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $user = Auth::user();
+                            @endphp
                             @forelse ($purchaseRequests as $pr)
                                 <tr class="align-middle">
                                     <td>{{ $loop->iteration }}</td>
+                                    <td> {{ $pr->doc_num }} </td>
                                     <td> @formatDate($pr->date_pr) </td>
                                     <td>{{ $pr->from_department ?? $pr->createdBy->department->name }}</td>
                                     <td>{{ $pr->to_department }}</td>
                                     <td>{{ $pr->pr_no }}</td>
                                     <td>{{ $pr->supplier }}</td>
                                     <td>
-                                        <a href="{{ route('purchaserequest.detail', ['id' => $pr->id]) }}"
-                                            class="btn btn-secondary">
-                                            <i class='bx bx-info-circle'></i> Detail
-                                        </a>
-                                        @php
-                                            $user = Auth::user();
-                                        @endphp
-
-                                        {{-- Edit Feature --}}
-                                        {{-- @if (($pr->status == 1 && $user->specification->name == 'PURCHASER') || ($pr->status == 6 && $user->is_head == 1) || ($pr->status == 2 && $user->department->name == 'HRD'))
-                                            <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
-                                                <i class='bx bx-edit'></i> Edit
-                                            </a>
-                                        @endif --}}
-
-                                        {{-- Delete Feature --}}
-                                        @if ($pr->user_id_create === Auth::user()->id)
-                                            @include('partials.delete-pr-modal', [
-                                                'id' => $pr->id,
-                                                'doc_num' => $pr->doc_num,
-                                            ])
-                                            <button class="btn btn-danger" data-bs-toggle="modal"
-                                                data-bs-target="#delete-pr-modal-{{ $pr->id }}">
-                                                <i class='bx bx-trash-alt'></i> <span
-                                                    class="d-none d-sm-inline">Delete</span>
-                                            </button>
-                                        @endif
-
-                                        <div class="btn-group" role="group">
-
-                                            <button type="button"
-                                                class="btn text-success border border-success dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                                More
-                                            </button>
-
-                                            <ul class="dropdown-menu">
-                                                <li>
-                                                    <a href="{{ route('purchaserequest.exportToPdf', $pr->id) }}"
-                                                        class="btn btn-success my-1 dropdown-item">
-                                                        <i class='bx bxs-file-pdf'></i> <span
-                                                            class="d-none d-sm-inline">Export PDF</span>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
+                                        @include('partials.pr-action-buttons')
                                     </td>
                                     <td>
                                         @include('partials.pr-status-badge')
                                     </td>
-                                    <td>
-                                        {{ $pr->description ?? '-' }}
-                                    </td>
                                     <td>@formatDate($pr->approved_at)</td>
+                                    <td>{{ $pr->po_number }}</td>
                                 </tr>
                             @empty
                                 <tr>

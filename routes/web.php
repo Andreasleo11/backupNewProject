@@ -77,6 +77,12 @@ use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
+use App\Http\Controllers\BarcodeController;
+use App\Http\Controllers\MasterTintaController;
+use App\Http\Controllers\SuratPerintahKerjaKomputerController;
+use App\Http\Controllers\MasterInventoryController;
+
+
 
 
 use App\Http\Controllers\AdjustFormQcController;
@@ -86,10 +92,6 @@ use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
-use App\Models\MonthlyBudgetReport;
-use App\Models\MonthlyBudgetReportSummaryDetails;
-use App\Models\MonthlyBudgetSummaryReport;
-use App\Notifications\MonthlyBudgetReportRequestSign;
 
 /*
 |--------------------------------------------------------------------------
@@ -293,9 +295,9 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
+
         Route::get("deliveryschedule/raw", [DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
-        Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('averagemonth');
 
 
         Route::get("delsched/start1", [DeliveryScheduleController::class, "step1"])->name("deslsched.step1");
@@ -492,6 +494,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/purchaserequest/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject')->middleware('permission:reject-purchase-request');
     Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update')->middleware('permission:update-purchase-request');
     Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete')->middleware('permission:delete-purchase-request');
+    Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel')->middleware('permission:cancel-purchase-request');
+    Route::put('purchaserequest/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
 
     // PR MONTHLY
     Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
@@ -586,6 +590,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
     Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
 
+
+    Route::get("/updatedept",  [DisciplinePageController::class, 'updateDept'])->name('update.dept');
+
+
     Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
     Route::get('/fetch/filtered/yayasan-employees', [DisciplinePageController::class, 'fetchFilteredYayasanEmployees'])->name('fetch.filtered.yayasan.employees');
 
@@ -607,11 +615,12 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
     Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
+    Route::delete("formovertime/{id}", [FormOvertimeController::class, 'destroy'])->name("formovertime.delete");
     Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
-
+    Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
@@ -642,9 +651,61 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
+    Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
+    Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
+    Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
+    Route::post('barcode/missing/generate', [BarcodeController::class, 'missingbarcodegenerator'])->name('generateBarcodeMissing');
+
+    Route::post('barcode/process/save', [BarcodeController::class, 'processInAndOut'])->name('process.in.and.out');
+
+    Route::post('process/inandoutbarcode', [BarcodeController::class, 'storeInAndOut'])->name('processbarcodeinandout');
+    Route::get('indexbarcode', [BarcodeController::class, 'indexBarcode'])->name('barcodeindex');
+    Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
+
+    Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
+
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
+
+    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
+
+    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
+
+    Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
+
+    Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
+
+    Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
+    Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
+    Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
+
+    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
+
+    Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+
+    Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
+    Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
+    Route::post('/spkkomputer/input', [SuratPerintahKerjaKomputerController::class, 'inputprocess'])->name('spk.input');
+    Route::get('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'detail'])->name('spk.detail');
+    Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
+    Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
+    Route::get('spkkomputer/report/monthly',[SuratPerintahKerjaKomputerController::class, 'monthlyreport'])->name('spk.monthlyreport');
+
+    
+
+    Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
+    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
+
+
+
+    Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
+    Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
+    Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
+        
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
-        $report = MonthlyBudgetReport::find(5);
+        $report = App\Models\MonthlyBudgetReport::find(5);
 
         $detail = [
             'greeting' => 'Monthly Budget Report Notification',
@@ -655,7 +716,30 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         $detail['userName'] = $report->user->name;
 
-        return (new MonthlyBudgetReportRequestSign($report, $detail))
+      return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
             ->toMail($report->user);
+    });
+
+    // FOR DEBUG ONLY: VIEWING OT NOTIFICATION
+    Route::get('/ot/notification', function () {
+        $report = App\Models\HeaderFormOvertime::find(2);
+        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $details = [
+            'greeting' => 'Form Overtime Notification',
+            'body' => "We waiting for your sign for this report : <br>
+                    - Report ID : $report->id <br>
+                    - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
+                    - Create Date : {$formattedCreateDate} <br>
+                    - Created By : {$report->Relationuser->name} <br>
+                        ",
+            'actionText' => 'Click to see the detail',
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
+        ];
+
+
+        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->Relationuser);
+
+        // $user = App\Models\User::find(30);
+        // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
     });
 });

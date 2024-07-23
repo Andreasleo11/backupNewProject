@@ -103,6 +103,7 @@ class DeliveryScheduleController extends Controller
 					$inventoryInfo = [
 						'in_stock' => null,
 						'item_name' => null,
+						'warehouse' => null,
 					];
 			
 					// If inventory data exists, populate stock and item_name
@@ -110,6 +111,7 @@ class DeliveryScheduleController extends Controller
 						$inventoryInfo['in_stock'] = $inventory->stock;
 						// Assuming item_name is a field in the inventory model or related model
 						$inventoryInfo['item_name'] = $inventory->item_name; // Adjust as per your actual field name
+						$inventoryInfo['warehouse'] = $inventory->warehouse;
 					}
 			
 					return $inventoryInfo;

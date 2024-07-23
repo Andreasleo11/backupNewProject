@@ -16,13 +16,12 @@
                 2. Kedisiplinan kerja dibagi menjadi 6 point yaitu:
                 <ul>
                     <li>- Kerajinan kerja</li>
-                    <li>- Kerapian pakaian</li>
-                    <li>- Kerapian rambut</li>
-                    <li>- Kerapian sepatu</li>
-                    <li>- Prestasi</li>
+                    <li>- Kerapian Kerja</li>
                     <li>- Loyalitas</li>
+                    <li>- Perilaku Kerja</li>
+                    <li>- Prestasi</li>
                 </ul>
-                3. Untuk 6 poin diatas dinilai dengan Alphabet dengan spesifikasi sebagai berikut:
+                3. Untuk 4 poin diatas dinilai dengan Alphabet dengan spesifikasi sebagai berikut:
                 <ul>
                     <li>- A = 10 poin</li>
                     <li>- B = 7.5 poin</li>
@@ -30,6 +29,14 @@
                     <li>- D = 2.5 poin</li>
                     <li>- E = 0 poin </li>
                 </ul>
+                lalu untuk Prestasi nilainya menggunakan spesifikasi sebagai berikut : 
+                    <ul>
+                    <li>- A = 20 poin</li>
+                    <li>- B = 15 poin</li>
+                    <li>- C = 10 poin </li>
+                    <li>- D = 5 poin</li>
+                    <li>- E = 0 poin </li>
+                </ul>  
                 4. Untuk Grade dinilai dengan ketentuan sebagai berikut:
                 <ul>
                     <li>- A : 91-100</li>

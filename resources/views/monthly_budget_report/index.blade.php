@@ -47,6 +47,10 @@
                     </thead>
                     <tbody>
                         @forelse ($reports as $report)
+                            @php
+                                $reportDate = Carbon\Carbon::parse($report->report_date);
+                                $formatedDate = $reportDate->format('F Y');
+                            @endphp
                             <tr>
                                 <td>{{ $report->id }}</td>
                                 <td>{{ $report->dept_no }}</td>

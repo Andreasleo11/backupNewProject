@@ -3,24 +3,33 @@
 
 @section('content')
     <h1>MonthlyReport VQC</h1>
-    <form action="{{ route('monthlyreport.details') }}" method="POST" target="_blank">
-        @csrf
-        <label for="monthFilter">Filter by Month:</label>
-        <select id="monthFilter" name="monthData">
-            <option value="all">All Months</option>
-            @foreach (array_keys($result) as $month)
-                <option value="{{ $month }}">{{ $month }}</option>
-            @endforeach
-        </select>
-
-        <button type="submit" class="btn btn-primary">View Detail</button>
-    </form>
-
-    <form id="exportForm" action="{{ route('monthlyreport.export') }}" method="POST" style="margin-top: 20px;">
-        @csrf
-        <input type="hidden" name="monthData" id="exportMonthData">
-        <button type="submit" class="btn btn-success">Export to Excel</button>
-    </form>
+    <div class="mt-3 row">
+        <div class=""></div>
+        <div class="col-md-2">
+            <form action="{{ route('monthlyreport.details') }}" method="POST" target="_blank">
+                @csrf
+                <label for="monthFilter">Filter by Month:</label>
+                <select id="monthFilter" name="monthData" class="form-select">
+                    <option value="all">All Months</option>
+                    @foreach (array_keys($result) as $month)
+                        <option value="{{ $month }}">{{ $month }}</option>
+                    @endforeach
+                </select>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">View Detail</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="mt-3 mb-4">
+        <div class="mt-2">
+            <form id="exportForm" action="{{ route('monthlyreport.export') }}" method="POST">
+                @csrf
+                <input type="hidden" name="monthData" id="exportMonthData">
+                <button type="submit" class="btn btn-success">Export to Excel</button>
+            </form>
+        </div>
+    </div>
 
     <style>
         table {
@@ -62,7 +71,7 @@
                     @foreach ($customers as $customerId => $customerData)
                         <tr>
                             <td>{{ $customerId }}</td>
-                            <td>{{  $customerData['cant_use'] }}</td>
+                            <td>{{ $customerData['cant_use'] }}</td>
                             <td>{{ $customerData['total_rec_quantity'] }}</td>
                             <td>{{ 'IDR ' . number_format($customerData['total_price'], 0, ',', '.') }}</td>
                         </tr>

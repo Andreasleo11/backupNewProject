@@ -76,13 +76,18 @@
                         <div class="container mt-2 border-1" id="autographUser2"></div>
                         @php
                             $showIsKnownAutograph = false;
-                            if (!$report->is_known_autograph) {
-                                if ($report->department->name === 'MOULDING') {
-                                    if ($authUser->is_head && $authUser->specification->name === 'DESIGN') {
+                            if (!$report->is_known_autograph && $authUser->is_head === 1) {
+                                if ($authUser->department->name === $report->department->name) {
+                                    if (
+                                        $report->department->name === 'MOULDING' &&
+                                        $authUser->specification->name === 'DESIGN'
+                                    ) {
+                                        $showIsKnownAutograph = true;
+                                    } elseif (!$report->department->is_office) {
                                         $showIsKnownAutograph = true;
                                     }
-                                } elseif (!$report->department->is_office) {
-                                    if ($authUser->is_head) {
+                                } elseif ($report->department->name === 'STORE') {
+                                    if ($authUser->department->name === 'LOGISTIC') {
                                         $showIsKnownAutograph = true;
                                     }
                                 }

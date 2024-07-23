@@ -10,9 +10,78 @@
         $user = Auth::user();
     @endphp
 
+    {{-- HEAD DESIGN AUTOGRAPH --}}
+    @if (
+        $purchaseRequest->from_department === 'MOULDING' &&
+            !$purchaseRequest->is_import &&
+            $purchaseRequest->to_department === 'Maintenance')
+        <div class="col my-2">
+            <h2>Dept Head</h2>
+            <div class="autograph-box container" id="autographBox7"></div>
+            <div class="container mt-2 border-1" id="autographuser7"></div>
+            @php
+                $detailObj = null;
+                $count = 0;
+                $isApproveNotEmpty = null;
+                $countItemHasApprovalStatus = 0;
+                $thereIsApprovedItem = false;
+                foreach ($purchaseRequest->itemDetail as $detail) {
+                    $count += 1;
+                    if ($detail->is_approve_by_head !== null) {
+                        $isApproveNotEmpty = true;
+                        $detailObj = $detail;
+                        $countItemHasApprovalStatus += 1;
+                    }
+                    if ($detail->is_approve_by_head === 1) {
+                        $thereIsApprovedItem = true;
+                    }
+                }
+
+                $showDeptHeadDesignApprovalButtons =
+                    !$purchaseRequest->autograph_7 &&
+                    $user->department->name === $purchaseRequest->from_department &&
+                    $user->is_head == 1 &&
+                    $user->specification->name === 'DESIGN' &&
+                    $purchaseRequest->is_cancel === 0;
+
+            @endphp
+            @if ($showDeptHeadDesignApprovalButtons)
+                @if ($count === $countItemHasApprovalStatus)
+                    <div class="row px-4 d-flex justify-content-center">
+                        <div
+                            class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
+                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                                class="btn btn-danger">Reject</button>
+                        </div>
+                        <div
+                            class="col-auto {{ ($count == 1 && !$detailObj->is_approve_by_head) || !$thereIsApprovedItem ? 'd-none' : '' }}">
+                            @include('partials.approve-pr-confirmation-modal', [
+                                'title' => 'Approve confirmation',
+                                'body' =>
+                                    'Are you sure want to approve <strong>' .
+                                    $purchaseRequest->doc_num .
+                                    '</strong>?',
+                                'confirmButton' => [
+                                    'id' => 'btn7',
+                                    'class' => 'btn btn-success',
+                                    'onclick' =>
+                                        'addAutograph(7, ' . $purchaseRequest->id . ', ' . $user->id . ')',
+                                    'text' => 'Approve',
+                                ],
+                            ])
+                            <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
+                                class="btn btn-success">Approve</button>
+                        </div>
+                    </div>
+                @endif
+            @endif
+        </div>
+    @endif
+
     {{-- DEPT HEAD AUTOGRAPH --}}
     <div class="col my-2">
-        <h2>Dept Head</h2>
+        <h2> {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department === 'Maintenance' ? 'Head Design' : 'Dept Head' }}
+        </h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographuser2"></div>
         @php
@@ -32,12 +101,41 @@
                     $thereIsApprovedItem = true;
                 }
             }
-        @endphp
-        @if (
-            $user->department->name === $purchaseRequest->from_department &&
+
+            $showDeptHeadApprovalButtons =
+                !$purchaseRequest->autograph_2 &&
+                $user->department->name === $purchaseRequest->from_department &&
                 $user->is_head == 1 &&
                 $purchaseRequest->status == 1 &&
-                $isApproveNotEmpty)
+                $isApproveNotEmpty &&
+                $purchaseRequest->is_cancel === 0;
+
+            // if ($purchaseRequest->from_department === 'MOULDING' && $user->specification->name === 'DESIGN') {
+            //     $showDeptHeadApprovalButtons = false;
+            // }
+
+            if ($user->is_head == 1 && $purchaseRequest->status == 1 && $isApproveNotEmpty) {
+                if ($user->department->name === 'HRD' && $purchaseRequest->from_department === 'PERSONALIA') {
+                    $showDeptHeadApprovalButtons = true;
+                } elseif ($user->department->name === 'LOGISTIC' && $purchaseRequest->from_department === 'STORE') {
+                    $showDeptHeadApprovalButtons = true;
+                } elseif ($purchaseRequest->from_department === 'MOULDING') {
+                    if ($purchaseRequest->to_department === 'Maintenance') {
+                        if ($user->specification->name === 'DESIGN') {
+                            $showDeptHeadApprovalButtons = false;
+                        }
+                    } else {
+                        if (
+                            ($purchaseRequest->is_import !== 0 && $user->specification->name !== 'DESIGN') ||
+                            ($purchaseRequest->is_import === 0 && $user->specification->name === 'DESIGN')
+                        ) {
+                            $showDeptHeadApprovalButtons = true;
+                        }
+                    }
+                }
+            }
+        @endphp
+        @if ($showDeptHeadApprovalButtons)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -66,6 +164,8 @@
         @endif
     </div>
 
+
+
     {{-- GM AUTOGRAPH --}}
     @if ($purchaseRequest->from_department !== 'MOULDING')
         <div
@@ -91,7 +191,7 @@
                     }
                 }
             @endphp
-            @if ($user->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty)
+            @if ($user->is_gm === 1 && $purchaseRequest->status === 7 && $isApproveNotEmpty && $purchaseRequest->is_cancel === 0)
                 @if ($count === $countItemHasApprovalStatus)
                     <div class="row px-4 d-flex justify-content-center">
                         <div
@@ -143,7 +243,7 @@
                     : ($showApprovalButtons = false);
             }
         @endphp
-        @if ($showApprovalButtons && $purchaseRequest->status === 6)
+        @if ($showApprovalButtons && $purchaseRequest->status === 6 && $purchaseRequest->is_cancel === 0)
             <div class="row px-4 d-flex justify-content-center">
                 <div class="col-auto me-2">
                     <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
@@ -172,7 +272,7 @@
 
     {{-- VERIFICATOR AUTOGRAPH --}}
     <div
-        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel' ? '' : 'd-none' }}">
+        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel' || ($purchaseRequest->from_department === 'COMPUTER' && $purchaseRequest->to_department === 'Maintenance') ? '' : 'd-none' }}">
         <h2>Verificator</h2>
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2 border-1" id="autographuser3"></div>
@@ -196,7 +296,12 @@
                 }
             }
         @endphp
-        @if ($user->department->name == 'HRD' && $user->is_head == 1 && $purchaseRequest->status == 2 && $isApproveNotEmpty)
+        @if (
+            $user->department->name == 'HRD' &&
+                $user->is_head == 1 &&
+                $purchaseRequest->status == 2 &&
+                $isApproveNotEmpty &&
+                $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
@@ -252,7 +357,11 @@
                 }
             }
         @endphp
-        @if ($user->department->name == 'DIRECTOR' && $purchaseRequest->status == 3 && $isApproveNotEmpty)
+        @if (
+            $user->department->name == 'DIRECTOR' &&
+                $purchaseRequest->status == 3 &&
+                $isApproveNotEmpty &&
+                $purchaseRequest->is_cancel === 0)
             @if ($count === $countItemHasApprovalStatus)
                 <div class="row px-4 d-flex justify-content-center">
                     <div
