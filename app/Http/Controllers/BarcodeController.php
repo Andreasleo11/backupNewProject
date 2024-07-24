@@ -26,6 +26,8 @@ class BarcodeController extends Controller
     }
     public function indexBarcode()
     {
+        $barcodesFolder = public_path('barcodes');
+        File::cleanDirectory($barcodesFolder);
         $datas = MasterDataRogPartName::get();
         
         return view('barcodeinandout.indexbarcode', compact('datas'));
@@ -106,6 +108,9 @@ class BarcodeController extends Controller
         $partDetails = explode('/', $partno);
         $partNumber = $partDetails[0];
         $partName = $partDetails[1] ?? '';
+        $defaultquantity = 1;
+        $defaultwarehouse = "IND";
+        
 
         $startnum = $request->startNumber;
         $quantity = $request->quantity;
@@ -122,13 +127,13 @@ class BarcodeController extends Controller
 
         // $barcodeData = $partno . "\t" . $startnum . "\t" . $warehouse . "\t" . $incrementNumber;
 
-        $barcodeData = $partNumber . "\t" . $startnum;
+        $barcodeData = $partNumber . "\t" . $defaultquantity . "\t" . $defaultwarehouse . "\t" . $startnum;
         // Generate the barcode using DNS1D (1D Barcode)
         $barcode = new DNS1D();
     
        
         // Use $spkNumber in the filename
-        $filename = preg_replace('/[()#,.\\s&]+(?<!png)/i', '', $partNumber) . '-' . $startnum . '.png';
+        $filename = preg_replace('/[()#,.\\s&]+(?<!png)/i', '', $partNumber). '-' .$defaultquantity . '-' . $defaultwarehouse . '-' . $startnum . '.png';
         $filename = preg_replace('/"/', '-', $filename);
         $filename = preg_replace('/-+/', '-', $filename);
         
@@ -184,86 +189,90 @@ class BarcodeController extends Controller
     }
 
     public function processInAndOut(Request $request)
-    {
-        $barcodePackagingMaster = new BarcodePackagingMaster();
-        $tanggalScanFull = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
-        $barcodePackagingMaster->dateScan = $tanggalScanFull;
-        $warehouseType = $request->input('warehouseType');
-        $location = $request->input('location');
+        {
+            $barcodePackagingMaster = new BarcodePackagingMaster();
+            $tanggalScanFull = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+            $barcodePackagingMaster->dateScan = $tanggalScanFull;
+            $warehouseType = $request->input('warehouseType');
+            $location = $request->input('location');
+            
+
+
+            // Define prefix based on warehouse type and location
+            switch ($warehouseType) {
+                case 'in':
+                    $prefix = 'IN';
+                    break;
+                case 'out':
+                    $prefix = 'OUT';
+                    break;
+                default:
+                    $prefix = '';
+                    break;
+            }
+
+            // Add location suffix based on location
+            switch ($location) {
+                case 'jakarta':
+                    $suffix = 'J';
+                    break;
+                case 'karawang':
+                    $suffix = 'K';
+                    break;
+                default:
+                    $suffix = '';
+                    break;
+            }
+
+            // Merge prefix and suffix
+            $prefixSuffix = $prefix . $suffix;
+
+            // Validate and set position based on the merged prefix and suffix
+            switch ($prefixSuffix) {
+                case 'INJ':
+                    $position = 'Jakarta';
+                    $HeaderScan = 'IN JAKARTA';
+                    break;
+                case 'INK':
+                    $position = 'Karawang';
+                    $HeaderScan = 'IN KARAWANG';
+                    break;
+                case 'OUTJ':
+                    $position = 'Customer';
+                    $HeaderScan = 'OUT JAKARTA';
+                    break;
+                case 'OUTK':
+                    $position = 'Customer';
+                    $HeaderScan = 'OUT KARAWANG';
+                    break;
+                default:
+                    $position = 'Unknown'; // Or handle default case as needed
+                    break;
+            }
+
+            $barcodePackagingMaster->tipeBarcode = $warehouseType;
+            $barcodePackagingMaster->location = $location;
+
+            $barcodePackagingMaster->save();
+
+            // Retrieve the id of the newly created entry
+            $id = $barcodePackagingMaster->id;
+
+            // Generate random string part
+            $randomString = substr(md5(microtime()), 0, 6); // Example of generating a random string
+
+            // Combine prefix, suffix, and random string to form the document number
+            $noDokumen = $prefix . $suffix . '-' . $randomString . '-' . $id;
+
+            $barcodePackagingMaster->noDokumen = $noDokumen;
+            // Output the generated document number for testing purposes
+            
+            
+            
+            $barcodePackagingMaster->save();
         
-
-
-        // Define prefix based on warehouse type and location
-        switch ($warehouseType) {
-            case 'in':
-                $prefix = 'IN';
-                break;
-            case 'out':
-                $prefix = 'OUT';
-                break;
-            default:
-                $prefix = '';
-                break;
+            return view('barcodeinandout.scanpage', compact('noDokumen', 'tanggalScanFull', 'position', 'HeaderScan'));
         }
-
-        // Add location suffix based on location
-        switch ($location) {
-            case 'jakarta':
-                $suffix = 'J';
-                break;
-            case 'karawang':
-                $suffix = 'K';
-                break;
-            default:
-                $suffix = '';
-                break;
-        }
-
-        // Merge prefix and suffix
-        $prefixSuffix = $prefix . $suffix;
-
-        // Validate and set position based on the merged prefix and suffix
-        switch ($prefixSuffix) {
-            case 'INJ':
-                $position = 'Jakarta';
-                break;
-            case 'INK':
-                $position = 'Karawang';
-                break;
-            case 'OUTJ':
-                $position = 'Customer';
-                break;
-            case 'OUTK':
-                $position = 'Customer';
-                break;
-            default:
-                $position = 'Unknown'; // Or handle default case as needed
-                break;
-        }
-
-        $barcodePackagingMaster->tipeBarcode = $warehouseType;
-        $barcodePackagingMaster->location = $location;
-
-        $barcodePackagingMaster->save();
-
-        // Retrieve the id of the newly created entry
-        $id = $barcodePackagingMaster->id;
-
-        // Generate random string part
-        $randomString = substr(md5(microtime()), 0, 6); // Example of generating a random string
-
-        // Combine prefix, suffix, and random string to form the document number
-        $noDokumen = $prefix . $suffix . '-' . $randomString . '-' . $id;
-
-        $barcodePackagingMaster->noDokumen = $noDokumen;
-        // Output the generated document number for testing purposes
-        
-        
-        
-        $barcodePackagingMaster->save();
-       
-        return view('barcodeinandout.scanpage', compact('noDokumen', 'tanggalScanFull', 'position'));
-    }
 
     public function storeInAndOut(Request $request)
     {
@@ -274,9 +283,19 @@ class BarcodeController extends Controller
         $master = BarcodePackagingMaster::where('noDokumen', $docnum)->first();
 
         $idmaster = $master->id;
+
+    
         
         $counter = 1;
         while (isset($data["partno" . $counter])) {
+            if($data["label" . $counter] === "ADJUST")
+            {
+                $data["quantity" . $counter];
+            }
+            else
+            {
+                $data["quantity" . $counter] = 1;
+            }
 
             $partNo = $data["partno" . $counter];
             $label = $data["label" . $counter];
@@ -293,6 +312,7 @@ class BarcodeController extends Controller
                     'masterId' => $idmaster,
                     'noDokumen' => $data['noDokumen'],
                     'partNo' => $partNo,
+                    'quantity' => $data['quantity'. $counter],
                     'label' => $label,
                     'position' => $data['position'],
                     'scantime' => \Carbon\Carbon::parse($data["scantime" . $counter])->format('Y-m-d H:i:s'),
@@ -335,6 +355,7 @@ class BarcodeController extends Controller
                 if ($detail->noDokumen === $noDokumen) {
                     $result[$masterId][$noDokumen][] = [
                         'partNo' => $detail->partNo,
+                        'quantity' => $detail->quantity,
                         'label' => $detail->label,
                         'scantime' => $detail->scantime,
                         'position' => $detail->position,
@@ -351,36 +372,42 @@ class BarcodeController extends Controller
     }
 
     public function filter(Request $request)
-{
-    $query = BarcodePackagingMaster::with('detailBarcode');
+    {
+        $query = BarcodePackagingMaster::with('detailBarcode');
 
-    if ($request->filled('tipeBarcode')) {
-        $query->where('tipeBarcode', $request->tipeBarcode);
+        if ($request->filled('tipeBarcode')) {
+            $query->where('tipeBarcode', $request->tipeBarcode);
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
+
+        if ($request->filled('dateScan')) {
+            $dateScan = \Carbon\Carbon::createFromFormat('Y-m-d', $request->input('dateScan'))->startOfDay();
+            $query->whereDate('dateScan', $dateScan);
+        }
+
+        $result = $query->get()->map(function ($item) {
+            return [
+                'dateScan' => $item->dateScan,
+                'noDokumen' => $item->noDokumen,
+                'tipeBarcode' => $item->tipeBarcode,
+                'location' => $item->location,
+                $item->noDokumen => $item->detailBarcode->map(function ($detail) {
+                    return [
+                        'partNo' => $detail->partNo,
+                        'label' => $detail->label,
+                        'quantity' => $detail->quantity,
+                        'position' => $detail->position,
+                        'scantime' => $detail->scantime,
+                    ];
+                }),
+            ];
+        });
+
+        return view('barcodeinandout.partials.barcode_table', ['result' => $result]);
     }
-
-    if ($request->filled('location')) {
-        $query->where('location', $request->location);
-    }
-
-    $result = $query->get()->map(function ($item) {
-        return [
-            'dateScan' => $item->dateScan,
-            'noDokumen' => $item->noDokumen,
-            'tipeBarcode' => $item->tipeBarcode,
-            'location' => $item->location,
-            $item->noDokumen => $item->detailBarcode->map(function ($detail) {
-                return [
-                    'partNo' => $detail->partNo,
-                    'label' => $detail->label,
-                    'position' => $detail->position,
-                    'scantime' => $detail->scantime,
-                ];
-            }),
-        ];
-    });
-
-    return view('barcodeinandout.partials.barcode_table', ['result' => $result]);
-}
 
 
 
