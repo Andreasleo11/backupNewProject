@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\DirectorPurchaseRequestDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePurchaseRequest;
+use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\PurchaseRequest;
@@ -81,9 +82,9 @@ class PurchaseRequestController extends Controller
                     });
             });
 
-            $purchaseRequestsQuery->where(function ($query) use ($user) {
-                $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
-            });
+            // $purchaseRequestsQuery->where(function ($query) use ($user) {
+            //     $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
+            // });
 
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
@@ -141,6 +142,7 @@ class PurchaseRequestController extends Controller
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
+            ->orWhere('user_id_create', $user->id)
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
@@ -547,17 +549,9 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePurchaseRequest $request, $id)
     {
-        // dd($id);
-        $validated = $request->validate([
-            'date_pr' => 'date',
-            'date_required' => 'date',
-            'pic' => 'string',
-            'remark' => 'string',
-            'supplier' => 'string',
-        ]);
-
+        $validated = $request->validated();
         // Define the additional attribute and its value
         $additionalData = [
             'updated_at' => now(),

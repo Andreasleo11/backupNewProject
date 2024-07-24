@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     {{-- GLOBAL VARIABLE --}}
     @php
         $authUser = auth()->user();
@@ -35,7 +34,7 @@
         </div>
 
         <div class="card mt-5">
-            <div class=card-body>
+            <div class="card-body pb-0 pb-1">
                 <table class="table table-border text-center mb-0">
                     <thead>
                         <tr>
@@ -55,31 +54,26 @@
                             <tr>
                                 <td>{{ $report->id }}</td>
                                 <td>{{ $report->dept_no }}</td>
-                                <td>{{ $formatedDate }}</td>
+                                <td> @formatDate($report->report_date) </td>
                                 <td>
-                                    @if ($report->approved_autograph)
-                                        <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
-                                    @elseif($report->is_known_autograph)
-                                        @if ($report->department->name === 'QA' || $report->department->name === 'QC')
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting Director</span>
-                                        @else
-                                            <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting GM</span>
-                                        @endif
-                                    @elseif($report->created_autograph)
-                                        <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting Dept Head</span>
-                                    @endif
+                                    @include('partials.monthly-budget-summary-report-status')
                                 </td>
                                 <td>
                                     <a href="{{ route('monthly.budget.report.show', $report->id) }}"
                                         class="btn btn-secondary">Detail</a>
-                                    @include('partials.delete-confirmation-modal', [
-                                        'id' => $report->id,
-                                        'route' => 'monthly.budget.report.delete',
-                                        'title' => 'Delete report confirmation',
-                                        'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
-                                    ])
-                                    <button class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                    @if (!$report->created_autograph)
+                                        <a href="{{ route('monthly.budget.report.edit', $report->id) }}"
+                                            class="btn btn-primary">Edit</a>
+                                        @include('partials.delete-confirmation-modal', [
+                                            'id' => $report->id,
+                                            'route' => 'monthly.budget.report.delete',
+                                            'title' => 'Delete report confirmation',
+                                            'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
+                                        ])
+
+                                        <button class="btn btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -90,6 +84,9 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            {{ $reports->links() }}
         </div>
     </div>
 @endsection

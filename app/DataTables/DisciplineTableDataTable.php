@@ -262,7 +262,9 @@ class DisciplineTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '331')->orWhere('Dept', '330')
+                    $query->where(function ($query) {
+                        $query->where('Dept', '331')->orWhere('Dept', '330');
+                    })
                         ->where('NIK', '!=', '00179')
                         ->where('status', '!=', 'YAYASAN');
                 })->newQuery();
@@ -318,7 +320,9 @@ class DisciplineTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '340')->orWhere('Dept', '341')
+                    $query->where(function ($query) {
+                        $query->where('Dept', '340')->orWhere('Dept', '341');
+                    })
                         ->where('NIK', '!=', '00033')
                         ->where('status', '!=', 'YAYASAN');
                 })->newQuery();
