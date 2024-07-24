@@ -44,7 +44,9 @@ class PurchaseRequest extends Model
         'from_department',
         'is_import',
         'is_cancel',
-        'po_number'
+        'po_number',
+        'doc_num',
+        'branch'
     ];
 
 
@@ -84,8 +86,9 @@ class PurchaseRequest extends Model
             // Get the date portion
             $date = now()->format('Ymd'); // Assuming you want the current date
 
+            $branch = substr($purchaseRequest->branch, 0, 3);
             // Build the docNum
-            $docNum = "PR/{$purchaseRequest->id}/{$date}";
+            $docNum = "PR/$branch/$purchaseRequest->id/$date";
 
             $prNo = substr($purchaseRequest->to_department, 0, 4) . '-' . $purchaseRequest->id;
 

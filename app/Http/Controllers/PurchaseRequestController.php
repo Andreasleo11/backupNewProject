@@ -191,7 +191,8 @@ class PurchaseRequestController extends Controller
             'type' => $request->input('type'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
-            'status' => 1
+            'status' => 1,
+            'branch' => $request->branch,
         ];
 
         if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
