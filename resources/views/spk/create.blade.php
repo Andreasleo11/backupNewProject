@@ -75,6 +75,16 @@
                                     @endforeach
                                 </select>
                             </div>
+
+                            <div class="form-group mt-3">
+                                <label for="toDepartmentDropdown" class="fw-semibold col-form-label col-sm-2"> To
+                                    Department</label>
+                                <select class="form-select" name="to_department" id="toDepartmentDropdown" required>
+                                    <option value="" selected disabled>Select to department..</option>
+                                    <option value="COMPUTER">COMPUTER</option>
+                                    <option value="MAINTENANCE">MAINTENANCE</option>
+                                </select>
+                            </div>
                             <div class="form-group mt-3">
                                 <label for="keterangan_laporan" class="fw-semibold form-label">Judul Laporan</label>
                                 <input type="text" name="judul_laporan" id="judul_laporan" value="" required
@@ -108,17 +118,17 @@
         });
     </script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', (event) => {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const dd = String(today.getDate()).padStart(2, '0');
-        const hh = String(today.getHours()).padStart(2, '0');
-        const min = String(today.getMinutes()).padStart(2, '0');
-        const ss = String(today.getSeconds()).padStart(2, '0');
-        const formattedToday = `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
-        document.getElementById('tanggallapor').value = formattedToday;
-    });
-</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            const dd = String(today.getDate()).padStart(2, '0');
+            const hh = String(today.getHours()).padStart(2, '0');
+            const min = String(today.getMinutes()).padStart(2, '0');
+            const ss = String(today.getSeconds()).padStart(2, '0');
+            const formattedToday = `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+            document.getElementById('tanggallapor').value = formattedToday;
+        });
+    </script>
 @endpush

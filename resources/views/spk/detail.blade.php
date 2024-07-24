@@ -1,6 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
+
+    <style>
+        .autograph-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 100px;
+            /* Adjust height as needed */
+            text-align: center;
+            font-size: 14px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+    </style>
     @include('partials.alert-success-error')
 
     {{-- GLOBAL VARIABLE --}}
@@ -25,7 +38,41 @@
                 {{-- Upcoming feature? --}}
             </div>
             <div class="container">
-                <div class="row justify-content-center">
+                @if ($report->status_laporan == 2)
+                    <div class="row mt-4 justify-content-center">
+                        <div class="col-md-8">
+                            <div class="row text-center justify-content-center">
+                                <div class="col-md-4">
+                                    <label for="pelapor_autograph" class="fw-semibold col-form-label">Pelapor
+                                        Autograph</label>
+                                    <div class="autograph-box" id="pelapor_autograph">
+                                        <img src="{{ asset($report->pelapor . '.png') }}" alt="Pelapor Autograph"
+                                            style="height: 100px;">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="petugas_autograph" class="fw-semibold col-form-label">Petugas
+                                        Autograph</label>
+                                    <div class="autograph-box" id="petugas_autograph">
+                                        <img src="{{ asset($report->pic . '.png') }}" alt="Pelapor Autograph"
+                                            style="height: 100px;">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="depthead_autograph" class="fw-semibold col-form-label">DeptHead
+                                        Autograph</label>
+                                    <div class="autograph-box" id="depthead_autograph">
+                                        <img src="{{ asset($depthead->name . '.png') }}" alt="Pelapor Autograph"
+                                            style="height: 100px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                @endif
+
+                <div class="row justify-content-center mt-4">
                     <div class="col-md-8">
                         <form action="{{ route('spk.update', $report->id) }}" method="post">
                             @method('PUT')
@@ -41,21 +88,36 @@
                                         <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
                                         <div class="text-secondary">
                                             <div>Pelapor : {{ $report->pelapor }}</div>
-                                            <div class="mb-2">Tanggal Lapor : {{ \Carbon\Carbon::parse($report->tanggal_lapor)->translatedFormat('d F Y H:i:s') }}</div>
-                                            <div class="mb-2">Dibuat Pada : {{ \Carbon\Carbon::parse($report->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
-                                            <div class="mb-2">Diupdate Pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                            <div>Tanggal Lapor :
+                                                {{ \Carbon\Carbon::parse($report->tanggal_lapor)->translatedFormat('d F Y H:i:s') }}
+                                            </div>
+                                            <div>Dibuat Pada :
+                                                {{ \Carbon\Carbon::parse($report->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                            </div>
+                                            <div>Diupdate Pada :
+                                                {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                            </div>
                                             @if ($report->tanggal_selesai !== null)
-                                                <div class="mb-2">Selesai pada : {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}</div>
+                                                <div>Selesai pada :
+                                                    {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                </div>
                                             @endif
                                         </div>
-                                        @include('partials.spk-status')
+                                        <div class="mt-2">
+                                            @include('partials.spk-status', [
+                                                'status' => $report->status_laporan,
+                                            ])
+                                        </div>
+
+
                                     </div>
                                     <div class="form-group row mt-5">
                                         <label for="no_dokumen" class="fw-semibold col-form-label col">No Dokumen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="no_dokumen" id="no_dokumen"
                                                 value="{{ $report->no_dokumen }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
+                                                readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -63,14 +125,27 @@
                                         <div class="col-sm-9">
                                             <input type="text" name="pelapor" id="pelapor"
                                                 value="{{ $report->pelapor }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
+                                                readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
-                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2" readonly>
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
+                                                readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group row mt-3">
+                                        <label for="deto_departmentpt" class="fw-semibold col-form-label col">To
+                                            Departemen</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" name="to_department" id="to_department"
+                                                value="{{ $report->to_department }}"
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
+                                                readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -93,9 +168,11 @@
                                         <label for="pic" class="fw-semibold col-form-label col">PIC</label>
                                         <div class="col-sm-9">
                                             <select name="pic" id="pic" class="form-control">
-                                                <option value="" disabled selected>{{$report->pic ?? '-' }} </option>
-                                                @foreach($users as $user)
-                                                    <option value="{{ $user->name }}" {{ isset($report->pic) && $report->pic == $user->id ? 'selected' : '' }}>
+                                                <option value="" disabled selected>{{ $report->pic ?? '-' }}
+                                                </option>
+                                                @foreach ($users as $user)
+                                                    <option value="{{ $user->name }}"
+                                                        {{ isset($report->pic) && $report->pic == $user->id ? 'selected' : '' }}>
                                                         {{ $user->name }}
                                                     </option>
                                                 @endforeach
@@ -110,13 +187,36 @@
                                     </textarea>
                                         </div>
                                     </div>
+
+                                    <div class="form-group row mt-3">
+                                        <label class="fw-semibold col-form-label col">Remarks</label>
+                                        <div class="col-sm-9 mt-2">
+                                            @if ($report->spkRemarks->isEmpty())
+                                                <p>No remarks available.</p>
+                                            @else
+                                                <ul class="list-group">
+                                                    @foreach ($report->spkRemarks as $remark)
+                                                        <li class="list-group-item">
+
+                                                            @include('partials.spk-status', [
+                                                                'status' => $remark->status,
+                                                            ])
+                                                            <br>
+                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                            <strong>Date:</strong>
+                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </div>
+                                    </div>
                                     <div class="form-group row mt-3">
                                         <label for="tanggal_terima" class="fw-semibold col-form-label col">Tanggal
-                                            Terima</label>
+                                            Mulai</label>
                                         <div class="col-sm-9">
                                             <input type="datetime-local" name="tanggal_terima" id="tanggal_terima"
-                                                class="form-control"
-                                                value="{{ $report->tanggal_terima}}">
+                                                class="form-control" value="{{ $report->tanggal_terima }}">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -124,8 +224,7 @@
                                             Estimasi</label>
                                         <div class="col-sm-9">
                                             <input type="datetime-local" name="tanggal_estimasi" id="tanggal_estimasi"
-                                                class="form-control"
-                                                value="{{ $report->tanggal_estimasi}}">
+                                                class="form-control" value="{{ $report->tanggal_estimasi }}">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -133,8 +232,7 @@
                                             Selesai</label>
                                         <div class="col-sm-9">
                                             <input type="datetime-local" name="tanggal_selesai" id="tanggal_selesai"
-                                                class="form-control"
-                                                value="{{ $report->tanggal_selesai}}">
+                                                class="form-control" value="{{ $report->tanggal_selesai }}">
                                         </div>
                                     </div>
                                 </div>
@@ -157,7 +255,7 @@
 
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
-            const ignoredInputs = ['no_dokumen', 'pelapor', 'dept'];
+            const ignoredInputs = ['no_dokumen', 'pelapor', 'dept', 'to_department'];
             const inputs = document.querySelectorAll('input, textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
 

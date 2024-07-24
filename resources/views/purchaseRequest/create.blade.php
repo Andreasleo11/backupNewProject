@@ -15,6 +15,24 @@
                     <form action="{{ route('purchaserequest.insert') }}" method="POST" class="row ">
                         @csrf
 
+                        <div class="form-group mt-5 col-md-2">
+                            <label class="form-label fs-5 fw-bold">Branch</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="branch" id="jakartaRadio"
+                                    value="JAKARTA" checked>
+                                <label class="form-check-label" for="jakartaRadio">
+                                    Jakarta
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="branch" id="karawangRadio"
+                                    value="KARAWANG" {{ old('branch') == 'true' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="karawangRadio">
+                                    Karawang
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="form-group mt-5 col">
                             <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
                             <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
@@ -49,7 +67,7 @@
                             <label class="form-label fs-5 fw-bold">Local/Import</label>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="is_import" id="localRadio"
-                                    value="false" {{ old('is_import') == 'false' ? 'checked' : '' }}>
+                                    value="false" {{ old('is_import') == 'true' ? 'checked' : '' }}>
                                 <label class="form-check-label" for="localRadio">
                                     Local
                                 </label>
@@ -96,7 +114,8 @@
 
                         <div class="form-group mt-3 col-md-6">
                             <label class="form-label fs-5 fw-bold col-sm-2" for="pic">PIC</label>
-                            <input class="form-control" type="text" name="pic" value="{{ old('pic') }}" required>
+                            <input class="form-control" type="text" name="pic" value="{{ old('pic') }}"
+                                required>
                         </div>
 
                         <div class="form-group mt-3">
