@@ -737,6 +737,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     });
 
+    // FOR DEBUG ONLY: VIEWING CREATED SPK NOTIFICATION
     Route::get('/createdSpkPreview', function () {
         $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
 
@@ -754,6 +755,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         return (new App\Notifications\SPKCreated($spk, $details))->toMail(auth()->user());
     });
 
+    // FOR DEBUG ONLY: VIEWING UPDATED SPK NOTIFICATION
     Route::get('/updatedSpkPreview', function () {
         $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
 

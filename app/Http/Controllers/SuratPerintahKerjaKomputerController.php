@@ -86,8 +86,6 @@ class SuratPerintahKerjaKomputerController extends Controller
         // Save the instance to the database
         $spk->save();
 
-        $this->sendNotification($spk);
-
         // Optionally, you can return a response or redirect
         return redirect()->route('spk.index')->with('success', 'Data successfully inserted.');
     }
@@ -136,8 +134,6 @@ class SuratPerintahKerjaKomputerController extends Controller
             'status' => $status,
             'remarks' => $remarks,
         ]);
-
-        $this->sendNotification($report);
 
         // Redirect back with success message
         return redirect()->back()->with('success', 'SPK updated successfully!');
@@ -261,43 +257,5 @@ class SuratPerintahKerjaKomputerController extends Controller
             'monthlyReport' => $monthlyReport, 'month' => $month,
             'year' => $year,
         ]);
-    }
-
-    private function sendNotification(SuratPerintahKerjaKomputer $spk)
-    {
-        $status = 'UNKNOWN';
-        switch ($spk->status) {
-            case 0:
-                $status = 'WAITING';
-                break;
-            case 1:
-                $status = 'IN PROGRESS';
-                break;
-            case 2:
-                $status = 'DONE';
-                break;
-        }
-
-        $details = [
-            'cc' => $spk->createdBy,
-            'greeting' => 'Surat Perintah Kerja Komputer Notification',
-            'body' => "We want to inform you about this SPK : <br>
-                - No Dokumen : $spk->no_dokumen <br>
-                - Pelapor : $spk->pelapor <br>
-                - Departemen : $spk->dept <br>
-                - Status : $status",
-            'actionText' => 'Click to see the detail',
-            'actionURL' => route('spk.detail', $spk->id),
-        ];
-
-        if ($spk->status === 0 || $spk->status === 1) {
-            $users = User::whereHas('department', function ($query) {
-                $query->where('name', 'COMPUTER');
-            });
-            Notification::send($users, new SPKCreated($spk, $details));
-        } elseif ($spk->status === 2) {
-            $user = $spk->createdBy;
-            $user->notify(new SPKCreated($spk, $details));
-        }
     }
 }
