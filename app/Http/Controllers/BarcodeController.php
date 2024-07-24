@@ -136,7 +136,9 @@ class BarcodeController extends Controller
         // dd($lowercaseFilename);
 
             
-        
+        if (!File::exists($barcodesFolder)) {
+            File::makeDirectory($barcodesFolder, 0755, true); // 0755 is the permission, true for recursive creation
+        }
        
         // Save the barcode as a PNG image inside the barcodes folder
         $barcode->getBarcodePNGPath($barcodeData, 'C128', 2, 70, [0, 0, 0], false);

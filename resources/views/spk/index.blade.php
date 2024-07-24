@@ -57,7 +57,7 @@
                                 <td class="align-content-center">@formatDate($report->tanggal_lapor)</td>
                                 <td class="align-content-center">{{ $report->judul_laporan }}</td>
                                 <td class="align-content-center">{{ $report->pic ?? 'Not Assigned' }}</td>
-                                <td class="align-content-center">@include('partials.spk-status')</td>
+                                <td class="align-content-center">@include('partials.spk-status', ['status' => $report->status_laporan])</td>
                                 <td class="align-content-center">@include('partials.spk-actions')</td>
                             </tr>
                         @empty
