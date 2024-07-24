@@ -9,24 +9,22 @@ use App\Models\SuratPerintahKerjaKomputer;
 use App\Models\User;
 use App\Models\SpkRemark;
 use App\Models\Department;
+use App\Notifications\SPKCreated;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use DateTime;
-
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Notification;
 
 class SuratPerintahKerjaKomputerController extends Controller
 {
     public function index()
     {
-
         $this->updatestatus();
 
         $authUser = auth()->user();
 
         $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
-        // dd($reportsQuery->get());
 
         if ($authUser->department->name !== 'COMPUTER') {
             $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
@@ -56,8 +54,8 @@ class SuratPerintahKerjaKomputerController extends Controller
     }
 
     public function inputprocess(Request $request)
-    {  
-     
+    {
+
         // Validate the request data
         $validatedData = $request->validate([
             'no_dokumen' => 'required|string|max:255',
@@ -83,9 +81,12 @@ class SuratPerintahKerjaKomputerController extends Controller
         $spk->to_department = $validatedData['to_department'];
         $spk->judul_laporan = $validatedData['judul_laporan'];
         $spk->keterangan_laporan = $validatedData['keterangan_laporan'];
+        $spk->status_laporan = 0;
 
         // Save the instance to the database
         $spk->save();
+
+        $this->sendNotification($spk);
 
         // Optionally, you can return a response or redirect
         return redirect()->route('spk.index')->with('success', 'Data successfully inserted.');
@@ -103,8 +104,8 @@ class SuratPerintahKerjaKomputerController extends Controller
         $depthead = User::whereHas('department', function ($query) use ($dept) {
             $query->where('name', $dept);
         })->where('is_head', true)
-        ->first();
-        
+            ->first();
+
         return view('spk.detail', compact('report', 'users', 'depthead'));
     }
 
@@ -131,10 +132,12 @@ class SuratPerintahKerjaKomputerController extends Controller
         $reportid = $report->id;
         // dd($status);
         SpkRemark::create([
-            'spk_id' => $reportid, 
+            'spk_id' => $reportid,
             'status' => $status,
             'remarks' => $remarks,
         ]);
+
+        $this->sendNotification($report);
 
         // Redirect back with success message
         return redirect()->back()->with('success', 'SPK updated successfully!');
@@ -163,8 +166,8 @@ class SuratPerintahKerjaKomputerController extends Controller
         $reports = SuratPerintahKerjaKomputer::all();
 
         foreach ($reports as $report) {
-            // Initialize status_laporan as 0
-            $report->status_laporan = 0;
+            // // Initialize status_laporan as 0
+            // $report->status_laporan = 0;
 
             // Check if tanggal_selesai is not null
             if ($report->tanggal_selesai !== null) {
@@ -178,20 +181,19 @@ class SuratPerintahKerjaKomputerController extends Controller
             // Save the updated report
             $report->save();
         }
-        return;
     }
 
     public function monthlyreport(Request $request)
     {
         // Fetch all SuratPerintahKerjaKomputer records
-         // Get current month and year from request or set default
+        // Get current month and year from request or set default
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
         // Fetch all SuratPerintahKerjaKomputer records filtered by month and year
         $reports = SuratPerintahKerjaKomputer::whereYear('tanggal_lapor', $year)
-                                            ->whereMonth('tanggal_lapor', $month)
-                                            ->get();
+            ->whereMonth('tanggal_lapor', $month)
+            ->get();
 
         // Initialize an array to store formatted report data
         $monthlyReport = [];
@@ -204,7 +206,7 @@ class SuratPerintahKerjaKomputerController extends Controller
             $estimasiFormatted = '';
             $menitEstimasi = 0;
             $menitDurasi = 0;
-            
+
             $dateLapor = new DateTime($report->tanggal_lapor);
             $durasiFormatted = '';
 
@@ -225,13 +227,13 @@ class SuratPerintahKerjaKomputerController extends Controller
             $estimasiFormatted = sprintf('%d hari, %d jam, %d menit', $estimasi->days, $estimasi->h, $estimasi->i);
 
             // Convert durations to minutes
-          
+
             $menitEstimasi = $estimasi->days * 24 * 60 + $estimasi->h * 60 + $estimasi->i;
 
 
             $presentase = ($menitEstimasi !== 0 && $menitDurasi !== 0 && $menitDurasi !== 0)
-            ? min(1, $menitEstimasi / $menitDurasi ) * 100
-            : 0;
+                ? min(1, $menitEstimasi / $menitDurasi) * 100
+                : 0;
 
             // Prepare the data for the monthly report
             $monthlyReport[] = [
@@ -252,10 +254,50 @@ class SuratPerintahKerjaKomputerController extends Controller
                 'presentase' => $presentase ?? 0,
             ];
         }
-        
+
         // Output or return the formatted monthly report
-        
-        return view('spk.monthlyreport', ['monthlyReport' => $monthlyReport, 'month' => $month,
-        'year' => $year,]);
+
+        return view('spk.monthlyreport', [
+            'monthlyReport' => $monthlyReport, 'month' => $month,
+            'year' => $year,
+        ]);
+    }
+
+    private function sendNotification(SuratPerintahKerjaKomputer $spk)
+    {
+        $status = 'UNKNOWN';
+        switch ($spk->status) {
+            case 0:
+                $status = 'WAITING';
+                break;
+            case 1:
+                $status = 'IN PROGRESS';
+                break;
+            case 2:
+                $status = 'DONE';
+                break;
+        }
+
+        $details = [
+            'cc' => $spk->createdBy,
+            'greeting' => 'Surat Perintah Kerja Komputer Notification',
+            'body' => "We want to inform you about this SPK : <br>
+                - No Dokumen : $spk->no_dokumen <br>
+                - Pelapor : $spk->pelapor <br>
+                - Departemen : $spk->dept <br>
+                - Status : $status",
+            'actionText' => 'Click to see the detail',
+            'actionURL' => route('spk.detail', $spk->id),
+        ];
+
+        if ($spk->status === 0 || $spk->status === 1) {
+            $users = User::whereHas('department', function ($query) {
+                $query->where('name', 'COMPUTER');
+            });
+            Notification::send($users, new SPKCreated($spk, $details));
+        } elseif ($spk->status === 2) {
+            $user = $spk->createdBy;
+            $user->notify(new SPKCreated($spk, $details));
+        }
     }
 }
