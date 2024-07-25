@@ -17,6 +17,7 @@ class FixPurchaseRequestSeeder extends Seeder
         $this->fixPurchaseRequetType();
         $this->updatePRPE();
         $this->fixPurchaseRequestDetails();
+        $this->fixPRBranch();
     }
 
     private function updateDepartmentIsOffice()
@@ -75,5 +76,10 @@ class FixPurchaseRequestSeeder extends Seeder
                     'is_approve' => true
                 ]);
         }
+    }
+
+    private function fixPRBranch()
+    {
+        \App\Models\PurchaseRequest::whereNull('branch')->update(['branch' => 'JAKARTA']);
     }
 }
