@@ -38,6 +38,14 @@
                 </select>
             </div>
 
+            <div class="col-auto">
+                <label for="branch" class="form-label">Branch</label>
+                <select class="form-select" name="branch">
+                    <option value="jakarta" {{ session('branch') === 'jakarta' ? 'selected' : '' }}>Jakarta</option>
+                    <option value="karawang" {{ session('branch') == 'karawang' ? 'selected' : '' }}>Karawang</option>
+                </select>
+            </div>
+
             <div class="col-auto align-content-end ">
                 <a href="{{ route('purchaserequest.home', ['start_date' => null, 'end_date' => null, 'status' => null]) }}"
                     class="btn btn-secondary">Reset</a>
@@ -94,7 +102,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10">No Data</td>
+                                    <td colspan="20">No Data</td>
                                 </tr>
                             @endforelse
                         </tbody>
