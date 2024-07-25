@@ -41,6 +41,7 @@
                 <th>Type</th>
                 <th>Purpose</th>
                 <th>Brand</th>
+                <th>Description</th>
                 <th>Hardwares</th>
                 <th>Softwares</th>
             </tr>
@@ -54,6 +55,7 @@
                     <td>{{ $data->type }}</td>
                     <td>{{ $data->purpose }}</td>
                     <td>{{ $data->brand }}</td>
+                    <td>{{ $data->description}}</td>
                     <td>
                         @if($data->hardwares->isEmpty())
                             No hardwares
