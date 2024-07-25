@@ -38,6 +38,10 @@
             <option value="KARAWANG">KARAWANG</option>
         </select>
 
+
+        <label for="dateScan">Date Scan:</label>
+        <input type="date" name="dateScan" id="dateScan">
+
         <button type="button" id="filterButton">Filter</button>
     </form>
 
@@ -50,12 +54,17 @@
             $('#filterButton').on('click', function() {
                 var tipeBarcode = $('#tipeBarcode').val();
                 var location = $('#location').val();
+                var dateScan = $('#dateScan').val();
+                console.log(tipeBarcode);
+                console.log(location);
+                console.log(dateScan);
                 $.ajax({
                     url: '{{ route("barcode.filter") }}',
                     method: 'GET',
                     data: {
                         tipeBarcode: tipeBarcode,
-                        location: location
+                        location: location,
+                        dateScan: dateScan
                     },
                     success: function(response) {
                         $('#barcodeData').html(response);

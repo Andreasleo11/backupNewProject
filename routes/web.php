@@ -294,6 +294,8 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
         Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
+        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
+
         Route::get("deliveryschedule/raw", [DeliveryScheduleController::class, "indexraw"])->name("rawdelsched");
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
 
@@ -640,6 +642,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
     Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
+    Route::get('monthlyBudgetReport/{id}/edit', [MonthlyBudgetReportController::class, 'edit'])->name('monthly.budget.report.edit');
+    Route::put('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'update'])->name('monthly.budget.report.update');
     Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
     Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
     Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
@@ -662,6 +666,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
+    Route::get('barcode/historytable', [BarcodeController::class, 'historybarcodelist'])->name('barcode.historytable');
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
 
@@ -686,19 +691,15 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'detail'])->name('spk.detail');
     Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
     Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
-    Route::get('spkkomputer/report/monthly',[SuratPerintahKerjaKomputerController::class, 'monthlyreport'])->name('spk.monthlyreport');
-
-    
+    Route::get('spkkomputer/report/monthly', [SuratPerintahKerjaKomputerController::class, 'monthlyreport'])->name('spk.monthlyreport');
 
     Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
 
-
-
     Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
     Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
     Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
-        
+
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
         $report = App\Models\MonthlyBudgetReport::find(5);
@@ -712,8 +713,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         $detail['userName'] = $report->user->name;
 
-
-        return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
+      return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
             ->toMail($report->user);
     });
 
@@ -723,7 +723,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
         $details = [
             'greeting' => 'Form Overtime Notification',
-            'body' => "We waiting for your sign for this report : <br>
+            'body' => "Notification for SPK : <br>
                     - Report ID : $report->id <br>
                     - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
                     - Create Date : {$formattedCreateDate} <br>
@@ -738,6 +738,55 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         // $user = App\Models\User::find(30);
         // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
+    });
 
+    // FOR DEBUG ONLY: VIEWING CREATED SPK NOTIFICATION
+    Route::get('/createdSpkPreview', function () {
+        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+
+        $details = [
+            'cc' => $spk->createdBy->email,
+            'greeting' => 'Surat Perintah Kerja Komputer Notification',
+            'body' => "Notification for SPK : <br>
+                - No Dokumen : $spk->no_dokumen <br>
+                - Pelapor : $spk->pelapor <br>
+                - Departemen : $spk->dept <br>",
+            'actionText' => 'Check Now',
+            'actionURL' => route('spk.detail', $spk->id),
+        ];
+
+        return (new App\Notifications\SPKCreated($spk, $details))->toMail(auth()->user());
+    });
+
+    // FOR DEBUG ONLY: VIEWING UPDATED SPK NOTIFICATION
+    Route::get('/updatedSpkPreview', function () {
+        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+
+        $status = 'UNKNOWN';
+        switch ($spk->status) {
+            case 0:
+                $status = 'WAITING';
+                break;
+            case 1:
+                $status = 'IN PROGRESS';
+                break;
+            case 2:
+                $status = 'DONE';
+                break;
+        }
+
+        $keteranganPic = $spk->keterangan_pic ?: '-';
+        $details = [
+            'greeting' => 'Surat Perintah Kerja Komputer Notification',
+            'body' => "Notification for SPK : <br>
+                - No Dokumen : $spk->no_dokumen <br>
+                - Status : $status <br>
+                - PIC : $spk->pic  <br>
+                - Keterangan PIC : $keteranganPic <br>",
+            'actionText' => 'Check Detail',
+            'actionURL' => route('spk.detail', $spk->id),
+        ];
+
+        return (new App\Notifications\SPKUpdated($spk, $details))->toMail(auth()->user());
     });
 });

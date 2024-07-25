@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Exports\MonthlyBudgetReportTemplateExport;
+use App\Http\Requests\UpdateMonthlyBudgetReportRequest;
 use App\Imports\MonthlyBudgetReportImport;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Models\MonthlyBudgetReport as Report;
+use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetReportDetail as Detail;
+use App\Models\MonthlyBudgetReportDetail;
 use App\Models\User;
 use App\Notifications\MonthlyBudgetReportRequestSign;
 use Illuminate\Support\Facades\DB;
@@ -25,48 +28,51 @@ class MonthlyBudgetReportController extends Controller
 
         $reportsQuery = Report::with('department', 'details');
 
-        if($authUser->email == 'nur@daijo.co.id'){
+
+        if ($authUser->email == 'nur@daijo.co.id') {
             $reportsQuery = Report::whereNotNull('created_autograph')
                 ->whereNotNull('is_known_autograph')
                 ->whereNotNull('approved_autograph');
-        } elseif($isDirector){
+        } elseif ($isDirector) {
             $reportsQuery = Report::whereNotNull('created_autograph')
                 ->whereNotNull('is_known_autograph')
-                ->whereHas('department', function($query){
+                ->whereHas('department', function ($query) {
                     $query->where('name', 'QA')
                         ->orWhere('name', 'QC');
                 });
-        } elseif($isGm){
+        } elseif ($isGm) {
             $reportsQuery = Report::whereNotNull('created_autograph')
                 ->whereNotNull('is_known_autograph')
-                ->whereHas('department', function($query){
-                    $query->whereNot(function($query){
+                ->whereHas('department', function ($query) {
+                    $query->whereNot(function ($query) {
                         $query->where('name', 'QA')
                             ->orWhere('name', 'QC')
                             ->orWhere('name', 'MOULDING');
                     });
-            });
-        } elseif($isHead){
+                });
+        } elseif ($isHead) {
             $reportsQuery = Report::whereNotNull('created_autograph');
         }
 
         // filter by auth user department or if it's user create the report besides DIRECTOR and GM
-        if(!($isDirector || $isGm)){
-            $reportsQuery->whereHas('department', function($query) use($authUser) {
+        if (!($isDirector || $isGm)) {
+            $reportsQuery->whereHas('department', function ($query) use ($authUser) {
                 $query->where('id', $authUser->department->id)->orWhere('creator_id', $authUser->id);
             });
 
-            if($isHead && $authUser->department->name === 'LOGISTIC'){
-                $reportsQuery->orWhere(function($query){
-                    $query->whereHas('department', function($query){
+            if ($isHead && $authUser->department->name === 'LOGISTIC') {
+                $reportsQuery->orWhere(function ($query) {
+                    $query->whereHas('department', function ($query) {
                         $query->where('name', 'STORE');
                     });
                 });
             }
         }
 
-        $reports = $reportsQuery->get();
-        // dd($reports);
+        $reports = $reportsQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
         return view('monthly_budget_report.index', compact('reports'));
     }
 
@@ -81,7 +87,7 @@ class MonthlyBudgetReportController extends Controller
         // Validate the request
         $request->validate([
             'dept_no' => 'required|integer',
-            'creator_id' => 'nullable|integer',
+            'creator_id' => 'required|integer',
             'report_date' => 'required|date',
             'created_autograph' => 'nullable|string',
             'is_known_autograph' => 'nullable|string',
@@ -127,7 +133,7 @@ class MonthlyBudgetReportController extends Controller
                 // Rollback the transaction on error
                 DB::rollBack();
 
-                 // Log the error (check laravel.log for details)
+                // Log the error (check laravel.log for details)
                 Log::error('Error importing Excel file: ' . $e->getMessage());
 
                 return redirect()->back()->with('error', 'Error importing Excel file!');
@@ -173,28 +179,43 @@ class MonthlyBudgetReportController extends Controller
         }
     }
 
+    public function edit($id)
+    {
+        $departments = Department::all();
+        $report = MonthlyBudgetReport::find($id);
+        return view('monthly_budget_report.edit', compact('departments', 'report'));
+    }
+
     public function show($id)
     {
         $report = Report::with('details', 'department')->find($id);
         return view('monthly_budget_report.detail', compact('report'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateMonthlyBudgetReportRequest $request, $id)
     {
-        $request->validate([
-            'dept_no' => 'integer',
-            'report_date' => 'date',
-        ]);
+        $validated = $request->validated();
 
-        Report::find($id)->update($request);
-        return redirect()->back()->with('status', 'Monthly Budget Report successfully updated!');
+        if ($validated['items']) {
+            foreach ($validated['items'] as $item) {
+                MonthlyBudgetReportDetail::find($item['id'])->update([
+                    'name' => $item['name'],
+                    'uom' => $item['uom'],
+                    'quantity' => $item['quantity'],
+                    'remark' => $item['remark'],
+                ]);
+            }
+        }
+
+        Report::find($id)->update($request->all());
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully updated!');
     }
 
     public function destroy($id)
     {
         Report::find($id)->delete();
         Detail::where('header_id', $id)->delete();
-        return redirect()->back()->with('status', 'Monthly Budget Report successfully deleted!');
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully deleted!');
     }
 
     public function saveAutograph(Request $request, $id)
@@ -202,7 +223,7 @@ class MonthlyBudgetReportController extends Controller
         $report = Report::with('department', 'user')->find($id);
         $report->update($request->all());
         $this->sendNotification($report);
-        return redirect()->back()->with('status', 'Monthly Budget Report successfully approved!');
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully approved!');
     }
 
     public function downloadExcelTemplate(Request $request)
@@ -221,37 +242,39 @@ class MonthlyBudgetReportController extends Controller
             'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'monthlyBudgetReport/' . $report->id,
         ];
 
+        $user = null;
+
         // $creator = User::find($report->creator_id)->notify(new MonthlyBudgetReportRequestSign($report, $detail));
 
-        if($report->created_autograph && !$report->is_known_autograph && !$report->approved_autograph){
-            if($report->department->name === 'MOULDING'){
-                $user = User::with('department', 'specification')->whereHas('department', function($query){
+        if ($report->created_autograph && !$report->is_known_autograph && !$report->approved_autograph) {
+            if ($report->department->name === 'MOULDING') {
+                $user = User::with('department', 'specification')->whereHas('department', function ($query) {
                     $query->where('name', 'MOULDING');
-                })->where('is_head', 1)->whereHas('specification', function($query){
+                })->where('is_head', 1)->whereHas('specification', function ($query) {
                     $query->where('name', 'design');
                 })->first();
-            } elseif($report->department->name === 'STORE') {
-                $user = User::where('is_head', 1)->whereHas('department', function($query){
+            } elseif ($report->department->name === 'STORE') {
+                $user = User::where('is_head', 1)->whereHas('department', function ($query) {
                     $query->where('name', 'LOGISTIC');
                 })->first();
             } else {
                 $user = User::where('department_id', $report->department->id)->where('is_head', 1)->first();
             }
-        } elseif($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph){
-            if($report->department->name === 'MOULDING'){
-                $user = User::with('department', 'specification')->whereHas('department', function($query){
+        } elseif ($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph) {
+            if ($report->department->name === 'MOULDING') {
+                $user = User::with('department', 'specification')->whereHas('department', function ($query) {
                     $query->where('name', 'MOULDING');
-                })->where('is_head', 1)->whereHas('specification', function($query){
+                })->where('is_head', 1)->whereHas('specification', function ($query) {
                     $query->where('name', '!=', 'design');
                 })->first();
-            } elseif($report->department->name === "QA" || $report->department->name === "QC"){
-                $user = User::with('department')->whereHas('department', function($query){
+            } elseif ($report->department->name === "QA" || $report->department->name === "QC") {
+                $user = User::with('department')->whereHas('department', function ($query) {
                     $query->where('name', 'DIRECTOR');
                 })->first();
             } else {
                 $user = User::where('is_gm', 1)->first();
             }
-        } elseif($report->created_autograph && $report->is_known_autograph && $report->approved_autograph){
+        } elseif ($report->created_autograph && $report->is_known_autograph && $report->approved_autograph) {
             $user = User::where('email', 'nur@daijo.co.id')->first();
             $detail['body'] = "Monthly Budget Report signed!";
 
@@ -259,7 +282,7 @@ class MonthlyBudgetReportController extends Controller
             $report->user->notify(new MonthlyBudgetReportRequestSign($report, $detail));
         }
 
-        if($user){
+        if ($user) {
             try {
                 $detail['userName'] = $user->name;
                 $user->notify(new MonthlyBudgetReportRequestSign($report, $detail));

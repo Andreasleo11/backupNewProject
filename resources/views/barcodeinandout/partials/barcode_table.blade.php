@@ -7,6 +7,7 @@
         <thead>
             <tr>
                 <th>Part No</th>
+                <th>Quantity</th>
                 <th>Label</th>
                 <th>Position</th>
                 <th>Scan Time</th>
@@ -16,6 +17,7 @@
             @foreach ($item[$item['noDokumen']] as $detail)
                 <tr>
                     <td>{{ $detail['partNo'] }}</td>
+                    <td>{{ $detail['quantity']}}</td>
                     <td>{{ $detail['label'] }}</td>
                     <td>{{ $detail['position'] }}</td>
                     <td>{{ $detail['scantime'] }}</td>

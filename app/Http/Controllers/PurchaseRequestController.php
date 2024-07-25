@@ -106,6 +106,7 @@ class PurchaseRequestController extends Controller
         $startDate = $request->start_date;
         $endDate = $request->end_date;
         $status = $request->status;
+        $branch = $request->branch;
 
         // Retrieve the stored session values for filter persistence
         $storedStartDate = $request->session()->get('start_date');
@@ -128,10 +129,6 @@ class PurchaseRequestController extends Controller
             $endDate = $storedEndDate;
         }
 
-        if ($status != 0 && $storedStatus) {
-            $status = $storedStatus;
-        }
-
         // Filtering based on the status
         if ($status) {
             $request->session()->put('status', $status);
@@ -140,9 +137,20 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('status', $status);
         }
 
+        // Filtering based on the branch
+        if ($branch) {
+            $request->session()->put('branch', $branch);
+            $purchaseRequestsQuery->where('branch', $branch);
+        } else {
+            $request->session()->forget('branch', $branch);
+        }
+
+        $purchaseRequestsQuery->where(function ($query) use ($user) {
+            $query->orWhere('user_id_create', $user->id);
+        });
+
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
-            ->orWhere('user_id_create', $user->id)
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
@@ -193,7 +201,8 @@ class PurchaseRequestController extends Controller
             'type' => $request->input('type'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'autograph_user_1' => Auth::user()->name,
-            'status' => 1
+            'status' => 1,
+            'branch' => $request->branch,
         ];
 
         if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {

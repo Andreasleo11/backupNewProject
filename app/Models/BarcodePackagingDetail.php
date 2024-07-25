@@ -13,6 +13,7 @@ class BarcodePackagingDetail extends Model
         'masterId',
         'noDokumen',
         'partNo',
+        'quantity',
         'label',
         'position',
         'scantime',

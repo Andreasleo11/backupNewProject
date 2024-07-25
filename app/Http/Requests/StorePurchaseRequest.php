@@ -36,6 +36,7 @@ class StorePurchaseRequest extends FormRequest
             'remark' => 'nullable|string|max:255',
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
+            'branch' => ['required', 'string', Rule::in(['JAKARTA', 'KARAWANG'])],
             // 'type' => [
             //     'nullable',
             //     'string',

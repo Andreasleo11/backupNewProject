@@ -7,25 +7,24 @@ use App\Http\Requests\UpdateSuratPerintahKerjaKomputerRequest;
 use Illuminate\Http\Request;
 use App\Models\SuratPerintahKerjaKomputer;
 use App\Models\User;
+use App\Models\SpkRemark;
 use App\Models\Department;
+use App\Notifications\SPKCreated;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use DateTime;
-
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Notification;
 
 class SuratPerintahKerjaKomputerController extends Controller
 {
     public function index()
     {
-
         $this->updatestatus();
 
         $authUser = auth()->user();
 
         $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
-        // dd($reportsQuery->get());
 
         if ($authUser->department->name !== 'COMPUTER') {
             $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
@@ -37,7 +36,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         $reports = $reportsQuery
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return view('spk.index', compact('reports'));
     }
@@ -56,7 +55,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function inputprocess(Request $request)
     {
-        
+
         // Validate the request data
         $validatedData = $request->validate([
             'no_dokumen' => 'required|string|max:255',
@@ -65,6 +64,7 @@ class SuratPerintahKerjaKomputerController extends Controller
             'dept' => 'required|string|max:255',
             'judul_laporan' => 'required|string|max:255',
             'keterangan_laporan' => 'required|string',
+            'to_department' => 'required|string',
         ]);
 
         // Replace the 'T' with a space in tanggallapor
@@ -78,8 +78,10 @@ class SuratPerintahKerjaKomputerController extends Controller
         $spk->pelapor = $validatedData['pelapor'];
         $spk->tanggal_lapor = $validatedData['tanggallapor'];
         $spk->dept = $validatedData['dept'];
+        $spk->to_department = $validatedData['to_department'];
         $spk->judul_laporan = $validatedData['judul_laporan'];
         $spk->keterangan_laporan = $validatedData['keterangan_laporan'];
+        $spk->status_laporan = 0;
 
         // Save the instance to the database
         $spk->save();
@@ -93,8 +95,16 @@ class SuratPerintahKerjaKomputerController extends Controller
         $users = User::where('department_id', 15)->get();
 
         $this->updatestatus();
-        $report = SuratPerintahKerjaKomputer::find($id);
-        return view('spk.detail', compact('report', 'users'));
+        $report = SuratPerintahKerjaKomputer::with('spkRemarks')->find($id);
+        // dd($report);
+
+        $dept = $report->dept;
+        $depthead = User::whereHas('department', function ($query) use ($dept) {
+            $query->where('name', $dept);
+        })->where('is_head', true)
+            ->first();
+
+        return view('spk.detail', compact('report', 'users', 'depthead'));
     }
 
     public function update(UpdateSuratPerintahKerjaKomputerRequest $request, $id)
@@ -103,9 +113,27 @@ class SuratPerintahKerjaKomputerController extends Controller
         // dd($request->all());
         // Find the record to update
         $report = SuratPerintahKerjaKomputer::findOrFail($id);
-
         // Update the record with validated data
         $report->update($request->validated());
+        if ($report->tanggal_selesai !== null) {
+            $report->status_laporan = 2;
+        }
+        // Check if pic, keterangan_pic, and tanggal_estimasi are not null
+        elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null && $report->tanggal_terima !== null) {
+            $report->status_laporan = 1;
+        }
+
+        // Save the updated report
+        $report->save();
+        $remarks = $request->keterangan_pic;
+        $status = $report->status_laporan;
+        $reportid = $report->id;
+        // dd($status);
+        SpkRemark::create([
+            'spk_id' => $reportid,
+            'status' => $status,
+            'remarks' => $remarks,
+        ]);
 
         // Redirect back with success message
         return redirect()->back()->with('success', 'SPK updated successfully!');
@@ -134,8 +162,8 @@ class SuratPerintahKerjaKomputerController extends Controller
         $reports = SuratPerintahKerjaKomputer::all();
 
         foreach ($reports as $report) {
-            // Initialize status_laporan as 0
-            $report->status_laporan = 0;
+            // // Initialize status_laporan as 0
+            // $report->status_laporan = 0;
 
             // Check if tanggal_selesai is not null
             if ($report->tanggal_selesai !== null) {
@@ -149,20 +177,19 @@ class SuratPerintahKerjaKomputerController extends Controller
             // Save the updated report
             $report->save();
         }
-        return;
     }
 
     public function monthlyreport(Request $request)
     {
         // Fetch all SuratPerintahKerjaKomputer records
-         // Get current month and year from request or set default
+        // Get current month and year from request or set default
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
         // Fetch all SuratPerintahKerjaKomputer records filtered by month and year
         $reports = SuratPerintahKerjaKomputer::whereYear('tanggal_lapor', $year)
-                                            ->whereMonth('tanggal_lapor', $month)
-                                            ->get();
+            ->whereMonth('tanggal_lapor', $month)
+            ->get();
 
         // Initialize an array to store formatted report data
         $monthlyReport = [];
@@ -175,7 +202,7 @@ class SuratPerintahKerjaKomputerController extends Controller
             $estimasiFormatted = '';
             $menitEstimasi = 0;
             $menitDurasi = 0;
-            
+
             $dateLapor = new DateTime($report->tanggal_lapor);
             $durasiFormatted = '';
 
@@ -196,13 +223,13 @@ class SuratPerintahKerjaKomputerController extends Controller
             $estimasiFormatted = sprintf('%d hari, %d jam, %d menit', $estimasi->days, $estimasi->h, $estimasi->i);
 
             // Convert durations to minutes
-          
+
             $menitEstimasi = $estimasi->days * 24 * 60 + $estimasi->h * 60 + $estimasi->i;
 
 
             $presentase = ($menitEstimasi !== 0 && $menitDurasi !== 0 && $menitDurasi !== 0)
-            ? min(1, $menitEstimasi / $menitDurasi ) * 100
-            : 0;
+                ? min(1, $menitEstimasi / $menitDurasi) * 100
+                : 0;
 
             // Prepare the data for the monthly report
             $monthlyReport[] = [
@@ -223,10 +250,12 @@ class SuratPerintahKerjaKomputerController extends Controller
                 'presentase' => $presentase ?? 0,
             ];
         }
-        
+
         // Output or return the formatted monthly report
-        
-        return view('spk.monthlyreport', ['monthlyReport' => $monthlyReport, 'month' => $month,
-        'year' => $year,]);
+
+        return view('spk.monthlyreport', [
+            'monthlyReport' => $monthlyReport, 'month' => $month,
+            'year' => $year,
+        ]);
     }
 }
