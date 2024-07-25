@@ -68,5 +68,8 @@
                 </table>
             </div>
         </div>
+        <div class="d-flex justify-content-end mt-3">
+            {{ $reports->links() }}
+        </div>
     </div>
 @endsection

@@ -35,7 +35,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         $reports = $reportsQuery
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
 
         return view('spk.index', compact('reports'));
     }
