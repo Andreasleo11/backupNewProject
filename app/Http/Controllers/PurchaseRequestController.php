@@ -155,12 +155,13 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('branch', $branch);
         }
 
-        $purchaseRequestsQuery->where(function ($query) use ($user) {
-            $query->orWhere('user_id_create', $user->id);
-        });
+        // $purchaseRequestsQuery->where(function ($query) use ($user) {
+        //     $query->orWhere('user_id_create', $user->id);
+        // });
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
+            ->orWhere('user_id_create', $user->id)
             ->paginate(10);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
