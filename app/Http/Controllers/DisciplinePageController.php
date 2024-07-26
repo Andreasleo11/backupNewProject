@@ -43,7 +43,13 @@ class DisciplinePageController extends Controller
             })
                 ->get();
         }
-
+        elseif ($user->email === "ani_apriani@daijo.co.id" || $user->email === "bernadett@daijo.co.id") {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('Dept', '310')
+                    ->where('status', '!=', 'YAYASAN')->where('level', 5);
+            })
+                ->get();
+        }
         //PEER LOGIC UNTUK HANDLE ORANG ORANG DIBAWAH DEPT HEADNYA SAJA - HARUS DIHANDLE MANUAL
         elseif ($user->is_head == 1) {
             if ($user->department_id == 2) {
@@ -71,12 +77,6 @@ class DisciplinePageController extends Controller
                 })
                     ->get();
             } elseif ($user->department_id == 7) {
-                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '310')
-                        ->where('status', '!=', 'YAYASAN')->where('level', 5);
-                })
-                    ->get();
-            } elseif ($user->email === "ani_apriani@daijo.co.id") {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '310')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
@@ -165,9 +165,29 @@ class DisciplinePageController extends Controller
 
     public function allindex(AllDisciplineTableDataTable $dataTable)
     {
-        $employees = EvaluationData::with('karyawan')->get();
+        $user = Auth::user();
+        if ($user->email === "ani_apriani@daijo.co.id" || $user->email === "bernadett@daijo.co.id") {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('status', '!==', 'YAYASAN')->where('level', 5);
+            })
+                ->get();
+        }
         return $dataTable->render("setting.alldisciplineindex", compact("employees"));
     }
+
+    public function yayasanallindex(DisciplineYayasanTableDataTable $dataTable)
+    {
+        $user = Auth::user();
+        if ($user->email === "ani_apriani@daijo.co.id" || $user->email === "bernadett@daijo.co.id") {
+            $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                $query->where('status', 'YAYASAN');
+            })
+                ->get();
+        }
+        return $dataTable->render("setting.allyayasandisciplineindex", compact("employees"));
+    }
+
+    
 
     public function setFilterValue(Request $request)
     {
