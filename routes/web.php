@@ -594,6 +594,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get("/updatedept",  [DisciplinePageController::class, 'updateDept'])->name('update.dept');
 
+    Route::get("/exportyayasanexcel",  [DisciplinePageController::class, 'exportYayasan'])->name('exportyayasan');
 
     Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
     Route::get('/fetch/filtered/yayasan-employees', [DisciplinePageController::class, 'fetchFilteredYayasanEmployees'])->name('fetch.filtered.yayasan.employees');
