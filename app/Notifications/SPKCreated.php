@@ -40,7 +40,6 @@ class SPKCreated extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->cc($this->details['cc'])
             ->greeting($this->details['greeting'])
             ->line('There\'s a new Surat Perintah Kerja Komputer just been created!')
             ->line(new \Illuminate\Support\HtmlString($this->details['body']))

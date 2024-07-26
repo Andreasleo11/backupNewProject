@@ -164,8 +164,6 @@
         @endif
     </div>
 
-
-
     {{-- GM AUTOGRAPH --}}
     @if ($purchaseRequest->from_department !== 'MOULDING')
         <div
