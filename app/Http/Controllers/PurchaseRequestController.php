@@ -34,18 +34,24 @@ class PurchaseRequestController extends Controller
 
         if ($isHRDHead) {
             // If the user is HRD Head, filter requests with specific conditions
-            $purchaseRequestsQuery->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
-                ->whereNotNull('autograph_5')
-                ->where(function ($query) {
-                    $query->whereNull('autograph_3')
-                        ->orWhereNotNull('autograph_3')
-                        ->where(function ($query) {
-                            $query->where('to_department', 'Personnel')
-                                ->where('type', 'office')
-                                ->orWhere('to_department', 'Computer');
-                        });
-                })->orWhere('from_department', 'PERSONALIA');
+            $purchaseRequestsQuery->where(function ($query) {
+                $query->whereNotNull('autograph_1')
+                    ->whereNotNull('autograph_2')
+                    ->whereNotNull('autograph_5')
+                    ->where(function ($query) {
+                        $query->whereNull('autograph_3')
+                            ->orWhereNotNull('autograph_3')
+                            ->where(function ($query) {
+                                $query->where('to_department', 'Personnel')
+                                    ->where('type', 'office')
+                                    ->orWhere('to_department', 'Computer');
+                            });
+                    })->orWhere('from_department', 'PERSONALIA');
+
+                // if ($query->where('to_department', '=', 'Maintenance') && $query->where('from_department', '=', 'COMPUTER')) {
+                //     $query->whereNull('autograph_5');
+                // }
+            });
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
                 ->whereNotNull('autograph_2')
@@ -80,7 +86,11 @@ class PurchaseRequestController extends Controller
                         $query->where('from_department', 'MOULDING')
                             ->orWhere('type', '!=', 'factory');
                     });
+                if (!$query->where('to_department', 'Purchasing')) {
+                    $query->whereNotNull('autograph_6');
+                }
             });
+
 
             // $purchaseRequestsQuery->where(function ($query) use ($user) {
             //     $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
@@ -321,11 +331,16 @@ class PurchaseRequestController extends Controller
 
             // After Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
+
                 if (($purchaseRequest->to_department === 'Purchasing' && $purchaseRequest->type === 'factory') ||
                     $purchaseRequest->to_department === 'Maintenance'
                 ) {
-                    // Direct to Director
-                    $purchaseRequest->status = 3;
+                    if ($purchaseRequest->from_department === 'COMPUTER') {
+                        $purchaseRequest->status = 2;
+                    } else {
+                        // Direct to Director
+                        $purchaseRequest->status = 3;
+                    }
                 } elseif ($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel') {
                     // Status when verificator has not signed
                     $purchaseRequest->status = 2;
