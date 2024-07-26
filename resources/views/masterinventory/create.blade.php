@@ -71,6 +71,14 @@
             @enderror
         </div>
 
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}">
+            @error('brand')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+
         <div id="hardware-section">
             <h3>Hardware</h3>
             <button type="button" class="btn btn-secondary" onclick="addHardwareRow()">Add Hardware</button>

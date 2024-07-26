@@ -419,7 +419,7 @@ class BarcodeController extends Controller
         $partNumbers = BarcodePackagingDetail::select('partNo')->distinct()->get();
 
         // Fetch all items
-        $items = BarcodePackagingDetail::all();
+        $items = BarcodePackagingDetail::where('label', '!=', 'ADJUST')->get();
 
         // Create an associative array to hold the latest records
         $latestItems = [];
@@ -475,5 +475,33 @@ class BarcodeController extends Controller
 
         return view('barcodeinandout.latestbarcodeitem', compact('sortedItems', 'partNumbers'));
 
+    }
+
+    public function historybarcodelist(Request $request)
+    {
+        $query = BarcodePackagingMaster::with(['detailbarcode' => function($query) use ($request) {
+            if ($request->has('partNo') && $request->partNo != '') {
+                $query->where('partNo', $request->partNo);
+            }
+        }]);
+
+        // Apply filters
+        if ($request->has('datescan') && $request->datescan != '') {
+            $query->whereDate('dateScan', $request->datescan);
+        }
+    
+        if ($request->has('barcode_type') && $request->barcode_type != '') {
+            $query->where('tipeBarcode', $request->barcode_type);
+        }
+    
+        if ($request->has('location') && $request->location != '') {
+            $query->where('location', $request->location);
+        }
+    
+        $items = $query->get();
+
+        $distinctPartNos = BarcodePackagingDetail::select('partNo')->distinct()->get();
+
+        return view('barcodeinandout.historylisttable', compact('items', 'distinctPartNos'));
     }
 }

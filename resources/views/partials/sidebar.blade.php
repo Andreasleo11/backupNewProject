@@ -313,13 +313,24 @@
                     </a>
                 </li>
 
+                @if($user && $user->name === 'raymond')
                 <li class="sidebar-list">
                     <a href="{{ route('list.barcode') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Report History
                     </a>
                 </li>
+                @endif
 
+                <li class="sidebar-list">
+                    <a href="{{ route('barcode.historytable') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Report History Table Style
+                    </a>
+                </li>
+
+
+                
                 <li class="sidebar-list">
                     <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>

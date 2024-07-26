@@ -666,6 +666,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
+    Route::get('barcode/historytable', [BarcodeController::class, 'historybarcodelist'])->name('barcode.historytable');
 
     Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
 

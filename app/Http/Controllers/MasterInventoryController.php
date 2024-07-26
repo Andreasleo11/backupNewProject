@@ -44,6 +44,7 @@ class MasterInventoryController extends Controller
             'type' => 'required|string|max:255',
             'purpose' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
+            'description' => 'require|string|max:255',
             'hardwares.*.type' => 'string|max:255',
             'hardwares.*.brand' => 'string|max:255',
             'hardwares.*.hardware_name' => 'string|max:255',
@@ -62,6 +63,7 @@ class MasterInventoryController extends Controller
             'type' => $request->type,
             'purpose' => $request->purpose,
             'brand' => $request->brand,
+            'description' => $request->description,
         ]);
 
         // Store hardwares

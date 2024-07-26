@@ -16,6 +16,7 @@ class MasterInventory extends Model
         'type',
         'purpose',
         'brand',
+        'description',
     ];
 
     public function hardwares()
