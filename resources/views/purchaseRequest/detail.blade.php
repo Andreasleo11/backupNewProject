@@ -308,12 +308,17 @@
                                             $user->is_head == 1;
                                         if ($user->is_head == 1 && $purchaseRequest->from_department === 'STORE') {
                                             $showDeptHeadItemApprove = true;
+                                        } elseif (
+                                            $purchaseRequest->from_department === 'PERSONALIA' &&
+                                            auth()->user()->department->name === 'HRD'
+                                        ) {
+                                            $showDeptHeadItemApprove = true;
                                         }
                                     @endphp
 
                                     {{-- Button approve reject per item --}}
                                     @if (!$purchaseRequest->is_cancel)
-                                        @if ($user->department->name === 'DIRECTOR')
+                                        @if ($user->department->name === 'DIRECTOR' && $purchaseRequest->status === 3)
                                             <td>
                                                 @if ($detail->is_approve === null)
                                                     <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
@@ -324,7 +329,7 @@
                                                     {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
                                                 @endif
                                             </td>
-                                        @elseif ($user->specification->name == 'VERIFICATOR')
+                                        @elseif ($user->specification->name == 'VERIFICATOR' && $purchaseRequest->status === 2)
                                             <td>
                                                 @if ($detail->is_approve_by_verificator === null)
                                                     <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
@@ -335,7 +340,7 @@
                                                     {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
                                                 @endif
                                             </td>
-                                        @elseif ($showDeptHeadItemApprove)
+                                        @elseif ($showDeptHeadItemApprove && $purchaseRequest->status === 1)
                                             @if ($purchaseRequest->from_department === 'MOULDING')
                                                 <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
                                                     @if ($detail->is_approve_by_head === null)
