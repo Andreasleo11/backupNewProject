@@ -430,6 +430,7 @@ class DisciplinePageController extends Controller
 
     public function exportYayasan(Request $request)
     {
+        
         $selectedMonth = $request->input('filter_status');
 
         $currentYear = Carbon::now()->year;
@@ -439,8 +440,9 @@ class DisciplinePageController extends Controller
 
         // Calculate the cutoff date, 6 months before the selected month
         $cutoffDate = $selectedDate->copy()->subMonths(6)->startOfMonth();
-
-
+        
+    
+        
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query->where('status', 'YAYASAN')
@@ -450,9 +452,7 @@ class DisciplinePageController extends Controller
             ->get();
 
 
-
         $result = [];
-
         foreach ($employees as $data) {
             $employeeId = $data->karyawan->NIK;
 
@@ -466,6 +466,7 @@ class DisciplinePageController extends Controller
             }
 
             $total = $data->total;
+            
             if ($total >= 91) {
                 $result[$employeeId]['nilai_A'] = 1;
                 $result[$employeeId]['nilai_B'] = 0; // Ensure nilai_B is set to 0

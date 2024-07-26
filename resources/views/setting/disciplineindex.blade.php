@@ -11,6 +11,7 @@
         <a href="{{ route('allyayasandiscipline.index') }}" class="btn btn-outline-primary">List All Yayasan</a>
     @endif
 
+
     @include('partials.upload-excel-file-discipline-modal')
     <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
         data-bs-target="#upload-excel-file-discipline-modal">Upload
@@ -57,7 +58,7 @@
                 <!-- Filtered employees will be displayed here -->
             </div>
 
-            @if ($user->name === 'timotius')
+            @if ($user->name === 'timotius' || $user->name === 'ani' )
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">Export Yayasan</button>
                 </div>
