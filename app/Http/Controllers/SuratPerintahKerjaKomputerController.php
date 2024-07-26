@@ -48,9 +48,32 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         $randomString = Str::random(5);
 
-        $docnum = 'SPK-' . $randomString;
+        $docnum = 'DI/SPK';
 
         return view('spk.create', compact('departments', 'username', 'docnum'));
+    }
+
+    function generateNoDokumen($department)
+    {
+        $prefix = 'DI';
+        $randomNumber = str_pad(rand(0, 99999), 5, '0', STR_PAD_LEFT); // Generates a 5-character random number
+
+        switch ($department) {
+            case 'COMPUTER':
+                $middle = 'CP';
+                break;
+            case 'HRD':
+                $middle = 'HRD';
+                break;
+            case 'MAINTENANCE':
+                $middle = 'MT';
+                break;
+            default:
+                $middle = 'UNKNOWN';
+                break;
+        }
+
+        return "$prefix/$middle/SPK/$randomNumber";
     }
 
     public function inputprocess(Request $request)
@@ -67,6 +90,20 @@ class SuratPerintahKerjaKomputerController extends Controller
             'to_department' => 'required|string',
         ]);
 
+        if($validatedData['to_department'] === 'COMPUTER')
+        {
+            $validatedData['no_dokumen'] = $this->generateNoDokumen('COMPUTER');
+        }
+        elseif($validatedData['to_department'] === 'HRD')
+        {
+            $validatedData['no_dokumen'] = $this->generateNoDokumen('HRD');
+        }
+        elseif($validatedData['to_department'] === 'MAINTENANCE')
+        {
+            $validatedData['no_dokumen'] = $this->generateNoDokumen('MAINTENANCE');
+        }
+
+        // dd($validatedData['no_dokumen']);
         // Replace the 'T' with a space in tanggallapor
         if (isset($validatedData['tanggallapor'])) {
             $validatedData['tanggallapor'] = str_replace('T', ' ', $validatedData['tanggallapor']);
@@ -92,11 +129,31 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function detail($id)
     {
-        $users = User::where('department_id', 15)->get();
-
+        
         $this->updatestatus();
         $report = SuratPerintahKerjaKomputer::with('spkRemarks')->find($id);
         // dd($report);
+
+        $users = null; // Initialize the $users variable
+
+        switch ($report->to_department) {
+            case 'COMPUTER':
+                $users = User::where('department_id', 15)->get();
+                break;
+            case 'MAINTENANCE':
+                $users = User::where('department_id', 18)->get();
+                break;
+            case 'HRD':
+                $users = User::where('department_id', 22)->get();
+                break;
+            default:
+                // Handle other departments if needed
+                $users = collect(); // Empty collection if no match found
+                break;
+        }
+
+        dd($users);
+
 
         $dept = $report->dept;
         $depthead = User::whereHas('department', function ($query) use ($dept) {
