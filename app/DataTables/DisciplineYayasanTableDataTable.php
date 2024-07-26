@@ -270,6 +270,11 @@ class DisciplineYayasanTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('status', 'YAYASAN');
+                })->newQuery();}
+        elseif (Auth::user()->email === "ani_apriani@daijo.co.id" || Auth::user()->email === "bernadett@daijo.co.id") {
+            return $model::with('karyawan')
+                ->whereHas('karyawan', function ($query) {
+                    $query->where('status', 'YAYASAN');
                 })->newQuery();
         } elseif (Auth::user()->department_id == 21) {
             // Get data for department 340

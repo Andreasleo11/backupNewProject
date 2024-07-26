@@ -7,7 +7,8 @@
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
     @if ($user->department_id === 7 || $user->department_id === 22)
-        <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Department</a>
+        <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Selain Yayasan</a>
+        <a href="{{ route('allyayasandiscipline.index') }}" class="btn btn-outline-primary">List All Yayasan</a>
     @endif
 
     @include('partials.upload-excel-file-discipline-modal')
