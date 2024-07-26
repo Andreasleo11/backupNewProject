@@ -49,6 +49,31 @@ class SuratPerintahKerjaKomputer extends Model
         parent::boot();
 
         static::created(function ($spk) {
+            $prefix = 'DI';
+            switch ($spk->to_department) {
+                case 'COMPUTER':
+                    $middle = 'CP';
+                    break;
+                case 'HRD':
+                    $middle = 'HRD';
+                    break;
+                case 'MAINTENANCE':
+                    $middle = 'MT';
+                    break;
+                default:
+                    $middle = 'UNKNOWN';
+                    break;
+            }
+            $thirdfix = "SPK";
+
+            $lastNumber = str_pad($spk->id, 5, '0', STR_PAD_LEFT);
+
+
+            $no_dokumen = "$prefix/$middle/$thirdfix/$lastNumber";
+
+            $spk->no_dokumen = $no_dokumen;
+            $spk->save();
+
             $spk->sendNotification('created');
         });
 
