@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('reports', function (Blueprint $table) {
             $table->softDeletes();
+            $table->string('created_by')->nullable()->after('num_of_parts');
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('reports', function (Blueprint $table) {
             $table->dropSoftDeletes();
+            $table->dropColumn('created_by');
         });
     }
 };
