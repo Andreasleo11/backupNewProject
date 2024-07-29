@@ -53,7 +53,7 @@
     let selectedMonth = localStorage.getItem('selectedMonth');
 
     // Initialize DataTable and apply initial filter if the month is stored
-    let dataTable = window.LaravelDataTables["alldisciplinetable-table"];
+    let dataTable = window.LaravelDataTables["disciplineyayasantable-table"];
     if (selectedMonth) {
         $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
         applyFilter(selectedMonth); // Apply the filter
