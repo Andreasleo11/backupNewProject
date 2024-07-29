@@ -18,6 +18,8 @@ class MonthlyBudgetReport extends Model
         'created_autograph',
         'is_known_autograph',
         'approved_autograph',
+        'reject_reason',
+        'is_reject'
     ];
 
     public function details()

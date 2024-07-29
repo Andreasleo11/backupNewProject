@@ -298,4 +298,14 @@ class MonthlyBudgetReportController extends Controller
             return redirect()->back()->with('error', 'Send notification failed! (User not found)');
         }
     }
+
+    public function reject(Request $request, $id)
+    {
+        Report::find($id)->update([
+            'reject_reason' => $request->description,
+            'is_reject' => 1
+        ]);
+
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully rejected!');
+    }
 }
