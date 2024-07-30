@@ -28,9 +28,7 @@ class MonthlyBudgetReportController extends Controller
 
 
         if ($authUser->email == 'nur@daijo.co.id') {
-            $reportsQuery = Report::whereNotNull('created_autograph')
-                ->whereNotNull('is_known_autograph')
-                ->whereNotNull('approved_autograph');
+            $reportsQuery = Report::whereNotNull('created_autograph');
         } elseif ($isDirector) {
             $reportsQuery = Report::whereNotNull('created_autograph')
                 ->whereNotNull('is_known_autograph')
@@ -53,7 +51,7 @@ class MonthlyBudgetReportController extends Controller
         }
 
         // filter by auth user department or if it's user create the report besides DIRECTOR and GM
-        if (!($isDirector || $isGm)) {
+        if (!($isDirector || $isGm || $authUser->email === 'nur@daijo.co.id')) {
             $reportsQuery->whereHas('department', function ($query) use ($authUser) {
                 $query->where('id', $authUser->department->id)->orWhere('creator_id', $authUser->id);
             });
