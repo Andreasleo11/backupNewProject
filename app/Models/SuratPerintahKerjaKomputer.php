@@ -54,7 +54,7 @@ class SuratPerintahKerjaKomputer extends Model
                 case 'COMPUTER':
                     $middle = 'CP';
                     break;
-                case 'HRD':
+                case 'PERSONALIA':
                     $middle = 'HRD';
                     break;
                 case 'MAINTENANCE':

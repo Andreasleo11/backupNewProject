@@ -83,7 +83,7 @@
                                     <option value="" selected disabled>Select to department..</option>
                                     <option value="COMPUTER">COMPUTER</option>
                                     <option value="MAINTENANCE">MAINTENANCE</option>
-                                    <option value="HRD">PERSONALIA</option>
+                                    <option value="PERSONALIA">PERSONALIA</option>
                                 </select>
                             </div>
                             <div class="form-group mt-3">

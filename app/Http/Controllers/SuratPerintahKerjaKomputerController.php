@@ -25,13 +25,24 @@ class SuratPerintahKerjaKomputerController extends Controller
         $authUser = auth()->user();
 
         $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
+        
 
-        if ($authUser->department->name !== 'COMPUTER') {
+        if($authUser->department->name !== 'COMPUTER' && $authUser->department->name !== 'PERSONALIA' && $authUser->department->name !== 'MAINTENANCE') {
             $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
                 $query->where('id', $authUser->department->id);
             });
 
             $reportsQuery->orWhere('pelapor', $authUser->name);
+        //    dd('masuk if');
+        }
+        else
+        {
+            $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
+                $query->where('to_department', $authUser->department->name);
+            });
+
+            $reportsQuery->orWhere('pelapor', $authUser->name);
+            // dd('masuk else');
         }
 
         $reports = $reportsQuery
@@ -94,7 +105,7 @@ class SuratPerintahKerjaKomputerController extends Controller
         {
             $validatedData['no_dokumen'] = $this->generateNoDokumen('COMPUTER');
         }
-        elseif($validatedData['to_department'] === 'HRD')
+        elseif($validatedData['to_department'] === 'PERSONALIA')
         {
             $validatedData['no_dokumen'] = $this->generateNoDokumen('HRD');
         }
@@ -152,7 +163,7 @@ class SuratPerintahKerjaKomputerController extends Controller
                 break;
         }
 
-        dd($users);
+        // dd($users);
 
 
         $dept = $report->dept;
