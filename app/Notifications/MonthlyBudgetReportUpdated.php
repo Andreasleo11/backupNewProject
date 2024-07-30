@@ -2,25 +2,25 @@
 
 namespace App\Notifications;
 
-use App\Models\SuratPerintahKerjaKomputer;
+use App\Models\MonthlyBudgetReport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class SPKUpdated extends Notification
+class MonthlyBudgetReportUpdated extends Notification
 {
     use Queueable;
 
-    private $spk;
+    private $report;
     private $details;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(SuratPerintahKerjaKomputer $spk, $details)
+    public function __construct(MonthlyBudgetReport $report, $details)
     {
-        $this->spk = $spk;
+        $this->report = $report;
         $this->details = $details;
     }
 
@@ -31,7 +31,7 @@ class SPKUpdated extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -40,10 +40,9 @@ class SPKUpdated extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('There\'s a Surat Perintah Kerja Komputer has just been updated!')
+            ->line('There\'s a Monthly Budget Report has just been updated!')
             ->greeting($this->details['greeting'])
             ->line(new \Illuminate\Support\HtmlString($this->details['body']))
-            // ->lineIf($this->spk->keterangan_pic, 'Keterangan PIC : ' . $this->spk->keterangan_pic)
             ->action($this->details['actionText'], $this->details['actionURL']);
     }
 
@@ -55,8 +54,8 @@ class SPKUpdated extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'SPK with id = ' . $this->spk->id . ' has just been updated!',
-            'status' => $this->spk->status_laporan
+            'message' => 'Monthly Budget Report with document number = ' . $this->report->doc_num . ' has just been updated!',
+            'status' => $this->report->status
         ];
     }
 }

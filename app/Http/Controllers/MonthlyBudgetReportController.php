@@ -11,8 +11,6 @@ use App\Models\MonthlyBudgetReport as Report;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetReportDetail as Detail;
 use App\Models\MonthlyBudgetReportDetail;
-use App\Models\User;
-use App\Notifications\MonthlyBudgetReportRequestSign;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -30,9 +28,7 @@ class MonthlyBudgetReportController extends Controller
 
 
         if ($authUser->email == 'nur@daijo.co.id') {
-            $reportsQuery = Report::whereNotNull('created_autograph')
-                ->whereNotNull('is_known_autograph')
-                ->whereNotNull('approved_autograph');
+            $reportsQuery = Report::whereNotNull('created_autograph');
         } elseif ($isDirector) {
             $reportsQuery = Report::whereNotNull('created_autograph')
                 ->whereNotNull('is_known_autograph')
@@ -55,7 +51,7 @@ class MonthlyBudgetReportController extends Controller
         }
 
         // filter by auth user department or if it's user create the report besides DIRECTOR and GM
-        if (!($isDirector || $isGm)) {
+        if (!($isDirector || $isGm || $authUser->email === 'nur@daijo.co.id')) {
             $reportsQuery->whereHas('department', function ($query) use ($authUser) {
                 $query->where('id', $authUser->department->id)->orWhere('creator_id', $authUser->id);
             });
@@ -127,7 +123,6 @@ class MonthlyBudgetReportController extends Controller
                 // Commit the transaction
                 DB::commit();
 
-                $this->sendNotification($report);
                 return redirect()->back()->with('success', 'Monthly Budget Report created successfully from Excel file.');
             } catch (\Exception $e) {
                 // Rollback the transaction on error
@@ -174,7 +169,7 @@ class MonthlyBudgetReportController extends Controller
                     'remark' => $item['remark'],
                 ]);
             }
-            $this->sendNotification($report);
+
             return redirect()->back()->with('success', 'Monthly Budget Report created successfully from manual input.');
         }
     }
@@ -222,7 +217,6 @@ class MonthlyBudgetReportController extends Controller
     {
         $report = Report::with('department', 'user')->find($id);
         $report->update($request->all());
-        $this->sendNotification($report);
         return redirect()->back()->with('success', 'Monthly Budget Report successfully approved!');
     }
 
@@ -233,69 +227,13 @@ class MonthlyBudgetReportController extends Controller
         return Excel::download(new MonthlyBudgetReportTemplateExport($deptNo), 'monthly_budget_template.xlsx');
     }
 
-    private function sendNotification($report)
+    public function reject(Request $request, $id)
     {
-        $detail = [
-            'greeting' => 'Monthly Budget Report Notification',
-            'body' => 'We waiting for your sign!',
-            'actionText' => 'Click to see the detail',
-            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'monthlyBudgetReport/' . $report->id,
-        ];
+        Report::find($id)->update([
+            'reject_reason' => $request->description,
+            'is_reject' => 1
+        ]);
 
-        $user = null;
-
-        // $creator = User::find($report->creator_id)->notify(new MonthlyBudgetReportRequestSign($report, $detail));
-
-        if ($report->created_autograph && !$report->is_known_autograph && !$report->approved_autograph) {
-            if ($report->department->name === 'MOULDING') {
-                $user = User::with('department', 'specification')->whereHas('department', function ($query) {
-                    $query->where('name', 'MOULDING');
-                })->where('is_head', 1)->whereHas('specification', function ($query) {
-                    $query->where('name', 'design');
-                })->first();
-            } elseif ($report->department->name === 'STORE') {
-                $user = User::where('is_head', 1)->whereHas('department', function ($query) {
-                    $query->where('name', 'LOGISTIC');
-                })->first();
-            } else {
-                $user = User::where('department_id', $report->department->id)->where('is_head', 1)->first();
-            }
-        } elseif ($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph) {
-            if ($report->department->name === 'MOULDING') {
-                $user = User::with('department', 'specification')->whereHas('department', function ($query) {
-                    $query->where('name', 'MOULDING');
-                })->where('is_head', 1)->whereHas('specification', function ($query) {
-                    $query->where('name', '!=', 'design');
-                })->first();
-            } elseif ($report->department->name === "QA" || $report->department->name === "QC") {
-                $user = User::with('department')->whereHas('department', function ($query) {
-                    $query->where('name', 'DIRECTOR');
-                })->first();
-            } else {
-                $user = User::where('is_gm', 1)->first();
-            }
-        } elseif ($report->created_autograph && $report->is_known_autograph && $report->approved_autograph) {
-            $user = User::where('email', 'nur@daijo.co.id')->first();
-            $detail['body'] = "Monthly Budget Report signed!";
-
-            // notify the creator if already signed all
-            $report->user->notify(new MonthlyBudgetReportRequestSign($report, $detail));
-        }
-
-        if ($user) {
-            try {
-                $detail['userName'] = $user->name;
-                $user->notify(new MonthlyBudgetReportRequestSign($report, $detail));
-
-                return redirect()->back()->with('success', 'Notification sent successfully!');
-            } catch (\Exception $e) {
-                // Log the error (check laravel.log for details)
-                Log::error('Error when sending the notification : ' . $e->getMessage());
-                return redirect()->back()->with('error', 'Send notification failed!');
-            }
-        } else {
-            Log::error('Error when sending the notification. User not found! : ');
-            return redirect()->back()->with('error', 'Send notification failed! (User not found)');
-        }
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully rejected!');
     }
 }

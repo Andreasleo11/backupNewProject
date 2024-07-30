@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call([
-            FixPurchaseRequestSeeder::class
+            FixPurchaseRequestSeeder::class,
+            FixMonthlyBudgetReportSeeder::class,
         ]);
     }
 }

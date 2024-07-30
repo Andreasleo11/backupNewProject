@@ -649,6 +649,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
     Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
     Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
+    Route::put('monthlyBudgetReport/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly.budget.report.reject');
 
     Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
     Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
@@ -715,7 +716,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         $detail['userName'] = $report->user->name;
 
-      return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
+        return (new App\Notifications\MonthlyBudgetReportRequestSign($report, $detail))
             ->toMail($report->user);
     });
 
