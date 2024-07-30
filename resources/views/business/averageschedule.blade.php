@@ -3,7 +3,7 @@
 @section('content')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <div class="mx-5 mt-4">
-        <h1>Average Delivery Schedule Per Month</h1>
+        <h1>FG Stock Monitoring</h1>
         
         <button onclick="openInNewTab('{{ route('indexds') }}')">Delivery Schedule For Verification</button>
 
