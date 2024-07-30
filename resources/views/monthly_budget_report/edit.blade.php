@@ -14,16 +14,18 @@
         <div class="row justify-content-center mt-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body pb-4">
                         <form action="{{ route('monthly.budget.report.update', $report->id) }}" method="post"
-                            class="row gx-3">
+                            class="row gx-3" id="form-monthly-budget-report">
                             @csrf
                             @method('PUT')
                             {{-- <input type="hidden" name="created_autograph" value="{{ ucwords(auth()->user()->name) }}">
                             <input type="hidden" name="creator_id" value="{{ auth()->user()->id }}"> --}}
                             <div class="form-group mt-1 col">
                                 <label class="form-label fs-5 fw-bold">Dept No</label>
-                                <select name="dept_no" id="dept_no" required>
+                                <input type="text" name="dept_no" value="{{ $report->dept_no }}" readonly
+                                    class="form-control bg-secondary-subtle">
+                                {{-- <select name="dept_no" id="dept_no" required>
                                     @foreach ($departments as $department)
                                         @if ($department->name !== 'DIRECTOR')
                                             <option value="{{ $department->dept_no }}"
@@ -31,7 +33,7 @@
                                                 {{ $department->name }}</option>
                                         @endif
                                     @endforeach
-                                </select>
+                                </select> --}}
                             </div>
                             <div class="form-group mt-1 col">
                                 <label class="form-label fs-5 fw-bold">Report Date</label>
@@ -39,18 +41,14 @@
                                     value="{{ $report->report_date }}" required>
                             </div>
 
-                            <div id="manualInputSection">
+                            {{-- <div id="manualInputSection">
                                 <div class="form-group mt-4">
                                     <label class="form-label fs-5 fw-bold">List of Items</label>
                                     <div id="items" class="border rounded-1 pt-2 pb-4 ps-3 pe-3 mb-1"></div>
                                 </div>
                                 <button class="btn btn-outline-secondary mt-3 btn-sm" type="button"
                                     onclick="addNewItem()">+ Add Item</button>
-                            </div>
-
-                            <div class="form-group mt-4">
-                                <button type="submit" class="btn btn-primary w-100">Submit</button>
-                            </div>
+                            </div> --}}
                         </form>
 
                         <form action="{{ route('monthly.budget.download.excel.template') }}" method="post"
@@ -62,13 +60,95 @@
                 </div>
             </div>
         </div>
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-12">
+                <div class="form-group mt-2">
+                    <div class="row justify-content-between">
+                        <div class="col">
+                            <label class="form-label fs-4 fw-bold">List of Items</label>
+                        </div>
+                        <div class="col-auto">
+                            @include('partials.create-monthly-budget-report-detail', ['report' => $report])
+                            <button data-bs-toggle="modal" data-bs-target="#create-monthly-budget-report-detail"
+                                class="btn btn-outline-primary">Create</button>
+                        </div>
+                    </div>
+                    <div class="card mt-2">
+                        <div class="card-body pb-0">
+                            <table class="table table-borderless table-striped text-center">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        @if ($report->department->name === 'MOULDING')
+                                            <th>Spec</th>
+                                        @endif
+                                        <th>UoM</th>
+                                        @if ($report->department->name === 'MOULDING')
+                                            <th>Last Recorded Stock</th>
+                                            <th>Usage Per Month</th>
+                                        @endif
+                                        <th>Quantity Request</th>
+                                        <th>Remark</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($details as $detail)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $detail->name }}</td>
+                                            @if ($report->department->name === 'MOULDING')
+                                                <td>{{ $detail->spec }}</td>
+                                            @endif
+                                            <td>{{ $detail->uom }}</td>
+                                            @if ($report->department->name === 'MOULDING')
+                                                <td>{{ $detail->last_recorded_stock }}</td>
+                                                <td>{{ $detail->usage_per_month }}</td>
+                                            @endif
+                                            <td>{{ $detail->quantity }}</td>
+                                            <td>{{ $detail->remark }}</td>
+                                            <td>
+                                                @include('partials.edit-monthly-budget-report-detail')
+                                                <button
+                                                    data-bs-target="#edit-monthly-budget-report-detail-{{ $detail->id }}"
+                                                    data-bs-toggle="modal" class="btn btn-primary">Edit</button>
+                                                @include('partials.delete-confirmation-modal', [
+                                                    'id' => $detail->id,
+                                                    'title' => 'Are you sure want to delete this?',
+                                                    'body' => 'Once it delete it cannot be undone!',
+                                                    'route' => 'monthly.budget.report.detail.delete',
+                                                ])
+                                                <button data-bs-toggle="modal"
+                                                    data-bs-target="#delete-confirmation-modal-{{ $detail->id }}"
+                                                    class="btn btn-danger">Delete</button>
+
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10">No Data</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary w-100"
+                onclick="document.getElementById('form-monthly-budget-report').submit()">Submit</button>
+        </div>
     </div>
 @endsection
 
 @push('extraJs')
     <script>
         let details = {!! $report->details !!};
-        console.log(details);
+        // console.log(details);
         const deptNoSelect = document.getElementById('dept_no');
         const deptNoFormExcelTemplate = document.getElementById('deptNoFormExcelTemplate');
         // Initial Value
