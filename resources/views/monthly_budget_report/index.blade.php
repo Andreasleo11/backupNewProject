@@ -56,7 +56,9 @@
                                 <td>{{ $report->dept_no }}</td>
                                 <td> @formatDate($report->report_date) </td>
                                 <td>
-                                    @include('partials.monthly-budget-summary-report-status')
+                                    @include('partials.monthly-budget-summary-report-status', [
+                                        'status' => $report->status,
+                                    ])
                                 </td>
                                 <td>
                                     <a href="{{ route('monthly.budget.report.show', $report->id) }}"
