@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    @include('partials.alert-success-error')
     {{-- GLOBAL VARIABLE --}}
     @php
         $authUser = auth()->user();
@@ -38,7 +39,7 @@
                 <table class="table table-border text-center mb-0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Doc. Number</th>
                             <th>Dept No</th>
                             <th>Report Date</th>
                             <th>Status</th>
@@ -52,29 +53,39 @@
                                 $formatedDate = $reportDate->format('F Y');
                             @endphp
                             <tr>
-                                <td>{{ $report->id }}</td>
+                                <td>{{ $report->doc_num }}</td>
                                 <td>{{ $report->dept_no }}</td>
                                 <td> @formatDate($report->report_date) </td>
                                 <td>
-                                    @include('partials.monthly-budget-summary-report-status', [
+                                    @include('partials.monthly-budget-report-status', [
                                         'status' => $report->status,
+                                        'isCancel' => $report->is_cancel,
                                     ])
                                 </td>
                                 <td>
                                     <a href="{{ route('monthly.budget.report.show', $report->id) }}"
                                         class="btn btn-secondary">Detail</a>
-                                    @if (!$report->created_autograph)
-                                        <a href="{{ route('monthly.budget.report.edit', $report->id) }}"
-                                            class="btn btn-primary">Edit</a>
-                                        @include('partials.delete-confirmation-modal', [
-                                            'id' => $report->id,
-                                            'route' => 'monthly.budget.report.delete',
-                                            'title' => 'Delete report confirmation',
-                                            'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
-                                        ])
+                                    @if (auth()->user()->id === $report->user->id)
+                                        @if (!$report->created_autograph)
+                                            <a href="{{ route('monthly.budget.report.edit', $report->id) }}"
+                                                class="btn btn-primary">Edit</a>
+                                            @include('partials.delete-confirmation-modal', [
+                                                'id' => $report->id,
+                                                'route' => 'monthly.budget.report.delete',
+                                                'title' => 'Delete report confirmation',
+                                                'body' => "Are you sure want to delete this report with id <strong>$report->id</strong>?",
+                                            ])
 
-                                        <button class="btn btn-danger" data-bs-toggle="modal"
-                                            data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                            <button class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                        @elseif(!$report->is_cancel)
+                                            @include('partials.cancel-confirmation-modal', [
+                                                'id' => $report->id,
+                                                'route' => route('monthly.budget.report.cancel', $report->id),
+                                            ])
+                                            <button class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#cancel-confirmation-modal-{{ $report->id }}">Cancel</button>
+                                        @endif
                                     @endif
                                 </td>
                             </tr>

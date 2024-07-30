@@ -234,6 +234,7 @@
                 input.type = group.type;
                 input.name = group.name;
                 input.placeholder = group.placeholder;
+                input.required = true;
                 if (group.value) input.value = group.value;
 
                 formGroup.appendChild(input);

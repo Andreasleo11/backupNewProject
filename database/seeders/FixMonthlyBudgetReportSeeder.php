@@ -20,7 +20,7 @@ class FixMonthlyBudgetReportSeeder extends Seeder
     {
         $reports = MonthlyBudgetReport::all();
         foreach ($reports as $report) {
-            $this->updateStatus($report);
+            // $this->updateStatus($report);
             $this->updateDocNum($report);
         }
     }
