@@ -236,4 +236,14 @@ class MonthlyBudgetReportController extends Controller
 
         return redirect()->back()->with('success', 'Monthly Budget Report successfully rejected!');
     }
+
+    public function cancel(Request $request, $id)
+    {
+        Report::find($id)->update([
+            'is_cancel' => true,
+            'cancel_reason' => $request->description
+        ]);
+
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully cancelled!');
+    }
 }
