@@ -80,7 +80,7 @@
                             <div class="card mt-2">
                                 <div class="card-body">
                                     <div class="text-end">
-                                        @if ($authUser->department->name === 'COMPUTER' && $report->tanggal_selesai === null)
+                                        @if ($authUser->department->name === 'COMPUTER' || $authUser->department->name === 'MAINTENANCE' || $authUser->department->name === 'PERSONALIA' && $report->tanggal_selesai === null)
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
