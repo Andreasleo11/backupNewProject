@@ -1,6 +1,6 @@
 <div class="modal fade" id="delete-confirmation-modal-{{ $id }}">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content text-start">
             <form action="{{ route($route, $id) }}" method="post">
                 @csrf
                 @method('DELETE')

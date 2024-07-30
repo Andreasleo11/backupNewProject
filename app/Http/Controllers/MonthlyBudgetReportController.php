@@ -178,7 +178,8 @@ class MonthlyBudgetReportController extends Controller
     {
         $departments = Department::all();
         $report = MonthlyBudgetReport::find($id);
-        return view('monthly_budget_report.edit', compact('departments', 'report'));
+        $details = $report->details;
+        return view('monthly_budget_report.edit', compact('departments', 'report', 'details'));
     }
 
     public function show($id)
@@ -190,21 +191,13 @@ class MonthlyBudgetReportController extends Controller
     public function update(UpdateMonthlyBudgetReportRequest $request, $id)
     {
         $validated = $request->validated();
+        $report = Report::find($id);
+        // Update the report with the remaining data
+        $report->update($validated);
 
-        if ($validated['items']) {
-            foreach ($validated['items'] as $item) {
-                MonthlyBudgetReportDetail::find($item['id'])->update([
-                    'name' => $item['name'],
-                    'uom' => $item['uom'],
-                    'quantity' => $item['quantity'],
-                    'remark' => $item['remark'],
-                ]);
-            }
-        }
-
-        Report::find($id)->update($request->all());
         return redirect()->back()->with('success', 'Monthly Budget Report successfully updated!');
     }
+
 
     public function destroy($id)
     {
