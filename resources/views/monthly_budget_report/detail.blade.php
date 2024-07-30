@@ -43,7 +43,9 @@
                                     ({{ $report->dept_no }})</div>
                                 <div class="fs-6 text-secondary">Created By : {{ $report->user->name }}</div>
                                 <div class="mt-1">
-                                    @include('partials.monthly-budget-summary-report-status')
+                                    @include('partials.monthly-budget-summary-report-status', [
+                                        'status' => $report->status,
+                                    ])
                                 </div>
                             </div>
                         </div>
