@@ -115,6 +115,7 @@ class MonthlyBudgetReport extends Model
     private function notifyUsers($details, $event)
     {
         if ($event == 'created') {
+            // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
         } else {
             $creator = [$this->user]; // Convert to array
             if ($this->created_autograph && !$this->is_known_autograph && !$this->approved_autograph) {
@@ -145,9 +146,6 @@ class MonthlyBudgetReport extends Model
                 } else {
                     $user = User::where('is_gm', 1)->first();
                 }
-            } elseif ($this->created_autograph && $this->is_known_autograph && $this->approved_autograph) {
-                $user = User::where('email', 'nur@daijo.co.id')->first();
-                $detail['body'] = "Monthly Budget Report signed!";
             }
 
             $users = isset($user) ? array_merge($creator, [$user]) : $creator;
