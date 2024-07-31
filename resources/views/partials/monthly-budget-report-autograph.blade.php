@@ -1,6 +1,6 @@
 @include('partials.reject-confirmation-modal', [
     'route' => route('monthly.budget.report.reject', $report->id),
-    'doc_num' => "MBR/$report->id",
+    'doc_num' => $report->doc_num,
 ])
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -20,7 +20,7 @@
                 @if ($showCreatedAutograph)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                            <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
                         <div class="col-auto">
@@ -72,7 +72,7 @@
                 @if ($showIsKnownAutograph)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                            <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
                         <div class="col-auto">
@@ -122,7 +122,7 @@
                 @if ($showApprovedAutograph)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2 ">
-                            <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
+                            <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
                                 class="btn btn-danger">Reject</button>
                         </div>
                         <div class="col-auto">
