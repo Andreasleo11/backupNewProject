@@ -54,7 +54,7 @@ class MonthlyBudgetReportCreated extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Monthly Budget Report with document number = ' . $this->report->doc_num . ' has just been updated!',
+            'message' => 'Monthly Budget Report with document number = ' . $this->report->doc_num . ' has just been created!',
             'status' => $this->report->status
         ];
     }

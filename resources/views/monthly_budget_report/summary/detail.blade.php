@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    @include('partials.alert-success-error')
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
@@ -204,7 +205,7 @@
                                         @php
                                             $rowIndex = 0; // Initialize row index
                                         @endphp
-                                        @foreach ($groupedDetails as $index => $group)
+                                        @foreach ($groupedDetailsForView as $index => $group)
                                             @php
                                                 $rowspanCount = count($group['items']); // Calculate rowspan for the name column
                                             @endphp
@@ -234,11 +235,12 @@
                                                 </tr>
                                             @endforeach
                                         @endforeach
-                                        @if (empty($groupedDetails))
+                                        @if (empty($groupedDetailsForView))
                                             <tr>
                                                 <td colspan="10">No Data</td>
                                             </tr>
                                         @endif
+
                                     </tbody>
                                 </table>
                             </div>
