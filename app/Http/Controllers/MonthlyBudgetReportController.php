@@ -236,7 +236,8 @@ class MonthlyBudgetReportController extends Controller
     {
         Report::find($id)->update([
             'is_cancel' => true,
-            'cancel_reason' => $request->description
+            'cancel_reason' => $request->description,
+            'status' => 5
         ]);
 
         return redirect()->back()->with('success', 'Monthly Budget Report successfully cancelled!');
