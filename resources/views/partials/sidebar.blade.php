@@ -336,6 +336,13 @@
                     </a>
                 </li>
 
+                <li class="sidebar-list">
+                    <a href="{{ route('stockallbarcode') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        STOCK Item 
+                    </a>
+                </li>
+
 
                 
                 <li class="sidebar-list">

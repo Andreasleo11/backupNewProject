@@ -693,6 +693,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+    Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
+
 
     Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
     Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
