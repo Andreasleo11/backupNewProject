@@ -35,15 +35,6 @@ class SuratPerintahKerjaKomputerController extends Controller
             $reportsQuery->orWhere('pelapor', $authUser->name);
         //    dd('masuk if');
         }
-        else
-        {
-            $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
-                $query->where('to_department', $authUser->department->name);
-            });
-
-            $reportsQuery->orWhere('pelapor', $authUser->name);
-            // dd('masuk else');
-        }
 
         $reports = $reportsQuery
             ->orderBy('created_at', 'desc')

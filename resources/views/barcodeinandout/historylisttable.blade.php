@@ -2,7 +2,6 @@
 
 @section('content')
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,8 +23,8 @@
 <body>
     <h1>Barcode History List</h1>
 
-     <!-- Filter Form -->
-     <form method="GET" action="{{ route('barcode.historytable') }}">
+    <!-- Filter Form -->
+    <form method="GET" action="{{ route('barcode.historytable') }}">
         <label for="datescan">Date Scan:</label>
         <input type="date" id="datescan" name="datescan" value="{{ request('datescan') }}">
         
@@ -70,6 +69,9 @@
             </tr>
         </thead>
         <tbody>
+            @php
+                $totalQuantity = 0;
+            @endphp
             @foreach($items as $item)
                 @foreach($item->detailbarcode as $detail)
                     <tr>
@@ -82,8 +84,16 @@
                         <td>{{ $detail->position }}</td>
                         <td>{{ $detail->scantime }}</td>
                     </tr>
+                    @php
+                        $totalQuantity += $detail->quantity;
+                    @endphp
                 @endforeach
             @endforeach
+            <tr>
+                <td colspan="4"></td>
+                <td><strong>Total Quantity: {{ $totalQuantity }}</strong></td>
+                <td colspan="3"></td>
+            </tr>
         </tbody>
     </table>
 </body>
