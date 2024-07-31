@@ -185,6 +185,7 @@ class MonthlyBudgetReportController extends Controller
     public function show($id)
     {
         $report = Report::with('details', 'department')->find($id);
+        $this->updateStatus($report);
         return view('monthly_budget_report.detail', compact('report'));
     }
 
@@ -210,6 +211,7 @@ class MonthlyBudgetReportController extends Controller
     {
         $report = Report::with('department', 'user')->find($id);
         $report->update($request->all());
+        $this->updateStatus($report);
         return redirect()->back()->with('success', 'Monthly Budget Report successfully approved!');
     }
 
@@ -238,5 +240,26 @@ class MonthlyBudgetReportController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Monthly Budget Report successfully cancelled!');
+    }
+
+    private function updateStatus($report)
+    {
+        if ($report->is_reject === 1) {
+            $report->status = 7;
+        } elseif ($report->approved_autograph) {
+            $report->status = 6;
+        } elseif ($report->is_known_autograph) {
+            if ($report->department->name === 'MOULDING') {
+                $report->status = 3;
+            } elseif ($report->department->name === 'QA' || $report->department->name === 'QC') {
+                $report->status = 5;
+            } else {
+                $report->status = 4;
+            }
+        } elseif ($report->created_autograph) {
+            $report->status = 2;
+        }
+
+        $report->save();
     }
 }
