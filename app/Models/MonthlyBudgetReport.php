@@ -23,7 +23,10 @@ class MonthlyBudgetReport extends Model
         'approved_autograph',
         'reject_reason',
         'is_reject',
-        'status'
+        'doc_num',
+        'status',
+        'is_cancel',
+        'cancel_reason',
     ];
 
     public function details()
@@ -57,7 +60,9 @@ class MonthlyBudgetReport extends Model
         });
 
         static::updated(function ($report) {
-            $report->sendNotification('updated');
+            if ($report->isDirty('status')) {
+                $report->sendNotification('updated');
+            }
         });
     }
 
