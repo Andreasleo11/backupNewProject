@@ -24,6 +24,7 @@ class MonthlyBudgetSummaryReport extends Model
         'reject_reason',
     ];
 
+    // Relations
     public function details()
     {
         return $this->hasMany(MonthlyBudgetReportSummaryDetail::class, 'header_id');
@@ -34,6 +35,23 @@ class MonthlyBudgetSummaryReport extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    // Queries
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 4);
+    }
+
+    public function scopeWaiting($query)
+    {
+        return $query->where('status', 3);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 5);
+    }
+
+    // Other
     protected static function boot()
     {
         parent::boot();
