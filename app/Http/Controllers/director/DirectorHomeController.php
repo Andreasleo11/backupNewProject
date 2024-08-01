@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\director;
 
 use App\Http\Controllers\Controller;
+use App\Models\MonthlyBudgetReport;
+use App\Models\MonthlyBudgetSummaryReport;
 use App\Models\PurchaseRequest;
 use App\Models\Report;
 
@@ -22,6 +24,18 @@ class DirectorHomeController extends Controller
             'rejected' => PurchaseRequest::rejected()->count(),
         ];
 
-        return view('director.home', compact('reportCounts', 'purchaseRequestCounts'));
+        $monthlyBudgetReportsCounts = [
+            'approved' => MonthlyBudgetReport::approvedByDirector()->count(),
+            'waiting' => MonthlyBudgetReport::waiting()->count(),
+            'rejected' => MonthlyBudgetReport::rejected()->count(),
+        ];
+
+        $monthlyBudgetSummaryReportsCounts = [
+            'approved' => MonthlyBudgetSummaryReport::approved()->count(),
+            'waiting' => MonthlyBudgetSummaryReport::waiting()->count(),
+            'rejected' => MonthlyBudgetSummaryReport::rejected()->count(),
+        ];
+
+        return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts'));
     }
 }
