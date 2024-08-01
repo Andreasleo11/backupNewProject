@@ -5,33 +5,32 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Detail for id = {{ $item['id'] }}</h5>
+                    <h5 class="modal-title">Edit Detail for <strong>{{ $group['name'] }}</strong></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-start pb-5 px-4">
-                    <div class="form-group mt-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" name="name" class="form-control" disabled readonly
-                            value="{{ $group['name'] }}">
-                    </div>
                     <div class="form-group mt-3">
                         <label for="dept_no" class="form-label">Dept No</label>
                         <input type="text" name="dept_no" class="form-control" disabled readonly
                             value="{{ $item['dept_no'] }}">
                     </div>
                     <div class="form-group mt-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ $group['name'] }}" required>
+                    </div>
+                    <div class="form-group mt-3">
                         <label for="quantity" class="form-label">Quantity</label>
-                        <input type="text" name="quantity" class="form-control" disabled readonly
-                            value="{{ $item['quantity'] }}" id="quantityInput{{ $item['id'] }}">
+                        <input type="text" name="quantity" class="form-control" value="{{ $item['quantity'] }}"
+                            id="quantityInput{{ $item['id'] }}" required>
                     </div>
                     <div class="form-group mt-3">
                         <label for="uom" class="form-label">UoM</label>
-                        <input type="text" name="uom" class="form-control" disabled readonly
-                            value="{{ $item['uom'] }}">
+                        <input type="text" name="uom" class="form-control" value="{{ $item['uom'] }}" required>
                     </div>
                     <div class="form-group mt-3">
                         <label class="form-label" for="supplier">Supplier</label>
-                        <input class="form-control" type="text" name="supplier" value="{{ $item['supplier'] }}">
+                        <input class="form-control" type="text" name="supplier" value="{{ $item['supplier'] }}"
+                            required>
                     </div>
                     <div class="form-group mt-3">
                         <label class="form-label" for="supplier">Cost Per Unit</label>
@@ -40,7 +39,8 @@
                     </div>
                     <div class="form-group mt-3">
                         <label class="form-label" for="remark">Remark</label>
-                        <input class="form-control" type="text" name="remark" value="{{ $item['remark'] }}">
+                        <input class="form-control" type="text" name="remark" value="{{ $item['remark'] }}"
+                            required>
                     </div>
                 </div>
                 <div class="modal-footer">

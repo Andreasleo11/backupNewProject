@@ -336,7 +336,7 @@ class PurchaseRequestController extends Controller
                 if (($purchaseRequest->to_department === 'Purchasing' && $purchaseRequest->type === 'factory') ||
                     $purchaseRequest->to_department === 'Maintenance'
                 ) {
-                    if ($purchaseRequest->from_department === 'COMPUTER') {
+                    if ($purchaseRequest->from_department === 'COMPUTER' || $purchaseRequest->from_department === 'PERSONALIA') {
                         $purchaseRequest->status = 2;
                     } else {
                         // Direct to Director

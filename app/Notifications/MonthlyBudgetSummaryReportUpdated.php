@@ -2,13 +2,13 @@
 
 namespace App\Notifications;
 
-use App\Models\MonthlyBudgetReport;
+use App\Models\MonthlyBudgetSummaryReport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MonthlyBudgetReportCreated extends Notification
+class MonthlyBudgetSummaryReportUpdated extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,7 +18,7 @@ class MonthlyBudgetReportCreated extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(MonthlyBudgetReport $report, $details)
+    public function __construct(MonthlyBudgetSummaryReport $report, $details)
     {
         $this->report = $report;
         $this->details = $details;
@@ -40,7 +40,7 @@ class MonthlyBudgetReportCreated extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('There\'s a Monthly Budget Report has just been created!')
+            ->line('There\'s a Monthly Budget Report has just been updated!')
             ->greeting($this->details['greeting'])
             ->line(new \Illuminate\Support\HtmlString($this->details['body']))
             ->action($this->details['actionText'], $this->details['actionURL']);
@@ -54,7 +54,7 @@ class MonthlyBudgetReportCreated extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Monthly Budget Report with document number = ' . $this->report->doc_num . ' has just been created!',
+            'message' => 'Monthly Budget Summary Report with document number = ' . $this->report->doc_num . ' has just been updated!',
             'status' => $this->report->status
         ];
     }

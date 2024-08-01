@@ -29,6 +29,7 @@ class MonthlyBudgetReport extends Model
         'cancel_reason',
     ];
 
+    // Relations
     public function details()
     {
         return $this->hasMany(MonthlyBudgetReportDetail::class, 'header_id');
@@ -44,6 +45,27 @@ class MonthlyBudgetReport extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    // Queries
+    public function scopeApprovedByDirector($query)
+    {
+        return $query
+            ->whereHas('department', function ($query) {
+                $query->where('name', 'QA')->orWhere('name', 'QC');
+            })
+            ->where('status', 6);
+    }
+
+    public function scopeWaiting($query)
+    {
+        return $query->where('status', 5);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 7);
+    }
+
+    // Other
     protected static function boot()
     {
         parent::boot();
@@ -115,6 +137,7 @@ class MonthlyBudgetReport extends Model
     private function notifyUsers($details, $event)
     {
         if ($event == 'created') {
+            // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
         } else {
             $creator = [$this->user]; // Convert to array
             if ($this->created_autograph && !$this->is_known_autograph && !$this->approved_autograph) {
@@ -145,9 +168,6 @@ class MonthlyBudgetReport extends Model
                 } else {
                     $user = User::where('is_gm', 1)->first();
                 }
-            } elseif ($this->created_autograph && $this->is_known_autograph && $this->approved_autograph) {
-                $user = User::where('email', 'nur@daijo.co.id')->first();
-                $detail['body'] = "Monthly Budget Report signed!";
             }
 
             $users = isset($user) ? array_merge($creator, [$user]) : $creator;

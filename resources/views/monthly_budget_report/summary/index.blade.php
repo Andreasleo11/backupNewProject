@@ -50,7 +50,7 @@
                 <table class="table table-border text-center mb-0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Doc. Number</th>
                             <th>Report Date</th>
                             <th>Created At</th>
                             <th>Status</th>
@@ -67,11 +67,13 @@
                                 $formattedCreatedAt = $createdAt->format('d/m/Y (H:i:s)');
                             @endphp
                             <tr>
-                                <td>{{ $report->id }}</td>
+                                <td>{{ $report->doc_num }}</td>
                                 <td>{{ $monthYear }}</td>
                                 <td>{{ $formattedCreatedAt }}</td>
                                 <td>
-                                    @include('partials.monthly-budget-summary-report-status')
+                                    @include('partials.monthly-budget-summary-report-status', [
+                                        'status' => $report->status,
+                                    ])
                                 </td>
                                 <td>
                                     <a href="{{ route('monthly.budget.summary.report.show', $report->id) }}"
@@ -82,8 +84,10 @@
                                         'title' => 'Delete report confirmation',
                                         'body' => "Are you sure want to delete this report with id = <strong>$report->id</strong>?",
                                     ])
-                                    <button class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                    @if ($report->status === 1 || $report->status === 2)
+                                        <button class="btn btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
