@@ -511,6 +511,7 @@ class DisciplinePageController extends Controller
 
 
         $user = Auth::user();
+       
         try {
 
             if ($user->department_id == 2) {
