@@ -23,7 +23,7 @@ class MasterInventoryController extends Controller
         // dd($datas);
         return view('masterinventory.index', compact('datas'));
     }
-    
+
     public function createpage()
     {
         $depts = Department::get();
@@ -35,16 +35,16 @@ class MasterInventoryController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-        
-         // Validate the request
-         $validatedData = $request->validate([
+
+        // Validate the request
+        $validatedData = $request->validate([
             'ip_address' => 'required|string|max:255',
             'username' => 'required|string|max:255',
             'dept' => 'required|string|max:255',
             'type' => 'required|string|max:255',
             'purpose' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
-            'description' => 'require|string|max:255',
+            'description' => 'required|string|max:255',
             'hardwares.*.type' => 'string|max:255',
             'hardwares.*.brand' => 'string|max:255',
             'hardwares.*.hardware_name' => 'string|max:255',
@@ -92,5 +92,4 @@ class MasterInventoryController extends Controller
 
         return redirect()->route('masterinventory.index')->with('success', 'Master Inventory created successfully.');
     }
-    
 }

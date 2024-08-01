@@ -320,13 +320,13 @@
                     </a>
                 </li>
 
-                @if($user && $user->name === 'raymond')
-                <li class="sidebar-list">
-                    <a href="{{ route('list.barcode') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Report History
-                    </a>
-                </li>
+                @if ($user && $user->name === 'raymond')
+                    <li class="sidebar-list">
+                        <a href="{{ route('list.barcode') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Report History
+                        </a>
+                    </li>
                 @endif
 
                 <li class="sidebar-list">
@@ -336,8 +336,15 @@
                     </a>
                 </li>
 
+                <li class="sidebar-list">
+                    <a href="{{ route('stockallbarcode') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        STOCK Item 
+                    </a>
+                </li>
 
-                
+
+
                 <li class="sidebar-list">
                     <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
@@ -481,7 +488,7 @@
                     </a>
                 </li>
 
-                @if ($user->email === 'nur@daijo.co.id' || $user->role->name === 'SUPERADMIN')
+                @if ($user->email === 'nur@daijo.co.id' || $user->department->name === 'DIRECTOR' || $user->role->name === 'SUPERADMIN')
                     <li class="sidebar-item">
                         <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>

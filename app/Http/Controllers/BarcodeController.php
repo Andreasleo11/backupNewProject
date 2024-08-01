@@ -240,11 +240,11 @@ class BarcodeController extends Controller
                     $HeaderScan = 'IN KARAWANG';
                     break;
                 case 'OUTJ':
-                    $position = 'Customer';
+                    $position = 'CustomerJakarta';
                     $HeaderScan = 'OUT JAKARTA';
                     break;
                 case 'OUTK':
-                    $position = 'Customer';
+                    $position = 'CustomerKarawang';
                     $HeaderScan = 'OUT KARAWANG';
                     break;
                 default:
@@ -503,5 +503,61 @@ class BarcodeController extends Controller
         $distinctPartNos = BarcodePackagingDetail::select('partNo')->distinct()->get();
 
         return view('barcodeinandout.historylisttable', compact('items', 'distinctPartNos'));
+    }
+    
+
+    public function stockall($location = 'Jakarta')
+    {
+        // Define position mappings based on location
+        $positionMapping = [
+            'Jakarta' => ['position' => 'Jakarta', 'customerPosition' => 'CustomerJakarta'],
+            'Karawang' => ['position' => 'Karawang', 'customerPosition' => 'CustomerKarawang']
+        ];
+
+        // Check if the location exists in the mapping
+        if (!array_key_exists($location, $positionMapping)) {
+            abort(404, 'Location not found');
+        }
+
+        // Retrieve data based on location mapping
+        $locationData = $positionMapping[$location];
+        $datas = BarcodePackagingDetail::where('position', $locationData['position'])
+                                    ->orWhere('position', $locationData['customerPosition'])
+                                    ->get();
+
+        $names = MasterDataRogPartName::get();
+
+        $partNos = $datas->pluck('partNo')->unique();
+        $balances = [];
+
+        foreach ($partNos as $partNo) {
+            // Calculate quantities based on location
+            $locationQuantity = $datas->where('partNo', $partNo)
+                                    ->where('position', $locationData['position'])
+                                    ->sum('quantity');
+
+            $customerQuantity = $datas->where('partNo', $partNo)
+                                    ->where('position', $locationData['customerPosition'])
+                                    ->sum('quantity');
+
+            $balance = max($locationQuantity - $customerQuantity, 0);
+
+            // Find the corresponding name data and extract the description
+            $nameData = $names->first(function ($item) use ($partNo) {
+                return strpos($item->name, "{$partNo}/") === 0;
+            });
+
+            // Extract description or provide default message
+            $description = $nameData ? explode('/', $nameData->name, 2)[1] : 'No description available';
+
+            // Add the partNo, description, and balance to the balances array
+            $balances[] = [
+                'partNo' => $partNo,
+                'description' => $description,
+                'balance' => $balance,
+            ];
+        }
+
+        return view('barcodeinandout.stockallbarcode', compact('balances', 'location'));
     }
 }
