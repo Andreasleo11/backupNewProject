@@ -23,7 +23,7 @@
         }
     @endphp
 
-    @if ($user->is_head && !$user->is_gm)
+    @if ($user->is_head && !$user->is_gm || $user->email === "fery@daijo.co.id")
         <form method="POST" action="{{ route('approve.data.depthead') }}" id="lock-form">
             @csrf
             <input type="hidden" name="filter_month" id="filter-month-input">
