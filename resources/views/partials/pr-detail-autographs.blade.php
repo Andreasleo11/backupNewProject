@@ -270,7 +270,12 @@
 
     {{-- VERIFICATOR AUTOGRAPH --}}
     <div
-        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel' || ($purchaseRequest->from_department === 'COMPUTER' && $purchaseRequest->to_department === 'Maintenance') ? '' : 'd-none' }}">
+        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' ||
+        $purchaseRequest->to_department === 'Personnel' ||
+        ($purchaseRequest->from_department === 'COMPUTER' && $purchaseRequest->to_department === 'Maintenance') ||
+        ($purchaseRequest->from_department === 'PERSONALIA' && $purchaseRequest->to_department === 'Maintenance')
+            ? ''
+            : 'd-none' }}">
         <h2>Verificator</h2>
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2 border-1" id="autographuser3"></div>

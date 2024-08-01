@@ -22,7 +22,6 @@
 <div class="container">
     <h1>Master Inventory List</h1>
     
-
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
@@ -44,6 +43,7 @@
                 <th>Description</th>
                 <th>Hardwares</th>
                 <th>Softwares</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -55,7 +55,7 @@
                     <td>{{ $data->type }}</td>
                     <td>{{ $data->purpose }}</td>
                     <td>{{ $data->brand }}</td>
-                    <td>{{ $data->description}}</td>
+                    <td>{{ $data->description }}</td>
                     <td>
                         @if($data->hardwares->isEmpty())
                             No hardwares
@@ -93,6 +93,9 @@
                                 </div>
                             @endforeach
                         @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('masterinventory.editpage', $data->id) }}" class="btn btn-warning">Edit</a>
                     </td>
                 </tr>
             @endforeach
