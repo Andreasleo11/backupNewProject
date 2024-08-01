@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FixPurchaseRequestSeeder::class,
             FixMonthlyBudgetReportSeeder::class,
+            FixMonthlyBudgetSummaryReportSeeder::class,
         ]);
     }
 }

@@ -1,4 +1,4 @@
-<div class="modal fade" id="reject-pr-confirmation">
+<div class="modal fade" id="reject-confirmation">
     <div class="modal-dialog modal-dialog">
         <form action="{{ $route }}" method="POST">
             @method('PUT')

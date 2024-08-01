@@ -638,8 +638,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
     Route::post('monthlyBudgetSummaryReport', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
     Route::delete('monthlyBudgetSummaryReport/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
-
     Route::put('monthlyBudgetSummaryReport/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
+    Route::put('monthlyBudgetSummaryReport/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
 
     Route::put('monthlyBudgetReportSummaryDetail,{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
 
@@ -652,13 +652,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
     Route::put('monthlyBudgetReport/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly.budget.report.reject');
     Route::put('monthlyBudgetReport/{id}/cancel', [MonthlyBudgetReportController::class, 'cancel'])->name('monthly.budget.report.cancel');
+    Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
+    Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
     Route::post('monthlyBudgetReportDetail', [MonthlyBudgetReportDetailController::class, 'store'])->name('monthly.budget.report.detail.store');
     Route::put('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
     Route::delete('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
 
-    Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
-    Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
     Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
     Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
