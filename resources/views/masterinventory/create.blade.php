@@ -72,6 +72,14 @@
         </div>
 
         <div class="form-group">
+            <label for="os">OS</label>
+            <input type="text" name="os" id="os" class="form-control" value="{{ old('os') }}">
+            @error('os')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div class="form-group">
             <label for="description">Description</label>
             <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}">
             @error('brand')
