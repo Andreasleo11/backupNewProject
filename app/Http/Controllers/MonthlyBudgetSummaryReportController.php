@@ -17,6 +17,8 @@ class MonthlyBudgetSummaryReportController extends Controller
 
         if ($authUser->department->name === 'DIRECTOR') {
             $reportsQuery->where('status', 3)->orWhere('status', 4)->orWhere('status', 5);
+        } elseif ($authUser->is_gm) {
+            $reportsQuery->where('status', 2);
         }
 
         $reports = $reportsQuery
@@ -65,6 +67,9 @@ class MonthlyBudgetSummaryReportController extends Controller
                 'name' => $detail['detail']['name'],
                 'dept_no' => $detail['dept_no'],
                 'quantity' => $detail['detail']['quantity'],
+                'spec' => $detail['detail']['spec'],
+                'last_recorded_stock' => $detail['detail']['last_recorded_stock'],
+                'usage_per_month' => $detail['detail']['usage_per_month'],
                 'uom' => $detail['detail']['uom'],
                 'remark' => $detail['detail']['remark'],
             ]);
@@ -82,19 +87,19 @@ class MonthlyBudgetSummaryReportController extends Controller
     public function show($id)
     {
         $report = Report::with('details')->find($id);
+        // dd($report->details->where('name', 'SELANG PU TRANSPARANT'));
         $this->updateStatus($report);
 
         // Prepare an array to hold grouped details
         $groupedDetails = [];
-        $detailsToUpdate = []; // Store details that need to be updated
         $detailsToDelete = [];
 
         // Loop through each detail to group by name and dept_no
         foreach ($report->details as $detail) {
             $name = $detail->name;
             $deptNo = $detail->dept_no;
-            $detailId = $detail->id;
             $uom = $detail->uom;
+            $detailId = $detail->id;
 
             if (!isset($groupedDetails[$name])) {
                 // Initialize if not exists
@@ -121,25 +126,15 @@ class MonthlyBudgetSummaryReportController extends Controller
                     'id' => $detailId,
                     'dept_no' => $deptNo,
                     'quantity' => $detail->quantity,
+                    'spec' => $detail->spec,
+                    'last_recorded_stock' => $detail->last_recorded_stock,
+                    'usage_per_month' => $detail->usage_per_month,
                     'uom' => $uom,
                     'supplier' => $detail->supplier,
                     'cost_per_unit' => $detail->cost_per_unit,
                     'remark' => $detail->remark,
                     // Add other fields as needed
                 ];
-                $detailsToUpdate[] = $detailId; // Mark this item for updating
-            }
-        }
-
-        // Update records with combined quantities
-        foreach ($groupedDetails as $group) {
-            foreach ($group['items'] as $item) {
-                if (in_array($item['id'], $detailsToUpdate)) {
-                    // Update the database record
-                    $detailToUpdate = Detail::find($item['id']);
-                    $detailToUpdate->quantity = $item['quantity'];
-                    $detailToUpdate->save();
-                }
             }
         }
 
@@ -166,7 +161,8 @@ class MonthlyBudgetSummaryReportController extends Controller
 
     public function saveAutograph(Request $request, $id)
     {
-        $report = Report::find($id)->update($request->all());
+        $report = Report::find($id);
+        $report->update($request->all());
         $this->updateStatus($report);
 
         return redirect()->back()->with('status', 'Monthly Budget Summary Report successfully approved!');
@@ -185,7 +181,7 @@ class MonthlyBudgetSummaryReportController extends Controller
 
     private function updateStatus($report)
     {
-        if ($report->is_reject === 1) {
+        if ($report->is_reject == 1) {
             $report->status = 5;
         } elseif ($report->approved_autograph) {
             $report->status = 4;

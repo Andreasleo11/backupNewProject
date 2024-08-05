@@ -44,6 +44,7 @@ class MasterInventoryController extends Controller
             'type' => 'required|string|max:255',
             'purpose' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
+            'os' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'hardwares.*.type' => 'string|max:255',
             'hardwares.*.brand' => 'string|max:255',
@@ -63,6 +64,7 @@ class MasterInventoryController extends Controller
             'type' => $request->type,
             'purpose' => $request->purpose,
             'brand' => $request->brand,
+            'os' => $request->os,
             'description' => $request->description,
         ]);
 
@@ -110,7 +112,7 @@ class MasterInventoryController extends Controller
 
     public function update(Request $request, $id)
     {
-    //    dd($request->all());
+        //    dd($request->all());
         $validatedData = $request->validate([
             'ip_address' => 'required|string|max:255',
             'username' => 'required|string|max:255',
@@ -118,6 +120,7 @@ class MasterInventoryController extends Controller
             'type' => 'required|string|max:255',
             'purpose' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
+            'os' => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'hardwares.*.brand' => 'nullable|string|max:255',
             'hardwares.*.hardware_name' => 'nullable|string|max:255',
@@ -136,6 +139,7 @@ class MasterInventoryController extends Controller
             'type' => $request->type,
             'purpose' => $request->purpose,
             'brand' => $request->brand,
+            'os' => $request->os,
             'description' => $request->description,
         ]);
 

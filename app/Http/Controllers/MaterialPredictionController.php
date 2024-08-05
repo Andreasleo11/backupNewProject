@@ -39,7 +39,9 @@ class materialPredictionController extends Controller
                     // Extract necessary data
                     $materialCode = $forecast->material_code;
                     $materialName = $forecast->material_name;
-                    $customer = $forecast->forecast_name;
+                    $customer = $forecast->forecast_code;
+                    //Changes 1 agustus 2024 , bu bertha dan mba dian minta customer diubah ke forecast code
+                    // $customer = $forecast->forecast_name;
                     $itemNo = $forecast->Item_no;
                     $unitOfMeasure = $forecast->{'U/M'};
                     $materialquantity = (double) $forecast->quantity_material;

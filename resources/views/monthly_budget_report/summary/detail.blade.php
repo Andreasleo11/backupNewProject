@@ -1,18 +1,6 @@
 @extends('layouts.app')
 
-@section('content')
-    @include('partials.alert-success-error')
-    <section class="breadcrumb">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('monthly.budget.summary.report.index') }}">Monthly Budget
-                        Summary Reports</a>
-                </li>
-                <li class="breadcrumb-item active">Detail</li>
-            </ol>
-        </nav>
-    </section>
-
+@push('extraCss')
     <style>
         .autograph-box {
             width: 200px;
@@ -28,18 +16,44 @@
             color: #888;
         }
     </style>
+@endpush
 
+@section('content')
     {{-- GLOBAL VARIABLE --}}
     @php
         $authUser = Auth::user();
     @endphp
+
+    @include('partials.alert-success-error')
+    <section class="breadcrumb">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ route('monthly.budget.summary.report.index') }}">Monthly Budget
+                        Summary Reports</a>
+                </li>
+                <li class="breadcrumb-item active">Detail</li>
+            </ol>
+        </nav>
+    </section>
+
+    <div class="row">
+        <div class="col-md-11 text-end mb-5">
+            @if ($authUser->email === 'nur@daijo.co.id')
+                <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                    <i class='bx bx-upload'></i> Upload
+                </button>
+
+                @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
+            @endif
+        </div>
+    </div>
 
     <section class="autographs">
         @include('partials.monthly-budget-summary-report-autograph')
     </section>
     <section aria-label="report">
         <div class="row justify-content-center mt-5">
-            <div class="col-md-8">
+            <div class="col">
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center">
@@ -66,6 +80,9 @@
                                                 <th>Dept</th>
                                                 <th>Quantity</th>
                                                 <th>UoM</th>
+                                                <th>Spec <span class="text-danger">*</span></th>
+                                                <th>Last Recorded Stock <span class="text-danger">*</span></th>
+                                                <th>Usage Per Month <span class="text-danger">*</span></th>
                                                 <th>Supplier</th>
                                                 <th>Cost Per Unit</th>
                                                 <th>Total Cost</th>
@@ -96,16 +113,22 @@
                                                         <td>{{ $item['dept_no'] }}</td>
                                                         <td>{{ $item['quantity'] }}</td>
                                                         <td>{{ $item['uom'] }}</td>
+                                                        <td>{{ $item['spec'] ?? '-' }}</td>
+                                                        <td>{{ $item['last_recorded_stock'] ?? '-' }}</td>
+                                                        <td>{{ $item['usage_per_month'] ?? '-' }}</td>
                                                         <td>{{ $item['supplier'] ?? '-' }}</td>
                                                         <td>@currency($item['cost_per_unit'])</td>
                                                         <td>@currency($totalCost)</td>
-                                                        <td>{{ $item['remark'] }}</td>
+                                                        <td style="width: 25%;">
+                                                            {{ $item['remark'] }}
+                                                        </td>
                                                         <td>
                                                             @if (($report->status === 1 && $report->user->id === $authUser->id) || ($report->status === 2 && $authUser->is_gm === 1))
                                                                 @include('partials.edit-monthly-budget-report-summary-detail')
                                                                 <button class="btn btn-primary"
                                                                     data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
-                                                                    data-bs-toggle="modal">Edit</button>
+                                                                    data-bs-toggle="modal"><i
+                                                                        class='bx bx-edit'></i></button>
                                                             @endif
                                                         </td>
                                                     </tr>
@@ -121,6 +144,11 @@
                                     </table>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="mt-2 ms-2">
+                            <h6 class="fw-semibold mt-3">NOTE :</h6>
+                            <span class="text-danger">*</span> : Only Moulding Dept
                         </div>
                     </div>
                 </div>

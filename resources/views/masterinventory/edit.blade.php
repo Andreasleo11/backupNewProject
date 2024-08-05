@@ -39,6 +39,12 @@
             <input type="text" name="brand" id="brand" class="form-control" value="{{ $data->brand }}" required>
         </div>
 
+        
+        <div class="form-group">
+            <label for="os">OS</label>
+            <input type="text" name="os" id="os" class="form-control" value="{{ $data->os }}" required>
+        </div>
+
         <div class="form-group">
             <label for="description">Description</label>
             <input type="text" name="description" id="description" class="form-control" value="{{ $data->description }}" required>

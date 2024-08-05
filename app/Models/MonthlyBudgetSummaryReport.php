@@ -128,7 +128,7 @@ class MonthlyBudgetSummaryReport extends Model
             if ($this->status == 2) {
                 $user = User::where('is_gm', 1)->first();
             } elseif ($this->status == 3) {
-                $user = User::with('specification')->whereHas('specification', function ($query) {
+                $user = User::with('department')->whereHas('department', function ($query) {
                     $query->where('name', 'DIRECTOR');
                 })->first();
             }
