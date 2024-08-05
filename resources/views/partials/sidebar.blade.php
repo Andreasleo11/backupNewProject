@@ -262,18 +262,18 @@
             </a>
             <ul id="inventoryitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
-                        <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            FG Stock Monitoring
-                        </a>
-                    </li>    
-            
+                    <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        FG Stock Monitoring
+                    </a>
+                </li>
+
                 <li class="sidebar-list">
-                        <a href="{{ route('inventoryfg') }}" class="sidebar-link">
-                            <i class='bx bx-cube'></i>
-                            Inventory FG
-                        </a>
-                    </li>
+                    <a href="{{ route('inventoryfg') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Inventory FG
+                    </a>
+                </li>
 
                 <li class="sidebar-list">
                     <a href="{{ route('inventorymtr') }}" class="sidebar-link">
@@ -339,7 +339,7 @@
                 <li class="sidebar-list">
                     <a href="{{ route('stockallbarcode') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
-                        STOCK Item 
+                        STOCK Item
                     </a>
                 </li>
 
@@ -488,7 +488,11 @@
                     </a>
                 </li>
 
-                @if ($user->email === 'nur@daijo.co.id' || $user->department->name === 'DIRECTOR' || $user->role->name === 'SUPERADMIN')
+                @if (
+                    $user->email === 'nur@daijo.co.id' ||
+                        $user->is_gm ||
+                        $user->department->name === 'DIRECTOR' ||
+                        $user->role->name === 'SUPERADMIN')
                     <li class="sidebar-item">
                         <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>

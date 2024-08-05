@@ -12,35 +12,55 @@
                     <div class="form-group mt-3">
                         <label for="dept_no" class="form-label">Dept No</label>
                         <input type="text" name="dept_no" class="form-control" disabled readonly
-                            value="{{ $item['dept_no'] }}">
+                            value="{{ old('dept_no', $item['dept_no']) }}">
                     </div>
                     <div class="form-group mt-3">
                         <label for="name" class="form-label">Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ $group['name'] }}" required>
+                        <input type="text" name="name" class="form-control"
+                            value="{{ old('name', $group['name']) }}" required>
                     </div>
                     <div class="form-group mt-3">
                         <label for="quantity" class="form-label">Quantity</label>
-                        <input type="text" name="quantity" class="form-control" value="{{ $item['quantity'] }}"
-                            id="quantityInput{{ $item['id'] }}" required>
+                        <input type="text" name="quantity" class="form-control"
+                            value="{{ old('quantity', $item['quantity']) }}" id="quantityInput{{ $item['id'] }}"
+                            required>
                     </div>
                     <div class="form-group mt-3">
                         <label for="uom" class="form-label">UoM</label>
-                        <input type="text" name="uom" class="form-control" value="{{ $item['uom'] }}" required>
+                        <input type="text" name="uom" class="form-control" value="{{ old('uom', $item['uom']) }}"
+                            required>
                     </div>
+                    @if ($item['dept_no'] == '363')
+                        <div class="form-group mt-3">
+                            <label for="spec" class="form-label">Spec</label>
+                            <input type="text" name="spec" class="form-control"
+                                value="{{ old('spec', $item['spec']) }}" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="last_recorded_stock" class="form-label">Last Recorded Stock</label>
+                            <input type="number" name="last_recorded_stock" class="form-control"
+                                value="{{ old('last_recorded_stock', $item['last_recorded_stock']) }}" required>
+                        </div>
+                        <div class="form-group mt-3">
+                            <label for="usage_per_month" class="form-label">Usage per Month</label>
+                            <input type="text" name="usage_per_month" class="form-control"
+                                value="{{ old('usage_per_month', $item['usage_per_month']) }}"" required>
+                        </div>
+                    @endif
                     <div class="form-group mt-3">
                         <label class="form-label" for="supplier">Supplier</label>
-                        <input class="form-control" type="text" name="supplier" value="{{ $item['supplier'] }}"
-                            required>
+                        <input class="form-control" type="text" name="supplier"
+                            value="{{ old('supplier', $item['supplier']) }}" required>
                     </div>
                     <div class="form-group mt-3">
                         <label class="form-label" for="supplier">Cost Per Unit</label>
                         <input class="form-control" type="text" name="cost_per_unit"
-                            id="costPerUnitInput{{ $item['id'] }}" value="{{ $item['cost_per_unit'] ?? 0 }}">
+                            id="costPerUnitInput{{ $item['id'] }}"
+                            value="{{ old('cost_per_unit', $item['cost_per_unit'] ?? 0) }}">
                     </div>
                     <div class="form-group mt-3">
                         <label class="form-label" for="remark">Remark</label>
-                        <input class="form-control" type="text" name="remark" value="{{ $item['remark'] }}"
-                            required>
+                        <textarea class="form-control" name="remark" id="remark" cols="30" rows="5" required>{{ old('remark', $item['remark']) }}</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

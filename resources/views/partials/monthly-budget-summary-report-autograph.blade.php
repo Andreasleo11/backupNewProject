@@ -3,7 +3,7 @@
     'doc_num' => $report->doc_num,
 ])
 <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
         <div class="row text-center">
             {{-- CREATED AUTOGRAPH --}}
             <div class="col my-2">
@@ -28,16 +28,16 @@
                         </div>
                         <div class="col-auto">
                             <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
-                                method="POST" id="formIsKnownAutograph">
+                                method="POST" id="formCreatedAutograph">
                                 @csrf @method('PUT')
-                                <input type="hidden" name="is_known_autograph" value="{{ ucwords($authUser->name) }}">
+                                <input type="hidden" name="created_autograph" value="{{ ucwords($authUser->name) }}">
                             </form>
                             @include('partials.approve-confirmation-modal2', [
                                 'id' => '1',
                                 'title' => 'Approval Confirmation',
                                 'body' => 'Are you sure want to approve this report?',
                                 'submitButton' =>
-                                    '<button class="btn btn-success" onclick="document.getElementById(\'formIsKnownAutograph\').submit()">Confirm</button>',
+                                    '<button class="btn btn-success" onclick="document.getElementById(\'formCreatedAutograph\').submit()">Confirm</button>',
                             ])
                             <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
                                 class="btn btn-success">Approve</button>
