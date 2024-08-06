@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             FixPurchaseRequestSeeder::class,
             FixMonthlyBudgetReportSeeder::class,
             FixMonthlyBudgetSummaryReportSeeder::class,
+            FixSPKRemarks::class,
         ]);
     }
 }

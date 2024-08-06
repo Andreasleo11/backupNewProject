@@ -78,7 +78,9 @@ class SuratPerintahKerjaKomputer extends Model
         });
 
         static::updated(function ($spk) {
-            $spk->sendNotification('updated');
+            if ($spk->isDirty('status_laporan') && !isset($spk->isNewRecord)) {
+                $spk->sendNotification('updated');
+            }
         });
     }
 
@@ -118,11 +120,11 @@ class SuratPerintahKerjaKomputer extends Model
     private function getStatusText($status)
     {
         switch ($status) {
-            case 0:
-                return 'WAITING';
             case 1:
-                return 'IN PROGRESS';
+                return 'WAITING';
             case 2:
+                return 'IN PROGRESS';
+            case 3:
                 return 'DONE';
             default:
                 return 'UNKNOWN';
@@ -131,7 +133,7 @@ class SuratPerintahKerjaKomputer extends Model
 
     private function notifyUsers($details, $event)
     {
-        if ($event == 'created' || $this->status_laporan === 0) {
+        if ($event == 'created') {
             $users = User::whereHas('department', function ($query) {
                 $query->where('name', 'COMPUTER');
             })->get();
