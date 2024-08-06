@@ -31,7 +31,7 @@ class SPKUpdated extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -43,7 +43,6 @@ class SPKUpdated extends Notification
             ->line('There\'s a Surat Perintah Kerja Komputer has just been updated!')
             ->greeting($this->details['greeting'])
             ->line(new \Illuminate\Support\HtmlString($this->details['body']))
-            // ->lineIf($this->spk->keterangan_pic, 'Keterangan PIC : ' . $this->spk->keterangan_pic)
             ->action($this->details['actionText'], $this->details['actionURL']);
     }
 

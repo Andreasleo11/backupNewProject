@@ -35,6 +35,35 @@
             </div>
         </div>
 
+        <form action="{{ route('spk.index') }}" method="get">
+            <div class="div mt-3 row ">
+                <div class="col-auto">
+                    <label for="start_date" class="form-label">Start date</label>
+                    <input type="date" name="start_date" class="form-control"
+                        value="{{ Session::get('start_date') ?? '' }}">
+                </div>
+                <div class="col-auto">
+                    <label for="end_date" class="form-label">End date</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ Session::get('end_date') ?? '' }}">
+                </div>
+                <div class="col-auto">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" name="status">
+                        <option value="0" {{ session('status') === null ? 'selected' : '' }}>ALL</option>
+                        <option value="1" {{ session('status') === 1 ? 'selected' : '' }}>WAITING</option>
+                        <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>IN PROGRESS</option>
+                        <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>DONE</option>
+                    </select>
+                </div>
+                <div class="col-auto align-content-end ">
+                    <a href="{{ route('spk.index', ['status' => null]) }}" class="btn btn-secondary">Reset</a>
+                </div>
+                <div class="col-auto align-content-end ">
+                    <button class="btn btn-primary mt-3">Filter</button>
+                </div>
+            </div>
+        </form>
+
         <div class="card mt-5">
             <div class=card-body>
                 <table class="table table-border text-center mb-0">

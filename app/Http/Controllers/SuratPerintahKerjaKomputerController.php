@@ -18,14 +18,14 @@ use Illuminate\Support\Facades\Notification;
 
 class SuratPerintahKerjaKomputerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->updatestatus();
 
         $authUser = auth()->user();
 
         $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
-        
+
 
         if ($authUser->department->name === 'COMPUTER' || $authUser->department->name === 'PERSONALIA' || $authUser->department->name === 'MAINTENANCE') {
             // Show all records where to_department matches the user's department
@@ -39,10 +39,37 @@ class SuratPerintahKerjaKomputerController extends Controller
             })->orWhere('pelapor', $authUser->name);
         }
 
+        // Custom Filter
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+        $status = $request->status;
+
+        // Retrieve the stored session values for filter persistence
+        $storedStartDate = $request->session()->get('start_date');
+        $storedEndDate = $request->session()->get('end_date');
+        $storedStatus = $request->session()->get('status');
+
+        // Additional filtering based on startDate and endDate
+        if ($startDate && $endDate) {
+            $reportsQuery->whereBetween('tanggal_lapor', [$startDate, $endDate]);
+            $request->session()->put('start_date', $startDate);
+            $request->session()->put('end_date', $endDate);
+        } else {
+            $request->session()->forget('start_date', $startDate);
+            $request->session()->forget('end_date', $endDate);
+        }
+
+        if ($status) {
+            $request->session()->put('status', $status);
+            $reportsQuery->where('status_laporan', $status);
+        } else {
+            $request->session()->forget('status', $status);
+        }
+
         $reports = $reportsQuery
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        
+
 
         return view('spk.index', compact('reports'));
     }
@@ -96,16 +123,11 @@ class SuratPerintahKerjaKomputerController extends Controller
             'to_department' => 'required|string',
         ]);
 
-        if($validatedData['to_department'] === 'COMPUTER')
-        {
+        if ($validatedData['to_department'] === 'COMPUTER') {
             $validatedData['no_dokumen'] = $this->generateNoDokumen('COMPUTER');
-        }
-        elseif($validatedData['to_department'] === 'PERSONALIA')
-        {
+        } elseif ($validatedData['to_department'] === 'PERSONALIA') {
             $validatedData['no_dokumen'] = $this->generateNoDokumen('HRD');
-        }
-        elseif($validatedData['to_department'] === 'MAINTENANCE')
-        {
+        } elseif ($validatedData['to_department'] === 'MAINTENANCE') {
             $validatedData['no_dokumen'] = $this->generateNoDokumen('MAINTENANCE');
         }
 
@@ -124,7 +146,7 @@ class SuratPerintahKerjaKomputerController extends Controller
         $spk->to_department = $validatedData['to_department'];
         $spk->judul_laporan = $validatedData['judul_laporan'];
         $spk->keterangan_laporan = $validatedData['keterangan_laporan'];
-        $spk->status_laporan = 0;
+        $spk->status_laporan = 1;
 
         // Save the instance to the database
         $spk->save();
@@ -135,7 +157,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function detail($id)
     {
-        
+
         $this->updatestatus();
         $report = SuratPerintahKerjaKomputer::with('spkRemarks')->find($id);
         // dd($report);
@@ -225,15 +247,11 @@ class SuratPerintahKerjaKomputerController extends Controller
         $reports = SuratPerintahKerjaKomputer::all();
 
         foreach ($reports as $report) {
-            // // Initialize status_laporan as 0
-            // $report->status_laporan = 0;
-
-            // Check if tanggal_selesai is not null
             if ($report->tanggal_selesai !== null) {
+                $report->status_laporan = 3;
+            } elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null && $report->tanggal_terima !== null) {
                 $report->status_laporan = 2;
-            }
-            // Check if pic, keterangan_pic, and tanggal_estimasi are not null
-            elseif ($report->pic !== null && $report->keterangan_pic !== null && $report->tanggal_estimasi !== null && $report->tanggal_terima !== null) {
+            } else {
                 $report->status_laporan = 1;
             }
 
