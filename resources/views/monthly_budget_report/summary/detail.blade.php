@@ -68,7 +68,10 @@
                                 </div>
                             </div>
                         </div>
-
+                        <div class="mt-2 ms-2">
+                            <h6 class="fw-semibold mt-3">NOTE :</h6>
+                            <span class="text-danger">*</span> : Only Moulding Department
+                        </div>
                         <div class="card mt-4">
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -95,6 +98,7 @@
                                         <tbody>
                                             @php
                                                 $rowIndex = 0; // Initialize row index
+                                                $grandTotal = 0; // Initialize grand total
                                             @endphp
                                             @foreach ($groupedDetailsForView as $index => $group)
                                                 @php
@@ -103,6 +107,7 @@
                                                 @foreach ($group['items'] as $itemIndex => $item)
                                                     @php
                                                         $totalCost = $item['quantity'] * $item['cost_per_unit'];
+                                                        $grandTotal += $totalCost; // Accumulate total cost
                                                     @endphp
                                                     <tr>
                                                         {{-- Render rowspan for the first row of each group --}}
@@ -129,6 +134,22 @@
                                                                     data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
                                                                     data-bs-toggle="modal"><i
                                                                         class='bx bx-edit'></i></button>
+                                                                @include(
+                                                                    'partials.delete-confirmation-modal',
+                                                                    [
+                                                                        'title' => 'Delete item',
+                                                                        'body' =>
+                                                                            'Are you sure want to delete this item?',
+                                                                        'id' => $item['id'],
+                                                                        'route' =>
+                                                                            'monthly.budget.report.summary.detail.destroy',
+                                                                    ]
+                                                                )
+
+                                                                <button class="btn btn-danger my-1"
+                                                                    data-bs-target="#delete-confirmation-modal-{{ $item['id'] }}"
+                                                                    data-bs-toggle="modal"><i class='bx bx-trash-alt'></i>
+                                                                </button>
                                                             @endif
                                                         </td>
                                                     </tr>
@@ -136,23 +157,30 @@
                                             @endforeach
                                             @if (empty($groupedDetailsForView))
                                                 <tr>
-                                                    <td colspan="10">No Data</td>
+                                                    <td colspan="13">No Data</td>
                                                 </tr>
                                             @endif
-
+                                            {{-- Display grand total row --}}
+                                            <tr>
+                                                <td colspan="11" class="text-end fw-bold">Total</td>
+                                                <td class="fw-bold">@currency($grandTotal)</td>
+                                                <td colspan="2"></td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mt-2 ms-2">
-                            <h6 class="fw-semibold mt-3">NOTE :</h6>
-                            <span class="text-danger">*</span> : Only Moulding Dept
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <div class="mt-2">
+        @include('partials.uploaded-section', [
+            'showDeleteButton' => $report->status === 1,
+            'files' => $report->files,
+        ])
+    </div>
 @endsection

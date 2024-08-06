@@ -23,6 +23,12 @@ class MonthlyBudgetReportSummaryDetailController extends Controller
         }
 
         MonthlyBudgetReportSummaryDetail::findOrFail($id)->update($validatedData);
-        return redirect()->back()->with('success', 'Details has been updated!');
+        return redirect()->back()->with('success', 'Details has been updated successfully!');
+    }
+
+    public function destroy($id)
+    {
+        MonthlyBudgetReportSummaryDetail::find($id)->delete();
+        return redirect()->back()->with('success', 'Details has been deleted successfully!');
     }
 }

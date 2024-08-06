@@ -35,6 +35,11 @@ class MonthlyBudgetSummaryReport extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function files()
+    {
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
+    }
+
     // Queries
     public function scopeApproved($query)
     {

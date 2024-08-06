@@ -23,7 +23,7 @@
                 $filenameWithoutExtension = pathinfo($filename, PATHINFO_FILENAME);
                 $extension = pathinfo($filename, PATHINFO_EXTENSION);
             @endphp
-            <div class="col d-flex col-xl-3 col-md-4">
+            <div class="col d-flex col-xl-3 col-md-4 my-2">
                 <a href="{{ asset('storage/files/' . $filename) }}" download="{{ $filename }}">
                     <div class="card">
                         <div class="card-body btn btn-light" style="max-width: 250px">
