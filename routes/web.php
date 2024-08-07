@@ -641,7 +641,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('monthlyBudgetSummaryReport/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
     Route::put('monthlyBudgetSummaryReport/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
 
-    Route::put('monthlyBudgetReportSummaryDetail,{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
+    Route::put('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
+    Route::delete('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'destroy'])->name('monthly.budget.report.summary.detail.destroy');
 
     Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
     Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');

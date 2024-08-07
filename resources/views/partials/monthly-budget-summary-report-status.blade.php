@@ -8,7 +8,7 @@
 @elseif($status === 3)
     <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting for Director</span>
 @elseif($status === 2)
-    <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting for GM</span>
+    <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting for Signatures</span>
 @elseif($status === 1)
     <span class="badge text-black-50 bg-primary-subtle px-3 py-2 fs-6">Waiting Creator</span>
 @endif

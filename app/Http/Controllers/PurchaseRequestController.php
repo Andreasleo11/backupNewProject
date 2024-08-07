@@ -79,17 +79,21 @@ class PurchaseRequestController extends Controller
         } elseif ($isPurchaser) {
             // If the user is a purchaser, filter requests with specific conditions
             $purchaseRequestsQuery->where(function ($query) {
-                $query->where('from_department', '!=', 'MOULDING')
-                    ->where('type', 'factory')
-                    ->whereNotNull('autograph_6')
-                    ->orWhere(function ($query) {
-                        $query->where('from_department', 'MOULDING')
-                            ->orWhere('type', '!=', 'factory');
-                    });
+                $query->where(function ($query) {
+                    $query->where('type', 'office')
+                        ->orWhere('from_department', 'MOULDING')
+                        ->whereNotNull('autograph_2');
+                })->orWhere(function ($query) {
+                    $query->where('type', 'factory')
+                        ->whereNotNull('autograph_6');
+                });
+
                 if (!$query->where('to_department', 'Purchasing')) {
                     $query->whereNotNull('autograph_6');
                 }
             });
+
+            // $purchaseRequestsQuery->where('status', 6);
 
 
             // $purchaseRequestsQuery->where(function ($query) use ($user) {

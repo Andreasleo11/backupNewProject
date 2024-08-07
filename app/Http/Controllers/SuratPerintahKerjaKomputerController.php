@@ -26,17 +26,18 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
 
-
-        if ($authUser->department->name === 'COMPUTER' || $authUser->department->name === 'PERSONALIA' || $authUser->department->name === 'MAINTENANCE') {
-            // Show all records where to_department matches the user's department
-            $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
-                $query->where('to_department', $authUser->department->name);
-            });
-        } else {
-            // For other departments, show records where deptRelation or pelapor matches
-            $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
-                $query->where('id', $authUser->department->id);
-            })->orWhere('pelapor', $authUser->name);
+        if ($authUser->department->name !== 'COMPUTER') {
+            if ($authUser->department->name === 'PERSONALIA' || $authUser->department->name === 'MAINTENANCE') {
+                // Show all records where to_department matches the user's department
+                $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
+                    $query->where('to_department', $authUser->department->name);
+                });
+            } else {
+                // For other departments, show records where deptRelation or pelapor matches
+                $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
+                    $query->where('id', $authUser->department->id);
+                })->orWhere('pelapor', $authUser->name);
+            }
         }
 
         // Custom Filter
@@ -69,6 +70,7 @@ class SuratPerintahKerjaKomputerController extends Controller
         $reports = $reportsQuery
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
 
 
         return view('spk.index', compact('reports'));

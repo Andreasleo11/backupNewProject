@@ -12,15 +12,15 @@
                 <div class="container mt-2" id="autographUser1"></div>
 
                 @php
-                    $showCreatedAutograph = false;
+                    $showCreatedApproval = false;
                     if (!$report->created_autograph) {
                         if ($report->creator_id === auth()->user()->id) {
-                            $showCreatedAutograph = true;
+                            $showCreatedApproval = true;
                         }
                     }
                 @endphp
 
-                @if ($showCreatedAutograph)
+                @if ($showCreatedApproval)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
@@ -46,22 +46,66 @@
                 @endif
             </div>
 
+            {{-- DEPT HEAD MOULDING AUTOGRAPH --}}
+            <div class="col my-2">
+                <h2>Dept Head Moulding</h2>
+                <div class="autograph-box container" id="autographBox4"></div>
+                <div class="container mt-2" id="autographUser4"></div>
+
+                @php
+                    $showDeptHeadMouldingApproval = false;
+                    if ($report->created_autograph && !$report->dept_head_moulding_autograph) {
+                        if ($authUser->is_head && $authUser->specification->name === 'DESIGN') {
+                            $showDeptHeadMouldingApproval = true;
+                        }
+                    }
+
+                    $showDeptHeadMouldingApproval = $showDeptHeadMouldingApproval && $report->is_reject === 0;
+                @endphp
+
+                @if ($showDeptHeadMouldingApproval)
+                    <div class="row px-4 d-flex justify-content-center">
+                        <div class="col-auto me-2">
+                            <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
+                                class="btn btn-danger">Reject</button>
+                        </div>
+                        <div class="col-auto">
+                            <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
+                                method="POST" id="formDeptHeadMouldingAutograph">
+                                @csrf @method('PUT')
+                                <input type="hidden" name="dept_head_moulding_autograph"
+                                    value="{{ ucwords($authUser->name) }}">
+                            </form>
+                            @include('partials.approve-confirmation-modal2', [
+                                'id' => '1',
+                                'title' => 'Approval Confirmation',
+                                'body' => 'Are you sure want to approve this report?',
+                                'submitButton' =>
+                                    '<button class="btn btn-success" onclick="document.getElementById(\'formDeptHeadMouldingAutograph\').submit()">Confirm</button>',
+                            ])
+                            <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
+                                class="btn btn-success">Approve</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
             {{-- IS KNOWN AUTOGRAPH --}}
             <div class="col my-2">
                 <h2>Diketahui</h2>
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographUser2"></div>
                 @php
-                    $showIsKnownAutograph = false;
+                    $showIsKnownApproval = false;
                     if ($report->created_autograph && !$report->is_known_autograph) {
                         if ($authUser->is_gm) {
-                            $showIsKnownAutograph = true;
+                            $showIsKnownApproval = true;
                         }
                     }
-                    $showIsKnownAutograph = $showIsKnownAutograph && $report->is_reject === 0;
+                    $showIsKnownApproval = $showIsKnownApproval && $report->is_reject === 0;
                 @endphp
 
-                @if ($showIsKnownAutograph)
+                @if ($showIsKnownApproval)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
@@ -93,15 +137,15 @@
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographUser3"></div>
                 @php
-                    $showApprovedAutograph = false;
+                    $showApprovedApproval = false;
                     if ($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph) {
                         if ($authUser->department->name === 'DIRECTOR') {
-                            $showApprovedAutograph = true;
+                            $showApprovedApproval = true;
                         }
                     }
-                    $showApprovedAutograph = $showApprovedAutograph && $report->is_reject === 0;
+                    $showApprovedApproval = $showApprovedApproval && $report->is_reject === 0;
                 @endphp
-                @if ($showApprovedAutograph)
+                @if ($showApprovedApproval)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2 ">
                             <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
@@ -140,10 +184,11 @@
                 autograph_1: '{{ $report->created_autograph ?? null }}',
                 autograph_2: '{{ $report->is_known_autograph ?? null }}',
                 autograph_3: '{{ $report->approved_autograph ?? null }}',
+                autograph_4: '{{ $report->dept_head_moulding_autograph ?? null }}',
             };
 
             // Loop through each autograph status and update the UI accordingly
-            for (var i = 1; i <= 3; i++) {
+            for (var i = 1; i <= 4; i++) {
                 var autographBox = document.getElementById('autographBox' + i);
                 var autographNameBox = document.getElementById('autographUser' + i);
 
