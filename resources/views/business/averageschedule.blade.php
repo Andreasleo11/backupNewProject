@@ -150,7 +150,7 @@
                 var selectedItems = itemCodeFilter.val(); // Get the selected values from Select2
 
                 allRows.forEach(function(row) {
-                    var days = parseInt(row.cells[7].textContent); // Get the content of the Days column
+                    var days = parseInt(row.cells[8].textContent); // Get the content of the Days column
                     var itemCode = row.cells[1].textContent; // Get the content of the Item Code column
 
                     var daysMatch = selectedDays === 'all' ||

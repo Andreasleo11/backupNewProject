@@ -143,24 +143,27 @@ class MasterInventoryController extends Controller
             'description' => $request->description,
         ]);
 
-        // Update hardwares
+       // Updating Hardwares
         $existingHardwareIds = $masterInventory->hardwares->pluck('id')->toArray();
         $newHardwareIds = [];
-    
+
         if ($request->has('hardwares')) {
             foreach ($request->hardwares as $hardware) {
                 if (!empty($hardware['brand']) && !empty($hardware['hardware_name'])) {
-                    if (!empty($hardware['id'])) {
-                        $existingHardware = $masterInventory->hardwares()->find($hardware['id']);
-                        if ($existingHardware) {
-                            $existingHardware->update([
-                                'hardware_id' => $hardware['type'],
-                                'brand' => $hardware['brand'],
-                                'hardware_name' => $hardware['hardware_name'],
-                                'remark' => $hardware['remark'],
-                            ]);
-                            $newHardwareIds[] = $hardware['id'];
-                        }
+                    // Try to find an existing hardware by unique fields (e.g., hardware_name and brand)
+                    $existingHardware = $masterInventory->hardwares()
+                        ->where('hardware_name', $hardware['hardware_name'])
+                        ->where('brand', $hardware['brand'])
+                        ->first();
+
+                    if ($existingHardware) {
+                        $existingHardware->update([
+                            'hardware_id' => $hardware['type'],
+                            'brand' => $hardware['brand'],
+                            'hardware_name' => $hardware['hardware_name'],
+                            'remark' => $hardware['remark'],
+                        ]);
+                        $newHardwareIds[] = $existingHardware->id;
                     } else {
                         $newHardware = $masterInventory->hardwares()->create([
                             'master_inventory_id' => $masterInventory->id,
@@ -174,31 +177,34 @@ class MasterInventoryController extends Controller
                 }
             }
         }
-    
+
         // Remove deleted hardwares
         $toBeDeletedHardwareIds = array_diff($existingHardwareIds, $newHardwareIds);
         if (!empty($toBeDeletedHardwareIds)) {
             $masterInventory->hardwares()->whereIn('id', $toBeDeletedHardwareIds)->delete();
         }
-    
-        // Update softwares
+
+        // Updating Softwares
         $existingSoftwareIds = $masterInventory->softwares->pluck('id')->toArray();
         $newSoftwareIds = [];
-    
+
         if ($request->has('softwares')) {
             foreach ($request->softwares as $software) {
                 if (!empty($software['software_name']) && !empty($software['license'])) {
-                    if (!empty($software['id'])) {
-                        $existingSoftware = $masterInventory->softwares()->find($software['id']);
-                        if ($existingSoftware) {
-                            $existingSoftware->update([
-                                'software_id' => $software['type'],
-                                'license' => $software['license'],
-                                'software_name' => $software['software_name'],
-                                'remark' => $software['remark'],
-                            ]);
-                            $newSoftwareIds[] = $software['id'];
-                        }
+                    // Try to find an existing software by unique fields (e.g., software_name and license)
+                    $existingSoftware = $masterInventory->softwares()
+                        ->where('software_name', $software['software_name'])
+                        ->where('license', $software['license'])
+                        ->first();
+
+                    if ($existingSoftware) {
+                        $existingSoftware->update([
+                            'software_id' => $software['type'],
+                            'license' => $software['license'],
+                            'software_name' => $software['software_name'],
+                            'remark' => $software['remark'],
+                        ]);
+                        $newSoftwareIds[] = $existingSoftware->id;
                     } else {
                         $newSoftware = $masterInventory->softwares()->create([
                             'master_inventory_id' => $masterInventory->id,
@@ -212,7 +218,7 @@ class MasterInventoryController extends Controller
                 }
             }
         }
-    
+
         // Remove deleted softwares
         $toBeDeletedSoftwareIds = array_diff($existingSoftwareIds, $newSoftwareIds);
         if (!empty($toBeDeletedSoftwareIds)) {
