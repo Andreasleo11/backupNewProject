@@ -26,14 +26,11 @@ use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PEController;
-
 //ROUTE SPECIAL PURCHASING
 use App\Http\Controllers\PurchasingMaterialController;
 use App\Http\Controllers\materialPredictionController;
 use App\Http\Controllers\PurchasingDetailController;
 //ROUTE SPECIAL PURCHASING
-
-use App\Http\Controllers\MailController;
 use App\Http\Controllers\ComputerHomeController;
 use App\Http\Controllers\DirectorPurchaseRequestController;
 use App\Http\Controllers\InventoryFgController;
@@ -45,13 +42,9 @@ use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSInjectionController;
 use App\Http\Controllers\pps\PPSKarawangController;
-
 use App\Http\Controllers\DeliveryScheduleController;
 use App\Http\Controllers\DetailPurchaseRequestController;
-use App\Http\Controllers\DSNewController;
 use App\Http\Controllers\EmployeeMasterController;
-
-
 use App\Http\Controllers\HolidayListController;
 use App\Http\Controllers\ProductionHomeController;
 use App\Http\Controllers\PurchasingReminderController;
@@ -81,10 +74,6 @@ use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaKomputerController;
 use App\Http\Controllers\MasterInventoryController;
-
-
-
-
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
@@ -93,6 +82,7 @@ use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
+use App\Http\Controllers\MaintenanceInventoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -714,6 +704,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
     Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
+
+    Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

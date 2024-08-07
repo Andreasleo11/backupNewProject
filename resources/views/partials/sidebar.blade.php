@@ -531,6 +531,12 @@
                     </li>
                 @endif
 
+                <li class="sidebar-item">
+                    <a href="{{ route('maintenance.inventory.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Maintenance Inventory
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>
