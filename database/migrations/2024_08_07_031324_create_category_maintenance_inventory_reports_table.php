@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detail_category_maintenance_inventory_reports', function (Blueprint $table) {
+        Schema::create('category_maintenance_inventory_reports', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('group_id');
             $table->foreign('group_id')
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detail_category_maintenance_inventory_reports');
+        Schema::dropIfExists('category_maintenance_inventory_reports');
     }
 };

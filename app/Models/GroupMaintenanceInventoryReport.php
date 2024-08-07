@@ -5,17 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DetailCategoryMaintenanceInventoryReport extends Model
+class GroupMaintenanceInventoryReport extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'group_id',
         'name',
     ];
 
-    public function category()
+    public function detail()
     {
-        return $this->belongsTo(CategoryMaintenanceInventoryReport::class);
+        return $this->hasMany(CategoryMaintenanceInventoryReport::class, 'group_id', 'id');
     }
 }

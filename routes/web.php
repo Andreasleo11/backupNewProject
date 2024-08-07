@@ -707,6 +707,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
 
+    Route::get('maintenanceInventoryReports/createpage', [MaintenanceInventoryController::class, 'createpage'])->name('maintenance.inventory.createpage');
+    Route::post('maintenanceInventoryReports/createprocess', [MaintenanceInventoryController::class, 'createprocess'])->name('submit.master.inventory');
+
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
         $report = App\Models\MonthlyBudgetReport::find(5);
