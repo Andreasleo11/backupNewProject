@@ -162,7 +162,8 @@
                                             @endif
                                             {{-- Display grand total row --}}
                                             <tr>
-                                                <td colspan="11" class="text-end fw-bold">Total</td>
+                                                <td colspan="10" class="text-end align-content-center fw-bold">Total
+                                                </td>
                                                 <td class="fw-bold">@currency($grandTotal)</td>
                                                 <td colspan="2"></td>
                                             </tr>

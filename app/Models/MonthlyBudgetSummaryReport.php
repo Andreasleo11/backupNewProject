@@ -17,6 +17,7 @@ class MonthlyBudgetSummaryReport extends Model
         'report_date',
         'creator_id',
         'created_autograph',
+        'dept_head_moulding_autograph',
         'is_known_autograph',
         'approved_autograph',
         'doc_num',
@@ -125,20 +126,28 @@ class MonthlyBudgetSummaryReport extends Model
 
     private function notifyUsers($details, $event)
     {
-        $creator = [$this->user]; // Convert to array
+        $creator = $this->user; // Convert to array
+        $users = [];
+        array_push($users, $creator);
 
         if ($event === 'created') {
             // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
         } elseif ($event === 'updated') {
             if ($this->status == 2) {
-                $user = User::where('is_gm', 1)->first();
+                $gm = User::where('is_gm', 1)->first();
+                $mouldingHead = User::whereHas('department', function ($query) {
+                    $query->where('name', 'MOULDING');
+                })->whereHas('specification', function ($query) {
+                    $query->where('name', 'DESIGN');
+                })->where('is_head', 1)->first();
+                array_push($users, $gm, $mouldingHead);
             } elseif ($this->status == 3) {
-                $user = User::with('department')->whereHas('department', function ($query) {
+                $director = User::with('department')->whereHas('department', function ($query) {
                     $query->where('name', 'DIRECTOR');
                 })->first();
+                array_push($users, $director);
             }
 
-            $users = isset($user) ? array_merge($creator, [$user]) : $creator;
             Notification::send($users, new MonthlyBudgetSummaryReportUpdated($this, $details));
         }
     }

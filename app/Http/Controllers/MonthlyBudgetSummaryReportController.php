@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport as Report;
 use App\Models\MonthlyBudgetReportSummaryDetail as Detail;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class MonthlyBudgetSummaryReportController extends Controller
 
         if ($authUser->department->name === 'DIRECTOR') {
             $reportsQuery->where('status', 3)->orWhere('status', 4)->orWhere('status', 5);
-        } elseif ($authUser->is_gm) {
+        } elseif ($authUser->is_gm || $authUser->is_head && $authUser->specification->name === 'DESIGN') {
             $reportsQuery->where('status', 2);
         }
 
@@ -185,7 +186,7 @@ class MonthlyBudgetSummaryReportController extends Controller
             $report->status = 5;
         } elseif ($report->approved_autograph) {
             $report->status = 4;
-        } elseif ($report->is_known_autograph) {
+        } elseif ($report->is_known_autograph && $report->dept_head_moulding_autograph) {
             $report->status = 3;
         } elseif ($report->created_autograph) {
             $report->status = 2;
