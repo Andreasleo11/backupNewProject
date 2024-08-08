@@ -707,9 +707,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
 
     Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
-
-    Route::get('maintenanceInventoryReports/createpage', [MaintenanceInventoryController::class, 'createpage'])->name('maintenance.inventory.createpage');
-    Route::post('maintenanceInventoryReports/createprocess', [MaintenanceInventoryController::class, 'createprocess'])->name('submit.master.inventory');
+    Route::get('maintenanceInventoryReports/create', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
+    Route::post('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'store'])->name('maintenance.inventory.store');
+    Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 
 
 
