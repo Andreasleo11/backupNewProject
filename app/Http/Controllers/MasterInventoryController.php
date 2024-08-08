@@ -54,12 +54,21 @@ class MasterInventoryController extends Controller
             'softwares.*.license' => 'string|max:255',
             'softwares.*.name' => 'string|max:255',
             'softwares.*.remark' => 'nullable|string|max:255',
+            'position_image' => 'required|image|mimes:jpg,png,jpeg,gif|max:2048',
         ]);
 
+        if ($request->hasFile('position_image')) {
+            $image = $request->file('position_image');
+            $imageName = $image->getClientOriginalName();
+            
+            $imagePath = $image->storeAs('masterinventory', $imageName, 'public');
+          
+        }
         // Create the master inventory
         $masterInventory = MasterInventory::create([
             'ip_address' => $request->ip_address,
             'username' => $request->username,
+            'position_image' => $imagePath,
             'dept' => $request->dept,
             'type' => $request->type,
             'purpose' => $request->purpose,
@@ -128,9 +137,27 @@ class MasterInventoryController extends Controller
             'softwares.*.software_name' => 'nullable|string|max:255',
             'softwares.*.license' => 'nullable|string|max:255',
             'softwares.*.remark' => 'nullable|string|max:255',
+            'position_image' => 'nullable|image|mimes:jpg,png,jpeg,gif|max:2048',
         ]);
 
         $masterInventory = MasterInventory::findOrFail($id);
+
+         // Handle the image update
+        if ($request->hasFile('position_image')) {
+            // Delete the old image if it exists
+            if ($masterInventory->position_image) {
+                $oldImagePath = public_path('storage/' . $masterInventory->position_image);
+                if (file_exists($oldImagePath)) {
+                    unlink($oldImagePath);
+                }
+            }
+            $image = $request->file('position_image');
+            $imageName = $image->getClientOriginalName();
+            // Store the new image and update the model
+            $imagePath = $imagePath = $image->storeAs('masterinventory', $imageName, 'public');
+            $masterInventory->position_image = $imagePath;
+        }
+
 
         $masterInventory->update([
             'ip_address' => $request->ip_address,
@@ -228,4 +255,18 @@ class MasterInventoryController extends Controller
         return redirect()->route('masterinventory.index')->with('success', 'Master Inventory updated successfully.');
     }
 
+
+    public function detail($id)
+    {
+        $data = MasterInventory::with([
+            'hardwares.hardwareType',
+            'softwares.softwareType'
+        ])->findOrFail($id);
+
+        $depts = Department::get();
+        $hardwareTypes = HardwareTypeInventory::get();
+        $softwareTypes = SoftwareTypeInventory::get();
+
+        return view('masterinventory.detail', compact('data', 'depts', 'hardwareTypes', 'softwareTypes'));
+    }
 }

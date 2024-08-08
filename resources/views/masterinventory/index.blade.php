@@ -68,6 +68,19 @@
 
     th {
         text-align: inherit;
+        cursor: pointer;
+    }
+    
+    th.sortable {
+    cursor: pointer;
+    }
+
+    th.sortable.asc::after {
+        content: " ↑"; /* Up arrow for ascending */
+    }
+
+    th.sortable.desc::after {
+        content: " ↓"; /* Down arrow for descending */
     }
 
     .filter-input {
@@ -75,7 +88,13 @@
         width: calc(50% - 10px);
         display: inline-block;
     }
+
 </style>
+
+<!-- Lightbox2 CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css">
+
+
 
 <div class="container">
     <h1>Master Inventory List</h1>
@@ -96,17 +115,18 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>IP Address</th>
-                <th>Username</th>
-                <th>Department</th>
-                <th>Type</th>
-                <th>Purpose</th>
-                <th>Brand</th>
-                <th>OS</th>
-                <th>Description</th>
-                <th>Hardwares</th>
-                <th>Softwares</th>
-                <th>Actions</th>
+                <th class="sortable" data-column="ip_address">IP Address</th>
+                <th class="sortable" data-column="username">Username</th>
+                <!-- <th>Position Image</th> -->
+                <th class="sortable" data-column="dept">Department</th>
+                <th class="sortable" data-column="type">Type</th>
+                <th class="sortable" data-column="purpose">Purpose</th>
+                <th class="sortable" data-column="brand">Brand</th>
+                <th class="sortable" data-column="os">OS</th>
+                <th class="sortable" data-column="description">Description</th>
+                <!-- <th>Hardwares</th>
+                <th>Softwares</th> -->
+                <th colspan="2" class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody id="inventory-table">
@@ -114,13 +134,18 @@
                 <tr>
                     <td class="ip-address">{{ $data->ip_address }}</td>
                     <td class="username">{{ $data->username }}</td>
+                    <!-- <td>
+                        <a data-fancybox="gallery" href="{{ asset('storage/' . $data->position_image) }}" data-caption="Position Image">
+                            <img src="{{ asset('storage/' . $data->position_image) }}" alt="Position Image" style="max-width: 1000px; max-height: 100px;">
+                        </a>
+                    </td> -->
                     <td>{{ $data->dept }}</td>
                     <td>{{ $data->type }}</td>
                     <td>{{ $data->purpose }}</td>
                     <td>{{ $data->brand }}</td>
                     <td>{{ $data->os }}</td>
                     <td>{{ $data->description }}</td>
-                    <td>
+                    <!-- <td>
                         @if($data->hardwares->isEmpty())
                             No hardwares
                         @else
@@ -137,9 +162,12 @@
                                 Show Software Details
                             </button>
                         @endif
-                    </td>
-                    <td>
+                    </td> -->
+                    <!-- <td>
                         <a href="{{ route('masterinventory.editpage', $data->id) }}" class="btn btn-warning">Edit</a>
+                    </td> -->
+                    <td>
+                    <a href="{{ route('masterinventory.detail', $data->id) }}" class="btn btn-success">Detail</a>
                     </td>
                 </tr>
             @endforeach
@@ -169,8 +197,31 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+
 <script>
+
+$(document).ready(function() {
+        $('[data-fancybox="gallery"]').fancybox({
+            // Custom options
+            loop: true,
+            buttons: [
+                'slideShow',
+                'fullScreen',
+                'thumbs',
+                'close'
+            ],
+            caption: function(instance, item) {
+                return $(this).data('caption') || '';
+            },
+            transitionEffect: "fade", // Example of custom option
+            transitionDuration: 500
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
+
         const dataModal = document.getElementById('dataModal');
         const dataModalBody = document.getElementById('dataModalBody');
 
@@ -293,6 +344,51 @@
             });
         });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const table = document.querySelector('table');
+    const headers = table.querySelectorAll('.sortable');
+    let sortDirection = {};
+
+    headers.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.getAttribute('data-column');
+            const order = sortDirection[column] === 'asc' ? 'desc' : 'asc';
+            sortDirection[column] = order;
+            sortTable(column, order);
+        });
+    });
+
+    function sortTable(column, order) {
+        const rows = Array.from(table.querySelectorAll('tbody tr'));
+        const index = Array.from(headers).findIndex(header => header.getAttribute('data-column') === column);
+
+        rows.sort((a, b) => {
+            const aText = a.children[index].textContent.trim();
+            const bText = b.children[index].textContent.trim();
+            
+            // Determine if column data is numeric or text
+            const aValue = isNaN(aText) ? aText.toLowerCase() : parseFloat(aText);
+            const bValue = isNaN(bText) ? bText.toLowerCase() : parseFloat(bText);
+
+            if (aValue < bValue) return order === 'asc' ? -1 : 1;
+            if (aValue > bValue) return order === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(row => table.querySelector('tbody').appendChild(row));
+
+        // Remove previous sort indicators
+        headers.forEach(header => header.classList.remove('asc', 'desc'));
+
+        // Add sort indicator to the current header
+        const sortedHeader = Array.from(headers).find(header => header.getAttribute('data-column') === column);
+        sortedHeader.classList.add(order);
+    }
+});
+  
+
+
 </script>
 
 @endsection

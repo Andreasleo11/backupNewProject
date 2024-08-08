@@ -4,7 +4,7 @@
 <div class="container">
     <h1>Edit Inventory</h1>
 
-    <form action="{{ route('masterinventory.update', $data->id) }}" method="POST">
+    <form action="{{ route('masterinventory.update', $data->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         
@@ -20,13 +20,37 @@
         </div>
 
         <div class="form-group">
-            <label for="dept">Department </label>
-            <input type="text" name="dept" id="dept" class="form-control" value="{{ $data->dept }}" required>
+            <label for="position_image">Position Image</label>
+            <input type="file" name="position_image" id="position_image" class="form-control">
+            @error('position_image')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
         </div>
 
         <div class="form-group">
-            <label for="type">Type </label>
-            <input type="text" name="type" id="type" class="form-control" value="{{ $data->type }}" required>
+            <label for="dept">Department</label>
+            <select name="dept" id="dept" class="form-control" required>
+                @foreach($depts as $dept)
+                    <option value="{{ $dept->name }}" {{ $data->dept == $dept->name ? 'selected' : '' }}>
+                        {{ $dept->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('dept')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <div class="form-group">
+            <label for="type">Type</label>
+            <select name="type" id="type" class="form-control" required>
+                <option value="PC" {{ $data->type == 'PC' ? 'selected' : '' }}>PC</option>
+                <option value="Laptop" {{ $data->type == 'Laptop' ? 'selected' : '' }}>Laptop</option>
+                <option value="Others" {{ $data->type == 'Others' ? 'selected' : '' }}>Others</option>
+            </select>
+            @error('type')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
         </div>
 
         <div class="form-group">
@@ -39,7 +63,6 @@
             <input type="text" name="brand" id="brand" class="form-control" value="{{ $data->brand }}" required>
         </div>
 
-        
         <div class="form-group">
             <label for="os">OS</label>
             <input type="text" name="os" id="os" class="form-control" value="{{ $data->os }}" required>
@@ -49,58 +72,86 @@
             <label for="description">Description</label>
             <input type="text" name="description" id="description" class="form-control" value="{{ $data->description }}" required>
         </div>
-        <!-- Repeat for other fields like username, dept, etc. -->
+
 
         <!-- Form fields for Hardwares -->
-        <div id="hardwares-container">
-            <h4>Hardwares</h4>
-            @foreach($data->hardwares as $index => $hardware)
-                <div class="form-group" data-index="{{ $index }}">
-                    <label for="hardware_type_{{ $index }}">Hardware Type</label>
-                    <select name="hardwares[{{ $index }}][type]" id="hardware_type_{{ $index }}" class="form-control">
-                        @foreach($hardwareTypes as $type)
-                            <option value="{{ $type->id }}" {{ $hardware->hardware_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
-                        @endforeach
-                    </select>
-                    <label for="hardware_brand_{{ $index }}">Hardware Brand</label>
-                    <input type="text" name="hardwares[{{ $index }}][brand]" id="hardware_brand_{{ $index }}" class="form-control" value="{{ $hardware->brand }}" required>
-                    <!-- Repeat for other hardware fields like hardware_name, remark, etc. -->
-                    <label for="hardware_name_{{ $index }}">Hardware Name</label>
-                    <input type="text" name="hardwares[{{ $index }}][hardware_name]" id="hardware_name_{{ $index }}" class="form-control" value="{{ $hardware->hardware_name }}" required>
-
-                    <label for="hardware_remark_{{ $index }}">Remark</label>
-                    <input type="text" name="hardwares[{{ $index }}][remark]" id="hardware_remark_{{ $index }}" class="form-control" value="{{ $hardware->remark }}" required>
-
-                    
-                    <button type="button" class="btn btn-danger remove-hardware">Remove</button>
-                </div>
-            @endforeach
-        </div>
+        <h4>Hardwares</h4>
+        <table class="table" id="hardwares-table">
+            <thead>
+                <tr>
+                    <th>Hardware Type</th>
+                    <th>Hardware Brand</th>
+                    <th>Hardware Name</th>
+                    <th>Remark</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="hardwares-container">
+                @foreach($data->hardwares as $index => $hardware)
+                    <tr data-index="{{ $index }}">
+                        <td>
+                            <select name="hardwares[{{ $index }}][type]" class="form-control">
+                                @foreach($hardwareTypes as $type)
+                                    <option value="{{ $type->id }}" {{ $hardware->hardware_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="hardwares[{{ $index }}][brand]" class="form-control" value="{{ $hardware->brand }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="hardwares[{{ $index }}][hardware_name]" class="form-control" value="{{ $hardware->hardware_name }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="hardwares[{{ $index }}][remark]" class="form-control" value="{{ $hardware->remark }}" required>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger remove-hardware">Remove</button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
         <button type="button" class="btn btn-secondary" id="add-hardware">Add Hardware</button>
 
-        <div id="softwares-container">
-            <h4>Softwares</h4>
-            @foreach($data->softwares as $index => $software)
-                <div class="form-group" data-index="{{ $index }}">
-                    <label for="software_type_{{ $index }}">Software Type</label>
-                    <select name="softwares[{{ $index }}][type]" id="software_type_{{ $index }}" class="form-control">
-                        @foreach($softwareTypes as $type)
-                            <option value="{{ $type->id }}" {{ $software->software_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
-                        @endforeach
-                    </select>
-                    <label for="software_name_{{ $index }}">Software Name</label>
-                    <input type="text" name="softwares[{{ $index }}][software_name]" id="software_name_{{ $index }}" class="form-control" value="{{ $software->software_name }}" required>
-                    
-                    <label for="software_license_{{ $index }}">License</label>
-                    <input type="text" name="softwares[{{ $index }}][license]" id="software_license_{{ $index }}" class="form-control" value="{{ $software->license }}" required>
-
-                    <label for="software_remark_{{ $index }}">Remark</label>
-                    <input type="text" name="softwares[{{ $index }}][remark]" id="software_remark_{{ $index }}" class="form-control" value="{{ $software->remark }}" required>
-                    <!-- Repeat for other software fields like license, remark, etc. -->
-                    <button type="button" class="btn btn-danger remove-software">Remove</button>
-                </div>
-            @endforeach
-        </div>
+        <!-- Form fields for Softwares -->
+        <h4>Softwares</h4>
+        <table class="table" id="softwares-table">
+            <thead>
+                <tr>
+                    <th>Software Type</th>
+                    <th>Software Name</th>
+                    <th>License</th>
+                    <th>Remark</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="softwares-container">
+                @foreach($data->softwares as $index => $software)
+                    <tr data-index="{{ $index }}">
+                        <td>
+                            <select name="softwares[{{ $index }}][type]" class="form-control">
+                                @foreach($softwareTypes as $type)
+                                    <option value="{{ $type->id }}" {{ $software->software_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="softwares[{{ $index }}][software_name]" class="form-control" value="{{ $software->software_name }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="softwares[{{ $index }}][license]" class="form-control" value="{{ $software->license }}" required>
+                        </td>
+                        <td>
+                            <input type="text" name="softwares[{{ $index }}][remark]" class="form-control" value="{{ $software->remark }}" required>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger remove-software">Remove</button>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
         <button type="button" class="btn btn-secondary" id="add-software">Add Software</button>
 
         <button type="submit" class="btn btn-primary">Update Inventory</button>
@@ -116,62 +167,66 @@
 
         document.getElementById('add-hardware').addEventListener('click', function () {
             const container = document.getElementById('hardwares-container');
-            const div = document.createElement('div');
-            div.className = 'form-group';
-            div.dataset.index = hardwareIndex;
+            const row = document.createElement('tr');
+            row.dataset.index = hardwareIndex;
             let options = hardwareTypes.map(type => `<option value="${type.id}">${type.name}</option>`).join('');
-            div.innerHTML = `
-                <label for="hardware_type_${hardwareIndex}">Hardware Type</label>
-                <select name="hardwares[${hardwareIndex}][type]" id="hardware_type_${hardwareIndex}" class="form-control">
-                    ${options}
-                </select>
-                <label for="hardware_brand_${hardwareIndex}">Hardware Brand</label>
-                <input type="text" name="hardwares[${hardwareIndex}][brand]" id="hardware_brand_${hardwareIndex}" class="form-control" required>
-                 <label for="hardware_name_${hardwareIndex}">Hardware Name</label>
-                    <input type="text" name="hardwares[${hardwareIndex}][hardware_name]" id="hardware_name_${hardwareIndex}" class="form-control" required>
-
-                    <label for="hardware_remark_${hardwareIndex}">Remark</label>
-                    <input type="text" name="hardwares[${hardwareIndex}][remark]" id="hardware_remark_${hardwareIndex}" class="form-control" required>
-
-                <!-- Repeat for other hardware fields like hardware_name, remark, etc. -->
-                <button type="button" class="btn btn-danger remove-hardware">Remove</button>
+            row.innerHTML = `
+                <td>
+                    <select name="hardwares[${hardwareIndex}][type]" class="form-control">
+                        ${options}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="hardwares[${hardwareIndex}][brand]" class="form-control" required>
+                </td>
+                <td>
+                    <input type="text" name="hardwares[${hardwareIndex}][hardware_name]" class="form-control" required>
+                </td>
+                <td>
+                    <input type="text" name="hardwares[${hardwareIndex}][remark]" class="form-control" required>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-hardware">Remove</button>
+                </td>
             `;
-            container.appendChild(div);
+            container.appendChild(row);
             hardwareIndex++;
         });
 
         document.getElementById('add-software').addEventListener('click', function () {
             const container = document.getElementById('softwares-container');
-            const div = document.createElement('div');
-            div.className = 'form-group';
-            div.dataset.index = softwareIndex;
+            const row = document.createElement('tr');
+            row.dataset.index = softwareIndex;
             let options = softwareTypes.map(type => `<option value="${type.id}">${type.name}</option>`).join('');
-            div.innerHTML = `
-                <label for="software_type_${softwareIndex}">Software Type</label>
-                <select name="softwares[${softwareIndex}][type]" id="software_type_${softwareIndex}" class="form-control">
-                    ${options}
-                </select>
-                <label for="software_name_${softwareIndex}">Software Name</label>
-                <input type="text" name="softwares[${softwareIndex}][software_name]" id="software_name_${softwareIndex}" class="form-control" required>
-                <!-- Repeat for other software fields like license, remark, etc. -->
-
-                <label for="software_license_${softwareIndex}">License</label>
-                    <input type="text" name="softwares[${softwareIndex}][license]" id="software_license_${softwareIndex}" class="form-control" required>
-
-                    <label for="software_remark_${softwareIndex}">Remark</label>
-                    <input type="text" name="softwares[${softwareIndex}][remark]" id="software_remark_${softwareIndex}" class="form-control" required>
-                <button type="button" class="btn btn-danger remove-software">Remove</button>
+            row.innerHTML = `
+                <td>
+                    <select name="softwares[${softwareIndex}][type]" class="form-control">
+                        ${options}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][software_name]" class="form-control" required>
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][license]" class="form-control" required>
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][remark]" class="form-control" required>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-software">Remove</button>
+                </td>
             `;
-            container.appendChild(div);
+            container.appendChild(row);
             softwareIndex++;
         });
 
         document.addEventListener('click', function (event) {
             if (event.target.classList.contains('remove-hardware')) {
-                event.target.parentElement.remove();
+                event.target.closest('tr').remove();
             }
             if (event.target.classList.contains('remove-software')) {
-                event.target.parentElement.remove();
+                event.target.closest('tr').remove();
             }
         });
     });
