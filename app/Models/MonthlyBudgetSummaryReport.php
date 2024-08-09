@@ -22,7 +22,10 @@ class MonthlyBudgetSummaryReport extends Model
         'doc_num',
         'is_reject',
         'reject_reason',
-        'is_moulding'
+        'is_moulding',
+        'is_cancel',
+        'cancel_reason',
+        'status'
     ];
 
     // Relations
@@ -124,6 +127,8 @@ class MonthlyBudgetSummaryReport extends Model
                 return 'Approved';
             case 6:
                 return 'Rejected';
+            case 7:
+                return 'Cancelled';
             default:
                 return 'Unknown';
         }

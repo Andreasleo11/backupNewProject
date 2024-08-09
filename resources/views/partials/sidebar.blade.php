@@ -487,19 +487,13 @@
                         Monthly Budget Reports
                     </a>
                 </li>
-                @if (
-                    $user->email === 'nur@daijo.co.id' ||
-                        ($user->is_head && $user->specification->name === 'DESIGN') ||
-                        $user->is_gm ||
-                        $user->department->name === 'DIRECTOR' ||
-                        $user->role->name === 'SUPERADMIN')
-                    <li class="sidebar-item">
-                        <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Summary Monthly Budget
-                        </a>
-                    </li>
-                @endif
+
+                <li class="sidebar-item">
+                    <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Summary Monthly Budget
+                    </a>
+                </li>
 
                 <li class="sidebar-item">
                     <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
