@@ -60,7 +60,7 @@
                             <div class="h2 fw-bold mt-4">Monthly Budget Summary Report <span
                                     class="{{ $report->is_moulding ? '' : 'd-none' }}">Moulding</span></div>
                             <div class="fs-6 mt-2">
-                                <div class="fs-6 ">Doc. Num : {{ $report->doc_num }}</div>
+                                <div class="fs-5 ">Doc. Num : {{ $report->doc_num }}</div>
                                 <div class="fs-6 text-secondary">Created At : {{ $formattedCreatedAt }}</div>
                                 <div class="fs-6 text-secondary">Month : {{ $monthYear }} </div>
                                 <div class="mt-1">
@@ -73,7 +73,7 @@
                         <div class="card mt-4">
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table text-center table-striped">
+                                    <table class="table text-center table-striped ">
                                         <thead>
                                             <tr>
                                                 <th>#</th>

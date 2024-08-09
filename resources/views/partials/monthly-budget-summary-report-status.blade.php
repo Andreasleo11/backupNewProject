@@ -1,4 +1,9 @@
-@if ($status === 6)
+@if ($status === 7)
+    <span class="badge text-bg-danger px-3 py-2 fs-6">Cancelled</span>
+    <button data-bs-toggle="tooltip" data-bs-title="Reject Reason: {{ $report->cancel_reason ?? '-' }}"
+        class="btn btn-secondary btn-sm align-items-center">
+        <i class='bx bx-info-circle'></i></button>
+@elseif ($status === 6)
     <span class="badge text-bg-danger px-3 py-2 fs-6">Rejected</span>
     <button data-bs-toggle="tooltip" data-bs-title="Reject Reason: {{ $report->reject_reason ?? '-' }}"
         class="btn btn-secondary btn-sm align-items-center">

@@ -211,7 +211,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         Report::find($id)->update([
             'reject_reason' => $request->description,
             'is_reject' => 1,
-            'status' => 5,
+            'status' => 6,
         ]);
 
         return redirect()->back()->with('success', 'Monthly Budget Report successfully rejected!');
@@ -234,5 +234,15 @@ class MonthlyBudgetSummaryReportController extends Controller
         }
 
         $report->save();
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        Report::find($id)->update([
+            'is_cancel' => 1,
+            'cancel_reason' => $request->description,
+            'status' => 7
+        ]);
+        return redirect()->back()->with('success', 'Monthly Budget Report successfully cancelled!');
     }
 }
