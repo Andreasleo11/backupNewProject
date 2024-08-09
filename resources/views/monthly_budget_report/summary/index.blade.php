@@ -84,7 +84,7 @@
                                         'title' => 'Delete report confirmation',
                                         'body' => "Are you sure want to delete this report with id = <strong>$report->id</strong>?",
                                     ])
-                                    @if ($report->status === 1 || $report->status === 2)
+                                    @if ($report->status === 1 || $report->status === 2 || $report->status === 3)
                                         <button class="btn btn-danger" data-bs-toggle="modal"
                                             data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
                                     @endif
@@ -99,7 +99,9 @@
                 </table>
             </div>
         </div>
-
+        <div class="d-flex justify-content-end mt-3">
+            {{ $reports->links() }}
+        </div>
     </div>
 @endsection
 @push('extraJs')
