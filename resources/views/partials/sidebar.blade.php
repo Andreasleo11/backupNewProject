@@ -487,9 +487,9 @@
                         Monthly Budget Reports
                     </a>
                 </li>
-
                 @if (
                     $user->email === 'nur@daijo.co.id' ||
+                        ($user->is_head && $user->specification->name === 'DESIGN') ||
                         $user->is_gm ||
                         $user->department->name === 'DIRECTOR' ||
                         $user->role->name === 'SUPERADMIN')
@@ -531,6 +531,12 @@
                     </li>
                 @endif
 
+                <li class="sidebar-item">
+                    <a href="{{ route('maintenance.inventory.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Maintenance Inventory
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

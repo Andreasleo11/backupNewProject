@@ -57,8 +57,10 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="text-center">
-                            <div class="h2 fw-bold mt-4">Monthly Budget Summary Report</div>
+                            <div class="h2 fw-bold mt-4">Monthly Budget Summary Report <span
+                                    class="{{ $report->is_moulding ? '' : 'd-none' }}">Moulding</span></div>
                             <div class="fs-6 mt-2">
+                                <div class="fs-6 ">Doc. Num : {{ $report->doc_num }}</div>
                                 <div class="fs-6 text-secondary">Created At : {{ $formattedCreatedAt }}</div>
                                 <div class="fs-6 text-secondary">Month : {{ $monthYear }} </div>
                                 <div class="mt-1">
@@ -67,10 +69,6 @@
                                     ])
                                 </div>
                             </div>
-                        </div>
-                        <div class="mt-2 ms-2">
-                            <h6 class="fw-semibold mt-3">NOTE :</h6>
-                            <span class="text-danger">*</span> : Only Moulding Department
                         </div>
                         <div class="card mt-4">
                             <div class="card-body">
@@ -83,9 +81,11 @@
                                                 <th>Dept</th>
                                                 <th>Quantity</th>
                                                 <th>UoM</th>
-                                                <th>Spec <span class="text-danger">*</span></th>
-                                                <th>Last Recorded Stock <span class="text-danger">*</span></th>
-                                                <th>Usage Per Month <span class="text-danger">*</span></th>
+                                                @if ($report->is_moulding)
+                                                    <th>Spec</th>
+                                                    <th>Last Recorded Stock</th>
+                                                    <th>Usage Per Month</th>
+                                                @endif
                                                 <th>Supplier</th>
                                                 <th>Cost Per Unit</th>
                                                 <th>Total Cost</th>
@@ -118,9 +118,11 @@
                                                         <td>{{ $item['dept_no'] }}</td>
                                                         <td>{{ $item['quantity'] }}</td>
                                                         <td>{{ $item['uom'] }}</td>
-                                                        <td>{{ $item['spec'] ?? '-' }}</td>
-                                                        <td>{{ $item['last_recorded_stock'] ?? '-' }}</td>
-                                                        <td>{{ $item['usage_per_month'] ?? '-' }}</td>
+                                                        @if ($report->is_moulding)
+                                                            <td>{{ $item['spec'] ?? '-' }}</td>
+                                                            <td>{{ $item['last_recorded_stock'] ?? '-' }}</td>
+                                                            <td>{{ $item['usage_per_month'] ?? '-' }}</td>
+                                                        @endif
                                                         <td>{{ $item['supplier'] ?? '-' }}</td>
                                                         <td>@currency($item['cost_per_unit'])</td>
                                                         <td>@currency($totalCost)</td>
@@ -128,7 +130,10 @@
                                                             {{ $item['remark'] }}
                                                         </td>
                                                         <td>
-                                                            @if (($report->status === 1 && $report->user->id === $authUser->id) || ($report->status === 2 && $authUser->is_gm === 1))
+                                                            @if (
+                                                                ($report->status === 1 && $report->user->id === $authUser->id) ||
+                                                                    ($report->status === 2 && $authUser->is_gm === 1) ||
+                                                                    ($report->status === 3 && $authUser->is_head === 1 && $authUser->department->name === 'MOULDING'))
                                                                 @include('partials.edit-monthly-budget-report-summary-detail')
                                                                 <button class="btn btn-primary"
                                                                     data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
@@ -162,7 +167,9 @@
                                             @endif
                                             {{-- Display grand total row --}}
                                             <tr>
-                                                <td colspan="11" class="text-end fw-bold">Total</td>
+                                                <td colspan="{{ $report->is_moulding ? 10 : 7 }}"
+                                                    class="text-end align-content-center fw-bold">Total
+                                                </td>
                                                 <td class="fw-bold">@currency($grandTotal)</td>
                                                 <td colspan="2"></td>
                                             </tr>

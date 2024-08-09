@@ -12,15 +12,15 @@
                 <div class="container mt-2" id="autographUser1"></div>
 
                 @php
-                    $showCreatedAutograph = false;
+                    $showCreatedApproval = false;
                     if (!$report->created_autograph) {
                         if ($report->creator_id === auth()->user()->id) {
-                            $showCreatedAutograph = true;
+                            $showCreatedApproval = true;
                         }
                     }
                 @endphp
 
-                @if ($showCreatedAutograph)
+                @if ($showCreatedApproval)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
@@ -52,16 +52,22 @@
                 <div class="autograph-box container" id="autographBox2"></div>
                 <div class="container mt-2 border-1" id="autographUser2"></div>
                 @php
-                    $showIsKnownAutograph = false;
+                    $showIsKnownApproval = false;
                     if ($report->created_autograph && !$report->is_known_autograph) {
-                        if ($authUser->is_gm) {
-                            $showIsKnownAutograph = true;
+                        if ($authUser->is_gm && $report->is_moulding === 0) {
+                            $showIsKnownApproval = true;
+                        } elseif (
+                            $authUser->is_head &&
+                            $authUser->department->name === 'MOULDING' &&
+                            $report->is_moulding === 1
+                        ) {
+                            $showIsKnownApproval = true;
                         }
                     }
-                    $showIsKnownAutograph = $showIsKnownAutograph && $report->is_reject === 0;
+                    $showIsKnownApproval = $showIsKnownApproval && $report->is_reject === 0;
                 @endphp
 
-                @if ($showIsKnownAutograph)
+                @if ($showIsKnownApproval)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2">
                             <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
@@ -93,15 +99,15 @@
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographUser3"></div>
                 @php
-                    $showApprovedAutograph = false;
+                    $showApprovedApproval = false;
                     if ($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph) {
                         if ($authUser->department->name === 'DIRECTOR') {
-                            $showApprovedAutograph = true;
+                            $showApprovedApproval = true;
                         }
                     }
-                    $showApprovedAutograph = $showApprovedAutograph && $report->is_reject === 0;
+                    $showApprovedApproval = $showApprovedApproval && $report->is_reject === 0;
                 @endphp
-                @if ($showApprovedAutograph)
+                @if ($showApprovedApproval)
                     <div class="row px-4 d-flex justify-content-center">
                         <div class="col-auto me-2 ">
                             <button data-bs-toggle="modal" data-bs-target="#reject-confirmation"
