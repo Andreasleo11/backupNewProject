@@ -7,6 +7,12 @@
             <a href="#">Menu</a>
         </div>
     </div>
+
+    <!-- Search Input Field -->
+    <div class="sidebar-search">
+        <input type="text" id="sidebar-search-input" placeholder="Search...">
+    </div>
+
     <ul class="sidebar-nav">
         <li class="sidebar-item" id="sidebar-item-dashboard">
             <a href="{{ route('home') }}" class="sidebar-link">
@@ -52,11 +58,63 @@
                             <span>Users Permissions</span>
                         </a>
                     </li>
-
                     <li class="sidebar-item" id="sidebar-item-admin">
                         <a href="{{ route('superadmin.permissions.index') }}" class="sidebar-link">
                             <i class='bx bx-lock-alt'></i>
                             <span>Permissions</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Change Default Email QC
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('pt.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Project Tracker
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
+
+        @if ($department === 'COMPUTER' || $user->role->name === 'SUPERADMIN')
+            <li class="sidebar-item" id="sidebar-item-computer">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#computer" aria-expanded="false" aria-controls="computer">
+                    <i class='bx bx-bug'></i>
+                    <span>Computer</span>
+                </a>
+                <ul id="computer" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Stock Management
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Inventory Master
+                        </a>
+                    </li>
+
+                    @if ($user->is_head === 1 || $user->role->name === 'SUPERADMIN')
+                        <li class="sidebar-item">
+                            <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Employee Master
+                            </a>
+                        </li>
+                    @endif
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('maintenance.inventory.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Maintenance Inventory
                         </a>
                     </li>
                 </ul>
@@ -77,9 +135,22 @@
                             Verification Reports
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('listformadjust') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Adjust
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Defect Categories
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
+
         @if (
             $department === 'PRODUCTION' ||
                 $department === 'PE' ||
@@ -245,7 +316,8 @@
                 <ul id="accountingitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                     <li class="sidebar-accounting">
                         <a href="{{ route('accounting.purchase-request') }}" class="sidebar-link">
-                            Approved Purchase Requests
+                            <i class='bx bx-file'></i>
+                            Approved PRs
                         </a>
                     </li>
                 </ul>
@@ -303,6 +375,13 @@
                     <a href="{{ route('barcodeindex') }}" class="sidebar-link">
                         <i class='bx bx-cube'></i>
                         Create Barcode
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Barcode Feature
                     </a>
                 </li>
 
@@ -367,6 +446,7 @@
                         Master Stock
                     </a>
                 </li>
+
             </ul>
         </li>
 
@@ -377,24 +457,12 @@
                 <span>Other</span>
             </a>
             <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+
                 <li class="sidebar-item">
                     <a href="{{ $department === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
                         class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Purchase Request
-                    </a>
-                </li>
-                <li class="sidebar-item">
-                    <a href="{{ route('listformadjust') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Adjust
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('discipline.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Discipline Evaluation
                     </a>
                 </li>
 
@@ -406,17 +474,40 @@
                 </li>
 
                 <li class="sidebar-item">
-                    <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                    <a href="{{ route('formcuti.home') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
-                        Discipline Evaluation
+                        Form Cuti
                     </a>
                 </li>
 
                 <li class="sidebar-item">
-                    <a href="{{ route('yayasan.table') }}" class="sidebar-link">
+                    <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
-                        Discipline Evaluation Yayasan
+                        Form Keluar
                     </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#employee-evaluation-nested-dropdown" aria-expanded="false"
+                        aria-controls="employee-evaluation-nested-dropdown">
+                        <i class='bx bx-file'></i>
+                        <span>Employee Evaluation</span>
+                    </a>
+                    <ul id="employee-evaluation-nested-dropdown" class="sidebar-dropdown list-unstyled collapse">
+                        <li class="sidebar-item">
+                            <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                All
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('yayasan.table') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Yayasan
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li class="sidebar-item">
@@ -434,78 +525,26 @@
                 </li>
 
                 <li class="sidebar-item">
-                    <a href="{{ route('formcuti.home') }}" class="sidebar-link">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#monthly-budget-nested-dropdown" aria-expanded="false"
+                        aria-controls="monthly-budget-nested-dropdown">
                         <i class='bx bx-file'></i>
-                        Form Cuti
+                        <span>Monthly Budget</span>
                     </a>
-                </li>
-
-
-                <li class="sidebar-item">
-                    <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Keluar
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Barcode Feature
-                    </a>
-                </li>
-
-                @if ($department === 'QA' || $department === 'QC')
-                    <li class="sidebar-item">
-                        <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Defect Categories
-                        </a>
-                    </li>
-                @endif
-
-                @if ($user->role->name === 'SUPERADMIN')
-                    <li class="sidebar-item">
-                        <a href="{{ route('changeemail.page') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Change Default Email QC
-                        </a>
-                    </li>
-
-
-                    <li class="sidebar-item">
-                        <a href="{{ route('pt.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Project Tracker
-                        </a>
-                    </li>
-                @endif
-
-                <li class="sidebar-item">
-                    <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Monthly Budget Reports
-                    </a>
-                </li>
-                @if (
-                    $user->email === 'nur@daijo.co.id' ||
-                        ($user->is_head && $user->specification->name === 'DESIGN') ||
-                        $user->is_gm ||
-                        $user->department->name === 'DIRECTOR' ||
-                        $user->role->name === 'SUPERADMIN')
-                    <li class="sidebar-item">
-                        <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Summary Monthly Budget
-                        </a>
-                    </li>
-                @endif
-
-                <li class="sidebar-item">
-                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Stock Management
-                    </a>
+                    <ul id="monthly-budget-nested-dropdown" class="sidebar-dropdown list-unstyled collapse">
+                        <li class="sidebar-item">
+                            <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Reports
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Summary Reports
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li class="sidebar-item">
@@ -514,30 +553,23 @@
                         SPK
                     </a>
                 </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Inventory Master Komputer
-                    </a>
-                </li>
-
-                @if (($user->is_head === 1 && $user->department->name === 'COMPUTER') || $user->role->name === 'SUPERADMIN')
-                    <li class="sidebar-item">
-                        <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Employee Master
-                        </a>
-                    </li>
-                @endif
-
-                <li class="sidebar-item">
-                    <a href="{{ route('maintenance.inventory.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Maintenance Inventory
-                    </a>
-                </li>
             </ul>
         </li>
     </ul>
 </aside>
+
+<script>
+    document.getElementById('sidebar-search-input').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        const items = document.querySelectorAll('.sidebar-nav .sidebar-item');
+
+        items.forEach(function(item) {
+            const text = item.textContent || item.innerText;
+            if (text.toLowerCase().includes(filter)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+</script>

@@ -154,3 +154,23 @@ a.sidebar-link:hover {
     transform: rotate(45deg);
     transition: all .2s ease-out;
 }
+
+#sidebar .sidebar-item .sidebar-dropdown .sidebar-item .sidebar-dropdown {
+    padding-left: 1rem;
+}
+
+#sidebar .sidebar-dropdown .sidebar-link {
+    padding-left: 2.5rem;
+}
+
+.sidebar-search {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+#sidebar-search-input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
