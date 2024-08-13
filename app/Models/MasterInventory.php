@@ -12,6 +12,7 @@ class MasterInventory extends Model
     protected $fillable = [
         'ip_address',
         'username',
+        'position_image',
         'dept',
         'type',
         'purpose',

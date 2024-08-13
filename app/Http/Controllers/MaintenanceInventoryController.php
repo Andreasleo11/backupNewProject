@@ -19,8 +19,16 @@ class MaintenanceInventoryController extends Controller
         return view('maintenance-inventory.index', compact('reports'));
     }
 
-    public function create(Request $request)
+    public function create($id = null)
     {
+     
+        if ($id) {
+            // Handle the case where $id is provided
+            // For example, fetch the data or perform specific actions
+            // dd($id); // For debugging purposes
+        }
+      
+        
         $masters = MasterInventory::all();
         $users = User::where(function ($query) {
             $query->where('name', 'vicky')->orWhere('name', 'bagus');
@@ -38,7 +46,7 @@ class MaintenanceInventoryController extends Controller
 
         // dd($transformedGroups);
 
-        return view('maintenance-inventory.create', compact('masters', 'users', 'groups'));
+        return view('maintenance-inventory.create', compact('masters', 'users', 'groups', 'id'));
     }
 
     public function store(Request $request)

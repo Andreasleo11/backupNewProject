@@ -34,11 +34,11 @@
                                             class="text-danger">*</span></label>
                                     <select class="form-select @error('master_id') is-invalid @enderror" id="masterSelect"
                                         name="master_id" required>
-                                        <option value="" disabled {{ old('master_id') ? '' : 'selected' }}>--Select a
+                                        <option value="" disabled {{ old('master_id', $id) ? '' : 'selected' }}>--Select a
                                             master inventory--</option>
                                         @foreach ($masters as $master)
                                             <option value="{{ $master->id }}"
-                                                {{ old('master_id') == $master->id ? 'selected' : '' }}>
+                                                {{ old('master_id', $id) == $master->id ? 'selected' : '' }}>
                                                 {{ $master->username }} - {{ $master->ip_address }}
                                             </option>
                                         @endforeach
