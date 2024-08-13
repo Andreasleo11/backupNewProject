@@ -11,7 +11,6 @@ class File extends Model
         'doc_id',
         'name',
         'mime_type',
-        'data',
         'size'
     ];
     use HasFactory;
@@ -21,7 +20,8 @@ class File extends Model
         $this->belongsTo(Report::class);
     }
 
-    public function purchaseRequest(){
+    public function purchaseRequest()
+    {
         $this->belongsTo(PurchaseRequest::class, 'doc_id', 'doc_num');
     }
 }
