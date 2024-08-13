@@ -121,6 +121,7 @@
             <thead>
                 <tr>
                     <th>Software Type</th>
+                    <th>software Brand</th>
                     <th>Software Name</th>
                     <th>License</th>
                     <th>Remark</th>
@@ -182,6 +183,9 @@
                     <select name="softwares[${softwareIndex}][type]" class="form-control">
                         ${options}
                     </select>
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][software_brand]" class="form-control">
                 </td>
                 <td>
                     <input type="text" name="softwares[${softwareIndex}][software_name]" class="form-control">

@@ -703,11 +703,26 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
     Route::get('masterinventory/detail/{id}', [MasterInventoryController::class, 'detail'])->name('masterinventory.detail');
 
+
+    Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
+
+
+    // Route to handle adding new types
+    Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
+    Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');
+    Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name('delete.type');
+
+
     Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
     Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
+    Route::put('masterinventory/update/repairhistory/{id}', [MasterInventoryController::class, 'updateHistory'])->name('inventory.update');
+    Route::post('masterinventory/repairs', [MasterInventoryController::class, 'CreateRepair'])->name('repair.store');
+    Route::get('/items/types/{type}', [MasterInventoryController::class, 'getItems'])->name('items.get');
+    Route::get('/items/available', [MasterInventoryController::class, 'getAvailableItems']);
+
 
     Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
-    Route::get('maintenanceInventoryReports/create', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
+    Route::get('maintenanceInventoryReports/create/{id?}', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
     Route::post('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'store'])->name('maintenance.inventory.store');
     Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 

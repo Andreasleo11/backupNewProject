@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Facades\Log;
 use App\Models\DetailSoftware;
 use App\Models\SoftwareTypeInventory;
 use App\Models\DetailHardware;
 use App\Models\HardwareTypeInventory;
 use App\Models\MasterInventory;
 use App\Models\Department;
+use App\Models\InventoryRepairHistory;
 
 class MasterInventoryController extends Controller
 {
@@ -52,6 +54,7 @@ class MasterInventoryController extends Controller
             'hardwares.*.remark' => 'nullable|string|max:255',
             'softwares.*.type' => 'string|max:255',
             'softwares.*.license' => 'string|max:255',
+            'softwares.*.brand' => 'string|max:255',
             'softwares.*.name' => 'string|max:255',
             'softwares.*.remark' => 'nullable|string|max:255',
             'position_image' => 'required|image|mimes:jpg,png,jpeg,gif|max:2048',
@@ -94,6 +97,7 @@ class MasterInventoryController extends Controller
             foreach ($request->softwares as $software) {
                 $masterInventory->softwares()->create([
                     'software_id' => $software['type'],
+                    'software_brand'=>$software['software_brand'],
                     'license' => $software['license'],
                     'software_name' => $software['software_name'],
                     'remark' => $software['remark'],
@@ -134,6 +138,7 @@ class MasterInventoryController extends Controller
             'hardwares.*.brand' => 'nullable|string|max:255',
             'hardwares.*.hardware_name' => 'nullable|string|max:255',
             'hardwares.*.remark' => 'nullable|string|max:255',
+            'softwares.*.brand' => 'string|max:255',
             'softwares.*.software_name' => 'nullable|string|max:255',
             'softwares.*.license' => 'nullable|string|max:255',
             'softwares.*.remark' => 'nullable|string|max:255',
@@ -227,6 +232,7 @@ class MasterInventoryController extends Controller
                     if ($existingSoftware) {
                         $existingSoftware->update([
                             'software_id' => $software['type'],
+                            'software_brand' => $software['software_brand'],
                             'license' => $software['license'],
                             'software_name' => $software['software_name'],
                             'remark' => $software['remark'],
@@ -236,6 +242,7 @@ class MasterInventoryController extends Controller
                         $newSoftware = $masterInventory->softwares()->create([
                             'master_inventory_id' => $masterInventory->id,
                             'software_id' => $software['type'],
+                            'software_brand' => $software['software_brand'],
                             'license' => $software['license'],
                             'software_name' => $software['software_name'],
                             'remark' => $software['remark'],
@@ -266,7 +273,258 @@ class MasterInventoryController extends Controller
         $depts = Department::get();
         $hardwareTypes = HardwareTypeInventory::get();
         $softwareTypes = SoftwareTypeInventory::get();
+        $repairHistories = InventoryRepairHistory::where('master_id', $id)->get();
 
-        return view('masterinventory.detail', compact('data', 'depts', 'hardwareTypes', 'softwareTypes'));
+        $processedHistories = $repairHistories->map(function ($repairHistory) {
+            if ($repairHistory->type === 'hardware') {
+                $repairHistory->typeDetails = $repairHistory->hardwareType; // Attach hardwareType details
+            } elseif ($repairHistory->type === 'software') {
+                $repairHistory->typeDetails = $repairHistory->softwareType; // Attach softwareType details
+            }
+            return $repairHistory;
+        });
+
+        // dd($processedHistories);
+        return view('masterinventory.detail', compact('data', 'depts', 'hardwareTypes', 'softwareTypes', 'processedHistories'));
+    }
+
+
+    public function typeAdder()
+    {
+        $masterId = 10;
+        $items = DetailHardware::where('master_inventory_id', $masterId)->get([
+            'hardware_id as id', 
+            'hardware_name as name'
+        ]);
+        dd($items);
+        $hardwareTypes = HardwareTypeInventory::all();
+        $softwareTypes = SoftwareTypeInventory::all();
+
+        return view('masterinventory.typeadd', compact('hardwareTypes', 'softwareTypes'));
+    }
+
+
+    public function addHardwareType(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        $type = new HardwareTypeInventory();
+        $type->name = $request->input('name');
+        $type->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function addSoftwareType(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255'
+        ]);
+
+        $type = new SoftwareTypeInventory();
+        $type->name = $request->input('name');
+        $type->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function deleteType(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer',
+            'type' => 'required|string|in:hardware,software'
+        ]);
+
+        if ($request->input('type') == 'hardware') {
+            $type = HardwareTypeInventory::find($request->input('id'));
+        } elseif ($request->input('type') == 'software') {
+            $type = SoftwareTypeInventory::find($request->input('id'));
+        } else {
+            return response()->json(['success' => false, 'message' => 'Invalid type'], 400);
+        }
+
+        if ($type) {
+            $type->delete();
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Type not found'], 404);
+        }
+    }
+
+
+        public function getItems($type)
+    {
+        $items = [];
+
+        if ($type === 'hardware') {
+            $items = HardwareTypeInventory::all(); // Fetch hardware types
+        } elseif ($type === 'software') {
+            $items = SoftwareTypeInventory::all(); // Fetch software types
+        }
+
+        return response()->json($items);
+    }
+
+    public function getAvailableItems(Request $request)
+{
+    $type = $request->query('type');
+    $masterId = $request->query('master_id');
+
+    
+    $items = [];
+    if (!$type || !$masterId) {
+        return response()->json(['error' => 'Invalid parameters'], 400);
+    }
+
+    // Fetch items based on type
+    if ($type === 'hardware') {
+        $items = DetailHardware::where('master_inventory_id', $masterId)
+            ->get(['id as id', 'hardware_name as name']);
+    } elseif ($type === 'software') {
+        $items = DetailSoftware::where('master_inventory_id', $masterId)
+            ->get(['id as id', 'software_name as name']);
+    } else {
+        return response()->json(['error' => 'Invalid type specified'], 400);
+    }
+
+    return response()->json($items);
+}
+
+    public function CreateRepair(Request $request)
+    {
+        // dd($request->all());
+        // Validate the request
+    $validated = $request->validate([
+        '_token' => 'required',
+        'master_id' => 'required',
+        'requestName' => 'required|string',
+        'type' => 'required|string',
+        'action' => 'required|string',
+        'oldPart' => 'nullable|string',
+        'itemType' => 'nullable|string',
+        'itemBrand' => 'nullable|string',
+        'itemName' => 'nullable|string',
+        'itemTypeInstallation' => 'nullable|string',
+        'itemBrandInstallation' => 'nullable|string',
+        'itemNameInstallation' => 'nullable|string',
+        'remark' => 'nullable|string',
+    ]);
+
+    // Prepare data for insertion
+    $data = [
+        'master_id' => $validated['master_id'],
+        'request_name' => $validated['requestName'],
+        'type' => $validated['type'],
+        'action' => $validated['action'],
+        'old_part' => $validated['oldPart'],
+        'remark' => $validated['remark'],
+    ];
+
+
+    if ($validated['action'] === 'replacement') {
+        $data['item_type'] = $validated['itemType'];
+        $data['item_brand'] = $validated['itemBrand'];
+        $data['item_name'] = $validated['itemName'];
+    } elseif ($validated['action'] === 'installation') {
+        $data['item_type'] = $validated['itemTypeInstallation'];
+        $data['item_brand'] = $validated['itemBrandInstallation'];
+        $data['item_name'] = $validated['itemNameInstallation'];
+    }
+
+    // dd($data);
+
+    // Insert data into InventoryRepairHistory
+    InventoryRepairHistory::create($data);
+
+    // Return a response or redirect
+    return redirect()->route('masterinventory.detail', ['id' => $validated['master_id']])
+    ->with('success', 'Data inserted successfully');
+
+    
+    }
+
+
+    public function updateHistory($id)
+    {
+        // Find the InventoryRepairHistory record by id
+        $repairHistory = InventoryRepairHistory::findOrFail($id);
+        // dd($repairHistory);
+        // Your logic to update or add data into the masterinventory table
+        // Example logic:
+        $inventory = MasterInventory::where('id', $repairHistory->master_id)->with([
+            'hardwares.hardwareType',
+            'softwares.softwareType' // Assuming you have a similar relationship for softwares
+        ])->first();
+
+        $repairHistory->action_date = now(); // Set action_date to the current date and time
+        $repairHistory->save(); // Save the changes
+
+        if ($repairHistory->action === 'replacement') {
+            // Handle replacement logic
+            if ($repairHistory->type === 'hardware') {
+                // Find the hardware detail to update
+                $hardwareDetail = $inventory->hardwares->firstWhere('hardware_name', $repairHistory->old_part);
+                
+                if ($hardwareDetail) {
+                    // Update the hardware detail with new values
+                    $hardwareDetail->update([
+                        'hardware_name' => $repairHistory->item_name, // Example of updating hardware name
+                        'brand' => $repairHistory->item_brand, // Example of updating hardware brand
+                        'remark'=> $repairHistory->remark,
+                        // Add more fields if needed
+                    ]);
+                } else {
+                    // Handle case where hardware detail is not found
+                    return response()->json(['message' => 'Hardware detail not found'], 404);
+                }
+            } elseif ($repairHistory->type === 'software') {
+                // Find the software detail to update
+                $softwareDetail = $inventory->softwares->firstWhere('software_name', $repairHistory->old_part);
+                if ($softwareDetail) {
+                    // Update the software detail with new values
+                    $softwareDetail->update([
+                        'software_name' => $repairHistory->item_name, // Example of updating software name
+                        'software_brand' => $repairHistory->item_brand, // Example of updating software brand
+                        'remark' => $repairHistory->remark,
+                        // Add more fields if needed
+                    ]);
+                } else {
+                    // Handle case where software detail is not found
+                    return response()->json(['message' => 'Software detail not found'], 404);
+                }
+            }
+        } elseif ($repairHistory->action === 'installation') {
+            // Handle installation logic
+            if ($repairHistory->type === 'hardware') {
+                // Create new hardware detail
+                $inventory->hardwares()->create([
+                    'master_inventory_id' => $repairHistory->master_id,
+                    'hardware_id' => $repairHistory->item_type,
+                    'hardware_name' => $repairHistory->item_name,
+                    'hardware_brand' => $repairHistory->item_brand,
+                    'remark' => $repairHistory->remark, // Example relationship
+                    // Add more fields if needed
+                ]);
+            } elseif ($repairHistory->type === 'software') {
+                // Create new software detail
+                $inventory->softwares()->create([
+                    'master_inventory_id' => $repairHistory->master_id,
+                    'software_name' => $repairHistory->item_name,
+                    'software_brand' => $repairHistory->item_brand,
+                    'software_id' => $repairHistory->item_type,
+                    'remark' => $repairHistory->remark,
+                    'license' => 'Not License', // Example relationship
+                    // Add more fields if needed
+                ]);
+            }
+        } else {
+            // Handle invalid action
+            return response()->json(['message' => 'Invalid action'], 400);
+        }
+
+        // Redirect or return response
+        return redirect()->back()->with('success', 'Inventory updated or added successfully.');
     }
 }

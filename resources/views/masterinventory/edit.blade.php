@@ -120,6 +120,7 @@
             <thead>
                 <tr>
                     <th>Software Type</th>
+                    <th>Software Brand</th>
                     <th>Software Name</th>
                     <th>License</th>
                     <th>Remark</th>
@@ -135,6 +136,9 @@
                                     <option value="{{ $type->id }}" {{ $software->software_id == $type->id ? 'selected' : '' }}>{{ $type->name }}</option>
                                 @endforeach
                             </select>
+                        </td>
+                        <td>
+                            <input type="text" name="softwares[{{ $index }}][software_brand]" class="form-control" value="{{ $software->software_brand }}" required>
                         </td>
                         <td>
                             <input type="text" name="softwares[{{ $index }}][software_name]" class="form-control" value="{{ $software->software_name }}" required>
@@ -203,6 +207,9 @@
                     <select name="softwares[${softwareIndex}][type]" class="form-control">
                         ${options}
                     </select>
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][software_brand]" class="form-control" required>
                 </td>
                 <td>
                     <input type="text" name="softwares[${softwareIndex}][software_name]" class="form-control" required>

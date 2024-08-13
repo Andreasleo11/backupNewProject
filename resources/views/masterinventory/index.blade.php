@@ -168,6 +168,7 @@
                     </td> -->
                     <td>
                     <a href="{{ route('masterinventory.detail', $data->id) }}" class="btn btn-success">Detail</a>
+                    <a href="{{ route('maintenance.inventory.create', ['id' => $data->id]) }}" class="btn btn-success">Create Maintenance</a>
                     </td>
                 </tr>
             @endforeach

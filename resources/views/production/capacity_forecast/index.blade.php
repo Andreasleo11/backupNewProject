@@ -5,8 +5,7 @@
 <section class="header">
         <div class="row">
             <div class="col">
-                <h1 class="h1"> Capacity By Forecast </h1>
-
+                <h1 class="h1"> Capacity By Forecast  Periode {{ $time->start_date }}</h1>
                 <a href="{{ route('viewstep1') }}" class="btn btn-secondary float-right"> Mulai Proses</a>
             </div>
         </div>
