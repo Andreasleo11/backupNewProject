@@ -216,10 +216,10 @@ class BarcodeController extends Controller
             // Add location suffix based on location
             switch ($location) {
                 case 'jakarta':
-                    $suffix = 'J';
+                    $suffix = 'JKT';
                     break;
                 case 'karawang':
-                    $suffix = 'K';
+                    $suffix = 'KRW';
                     break;
                 default:
                     $suffix = '';
@@ -227,23 +227,23 @@ class BarcodeController extends Controller
             }
 
             // Merge prefix and suffix
-            $prefixSuffix = $prefix . $suffix;
+            $prefixSuffix = $prefix . '/' . $suffix;
 
             // Validate and set position based on the merged prefix and suffix
             switch ($prefixSuffix) {
-                case 'INJ':
+                case 'IN/JKT':
                     $position = 'Jakarta';
                     $HeaderScan = 'IN JAKARTA';
                     break;
-                case 'INK':
+                case 'IN/KRW':
                     $position = 'Karawang';
                     $HeaderScan = 'IN KARAWANG';
                     break;
-                case 'OUTJ':
+                case 'OUT/JKT':
                     $position = 'CustomerJakarta';
                     $HeaderScan = 'OUT JAKARTA';
                     break;
-                case 'OUTK':
+                case 'OUT/KRW':
                     $position = 'CustomerKarawang';
                     $HeaderScan = 'OUT KARAWANG';
                     break;
@@ -259,12 +259,10 @@ class BarcodeController extends Controller
 
             // Retrieve the id of the newly created entry
             $id = $barcodePackagingMaster->id;
-
-            // Generate random string part
-            $randomString = substr(md5(microtime()), 0, 6); // Example of generating a random string
+            $currentDate = date('Ymd');
 
             // Combine prefix, suffix, and random string to form the document number
-            $noDokumen = $prefix . $suffix . '-' . $randomString . '-' . $id;
+            $noDokumen = 'PKG'. '/' . $prefixSuffix . '/' . $id . '/' . $currentDate;
 
             $barcodePackagingMaster->noDokumen = $noDokumen;
             // Output the generated document number for testing purposes

@@ -32,11 +32,12 @@ class CapacityByForecastController extends Controller
     {
 		
         // $data = CapLineSummary::get();
-        // $time = UtiDateList::find(8);
-        // $startdate = $time->start_date;        
+        $time = UtiDateList::find(8);
+        // $startdate = $time->start_date;    	
+		// dd($time);    
 
         // return view("production.capacity_forecast.index", compact( "data","startdate"));
-        return $dataTable->render("production.capacity_forecast.index");
+        return $dataTable->render("production.capacity_forecast.index", compact('time'));
     }
 
     public function line(CapLineCapacityDataTable $dataTable)

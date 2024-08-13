@@ -12,6 +12,7 @@ class DetailSoftware extends Model
     protected $fillable = [
         'master_inventory_id',
         'software_id',
+        'software_brand',
         'software_name',
         'license',
         'remark',

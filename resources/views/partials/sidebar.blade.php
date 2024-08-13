@@ -450,6 +450,36 @@
             </ul>
         </li>
 
+
+
+        <li class="sidebar-item" id="sidebar-item-list">
+            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                data-bs-target="#computeritem" aria-expanded="false" aria-controls="setting">
+                <i class='bx bxs-component'></i>
+                <span>Computer</span>
+            </a>
+            <ul id="computeritem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                        <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Inventory Master Komputer
+                        </a>
+                </li>
+
+                <li class="sidebar-list">
+                    <a href="{{ route('masterinventory.typeindex') }}" class="sidebar-link">
+                        <i class='bx bx-cube'></i>
+                        Type Inventory
+                    </a>
+                </li>
+
+
+                
+            </ul>
+        </li>
+
+
+
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                 data-bs-target="#other" aria-expanded="false" aria-controls="other">

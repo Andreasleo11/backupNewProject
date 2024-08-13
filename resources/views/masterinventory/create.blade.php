@@ -3,19 +3,20 @@
 @section('content')
 <div class="container">
     <h1>Create Master Inventory</h1>
-    
+
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
 
-    <form method="POST" action="{{ route('masterinventory.store') }}">
+    <form method="POST" action="{{ route('masterinventory.store') }}" enctype="multipart/form-data">
         @csrf
 
+        <!-- Form fields for Master Inventory -->
         <div class="form-group">
             <label for="ip_address">IP Address</label>
-            <input type="text" name="ip_address" id="ip_address" class="form-control" value="{{ old('ip_address') }}">
+            <input type="text" name="ip_address" id="ip_address" class="form-control" value="{{ old('ip_address') }}" required>
             @error('ip_address')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
@@ -23,12 +24,21 @@
 
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" name="username" id="username" class="form-control" value="{{ old('username') }}">
+            <input type="text" name="username" id="username" class="form-control" value="{{ old('username') }}" required>
             @error('username')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
         </div>
 
+        <div class="form-group">
+            <label for="position_image">Position Image</label>
+            <input type="file" name="position_image" id="position_image" class="form-control">
+            @error('position_image')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
+        </div>
+
+       
         <div class="form-group">
             <label for="dept">Department</label>
             <select name="dept" id="dept" class="form-control">
@@ -57,7 +67,7 @@
 
         <div class="form-group">
             <label for="purpose">Purpose</label>
-            <input type="text" name="purpose" id="purpose" class="form-control" value="{{ old('purpose') }}">
+            <input type="text" name="purpose" id="purpose" class="form-control" value="{{ old('purpose') }}" required>
             @error('purpose')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
@@ -65,7 +75,7 @@
 
         <div class="form-group">
             <label for="brand">Brand</label>
-            <input type="text" name="brand" id="brand" class="form-control" value="{{ old('brand') }}">
+            <input type="text" name="brand" id="brand" class="form-control" value="{{ old('brand') }}" required>
             @error('brand')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
@@ -73,7 +83,7 @@
 
         <div class="form-group">
             <label for="os">OS</label>
-            <input type="text" name="os" id="os" class="form-control" value="{{ old('os') }}">
+            <input type="text" name="os" id="os" class="form-control" value="{{ old('os') }}" required>
             @error('os')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
@@ -81,106 +91,127 @@
 
         <div class="form-group">
             <label for="description">Description</label>
-            <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}">
-            @error('brand')
+            <input type="text" name="description" id="description" class="form-control" value="{{ old('description') }}" required>
+            @error('description')
                 <span class="text-danger">{{ $message }}</span>
             @enderror
         </div>
 
-        <div id="hardware-section">
-            <h3>Hardware</h3>
-            <button type="button" class="btn btn-secondary" onclick="addHardwareRow()">Add Hardware</button>
-            
-            <div id="hardware-rows"></div>
-        </div>
+        <!-- Form fields for Hardwares -->
+        <h4>Hardwares</h4>
+        <table class="table" id="hardwares-table">
+            <thead>
+                <tr>
+                    <th>Hardware Type</th>
+                    <th>Hardware Brand</th>
+                    <th>Hardware Name</th>
+                    <th>Remark</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="hardwares-container">
+                <!-- Dynamic hardware rows will be added here -->
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-secondary" id="add-hardware">Add Hardware</button>
 
-        <div id="software-section">
-            <h3>Software</h3>
-            <button type="button" class="btn btn-secondary" onclick="addSoftwareRow()">Add Software</button>
-            
-            <div id="software-rows"></div>
-        </div>
+        <!-- Form fields for Softwares -->
+        <h4>Softwares</h4>
+        <table class="table" id="softwares-table">
+            <thead>
+                <tr>
+                    <th>Software Type</th>
+                    <th>software Brand</th>
+                    <th>Software Name</th>
+                    <th>License</th>
+                    <th>Remark</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="softwares-container">
+                <!-- Dynamic software rows will be added here -->
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-secondary" id="add-software">Add Software</button>
 
-        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-primary">Create Inventory</button>
     </form>
 </div>
 
 <script>
-    let hardwareCount = 0;
-    let softwareCount = 0;
+    document.addEventListener('DOMContentLoaded', function () {
+        let hardwareIndex = 0;
+        let softwareIndex = 0;
+        const hardwareTypes = @json($hardwares);
+        const softwareTypes = @json($softwares);
 
-    function addHardwareRow() {
-        hardwareCount++;
+        document.getElementById('add-hardware').addEventListener('click', function () {
+            const container = document.getElementById('hardwares-container');
+            const row = document.createElement('tr');
+            row.dataset.index = hardwareIndex;
+            let options = hardwareTypes.map(type => `<option value="${type.id}">${type.name}</option>`).join('');
+            row.innerHTML = `
+                <td>
+                    <select name="hardwares[${hardwareIndex}][type]" class="form-control">
+                        ${options}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="hardwares[${hardwareIndex}][brand]" class="form-control">
+                </td>
+                <td>
+                    <input type="text" name="hardwares[${hardwareIndex}][hardware_name]" class="form-control">
+                </td>
+                <td>
+                    <input type="text" name="hardwares[${hardwareIndex}][remark]" class="form-control">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-hardware">Remove</button>
+                </td>
+            `;
+            container.appendChild(row);
+            hardwareIndex++;
+        });
 
-        const hardwareRow = document.createElement('div');
-        hardwareRow.className = 'hardware-row';
-        hardwareRow.innerHTML = `
-            <div class="form-group">
-                <label for="hardware_type_${hardwareCount}">Type</label>
-                <select name="hardwares[${hardwareCount}][type]" id="hardwares_type_${hardwareCount}" class="form-control">
-                    @foreach($hardwares as $hardware)
-                        <option value="{{ $hardware->id }}">{{ $hardware->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="hardwares_brand_${hardwareCount}">Brand</label>
-                <input type="text" name="hardwares[${hardwareCount}][brand]" id="hardwares_brand_${hardwareCount}" class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="hardwares_name_${hardwareCount}">Hardware Name</label>
-                <input type="text" name="hardwares[${hardwareCount}][hardware_name]" id="hardwares_name_${hardwareCount}" class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="hardwares_remark_${hardwareCount}">Remark</label>
-                <input type="text" name="hardwares[${hardwareCount}][remark]" id="hardwares_remark_${hardwareCount}" class="form-control">
-            </div>
-            <button type="button" class="btn btn-danger" onclick="removeHardwareRow(this)">Remove</button>
-            <hr>
-        `;
+        document.getElementById('add-software').addEventListener('click', function () {
+            const container = document.getElementById('softwares-container');
+            const row = document.createElement('tr');
+            row.dataset.index = softwareIndex;
+            let options = softwareTypes.map(type => `<option value="${type.id}">${type.name}</option>`).join('');
+            row.innerHTML = `
+                <td>
+                    <select name="softwares[${softwareIndex}][type]" class="form-control">
+                        ${options}
+                    </select>
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][software_brand]" class="form-control">
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][software_name]" class="form-control">
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][license]" class="form-control">
+                </td>
+                <td>
+                    <input type="text" name="softwares[${softwareIndex}][remark]" class="form-control">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger remove-software">Remove</button>
+                </td>
+            `;
+            container.appendChild(row);
+            softwareIndex++;
+        });
 
-        document.getElementById('hardware-rows').appendChild(hardwareRow);
-    }
-
-    function removeHardwareRow(button) {
-        button.parentElement.remove();
-    }
-
-    function addSoftwareRow() {
-        softwareCount++;
-
-        const softwareRow = document.createElement('div');
-        softwareRow.className = 'software-row';
-        softwareRow.innerHTML = `
-            <div class="form-group">
-                <label for="software_type_${softwareCount}">Type</label>
-                <select name="softwares[${softwareCount}][type]" id="software_type_${softwareCount}" class="form-control">
-                    @foreach($softwares as $software)
-                        <option value="{{ $software->id }}">{{ $software->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="software_license_${softwareCount}">License</label>
-                <input type="text" name="softwares[${softwareCount}][license]" id="software_license_${softwareCount}" class="form-control">
-            </div>
-             <div class="form-group">
-                <label for="softwares_name_${softwareCount}">Software Name</label>
-                <input type="text" name="softwares[${softwareCount}][software_name]" id="softwares_name_${softwareCount}" class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="software_remark_${softwareCount}">Remark</label>
-                <input type="text" name="softwares[${softwareCount}][remark]" id="software_remark_${softwareCount}" class="form-control">
-            </div>
-            <button type="button" class="btn btn-danger" onclick="removeSoftwareRow(this)">Remove</button>
-            <hr>
-        `;
-
-        document.getElementById('software-rows').appendChild(softwareRow);
-    }
-
-    function removeSoftwareRow(button) {
-        button.parentElement.remove();
-    }
+        document.addEventListener('click', function (event) {
+            if (event.target.classList.contains('remove-hardware')) {
+                event.target.closest('tr').remove();
+            }
+            if (event.target.classList.contains('remove-software')) {
+                event.target.closest('tr').remove();
+            }
+        });
+    });
 </script>
 @endsection

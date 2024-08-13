@@ -8,24 +8,21 @@ use Illuminate\Support\Facades\Storage;
 
 class FileController extends Controller
 {
-    public function upload(Request $request){
+    public function upload(Request $request)
+    {
         $request->validate([
             'files.*' => 'required|file|max:16000',
             'doc_num' => 'string',
         ]);
 
-        if($request->hasFile('files')){
+        if ($request->hasFile('files')) {
             // dd($request->files);
             foreach ($request->file('files') as $file) {
-                // dd($file);
                 // Generate a unique filename
                 $fileName = time() . '-' . $file->getClientOriginalName();
 
                 // Get the file size in bytes
                 $fileSize = $file->getSize();
-
-                // Read file content
-                $fileData = file_get_contents($file->getRealPath());
 
                 // Store the file in the filesystem
                 $file->storeAs('public/files', $fileName);
@@ -35,7 +32,6 @@ class FileController extends Controller
                     'doc_id' => $request->doc_num,
                     'name' => $fileName,
                     'mime_type' => $file->getClientMimeType(),
-                    'data' => $fileData,
                     'size' => $fileSize,
                 ]);
             }
@@ -44,7 +40,8 @@ class FileController extends Controller
         return redirect()->back()->with(['success' => 'Files successfully uploaded!']);
     }
 
-    public function destroy($id){
+    public function destroy($id)
+    {
         $file = File::find($id);
         // Check if the file exists
         if ($file) {
