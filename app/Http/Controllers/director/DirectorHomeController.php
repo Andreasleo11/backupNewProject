@@ -32,7 +32,7 @@ class DirectorHomeController extends Controller
 
         $monthlyBudgetSummaryReportsCounts = [
             'approved' => MonthlyBudgetSummaryReport::approved()->count(),
-            'waiting' => MonthlyBudgetSummaryReport::waiting()->count(),
+            'waiting' => MonthlyBudgetSummaryReport::waitingDirector()->count(),
             'rejected' => MonthlyBudgetSummaryReport::rejected()->count(),
         ];
 

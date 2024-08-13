@@ -40,38 +40,46 @@ class SuratPerintahKerjaKomputerController extends Controller
             }
         }
 
-        // Custom Filter
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-        $status = $request->status;
+        // Check if filter parameters are set
+        if ($request->has(['filter_column', 'filter_action', 'filter_value'])) {
+            $filterColumn = $request->input('filter_column');
+            $filterAction = $request->input('filter_action');
+            $filterValue = $request->input('filter_value');
 
-        // Retrieve the stored session values for filter persistence
-        $storedStartDate = $request->session()->get('start_date');
-        $storedEndDate = $request->session()->get('end_date');
-        $storedStatus = $request->session()->get('status');
-
-        // Additional filtering based on startDate and endDate
-        if ($startDate && $endDate) {
-            $reportsQuery->whereBetween('tanggal_lapor', [$startDate, $endDate]);
-            $request->session()->put('start_date', $startDate);
-            $request->session()->put('end_date', $endDate);
-        } else {
-            $request->session()->forget('start_date', $startDate);
-            $request->session()->forget('end_date', $endDate);
-        }
-
-        if ($status) {
-            $request->session()->put('status', $status);
-            $reportsQuery->where('status_laporan', $status);
-        } else {
-            $request->session()->forget('status', $status);
+            // Validate filter column
+            $validColumns = ['no_dokumen', 'pelapor', 'tanggal_lapor', 'judul_laporan', 'pic'];
+            if (in_array($filterColumn, $validColumns)) {
+                switch ($filterAction) {
+                    case 'contains':
+                        $reportsQuery->where($filterColumn, 'like', '%' . $filterValue . '%');
+                        break;
+                    case 'equals':
+                        $reportsQuery->where($filterColumn, '=', $filterValue);
+                        break;
+                    case 'between':
+                        if ($filterColumn === 'tanggal_lapor' && $request->has('filter_value_2')) {
+                            $filterValue2 = $request->input('filter_value_2');
+                            $reportsQuery->whereBetween($filterColumn, [$filterValue, $filterValue2]);
+                        }
+                        break;
+                    case 'greater_than':
+                        if ($filterColumn === 'tanggal_lapor') {
+                            $reportsQuery->where($filterColumn, '>', $filterValue);
+                        }
+                        break;
+                    case 'less_than':
+                        if ($filterColumn === 'tanggal_lapor') {
+                            $reportsQuery->where($filterColumn, '<', $filterValue);
+                        }
+                        break;
+                }
+            }
         }
 
         $reports = $reportsQuery
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-
+            ->paginate(10)
+            ->appends($request->except('page'));
 
         return view('spk.index', compact('reports'));
     }
@@ -337,7 +345,8 @@ class SuratPerintahKerjaKomputerController extends Controller
         // Output or return the formatted monthly report
 
         return view('spk.monthlyreport', [
-            'monthlyReport' => $monthlyReport, 'month' => $month,
+            'monthlyReport' => $monthlyReport,
+            'month' => $month,
             'year' => $year,
         ]);
     }

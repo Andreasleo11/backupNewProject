@@ -17,7 +17,7 @@ class HeaderMaintenanceInventoryReport extends Model
 
     public function detail()
     {
-        return $this->hasMany(DetailMaintenanceInventoryReport::class);
+        return $this->hasMany(DetailMaintenanceInventoryReport::class, 'header_id');
     }
 
     public function master()

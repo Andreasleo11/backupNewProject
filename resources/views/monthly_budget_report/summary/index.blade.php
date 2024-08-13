@@ -47,9 +47,10 @@
 
         <div class="card mt-5">
             <div class=card-body>
-                <table class="table table-border text-center mb-0">
+                <table class="table text-center mb-0 align-middle">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th>Doc. Number</th>
                             <th>Report Date</th>
                             <th>Created At</th>
@@ -57,7 +58,7 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-group-divider">
                         @forelse ($reports as $report)
                             @php
                                 $reportDate = Carbon\Carbon::parse($report->report_date);
@@ -67,6 +68,7 @@
                                 $formattedCreatedAt = $createdAt->format('d/m/Y (H:i:s)');
                             @endphp
                             <tr>
+                                <th>{{ $loop->iteration }}</th>
                                 <td>{{ $report->doc_num }}</td>
                                 <td>{{ $monthYear }}</td>
                                 <td>{{ $formattedCreatedAt }}</td>
@@ -77,17 +79,31 @@
                                 </td>
                                 <td>
                                     <a href="{{ route('monthly.budget.summary.report.show', $report->id) }}"
-                                        class="btn btn-secondary">Detail</a>
+                                        class="btn btn-secondary"><i class='bx bx-info-circle'></i> Detail</a>
                                     @include('partials.delete-confirmation-modal', [
                                         'id' => $report->id,
                                         'route' => 'monthly.budget.summary.report.delete',
                                         'title' => 'Delete report confirmation',
-                                        'body' => "Are you sure want to delete this report with id = <strong>$report->id</strong>?",
+                                        'body' => "Are you sure want to delete report <strong>$report->doc_num</strong>?",
                                     ])
-                                    @if ($report->status === 1 || $report->status === 2)
-                                        <button class="btn btn-danger" data-bs-toggle="modal"
-                                            data-bs-target="#delete-confirmation-modal-{{ $report->id }}">Delete</button>
+                                    @if ($authUser->id == $report->creator_id)
+                                        @if ($report->status === 1)
+                                            <button class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#delete-confirmation-modal-{{ $report->id }}"><i
+                                                    class='bx bx-trash-alt'></i> Delete</button>
+                                        @elseif($report->status === 2 || $report->status === 3 || $report->status === 4)
+                                            @include('partials.cancel-confirmation-modal', [
+                                                'id' => $report->id,
+                                                'route' => route(
+                                                    'monthly.budget.summary.report.cancel',
+                                                    $report->id),
+                                            ])
+                                            <button class="btn btn-outline-danger" data-bs-toggle="modal"
+                                                data-bs-target="#cancel-confirmation-modal-{{ $report->id }}"><i
+                                                    class='bx bx-x-circle'></i> Cancel</button>
+                                        @endif
                                     @endif
+
                                 </td>
                             </tr>
                         @empty
@@ -99,7 +115,9 @@
                 </table>
             </div>
         </div>
-
+        <div class="d-flex justify-content-end mt-3">
+            {{ $reports->links() }}
+        </div>
     </div>
 @endsection
 @push('extraJs')

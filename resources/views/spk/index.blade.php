@@ -35,36 +35,83 @@
             </div>
         </div>
 
-        <form action="{{ route('spk.index') }}" method="get">
-            <div class="div mt-3 row ">
+        <form action="{{ route('spk.index') }}" method="GET" class="needs-validation" novalidate>
+            <div class="row align-items-end mt-3">
                 <div class="col-auto">
-                    <label for="start_date" class="form-label">Start date</label>
-                    <input type="date" name="start_date" class="form-control"
-                        value="{{ Session::get('start_date') ?? '' }}">
-                </div>
-                <div class="col-auto">
-                    <label for="end_date" class="form-label">End date</label>
-                    <input type="date" name="end_date" class="form-control" value="{{ Session::get('end_date') ?? '' }}">
-                </div>
-                <div class="col-auto">
-                    <label for="status" class="form-label">Status</label>
-                    <select class="form-select" name="status">
-                        <option value="0" {{ session('status') === null ? 'selected' : '' }}>ALL</option>
-                        <option value="1" {{ session('status') === 1 ? 'selected' : '' }}>WAITING</option>
-                        <option value="2" {{ session('status') == 2 ? 'selected' : '' }}>IN PROGRESS</option>
-                        <option value="3" {{ session('status') == 3 ? 'selected' : '' }}>DONE</option>
+                    <label for="filter_column">Filter Column</label>
+                    <select name="filter_column" id="filter_column" class="form-select">
+                        <option value="" selected disabled>--Select column--</option>
+                        <option value="no_dokumen" {{ request('filter_column') == 'no_dokumen' ? 'selected' : '' }}>No.
+                            Dokumen</option>
+                        <option value="pelapor" {{ request('filter_column') == 'pelapor' ? 'selected' : '' }}>Pelapor
+                        </option>
+                        <option value="tanggal_lapor" {{ request('filter_column') == 'tanggal_lapor' ? 'selected' : '' }}>
+                            Tanggal Lapor</option>
+                        <option value="judul_laporan" {{ request('filter_column') == 'judul_laporan' ? 'selected' : '' }}>
+                            Judul Laporan</option>
+                        <option value="pic" {{ request('filter_column') == 'pic' ? 'selected' : '' }}>PIC</option>
                     </select>
+                    <div class="invalid-feedback">
+                        Please select the column.
+                    </div>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
                 </div>
-                <div class="col-auto align-content-end ">
-                    <a href="{{ route('spk.index', ['status' => null]) }}" class="btn btn-secondary">Reset</a>
+                <div class="col-auto">
+                    <label for="filter_action">Action</label>
+                    <select name="filter_action" id="filter_action" class="form-select">
+                        <option value="" selected disabled>--Select action--</option>
+                        <option value="contains" {{ request('filter_action') == 'contains' ? 'selected' : '' }}>Contains
+                        </option>
+                        <option value="equals" {{ request('filter_action') == 'equals' ? 'selected' : '' }}>Equals</option>
+                        <option value="between" {{ request('filter_action') == 'between' ? 'selected' : '' }}>Between
+                        </option>
+                        <option value="greater_than" {{ request('filter_action') == 'greater_than' ? 'selected' : '' }}>
+                            Greater Than</option>
+                        <option value="less_than" {{ request('filter_action') == 'less_than' ? 'selected' : '' }}>Less Than
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select the action.
+                    </div>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
                 </div>
-                <div class="col-auto align-content-end ">
-                    <button class="btn btn-primary mt-3">Filter</button>
+                <div class="col-auto">
+                    <label for="filter_value">Filter Value</label>
+                    <input type="text" name="filter_value" id="filter_value" value="{{ request('filter_value') }}"
+                        class="form-control">
+                    <div class="invalid-feedback">
+                        Please fill the filter value.
+                    </div>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+                <div class="col-auto" id="filter_value_2_container"
+                    style="display: {{ request('filter_action') == 'between' && request('filter_column') == 'tanggal_lapor' ? 'block' : 'none' }}">
+                    <label for="filter_value_2">Filter Value 2</label>
+                    <input type="text" name="filter_value_2" id="filter_value_2" value="{{ request('filter_value_2') }}"
+                        class="form-control">
+                    <div class="invalid-feedback">
+                        Please fill the filter value.
+                    </div>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Filter</button>
+                    @if (request('filter_column') || request('filter_action') || request('filter_value') || request('filter_value_2'))
+                        <a href="{{ route('spk.index') }}" class="btn btn-secondary">Reset</a>
+                    @endif
                 </div>
             </div>
         </form>
 
-        <div class="card mt-5">
+        <div class="card mt-3">
             <div class=card-body>
                 <table class="table table-border text-center mb-0">
                     <thead>
@@ -103,3 +150,92 @@
         </div>
     </div>
 @endsection
+
+@push('extraJs')
+    <script>
+        (() => {
+            'use strict'
+
+            const forms = document.querySelectorAll('.needs-validation')
+
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    const filterColumn = document.getElementById('filter_column')
+                    const filterAction = document.getElementById('filter_action')
+                    const filterValue = document.getElementById('filter_value')
+                    const filterValue2Container = document.getElementById('filter_value_2_container')
+                    const filterValue2 = document.getElementById('filter_value_2')
+
+                    // Custom validation for select elements
+                    if (filterColumn.value === '' || filterColumn.value === '--Select column--') {
+                        filterColumn.setCustomValidity('Please select the column.')
+                    } else {
+                        filterColumn.setCustomValidity('')
+                    }
+
+                    if (filterAction.value === '' || filterAction.value === '--Select action--') {
+                        filterAction.setCustomValidity('Please select the action.')
+                    } else {
+                        filterAction.setCustomValidity('')
+                    }
+
+                    // Custom validation for filter values
+                    if (filterValue.value.trim() === '') {
+                        filterValue.setCustomValidity('Please fill the filter value.')
+                    } else {
+                        filterValue.setCustomValidity('')
+                    }
+
+                    if (filterValue2Container.style.display === 'block' && filterValue2.value.trim() ===
+                        '') {
+                        filterValue2.setCustomValidity('Please fill the filter value.')
+                    } else {
+                        filterValue2.setCustomValidity('')
+                    }
+
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+
+        document.getElementById('filter_action').addEventListener('change', function() {
+            const filterValue2Container = document.getElementById('filter_value_2_container');
+            if (this.value === 'between' && document.getElementById('filter_column').value === 'tanggal_lapor') {
+                filterValue2Container.style.display = 'block';
+            } else {
+                filterValue2Container.style.display = 'none';
+            }
+        });
+
+        document.getElementById('filter_column').addEventListener('change', function() {
+            const filterValueInput = document.getElementById('filter_value');
+            const filterValue2Input = document.getElementById('filter_value_2');
+            const filterAction = document.getElementById('filter_action');
+
+            if (this.value === 'tanggal_lapor') {
+                filterValueInput.type = 'date';
+                filterValue2Input.type = 'date';
+
+                // Enable greater_than and less_than for tanggal_lapor
+                filterAction.querySelector('option[value="greater_than"]').disabled = false;
+                filterAction.querySelector('option[value="less_than"]').disabled = false;
+                filterAction.querySelector('option[value="between"]').disabled = false;
+            } else {
+                filterValueInput.type = 'text';
+                filterValue2Input.type = 'text';
+
+                // Disable greater_than, less_than, and between for other columns
+                filterAction.querySelector('option[value="greater_than"]').disabled = true;
+                filterAction.querySelector('option[value="less_than"]').disabled = true;
+                filterAction.querySelector('option[value="between"]').disabled = true;
+            }
+        });
+
+        document.getElementById('filter_column').dispatchEvent(new Event('change'));
+    </script>
+@endpush

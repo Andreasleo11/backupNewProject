@@ -17,12 +17,15 @@ class MonthlyBudgetSummaryReport extends Model
         'report_date',
         'creator_id',
         'created_autograph',
-        'dept_head_moulding_autograph',
         'is_known_autograph',
         'approved_autograph',
         'doc_num',
         'is_reject',
         'reject_reason',
+        'is_moulding',
+        'is_cancel',
+        'cancel_reason',
+        'status'
     ];
 
     // Relations
@@ -44,12 +47,12 @@ class MonthlyBudgetSummaryReport extends Model
     // Queries
     public function scopeApproved($query)
     {
-        return $query->where('status', 4);
+        return $query->where('status', 5);
     }
 
-    public function scopeWaiting($query)
+    public function scopeWaitingDirector($query)
     {
-        return $query->where('status', 3);
+        return $query->where('status', 4);
     }
 
     public function scopeRejected($query)
@@ -64,6 +67,9 @@ class MonthlyBudgetSummaryReport extends Model
 
         static::created(function ($report) {
             $prefix = 'MBSR';
+            if ($report->is_moulding) {
+                $prefix = $prefix . '/MOULD';
+            }
             $id = $report->id;
             $date = $report->created_at->format('dmY');
             $docNum = "$prefix/$id/$date";
@@ -114,11 +120,15 @@ class MonthlyBudgetSummaryReport extends Model
             case 2:
                 return 'Waiting GM';
             case 3:
-                return 'Waiting Director';
+                return 'Waiting Dept Head';
             case 4:
-                return 'Approved';
+                return 'Waiting Director';
             case 5:
+                return 'Approved';
+            case 6:
                 return 'Rejected';
+            case 7:
+                return 'Cancelled';
             default:
                 return 'Unknown';
         }
@@ -135,13 +145,15 @@ class MonthlyBudgetSummaryReport extends Model
         } elseif ($event === 'updated') {
             if ($this->status == 2) {
                 $gm = User::where('is_gm', 1)->first();
+                array_push($users, $gm);
+            } elseif ($this->status == 3) {
                 $mouldingHead = User::whereHas('department', function ($query) {
                     $query->where('name', 'MOULDING');
                 })->whereHas('specification', function ($query) {
                     $query->where('name', 'DESIGN');
                 })->where('is_head', 1)->first();
-                array_push($users, $gm, $mouldingHead);
-            } elseif ($this->status == 3) {
+                array_push($users, $mouldingHead);
+            } elseif ($this->status == 4) {
                 $director = User::with('department')->whereHas('department', function ($query) {
                     $query->where('name', 'DIRECTOR');
                 })->first();
