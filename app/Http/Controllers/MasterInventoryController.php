@@ -12,6 +12,8 @@ use App\Models\HardwareTypeInventory;
 use App\Models\MasterInventory;
 use App\Models\Department;
 use App\Models\InventoryRepairHistory;
+use App\Models\HeaderMaintenanceInventoryReport;
+use App\Models\DetailMaintenanceInventoryReport;
 
 class MasterInventoryController extends Controller
 {
@@ -296,7 +298,7 @@ class MasterInventoryController extends Controller
             'hardware_id as id', 
             'hardware_name as name'
         ]);
-        dd($items);
+       
         $hardwareTypes = HardwareTypeInventory::all();
         $softwareTypes = SoftwareTypeInventory::all();
 
@@ -526,5 +528,34 @@ class MasterInventoryController extends Controller
 
         // Redirect or return response
         return redirect()->back()->with('success', 'Inventory updated or added successfully.');
+    }
+
+
+    public function destroy($id)
+    {
+        // Find the inventory master record
+        $inventoryMaster = MasterInventory::findOrFail($id);
+
+        // Delete related DetailHardware records
+        DetailHardware::where('master_inventory_id', $id)->delete();
+
+        // Delete related DetailSoftware records
+        DetailSoftware::where('master_inventory_id', $id)->delete();
+
+        $headerReports = HeaderMaintenanceInventoryReport::where('master_id', $id)->get();
+
+        // Delete related DetailMaintenanceInventoryReport records
+        foreach ($headerReports as $headerReport) {
+            DetailMaintenanceInventoryReport::where('header_id', $headerReport->id)->delete();
+        }
+
+        // Delete the header maintenance inventory reports
+        HeaderMaintenanceInventoryReport::where('master_id', $id)->delete();
+
+        // Delete the inventory master record
+        $inventoryMaster->delete();
+
+        // Redirect back with a success message
+        return redirect()->route('masterinventory.index')->with('success', 'Inventory Master deleted successfully!');
     }
 }

@@ -20,6 +20,7 @@ use App\Models\delsched_stockwip;
 use App\Models\SapDelsched;
 use App\Models\SapInventoryMtr;
 use App\Models\SapInventoryFg;
+use App\Models\SapReject;
 
 use App\Models\DelschedFinal;
 use App\Models\DelschedFinalWip;
@@ -70,6 +71,10 @@ class DeliveryScheduleController extends Controller
 	public function averageschedule()
 	{
 		$data = SapDelsched::all();
+
+
+		$rejectdatas = SapReject::all();
+
 		// Mengelompokkan data berdasarkan bulan dan item_code, kemudian menghitung total quantity
 		$today = now();
 		$currentMonth = $today->format('Y-m');
@@ -96,8 +101,8 @@ class DeliveryScheduleController extends Controller
 			$inventoryMap = $inventoryData->keyBy('item_code');
 			
 			// Combine the grouped data with the inventory data
-			$result = $itemCounts->map(function($group) use ($inventoryMap) {
-				return $group->map(function($count, $itemCode) use ($inventoryMap) {
+			$result = $itemCounts->map(function($group) use ($inventoryMap, $rejectdatas) {
+				return $group->map(function($count, $itemCode) use ($inventoryMap, $rejectdatas) {
 					$inventory = $inventoryMap->get($itemCode);
 
 					// Initialize an array to hold stock and item_name
@@ -113,6 +118,13 @@ class DeliveryScheduleController extends Controller
 						// Assuming item_name is a field in the inventory model or related model
 						$inventoryInfo['item_name'] = $inventory->item_name; // Adjust as per your actual field name
 						$inventoryInfo['warehouse'] = $inventory->warehouse;
+						
+						foreach ($rejectdatas as $reject) {
+							if ($reject->item_no === $inventory->item_code) {
+								$inventoryInfo['in_stock'] -= $reject->in_stock; // Adjust field name as needed
+								
+							}
+						}
 					}
 			
 					return $inventoryInfo;
@@ -128,8 +140,6 @@ class DeliveryScheduleController extends Controller
 					return $itemGroup->sum('delivery_qty');
 				});
 			});
-
-
 			// dd($totalQuantities);
 
 		return view("business.averageschedule", compact('data','itemCounts', 'totalQuantities', 'result'));

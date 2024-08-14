@@ -707,6 +707,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
 
+    Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name('masterinventory.delete');
+
 
     // Route to handle adding new types
     Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');

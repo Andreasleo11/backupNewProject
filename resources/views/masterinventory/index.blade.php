@@ -169,28 +169,16 @@
                     <td>
                     <a href="{{ route('masterinventory.detail', $data->id) }}" class="btn btn-success">Detail</a>
                     <a href="{{ route('maintenance.inventory.create', ['id' => $data->id]) }}" class="btn btn-success">Create Maintenance</a>
+                    <form action="{{ route('masterinventory.delete', $data->id) }}" method="POST" style="display:inline;" onsubmit="return confirmDelete()">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
-</div>
-
-<div class="modal" id="dataModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h5 class="modal-title" id="dataModalLabel">Details</h5>
-            <!-- <button type="button" class="close" onclick="closeModal()">
-                <span aria-hidden="true">&times;</span>
-            </button> -->
-        </div>
-        <div class="modal-body" id="dataModalBody">
-            <!-- Dynamic content will be loaded here -->
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
-        </div>
-    </div>
 </div>
 
 <!-- Include necessary scripts -->
@@ -202,6 +190,10 @@
 
 
 <script>
+
+function confirmDelete() {
+        return confirm('Are you sure you want to delete this item? This action cannot be undone.');
+    }
 
 $(document).ready(function() {
         $('[data-fancybox="gallery"]').fancybox({
