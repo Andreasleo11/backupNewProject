@@ -84,7 +84,7 @@
             <li class="sidebar-item" id="sidebar-item-computer">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#computer" aria-expanded="false" aria-controls="computer">
-                    <i class='bx bx-bug'></i>
+                    <i class='bx bx-desktop'></i>
                     <span>Computer</span>
                 </a>
                 <ul id="computer" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
@@ -115,6 +115,13 @@
                         <a href="{{ route('maintenance.inventory.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Maintenance Inventory
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('masterinventory.typeindex') }}" class="sidebar-link">
+                            <i class='bx bx-cube'></i>
+                            Type Inventory
                         </a>
                     </li>
                 </ul>
@@ -449,36 +456,6 @@
 
             </ul>
         </li>
-
-
-
-        <li class="sidebar-item" id="sidebar-item-list">
-            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#computeritem" aria-expanded="false" aria-controls="setting">
-                <i class='bx bxs-component'></i>
-                <span>Computer</span>
-            </a>
-            <ul id="computeritem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                        <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
-                            <i class='bx bx-file'></i>
-                            Inventory Master Komputer
-                        </a>
-                </li>
-
-                <li class="sidebar-list">
-                    <a href="{{ route('masterinventory.typeindex') }}" class="sidebar-link">
-                        <i class='bx bx-cube'></i>
-                        Type Inventory
-                    </a>
-                </li>
-
-
-                
-            </ul>
-        </li>
-
-
 
         <li class="sidebar-item" id="sidebar-item-other">
             <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"

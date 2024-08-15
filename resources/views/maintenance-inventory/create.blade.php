@@ -10,7 +10,7 @@
     <div class="container">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('monthly.budget.report.index') }}">Maintenance Inventory
+                <li class="breadcrumb-item"><a href="{{ route('maintenance.inventory.index') }}">Maintenance Inventory
                         Reports</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
@@ -34,7 +34,8 @@
                                             class="text-danger">*</span></label>
                                     <select class="form-select @error('master_id') is-invalid @enderror" id="masterSelect"
                                         name="master_id" required>
-                                        <option value="" disabled {{ old('master_id', $id) ? '' : 'selected' }}>--Select a
+                                        <option value="" disabled {{ old('master_id', $id) ? '' : 'selected' }}>
+                                            --Select a
                                             master inventory--</option>
                                         @foreach ($masters as $master)
                                             <option value="{{ $master->id }}"

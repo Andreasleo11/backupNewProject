@@ -12,19 +12,34 @@ use App\Models\HardwareTypeInventory;
 use App\Models\MasterInventory;
 use App\Models\Department;
 use App\Models\InventoryRepairHistory;
+use App\Models\HeaderMaintenanceInventoryReport;
+use App\Models\DetailMaintenanceInventoryReport;
 
-class MasterInventoryController extends Controller
+class MasterInventoryController extends BaseController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $datas = MasterInventory::with([
+        $itemsPerPage = $request->get('itemsPerPage', 10); // Default to 10 items per page
+
+        $query = MasterInventory::with([
             'hardwares.hardwareType',
             'softwares.softwareType' // Assuming you have a similar relationship for softwares
-        ])->get();
+        ]);
 
-        // dd($datas);
+        // Apply filters if any
+        $validColumns = ['ip_address', 'username', 'dept', 'type', 'purpose', 'brand', 'os', 'description'];
+        $query = $this->applyFilters($query, $request, $validColumns);
+
+        // Apply pagination or get all items
+        if ($itemsPerPage == 'all') {
+            $datas = $query->get(); // Get all items without pagination
+        } else {
+            $datas = $query->paginate($itemsPerPage);
+        }
+
         return view('masterinventory.index', compact('datas'));
     }
+
 
     public function createpage()
     {
@@ -63,9 +78,8 @@ class MasterInventoryController extends Controller
         if ($request->hasFile('position_image')) {
             $image = $request->file('position_image');
             $imageName = $image->getClientOriginalName();
-            
+
             $imagePath = $image->storeAs('masterinventory', $imageName, 'public');
-          
         }
         // Create the master inventory
         $masterInventory = MasterInventory::create([
@@ -97,7 +111,7 @@ class MasterInventoryController extends Controller
             foreach ($request->softwares as $software) {
                 $masterInventory->softwares()->create([
                     'software_id' => $software['type'],
-                    'software_brand'=>$software['software_brand'],
+                    'software_brand' => $software['software_brand'],
                     'license' => $software['license'],
                     'software_name' => $software['software_name'],
                     'remark' => $software['remark'],
@@ -118,7 +132,7 @@ class MasterInventoryController extends Controller
         $depts = Department::get();
         $hardwareTypes = HardwareTypeInventory::get();
         $softwareTypes = SoftwareTypeInventory::get();
-    
+
         return view('masterinventory.edit', compact('data', 'depts', 'hardwareTypes', 'softwareTypes'));
     }
 
@@ -147,7 +161,7 @@ class MasterInventoryController extends Controller
 
         $masterInventory = MasterInventory::findOrFail($id);
 
-         // Handle the image update
+        // Handle the image update
         if ($request->hasFile('position_image')) {
             // Delete the old image if it exists
             if ($masterInventory->position_image) {
@@ -175,7 +189,7 @@ class MasterInventoryController extends Controller
             'description' => $request->description,
         ]);
 
-       // Updating Hardwares
+        // Updating Hardwares
         $existingHardwareIds = $masterInventory->hardwares->pluck('id')->toArray();
         $newHardwareIds = [];
 
@@ -293,10 +307,10 @@ class MasterInventoryController extends Controller
     {
         $masterId = 10;
         $items = DetailHardware::where('master_inventory_id', $masterId)->get([
-            'hardware_id as id', 
+            'hardware_id as id',
             'hardware_name as name'
         ]);
-        dd($items);
+       
         $hardwareTypes = HardwareTypeInventory::all();
         $softwareTypes = SoftwareTypeInventory::all();
 
@@ -354,7 +368,7 @@ class MasterInventoryController extends Controller
     }
 
 
-        public function getItems($type)
+    public function getItems($type)
     {
         $items = [];
 
@@ -368,81 +382,79 @@ class MasterInventoryController extends Controller
     }
 
     public function getAvailableItems(Request $request)
-{
-    $type = $request->query('type');
-    $masterId = $request->query('master_id');
+    {
+        $type = $request->query('type');
+        $masterId = $request->query('master_id');
 
-    
-    $items = [];
-    if (!$type || !$masterId) {
-        return response()->json(['error' => 'Invalid parameters'], 400);
+
+        $items = [];
+        if (!$type || !$masterId) {
+            return response()->json(['error' => 'Invalid parameters'], 400);
+        }
+
+        // Fetch items based on type
+        if ($type === 'hardware') {
+            $items = DetailHardware::where('master_inventory_id', $masterId)
+                ->get(['id as id', 'hardware_name as name']);
+        } elseif ($type === 'software') {
+            $items = DetailSoftware::where('master_inventory_id', $masterId)
+                ->get(['id as id', 'software_name as name']);
+        } else {
+            return response()->json(['error' => 'Invalid type specified'], 400);
+        }
+
+        return response()->json($items);
     }
-
-    // Fetch items based on type
-    if ($type === 'hardware') {
-        $items = DetailHardware::where('master_inventory_id', $masterId)
-            ->get(['id as id', 'hardware_name as name']);
-    } elseif ($type === 'software') {
-        $items = DetailSoftware::where('master_inventory_id', $masterId)
-            ->get(['id as id', 'software_name as name']);
-    } else {
-        return response()->json(['error' => 'Invalid type specified'], 400);
-    }
-
-    return response()->json($items);
-}
 
     public function CreateRepair(Request $request)
     {
         // dd($request->all());
         // Validate the request
-    $validated = $request->validate([
-        '_token' => 'required',
-        'master_id' => 'required',
-        'requestName' => 'required|string',
-        'type' => 'required|string',
-        'action' => 'required|string',
-        'oldPart' => 'nullable|string',
-        'itemType' => 'nullable|string',
-        'itemBrand' => 'nullable|string',
-        'itemName' => 'nullable|string',
-        'itemTypeInstallation' => 'nullable|string',
-        'itemBrandInstallation' => 'nullable|string',
-        'itemNameInstallation' => 'nullable|string',
-        'remark' => 'nullable|string',
-    ]);
+        $validated = $request->validate([
+            '_token' => 'required',
+            'master_id' => 'required',
+            'requestName' => 'required|string',
+            'type' => 'required|string',
+            'action' => 'required|string',
+            'oldPart' => 'nullable|string',
+            'itemType' => 'nullable|string',
+            'itemBrand' => 'nullable|string',
+            'itemName' => 'nullable|string',
+            'itemTypeInstallation' => 'nullable|string',
+            'itemBrandInstallation' => 'nullable|string',
+            'itemNameInstallation' => 'nullable|string',
+            'remark' => 'nullable|string',
+        ]);
 
-    // Prepare data for insertion
-    $data = [
-        'master_id' => $validated['master_id'],
-        'request_name' => $validated['requestName'],
-        'type' => $validated['type'],
-        'action' => $validated['action'],
-        'old_part' => $validated['oldPart'],
-        'remark' => $validated['remark'],
-    ];
+        // Prepare data for insertion
+        $data = [
+            'master_id' => $validated['master_id'],
+            'request_name' => $validated['requestName'],
+            'type' => $validated['type'],
+            'action' => $validated['action'],
+            'old_part' => $validated['oldPart'],
+            'remark' => $validated['remark'],
+        ];
 
 
-    if ($validated['action'] === 'replacement') {
-        $data['item_type'] = $validated['itemType'];
-        $data['item_brand'] = $validated['itemBrand'];
-        $data['item_name'] = $validated['itemName'];
-    } elseif ($validated['action'] === 'installation') {
-        $data['item_type'] = $validated['itemTypeInstallation'];
-        $data['item_brand'] = $validated['itemBrandInstallation'];
-        $data['item_name'] = $validated['itemNameInstallation'];
-    }
+        if ($validated['action'] === 'replacement') {
+            $data['item_type'] = $validated['itemType'];
+            $data['item_brand'] = $validated['itemBrand'];
+            $data['item_name'] = $validated['itemName'];
+        } elseif ($validated['action'] === 'installation') {
+            $data['item_type'] = $validated['itemTypeInstallation'];
+            $data['item_brand'] = $validated['itemBrandInstallation'];
+            $data['item_name'] = $validated['itemNameInstallation'];
+        }
 
-    // dd($data);
+        // dd($data);
 
-    // Insert data into InventoryRepairHistory
-    InventoryRepairHistory::create($data);
+        // Insert data into InventoryRepairHistory
+        InventoryRepairHistory::create($data);
 
-    // Return a response or redirect
-    return redirect()->route('masterinventory.detail', ['id' => $validated['master_id']])
-    ->with('success', 'Data inserted successfully');
-
-    
+        // Return a response or redirect
+        return redirect()->route('masterinventory.detail', ['id' => $validated['master_id']])
+            ->with('success', 'Data inserted successfully');
     }
 
 
@@ -466,13 +478,13 @@ class MasterInventoryController extends Controller
             if ($repairHistory->type === 'hardware') {
                 // Find the hardware detail to update
                 $hardwareDetail = $inventory->hardwares->firstWhere('hardware_name', $repairHistory->old_part);
-                
+
                 if ($hardwareDetail) {
                     // Update the hardware detail with new values
                     $hardwareDetail->update([
                         'hardware_name' => $repairHistory->item_name, // Example of updating hardware name
                         'brand' => $repairHistory->item_brand, // Example of updating hardware brand
-                        'remark'=> $repairHistory->remark,
+                        'remark' => $repairHistory->remark,
                         // Add more fields if needed
                     ]);
                 } else {
@@ -526,5 +538,34 @@ class MasterInventoryController extends Controller
 
         // Redirect or return response
         return redirect()->back()->with('success', 'Inventory updated or added successfully.');
+    }
+
+
+    public function destroy($id)
+    {
+        // Find the inventory master record
+        $inventoryMaster = MasterInventory::findOrFail($id);
+
+        // Delete related DetailHardware records
+        DetailHardware::where('master_inventory_id', $id)->delete();
+
+        // Delete related DetailSoftware records
+        DetailSoftware::where('master_inventory_id', $id)->delete();
+
+        $headerReports = HeaderMaintenanceInventoryReport::where('master_id', $id)->get();
+
+        // Delete related DetailMaintenanceInventoryReport records
+        foreach ($headerReports as $headerReport) {
+            DetailMaintenanceInventoryReport::where('header_id', $headerReport->id)->delete();
+        }
+
+        // Delete the header maintenance inventory reports
+        HeaderMaintenanceInventoryReport::where('master_id', $id)->delete();
+
+        // Delete the inventory master record
+        $inventoryMaster->delete();
+
+        // Redirect back with a success message
+        return redirect()->route('masterinventory.index')->with('success', 'Inventory Master deleted successfully!');
     }
 }
