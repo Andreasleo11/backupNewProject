@@ -39,9 +39,10 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>#</th>
+                                <th>ID</th>
                                 <th>Nomor Dokumen</th>
                                 <th>Master ID</th>
+                                <th>Periode</th>
                                 <th>Revision Date</th>
                                 <th>Action</th>
                             </tr>
@@ -49,9 +50,10 @@
                         <tbody>
                             @forelse ($reports as $report)
                                 <tr>
-                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $report->id }}</td>
                                     <td>{{ $report->no_dokumen }}</td>
                                     <td>{{ $report->master_id }}</td>
+                                    <td>{{ $report->periode_caturwulan }}</td>
                                     <td>{{ $report->revision_date }}</td>
                                     <td>
                                         <a href="{{ route('maintenance.inventory.show', $report->id) }}"
