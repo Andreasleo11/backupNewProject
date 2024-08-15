@@ -15,20 +15,23 @@ class MaintenanceInventoryController extends Controller
 {
     public function index()
     {
-        $reports = HeaderMaintenanceInventoryReport::all();
+        $reportsQuery = HeaderMaintenanceInventoryReport::query();
+        $reports = $reportsQuery
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
         return view('maintenance-inventory.index', compact('reports'));
     }
 
     public function create($id = null)
     {
-     
+
         if ($id) {
             // Handle the case where $id is provided
             // For example, fetch the data or perform specific actions
             // dd($id); // For debugging purposes
         }
-      
-        
+
+
         $masters = MasterInventory::all();
         $users = User::where(function ($query) {
             $query->where('name', 'vicky')->orWhere('name', 'bagus');
