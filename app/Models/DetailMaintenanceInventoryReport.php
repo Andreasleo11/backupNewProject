@@ -19,6 +19,6 @@ class DetailMaintenanceInventoryReport extends Model
 
     public function typecategory()
     {
-        return $this->hasMany(CategoryMaintenanceInventoryReport::class);
+        return $this->belongsTo(CategoryMaintenanceInventoryReport::class, 'category_id');
     }
 }

@@ -58,6 +58,9 @@
                                     <td>
                                         <a href="{{ route('maintenance.inventory.show', $report->id) }}"
                                             class="btn btn-secondary">Detail</a>
+                                        <a href="{{ route('maintenance.inventory.edit', $report->id) }}"
+                                            class="btn btn-primary">Edit</a>
+
                                     </td>
                                 </tr>
                             @empty
