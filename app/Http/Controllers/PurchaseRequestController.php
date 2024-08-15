@@ -80,17 +80,19 @@ class PurchaseRequestController extends Controller
             // If the user is a purchaser, filter requests with specific conditions
             $purchaseRequestsQuery->where(function ($query) {
                 $query->where(function ($query) {
-                    $query->where('type', 'office')
-                        ->orWhere('from_department', 'MOULDING')
+                    $query->where(function ($query) {
+                        $query->where('type', 'office')
+                            ->orWhere('from_department', 'MOULDING');
+                    })
                         ->whereNotNull('autograph_2');
                 })->orWhere(function ($query) {
                     $query->where('type', 'factory')
                         ->whereNotNull('autograph_6');
                 });
+                // if (!$query->where('to_department', 'Purchasing')) {
+                //     $query->whereNotNull('autograph_6');
+                // }
 
-                if (!$query->where('to_department', 'Purchasing')) {
-                    $query->whereNotNull('autograph_6');
-                }
             });
 
             // $purchaseRequestsQuery->where('status', 6);
@@ -110,6 +112,8 @@ class PurchaseRequestController extends Controller
                 $purchaseRequestsQuery->where('to_department', 'Personnel');
             }
 
+            $purchaseRequestsQuery->whereNotNull('autograph_1');
+        } elseif ($user->role->name === 'SUPERADMIN') {
             $purchaseRequestsQuery->whereNotNull('autograph_1');
         } else {
             // Otherwise, filter requests based on user department
@@ -396,14 +400,17 @@ class PurchaseRequestController extends Controller
             }
         })->values(); // Ensure that the result is an array
 
-        $this->updateMasterPRItems($filteredItemDetail);
+        if ($purchaseRequest->status == 4) {
+            // dd($filteredItemDetail);
+            $this->updateMasterPRItems($filteredItemDetail);
+        }
 
         return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
     }
 
     private function updateMasterPRItems($items)
     {
-        if (isset($items) && is_array($items)) {
+        if (isset($items)) {
             foreach ($items as $itemData) {
                 $itemName = $itemData['item_name'];
                 $price = $this->sanitizeCurrencyInput($itemData['price']);
@@ -411,7 +418,7 @@ class PurchaseRequestController extends Controller
 
                 // Check if the item exists in MasterDataPr
                 $existingItem = MasterDataPr::where('name', $itemName)->first();
-
+                // dd($existingItems);
                 if (!$existingItem) {
                     // Case 1: Item not available in MasterDataPr
                     MasterDataPr::create([
