@@ -80,9 +80,9 @@
             <thead>
                 <tr>
                     <th>Hardware Type</th>
-                    <th>Hardware Brand</th>
+                    <th>Nomor Inventaris</th>
                     <th>Hardware Name</th>
-                    <th>Remark</th>
+                    <th>Tanggal Pembelian</th>
                     <th>Actions</th>
                 </tr>
             </thead>

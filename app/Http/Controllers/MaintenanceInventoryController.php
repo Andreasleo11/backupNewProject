@@ -24,8 +24,33 @@ class MaintenanceInventoryController extends Controller
         return view('maintenance-inventory.index', compact('reports'));
     }
 
+    private function getPeriodeCaturwulan($month)
+    {
+        if ($month >= 1 && $month <= 4) {
+            return 1;
+        } elseif ($month >= 5 && $month <= 8) {
+            return 2;
+        } else {
+            return 3;
+        }
+    }
+
     public function create($id = null)
     {
+        $currentMonth = now()->month;
+        $periodeCaturwulan = $this->getPeriodeCaturwulan($currentMonth);
+
+        // Check for the most recent header for the current period and matching master_id
+        $existingHeader = HeaderMaintenanceInventoryReport::where('periode_caturwulan', $periodeCaturwulan)
+            ->where('master_id', $id)
+            ->latest('created_at') // Order by 'created_at' in descending order
+            ->first(); // Get the latest record
+
+        if ($existingHeader) {
+            // Redirect to the show method if a header already exists
+            return redirect()->route('maintenance.inventory.show', ['id' => $existingHeader->id]);
+        }
+
         $masters = MasterInventory::all();
         $users = User::where(function ($query) {
             $query->where('name', 'vicky')->orWhere('name', 'bagus');
@@ -43,7 +68,7 @@ class MaintenanceInventoryController extends Controller
             ];
         })->toArray();
         // dd($groups);
-
+        
         return view('maintenance-inventory.create', compact('masters', 'users', 'groups', 'id'));
     }
 
@@ -119,7 +144,8 @@ class MaintenanceInventoryController extends Controller
 
     public function show($id)
     {
-        $report = HeaderMaintenanceInventoryReport::with('detail')->find($id);
+        $report = HeaderMaintenanceInventoryReport::with('detail', 'detail.typecategory')->find($id);
+        dd($report);
         return view('maintenance-inventory.detail', compact('report'));
     }
 
