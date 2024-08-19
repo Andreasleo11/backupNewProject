@@ -11,6 +11,7 @@ use App\Exports\Delso;
 use App\Exports\InventoryFg;
 use App\Exports\InventoryMtr;
 use App\Exports\LineProduction;
+use App\Exports\SapReject;
 use App\Imports\BomWipImport;
 use App\Imports\DelactualImport;
 use App\Imports\DelschedImport;
@@ -18,6 +19,7 @@ use App\Imports\DelsoImport;
 use App\Imports\InventoryFgImport;
 use App\Imports\InventoryMtrImport;
 use App\Imports\LineProductionImport;
+use App\Imports\SapRejectImport;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -131,6 +133,19 @@ class UpdateDailyController extends Controller
             $excelFileName = $this->processLineproductionFiles($uploadedFiles);
             try {
                 $this->importLineProductionFile($excelFileName);
+            } catch (\Throwable $th) {
+                //throw $th;
+                return redirect()->back()->with(['error' => 'Failed to Import Sap LineProduction']);
+            }
+            
+            return Redirect::route('indexupdatepage');
+        }
+
+        elseif ($selectedOption === 'sap_reject') {
+            DB::table('sap_reject')->truncate();
+            $excelFileName = $this->processSapRejectFiles($uploadedFiles);
+            try {
+                $this->importSapRejectFile($excelFileName);
             } catch (\Throwable $th) {
                 //throw $th;
                 return redirect()->back()->with(['error' => 'Failed to Import Sap LineProduction']);
@@ -529,6 +544,44 @@ class UpdateDailyController extends Controller
     {
             // Import the Excel file using the DelschedImport class
         Excel::import(new LineProductionImport, public_path('storage/AutomateFile/' . $excelFileName));
+
+            // If the import is successful, return a success message
+        return 'Excel file imported successfully.';
+    }
+
+    private function processSapRejectFiles($files){
+         // Initialize an array to store all data
+       $allData = [];
+
+       // Iterate through each file
+       foreach ($files as $file) {
+           // Read the XLS file
+           $data = Excel::toArray([], $file);
+           // Remove the first row (header)
+           array_shift($data[0]);
+
+            // Remove the first column
+           foreach ($data[0] as &$row) {
+               array_shift($row);
+           }
+
+           // Append data from this file to the allData array
+           $allData = array_merge($allData, $data[0]);
+       }
+       
+       $excelFileName = 'sapreject.xlsx';
+       $excelFilePath = public_path($excelFileName);
+
+       Excel::store(new SapReject($allData), 'public/AutomateFile/' . $excelFileName);
+
+       // $filePath = Storage::url($fileName);
+       return $excelFileName;
+    }
+
+    private function importSapRejectFile($excelFileName)
+    {
+            // Import the Excel file using the DelschedImport class
+        Excel::import(new SapRejectImport, public_path('storage/AutomateFile/' . $excelFileName));
 
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';

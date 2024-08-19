@@ -92,9 +92,9 @@
                         <thead>
                             <tr>
                                 <th>Type</th>
-                                <th>Brand</th>
+                                <th>Nomor Inventaris</th>
                                 <th>Hardware Name</th>
-                                <th>Remark</th>
+                                <th>Tanggal Pembelian</th>
                                 <th>Last Update</th>
                             </tr>
                         </thead>
@@ -323,6 +323,12 @@
             </div>
         </div>
     </div>
+
+<!-- Include jQuery (Bootstrap requires it) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+
+<!-- Include Bootstrap JavaScript -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         document.addEventListener('DOMContentLoaded', function() {

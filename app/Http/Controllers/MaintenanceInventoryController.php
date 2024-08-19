@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreMaintenanceInventoryRequest;
+use App\Http\Requests\UpdateMaintenanceInventoryRequest;
 use App\Models\HeaderMaintenanceInventoryReport;
 use App\Models\GroupMaintenanceInventoryReport;
 use App\Models\DetailMaintenanceInventoryReport;
@@ -22,15 +24,32 @@ class MaintenanceInventoryController extends Controller
         return view('maintenance-inventory.index', compact('reports'));
     }
 
+    private function getPeriodeCaturwulan($month)
+    {
+        if ($month >= 1 && $month <= 4) {
+            return 1;
+        } elseif ($month >= 5 && $month <= 8) {
+            return 2;
+        } else {
+            return 3;
+        }
+    }
+
     public function create($id = null)
     {
+        $currentMonth = now()->month;
+        $periodeCaturwulan = $this->getPeriodeCaturwulan($currentMonth);
 
-        if ($id) {
-            // Handle the case where $id is provided
-            // For example, fetch the data or perform specific actions
-            // dd($id); // For debugging purposes
+        // Check for the most recent header for the current period and matching master_id
+        $existingHeader = HeaderMaintenanceInventoryReport::where('periode_caturwulan', $periodeCaturwulan)
+            ->where('master_id', $id)
+            ->latest('created_at') // Order by 'created_at' in descending order
+            ->first(); // Get the latest record
+
+        if ($existingHeader) {
+            // Redirect to the show method if a header already exists
+            return redirect()->route('maintenance.inventory.show', ['id' => $existingHeader->id]);
         }
-
 
         $masters = MasterInventory::all();
         $users = User::where(function ($query) {
@@ -38,7 +57,9 @@ class MaintenanceInventoryController extends Controller
         })->get();
         $groups = GroupMaintenanceInventoryReport::with('detail')->get()->map(function ($group) {
             return [
-                $group->name => $group->detail->map(function ($detail) {
+                'group_id' => $group->id, // Add group_id here
+                'group_name' => $group->name,
+                'details' => $group->detail->map(function ($detail) {
                     return [
                         'id' => $detail->id,
                         'name' => $detail->name,
@@ -46,91 +67,73 @@ class MaintenanceInventoryController extends Controller
                 })->toArray(),
             ];
         })->toArray();
-
-        // dd($transformedGroups);
-
+        // dd($groups);
+        
         return view('maintenance-inventory.create', compact('masters', 'users', 'groups', 'id'));
     }
 
-    public function store(Request $request)
+    public function store(StoreMaintenanceInventoryRequest $request)
     {
-        // Validation rules
-        $rules = [
-            'master_id' => 'required|exists:master_inventories,id',
-            'revision_date' => 'nullable|date',
-            'items' => 'required|array',
-            'items.*' => 'exists:category_maintenance_inventory_reports,id',
-            'conditions' => 'required|array',
-            'conditions.*' => 'in:good,bad',
-            'remarks' => 'required|array',
-            'checked_by' => 'required|array',
-            'checked_by.*' => 'exists:users,name',
-            'new_items' => 'array',
-            'new_items_names' => 'array',
-            'new_items_names.*' => 'required_with:new_items',
-            'new_conditions' => 'array',
-            'new_conditions.*' => 'in:good,bad',
-            'new_remarks' => 'array',
-        ];
+        // dd($request->all());
+        $header = $this->createHeader($request);
 
-        // Validation messages
-        $messages = [
-            'master_id.required' => 'The master inventory is required.',
-            'master_id.exists' => 'The selected master inventory does not exist.',
-            'revision_date.date' => 'The revision date is not a valid date.',
-            'items.required' => 'At least one item must be selected.',
-            'items.*.exists' => 'One or more selected items do not exist.',
-            'conditions.required' => 'Conditions are required.',
-            'conditions.*.in' => 'Each condition must be either good or bad.',
-            'remarks.required' => 'Remarks are required.',
-            'checked_by.required' => 'Checked by field is required.',
-            'checked_by.*.exists' => 'The selected checker does not exist.',
-            'new_items_names.*.required_with' => 'The name for each new item is required.',
-            'new_conditions.*.in' => 'Each new condition must be either good or bad.',
-        ];
+        $this->createDetails($request, $header->id);
+        $this->createNewItems($request, $header->id);
 
-        // Validate the request data
-        $validator = Validator::make($request->all(), $rules, $messages);
+        return $this->handleRedirect($request);
+    }
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        // Create the header
-        $header = HeaderMaintenanceInventoryReport::create([
-            'no_dokumen' => 'MIR-' . now()->timestamp, // or any other document number generation logic
+    private function createHeader(StoreMaintenanceInventoryRequest $request)
+    {
+        return HeaderMaintenanceInventoryReport::create([
+            'no_dokumen' => 'MIR-' . now()->timestamp,
             'master_id' => $request->input('master_id'),
             'revision_date' => $request->input('revision_date'),
         ]);
+    }
 
-        // Create the details
+    private function createDetails(StoreMaintenanceInventoryRequest $request, $headerId)
+    {
         $items = $request->input('items', []);
         foreach ($items as $itemId) {
             DetailMaintenanceInventoryReport::create([
-                'header_id' => $header->id,
+                'header_id' => $headerId,
                 'category_id' => $itemId,
                 'condition' => $request->input("conditions.$itemId"),
                 'remark' => $request->input("remarks.$itemId"),
                 'checked_by' => $request->input("checked_by.$itemId"),
             ]);
         }
+    }
 
-        // Handle new items
+    private function createNewItems(StoreMaintenanceInventoryRequest $request, $headerId)
+    {
         $newItems = $request->input('new_items', []);
         foreach ($newItems as $index => $newItemId) {
             $newItemName = $request->input("new_items_names.$newItemId");
             if (!$newItemName) {
-                continue; // Skip if the new item name is not provided
+                continue;
             }
+
+            // Create a new CategoryMaintenanceInventoryReport
+            $category = CategoryMaintenanceInventoryReport::create([
+                'group_id' => $request->input("new_group_ids.$newItemId"), // Assuming you are passing group_id for new items
+                'name' => $newItemName,
+            ]);
+
+            // Create a new DetailMaintenanceInventoryReport with the new category_id
             DetailMaintenanceInventoryReport::create([
-                'header_id' => $header->id,
-                'category_id' => 0, // or some identifier for new items
+                'header_id' => $headerId,
+                'category_id' => $category->id,
                 'condition' => $request->input("new_conditions.$newItemId"),
                 'remark' => $request->input("new_remarks.$newItemId"),
-                'checked_by' => $request->input("checked_by.$newItemId"),
+                'checked_by' => $request->input("new_checked_by.$newItemId"),
             ]);
         }
+    }
 
+    private function handleRedirect(StoreMaintenanceInventoryRequest $request)
+    {
         $action = $request->input('action');
         if ($action === 'create_another') {
             return redirect()->route('maintenance.inventory.create')->with('success', 'Maintenance Inventory Report created successfully!')->withInput();
@@ -141,7 +144,66 @@ class MaintenanceInventoryController extends Controller
 
     public function show($id)
     {
-        $report = HeaderMaintenanceInventoryReport::with('detail')->find($id);
+        $report = HeaderMaintenanceInventoryReport::with('detail', 'detail.typecategory')->find($id);
+        dd($report);
         return view('maintenance-inventory.detail', compact('report'));
+    }
+
+    public function edit($id)
+    {
+        $masters = MasterInventory::all();
+        $users = User::where(function ($query) {
+            $query->where('name', 'vicky')->orWhere('name', 'bagus');
+        })->get();
+        $details = DetailMaintenanceInventoryReport::with('typecategory', 'typecategory.group')->where('header_id', $id)->get();
+        $groupedDetails = $details->groupBy(function ($item) {
+            return $item->typecategory->group->name;
+        });
+        $report = HeaderMaintenanceInventoryReport::with('detail')->find($id);
+        return view('maintenance-inventory.edit', compact('report', 'masters', 'users', 'groupedDetails'));
+    }
+
+    public function update(UpdateMaintenanceInventoryRequest $request, $id)
+    {
+        // dd($request->all());
+        $header = HeaderMaintenanceInventoryReport::findOrFail($id);
+
+        $header->update([
+            'master_id' => $request->input('master_id'),
+            'revision_date' => $request->input('revision_date'),
+        ]);
+
+        $this->updateDetails($request, $header->id);
+
+        // Handle new items
+        if ($request->has('new_items')) {
+            foreach ($request->input('new_items') as $newItemId) {
+                DetailMaintenanceInventoryReport::create([
+                    'header_id' => $header->id,
+                    'name' => $request->input("new_items_names.$newItemId"),
+                    'condition' => $request->input("new_conditions.$newItemId"),
+                    'remark' => $request->input("new_remarks.$newItemId"),
+                    'checked_by' => $request->input("new_checked_by.$newItemId"),
+                    'group_id' => $request->input("new_group_ids.$newItemId"),
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Maintenance Inventory Report successfully updated!');
+    }
+
+    private function updateDetails(UpdateMaintenanceInventoryRequest $request, $headerId)
+    {
+        $items = $request->input('items', []);
+        foreach ($items as $itemId) {
+            $detail = DetailMaintenanceInventoryReport::find($itemId);
+            if ($detail) {
+                $detail->update([
+                    'condition' => $request->input("conditions.$itemId"),
+                    'remark' => $request->input("remarks.$itemId"),
+                    'checked_by' => $request->input("checked_by.$itemId"),
+                ]);
+            }
+        }
     }
 }

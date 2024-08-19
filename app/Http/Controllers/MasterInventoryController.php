@@ -515,7 +515,7 @@ class MasterInventoryController extends BaseController
                     'master_inventory_id' => $repairHistory->master_id,
                     'hardware_id' => $repairHistory->item_type,
                     'hardware_name' => $repairHistory->item_name,
-                    'hardware_brand' => $repairHistory->item_brand,
+                    'brand' => $repairHistory->item_brand,
                     'remark' => $repairHistory->remark, // Example relationship
                     // Add more fields if needed
                 ]);

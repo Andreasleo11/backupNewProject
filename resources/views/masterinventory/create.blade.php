@@ -103,9 +103,9 @@
             <thead>
                 <tr>
                     <th>Hardware Type</th>
-                    <th>Hardware Brand</th>
+                    <th>Nomor Inventaris</th> <!-- header only -->
                     <th>Hardware Name</th>
-                    <th>Remark</th>
+                    <th>Tanggal Pembelian</th> <!-- header only -->
                     <th>Actions</th>
                 </tr>
             </thead>

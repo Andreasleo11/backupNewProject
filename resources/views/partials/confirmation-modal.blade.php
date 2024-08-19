@@ -1,4 +1,4 @@
-<div class="modal fade" id="approve-confirmation-modal-{{ $id }}">
+<div class="modal fade" id="confirmation-modal-{{ $id }}">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

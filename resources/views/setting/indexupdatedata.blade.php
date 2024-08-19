@@ -23,6 +23,7 @@
             <option value="sap_inventoryfg">sap_inventoryfg</option>
             <option value="sap_inventorymtr">sap_inventorymtr</option>
             <option value="sap_lineproduction">sap_lineproduction</option>
+            <option value="sap_reject">sap_reject</option>
         </select>
         <br>
         <label for="excel_files">Upload Excel files:</label>

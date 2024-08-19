@@ -29,14 +29,14 @@
                                 @csrf @method('PUT')
                                 <input type="hidden" name="created_autograph" value="{{ ucwords($authUser->name) }}">
                             </form>
-                            @include('partials.approve-confirmation-modal2', [
-                                'id' => '1',
+                            @include('partials.confirmation-modal', [
+                                'id' => $report->id,
                                 'title' => 'Approval Confirmation',
                                 'body' => 'Are you sure want to approve this report?',
                                 'submitButton' =>
                                     '<button class="btn btn-success" onclick="document.getElementById(\'formCreatedAutograph\').submit()">Confirm</button>',
                             ])
-                            <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
+                            <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-{{ $report->id }}"
                                 class="btn btn-success">Approve</button>
                         </div>
                     </div>
@@ -81,14 +81,14 @@
                                 @csrf @method('PUT')
                                 <input type="hidden" name="is_known_autograph" value="{{ ucwords($authUser->name) }}">
                             </form>
-                            @include('partials.approve-confirmation-modal2', [
-                                'id' => '1',
+                            @include('partials.confirmation-modal', [
+                                'id' => $report->id,
                                 'title' => 'Approval Confirmation',
                                 'body' => 'Are you sure want to approve this report?',
                                 'submitButton' =>
                                     '<button class="btn btn-success" onclick="document.getElementById(\'formIsKnownAutograph\').submit()">Confirm</button>',
                             ])
-                            <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
+                            <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-{{ $report->id }}"
                                 class="btn btn-success">Approve</button>
                         </div>
                     </div>
@@ -131,14 +131,14 @@
                                 @csrf @method('PUT')
                                 <input type="hidden" name="approved_autograph" value="{{ ucwords($authUser->name) }}">
                             </form>
-                            @include('partials.approve-confirmation-modal2', [
-                                'id' => '2',
+                            @include('partials.confirmation-modal', [
+                                'id' => $report->id,
                                 'title' => 'Approval Confirmation',
                                 'body' => 'Are you sure want to approve this report?',
                                 'submitButton' =>
                                     '<button class="btn btn-success" onclick="document.getElementById(\'formApprovedAutograph\').submit()">Confirm</button>',
                             ])
-                            <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-2"
+                            <button data-bs-toggle="modal" data-bs-target="#confirmation-modal-{{ $report->id }}"
                                 class="btn btn-success">Approve</button>
                         </div>
                     </div>
