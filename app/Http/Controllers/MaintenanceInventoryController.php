@@ -145,7 +145,7 @@ class MaintenanceInventoryController extends Controller
     public function show($id)
     {
         $report = HeaderMaintenanceInventoryReport::with('detail', 'detail.typecategory')->find($id);
-        dd($report);
+        // dd($report);
         return view('maintenance-inventory.detail', compact('report'));
     }
 
