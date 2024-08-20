@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Notifications\SPKCreated;
 use App\Notifications\SPKUpdated;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Notification;
@@ -27,6 +28,15 @@ class SuratPerintahKerjaKomputer extends Model
         'tanggal_terima',
         'tanggal_selesai',
         'tanggal_estimasi',
+        'requested_by_autograph',
+        'prepared_by_autograph',
+        'pic_autograph',
+        'finished_by_autograph',
+        'dept_head_autograph',
+        'requested_by',
+        'is_revision',
+        'revision_count',
+        'revision_reason',
     ];
 
     public function deptRelation()
@@ -41,7 +51,12 @@ class SuratPerintahKerjaKomputer extends Model
 
     public function spkRemarks()
     {
-        return $this->hasMany(SpkRemark::class, 'spk_id');
+        return $this->hasMany(SpkRemark::class, 'spk_id')->where('is_revision', 0);
+    }
+
+    public function revisionRemarks()
+    {
+        return $this->hasMany(SpkRemark::class, 'spk_id')->where('is_revision', 1);
     }
 
     protected static function boot()
@@ -49,36 +64,37 @@ class SuratPerintahKerjaKomputer extends Model
         parent::boot();
 
         static::created(function ($spk) {
-            $prefix = 'DI';
-            switch ($spk->to_department) {
-                case 'COMPUTER':
-                    $middle = 'CP';
-                    break;
-                case 'PERSONALIA':
-                    $middle = 'HRD';
-                    break;
-                case 'MAINTENANCE':
-                    $middle = 'MT';
-                    break;
-                default:
-                    $middle = 'UNKNOWN';
-                    break;
-            }
-            $thirdfix = "SPK";
-
-            $lastNumber = str_pad($spk->id, 5, '0', STR_PAD_LEFT);
-
-
-            $no_dokumen = "$prefix/$middle/$thirdfix/$lastNumber";
-
-            $spk->no_dokumen = $no_dokumen;
-            $spk->save();
-
             $spk->sendNotification('created');
         });
 
         static::updated(function ($spk) {
-            if ($spk->isDirty('status_laporan') && !isset($spk->isNewRecord)) {
+            $statusChanged = $spk->isDirty('status_laporan');
+            $keteranganPicChanged = $spk->isDirty('keterangan_pic');
+
+            if (($statusChanged || $keteranganPicChanged)) {
+                // Create SPK Remark
+                $remarks = $spk->keterangan_pic;
+                $status = $spk->status_laporan;
+                $spkId = $spk->id;
+                $revisionReason = $spk->revision_reason;
+
+                if (!$spk->is_revision) {
+                    SpkRemark::create([
+                        'spk_id' => $spkId,
+                        'status' => $status,
+                        'remarks' => $remarks,
+                    ]);
+                } elseif ($spk->is_revision) {
+                    SpkRemark::create([
+                        'spk_id' => $spkId,
+                        'status' => $status,
+                        'remarks' => $remarks ?? $revisionReason,
+                        'is_revision' => true,
+                    ]);
+                }
+            }
+
+            if ($statusChanged) {
                 $spk->sendNotification('updated');
             }
         });
@@ -105,13 +121,24 @@ class SuratPerintahKerjaKomputer extends Model
                 - No Dokumen : $this->no_dokumen <br>
                 - Pelapor : $this->pelapor <br>
                 - Departemen : $this->dept <br>";
-        } else {
+        } elseif ($event == 'updated') {
             $keteranganPic = $this->keterangan_pic ?: '-';
-            $commonDetails['body'] = "Notification for SPK : <br>
-                - No Dokumen : $this->no_dokumen <br>
-                - PIC : $this->pic  <br>
-                - Keterangan PIC : $keteranganPic <br>
-                - Status : $status";
+
+            if ($this->is_revision) {
+                $commonDetails['body'] = "Notification for SPK : <br>
+                    Revision-$this->revision_count <br>
+                    - Revision Reason : $this->revision_reason <br>
+                    - No Dokumen : $this->no_dokumen <br>
+                    - PIC : $this->pic  <br>
+                    - Keterangan PIC : $keteranganPic <br>
+                    - Status : $status";
+            } else {
+                $commonDetails['body'] = "Notification for SPK : <br>
+                    - No Dokumen : $this->no_dokumen <br>
+                    - PIC : $this->pic  <br>
+                    - Keterangan PIC : $keteranganPic <br>
+                    - Status : $status";
+            }
         }
 
         return $commonDetails;
@@ -120,12 +147,16 @@ class SuratPerintahKerjaKomputer extends Model
     private function getStatusText($status)
     {
         switch ($status) {
+            case 0:
+                return 'WAITING CREATOR';
             case 1:
-                return 'WAITING';
+                return 'WAITING PIC';
             case 2:
                 return 'IN PROGRESS';
             case 3:
                 return 'DONE';
+            case 4:
+                return 'FINISH';
             default:
                 return 'UNKNOWN';
         }

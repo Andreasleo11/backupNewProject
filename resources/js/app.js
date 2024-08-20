@@ -7,6 +7,9 @@ import '/node_modules/tom-select/dist/css/tom-select.bootstrap5.min.css';
 import TomSelect from "tom-select";
 import { Fancybox } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
+import SignaturePad from 'signature_pad';
+
 window.TomSelect = TomSelect;
 window.Fancybox = Fancybox;
+window.SignaturePad = SignaturePad;
 
