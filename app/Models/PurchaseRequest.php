@@ -83,14 +83,65 @@ class PurchaseRequest extends Model
     protected static function booted()
     {
         static::created(function ($purchaseRequest) {
+            // Map department names to codes
+            $departmentCodes = [
+                'Accounting' => 'ACU',
+                'Assembly' => 'ASM',
+                'Business' => 'BUS',
+                'Computer' => 'CP',
+                'HRD' => 'HRD',
+                'Personnel' => 'HRD',
+                'Maintenance' => 'MT',
+                'Maintenance Moulding' => 'MTM',
+                'Moulding' => 'MLD',
+                'Plastic Injection' => 'PI',
+                'PPIC' => 'PIC',
+                'Purchasing' => 'PUR',
+                'QA' => 'QA',
+                'QC' => 'QC',
+                'Second Process' => 'SPC',
+                'Store' => 'STR',
+                'Logistic' => 'LOG',
+                'PE' => 'PE'
+            ];
+
+
+             // Map branches to area codes
+            $branchCodes = [
+                'JAKARTA' => 'JKT',
+                'KARAWANG' => 'KRW'
+            ];
+
             // Get the date portion
-            $date = now()->format('Ymd'); // Assuming you want the current date
+            $date = $purchaseRequest->created_at->format('ymd'); // Day-Month-Year format (e.g., '240819' for August 24, 2019)
 
-            $branch = substr($purchaseRequest->branch, 0, 3);
+            // Get the department code
+            $department = $purchaseRequest->to_department;
+            $branchCode = $departmentCodes[$department] ?? 'UNK'; // Use 'UNK' for unknown departments
+
+             // Get the area code from the branch
+            $branch = $purchaseRequest->branch;
+            $areaCode = $branchCodes[$branch] ?? 'UNK'; // Use 'UNK' for unknown branches
+
+            // Fetch the last record's doc_num for the current date and branch code
+            $latest = static::where('doc_num', 'like', "%/PR/{$areaCode}/{$date}/%")
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($latest) {
+                // Extract the increment part from the latest doc_num
+                $lastIncrement = (int) substr($latest->doc_num, -3); // Assuming the increment is always 3 digits
+            } else {
+                $lastIncrement = 0; // No records found for today
+            }
+
+            // Calculate the next increment number
+            $increment = str_pad($lastIncrement + 1, 3, '0', STR_PAD_LEFT);
+
             // Build the docNum
-            $docNum = "PR/$branch/$purchaseRequest->id/$date";
+            $docNum = "{$branchCode}/PR/{$areaCode}/{$date}/{$increment}";
 
-            $prNo = substr($purchaseRequest->to_department, 0, 4) . '-' . $purchaseRequest->id;
+            $prNo = substr($department, 0, 4) . '-' . $purchaseRequest->id;
 
             $purchaseRequest->update(['pr_no' => $prNo, 'doc_num' => $docNum]);
 

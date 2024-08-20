@@ -126,7 +126,7 @@
                                 <th>Software Brand</th>
                                 <th>Software Name</th>
                                 <th>License</th>
-                                <th>Remark</th>
+                                <th>Tanggal Pembelian</th>
                                 <th>Last Update</th>
                             </tr>
                         </thead>
@@ -166,7 +166,7 @@
                             <th>Item Brand</th>
                             <th>Item Name</th>
                             <th>Action Date</th>
-                            <th>Remark</th>
+                            <th>Tanggal Pembelian</th>
                             <!-- <th>Created At</th>
                                                         <th>Updated At</th> -->
                             <th>Actions</th>
@@ -313,7 +313,7 @@
 
                         <!-- Remark -->
                         <div class="form-group">
-                            <label for="remark">Remark</label>
+                            <label for="remark">Tanggal Pembelian (YYYY-MM-DD) </label>
                             <input type="text" class="form-control" id="remark" name="remark">
                         </div>
 
