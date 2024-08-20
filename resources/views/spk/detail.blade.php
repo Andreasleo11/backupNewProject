@@ -1,19 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
-    <style>
-        .autograph-box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 100px;
-            /* Adjust height as needed */
-            text-align: center;
-            font-size: 14px;
-            color: #333;
-            background-color: #f9f9f9;
-        }
-    </style>
     @include('partials.alert-success-error')
 
     {{-- GLOBAL VARIABLE --}}
@@ -38,52 +25,47 @@
                 {{-- Upcoming feature? --}}
             </div>
             <div class="container">
-                @if ($report->status_laporan == 2)
-                    <div class="row mt-4 justify-content-center">
-                        <div class="col-md-8">
-                            <div class="row text-center justify-content-center">
-                                <div class="col-md-4">
-                                    <label for="pelapor_autograph" class="fw-semibold col-form-label">Pelapor
-                                        Autograph</label>
-                                    <div class="autograph-box" id="pelapor_autograph">
-                                        <img src="{{ asset($report->pelapor . '.png') }}" alt="Pelapor Autograph"
-                                            style="height: 100px;">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="petugas_autograph" class="fw-semibold col-form-label">Petugas
-                                        Autograph</label>
-                                    <div class="autograph-box" id="petugas_autograph">
-                                        <img src="{{ asset($report->pic . '.png') }}" alt="Pelapor Autograph"
-                                            style="height: 100px;">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="depthead_autograph" class="fw-semibold col-form-label">DeptHead
-                                        Autograph</label>
-                                    <div class="autograph-box" id="depthead_autograph">
-                                        <img src="{{ asset($depthead->name . '.png') }}" alt="Pelapor Autograph"
-                                            style="height: 100px;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                @endif
-
                 <div class="row justify-content-center mt-4">
                     <div class="col-md-8">
-                        <form action="{{ route('spk.update', $report->id) }}" method="post">
-                            @method('PUT')
-                            @csrf
-                            <div class="card mt-2">
-                                <div class="card-body">
+                        <div class="card mt-2">
+                            <div class="card-body">
+                                @include('partials.ask-a-revision-modal')
+
+                                @include('partials.confirmation-modal', [
+                                    'id' => $report->id,
+                                    'title' => 'Finish this SPK',
+                                    'body' => 'Are you sure?',
+                                    'submitButton' =>
+                                        '<button type="submit" class="btn btn-primary" onclick="document.getElementById(\'formFinishSPK\').submit()">Confirm</button>',
+                                ])
+                                <form id="formFinishSPK" action="{{ route('spk.finish', $report->id) }}" method="POST"
+                                    class="d-none">
+                                    @csrf
+                                    @method('PUT')
+                                </form>
+
+                                <form action="{{ route('spk.update', $report->id) }}" method="post">
+                                    @method('PUT')
+                                    @csrf
                                     <div class="text-end">
-                                        @if ($authUser->department->name === 'COMPUTER' || $authUser->department->name === 'MAINTENANCE' || $authUser->department->name === 'PERSONALIA' && $report->tanggal_selesai === null)
+                                        @if (
+                                            ($authUser->department->name == 'COMPUTER' ||
+                                                $authUser->department->name == 'MAINTENANCE' ||
+                                                $authUser->department->name == 'PERSONALIA') &&
+                                                ($report->status_laporan !== 3 && $report->status_laporan !== 4))
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
+                                    @if ($report->status_laporan === 3)
+                                        <button type="button" data-bs-toggle="modal"
+                                            data-bs-target="#ask-a-revision-modal-{{ $report->id }}"
+                                            class="btn btn-outline-primary">Ask a Revision</button>
+
+
+                                        <button type="button" class="btn btn-primary"
+                                            data-bs-target="#confirmation-modal-{{ $report->id }}"
+                                            data-bs-toggle="modal">Finish</button>
+                                    @endif
                                     <div class="text-center my-3">
                                         <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
                                         <div class="text-secondary">
@@ -97,7 +79,7 @@
                                             <div>Diupdate Pada :
                                                 {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                                             </div>
-                                            @if ($report->tanggal_selesai !== null)
+                                            @if ($report->tanggal_selesai)
                                                 <div>Selesai pada :
                                                     {{ \Carbon\Carbon::parse($report->updated_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
                                                 </div>
@@ -108,8 +90,6 @@
                                                 'status' => $report->status_laporan,
                                             ])
                                         </div>
-
-
                                     </div>
                                     <div class="form-group row mt-5">
                                         <label for="no_dokumen" class="fw-semibold col-form-label col">No Dokumen</label>
@@ -130,6 +110,16 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
+                                        <label for="requested_by" class="fw-semibold col-form-label col">Requested
+                                            By</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" name="requested_by" id="requested_by"
+                                                value="{{ $report->requested_by }}"
+                                                class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
+                                                readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mt-3">
                                         <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
@@ -137,7 +127,6 @@
                                                 readonly>
                                         </div>
                                     </div>
-
                                     <div class="form-group row mt-3">
                                         <label for="deto_departmentpt" class="fw-semibold col-form-label col">To
                                             Departemen</label>
@@ -160,19 +149,18 @@
                                         <label for="no_dokumen" class="fw-semibold col-form-label col">Keterangan
                                             Laporan</label>
                                         <div class="col-sm-9 mt-2">
-                                            <textarea name="keterangan_laporan" id="keterangan_laporan" class="form-control" rows="5">{{ $report->keterangan_laporan }}
-                                    </textarea>
+                                            <textarea name="keterangan_laporan" id="keterangan_laporan" class="form-control" rows="5">{{ $report->keterangan_laporan }}</textarea>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="pic" class="fw-semibold col-form-label col">PIC</label>
                                         <div class="col-sm-9">
-                                            <select name="pic" id="pic" class="form-control">
-                                                <option value="" disabled selected>{{ $report->pic ?? '-' }}
+                                            <select name="pic" id="pic" class="form-select">
+                                                <option value="" disabled selected>--Select PIC--
                                                 </option>
                                                 @foreach ($users as $user)
                                                     <option value="{{ $user->name }}"
-                                                        {{ isset($report->pic) && $report->pic == $user->id ? 'selected' : '' }}>
+                                                        {{ isset($report->pic) && $report->pic == $user->name ? 'selected' : '' }}>
                                                         {{ $user->name }}
                                                     </option>
                                                 @endforeach
@@ -183,11 +171,9 @@
                                         <label for="keterangan_pic" class="fw-semibold col-form-label col">Keterangan
                                             PIC</label>
                                         <div class="col-sm-9 mt-2">
-                                            <textarea name="keterangan_pic" id="keterangan_pic" class="form-control" rows="5">{{ $report->keterangan_pic ?? '-' }}
-                                    </textarea>
+                                            <textarea name="keterangan_pic" id="keterangan_pic" class="form-control" rows="5">{{ $report->keterangan_pic }}</textarea>
                                         </div>
                                     </div>
-
                                     <div class="form-group row mt-3">
                                         <label class="fw-semibold col-form-label col">Remarks</label>
                                         <div class="col-sm-9 mt-2">
@@ -196,6 +182,29 @@
                                             @else
                                                 <ul class="list-group">
                                                     @foreach ($report->spkRemarks as $remark)
+                                                        <li class="list-group-item">
+
+                                                            @include('partials.spk-status', [
+                                                                'status' => $remark->status,
+                                                            ])
+                                                            <br>
+                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                            <strong>Date:</strong>
+                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="form-group row mt-3">
+                                        <label class="fw-semibold col-form-label col">Revision Remarks</label>
+                                        <div class="col-sm-9 mt-2">
+                                            @if ($report->revisionRemarks->isEmpty())
+                                                <p>No revision remarks available.</p>
+                                            @else
+                                                <ul class="list-group">
+                                                    @foreach ($report->revisionRemarks as $remark)
                                                         <li class="list-group-item">
 
                                                             @include('partials.spk-status', [
@@ -235,14 +244,20 @@
                                                 class="form-control" value="{{ $report->tanggal_selesai }}">
                                         </div>
                                     </div>
+                                    <div class="mt-3 text-end " id="saveChangesButtonContainer">
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </form>
+
+                                <div class="mt-5">
+                                    @include('partials.spk-autographs')
                                 </div>
                             </div>
-                            <div class="mt-3 text-end " id="saveChangesButtonContainer">
-                                <button type="submit" class="btn btn-primary">Save changes</button>
-                            </div>
-                        </form>
+                        </div>
+
                     </div>
                 </div>
+
             </div>
         </div>
 
@@ -255,12 +270,15 @@
 
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
-            const ignoredInputs = ['no_dokumen', 'pelapor', 'dept', 'to_department'];
-            const inputs = document.querySelectorAll('input, textarea, select');
+            const toggleableInputs = [
+                'judul_laporan', 'keterangan_laporan', 'pic', 'keterangan_pic', 'tanggal_terima', 'tanggal_estimasi',
+                'tanggal_selesai'
+            ];
+            const inputs = document.querySelectorAll('input:not([type=hidden]), textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
 
             inputs.forEach(input => {
-                if (!ignoredInputs.includes(input.id)) {
+                if (toggleableInputs.includes(input.id)) {
                     input.readOnly = !input.readOnly;
                     input.disabled = !input.disabled;
                 }
