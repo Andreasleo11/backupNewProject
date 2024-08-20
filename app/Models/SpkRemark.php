@@ -14,10 +14,11 @@ class SpkRemark extends Model
         'spk_id',
         'remarks',
         'status',
+        'is_revision'
     ];
 
     public function spkRelation()
     {
-        return $this->belongsTo(User::SuratPerintahKerjaKomputer);
+        return $this->belongsTo(SuratPerintahKerjaKomputer::class);
     }
 }

@@ -118,6 +118,7 @@
                         <tr>
                             <th>No. Dokumen</th>
                             <th>Pelapor</th>
+                            <th>Requested By</th>
                             <th>Tanggal Lapor</th>
                             <th>Judul Laporan</th>
                             <th>PIC</th>
@@ -130,6 +131,7 @@
                             <tr>
                                 <td class="align-content-center">{{ $report->no_dokumen }}</td>
                                 <td class="align-content-center">{{ $report->pelapor }}</td>
+                                <td class="align-content-center">{{ $report->requested_by }}</td>
                                 <td class="align-content-center">@formatDate($report->tanggal_lapor)</td>
                                 <td class="align-content-center">{{ $report->judul_laporan }}</td>
                                 <td class="align-content-center">{{ $report->pic ?? 'Not Assigned' }}</td>
