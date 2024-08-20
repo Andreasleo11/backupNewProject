@@ -15,13 +15,32 @@ use Illuminate\Support\Facades\Validator;
 
 class MaintenanceInventoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $reportsQuery = HeaderMaintenanceInventoryReport::query();
-        $reports = $reportsQuery
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('maintenance-inventory.index', compact('reports'));
+        $periode = $request->input('periode');
+        $year = $request->input('year', date('Y')); // Default to the current year if not provided
+    
+        $reportsQuery = HeaderMaintenanceInventoryReport::with('master');
+    
+        if ($periode) {
+            switch ($periode) {
+                case 1:
+                    $reportsQuery->whereMonth('created_at', '>=', 1)->whereMonth('created_at', '<=', 4);
+                    break;
+                case 2:
+                    $reportsQuery->whereMonth('created_at', '>=', 5)->whereMonth('created_at', '<=', 8);
+                    break;
+                case 3:
+                    $reportsQuery->whereMonth('created_at', '>=', 9)->whereMonth('created_at', '<=', 12);
+                    break;
+            }
+        }
+    
+        $reportsQuery->whereYear('created_at', $year);
+    
+        $reports = $reportsQuery->orderBy('created_at', 'desc')->paginate(10);
+    
+        return view('maintenance-inventory.index', compact('reports', 'periode', 'year'));
     }
 
     private function getPeriodeCaturwulan($month)
@@ -86,7 +105,7 @@ class MaintenanceInventoryController extends Controller
     private function createHeader(StoreMaintenanceInventoryRequest $request)
     {
         return HeaderMaintenanceInventoryReport::create([
-            'no_dokumen' => 'MIR-' . now()->timestamp,
+            'no_dokumen' => HeaderMaintenanceInventoryReport::generateNoDokumen(),
             'master_id' => $request->input('master_id'),
             'revision_date' => $request->input('revision_date'),
         ]);

@@ -32,6 +32,21 @@ class HeaderMaintenanceInventoryReport extends Model
         });
     }
 
+    public static function generateNoDokumen()
+    {
+        // Get today's date in YYMMDD format
+        $date = now()->format('ymd');
+
+        // Count the number of documents already created today
+        $countToday = self::whereDate('created_at', now()->format('Y-m-d'))->count();
+
+        // Generate the sequence number, starting from 001
+        $sequenceNumber = str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
+
+        // Return the formatted document number
+        return 'MIR/' . $date . '/' . $sequenceNumber;
+    }
+
     public function detail()
     {
         return $this->hasMany(DetailMaintenanceInventoryReport::class, 'header_id');

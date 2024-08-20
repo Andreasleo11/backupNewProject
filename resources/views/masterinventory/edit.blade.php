@@ -123,7 +123,7 @@
                     <th>Software Brand</th>
                     <th>Software Name</th>
                     <th>License</th>
-                    <th>Remark</th>
+                    <th>Tanggal Pembelian</th>
                     <th>Actions</th>
                 </tr>
             </thead>
