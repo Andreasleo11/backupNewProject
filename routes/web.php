@@ -695,6 +695,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
     Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
     Route::get('spkkomputer/report/monthly', [SuratPerintahKerjaKomputerController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaKomputerController::class, 'saveAutograph'])->name('spk.save.autograph');
+    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaKomputerController::class, 'revision'])->name('spk.revision');
+    Route::put('/spk/finish/{id}', [SuratPerintahKerjaKomputerController::class, 'finish'])->name('spk.finish');
 
     Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
