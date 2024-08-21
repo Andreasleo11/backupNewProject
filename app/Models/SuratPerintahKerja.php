@@ -25,7 +25,7 @@ class SuratPerintahKerja extends Model
         'pic',
         'keterangan_pic',
         'status_laporan',
-        'tanggal_terima',
+        'tanggal_mulai',
         'tanggal_selesai',
         'tanggal_estimasi',
         'requested_by_autograph',

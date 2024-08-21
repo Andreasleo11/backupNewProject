@@ -199,7 +199,7 @@
             const today = new Date();
             const date = today.toISOString().slice(2, 10).replace(/-/g, '');
             const count =
-                {{ \App\Models\SuratPerintahKerjaKomputer::whereDate('created_at', \Carbon\Carbon::today())->count() }};
+                {{ \App\Models\SuratPerintahKerja::whereDate('created_at', \Carbon\Carbon::today())->count() }};
             const lastNumber = String(count).padStart(3, '0');
             const noDokumen = `${toDeptCode}/${type}/${date}/${lastNumber}`;
 

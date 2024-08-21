@@ -221,11 +221,11 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="tanggal_terima" class="fw-semibold col-form-label col">Tanggal
+                                        <label for="tanggal_mulai" class="fw-semibold col-form-label col">Tanggal
                                             Mulai</label>
                                         <div class="col-sm-9">
-                                            <input type="datetime-local" name="tanggal_terima" id="tanggal_terima"
-                                                class="form-control" value="{{ $report->tanggal_terima }}">
+                                            <input type="datetime-local" name="tanggal_mulai" id="tanggal_mulai"
+                                                class="form-control" value="{{ $report->tanggal_mulai }}">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -271,7 +271,7 @@
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
             const toggleableInputs = [
-                'judul_laporan', 'keterangan_laporan', 'pic', 'keterangan_pic', 'tanggal_terima', 'tanggal_estimasi',
+                'judul_laporan', 'keterangan_laporan', 'pic', 'keterangan_pic', 'tanggal_mulai', 'tanggal_estimasi',
                 'tanggal_selesai'
             ];
             const inputs = document.querySelectorAll('input:not([type=hidden]), textarea, select');

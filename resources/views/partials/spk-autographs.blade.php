@@ -72,7 +72,7 @@
                 $report->pic === $authUser->name &&
                 $report->keterangan_pic &&
                 $report->tanggal_estimasi &&
-                $report->tanggal_terima
+                $report->tanggal_mulai
             ) {
                 $showPicAutograph = true;
             }

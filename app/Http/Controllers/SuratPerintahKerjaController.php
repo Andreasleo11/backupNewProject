@@ -206,7 +206,7 @@ class SuratPerintahKerjaController extends Controller
     {
         if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai)) {
             return 3;
-        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['keterangan_pic']) || $report->keterangan_pic) && (!empty($data['tanggal_terima']) || $report->tanggal_terima) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi)) {
+        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['keterangan_pic']) || $report->keterangan_pic) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi)) {
             return 2;
         } elseif ($report->prepared_by_autograph) {
             return 1;
@@ -271,7 +271,7 @@ class SuratPerintahKerjaController extends Controller
             }
 
             // Calculate estimasi_kesepakatan based on your logic
-            $dateMulai = new DateTime($report->tanggal_terima);
+            $dateMulai = new DateTime($report->tanggal_mulai);
             $dateEstimasi = new DateTime($report->tanggal_estimasi);
             $estimasi = $dateMulai->diff($dateEstimasi);
             $estimasiFormatted = sprintf('%d hari, %d jam, %d menit', $estimasi->days, $estimasi->h, $estimasi->i);
@@ -295,7 +295,7 @@ class SuratPerintahKerjaController extends Controller
                 'pic' => $report->pic,
                 'keterangan_pic' => $report->keterangan_pic,
                 'tanggal_lapor' => $report->tanggal_lapor,
-                'tanggal_terima' => $report->tanggal_terima,
+                'tanggal_mulai' => $report->tanggal_mulai,
                 'tanggal_selesai' => $report->tanggal_selesai,
                 'durasi' => $durasiFormatted,
                 'estimasi_kesepakatan' => $estimasiFormatted,

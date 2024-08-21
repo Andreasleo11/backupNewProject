@@ -29,7 +29,7 @@ class UpdateSuratPerintahKerjaRequest extends FormRequest
             'keterangan_laporan' => 'required|string|max:1000',
             'pic' => 'nullable|string|max:255',
             'keterangan_pic' => 'nullable|string|max:1000',
-            'tanggal_terima' => 'nullable|date',
+            'tanggal_mulai' => 'nullable|date',
             'status_laporan' => 'nullable|integer',
             'tanggal_selesai' => 'nullable|date',
             'tanggal_estimasi' => 'nullable|date',
@@ -59,7 +59,7 @@ class UpdateSuratPerintahKerjaRequest extends FormRequest
             'keterangan_pic.string' => 'Keterangan PIC must be a string.',
             'keterangan_pic.max' => 'Keterangan PIC may not be greater than 1000 characters.',
             'status_laporan.integer' => 'Status Laporan must be an integer.',
-            'tanggal_terima.date' => 'Tanggal Terima must be a valid date.',
+            'tanggal_mulai.date' => 'Tanggal Terima must be a valid date.',
             'tanggal_selesai.date' => 'Tanggal Selesai must be a valid date.',
             'tanggal_estimasi.date' => 'Tanggal Estimasi must be a valid date.',
         ];
