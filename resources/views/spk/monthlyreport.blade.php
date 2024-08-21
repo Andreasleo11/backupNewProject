@@ -81,7 +81,7 @@
                         <td>{{ $report['judul'] }}</td>
                         <td>{{ $report['keterangan_laporan'] }}</td>
                         <td>{{ $report['pic'] }}</td>
-                        <td>{{ $report['keterangan_pic'] }}</td>
+                        <td>{{ $report['tindakan'] }}</td>
                         <td>{{ $report['tanggal_lapor'] }}</td>
                         <td>{{ $report['tanggal_mulai'] }}</td>
                         <td>{{ $report['tanggal_selesai'] }}</td>

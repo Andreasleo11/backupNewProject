@@ -23,7 +23,7 @@ class SuratPerintahKerja extends Model
         'judul_laporan',
         'keterangan_laporan',
         'pic',
-        'keterangan_pic',
+        'tindakan',
         'status_laporan',
         'tanggal_mulai',
         'tanggal_selesai',
@@ -69,11 +69,11 @@ class SuratPerintahKerja extends Model
 
         static::updated(function ($spk) {
             $statusChanged = $spk->isDirty('status_laporan');
-            $keteranganPicChanged = $spk->isDirty('keterangan_pic');
+            $keteranganPicChanged = $spk->isDirty('tindakan');
 
             if (($statusChanged || $keteranganPicChanged)) {
                 // Create SPK Remark
-                $remarks = $spk->keterangan_pic;
+                $remarks = $spk->tindakan;
                 $status = $spk->status_laporan;
                 $spkId = $spk->id;
                 $revisionReason = $spk->revision_reason;
@@ -122,7 +122,7 @@ class SuratPerintahKerja extends Model
                 - Pelapor : $this->pelapor <br>
                 - Departemen : $this->dept <br>";
         } elseif ($event == 'updated') {
-            $keteranganPic = $this->keterangan_pic ?: '-';
+            $keteranganPic = $this->tindakan ?: '-';
 
             if ($this->is_revision) {
                 $commonDetails['body'] = "Notification for SPK : <br>

@@ -206,7 +206,7 @@ class SuratPerintahKerjaController extends Controller
     {
         if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai)) {
             return 3;
-        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['keterangan_pic']) || $report->keterangan_pic) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi)) {
+        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi)) {
             return 2;
         } elseif ($report->prepared_by_autograph) {
             return 1;
@@ -293,7 +293,7 @@ class SuratPerintahKerjaController extends Controller
                 'judul' => $report->judul_laporan,
                 'keterangan_laporan' => $report->keterangan_laporan,
                 'pic' => $report->pic,
-                'keterangan_pic' => $report->keterangan_pic,
+                'tindakan' => $report->tindakan,
                 'tanggal_lapor' => $report->tanggal_lapor,
                 'tanggal_mulai' => $report->tanggal_mulai,
                 'tanggal_selesai' => $report->tanggal_selesai,
@@ -326,7 +326,7 @@ class SuratPerintahKerjaController extends Controller
             'finished_by_autograph' => null,
             'dept_head_autograph' => null,
             'tanggal_selesai' => null,
-            'keterangan_pic' => null,
+            'tindakan' => null,
             'revision_reason' => $validated['revision_reason']
         ]);
 

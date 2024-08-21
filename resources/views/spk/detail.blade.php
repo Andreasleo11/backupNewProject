@@ -168,10 +168,10 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="keterangan_pic" class="fw-semibold col-form-label col">Keterangan
+                                        <label for="tindakan" class="fw-semibold col-form-label col">Keterangan
                                             PIC</label>
                                         <div class="col-sm-9 mt-2">
-                                            <textarea name="keterangan_pic" id="keterangan_pic" class="form-control" rows="5">{{ $report->keterangan_pic }}</textarea>
+                                            <textarea name="tindakan" id="tindakan" class="form-control" rows="5">{{ $report->tindakan }}</textarea>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -271,7 +271,7 @@
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
             const toggleableInputs = [
-                'judul_laporan', 'keterangan_laporan', 'pic', 'keterangan_pic', 'tanggal_mulai', 'tanggal_estimasi',
+                'judul_laporan', 'keterangan_laporan', 'pic', 'tindakan', 'tanggal_mulai', 'tanggal_estimasi',
                 'tanggal_selesai'
             ];
             const inputs = document.querySelectorAll('input:not([type=hidden]), textarea, select');

@@ -778,7 +778,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     // FOR DEBUG ONLY: VIEWING CREATED SPK NOTIFICATION
     Route::get('/createdSpkPreview', function () {
-        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+        $spk = App\Models\SuratPerintahKerja::find(4);
 
         $details = [
             'cc' => $spk->createdBy->email,
@@ -796,7 +796,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     // FOR DEBUG ONLY: VIEWING UPDATED SPK NOTIFICATION
     Route::get('/updatedSpkPreview', function () {
-        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+        $spk = App\Models\SuratPerintahKerja::find(4);
 
         $status = 'UNKNOWN';
         switch ($spk->status) {
@@ -811,7 +811,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
                 break;
         }
 
-        $keteranganPic = $spk->keterangan_pic ?: '-';
+        $keteranganPic = $spk->tindakan ?: '-';
         $details = [
             'greeting' => 'Surat Perintah Kerja Komputer Notification',
             'body' => "Notification for SPK : <br>

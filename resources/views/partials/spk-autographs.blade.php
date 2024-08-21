@@ -70,7 +70,7 @@
             if (
                 !$report->pic_autograph &&
                 $report->pic === $authUser->name &&
-                $report->keterangan_pic &&
+                $report->tindakan &&
                 $report->tanggal_estimasi &&
                 $report->tanggal_mulai
             ) {
