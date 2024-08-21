@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Models\SuratPerintahKerjaKomputer;
+use App\Models\SuratPerintahKerja;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -18,7 +18,7 @@ class SPKCreated extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(SuratPerintahKerjaKomputer $spk, $details)
+    public function __construct(SuratPerintahKerja $spk, $details)
     {
         $this->spk = $spk;
         $this->details = $details;

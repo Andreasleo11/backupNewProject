@@ -19,6 +19,6 @@ class SpkRemark extends Model
 
     public function spkRelation()
     {
-        return $this->belongsTo(SuratPerintahKerjaKomputer::class);
+        return $this->belongsTo(SuratPerintahKerja::class);
     }
 }

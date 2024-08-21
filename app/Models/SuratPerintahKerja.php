@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Notification;
 
-class SuratPerintahKerjaKomputer extends Model
+class SuratPerintahKerja extends Model
 {
     use HasFactory;
-    protected $table = 'surat_perintah_kerja_komputer';
+    protected $table = 'surat_perintah_kerja';
 
     protected $fillable = [
         'no_dokumen',
