@@ -263,77 +263,77 @@ class DisciplineYayasanTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')
-                        ->where('status', 'YAYASAN');
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->is_gm) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('status', 'YAYASAN');
+                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();}
         elseif (Auth::user()->email === "ani_apriani@daijo.co.id" || Auth::user()->email === "bernadett@daijo.co.id") {
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('status', 'YAYASAN');
+                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 21) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')
-                        ->where('status', 'YAYASAN');
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 11) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('dept', '390')
-                        ->where('status', 'YAYASAN');
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 16) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '363')
-                        ->where('status', 'YAYASAN');
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 20) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
-                        ->where('status', 'YAYASAN');
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 19) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where(function ($query) {
-                        $query->where('Dept', '361')->orWhere('Dept', '362');
+                        $query->whereIn('Dept', '361')->orWhere('Dept', '362');
                     })
-                        ->where('status', 'YAYASAN');
+                        ->where('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 18) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '350')
-                        ->where('status', 'YAYASAN');
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 24) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where(function ($query) {
-                        $query->where('Dept', '331')->orWhere('Dept', '330');
+                        $query->whereIn('Dept', '331')->orWhere('Dept', '330');
                     })
-                        ->where('status', 'YAYASAN');
+                        ->where('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 17) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('status', 'YAYASAN');
+                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
 
                     if (Auth::user()->name === 'catur') {
                         $query->where(function ($query) {
@@ -347,7 +347,7 @@ class DisciplineYayasanTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('status', 'YAYASAN');
+                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
 
                     if (auth()->user()->name === 'yuli') {
                         $query->where(function ($query) {

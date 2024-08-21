@@ -32,6 +32,8 @@
                 @if ($showCreateButton)
                     <a href="{{ route('masterinventory.createpage') }}" class="btn btn-primary">New Inventory</a>
                 @endif
+
+                <a href="{{ route('export.inventory') }}" class="btn btn-success">Export to Excel</a>
             </div>
         </div>
 

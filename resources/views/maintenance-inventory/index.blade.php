@@ -17,6 +17,16 @@
             </ol>
         </nav>
 
+
+        <div class="row">
+            <div class="col">
+                <h2 class="fw-bold">Maintenance Inventory Reports</h2>
+            </div>
+
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#usernameStatusModal">
+                Show Username Statuses
+            </button>
+            
         {{-- Filter Form --}}
         <form method="GET" action="{{ route('maintenance.inventory.index') }}">
             <div class="row mb-3">
@@ -43,11 +53,6 @@
             </div>
         </form>
         {{-- End Filter Form --}}
-
-        <div class="row">
-            <div class="col">
-                <h2 class="fw-bold">Maintenance Inventory Reports</h2>
-            </div>
             <div class="col text-end">
                 <a href="{{ route('maintenance.inventory.create') }}" class="btn btn-primary">New Report</a>
             </div>
@@ -91,4 +96,33 @@
             </div>
         </div>
     </div>
+
+
+    <div class="modal fade" id="usernameStatusModal" tabindex="-1" aria-labelledby="usernameStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="usernameStatusModalLabel">Username Statuses</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        @foreach($usernameStatuses as $username => $status)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <strong>{{ $username }}</strong> <!-- Username is bold -->
+                                @if($status === 'yes')
+                                    <span class="badge bg-success">Yes</span> <!-- or use a checkmark icon -->
+                                @else
+                                    <span class="badge bg-danger">No</span> <!-- or use a cross icon -->
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

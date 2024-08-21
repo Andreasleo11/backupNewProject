@@ -84,6 +84,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\MaintenanceInventoryController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -717,6 +718,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
     Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');
     Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name('delete.type');
+    Route::get('/export-inventory', [MasterInventoryController::class, 'export'])->name('export.inventory');
 
 
     Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
