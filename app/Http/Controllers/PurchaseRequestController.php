@@ -33,7 +33,6 @@ class PurchaseRequestController extends Controller
         $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');
 
         if ($isHRDHead) {
-            // If the user is HRD Head, filter requests with specific conditions
             $purchaseRequestsQuery->where(function ($query) {
                 $query->whereNotNull('autograph_1')
                     ->whereNotNull('autograph_2')
@@ -47,10 +46,6 @@ class PurchaseRequestController extends Controller
                                     ->orWhere('to_department', 'Computer');
                             });
                     })->orWhere('from_department', 'PERSONALIA');
-
-                // if ($query->where('to_department', '=', 'Maintenance') && $query->where('from_department', '=', 'COMPUTER')) {
-                //     $query->whereNull('autograph_5');
-                // }
             });
         } elseif ($isGM) {
             $purchaseRequestsQuery->whereNotNull('autograph_1')
@@ -58,7 +53,6 @@ class PurchaseRequestController extends Controller
                 ->whereNull('autograph_6')
                 ->where(function ($query) use ($userDepartmentName) {
                     $query->where('type', 'factory');
-                    // Additional condition for users where is_gm is 1 and department is 'MOULDING'
                     if ($userDepartmentName === 'MOULDING') {
                         $query->where('from_department', 'MOULDING');
                     } else {
@@ -66,7 +60,6 @@ class PurchaseRequestController extends Controller
                     }
                 });
         } elseif ($isHead) {
-            // same as else
             $purchaseRequestsQuery->where(function ($query) use ($userDepartmentName) {
                 $query->where('from_department', $userDepartmentName);
             });
@@ -77,7 +70,6 @@ class PurchaseRequestController extends Controller
                 $purchaseRequestsQuery->orWhere('from_department', 'STORE');
             }
         } elseif ($isPurchaser) {
-            // If the user is a purchaser, filter requests with specific conditions
             $purchaseRequestsQuery->where(function ($query) {
                 $query->where(function ($query) {
                     $query->where(function ($query) {
@@ -89,25 +81,12 @@ class PurchaseRequestController extends Controller
                     $query->where('type', 'factory')
                         ->whereNotNull('autograph_6');
                 });
-                // if (!$query->where('to_department', 'Purchasing')) {
-                //     $query->whereNotNull('autograph_6');
-                // }
-
             });
-
-            // $purchaseRequestsQuery->where('status', 6);
-
-
-            // $purchaseRequestsQuery->where(function ($query) use ($user) {
-            //     $query->orWhere('user_id_create', $user->id); // Assuming 'created_by' is the foreign key for the user who created the request
-            // });
 
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where('to_department', ucwords(strtolower($userDepartmentName)));
             } elseif ($user->email === 'nur@daijo.co.id') {
-                $purchaseRequestsQuery->where(function ($query) {
-                    $query->where('to_department', 'Maintenance');
-                });
+                $purchaseRequestsQuery->where('to_department', 'Maintenance');
             } elseif ($userDepartmentName === "PERSONALIA") {
                 $purchaseRequestsQuery->where('to_department', 'Personnel');
             }
@@ -116,7 +95,6 @@ class PurchaseRequestController extends Controller
         } elseif ($user->role->name === 'SUPERADMIN') {
             $purchaseRequestsQuery->whereNotNull('autograph_1');
         } else {
-            // Otherwise, filter requests based on user department
             $purchaseRequestsQuery->where('from_department', $userDepartmentName);
         }
 
@@ -130,6 +108,7 @@ class PurchaseRequestController extends Controller
         $storedStartDate = $request->session()->get('start_date');
         $storedEndDate = $request->session()->get('end_date');
         $storedStatus = $request->session()->get('status');
+        $storedBranch = $request->session()->get('branch');
 
         // Additional filtering based on startDate and endDate
         if ($startDate && $endDate) {
@@ -137,8 +116,8 @@ class PurchaseRequestController extends Controller
             $request->session()->put('start_date', $startDate);
             $request->session()->put('end_date', $endDate);
         } else {
-            $request->session()->forget('start_date', $startDate);
-            $request->session()->forget('end_date', $endDate);
+            $request->session()->forget('start_date');
+            $request->session()->forget('end_date');
         }
 
         // Apply stored session values for filter persistence
@@ -152,7 +131,7 @@ class PurchaseRequestController extends Controller
             $request->session()->put('status', $status);
             $purchaseRequestsQuery->where('status', $status);
         } else {
-            $request->session()->forget('status', $status);
+            $request->session()->forget('status');
         }
 
         // Filtering based on the branch
@@ -160,17 +139,21 @@ class PurchaseRequestController extends Controller
             $request->session()->put('branch', $branch);
             $purchaseRequestsQuery->where('branch', $branch);
         } else {
-            $request->session()->forget('branch', $branch);
+            $request->session()->forget('branch');
         }
-
-        // $purchaseRequestsQuery->where(function ($query) use ($user) {
-        //     $query->orWhere('user_id_create', $user->id);
-        // });
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
             ->orWhere('user_id_create', $user->id)
             ->paginate(10);
+
+        // Append the filter parameters to the pagination links
+        $purchaseRequests->appends([
+            'status' => $status,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'branch' => $branch,
+        ]);
 
         return view('purchaseRequest.index', compact('purchaseRequests'));
     }
