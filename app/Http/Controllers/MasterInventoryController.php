@@ -14,6 +14,8 @@ use App\Models\Department;
 use App\Models\InventoryRepairHistory;
 use App\Models\HeaderMaintenanceInventoryReport;
 use App\Models\DetailMaintenanceInventoryReport;
+use App\Exports\InventoryMasterExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MasterInventoryController extends BaseController
 {
@@ -567,5 +569,10 @@ class MasterInventoryController extends BaseController
 
         // Redirect back with a success message
         return redirect()->route('masterinventory.index')->with('success', 'Inventory Master deleted successfully!');
+    }
+
+    public function export()
+    {
+        return Excel::download(new InventoryMasterExport, 'listKomputer.xlsx');
     }
 }

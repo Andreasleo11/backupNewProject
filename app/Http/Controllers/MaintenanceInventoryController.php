@@ -37,10 +37,24 @@ class MaintenanceInventoryController extends Controller
         }
     
         $reportsQuery->whereYear('created_at', $year);
-    
+        $headerData = $reportsQuery->get();
         $reports = $reportsQuery->orderBy('created_at', 'desc')->paginate(10);
-    
-        return view('maintenance-inventory.index', compact('reports', 'periode', 'year'));
+
+         // Collect master_ids from the header data
+        $masterIdsInReports = $headerData->pluck('master_id')->unique();
+
+        // Fetch all MasterInventory records
+        $masterInventories = MasterInventory::all();
+
+        // Prepare an array to store username: yes/no
+        $usernameStatuses = [];
+
+        foreach ($masterInventories as $masterInventory) {
+            $usernameStatuses[$masterInventory->username] = $masterIdsInReports->contains($masterInventory->id) ? 'yes' : 'no';
+        }
+        // dd($usernameStatuses);
+        
+        return view('maintenance-inventory.index', compact('reports', 'periode', 'year', 'usernameStatuses'));
     }
 
     private function getPeriodeCaturwulan($month)
