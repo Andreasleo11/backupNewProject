@@ -244,6 +244,15 @@
                                                 class="form-control" value="{{ $report->tanggal_selesai }}">
                                         </div>
                                     </div>
+                                    <div class="form-group mt-3 row">
+                                        <label for="lama pengerjaan" class="fw-semibold col-form-label col">Lama
+                                            Pengerjaan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" name="lama_pengerjaan" id="lama_pengerjaan"
+                                                class="form-control-plaintext" readonly
+                                                value="{{ \Carbon\Carbon::parse($report->tanggal_mulai)->diffInDays(\Carbon\Carbon::parse($report->tanggal_selesai), false) }} Hari">
+                                        </div>
+                                    </div>
                                     <div class="mt-3 text-end " id="saveChangesButtonContainer">
                                         <button type="submit" class="btn btn-primary">Save changes</button>
                                     </div>
