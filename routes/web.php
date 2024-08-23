@@ -571,6 +571,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
 
+
+
+
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
     Route::post("/approve-data-yayasan/depthead", [DisciplinePageController::class, 'approve_depthead'])->name('approve.data.depthead');
@@ -594,10 +597,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/fetch/filtered/yayasan-employees-GM', [DisciplinePageController::class, 'fetchFilteredEmployeesGM']);
 
     Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
+    Route::put('/edit/maganddiscipline/{id}', [DisciplinePageController::class, 'updatemagang'])->name('updatemagang');
     Route::put('/edit/yayasandiscipline/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('updateyayasan');
     Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
+    Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name('magang.import');
 
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
+
+    Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
 
     //
 

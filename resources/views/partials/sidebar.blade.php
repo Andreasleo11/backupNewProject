@@ -514,6 +514,12 @@
                                 Yayasan
                             </a>
                         </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('magang.table') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Magang
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
