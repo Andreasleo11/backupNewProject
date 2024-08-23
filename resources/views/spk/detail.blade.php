@@ -1,6 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        .scrollable-container {
+            max-height: 200px;
+            /* Adjust the height as needed */
+            overflow-y: auto;
+            /* Adds vertical scrollbar */
+            transition: max-height 0.3s ease;
+            /* Smooth transition */
+        }
+
+        .scrollable-container.expanded {
+            max-height: none;
+            /* Removes the height limit when expanded */
+        }
+    </style>
     @include('partials.alert-success-error')
 
     {{-- GLOBAL VARIABLE --}}
@@ -34,7 +49,7 @@
                                 @include('partials.confirmation-modal', [
                                     'id' => $report->id,
                                     'title' => 'Finish this SPK',
-                                    'body' => 'Are you sure?',
+                                    'body' => "Are you sure want to finish this <strong>$report->no_dokumen</strong>?",
                                     'submitButton' =>
                                         '<button type="submit" class="btn btn-primary" onclick="document.getElementById(\'formFinishSPK\').submit()">Confirm</button>',
                                 ])
@@ -59,12 +74,14 @@
                                     @if ($report->status_laporan === 3)
                                         <button type="button" data-bs-toggle="modal"
                                             data-bs-target="#ask-a-revision-modal-{{ $report->id }}"
-                                            class="btn btn-outline-primary">Ask a Revision</button>
-
-
-                                        <button type="button" class="btn btn-primary"
+                                            class="btn btn-outline-primary ">Ask a Revision</button>
+                                        <span class="px-2">or</span>
+                                        <button type="button" class="btn btn-outline-success "
                                             data-bs-target="#confirmation-modal-{{ $report->id }}"
                                             data-bs-toggle="modal">Finish</button>
+                                        <span>this SPK
+                                            (<strong>{{ $report->no_dokumen }}</strong>).</span>
+                                        <hr>
                                     @endif
                                     <div class="text-center my-3">
                                         <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
@@ -88,6 +105,7 @@
                                         <div class="mt-2">
                                             @include('partials.spk-status', [
                                                 'status' => $report->status_laporan,
+                                                'is_urgent' => $report->is_urgent,
                                             ])
                                         </div>
                                     </div>
@@ -120,16 +138,18 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
+                                        <label for="from_department" class="fw-semibold col-form-label col">From
+                                            Department</label>
                                         <div class="col-sm-9">
-                                            <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
+                                            <input type="text" name="from_department" id="from_department"
+                                                value="{{ $report->from_department }}"
                                                 class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
                                                 readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
                                         <label for="deto_departmentpt" class="fw-semibold col-form-label col">To
-                                            Departemen</label>
+                                            Department</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="to_department" id="to_department"
                                                 value="{{ $report->to_department }}"
@@ -137,6 +157,7 @@
                                                 readonly>
                                         </div>
                                     </div>
+                                    <hr>
                                     <div class="form-group row mt-3">
                                         <label for="judul_laporan" class="fw-semibold col-form-label col">Judul
                                             Laporan</label>
@@ -180,46 +201,59 @@
                                             @if ($report->spkRemarks->isEmpty())
                                                 <p>No remarks available.</p>
                                             @else
-                                                <ul class="list-group">
-                                                    @foreach ($report->spkRemarks as $remark)
-                                                        <li class="list-group-item">
-
-                                                            @include('partials.spk-status', [
-                                                                'status' => $remark->status,
-                                                            ])
-                                                            <br>
-                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
-                                                            <strong>Date:</strong>
-                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
+                                                <div id="remarks-container" class="scrollable-container">
+                                                    <ul class="list-group">
+                                                        @foreach ($report->spkRemarks as $remark)
+                                                            <li class="list-group-item">
+                                                                @include('partials.spk-status', [
+                                                                    'status' => $remark->status,
+                                                                    'is_urgent' => $report->is_urgent,
+                                                                ])
+                                                                <br>
+                                                                <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                                <strong>Date:</strong>
+                                                                {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                                <button type="button" id="toggle-remarks" class="btn btn-link">Show
+                                                    All
+                                                    Remarks</button>
                                             @endif
                                         </div>
                                     </div>
+
                                     <div class="form-group row mt-3">
                                         <label class="fw-semibold col-form-label col">Revision Remarks</label>
                                         <div class="col-sm-9 mt-2">
                                             @if ($report->revisionRemarks->isEmpty())
                                                 <p>No revision remarks available.</p>
                                             @else
-                                                <ul class="list-group">
-                                                    @foreach ($report->revisionRemarks as $remark)
-                                                        <li class="list-group-item">
-
-                                                            @include('partials.spk-status', [
-                                                                'status' => $remark->status,
-                                                            ])
-                                                            <br>
-                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
-                                                            <strong>Date:</strong>
-                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
+                                                <div id="revision-remarks-container" class="scrollable-container">
+                                                    <ul class="list-group">
+                                                        @foreach ($report->revisionRemarks as $remark)
+                                                            <li class="list-group-item">
+                                                                @include('partials.spk-status', [
+                                                                    'status' => $remark->status,
+                                                                    'is_urgent' => $report->is_urgent,
+                                                                ])
+                                                                <br>
+                                                                <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                                <strong>Date:</strong>
+                                                                {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                                <button type="button" id="toggle-revision-remarks"
+                                                    class="btn btn-link mt-2">Show All
+                                                    Revision Remarks</button>
                                             @endif
                                         </div>
                                     </div>
+
+
                                     <div class="form-group row mt-3">
                                         <label for="tanggal_mulai" class="fw-semibold col-form-label col">Tanggal
                                             Mulai</label>
@@ -248,17 +282,37 @@
                                         <label for="lama pengerjaan" class="fw-semibold col-form-label col">Lama
                                             Pengerjaan</label>
                                         <div class="col-sm-9">
+                                            @php
+                                                $tanggalMulai = \Carbon\Carbon::parse($report->tanggal_mulai);
+                                                $tanggalSelesai = \Carbon\Carbon::parse($report->tanggal_selesai);
+
+                                                if ($tanggalMulai->isSameDay($tanggalSelesai)) {
+                                                    // Calculate the exact time difference
+                                                    $difference = $tanggalMulai->diff($tanggalSelesai);
+                                                    $lamaPengerjaan = $difference->format('%h Jam %I Menit');
+                                                } else {
+                                                    // Calculate the total difference
+                                                    $totalDays = $tanggalMulai->diffInDays($tanggalSelesai);
+                                                    $tanggalMulaiPlusOneDay = $tanggalMulai->addDay();
+                                                    $remainingTime = $tanggalMulaiPlusOneDay->diff($tanggalSelesai);
+
+                                                    $lamaPengerjaan =
+                                                        $totalDays .
+                                                        ' Hari ' .
+                                                        $remainingTime->format('%H Jam %I Menit');
+                                                }
+                                            @endphp
                                             <input type="text" name="lama_pengerjaan" id="lama_pengerjaan"
                                                 class="form-control-plaintext" readonly
-                                                value="{{ \Carbon\Carbon::parse($report->tanggal_mulai)->diffInDays(\Carbon\Carbon::parse($report->tanggal_selesai), false) }} Hari">
+                                                value="{{ $report->tanggal_mulai && $report->tanggal_selesai ? $lamaPengerjaan : '-' }}">
                                         </div>
                                     </div>
                                     <div class="mt-3 text-end " id="saveChangesButtonContainer">
                                         <button type="submit" class="btn btn-primary">Save changes</button>
                                     </div>
                                 </form>
-
-                                <div class="mt-5">
+                                <hr>
+                                <div class="mt-4">
                                     @include('partials.spk-autographs')
                                 </div>
                             </div>
@@ -274,6 +328,38 @@
 @endsection
 @push('extraJs')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleRemarks = document.getElementById('toggle-remarks');
+            const remarksContainer = document.getElementById('remarks-container');
+
+            if (toggleRemarks) {
+                toggleRemarks.addEventListener('click', function() {
+                    if (remarksContainer.classList.contains('expanded')) {
+                        remarksContainer.classList.remove('expanded');
+                        toggleRemarks.textContent = 'Show All Remarks';
+                    } else {
+                        remarksContainer.classList.add('expanded');
+                        toggleRemarks.textContent = 'Show Less';
+                    }
+                });
+            }
+
+            const toggleRevisionRemarks = document.getElementById('toggle-revision-remarks');
+            const revisionRemarksContainer = document.getElementById('revision-remarks-container');
+
+            if (toggleRevisionRemarks) {
+                toggleRevisionRemarks.addEventListener('click', function() {
+                    if (revisionRemarksContainer.classList.contains('expanded')) {
+                        revisionRemarksContainer.classList.remove('expanded');
+                        toggleRevisionRemarks.textContent = 'Show All Revision Remarks';
+                    } else {
+                        revisionRemarksContainer.classList.add('expanded');
+                        toggleRevisionRemarks.textContent = 'Show Less';
+                    }
+                });
+            }
+        });
+
         // Function to handle the edit button click
         handleEditButtonClick();
 

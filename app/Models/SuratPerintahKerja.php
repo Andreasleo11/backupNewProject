@@ -17,7 +17,7 @@ class SuratPerintahKerja extends Model
     protected $fillable = [
         'no_dokumen',
         'pelapor',
-        'dept',
+        'from_department',
         'to_department',
         'tanggal_lapor',
         'judul_laporan',
@@ -37,11 +37,12 @@ class SuratPerintahKerja extends Model
         'is_revision',
         'revision_count',
         'revision_reason',
+        'is_urgent'
     ];
 
-    public function deptRelation()
+    public function fromDepartment()
     {
-        return $this->belongsTo(Department::class, 'dept', 'name');
+        return $this->belongsTo(Department::class, 'from_department', 'name');
     }
 
     public function createdBy()
@@ -120,7 +121,7 @@ class SuratPerintahKerja extends Model
             $commonDetails['body'] = "Notification for SPK : <br>
                 - No Dokumen : $this->no_dokumen <br>
                 - Pelapor : $this->pelapor <br>
-                - Departemen : $this->dept <br>";
+                - Departmen : $this->from_department <br>";
         } elseif ($event == 'updated') {
             $keteranganPic = $this->tindakan ?: '-';
 
