@@ -107,7 +107,12 @@ class SuratPerintahKerjaController extends Controller
             'part_name' => 'nullable|string|max:255',
             'machine' => 'nullable|string|max:255',
             'is_urgent' => 'required|in:yes,no',
+            'for' => 'nullable|string|max:255|in:machine,mol'
         ]);
+
+        if ($validatedData['to_department'] === 'MAINTENANCE MOULDING') {
+            $request->validate(['for' => 'required']);
+        }
 
         // dd($validatedData);
 
@@ -117,7 +122,7 @@ class SuratPerintahKerjaController extends Controller
                 // $filePath = $file->storeAs('files', $filename, 'public');
                 $fileType = $file->getMimeType();
                 $fileSize = $file->getSize();
-
+                $file->storeAs('public/files', $filename);
                 File::create([
                     'doc_id' => $request->no_dokumen,
                     'name' => $filename,
@@ -151,6 +156,7 @@ class SuratPerintahKerjaController extends Controller
     public function detail($id)
     {
         $report = SuratPerintahKerja::with('spkRemarks')->find($id);
+        $files = File::where('doc_id', $report->no_dokumen)->get();
 
         $users = null;
         switch ($report->to_department) {
@@ -177,7 +183,7 @@ class SuratPerintahKerjaController extends Controller
         })->where('is_head', true)
             ->first();
 
-        return view('spk.detail', compact('report', 'users', 'depthead'));
+        return view('spk.detail', compact('report', 'users', 'depthead', 'files'));
     }
 
     public function update(UpdateSuratPerintahKerjaRequest $request, $id)
@@ -199,7 +205,6 @@ class SuratPerintahKerjaController extends Controller
 
         $data = $request->all();
         $data['status_laporan'] = $this->determineStatus($report, $data);
-        // dd($data['status_laporan']);
 
         $report->update($data);
 
@@ -208,11 +213,15 @@ class SuratPerintahKerjaController extends Controller
 
     private function determineStatus($report, $data)
     {
-        if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai)) {
+        if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai) && $report->pic_autograph) {
+            return 4;
+        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi) && $report->admin_autograph) {
             return 3;
-        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi)) {
+        } elseif ($report->to_department === 'MAINTENANCE MOULDING' && (($report->dept_head_autograph || !empty($data['dept_head_autograph'])) && $report->creator_autograph || $report->is_urgent && $report->creator_autograph)) {
+            return 6;
+        } elseif (!empty($data['dept_head_autograph'])) {
             return 2;
-        } elseif ($report->prepared_by_autograph) {
+        } elseif (!empty($data['creator_autograph']) || $report->cretor_autograph) {
             return 1;
         } else {
             return 0;
@@ -324,11 +333,11 @@ class SuratPerintahKerjaController extends Controller
 
         $report = SuratPerintahKerja::find($id);
         $report->update([
-            'status_laporan' => 2,
+            'status_laporan' => 3,
             'is_revision' => true,
             'revision_count' => $report->revision_count + 1,
-            'finished_by_autograph' => null,
-            'dept_head_autograph' => null,
+            'pic_autograph' => null,
+            'approved_autograph' => null,
             'tanggal_selesai' => null,
             'tindakan' => null,
             'revision_reason' => $validated['revision_reason']
@@ -339,7 +348,7 @@ class SuratPerintahKerjaController extends Controller
 
     public function finish($id)
     {
-        SuratPerintahKerja::find($id)->update(['status_laporan' => 4]);
+        SuratPerintahKerja::find($id)->update(['status_laporan' => 5]);
         return redirect()->back()->with('success', 'Spk finished!');
     }
 }

@@ -255,31 +255,30 @@
             document.getElementById('no_dokumen').value = noDokumen;
 
             // Toggle part number, part name, and machine fields based on department selection
-            const partFieldsRow = document.querySelector('.part-fields');
+            const partFields = document.querySelector('.part-fields');
+            const forFields = document.querySelector('.for-fields');
             if (toDepartment === 'MAINTENANCE MOULDING') {
-                partFieldsRow.classList.remove('d-none');
+                partFields.classList.remove('d-none');
             } else {
-                partFieldsRow.classList.add('d-none');
+                partFields.classList.add('d-none');
             }
 
-            const typeFieldRow = document.querySelector('.type-field');
+            const typeFields = document.querySelector('.type-field');
             if (toDepartment === 'MAINTENANCE' || toDepartment === 'MAINTENANCE MOULDING') {
-                typeFieldRow.classList.remove('d-none');
+                typeFields.classList.remove('d-none');
             } else {
-                typeFieldRow.classList.add('d-none');
+                typeFields.classList.add('d-none');
             }
 
         });
 
         document.addEventListener('DOMContentLoaded', (event) => {
             const attachmentInput = document.getElementById('attachments');
-            console.log(attachmentInput); // Check if this correctly references your file input element
             const previewContainer = document.getElementById('attachment-previews');
             let files = [];
 
             attachmentInput.addEventListener('change', function(event) {
                 files = Array.from(event.target.files);
-                console.log(files); // Log the selected files to confirm they're being captured
                 renderPreviews(files);
             });
 
@@ -288,10 +287,8 @@
 
                 files.forEach((file, i) => {
                     const reader = new FileReader();
-                    console.log('Rendering previews for files:', files); // Log the files being processed
 
                     reader.onload = function(e) {
-                        console.log('Rendering image preview for file index:', i);
                         const previewDiv = document.createElement('div');
                         previewDiv.classList.add('col-md-3', 'mb-3');
                         previewDiv.innerHTML = `
@@ -304,8 +301,6 @@
                         </div>
                     </div>
                 `;
-                        console.log('Adding preview div to container:',
-                            previewDiv); // Log the div being added
                         previewContainer.appendChild(previewDiv);
                     };
 
@@ -316,29 +311,11 @@
                 setTimeout(addRemoveListeners, 30);
             }
 
-            const observer = new MutationObserver((mutationsList) => {
-                for (const mutation of mutationsList) {
-                    if (mutation.type === 'childList') {
-                        console.log('A child node has been added or removed.', mutation);
-                    }
-                }
-            });
-
-            observer.observe(previewContainer, {
-                childList: true
-            });
-
             function addRemoveListeners() {
-                console.log('addRemoveListeners');
                 const removeButtons = previewContainer.querySelectorAll('.remove-image');
-                console.log('Found remove buttons:', removeButtons); // Log the NodeList of buttons
                 removeButtons.forEach(button => {
-                    console.log('Attaching listener to button:',
-                        button); // Log the button element to which the listener is attached
                     button.addEventListener('click', function() {
                         const index = parseInt(this.getAttribute('data-index'));
-                        console.log('Removing file at index:',
-                            index); // Log the index of the file to be removed
 
                         files.splice(index, 1); // Remove the selected file
 
@@ -353,8 +330,6 @@
                 files.forEach(file => {
                     dataTransfer.items.add(file); // Add remaining files to DataTransfer object
                 });
-
-                console.log('Updated files:', dataTransfer.files); // Log the updated file list
 
                 attachmentInput.files = dataTransfer.files; // Update the file input element
             }

@@ -688,13 +688,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
 
 
-    Route::get('/spkkomputer', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
-    Route::get('/spkkomputer/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
-    Route::post('/spkkomputer/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
-    Route::get('/spkkomputer/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
-    Route::put('/spkkomputer/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
-    Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
-    Route::get('spkkomputer/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
+    Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
+    Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
+    Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
+    Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
+    Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
+    Route::get('spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
     Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
     Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
     Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');

@@ -37,7 +37,12 @@
                 <h2 class="fw-bold">{{ $report->no_dokumen }}</h2>
             </div>
             <div class="col text-end">
-                {{-- Upcoming feature? --}}
+                @if ($report->pelapor === $authUser->name || $report->status_laporan === 2)
+                    @include('partials.upload-files-modal', ['doc_id' => $report->no_dokumen])
+                    <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                        <i class='bx bx-upload'></i> Upload
+                    </button>
+                @endif
             </div>
             <div class="container">
                 <div class="row justify-content-center mt-4">
@@ -71,7 +76,7 @@
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
-                                    @if ($report->status_laporan === 3)
+                                    @if ($report->status_laporan === 4)
                                         <button type="button" data-bs-toggle="modal"
                                             data-bs-target="#ask-a-revision-modal-{{ $report->id }}"
                                             class="btn btn-outline-primary ">Ask a Revision</button>
@@ -84,7 +89,7 @@
                                         <hr>
                                     @endif
                                     <div class="text-center my-3">
-                                        <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
+                                        <h2 class="fw-bold">Surat Perintah Kerja</h2>
                                         <div class="text-secondary">
                                             <div>Pelapor : {{ $report->pelapor }}</div>
                                             <div>Tanggal Lapor :
@@ -148,7 +153,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="deto_departmentpt" class="fw-semibold col-form-label col">To
+                                        <label for="to_department" class="fw-semibold col-form-label col">To
                                             Department</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="to_department" id="to_department"
@@ -173,6 +178,26 @@
                                             <textarea name="keterangan_laporan" id="keterangan_laporan" class="form-control" rows="5">{{ $report->keterangan_laporan }}</textarea>
                                         </div>
                                     </div>
+                                    @if ($report->to_department === 'MAINTENANCE MOULDING')
+                                        <div class="form-group mt-3 row">
+                                            <label for="inlineRadio"
+                                                class="fw-semibold col col-form-label fw-semibold">For </label>
+
+                                            <div class="col-sm-9 mt-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="for"
+                                                        id="inlineRadioMol" value="mol">
+                                                    <label class="form-check-label" for="inlineRadioMol">Mol</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="for"
+                                                        id="inlineRadioMachine" value="machine">
+                                                    <label class="form-check-label"
+                                                        for="inlineRadioMachine">Machine</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                     <div class="form-group row mt-3">
                                         <label for="pic" class="fw-semibold col-form-label col">PIC</label>
                                         <div class="col-sm-9">
@@ -223,7 +248,6 @@
                                             @endif
                                         </div>
                                     </div>
-
                                     <div class="form-group row mt-3">
                                         <label class="fw-semibold col-form-label col">Revision Remarks</label>
                                         <div class="col-sm-9 mt-2">
@@ -252,8 +276,6 @@
                                             @endif
                                         </div>
                                     </div>
-
-
                                     <div class="form-group row mt-3">
                                         <label for="tanggal_mulai" class="fw-semibold col-form-label col">Tanggal
                                             Mulai</label>
@@ -323,8 +345,13 @@
 
             </div>
         </div>
-
     </div>
+
+    @include('partials.uploaded-section', [
+        'files' => $files,
+        'showDeleteButton' => $report->pelapor === $authUser->name || $report->status_laporan === 2,
+    ])
+
 @endsection
 @push('extraJs')
     <script>
@@ -367,11 +394,10 @@
             // Get all inputs and textareas except those with specific IDs
             const toggleableInputs = [
                 'judul_laporan', 'keterangan_laporan', 'pic', 'tindakan', 'tanggal_mulai', 'tanggal_estimasi',
-                'tanggal_selesai'
+                'tanggal_selesai', 'inlineRadioMol', 'inlineRadioMachine'
             ];
             const inputs = document.querySelectorAll('input:not([type=hidden]), textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
-
             inputs.forEach(input => {
                 if (toggleableInputs.includes(input.id)) {
                     input.readOnly = !input.readOnly;

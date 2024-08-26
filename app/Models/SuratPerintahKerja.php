@@ -28,16 +28,16 @@ class SuratPerintahKerja extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'tanggal_estimasi',
-        'requested_by_autograph',
-        'prepared_by_autograph',
-        'pic_autograph',
-        'finished_by_autograph',
+        'creator_autograph',
         'dept_head_autograph',
+        'admin_autograph',
+        'pic_autograph',
+        'approved_autograph',
         'requested_by',
         'is_revision',
         'revision_count',
         'revision_reason',
-        'is_urgent'
+        'is_urgent',
     ];
 
     public function fromDepartment()
@@ -72,7 +72,7 @@ class SuratPerintahKerja extends Model
             $statusChanged = $spk->isDirty('status_laporan');
             $keteranganPicChanged = $spk->isDirty('tindakan');
 
-            if (($statusChanged || $keteranganPicChanged)) {
+            if (($statusChanged && $spk->tindakan || $keteranganPicChanged)) {
                 // Create SPK Remark
                 $remarks = $spk->tindakan;
                 $status = $spk->status_laporan;
@@ -89,7 +89,7 @@ class SuratPerintahKerja extends Model
                     SpkRemark::create([
                         'spk_id' => $spkId,
                         'status' => $status,
-                        'remarks' => $remarks ?? $revisionReason,
+                        'remarks' => $remarks,
                         'is_revision' => true,
                     ]);
                 }
