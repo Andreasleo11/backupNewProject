@@ -12,7 +12,7 @@
                     <div class="mb-3">
                         <label for="name" class="form-label">Revision Reason</label>
                         <textarea class="form-control" name="revision_reason" id="revision_reason" cols="30" rows="5"
-                            placeholder="Layar laptop kembali bluescreen dan tidak bisa dinyalakan walaupun sudah dicoba dicabut colok.."
+                            placeholder="e.g. Layar laptop kembali bluescreen dan tidak bisa dinyalakan walaupun sudah dicoba dicabut colok"
                             required></textarea>
                     </div>
                 </div>

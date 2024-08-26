@@ -72,7 +72,7 @@ use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\MasterTintaController;
-use App\Http\Controllers\SuratPerintahKerjaKomputerController;
+use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -696,16 +696,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
 
 
-    Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
-    Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
-    Route::post('/spkkomputer/input', [SuratPerintahKerjaKomputerController::class, 'inputprocess'])->name('spk.input');
-    Route::get('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'detail'])->name('spk.detail');
-    Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
-    Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
-    Route::get('spkkomputer/report/monthly', [SuratPerintahKerjaKomputerController::class, 'monthlyreport'])->name('spk.monthlyreport');
-    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaKomputerController::class, 'saveAutograph'])->name('spk.save.autograph');
-    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaKomputerController::class, 'revision'])->name('spk.revision');
-    Route::put('/spk/finish/{id}', [SuratPerintahKerjaKomputerController::class, 'finish'])->name('spk.finish');
+    Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
+    Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
+    Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
+    Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
+    Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
+    Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
+    Route::get('spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
+    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
+    Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
 
     Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
@@ -787,7 +787,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     // FOR DEBUG ONLY: VIEWING CREATED SPK NOTIFICATION
     Route::get('/createdSpkPreview', function () {
-        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+        $spk = App\Models\SuratPerintahKerja::find(4);
 
         $details = [
             'cc' => $spk->createdBy->email,
@@ -805,7 +805,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     // FOR DEBUG ONLY: VIEWING UPDATED SPK NOTIFICATION
     Route::get('/updatedSpkPreview', function () {
-        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+        $spk = App\Models\SuratPerintahKerja::find(4);
 
         $status = 'UNKNOWN';
         switch ($spk->status) {
@@ -820,7 +820,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
                 break;
         }
 
-        $keteranganPic = $spk->keterangan_pic ?: '-';
+        $keteranganPic = $spk->tindakan ?: '-';
         $details = [
             'greeting' => 'Surat Perintah Kerja Komputer Notification',
             'body' => "Notification for SPK : <br>

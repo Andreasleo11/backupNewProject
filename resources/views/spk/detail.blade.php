@@ -1,6 +1,21 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        .scrollable-container {
+            max-height: 200px;
+            /* Adjust the height as needed */
+            overflow-y: auto;
+            /* Adds vertical scrollbar */
+            transition: max-height 0.3s ease;
+            /* Smooth transition */
+        }
+
+        .scrollable-container.expanded {
+            max-height: none;
+            /* Removes the height limit when expanded */
+        }
+    </style>
     @include('partials.alert-success-error')
 
     {{-- GLOBAL VARIABLE --}}
@@ -22,7 +37,12 @@
                 <h2 class="fw-bold">{{ $report->no_dokumen }}</h2>
             </div>
             <div class="col text-end">
-                {{-- Upcoming feature? --}}
+                @if ($report->pelapor === $authUser->name || $report->status_laporan === 2)
+                    @include('partials.upload-files-modal', ['doc_id' => $report->no_dokumen])
+                    <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                        <i class='bx bx-upload'></i> Upload
+                    </button>
+                @endif
             </div>
             <div class="container">
                 <div class="row justify-content-center mt-4">
@@ -34,7 +54,7 @@
                                 @include('partials.confirmation-modal', [
                                     'id' => $report->id,
                                     'title' => 'Finish this SPK',
-                                    'body' => 'Are you sure?',
+                                    'body' => "Are you sure want to finish this <strong>$report->no_dokumen</strong>?",
                                     'submitButton' =>
                                         '<button type="submit" class="btn btn-primary" onclick="document.getElementById(\'formFinishSPK\').submit()">Confirm</button>',
                                 ])
@@ -56,18 +76,20 @@
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
-                                    @if ($report->status_laporan === 3)
+                                    @if ($report->status_laporan === 4)
                                         <button type="button" data-bs-toggle="modal"
                                             data-bs-target="#ask-a-revision-modal-{{ $report->id }}"
-                                            class="btn btn-outline-primary">Ask a Revision</button>
-
-
-                                        <button type="button" class="btn btn-primary"
+                                            class="btn btn-outline-primary ">Ask a Revision</button>
+                                        <span class="px-2">or</span>
+                                        <button type="button" class="btn btn-outline-success "
                                             data-bs-target="#confirmation-modal-{{ $report->id }}"
                                             data-bs-toggle="modal">Finish</button>
+                                        <span>this SPK
+                                            (<strong>{{ $report->no_dokumen }}</strong>).</span>
+                                        <hr>
                                     @endif
                                     <div class="text-center my-3">
-                                        <h2 class="fw-bold">Surat Perintah Kerja Komputer</h2>
+                                        <h2 class="fw-bold">Surat Perintah Kerja</h2>
                                         <div class="text-secondary">
                                             <div>Pelapor : {{ $report->pelapor }}</div>
                                             <div>Tanggal Lapor :
@@ -88,6 +110,7 @@
                                         <div class="mt-2">
                                             @include('partials.spk-status', [
                                                 'status' => $report->status_laporan,
+                                                'is_urgent' => $report->is_urgent,
                                             ])
                                         </div>
                                     </div>
@@ -120,16 +143,18 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="dept" class="fw-semibold col-form-label col">Departemen</label>
+                                        <label for="from_department" class="fw-semibold col-form-label col">From
+                                            Department</label>
                                         <div class="col-sm-9">
-                                            <input type="text" name="dept" id="dept" value="{{ $report->dept }}"
+                                            <input type="text" name="from_department" id="from_department"
+                                                value="{{ $report->from_department }}"
                                                 class="form-control-plaintext bg-secondary-subtle py-2 ps-3 rounded-2"
                                                 readonly>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="deto_departmentpt" class="fw-semibold col-form-label col">To
-                                            Departemen</label>
+                                        <label for="to_department" class="fw-semibold col-form-label col">To
+                                            Department</label>
                                         <div class="col-sm-9">
                                             <input type="text" name="to_department" id="to_department"
                                                 value="{{ $report->to_department }}"
@@ -137,6 +162,7 @@
                                                 readonly>
                                         </div>
                                     </div>
+                                    <hr>
                                     <div class="form-group row mt-3">
                                         <label for="judul_laporan" class="fw-semibold col-form-label col">Judul
                                             Laporan</label>
@@ -152,6 +178,26 @@
                                             <textarea name="keterangan_laporan" id="keterangan_laporan" class="form-control" rows="5">{{ $report->keterangan_laporan }}</textarea>
                                         </div>
                                     </div>
+                                    @if ($report->to_department === 'MAINTENANCE MOULDING')
+                                        <div class="form-group mt-3 row">
+                                            <label for="inlineRadio"
+                                                class="fw-semibold col col-form-label fw-semibold">For </label>
+
+                                            <div class="col-sm-9 mt-2">
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="for"
+                                                        id="inlineRadioMol" value="mol">
+                                                    <label class="form-check-label" for="inlineRadioMol">Mol</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="for"
+                                                        id="inlineRadioMachine" value="machine">
+                                                    <label class="form-check-label"
+                                                        for="inlineRadioMachine">Machine</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                     <div class="form-group row mt-3">
                                         <label for="pic" class="fw-semibold col-form-label col">PIC</label>
                                         <div class="col-sm-9">
@@ -168,10 +214,10 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="keterangan_pic" class="fw-semibold col-form-label col">Keterangan
+                                        <label for="tindakan" class="fw-semibold col-form-label col">Keterangan
                                             PIC</label>
                                         <div class="col-sm-9 mt-2">
-                                            <textarea name="keterangan_pic" id="keterangan_pic" class="form-control" rows="5">{{ $report->keterangan_pic }}</textarea>
+                                            <textarea name="tindakan" id="tindakan" class="form-control" rows="5">{{ $report->tindakan }}</textarea>
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -180,20 +226,25 @@
                                             @if ($report->spkRemarks->isEmpty())
                                                 <p>No remarks available.</p>
                                             @else
-                                                <ul class="list-group">
-                                                    @foreach ($report->spkRemarks as $remark)
-                                                        <li class="list-group-item">
-
-                                                            @include('partials.spk-status', [
-                                                                'status' => $remark->status,
-                                                            ])
-                                                            <br>
-                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
-                                                            <strong>Date:</strong>
-                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
+                                                <div id="remarks-container" class="scrollable-container">
+                                                    <ul class="list-group">
+                                                        @foreach ($report->spkRemarks as $remark)
+                                                            <li class="list-group-item">
+                                                                @include('partials.spk-status', [
+                                                                    'status' => $remark->status,
+                                                                    'is_urgent' => $report->is_urgent,
+                                                                ])
+                                                                <br>
+                                                                <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                                <strong>Date:</strong>
+                                                                {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                                <button type="button" id="toggle-remarks" class="btn btn-link">Show
+                                                    All
+                                                    Remarks</button>
                                             @endif
                                         </div>
                                     </div>
@@ -203,29 +254,34 @@
                                             @if ($report->revisionRemarks->isEmpty())
                                                 <p>No revision remarks available.</p>
                                             @else
-                                                <ul class="list-group">
-                                                    @foreach ($report->revisionRemarks as $remark)
-                                                        <li class="list-group-item">
-
-                                                            @include('partials.spk-status', [
-                                                                'status' => $remark->status,
-                                                            ])
-                                                            <br>
-                                                            <strong>Remark:</strong> {{ $remark->remarks }} <br>
-                                                            <strong>Date:</strong>
-                                                            {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
+                                                <div id="revision-remarks-container" class="scrollable-container">
+                                                    <ul class="list-group">
+                                                        @foreach ($report->revisionRemarks as $remark)
+                                                            <li class="list-group-item">
+                                                                @include('partials.spk-status', [
+                                                                    'status' => $remark->status,
+                                                                    'is_urgent' => $report->is_urgent,
+                                                                ])
+                                                                <br>
+                                                                <strong>Remark:</strong> {{ $remark->remarks }} <br>
+                                                                <strong>Date:</strong>
+                                                                {{ \Carbon\Carbon::parse($remark->created_at)->setTimezone('Asia/Jakarta')->translatedFormat('d F Y H:i:s') }}
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                                <button type="button" id="toggle-revision-remarks"
+                                                    class="btn btn-link mt-2">Show All
+                                                    Revision Remarks</button>
                                             @endif
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="tanggal_terima" class="fw-semibold col-form-label col">Tanggal
+                                        <label for="tanggal_mulai" class="fw-semibold col-form-label col">Tanggal
                                             Mulai</label>
                                         <div class="col-sm-9">
-                                            <input type="datetime-local" name="tanggal_terima" id="tanggal_terima"
-                                                class="form-control" value="{{ $report->tanggal_terima }}">
+                                            <input type="datetime-local" name="tanggal_mulai" id="tanggal_mulai"
+                                                class="form-control" value="{{ $report->tanggal_mulai }}">
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
@@ -244,12 +300,41 @@
                                                 class="form-control" value="{{ $report->tanggal_selesai }}">
                                         </div>
                                     </div>
+                                    <div class="form-group mt-3 row">
+                                        <label for="lama pengerjaan" class="fw-semibold col-form-label col">Lama
+                                            Pengerjaan</label>
+                                        <div class="col-sm-9">
+                                            @php
+                                                $tanggalMulai = \Carbon\Carbon::parse($report->tanggal_mulai);
+                                                $tanggalSelesai = \Carbon\Carbon::parse($report->tanggal_selesai);
+
+                                                if ($tanggalMulai->isSameDay($tanggalSelesai)) {
+                                                    // Calculate the exact time difference
+                                                    $difference = $tanggalMulai->diff($tanggalSelesai);
+                                                    $lamaPengerjaan = $difference->format('%h Jam %I Menit');
+                                                } else {
+                                                    // Calculate the total difference
+                                                    $totalDays = $tanggalMulai->diffInDays($tanggalSelesai);
+                                                    $tanggalMulaiPlusOneDay = $tanggalMulai->addDay();
+                                                    $remainingTime = $tanggalMulaiPlusOneDay->diff($tanggalSelesai);
+
+                                                    $lamaPengerjaan =
+                                                        $totalDays .
+                                                        ' Hari ' .
+                                                        $remainingTime->format('%H Jam %I Menit');
+                                                }
+                                            @endphp
+                                            <input type="text" name="lama_pengerjaan" id="lama_pengerjaan"
+                                                class="form-control-plaintext" readonly
+                                                value="{{ $report->tanggal_mulai && $report->tanggal_selesai ? $lamaPengerjaan : '-' }}">
+                                        </div>
+                                    </div>
                                     <div class="mt-3 text-end " id="saveChangesButtonContainer">
                                         <button type="submit" class="btn btn-primary">Save changes</button>
                                     </div>
                                 </form>
-
-                                <div class="mt-5">
+                                <hr>
+                                <div class="mt-4">
                                     @include('partials.spk-autographs')
                                 </div>
                             </div>
@@ -260,23 +345,59 @@
 
             </div>
         </div>
-
     </div>
+
+    @include('partials.uploaded-section', [
+        'files' => $files,
+        'showDeleteButton' => $report->pelapor === $authUser->name || $report->status_laporan === 2,
+    ])
+
 @endsection
 @push('extraJs')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleRemarks = document.getElementById('toggle-remarks');
+            const remarksContainer = document.getElementById('remarks-container');
+
+            if (toggleRemarks) {
+                toggleRemarks.addEventListener('click', function() {
+                    if (remarksContainer.classList.contains('expanded')) {
+                        remarksContainer.classList.remove('expanded');
+                        toggleRemarks.textContent = 'Show All Remarks';
+                    } else {
+                        remarksContainer.classList.add('expanded');
+                        toggleRemarks.textContent = 'Show Less';
+                    }
+                });
+            }
+
+            const toggleRevisionRemarks = document.getElementById('toggle-revision-remarks');
+            const revisionRemarksContainer = document.getElementById('revision-remarks-container');
+
+            if (toggleRevisionRemarks) {
+                toggleRevisionRemarks.addEventListener('click', function() {
+                    if (revisionRemarksContainer.classList.contains('expanded')) {
+                        revisionRemarksContainer.classList.remove('expanded');
+                        toggleRevisionRemarks.textContent = 'Show All Revision Remarks';
+                    } else {
+                        revisionRemarksContainer.classList.add('expanded');
+                        toggleRevisionRemarks.textContent = 'Show Less';
+                    }
+                });
+            }
+        });
+
         // Function to handle the edit button click
         handleEditButtonClick();
 
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
             const toggleableInputs = [
-                'judul_laporan', 'keterangan_laporan', 'pic', 'keterangan_pic', 'tanggal_terima', 'tanggal_estimasi',
-                'tanggal_selesai'
+                'judul_laporan', 'keterangan_laporan', 'pic', 'tindakan', 'tanggal_mulai', 'tanggal_estimasi',
+                'tanggal_selesai', 'inlineRadioMol', 'inlineRadioMachine'
             ];
             const inputs = document.querySelectorAll('input:not([type=hidden]), textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
-
             inputs.forEach(input => {
                 if (toggleableInputs.includes(input.id)) {
                     input.readOnly = !input.readOnly;

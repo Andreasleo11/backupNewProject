@@ -3,37 +3,35 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateSuratPerintahKerjaKomputerRequest;
+use App\Http\Requests\UpdateSuratPerintahKerjaRequest;
 use Illuminate\Http\Request;
-use App\Models\SuratPerintahKerjaKomputer;
+use App\Models\SuratPerintahKerja;
 use App\Models\User;
-use App\Models\SpkRemark;
 use App\Models\Department;
-use App\Notifications\SPKCreated;
+use App\Models\File;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use DateTime;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
-class SuratPerintahKerjaKomputerController extends Controller
+class SuratPerintahKerjaController extends Controller
 {
     public function index(Request $request)
     {
         $authUser = auth()->user();
 
-        $reportsQuery = SuratPerintahKerjaKomputer::with('deptRelation', 'createdBy');
+        $reportsQuery = SuratPerintahKerja::with('fromDepartment', 'createdBy');
 
         if ($authUser->department->name !== 'COMPUTER') {
             if ($authUser->department->name === 'PERSONALIA' || $authUser->department->name === 'MAINTENANCE') {
                 // Show all records where to_department matches the user's department
-                $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
+                $reportsQuery = SuratPerintahKerja::whereHas('fromDepartment', function ($query) use ($authUser) {
                     $query->where('to_department', $authUser->department->name);
                 });
             } else {
-                // For other departments, show records where deptRelation or pelapor matches
-                $reportsQuery = SuratPerintahKerjaKomputer::whereHas('deptRelation', function ($query) use ($authUser) {
+                // For other departments, show records where fromDepartment or pelapor matches
+                $reportsQuery = SuratPerintahKerja::whereHas('fromDepartment', function ($query) use ($authUser) {
                     $query->where('id', $authUser->department->id);
                 })->orWhere('pelapor', $authUser->name);
             }
@@ -88,8 +86,6 @@ class SuratPerintahKerjaKomputerController extends Controller
         $departments = Department::all();
         $username = auth()->user()->name;
 
-        $randomString = Str::random(5);
-
         return view('spk.create', compact('departments', 'username'));
     }
 
@@ -100,53 +96,67 @@ class SuratPerintahKerjaKomputerController extends Controller
             'no_dokumen' => 'required|string|max:255',
             'pelapor' => 'required|string|max:255',
             'tanggallapor' => 'required|date',
-            'dept' => 'required|string|max:255',
+            'from_department' => 'required|string|max:255',
             'judul_laporan' => 'required|string|max:255',
             'keterangan_laporan' => 'required|string',
             'to_department' => 'required|string',
-            'requested_by_autograph' => 'required|string',
-            'requested_by' => 'required|string'
+            'requested_by' => 'required|string',
+            'attachments.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'type' => 'nullable|string|max:255',
+            'part_no' => 'nullable|string|max:255',
+            'part_name' => 'nullable|string|max:255',
+            'machine' => 'nullable|string|max:255',
+            'is_urgent' => 'required|in:yes,no',
+            'for' => 'nullable|string|max:255|in:machine,mol'
         ]);
 
-        // dd($validatedData['no_dokumen']);
-        // Replace the 'T' with a space in tanggallapor
+        if ($validatedData['to_department'] === 'MAINTENANCE MOULDING') {
+            $request->validate(['for' => 'required']);
+        }
+
+        // dd($validatedData);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $filename = time() . '_' . $file->getClientOriginalName();
+                // $filePath = $file->storeAs('files', $filename, 'public');
+                $fileType = $file->getMimeType();
+                $fileSize = $file->getSize();
+                $file->storeAs('public/files', $filename);
+                File::create([
+                    'doc_id' => $request->no_dokumen,
+                    'name' => $filename,
+                    'mime_type' => $fileType,
+                    'size' => $fileSize,
+                ]);
+            }
+        }
+
         if (isset($validatedData['tanggallapor'])) {
             $validatedData['tanggallapor'] = str_replace('T', ' ', $validatedData['tanggallapor']);
         }
 
-        if ($request->filled('requested_by_autograph')) {
-            $autographData = $request->input('requested_by_autograph');
-            $autographData = str_replace('data:image/png;base64,', '', $autographData);
-            $autographData = str_replace(' ', '+', $autographData);
-            $autographImage = base64_decode($autographData);
-            $filePath = 'autographs/' . uniqid() . '.png';
-            Storage::disk('public')->put($filePath, $autographImage);
-            $validatedData['requested_by_autograph'] = $filePath;
-        }
-
-        // Create a new instance of SuratPerintahKerjaKomputer and populate it with the validated data
-        $spk = new SuratPerintahKerjaKomputer();
+        $spk = new SuratPerintahKerja();
         $spk->no_dokumen = $validatedData['no_dokumen'];
         $spk->pelapor = $validatedData['pelapor'];
         $spk->tanggal_lapor = $validatedData['tanggallapor'];
-        $spk->dept = $validatedData['dept'];
+        $spk->from_department = $validatedData['from_department'];
         $spk->to_department = $validatedData['to_department'];
         $spk->judul_laporan = $validatedData['judul_laporan'];
         $spk->keterangan_laporan = $validatedData['keterangan_laporan'];
-        $spk->requested_by_autograph = $validatedData['requested_by_autograph'];
         $spk->requested_by = $validatedData['requested_by'];
         $spk->status_laporan = 0;
+        $spk->is_urgent = $validatedData['is_urgent'] === 'yes' ? true : false;
 
-        // Save the instance to the database
         $spk->save();
 
-        // Optionally, you can return a response or redirect
         return redirect()->route('spk.index')->with('success', 'Data successfully inserted.');
     }
 
     public function detail($id)
     {
-        $report = SuratPerintahKerjaKomputer::with('spkRemarks')->find($id);
+        $report = SuratPerintahKerja::with('spkRemarks')->find($id);
+        $files = File::where('doc_id', $report->no_dokumen)->get();
 
         $users = null;
         switch ($report->to_department) {
@@ -167,18 +177,18 @@ class SuratPerintahKerjaKomputerController extends Controller
 
         // dd($users);
 
-        $dept = $report->dept;
-        $depthead = User::whereHas('department', function ($query) use ($dept) {
-            $query->where('name', $dept);
+        $fromDepartment = $report->fromDepartment;
+        $depthead = User::whereHas('department', function ($query) use ($fromDepartment) {
+            $query->where('name', $fromDepartment);
         })->where('is_head', true)
             ->first();
 
-        return view('spk.detail', compact('report', 'users', 'depthead'));
+        return view('spk.detail', compact('report', 'users', 'depthead', 'files'));
     }
 
-    public function update(UpdateSuratPerintahKerjaKomputerRequest $request, $id)
+    public function update(UpdateSuratPerintahKerjaRequest $request, $id)
     {
-        $report = SuratPerintahKerjaKomputer::findOrFail($id);
+        $report = SuratPerintahKerja::findOrFail($id);
         $validated = $request->validated();
 
         $validated['status_laporan'] = $this->determineStatus($report, $validated);
@@ -191,11 +201,10 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function saveAutograph(Request $request, $id)
     {
-        $report = SuratPerintahKerjaKomputer::findOrFail($id);
+        $report = SuratPerintahKerja::findOrFail($id);
 
         $data = $request->all();
         $data['status_laporan'] = $this->determineStatus($report, $data);
-        // dd($data['status_laporan']);
 
         $report->update($data);
 
@@ -204,11 +213,15 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     private function determineStatus($report, $data)
     {
-        if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai)) {
+        if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai) && $report->pic_autograph) {
+            return 4;
+        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi) && $report->admin_autograph) {
             return 3;
-        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['keterangan_pic']) || $report->keterangan_pic) && (!empty($data['tanggal_terima']) || $report->tanggal_terima) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi)) {
+        } elseif ($report->to_department === 'MAINTENANCE MOULDING' && (($report->dept_head_autograph || !empty($data['dept_head_autograph'])) && $report->creator_autograph || $report->is_urgent && $report->creator_autograph)) {
+            return 6;
+        } elseif (!empty($data['dept_head_autograph'])) {
             return 2;
-        } elseif ($report->prepared_by_autograph) {
+        } elseif (!empty($data['creator_autograph']) || $report->cretor_autograph) {
             return 1;
         } else {
             return 0;
@@ -221,7 +234,7 @@ class SuratPerintahKerjaKomputerController extends Controller
     public function destroy($id)
     {
         try {
-            $report = SuratPerintahKerjaKomputer::findOrFail($id);
+            $report = SuratPerintahKerja::findOrFail($id);
             $report->delete();
 
             return redirect()->back()->with('success', 'SPK deleted successfully!');
@@ -235,13 +248,13 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function monthlyreport(Request $request)
     {
-        // Fetch all SuratPerintahKerjaKomputer records
+        // Fetch all SuratPerintahKerja records
         // Get current month and year from request or set default
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
-        // Fetch all SuratPerintahKerjaKomputer records filtered by month and year
-        $reports = SuratPerintahKerjaKomputer::whereYear('tanggal_lapor', $year)
+        // Fetch all SuratPerintahKerja records filtered by month and year
+        $reports = SuratPerintahKerja::whereYear('tanggal_lapor', $year)
             ->whereMonth('tanggal_lapor', $month)
             ->get();
 
@@ -271,7 +284,7 @@ class SuratPerintahKerjaKomputerController extends Controller
             }
 
             // Calculate estimasi_kesepakatan based on your logic
-            $dateMulai = new DateTime($report->tanggal_terima);
+            $dateMulai = new DateTime($report->tanggal_mulai);
             $dateEstimasi = new DateTime($report->tanggal_estimasi);
             $estimasi = $dateMulai->diff($dateEstimasi);
             $estimasiFormatted = sprintf('%d hari, %d jam, %d menit', $estimasi->days, $estimasi->h, $estimasi->i);
@@ -289,13 +302,13 @@ class SuratPerintahKerjaKomputerController extends Controller
             $monthlyReport[] = [
                 'no_dokumen' => $report->no_dokumen,
                 'pelapor' => $report->pelapor,
-                'dept' => $report->dept,
+                'from_department' => $report->from_department,
                 'judul' => $report->judul_laporan,
                 'keterangan_laporan' => $report->keterangan_laporan,
                 'pic' => $report->pic,
-                'keterangan_pic' => $report->keterangan_pic,
+                'tindakan' => $report->tindakan,
                 'tanggal_lapor' => $report->tanggal_lapor,
-                'tanggal_terima' => $report->tanggal_terima,
+                'tanggal_mulai' => $report->tanggal_mulai,
                 'tanggal_selesai' => $report->tanggal_selesai,
                 'durasi' => $durasiFormatted,
                 'estimasi_kesepakatan' => $estimasiFormatted,
@@ -318,15 +331,15 @@ class SuratPerintahKerjaKomputerController extends Controller
     {
         $validated = $request->validate(['revision_reason' => 'required|string|max:255']);
 
-        $report = SuratPerintahKerjaKomputer::find($id);
+        $report = SuratPerintahKerja::find($id);
         $report->update([
-            'status_laporan' => 2,
+            'status_laporan' => 3,
             'is_revision' => true,
             'revision_count' => $report->revision_count + 1,
-            'finished_by_autograph' => null,
-            'dept_head_autograph' => null,
+            'pic_autograph' => null,
+            'approved_autograph' => null,
             'tanggal_selesai' => null,
-            'keterangan_pic' => null,
+            'tindakan' => null,
             'revision_reason' => $validated['revision_reason']
         ]);
 
@@ -335,7 +348,7 @@ class SuratPerintahKerjaKomputerController extends Controller
 
     public function finish($id)
     {
-        SuratPerintahKerjaKomputer::find($id)->update(['status_laporan' => 4]);
+        SuratPerintahKerja::find($id)->update(['status_laporan' => 5]);
         return redirect()->back()->with('success', 'Spk finished!');
     }
 }
