@@ -83,6 +83,7 @@ use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\MaintenanceInventoryController;
+use App\Http\Controllers\FormKerusakanController;
 
 
 /*
@@ -744,6 +745,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 
 
+    Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
+    Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
+    Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name('laporan-kerusakan.report');
+    Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
