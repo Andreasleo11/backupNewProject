@@ -186,8 +186,8 @@
                                             <div class="col-sm-9 mt-2">
                                                 <div class="form-check form-check-inline">
                                                     <input class="form-check-input" type="radio" name="for"
-                                                        id="inlineRadioMol" value="mol">
-                                                    <label class="form-check-label" for="inlineRadioMol">Mol</label>
+                                                        id="inlineRadioMould" value="mould">
+                                                    <label class="form-check-label" for="inlineRadioMould">Mould</label>
                                                 </div>
                                                 <div class="form-check form-check-inline">
                                                     <input class="form-check-input" type="radio" name="for"
@@ -354,7 +354,15 @@
 
 @endsection
 @push('extraJs')
-    <script>
+    <script type="module">
+        // Initialize TomSelect for dropdown
+        const picInput = new TomSelect('#pic', {
+            plugins: ['dropdown_input'],
+            sortField: {
+                field: "text"
+            },
+            create: true,
+        });
         document.addEventListener('DOMContentLoaded', function() {
             const toggleRemarks = document.getElementById('toggle-remarks');
             const remarksContainer = document.getElementById('remarks-container');
@@ -385,6 +393,106 @@
                     }
                 });
             }
+
+            const mouldOptions = [{
+                    value: 'Awaludin',
+                    text: 'Awaludin'
+                },
+                {
+                    value: 'Sokhib',
+                    text: 'Sokhib'
+                },
+                {
+                    value: 'Diki',
+                    text: 'Diki'
+                },
+                {
+                    value: 'Ashari',
+                    text: 'Ashari'
+                },
+                {
+                    value: 'Teguh',
+                    text: 'Teguh'
+                },
+                {
+                    value: 'Maulana',
+                    text: 'Maulana'
+                }
+            ];
+
+            const machineOptions = [{
+                    value: 'Dumro',
+                    text: 'Dumro'
+                },
+                {
+                    value: 'Waluyo',
+                    text: 'Waluyo'
+                },
+                {
+                    value: 'Achamd',
+                    text: 'Achamd'
+                },
+                {
+                    value: 'Junaidi',
+                    text: 'Junaidi'
+                },
+                {
+                    value: 'Seto',
+                    text: 'Seto'
+                },
+                {
+                    value: 'Andri',
+                    text: 'Andri'
+                }
+            ];
+
+            function updatePICOptions(options) {
+                // Clear existing options in Tom Select
+                picInput.clearOptions();
+                picInput.addOption({
+                    value: '',
+                    text: '--Select PIC--',
+                    disabled: true,
+                    selected: true
+                });
+
+                // Add new options
+                options.forEach(option => {
+                    picInput.addOption(option);
+                });
+                picInput.refreshOptions();
+            }
+
+            const radioMould = document.getElementById('inlineRadioMould');
+            const radioMachine = document.getElementById('inlineRadioMachine');
+
+            radioMould.addEventListener('change', function() {
+                if (this.checked) {
+                    updatePICOptions(mouldOptions);
+                }
+            });
+
+            radioMachine.addEventListener('change', function() {
+                if (this.checked) {
+                    updatePICOptions(machineOptions);
+                }
+            });
+
+            // Preselect based on existing report data
+            const selectedFor = '{{ old('for', $report->for ?? '') }}';
+            if (selectedFor === 'mould') {
+                radioMould.checked = true;
+                updatePICOptions(mouldOptions);
+            } else if (selectedFor === 'machine') {
+                radioMachine.checked = true;
+                updatePICOptions(machineOptions);
+            }
+
+            // Preselect PIC option
+            const selectedPIC = '{{ old('pic', $report->pic ?? '') }}';
+            if (selectedPIC) {
+                picInput.setValue(selectedPIC);
+            }
         });
 
         // Function to handle the edit button click
@@ -393,8 +501,8 @@
         function handleEditButtonClick() {
             // Get all inputs and textareas except those with specific IDs
             const toggleableInputs = [
-                'judul_laporan', 'keterangan_laporan', 'pic', 'tindakan', 'tanggal_mulai', 'tanggal_estimasi',
-                'tanggal_selesai', 'inlineRadioMol', 'inlineRadioMachine'
+                'judul_laporan', 'keterangan_laporan', 'tindakan', 'tanggal_mulai', 'tanggal_estimasi',
+                'tanggal_selesai', 'inlineRadioMould', 'inlineRadioMachine'
             ];
             const inputs = document.querySelectorAll('input:not([type=hidden]), textarea, select');
             const saveChangesButtonContainer = document.getElementById('saveChangesButtonContainer');
@@ -405,6 +513,12 @@
                 }
             });
 
+            if (picInput.isDisabled) {
+                picInput.enable();
+            } else {
+                picInput.disable();
+            }
+
             // Toggle the visibility of the Save changes button container
             saveChangesButtonContainer.classList.toggle('d-none');
 
@@ -413,6 +527,8 @@
             editButton.classList.toggle('btn-outline-primary');
             editButton.classList.toggle('btn-primary');
         }
+
+
 
         // Ensure the DOM is fully loaded before adding event listener
         document.addEventListener('DOMContentLoaded', function() {
@@ -424,6 +540,7 @@
             } else {
                 console.error('Edit button not found. Ensure the editButton ID is correct.');
             }
+
         });
     </script>
 @endpush
