@@ -411,12 +411,12 @@ class PurchaseRequestController extends Controller
                     ]);
                 } else {
                     // Case 2: Item available in MasterDataPr
-                    if ($existingItem->latest_price !== $price) {
-                        $existingItem->update([
-                            'price' => $existingItem->latest_price,
-                            'latest_price' => $price,
-                        ]);
-                    }
+                    // if ($existingItem->latest_price !== $price) {
+                    $existingItem->update([
+                        'price' => $existingItem->latest_price,
+                        'latest_price' => $price,
+                    ]);
+                    // }
                 }
             }
         }

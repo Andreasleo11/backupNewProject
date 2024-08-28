@@ -9,39 +9,41 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Notification;
 
-class SuratPerintahKerjaKomputer extends Model
+class SuratPerintahKerja extends Model
 {
     use HasFactory;
-    protected $table = 'surat_perintah_kerja_komputer';
+    protected $table = 'surat_perintah_kerja';
 
     protected $fillable = [
         'no_dokumen',
         'pelapor',
-        'dept',
+        'from_department',
         'to_department',
         'tanggal_lapor',
         'judul_laporan',
         'keterangan_laporan',
         'pic',
-        'keterangan_pic',
+        'tindakan',
         'status_laporan',
-        'tanggal_terima',
+        'tanggal_mulai',
         'tanggal_selesai',
         'tanggal_estimasi',
-        'requested_by_autograph',
-        'prepared_by_autograph',
-        'pic_autograph',
-        'finished_by_autograph',
+        'creator_autograph',
         'dept_head_autograph',
+        'admin_autograph',
+        'pic_autograph',
+        'approved_autograph',
         'requested_by',
         'is_revision',
         'revision_count',
         'revision_reason',
+        'is_urgent',
+        'for',
     ];
 
-    public function deptRelation()
+    public function fromDepartment()
     {
-        return $this->belongsTo(Department::class, 'dept', 'name');
+        return $this->belongsTo(Department::class, 'from_department', 'name');
     }
 
     public function createdBy()
@@ -69,11 +71,11 @@ class SuratPerintahKerjaKomputer extends Model
 
         static::updated(function ($spk) {
             $statusChanged = $spk->isDirty('status_laporan');
-            $keteranganPicChanged = $spk->isDirty('keterangan_pic');
+            $keteranganPicChanged = $spk->isDirty('tindakan');
 
-            if (($statusChanged || $keteranganPicChanged)) {
+            if (($statusChanged && $spk->tindakan || $keteranganPicChanged)) {
                 // Create SPK Remark
-                $remarks = $spk->keterangan_pic;
+                $remarks = $spk->tindakan;
                 $status = $spk->status_laporan;
                 $spkId = $spk->id;
                 $revisionReason = $spk->revision_reason;
@@ -88,7 +90,7 @@ class SuratPerintahKerjaKomputer extends Model
                     SpkRemark::create([
                         'spk_id' => $spkId,
                         'status' => $status,
-                        'remarks' => $remarks ?? $revisionReason,
+                        'remarks' => $remarks,
                         'is_revision' => true,
                     ]);
                 }
@@ -120,9 +122,9 @@ class SuratPerintahKerjaKomputer extends Model
             $commonDetails['body'] = "Notification for SPK : <br>
                 - No Dokumen : $this->no_dokumen <br>
                 - Pelapor : $this->pelapor <br>
-                - Departemen : $this->dept <br>";
+                - Departmen : $this->from_department <br>";
         } elseif ($event == 'updated') {
-            $keteranganPic = $this->keterangan_pic ?: '-';
+            $keteranganPic = $this->tindakan ?: '-';
 
             if ($this->is_revision) {
                 $commonDetails['body'] = "Notification for SPK : <br>

@@ -514,6 +514,12 @@
                                 Yayasan
                             </a>
                         </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('magang.table') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Magang
+                            </a>
+                        </li>
                     </ul>
                 </li>
 
@@ -558,6 +564,13 @@
                     <a href="{{ route('spk.index') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         SPK
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('formkerusakan.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Form Kerusakan / Perbaikan
                     </a>
                 </li>
             </ul>

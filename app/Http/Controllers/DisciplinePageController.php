@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\DataTables\DisciplineTableDataTable;
 use App\DataTables\DisciplineYayasanTableDataTable;
 use App\DataTables\AllDisciplineTableDataTable;
+use App\DataTables\DisciplineMagangDataTable;
 use App\Exports\DesciplineDataExp;
 use App\Imports\DesciplineDataImport;
 use App\Imports\DesciplineYayasanDataImport;
@@ -600,11 +601,166 @@ class DisciplinePageController extends Controller
                 })
                     ->get();
             }
-
+           
             return $dataTable->render("setting.disciplineyayasanindex", compact("employees", "user"));
         } catch (\Throwable $th) {
             abort(403, 'Departement anda tidak ada yayasan ');
         }
+    }
+
+
+    public function indexmagang (DisciplineMagangDataTable $dataTable)
+    {
+        //value yang dipake yayasan
+        $user = Auth::user();
+        // dd($user);
+        try {
+
+            if ($user->department_id == 2) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+
+                    if (auth()->user()->name === 'yuli') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '340')->orWhere('Dept', '341');
+                        });
+                    } else {
+                        $query->where('Dept', '340');
+                    }
+                })
+                    ->get();
+            } elseif ($user->is_gm) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 11) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '390')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 24) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '331')->orWhere('Dept', '330')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 16) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '363')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 17) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+
+                    if (auth()->user()->name === 'catur') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '330')->orWhere('Dept', '331');
+                        });
+                    } else {
+                        $query->where('Dept', '330');
+                    }
+                })
+                    ->get();
+            } elseif ($user->department_id == 25) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '351')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 19) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    dd($employees);
+                    if (auth()->user()->name === 'popon') {
+                        $query->where(function ($query) {
+                            $query->where('Dept', '361')->orWhere('Dept', '362');
+                        });
+                    } else {
+                        $query->where('Dept', '361');
+                    }
+                })->get();
+            } elseif ($user->department_id == 20) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '362')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 18) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '350')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            } elseif ($user->department_id == 9) {
+                $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '500')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                })
+                    ->get();
+            }
+            
+            return $dataTable->render("setting.disciplinemagangindex", compact("employees", "user"));
+        } catch (\Throwable $th) {
+            abort(403, 'Departement anda tidak ada Magang ');
+        }
+    }
+
+    public function updatemagang(Request $request, $id)
+    {
+        $evaluationData = EvaluationData::find($id);
+        $pengawas = Auth::user();
+
+
+        // Update the specific fields for this user
+        $evaluationData->update([
+            'kemampuan_kerja' => $request->kemampuan_kerja,
+            'kecerdasan_kerja' => $request->kecerdasan_kerja,
+            'qualitas_kerja' => $request->qualitas_kerja,
+            'disiplin_kerja' => $request->disiplin_kerja,
+            'kepatuhan_kerja' => $request->kepatuhan_kerja,
+            'lembur' => $request->lembur,
+            'efektifitas_kerja' => $request->efektifitas_kerja,
+            'relawan' => $request->relawan,
+            'integritas' => $request->integritas,
+            // Add other fields you want to update
+        ]);
+
+
+
+        // Calculate total score
+        $scoreMaps = [
+            'kemampuan_kerja' => ['A' => 17, 'B' => 14, 'C' => 11, 'D' => 8, 'E' => 0],
+            'kecerdasan_kerja' => ['A' => 16, 'B' => 13, 'C' => 10, 'D' => 7, 'E' => 0],
+            'qualitas_kerja' => ['A' => 11, 'B' => 9, 'C' => 7, 'D' => 4, 'E' => 0],
+            'disiplin_kerja' => ['A' => 8, 'B' => 6, 'C' => 5, 'D' => 3, 'E' => 0],
+            'kepatuhan_kerja' => ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'lembur' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'efektifitas_kerja' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'relawan' =>  ['A' => 10, 'B' => 8, 'C' => 6, 'D' => 4, 'E' => 0],
+            'integritas' => ['A' => 8, 'B' => 6, 'C' => 5, 'D' => 3, 'E' => 0]
+        ];
+
+        $total = 0;
+
+        foreach ($request->only(array_keys($scoreMaps)) as $field => $value) {
+            $total += $scoreMaps[$field][$value] ?? 0;
+        }
+
+        // Subtract penalties
+        $total -= (($evaluationData->Alpha * 10) + ($evaluationData->Izin * 2) + ($evaluationData->Sakit) + ($evaluationData->Telat * 0.5));
+
+        // dd($evaluationData);
+        // Update total score for the user
+        $evaluationData->update([
+            'total' => $total,
+            'pengawas' => $pengawas->name
+        ]);
+
+        return redirect()->route('magang.table')->with('success', 'Data updated successfully');
     }
 
     public function updateDept()
@@ -838,6 +994,14 @@ class DisciplinePageController extends Controller
         $excelFileName = $this->processExcelFileYayasan($uploadedFiles);
         $this->importExcelFileYayasan($excelFileName);
         return redirect()->route('yayasan.table')->with('success', 'Line added successfully');
+    }
+
+    public function magangimport(Request $request)
+    {
+        $uploadedFiles = $request->file('excel_files');
+        $excelFileName = $this->processExcelFileYayasan($uploadedFiles);
+        $this->importExcelFileYayasan($excelFileName);
+        return redirect()->route('magang.table')->with('success', 'Line added successfully');
     }
 
     public function processExcelFileYayasan($files)

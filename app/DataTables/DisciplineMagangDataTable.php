@@ -2,7 +2,6 @@
 
 namespace App\DataTables;
 
-
 use Illuminate\Support\Facades\Auth;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
@@ -14,7 +13,7 @@ use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
-class DisciplineYayasanTableDataTable extends DataTable
+class DisciplineMagangDataTable extends DataTable
 {
     /**
      * Build DataTable class.
@@ -245,7 +244,7 @@ class DisciplineYayasanTableDataTable extends DataTable
         }
         @endphp
         {{ $grade }}')
-            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-yayasan-modal-{{str_replace(\' \', \'\',$id)}}"  {{ ($is_lock === 1) ? "disabled" : ""  }}><i class="bx bx-edit"></i></button>
+            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-magang-modal-{{str_replace(\' \', \'\',$id)}}"  {{ ($is_lock === 1) ? "disabled" : ""  }}><i class="bx bx-edit"></i></button>
         ')
             ->setRowId('id');
     }
@@ -263,62 +262,62 @@ class DisciplineYayasanTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->is_gm) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();}
         elseif (Auth::user()->email === "ani_apriani@daijo.co.id" || Auth::user()->email === "bernadett@daijo.co.id") {
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 21) {
+        } elseif (Auth::user()->department_id == 9) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '311')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                    $query->where('Dept', '500')
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 11) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('dept', '390')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 16) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '363')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 20) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 19) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where(function ($query) {
-                        $query->where('Dept', '361')->orWhere('Dept', '362');
+                        $query->whereIn('Dept', '361')->orWhere('Dept', '362');
                     })
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->where('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 18) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '350')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 24) {
             // Get data for department 340
@@ -327,13 +326,13 @@ class DisciplineYayasanTableDataTable extends DataTable
                     $query->where(function ($query) {
                         $query->where('Dept', '331')->orWhere('Dept', '330');
                     })
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
         } elseif (Auth::user()->department_id == 17) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
 
                     if (Auth::user()->name === 'catur') {
                         $query->where(function ($query) {
@@ -347,7 +346,7 @@ class DisciplineYayasanTableDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
 
                     if (auth()->user()->name === 'yuli') {
                         $query->where(function ($query) {
@@ -368,20 +367,20 @@ class DisciplineYayasanTableDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('disciplineyayasantable-table')
-            ->columns($this->getColumns())
-            ->minifiedAjax()
-            //->dom('Bfrtip')
-            ->orderBy(1)
+                    ->setTableId('disciplinemagang-table')
+                    ->columns($this->getColumns())
+                    ->minifiedAjax()
+                    //->dom('Bfrtip')
+                    ->orderBy(1)
 
-            ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                Button::make('pdf'),
-                Button::make('print'),
-                Button::make('reset'),
-                Button::make('reload')
-            ]);
+                    ->buttons([
+                        Button::make('excel'),
+                        Button::make('csv'),
+                        Button::make('pdf'),
+                        Button::make('print'),
+                        Button::make('reset'),
+                        Button::make('reload')
+                    ]);
     }
 
     /**
@@ -391,7 +390,7 @@ class DisciplineYayasanTableDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
+       return [
             Column::make('id')
                 ->visible(false)
                 ->exportable(true),
@@ -458,6 +457,6 @@ class DisciplineYayasanTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DisciplineYayasanTable_' . date('YmdHis');
+        return 'DisciplineMagang_' . date('YmdHis');
     }
 }

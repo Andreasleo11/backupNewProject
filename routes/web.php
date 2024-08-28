@@ -72,7 +72,7 @@ use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\StockTintaController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\MasterTintaController;
-use App\Http\Controllers\SuratPerintahKerjaKomputerController;
+use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -83,6 +83,7 @@ use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\MaintenanceInventoryController;
+use App\Http\Controllers\FormKerusakanController;
 
 
 /*
@@ -571,6 +572,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
 
+
+
+
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
     Route::post("/approve-data-yayasan/depthead", [DisciplinePageController::class, 'approve_depthead'])->name('approve.data.depthead');
@@ -594,10 +598,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/fetch/filtered/yayasan-employees-GM', [DisciplinePageController::class, 'fetchFilteredEmployeesGM']);
 
     Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
+    Route::put('/edit/maganddiscipline/{id}', [DisciplinePageController::class, 'updatemagang'])->name('updatemagang');
     Route::put('/edit/yayasandiscipline/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('updateyayasan');
     Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
+    Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name('magang.import');
 
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
+
+    Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
 
     //
 
@@ -689,16 +697,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
 
 
-    Route::get('/spkkomputer', [SuratPerintahKerjaKomputerController::class, 'index'])->name('spk.index');
-    Route::get('/spkkomputer/create', [SuratPerintahKerjaKomputerController::class, 'createpage'])->name('spk.create');
-    Route::post('/spkkomputer/input', [SuratPerintahKerjaKomputerController::class, 'inputprocess'])->name('spk.input');
-    Route::get('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'detail'])->name('spk.detail');
-    Route::put('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'update'])->name('spk.update');
-    Route::delete('/spkkomputer/{id}', [SuratPerintahKerjaKomputerController::class, 'destroy'])->name('spk.delete');
-    Route::get('spkkomputer/report/monthly', [SuratPerintahKerjaKomputerController::class, 'monthlyreport'])->name('spk.monthlyreport');
-    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaKomputerController::class, 'saveAutograph'])->name('spk.save.autograph');
-    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaKomputerController::class, 'revision'])->name('spk.revision');
-    Route::put('/spk/finish/{id}', [SuratPerintahKerjaKomputerController::class, 'finish'])->name('spk.finish');
+    Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
+    Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
+    Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
+    Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
+    Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
+    Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
+    Route::get('spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
+    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
+    Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
 
     Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds')->middleware('permission:get-delivery-schedule-index');
@@ -737,6 +745,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 
 
+    Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
+    Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
+    Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name('laporan-kerusakan.report');
+    Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
@@ -780,7 +792,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     // FOR DEBUG ONLY: VIEWING CREATED SPK NOTIFICATION
     Route::get('/createdSpkPreview', function () {
-        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+        $spk = App\Models\SuratPerintahKerja::find(4);
 
         $details = [
             'cc' => $spk->createdBy->email,
@@ -798,7 +810,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     // FOR DEBUG ONLY: VIEWING UPDATED SPK NOTIFICATION
     Route::get('/updatedSpkPreview', function () {
-        $spk = App\Models\SuratPerintahKerjaKomputer::find(4);
+        $spk = App\Models\SuratPerintahKerja::find(4);
 
         $status = 'UNKNOWN';
         switch ($spk->status) {
@@ -813,7 +825,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
                 break;
         }
 
-        $keteranganPic = $spk->keterangan_pic ?: '-';
+        $keteranganPic = $spk->tindakan ?: '-';
         $details = [
             'greeting' => 'Surat Perintah Kerja Komputer Notification',
             'body' => "Notification for SPK : <br>

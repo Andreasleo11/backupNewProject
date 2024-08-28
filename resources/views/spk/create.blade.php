@@ -53,19 +53,20 @@
                                         class="form-control bg-secondary-subtle">
                                 </div>
                             </div>
+
                         </div>
                     </div>
                     <div class="card mt-4">
                         <div class="card-body">
                             <h4>Details</h4>
                             <hr>
-                            <div class="row align-items-baseline">
+
+                            <div class="row mt-3">
                                 <div class="col">
                                     <div class="form-group">
-                                        <label for="departmentDropdown"
-                                            class="fw-semibold col-form-label col-sm-2">Department <span
-                                                class="text-danger">*</span></label>
-                                        <select class="form-select" name="dept" id="departmentDropdown" required>
+                                        <label for="departmentDropdown" class="fw-semibold col-form-label">From
+                                            Department <span class="text-danger">*</span></label>
+                                        <select class="form-select" name="from_department" id="departmentDropdown" required>
                                             <option value="" selected disabled>--Select from department--</option>
                                             @foreach ($departments as $department)
                                                 @if ($department->id === $authUser->department->id)
@@ -79,47 +80,113 @@
                                         </select>
                                     </div>
                                 </div>
-
                                 <div class="col">
                                     <div class="form-group">
-                                        <label for="toDepartmentDropdown" class="fw-semibold col-form-label col-sm-2">To
+                                        <label for="toDepartmentDropdown" class="fw-semibold col-form-label">To
                                             Department <span class="text-danger">*</span></label>
                                         <select class="form-select" name="to_department" id="toDepartmentDropdown" required>
                                             <option value="" selected disabled>Select to department..</option>
                                             <option value="COMPUTER">COMPUTER</option>
                                             <option value="MAINTENANCE">MAINTENANCE</option>
+                                            <option value="MAINTENANCE MOULDING">MAINTENANCE MOULDING</option>
                                             <option value="PERSONALIA">PERSONALIA</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
-
+                            <div class="row mt-3">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="requested_by" class="fw-semibold form-label ">Requested By
+                                            <span class="text-danger">*</span></label>
+                                        <input type="text" name="requested_by" id="requested_by"
+                                            placeholder="e.g. Raymond" required class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col d-none type-field">
+                                    <div class="form-group">
+                                        <div>
+                                            <label for="inlineRadio" class="form-label fw-semibold">Type</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="type"
+                                                id="inlineRadioMade" value="made">
+                                            <label class="form-check-label" for="inlineRadioMade">Made</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="type"
+                                                id="inlineRadioRepair" value="repair">
+                                            <label class="form-check-label" for="inlineRadioRepair">Repair</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="type"
+                                                id="inlineRadioModify" value="modify">
+                                            <label class="form-check-label" for="inlineRadioModify">Modify</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <div>
+                                            <label for="inlineRadio" class="form-label fw-semibold">Is Urgent? <span
+                                                    class="text-danger">*</span></label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="is_urgent"
+                                                id="inlineRadioYes" value="yes">
+                                            <label class="form-check-label" for="inlineRadioYes">Yes</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="is_urgent"
+                                                id="inlineRadioNo" value="no" checked>
+                                            <label class="form-check-label" for="inlineRadioNo">No</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3 d-none part-fields">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="part_no" class="fw-semibold col-form-label">Part No
+                                            <span class="text-secondary fw-normal">(Optional)</span></label>
+                                        <input type="text" name="part_no" id="part_no" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="part_name" class="fw-semibold col-form-label">Part
+                                            Name <span class="text-secondary fw-normal">(Optional)</span></label>
+                                        <input type="text" name="part_name" id="part_name" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="machine" class="fw-semibold col-form-label">Machine <span
+                                                class="text-secondary fw-normal">(Optional)</span></label>
+                                        <input type="text" name="machine" id="machine" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
                             <div class="form-group mt-3">
                                 <label for="judul_laporan" class="fw-semibold form-label">Judul Laporan <span
                                         class="text-danger">*</span></label>
                                 <input type="text" name="judul_laporan" id="judul_laporan" value="" required
-                                    class="form-control" placeholder="Layar monitor komputer (departemen) bermasalah">
+                                    class="form-control"
+                                    placeholder="e.g. Layar monitor komputer (departemen) bermasalah">
                             </div>
                             <div class="form-group mt-3">
                                 <label for="keterangan_laporan" class="fw-semibold form-label">Keterangan Laporan <span
                                         class="text-danger">*</span></label>
                                 <textarea name="keterangan_laporan" id="keterangan_laporan" cols="30" rows="10" class="form-control"
-                                    placeholder="layar hanya berkedip saja tidak mau menyala padahal sudah dicoba restart" required></textarea>
+                                    placeholder="e.g. layar hanya berkedip saja tidak mau menyala padahal sudah dicoba restart" required></textarea>
                             </div>
                             <div class="form-group mt-3">
-                                <label for="requested_by" class="fw-semibold form-label">Requested By <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" name="requested_by" id="requested_by" placeholder="Raymond" required
-                                    class="form-control">
+                                <label for="attachments" class="fw-semibold form-label">Attachments</label>
+                                <input type="file" name="attachments[]" id="attachments" class="form-control"
+                                    multiple accept="image/*">
+                                <div id="attachment-previews" class="mt-3 row"></div>
                             </div>
-                            <div class="form-group mt-3">
-                                <label for="requestedByAutograph" class="fw-semibold form-label">Requested By Autograph
-                                    <span class="text-danger">*</span></label>
-                                <canvas id="signature-pad" class="signature-pad border d-block" width="400"
-                                    height="200"></canvas>
-                                <button type="button" id="clear-signature" class="btn btn-secondary mt-2">Clear</button>
-                                <input type="hidden" name="requested_by_autograph" id="requestedByAutograph">
-                            </div>
+
                         </div>
                     </div>
 
@@ -155,27 +222,6 @@
             document.getElementById('tanggallapor').value = formattedToday;
         });
 
-        // Initialize Signature Pad
-        const canvas = document.getElementById('signature-pad');
-        const signaturePad = new SignaturePad(canvas);
-        const clearButton = document.getElementById('clear-signature');
-        const autographInput = document.getElementById('requestedByAutograph');
-
-        clearButton.addEventListener('click', () => {
-            signaturePad.clear();
-            autographInput.value = '';
-        });
-
-        document.querySelector('#spkForm').addEventListener('submit', (event) => {
-            if (!signaturePad.isEmpty()) {
-                autographInput.value = signaturePad.toDataURL('image/png');
-                console.log(autographInput.value); // Debugging line
-            } else {
-                autographInput.value = '';
-                console.log('No signature drawn'); // Debugging line
-            }
-        });
-
         document.getElementById('toDepartmentDropdown').addEventListener('change', function() {
             const toDepartment = this.value;
             let toDeptCode = '';
@@ -190,6 +236,9 @@
                 case 'MAINTENANCE':
                     toDeptCode = 'MT';
                     break;
+                case 'MAINTENANCE MOULDING':
+                    toDeptCode = 'MM';
+                    break;
                 default:
                     toDeptCode = 'UNKNOWN';
                     break;
@@ -199,11 +248,91 @@
             const today = new Date();
             const date = today.toISOString().slice(2, 10).replace(/-/g, '');
             const count =
-                {{ \App\Models\SuratPerintahKerjaKomputer::whereDate('created_at', \Carbon\Carbon::today())->count() }};
+                {{ \App\Models\SuratPerintahKerja::whereDate('created_at', \Carbon\Carbon::today())->count() + 1 }};
             const lastNumber = String(count).padStart(3, '0');
             const noDokumen = `${toDeptCode}/${type}/${date}/${lastNumber}`;
 
             document.getElementById('no_dokumen').value = noDokumen;
+
+            // Toggle part number, part name, and machine fields based on department selection
+            const partFields = document.querySelector('.part-fields');
+            const forFields = document.querySelector('.for-fields');
+            if (toDepartment === 'MAINTENANCE MOULDING') {
+                partFields.classList.remove('d-none');
+            } else {
+                partFields.classList.add('d-none');
+            }
+
+            const typeFields = document.querySelector('.type-field');
+            if (toDepartment === 'MAINTENANCE' || toDepartment === 'MAINTENANCE MOULDING') {
+                typeFields.classList.remove('d-none');
+            } else {
+                typeFields.classList.add('d-none');
+            }
+
+        });
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const attachmentInput = document.getElementById('attachments');
+            const previewContainer = document.getElementById('attachment-previews');
+            let files = [];
+
+            attachmentInput.addEventListener('change', function(event) {
+                files = Array.from(event.target.files);
+                renderPreviews(files);
+            });
+
+            function renderPreviews(files) {
+                previewContainer.innerHTML = ''; // Clear existing previews
+
+                files.forEach((file, i) => {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        const previewDiv = document.createElement('div');
+                        previewDiv.classList.add('col-md-3', 'mb-3');
+                        previewDiv.innerHTML = `
+                    <div class="card">
+                        <img src="${e.target.result}" alt="Attachment Preview" class="card-img-top">
+                        <div class="card-body p-2 text-center">
+                            <button type="button" class="btn btn-danger btn-sm remove-image" data-index="${i}">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                `;
+                        previewContainer.appendChild(previewDiv);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+
+                // Adding a slight delay to ensure DOM updates before adding listeners
+                setTimeout(addRemoveListeners, 30);
+            }
+
+            function addRemoveListeners() {
+                const removeButtons = previewContainer.querySelectorAll('.remove-image');
+                removeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+
+                        files.splice(index, 1); // Remove the selected file
+
+                        updateFileInput(files);
+                        renderPreviews(files); // Re-render previews with updated file list
+                    });
+                });
+            }
+
+            function updateFileInput(files) {
+                const dataTransfer = new DataTransfer();
+                files.forEach(file => {
+                    dataTransfer.items.add(file); // Add remaining files to DataTransfer object
+                });
+
+                attachmentInput.files = dataTransfer.files; // Update the file input element
+            }
         });
     </script>
 @endpush
