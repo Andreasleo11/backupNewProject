@@ -33,6 +33,7 @@ class UpdateSuratPerintahKerjaRequest extends FormRequest
             'status_laporan' => 'nullable|integer',
             'tanggal_selesai' => 'nullable|date',
             'tanggal_estimasi' => 'nullable|date',
+            'for' => 'nullable|string|max:255|in:mould,machine'
         ];
     }
 
@@ -62,6 +63,7 @@ class UpdateSuratPerintahKerjaRequest extends FormRequest
             'tanggal_mulai.date' => 'Tanggal Terima must be a valid date.',
             'tanggal_selesai.date' => 'Tanggal Selesai must be a valid date.',
             'tanggal_estimasi.date' => 'Tanggal Estimasi must be a valid date.',
+            'for.in' => 'The selected option for "For" is invalid. Please choose either "mould" or "machine".',
         ];
     }
 }

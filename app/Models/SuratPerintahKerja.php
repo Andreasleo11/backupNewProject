@@ -38,6 +38,7 @@ class SuratPerintahKerja extends Model
         'revision_count',
         'revision_reason',
         'is_urgent',
+        'for',
     ];
 
     public function fromDepartment()
