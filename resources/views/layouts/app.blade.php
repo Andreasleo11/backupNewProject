@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,13 +18,13 @@
 
     <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <script src="https://kit.fontawesome.com/1cac8eb7b7.js" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
     @stack('extraCss')
 
 </head>
+
 <body>
     <div class="wrapper">
 
@@ -42,7 +43,7 @@
     @stack('extraJs')
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
-    <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
 
 </body>
+
 </html>

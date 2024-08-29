@@ -90,7 +90,7 @@ class SuratPerintahKerja extends Model
                     SpkRemark::create([
                         'spk_id' => $spkId,
                         'status' => $status,
-                        'remarks' => $remarks,
+                        'remarks' => $remarks ?? $revisionReason,
                         'is_revision' => true,
                     ]);
                 }
@@ -113,7 +113,7 @@ class SuratPerintahKerja extends Model
         $status = $this->getStatusText($this->status_laporan);
 
         $commonDetails = [
-            'greeting' => 'Surat Perintah Kerja Komputer Notification',
+            'greeting' => 'Surat Perintah Kerja Notification',
             'actionText' => 'Check Now',
             'actionURL' => route('spk.detail', $this->id),
         ];
@@ -152,12 +152,16 @@ class SuratPerintahKerja extends Model
             case 0:
                 return 'WAITING CREATOR';
             case 1:
-                return 'WAITING PIC';
+                return 'WAITING DEPT HEAD';
+            case 6:
+                return 'WAITING PPIC';
             case 2:
-                return 'IN PROGRESS';
+                return 'WAITING ADMIN';
             case 3:
-                return 'DONE';
+                return 'IN PROGRESS';
             case 4:
+                return 'DONE';
+            case 5:
                 return 'FINISH';
             default:
                 return 'UNKNOWN';
@@ -166,14 +170,71 @@ class SuratPerintahKerja extends Model
 
     private function notifyUsers($details, $event)
     {
+        $creator = $this->createdBy;
+        $users = [$creator];
+
         if ($event == 'created') {
-            $users = User::whereHas('department', function ($query) {
-                $query->where('name', 'COMPUTER');
-            })->get();
-            Notification::send($users, new SPKCreated($this, $details));
-        } else {
-            $user = $this->createdBy;
-            $user->notify(new SPKUpdated($this, $details));
+            //? WHO WILL BE NOTIFIED?
+        } elseif ($event == 'updated') {
+            if ($this->to_department === 'COMPUTER') {
+                $users = User::whereHas('department', function ($query) {
+                    $query->where('name', 'COMPUTER');
+                })->get();
+            } elseif ($this->to_department === 'MAINTENANCE MOULDING') {
+                switch ($this->status_laporan) {
+                    case 1:
+                        $user = User::where('is_head', true)->whereHas('department', function ($query) {
+                            $query->where('name', $this->from_department);
+                        })->first();
+                        break;
+                    case 6:
+                        $user = User::where('is_head', true)->whereHas('department', function ($query) {
+                            $query->where('name', 'PPIC');
+                        })->first();
+                        break;
+                    case 2:
+                        $user = User::where('name', 'umi_kulsum')->first();
+                        break;
+                    case 3:
+                    case 4:
+                        $user = User::where('is_head', true)->whereHas('department', function ($query) {
+                            $query->where('name', $this->to_department);
+                        })->first();
+                        break;
+                    default:
+                        $user = $creator;
+                        break;
+                }
+            } elseif ($this->to_department === 'MAINTENANCE') {
+                switch ($this->status_laporan) {
+                    case 1:
+                        $user = User::where('is_head', true)->whereHas('department', function ($query) {
+                            $query->where('name', $this->from_department);
+                        })->first();
+                        break;
+                    case 2:
+                        $user = User::where('name', 'iza')->first();
+                        break;
+                    case 3:
+                    case 4:
+                        $user = User::where('is_head', true)->whereHas('department', function ($query) {
+                            $query->where('name', $this->to_department);
+                        })->first();
+                        break;
+                    default:
+                        $user = $creator;
+                        break;
+                }
+            } elseif ($this->to_department === 'PERSONALIA') {
+                //? WHO WILL BE NOTIFIED?
+            }
+
+            // Check if $user is not null, then add it to the $users array
+            if ($user) {
+                $users[] = $user; // Use array append
+            }
+
+            Notification::send($users, new SPKUpdated($this, $details));
         }
     }
 }

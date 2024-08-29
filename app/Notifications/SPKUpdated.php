@@ -40,7 +40,7 @@ class SPKUpdated extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->line('There\'s a Surat Perintah Kerja Komputer has just been updated!')
+            ->line('There\'s a Surat Perintah Kerja has just been updated!')
             ->greeting($this->details['greeting'])
             ->line(new \Illuminate\Support\HtmlString($this->details['body']))
             ->action($this->details['actionText'], $this->details['actionURL']);

@@ -107,12 +107,7 @@ class SuratPerintahKerjaController extends Controller
             'part_name' => 'nullable|string|max:255',
             'machine' => 'nullable|string|max:255',
             'is_urgent' => 'required|in:yes,no',
-            'for' => 'nullable|string|max:255|in:machine,mould'
         ]);
-
-        if ($validatedData['to_department'] === 'MAINTENANCE MOULDING') {
-            $request->validate(['for' => 'required']);
-        }
 
         // dd($validatedData);
 
@@ -219,7 +214,7 @@ class SuratPerintahKerjaController extends Controller
             return 3;
         } elseif ($report->to_department === 'MAINTENANCE MOULDING' && (($report->dept_head_autograph || !empty($data['dept_head_autograph'])) && $report->creator_autograph || $report->is_urgent && $report->creator_autograph)) {
             return 6;
-        } elseif (!empty($data['dept_head_autograph'])) {
+        } elseif (!empty($data['dept_head_autograph']) || $report->dept_head_autograph) {
             return 2;
         } elseif (!empty($data['creator_autograph']) || $report->cretor_autograph) {
             return 1;

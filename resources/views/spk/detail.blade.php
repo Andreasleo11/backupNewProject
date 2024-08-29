@@ -71,8 +71,9 @@
                                         @if (
                                             ($authUser->department->name == 'COMPUTER' ||
                                                 $authUser->department->name == 'MAINTENANCE' ||
+                                                $authUser->department->name == 'MAINTENANCE MOULDING' ||
                                                 $authUser->department->name == 'PERSONALIA') &&
-                                                ($report->status_laporan !== 3 && $report->status_laporan !== 4))
+                                                ($report->status_laporan !== 4 && $report->status_laporan !== 5))
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
@@ -91,7 +92,6 @@
                                     <div class="text-center my-3">
                                         <h2 class="fw-bold">Surat Perintah Kerja</h2>
                                         <div class="text-secondary">
-                                            <div>Pelapor : {{ $report->pelapor }}</div>
                                             <div>Tanggal Lapor :
                                                 {{ \Carbon\Carbon::parse($report->tanggal_lapor)->translatedFormat('d F Y H:i:s') }}
                                             </div>
@@ -214,8 +214,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group row mt-3">
-                                        <label for="tindakan" class="fw-semibold col-form-label col">Keterangan
-                                            PIC</label>
+                                        <label for="tindakan" class="fw-semibold col-form-label col">Tindakan</label>
                                         <div class="col-sm-9 mt-2">
                                             <textarea name="tindakan" id="tindakan" class="form-control" rows="5">{{ $report->tindakan }}</textarea>
                                         </div>
@@ -242,9 +241,11 @@
                                                         @endforeach
                                                     </ul>
                                                 </div>
-                                                <button type="button" id="toggle-remarks" class="btn btn-link">Show
-                                                    All
-                                                    Remarks</button>
+                                                @if ($report->spkRemarks->count() > 3)
+                                                    <button type="button" id="toggle-remarks" class="btn btn-link">Show
+                                                        All
+                                                        Remarks</button>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
@@ -270,9 +271,11 @@
                                                         @endforeach
                                                     </ul>
                                                 </div>
-                                                <button type="button" id="toggle-revision-remarks"
-                                                    class="btn btn-link mt-2">Show All
-                                                    Revision Remarks</button>
+                                                @if ($report->revisionRemarks->count() > 3)
+                                                    <button type="button" id="toggle-revision-remarks"
+                                                        class="btn btn-link mt-2">Show All
+                                                        Revision Remarks</button>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
@@ -463,35 +466,42 @@
                 picInput.refreshOptions();
             }
 
-            const radioMould = document.getElementById('inlineRadioMould');
-            const radioMachine = document.getElementById('inlineRadioMachine');
+            @if ($report->to_department === 'MAINTENANCE MOULDING')
+                const radioMould = document.getElementById('inlineRadioMould');
+                const radioMachine = document.getElementById('inlineRadioMachine');
 
-            radioMould.addEventListener('change', function() {
-                if (this.checked) {
+
+                radioMould.addEventListener('change', function() {
+                    if (this.checked) {
+                        updatePICOptions(mouldOptions);
+                    }
+                });
+
+                radioMachine.addEventListener('change', function() {
+                    if (this.checked) {
+                        updatePICOptions(machineOptions);
+                    }
+                });
+
+                // Preselect based on existing report data
+                const selectedFor = '{{ old('for', $report->for ?? '') }}';
+                if (selectedFor === 'mould') {
+                    radioMould.checked = true;
                     updatePICOptions(mouldOptions);
-                }
-            });
-
-            radioMachine.addEventListener('change', function() {
-                if (this.checked) {
+                } else if (selectedFor === 'machine') {
+                    radioMachine.checked = true;
                     updatePICOptions(machineOptions);
                 }
-            });
+            @endif
 
-            // Preselect based on existing report data
-            const selectedFor = '{{ old('for', $report->for ?? '') }}';
-            if (selectedFor === 'mould') {
-                radioMould.checked = true;
-                updatePICOptions(mouldOptions);
-            } else if (selectedFor === 'machine') {
-                radioMachine.checked = true;
-                updatePICOptions(machineOptions);
-            }
-
-            // Preselect PIC option
+            // Preselect PIC option, including custom values
             const selectedPIC = '{{ old('pic', $report->pic ?? '') }}';
             if (selectedPIC) {
-                picInput.setValue(selectedPIC);
+                picInput.addOption({
+                    value: selectedPIC,
+                    text: selectedPIC
+                }); // Ensure the option exists
+                picInput.setValue(selectedPIC); // Set the value
             }
         });
 
