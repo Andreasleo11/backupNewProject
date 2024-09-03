@@ -6,7 +6,7 @@
     @elseif ($status === 6)
         <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING PPIC</span>
     @elseif ($status === 2)
-        <span class="badge bg-primary px-3 py-2 fs-6">WAITING ADMIN</span>
+        <span class="badge text-primary bg-primary-subtle px-3 py-2 fs-6">WAITING ADMIN</span>
     @elseif($status === 3)
         <span class="badge bg-primary px-3 py-2 fs-6">IN PROGRESS</span>
     @elseif ($status === 4)

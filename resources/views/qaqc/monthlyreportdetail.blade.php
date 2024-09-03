@@ -51,7 +51,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>Verify Date</th>
+                    <th>Rec Date</th>
                     <th>Customer</th>
                     <th>Details</th>
                 </tr>
@@ -59,7 +59,7 @@
             <tbody>
                 @foreach ($reports as $report)
                     <tr>
-                        <td>{{ $report->verify_date }}</td>
+                        <td>{{ $report->rec_date }}</td>
                         <td>{{ $report->customer }}</td>
                         <td>
                             <table class="nested-table">

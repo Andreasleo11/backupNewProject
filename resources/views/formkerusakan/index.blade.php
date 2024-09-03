@@ -138,6 +138,11 @@
             <td>{{ $summary->doc_num }}</td>
             <td>
                 <a href="{{ route('laporan-kerusakan.show', $summary->id) }}" class="btn btn-info btn-sm">View Details</a>
+                <form action="{{ route('laporan-kerusakan.destroy', $summary->id) }}" method="POST" style="display:inline-block;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this report?')">Delete</button>
+                </form>
             </td>
         </tr>
         @endforeach

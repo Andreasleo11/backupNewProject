@@ -749,6 +749,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
     Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name('laporan-kerusakan.report');
     Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
+    Route::delete('laporan-kerusakan-delete/{id}', [FormKerusakanController::class, 'destroy'])->name('laporan-kerusakan.destroy');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

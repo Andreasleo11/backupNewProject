@@ -14,8 +14,10 @@ class FormKerusakanController extends Controller
     {
         $customers = FormKerusakan::select('customer')->distinct()->pluck('customer');
         $release_dates = FormKerusakan::distinct()->pluck('release_date');
+       
         $datas = FormKerusakan::get();
         $summaries = SummaryFormKerusakan::all();
+        // dd($customers);
     
         // dd($datas);
 
@@ -106,5 +108,13 @@ class FormKerusakanController extends Controller
         ->get();
         
         return view('formkerusakan.report', compact('reports', 'customer', 'release_date', 'doc_num'));
+    }
+
+    public function destroy($id)
+    {
+        $summary = SummaryFormKerusakan::findOrFail($id);
+        $summary->delete();
+
+        return redirect()->route('formkerusakan.index')->with('success', 'Report deleted successfully.');
     }
 }
