@@ -60,6 +60,14 @@
                                 <div class="fs-6 text-secondary">From Department : {{ $report->department->name }}
                                     ({{ $report->dept_no }})</div>
                                 <div class="fs-6 text-secondary">Created By : {{ $report->user->name }}</div>
+                                @php
+                                    $reportDate = \Carbon\Carbon::parse($report->report_date);
+                                    $monthName = $reportDate->format('F'); // Full month name
+                                    $year = $reportDate->format('Y'); // Year
+                                    $monthYear = $monthName . ' ' . $year;
+                                @endphp
+                                <div class="fs-6 text-secondary">Report date : {{ "$report->report_date ($monthYear)" }}
+                                </div>
                                 <div class="mt-1">
                                     @include('partials.monthly-budget-report-status', [
                                         'status' => $report->status,

@@ -457,7 +457,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data.message);
+                    // console.log(data.message);
                     // Approve all detail items if the user is GM
                     @if (Auth::user()->is_gm ||
                             Auth::user()->specification->name === 'PURCHASER' ||
