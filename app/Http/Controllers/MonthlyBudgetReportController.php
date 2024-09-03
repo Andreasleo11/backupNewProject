@@ -11,6 +11,7 @@ use App\Models\MonthlyBudgetReport as Report;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetReportDetail as Detail;
 use App\Models\MonthlyBudgetReportDetail;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -185,6 +186,13 @@ class MonthlyBudgetReportController extends Controller
     public function show($id)
     {
         $report = Report::with('details', 'department')->find($id);
+
+        // Extract the month name
+        $reportDate = Carbon::parse($report->report_date);
+        $monthName = $reportDate->format('F'); // Full month name
+        $year = $reportDate->format('Y'); // Year
+        $monthYear = $monthName . ' ' . $year;
+
         $this->updateStatus($report);
         return view('monthly_budget_report.detail', compact('report'));
     }
