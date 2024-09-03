@@ -27,7 +27,7 @@ class ReportDataSheet implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'Verify Date',
+            'Rec Date',
             'Customer',
             'Part Number',
             'Part Name',

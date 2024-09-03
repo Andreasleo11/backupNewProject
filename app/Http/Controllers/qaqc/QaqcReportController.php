@@ -726,7 +726,7 @@ class QaqcReportController extends Controller
         // dd($datas);
          // Group by month
     $groupedByMonth = $datas->groupBy(function($item) {
-        return Carbon::parse($item->verify_date)->format('Y-m'); // Assuming 'created_at' as the date field
+        return Carbon::parse($item->rec_date)->format('Y-m'); // Assuming 'created_at' as the date field
     });
 
     $result = [];
