@@ -98,49 +98,54 @@ class PurchaseRequestController extends Controller
             $purchaseRequestsQuery->where('from_department', $userDepartmentName);
         }
 
-        // Custom Filter
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
-        $status = $request->status;
-        $branch = $request->branch;
+        // Check if reset is requested
+        if ($request->has('reset')) {
+            // Clear session filters
+            $request->session()->forget('start_date');
+            $request->session()->forget('end_date');
+            $request->session()->forget('status');
+            $request->session()->forget('branch');
 
-        // Retrieve the stored session values for filter persistence
-        $storedStartDate = $request->session()->get('start_date');
-        $storedEndDate = $request->session()->get('end_date');
-        $storedStatus = $request->session()->get('status');
-        $storedBranch = $request->session()->get('branch');
+            // Redirect without any filters
+            return redirect()->route('purchaserequest.home');
+        }
 
-        // Additional filtering based on startDate and endDate
+        // Apply filters from request or session
+        $startDate = $request->start_date ?: $request->session()->get('start_date');
+        $endDate = $request->end_date ?: $request->session()->get('end_date');
+        $status = $request->status ?: $request->session()->get('status');
+        $branch = $request->branch ?: $request->session()->get('branch');
+
+        // Filter query
         if ($startDate && $endDate) {
             $purchaseRequestsQuery->whereBetween('date_pr', [$startDate, $endDate]);
             $request->session()->put('start_date', $startDate);
             $request->session()->put('end_date', $endDate);
-        } else {
-            $request->session()->forget('start_date');
-            $request->session()->forget('end_date');
         }
 
-        // Apply stored session values for filter persistence
-        if (!$startDate && !$endDate && $storedStartDate && $storedEndDate) {
-            $startDate = $storedStartDate;
-            $endDate = $storedEndDate;
-        }
-
-        // Filtering based on the status
         if ($status) {
-            $request->session()->put('status', $status);
             $purchaseRequestsQuery->where('status', $status);
-        } else {
-            $request->session()->forget('status');
+            $request->session()->put('status', $status);
         }
 
-        // Filtering based on the branch
         if ($branch) {
-            $request->session()->put('branch', $branch);
             $purchaseRequestsQuery->where('branch', $branch);
-        } else {
-            $request->session()->forget('branch');
+            $request->session()->put('branch', $branch);
         }
+
+        // Fetch purchase requests with pagination
+        $purchaseRequests = $purchaseRequestsQuery
+            ->orderBy('created_at', 'desc')
+            ->orWhere('user_id_create', $user->id)
+            ->paginate(10);
+
+        // Append filter parameters for pagination links
+        $purchaseRequests->appends([
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+            'status' => $status,
+            'branch' => $branch,
+        ]);
 
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')

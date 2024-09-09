@@ -170,7 +170,9 @@ class MonthlyBudgetReport extends Model
                 }
             }
 
-            $users = isset($user) ? array_merge($creator, [$user]) : $creator;
+            $cc = User::where('name', 'nur')->first();
+
+            $users = isset($user) ? array_merge($creator, [$user, $cc]) : $creator;
 
             Notification::send($users, new MonthlyBudgetReportUpdated($this, $details));
         }
