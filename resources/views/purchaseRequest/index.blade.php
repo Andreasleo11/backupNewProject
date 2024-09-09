@@ -47,8 +47,7 @@
             </div>
 
             <div class="col-auto align-content-end ">
-                <a href="{{ route('purchaserequest.home', ['start_date' => null, 'end_date' => null, 'status' => null]) }}"
-                    class="btn btn-secondary">Reset</a>
+                <a href="{{ route('purchaserequest.home', ['reset' => 1]) }}" class="btn btn-secondary">Reset</a>
             </div>
             <div class="col-auto align-content-end ">
                 <button class="btn btn-primary mt-3">Filter</button>

@@ -33,7 +33,7 @@ class StorePurchaseRequest extends FormRequest
             'to_department' => 'required|string|max:255',
             'date_of_pr' => 'required|date',
             'date_of_required' => 'required|date',
-            'remark' => 'nullable|string|max:255',
+            'remark' => 'nullable|string',
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
             'branch' => ['required', 'string', Rule::in(['JAKARTA', 'KARAWANG'])],
