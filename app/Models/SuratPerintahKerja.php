@@ -172,6 +172,7 @@ class SuratPerintahKerja extends Model
     {
         $creator = $this->createdBy;
         $users = [$creator];
+        $user = null;
 
         if ($event == 'created') {
             //? WHO WILL BE NOTIFIED?
@@ -226,7 +227,8 @@ class SuratPerintahKerja extends Model
                         break;
                 }
             } elseif ($this->to_department === 'PERSONALIA') {
-                //? WHO WILL BE NOTIFIED?
+                //! WHO WILL BE NOTIFIED?
+                // TODO: Set user for who should be notified
             }
 
             // Check if $user is not null, then add it to the $users array

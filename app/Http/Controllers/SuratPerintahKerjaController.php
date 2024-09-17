@@ -208,18 +208,28 @@ class SuratPerintahKerjaController extends Controller
 
     private function determineStatus($report, $data)
     {
-        if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai) && $report->pic_autograph) {
-            return 4;
-        } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi) && $report->admin_autograph) {
-            return 3;
-        } elseif ($report->to_department === 'MAINTENANCE MOULDING' && (($report->dept_head_autograph || !empty($data['dept_head_autograph'])) && $report->creator_autograph || $report->is_urgent && $report->creator_autograph)) {
-            return 6;
-        } elseif (!empty($data['dept_head_autograph']) || $report->dept_head_autograph) {
-            return 2;
-        } elseif (!empty($data['creator_autograph']) || $report->cretor_autograph) {
-            return 1;
+        if ($report->to_department === 'COMPUTER') {
+            if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai)) {
+                return 4;
+            } elseif ((!empty($data['pic']) || $report->pic) || !empty($data['creator_autograph']) || $report->creator_autograph || ((!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi))) {
+                return 3;
+            } else {
+                return 0;
+            }
         } else {
-            return 0;
+            if ((!empty($data['tanggal_selesai']) || $report->tanggal_selesai) && $report->pic_autograph) {
+                return 4;
+            } elseif ((!empty($data['pic']) || $report->pic) && (!empty($data['tindakan']) || $report->tindakan) && (!empty($data['tanggal_mulai']) || $report->tanggal_mulai) && (!empty($data['tanggal_estimasi']) || $report->tanggal_estimasi) && $report->admin_autograph) {
+                return 3;
+            } elseif ($report->to_department === 'MAINTENANCE MOULDING' && (($report->dept_head_autograph || !empty($data['dept_head_autograph'])) && $report->creator_autograph || $report->is_urgent && $report->creator_autograph)) {
+                return 6;
+            } elseif (!empty($data['dept_head_autograph']) || $report->dept_head_autograph) {
+                return 2;
+            } elseif (!empty($data['creator_autograph']) || $report->creator_autograph) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
     }
 

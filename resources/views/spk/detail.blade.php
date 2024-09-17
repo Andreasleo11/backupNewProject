@@ -77,7 +77,7 @@
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
                                         @endif
                                     </div>
-                                    @if ($report->status_laporan === 4)
+                                    @if ($report->status_laporan === 4 && $authUser->name === $report->pelapor)
                                         <button type="button" data-bs-toggle="modal"
                                             data-bs-target="#ask-a-revision-modal-{{ $report->id }}"
                                             class="btn btn-outline-primary ">Ask a Revision</button>
