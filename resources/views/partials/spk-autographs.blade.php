@@ -48,7 +48,7 @@
     </div>
 
     {{-- DEPT HEAD AUTOGRAPH --}}
-    <div class="col my-3">
+    <div class="col my-3 {{ $report->to_department === 'COMPUTER' ? 'd-none' : '' }}">
         <h3>Dept Head</h3>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographUser2"></div>
@@ -133,7 +133,7 @@
     </div>
 
     {{-- ADMIN AUTOGRAPH --}}
-    <div class="my-3 col">
+    <div class="my-3 col {{ $report->to_department === 'COMPUTER' ? 'd-none' : '' }}">
         <h3>Admin</h3>
         <div class="autograph-box container" id="autographBox3"></div>
         <div class="container mt-2 border-1" id="autographUser3"></div>
@@ -180,6 +180,12 @@
             $showPicAutographButtons = false;
             if (!$report->pic_autograph && $report->admin_autograph && $report->tanggal_mulai) {
                 $showPicAutographButtons = true;
+            } elseif (
+                $report->to_department === 'COMPUTER' &&
+                !$report->pic_autograph &&
+                $report->pic === $authUser->name
+            ) {
+                $showPicAutographButtons = true;
             }
         @endphp
         @if ($showPicAutographButtons)
@@ -214,6 +220,13 @@
                 $report->status_laporan === 4 &&
                 $authUser->is_head &&
                 $report->to_department === $authUser->department->name
+            ) {
+                $showApprovedAutographButtons = true;
+            } elseif (
+                $report->to_department === 'COMPUTER' &&
+                !$report->approved_autograph &&
+                $authUser->is_head &&
+                $report->status_laporan === 4
             ) {
                 $showApprovedAutographButtons = true;
             }
