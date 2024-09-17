@@ -307,6 +307,46 @@ class PurchaseRequestController extends Controller
         $user = Auth::user();
         $userCreatedBy = $purchaseRequest->createdBy;
 
+        // $this->updateStatus($purchaseRequest);
+
+        $timestamp = strtotime($purchaseRequest->created_at);
+        $formattedDate = date("Ymd", $timestamp);
+        $doc_id = $purchaseRequest->doc_num;
+
+        $files = File::where('doc_id', $doc_id)->get();
+
+        // Filter itemDetail based on user role
+        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
+            $detail->quantity = $this->formatDecimal($detail->quantity);
+            if ($user->department->name === "DIRECTOR") {
+                if ($purchaseRequest->type === 'factory') {
+                    if ($purchaseRequest->to_department === 'Computer') {
+                        return $detail->is_approve_by_head && $detail->is_approve_by_gm && $detail->is_approve_by_verificator;
+                    }
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
+                } else {
+                    return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
+                }
+            } elseif ($user->specification->name === "VERIFICATOR") {
+                if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
+                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
+                }
+                return $detail->is_approve_by_head;
+            } else {
+                return true; // Include all details for other roles
+            }
+        })->values(); // Ensure that the result is an array
+
+        if ($purchaseRequest->status == 4) {
+            // dd($filteredItemDetail);
+            $this->updateMasterPRItems($filteredItemDetail);
+        }
+
+        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
+    }
+
+    private function updateStatus($purchaseRequest)
+    {
         // If PR not Rejected
         if ($purchaseRequest->status !== 5) {
             // After Dept Head Autograph
@@ -359,41 +399,6 @@ class PurchaseRequestController extends Controller
 
         // Save the updated status
         $purchaseRequest->save();
-
-        $timestamp = strtotime($purchaseRequest->created_at);
-        $formattedDate = date("Ymd", $timestamp);
-        $doc_id = $purchaseRequest->doc_num;
-
-        $files = File::where('doc_id', $doc_id)->get();
-
-        // Filter itemDetail based on user role
-        $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
-            $detail->quantity = $this->formatDecimal($detail->quantity);
-            if ($user->department->name === "DIRECTOR") {
-                if ($purchaseRequest->type === 'factory') {
-                    if ($purchaseRequest->to_department === 'Computer') {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm && $detail->is_approve_by_verificator;
-                    }
-                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                } else {
-                    return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
-                }
-            } elseif ($user->specification->name === "VERIFICATOR") {
-                if ($purchaseRequest->to_department === 'Computer' && $purchaseRequest->type === 'factory') {
-                    return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                }
-                return $detail->is_approve_by_head;
-            } else {
-                return true; // Include all details for other roles
-            }
-        })->values(); // Ensure that the result is an array
-
-        if ($purchaseRequest->status == 4) {
-            // dd($filteredItemDetail);
-            $this->updateMasterPRItems($filteredItemDetail);
-        }
-
-        return view('purchaseRequest.detail', compact('purchaseRequest', 'user', 'userCreatedBy', 'files', 'filteredItemDetail', 'departments', 'fromDeptNo'));
     }
 
     private function updateMasterPRItems($items)
@@ -416,12 +421,10 @@ class PurchaseRequestController extends Controller
                     ]);
                 } else {
                     // Case 2: Item available in MasterDataPr
-                    // if ($existingItem->latest_price !== $price) {
                     $existingItem->update([
                         'price' => $existingItem->latest_price,
                         'latest_price' => $price,
                     ]);
-                    // }
                 }
             }
         }
@@ -459,6 +462,8 @@ class PurchaseRequestController extends Controller
                 "autograph_user_{$section}" => $username
             ]);
         }
+
+        $this->updateStatus($pr);
 
         return response()->json(['success' => 'Autograph saved successfully!']);
     }

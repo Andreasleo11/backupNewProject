@@ -660,7 +660,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
     Route::delete('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
 
-
     Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
     Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
     Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
@@ -696,14 +695,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
     Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
 
-
     Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
     Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
     Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
     Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
     Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
     Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
-    Route::get('spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::get('/spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
     Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
     Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
     Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
@@ -715,19 +713,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
     Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
     Route::get('masterinventory/detail/{id}', [MasterInventoryController::class, 'detail'])->name('masterinventory.detail');
-
-
     Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
-
     Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name('masterinventory.delete');
-
 
     // Route to handle adding new types
     Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
     Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');
     Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name('delete.type');
     Route::get('/export-inventory', [MasterInventoryController::class, 'export'])->name('export.inventory');
-
 
     Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
     Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
@@ -743,7 +736,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'update'])->name('maintenance.inventory.update');
     Route::post('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'store'])->name('maintenance.inventory.store');
     Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
-
 
     Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
     Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
