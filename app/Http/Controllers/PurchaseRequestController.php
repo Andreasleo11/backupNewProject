@@ -288,7 +288,6 @@ class PurchaseRequestController extends Controller
     {
         $departments = Department::all();
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
-
         if (!$purchaseRequest) {
             // Handle the case where the purchase request is not found
             abort(404, 'Purchase request not found');

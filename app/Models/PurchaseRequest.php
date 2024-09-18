@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class PurchaseRequest extends Model
@@ -217,24 +218,29 @@ class PurchaseRequest extends Model
 
     private function notifyUsers($details, $event)
     {
-        $creator = [$this->createdBy];
+        $users = [$this->createdBy];
+
         if ($event == 'created') {
-            // test
+            if ($this->to_department === 'Maintenance') {
+                $user = User::where('email', 'nur@daijo.co.id')->first();
+            }
+
+            $createdNotificationUsers = isset($user) ? array_merge($users, [$user]) : $users;
+            Notification::send($createdNotificationUsers, new PurchaseRequestCreated($this, $details));
         } else {
             $status = $this->status;
             switch ($status) {
                 case 1:
                     if ($this->from_department === 'MOULDING') {
                         if ($this->is_import === 1) {
-                            $deptHead = 'fang@daijo.co.id';
+                            $deptHead = User::where('email', 'fang@daijo.co.id')->first();
                         } else {
                             // if is_import is false or null, notification will sent to fang and ong
                             $deptHead = User::where('is_head', 1)
                                 ->whereHas('department', function ($query) {
                                     $query->where('name', $this->from_department);
                                 })
-                                ->pluck('email')
-                                ->toArray();
+                                ->get();
                         }
                     } elseif ($this->from_department === 'STORE') {
                         $deptHead = User::where('is_head', 1)->whereHas('department', function ($query) {
@@ -244,29 +250,29 @@ class PurchaseRequest extends Model
                         $deptHead = User::where('is_head', 1)
                             ->whereHas('department', function ($query) {
                                 $query->where('name', $this->from_department);
-                            })
-                            ->first();
+                            })->first();
                     }
-                    $user = $deptHead ? $deptHead->email : $this->createdBy->email;
+
+                    $user = $deptHead ?: $this->createdBy;
                     break;
                 case 7:
                     $gm = User::whereHas('department', function ($query) {
                         $query->where('name', '!=', 'MOULDING')->where('is_gm', 1);
                     })
                         ->first();
-                    $user = $gm ? $gm->email : $this->createdBy->email;
+                    $user = $gm ?: $this->createdBy;
                     break;
                 case 6:
                     if ($this->to_department === "Computer") {
-                        $purchaser = 'vicky@daijo.co.id';
+                        $purchaser = User::where('email', 'vicky@daijo.co.id')->first();
                     } elseif ($this->to_department === "Purchasing") {
-                        $purchaser = 'dian@daijo.co.id';
+                        $purchaser = User::where('email', 'dian@daijo.co.id')->first();
                     } elseif ($this->to_department === "Maintenance") {
-                        $purchaser = 'nur@daijo.co.id';
+                        $purchaser = User::where('email', 'nur@daijo.co.id')->first();
                     } elseif ($this->to_department === "Personnel") {
-                        $purchaser = 'ani_apriani@daijo.co.id';
+                        $purchaser = User::where('email', 'ani_apriani@daijo.co.id')->first();
                     } else {
-                        $purchaser = $this->createdBy->email;
+                        $purchaser = $this->createdBy;
                     }
 
                     $user = $purchaser;
@@ -278,7 +284,8 @@ class PurchaseRequest extends Model
                         })
                         ->where('is_head', 1)
                         ->first();
-                    $user = $verificator ? $verificator->email : $this->createdBy->email;
+
+                    $user = $verificator ?: $this->createdBy;
                     break;
                 case 3:
                     $director = User::with('department')
@@ -286,20 +293,33 @@ class PurchaseRequest extends Model
                             $query->where('name', 'DIRECTOR');
                         })
                         ->first();
-                    $user = $director ? $director->email : $this->createdBy->email;
+
+                    $user = $director ?: $this->createdBy;
                     break;
                 case 4:
-                    $user = $this->createdBy->email;
-                    break;
                 case 5:
-                    $user = $this->createdBy->email;
+                    $user = $this->createdBy;
                     break;
                 default:
-                    $user = $this->createdBy->email;
+                    $user = $this->createdBy;
                     break;
             }
+
+            if ($this->to_department === 'Purchasing' && $this->status === 4) {
+                $purchasingUsers = User::whereHas('department', function ($query) {
+                    $query->where('name', 'PURCHASING');
+                })->get();
+                $users = array_merge($users, $purchasingUsers->all());
+            }
+
+            // If $user is a collection, merge its users; if it's a single object, wrap it in an array
+            if ($user instanceof \Illuminate\Support\Collection) {
+                $updatedNotificationUsers = array_merge($users, $user->all());
+            } else {
+                $updatedNotificationUsers = isset($user) ? array_merge($users, [$user]) : $users;
+            }
+
+            Notification::send($updatedNotificationUsers, new PurchaseRequestUpdated($this, $details));
         }
-        $users = isset($user) ? array_merge($creator, [$user]) : $creator;
-        Notification::send($users, new PurchaseRequestCreated($this, $details));
     }
 }
