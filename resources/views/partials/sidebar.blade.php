@@ -284,6 +284,14 @@
                     </li>
 
                     <li class="sidebar-purchasing">
+                        <a href="{{ route('purchasing.evaluationsupplier.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Evaluation Supplier
+                        </a>
+                    </li>
+
+
+                    <li class="sidebar-purchasing">
                         <a href="{{ route('reminderindex') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Reminder
