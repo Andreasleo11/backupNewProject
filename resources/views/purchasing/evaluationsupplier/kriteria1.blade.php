@@ -67,6 +67,7 @@
                     <th>Can Use</th>
                     <th>Remarks</th>
                     <th>Reason</th>
+                    <th>Risk</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,6 +86,7 @@
                         <td>{{ $data->can_use }}</td>
                         <td>{{ $data->remarks }}</td>
                         <td>{{ $data->reason }}</td>
+                        <td>{{ $data->risk }}</td>
                     </tr>
                 @empty
                     <tr>
