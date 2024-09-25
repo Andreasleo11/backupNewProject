@@ -281,7 +281,7 @@
 
                 // Check if autograph status is present in the database
                 if (autographs['autograph_' + i]) {
-                    var url = '/' + autographs['autograph_' + i];
+                    var url = '/autographs/' + autographs['autograph_' + i];
                     var autographName = autographs['autograph_' + i].split('.')[0];
 
                     autographBox.style.backgroundImage = "url('" + url + "')";
