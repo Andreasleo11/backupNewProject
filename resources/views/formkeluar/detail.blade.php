@@ -2,18 +2,21 @@
 @push('extraCss')
     <style>
         .autograph-box {
-            width: 200px; /* Adjust the width as needed */
-            height: 100px; /* Adjust the height as needed */
+            width: 200px;
+            /* Adjust the width as needed */
+            height: 100px;
+            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #ccc; /* Add border for better visibility */
+            border: 1px solid #ccc;
+            /* Add border for better visibility */
         }
     </style>
 @endpush
 
 @section('content')
 
-<section aria-label="header" class="container">
+    <section aria-label="header" class="container">
         <div class="row text-center">
 
 
@@ -21,8 +24,12 @@
                 <h2>Dept Head</h2>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2 border-1" id="autographuser1"></div>
-                @if(Auth::check() &&  Auth::user()->department && Auth::user()->is_head == 1 && Auth::user()->department == $formkeluar->department)
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(1, {{ $formkeluar->id }})">Acc Dept Head</button>
+                @if (Auth::check() &&
+                        Auth::user()->department &&
+                        Auth::user()->is_head == 1 &&
+                        Auth::user()->department == $formkeluar->department)
+                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(1, {{ $formkeluar->id }})">Acc Dept
+                        Head</button>
                 @endif
             </div>
 
@@ -38,7 +45,7 @@
                 @endphp
 
                 <h2>Yang Bersangkutan</h2>
-                @if(!$formkeluar->hasBeenSigned())
+                @if (!$formkeluar->hasBeenSigned())
                     <form action="{{ $formkeluar->getSignatureRoute() }}" method="POST">
                         @csrf
                         <div style="text-align: center">
@@ -46,9 +53,9 @@
                         </div>
                     </form>
                 @else
-                    <div class=" autograph-box container"  id="specialbox">
+                    <div class=" autograph-box container" id="specialbox">
                         @if ($formkeluar->signature)
-                        <img src="{{ asset($path2) }}" style="width:200px; " alt="Signature Image">
+                            <img src="{{ asset($path2) }}" style="width:200px; " alt="Signature Image">
                         @endif
                     </div>
                     {{ $formkeluar->name }}
@@ -60,7 +67,7 @@
 
 
 
-<section aria-label="table-report" class="container mt-5">
+    <section aria-label="table-report" class="container mt-5">
         <div class="card">
             <div class="card-body">
                 <div class="mt-2 text-center">
@@ -89,15 +96,15 @@
                         </thead>
                         <tbody>
                             <tr class="align-middle">
-                                <td>{{ $formkeluar->name}}</td>
-                                <td>{{ $formkeluar->jabatan}}</td>
-                                <td>{{ $formkeluar->department}}</td>
-                                <td>{{ $formkeluar->pengganti}}</td>
-                                <td>{{ $formkeluar->keperluan  }}</td>
-                                <td>{{ $formkeluar->tanggal_permohonan}}</td>
-                                <td>{{ $formkeluar->waktu_keluar}}</td>
-                                <td>{{ $formkeluar->jam_keluar}}</td>
-                                <td>{{ $formkeluar->jam_kembali}}</td>
+                                <td>{{ $formkeluar->name }}</td>
+                                <td>{{ $formkeluar->jabatan }}</td>
+                                <td>{{ $formkeluar->department }}</td>
+                                <td>{{ $formkeluar->pengganti }}</td>
+                                <td>{{ $formkeluar->keperluan }}</td>
+                                <td>{{ $formkeluar->tanggal_permohonan }}</td>
+                                <td>{{ $formkeluar->waktu_keluar }}</td>
+                                <td>{{ $formkeluar->jam_keluar }}</td>
+                                <td>{{ $formkeluar->jam_kembali }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -123,34 +130,33 @@
         var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
         console.log('image path :', imageUrl);
 
-        autographBox.style.backgroundImage = "url('" +imageUrl + "')";
+        autographBox.style.backgroundImage = "url('" + imageUrl + "')";
 
-         // Make an AJAX request to save the image path
+        // Make an AJAX request to save the image path
         fetch('/save-autosignature-path/' + formId + '/' + section, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            },
-            body: JSON.stringify({
-                imagePath: imageUrl,
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data.message);
-            location.reload();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({
+                    imagePath: imageUrl,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
 
         checkAutographStatus(formId);
     }
 
 
-    function checkAutographStatus(formId)
-    {
+    function checkAutographStatus(formId) {
         // Assume you have a variable from the server side indicating the autograph status
         var autographs = {
             autograph_1: '{{ $formkeluar->autograph_1 ?? null }}',
@@ -162,37 +168,36 @@
 
         // Loop through each autograph status and update the UI accordingly
         i = 1;
-            var autographBox = document.getElementById('autographBox' + i);
-            var autographInput = document.getElementById('autographInput' + i);
-            var autographNameBox = document.getElementById('autographuser' + i);
-            var btnId = document.getElementById('btn' + i);
+        var autographBox = document.getElementById('autographBox' + i);
+        var autographInput = document.getElementById('autographInput' + i);
+        var autographNameBox = document.getElementById('autographuser' + i);
+        var btnId = document.getElementById('btn' + i);
 
 
 
-            // Check if autograph status is present in the database
-            if (autographs['autograph_' + i]) {
+        // Check if autograph status is present in the database
+        if (autographs['autograph_' + i]) {
 
-                if(btnId){
-                    // console.log(btnId);
-                    btnId.style.display = 'none';
-                }
-
-                // Construct URL based on the current location
-                var url = '/' + autographs['autograph_' + i];
-
-                // Update the background image using the URL
-                autographBox.style.backgroundImage = "url('" + url + "')";
-
-                var autographName = autographNames['autograph_name_' + i];
-                autographNameBox.textContent = autographName;
-                autographNameBox.style.display = 'block';
+            if (btnId) {
+                // console.log(btnId);
+                btnId.style.display = 'none';
             }
+
+            // Construct URL based on the current location
+            var url = '/autographs/' + autographs['autograph_' + i];
+
+            // Update the background image using the URL
+            autographBox.style.backgroundImage = "url('" + url + "')";
+
+            var autographName = autographNames['autograph_name_' + i];
+            autographNameBox.textContent = autographName;
+            autographNameBox.style.display = 'block';
         }
+    }
 
 
     // Call the function to check autograph status on page load
-    window.onload = function () {
+    window.onload = function() {
         checkAutographStatus({{ $formkeluar->id }});
     };
-
 </script>
