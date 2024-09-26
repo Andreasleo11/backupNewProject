@@ -146,10 +146,12 @@ class PurchasingSupplierEvaluationController extends Controller
                     $claimCount = $monthlyClaims->count();
 
                     foreach ($monthlyClaims as $claim) {
-                        if ($claim->can_use == 'Yes') {
-                            $totalPoints += 50;
-                        } else {
-                            $totalPoints += 0; // can_use == 'no'
+                        if (is_null($claim->risk) || $claim->risk == '') {
+                            $totalPoints += 100; // risk is null or blank
+                        } else if ($claim->risk == 'Low') {
+                            $totalPoints += 50;  // risk is 'Low'
+                        } else if ($claim->risk == 'High') {
+                            $totalPoints += 0;   // risk is 'High'
                         }
                     }
 
@@ -468,9 +470,9 @@ class PurchasingSupplierEvaluationController extends Controller
         if ($averageScore >= 81) {
             return 'Diteruskan';
         } elseif ($averageScore >= 61) {
-            return 'Dipertahankan Dengan dilakukan re-evaluasi';
+            return 'Dipertahankan dan dilakukan Audit Supplier setelah 1-3 bulan dari Evaluasi Supplier tahunan';
         }  else {
-            return 'Dilakukan evaluasi selama 3 bulan dan grade harus naik';
+            return 'Dilakukan Monitoring performa selama 3 bulan dan dilakukan Audit Supplier di bulan berikutnya. Gradenya harus naik, bila gradenya tidak naik, akan dipertimbangkan untuk pemutusan kerjasama.';
         }
     }
 
