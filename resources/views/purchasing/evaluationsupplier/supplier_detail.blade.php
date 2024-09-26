@@ -62,6 +62,57 @@
             font-weight: bold;
             text-align: right;
         }
+
+        .signature-rectangle {
+        position: relative;
+        bottom: 20px;
+        right: 20px;
+        width: 100%;
+        margin-left:auto;
+        max-width: 900px; /* Adjust width as needed */
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .signature-section {
+        flex: 1;
+        border-right: 1px solid #ddd;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .signature-section:last-of-type {
+        border-right: none; /* Remove border for the last section */
+    }
+    .section-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .section-title {
+        font-weight: bold;
+        margin-bottom: 20px; /* Adjust space between title and name */
+    }
+    .signature-box {
+        border: 10px solid #ddd;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        width : 100px;
+        height: 50px;
+    }
+    .signature-name {
+        margin: 0;
+        margin-bottom: 20px; /* Add space between name and role */
+    }
+    .signature-role {
+        margin: 0;
+    }
+
     </style>
 </head>
 <body>
@@ -82,8 +133,8 @@
                 <p>C Nilai <= 60</p>
                 <p><strong>Status</strong></p>
                 <p>Grade A  : Diteruskan</p>
-                <p>Grade B  : Dipertahankan dengan dilakukan re-evaluasi</p>
-                <p>Grade C  : Dilakukan Evaluasi selama 3 bulan dan grade harus naik</p>
+                <p>Grade B  : Dipertahankan dan dilakukan Audit Supplier setelah 1-3 bulan dari Evaluasi Supplier tahunan</p>
+                <p>Grade C  : Dilakukan Monitoring performa selama 3 bulan dan dilakukan Audit Supplier di bulan berikutnya.<br> Gradenya harus naik, bila gradenya tidak naik, akan dipertimbangkan untuk pemutusan kerjasama.</p>
             </td>
         </tr>
         <tr>
@@ -152,7 +203,40 @@
             </tr>
         </tfoot>
     </table>
+
+<div class="signature-rectangle">
+    <div class="signature-section">
+        <div class="section-content">
+            <div class="section-title">Disiapkan Oleh</div>
+            <div class="signature-box">
+                
+            </div>
+            <p class="signature-name"><br>Brandon <br>Purchasing Staff</p>
+        </div>
+    </div>
+    <div class="signature-section">
+        <div class="section-content">
+            <div class="section-title">Diperiksa Oleh</div>
+            <div class="signature-box">
+              
+            </div>
+            <p class="signature-name"><br>Korintani <br>Purchasing Dept Head</p>
+        </div>
+    </div>
+    <div class="signature-section">
+        <div class="section-content">
+            <div class="section-title">Disahkan Oleh</div>
+            <div class="signature-box">
+                
+            </div>
+            <p class="signature-name"><br>Korintani <br>Purchasing Dept Head</p>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
+
+
 
 
