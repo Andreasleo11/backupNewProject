@@ -253,7 +253,7 @@
                     }
 
                     // Construct URL based on the current location
-                    var url = '/' + autographs['autograph_' + i];
+                    var url = '/autographs/' + autographs['autograph_' + i];
 
                     // Update the background image using the URL
                     autographBox.style.backgroundImage = "url('" + url + "')";

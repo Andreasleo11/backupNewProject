@@ -310,6 +310,11 @@ class PurchaseRequest extends Model
                     $query->where('name', 'PURCHASING');
                 })->get();
                 $users = array_merge($users, $purchasingUsers->all());
+            } elseif ($this->to_department === 'Maintenance') {
+                $ccUser = User::where('email', 'nur@daijo.co.id')->first();
+                if ($ccUser) {
+                    $users = array_merge($users, [$ccUser]);
+                }
             }
 
             // If $user is a collection, merge its users; if it's a single object, wrap it in an array
