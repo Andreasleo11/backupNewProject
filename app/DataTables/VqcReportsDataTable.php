@@ -32,8 +32,8 @@ class VqcReportsDataTable extends DataTable
                 if(request()->has('month') && request('month')){
                     $month = request('month');
                     $date = Carbon::createFromFormat('m-Y', $month);
-                    $query->whereMonth('created_at', $date->month)
-                            ->whereYear('created_at', $date->year);
+                    $query->whereMonth('rec_date', $date->month)
+                            ->whereYear('rec_date', $date->year);
                 }
             })
             ->addColumn('status', function($report) {

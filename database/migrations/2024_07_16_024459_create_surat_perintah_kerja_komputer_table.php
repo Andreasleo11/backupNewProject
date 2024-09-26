@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('judul_laporan');
             $table->string('keterangan_laporan');
             $table->string('pic')->nullable();
-            $table->string('tindakan')->nullable();
+            $table->string('keterangan_pic')->nullable();
             $table->integer('status_laporan')->nullable();
             $table->datetime('tanggal_selesai')->nullable();
             $table->datetime('tanggal_estimasi')->nullable();
