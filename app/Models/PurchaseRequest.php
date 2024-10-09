@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Console\Commands\SendPREmailNotification;
 use App\Notifications\PurchaseRequestCreated;
 use App\Notifications\PurchaseRequestUpdated;
+use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Notification;
 
 class PurchaseRequest extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
 
     protected $fillable = [
         'user_id_create',
