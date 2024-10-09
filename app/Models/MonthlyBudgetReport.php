@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\MonthlyBudgetReportDetail;
 use App\Notifications\MonthlyBudgetReportCreated;
 use App\Notifications\MonthlyBudgetReportUpdated;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class MonthlyBudgetReport extends Model
@@ -140,6 +141,9 @@ class MonthlyBudgetReport extends Model
             // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
         } else {
             $creator = [$this->user]; // Convert to array
+            $user = null;  // Initialize $user to avoid undefined variable error
+            $cc = null;
+
             if ($this->created_autograph && !$this->is_known_autograph && !$this->approved_autograph) {
                 if ($this->department->name === 'MOULDING') {
                     $user = User::with('department', 'specification')->whereHas('department', function ($query) {
@@ -168,13 +172,18 @@ class MonthlyBudgetReport extends Model
                 } else {
                     $user = User::where('is_gm', 1)->first();
                 }
+                $cc = User::where('name', 'nur')->first();
             }
-
-            $cc = User::where('name', 'nur')->first();
 
             $users = isset($user) ? array_merge($creator, [$user, $cc]) : $creator;
 
-            Notification::send($users, new MonthlyBudgetReportUpdated($this, $details));
+            // Ensure $users is not empty before sending notifications
+            if (!empty($users)) {
+                Notification::send($users, new MonthlyBudgetReportUpdated($this, $details));
+            } else {
+                // Log or handle the case where no users were found
+                Log::warning('No valid users found to send the notification for MonthlyBudgetReportUpdated.');
+            }
         }
     }
 }

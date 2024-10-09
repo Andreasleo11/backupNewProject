@@ -19,7 +19,7 @@
     @endif --}}
 
     {{-- Delete Feature --}}
-    {{-- @if ($pr->user_id_create === Auth::user()->id)
+    @if (auth()->user()->role->name === 'SUPERADMIN')
         @include('partials.delete-pr-modal', [
             'id' => $pr->id,
             'doc_num' => $pr->doc_num,
@@ -28,7 +28,7 @@
             data-bs-target="#delete-pr-modal-{{ $pr->id }}">
             <i class='bx bx-trash-alt'></i> <span class="d-none d-sm-inline">Delete</span>
         </button>
-    @endif --}}
+    @endif
 
     @if (
         ($user->id === $pr->user_id_create && $pr->status === 1) ||

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use DateTime;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\delsched_delfilter;
 use App\Models\delsched_delsum;
@@ -96,10 +97,10 @@ class DeliveryScheduleController extends Controller
 
 			// Fetch the SapInventoryMtr data
 			$inventoryData = SapInventoryFg::all();
-		
+
 			// Map the inventory data based on fg_code
 			$inventoryMap = $inventoryData->keyBy('item_code');
-			
+
 			// Combine the grouped data with the inventory data
 			$result = $itemCounts->map(function($group) use ($inventoryMap, $rejectdatas) {
 				return $group->map(function($count, $itemCode) use ($inventoryMap, $rejectdatas) {
@@ -111,22 +112,22 @@ class DeliveryScheduleController extends Controller
 						'item_name' => null,
 						'warehouse' => null,
 					];
-			
+
 					// If inventory data exists, populate stock and item_name
 					if ($inventory) {
 						$inventoryInfo['in_stock'] = $inventory->stock;
 						// Assuming item_name is a field in the inventory model or related model
 						$inventoryInfo['item_name'] = $inventory->item_name; // Adjust as per your actual field name
 						$inventoryInfo['warehouse'] = $inventory->warehouse;
-						
+
 						foreach ($rejectdatas as $reject) {
 							if ($reject->item_no === $inventory->item_code) {
 								$inventoryInfo['in_stock'] -= $reject->in_stock; // Adjust field name as needed
-								
+
 							}
 						}
 					}
-			
+
 					return $inventoryInfo;
 				});
 			});
@@ -165,6 +166,13 @@ class DeliveryScheduleController extends Controller
 			$val_so_number_i = $sap_delsched->so_number;
 
 			$tab_sap_inventoryfg = DB::table('sap_inventory_fg')->where('item_code',$val_item_code_i)->first();
+			if (is_null($tab_sap_inventoryfg)) {
+				// Log the item_code that returned null for further debugging
+				Log::error("No sap_inventory_fg found for item_code: {$val_item_code_i}");
+
+				// Optionally, continue with the next iteration if no record is found
+				continue;
+			}
 			$val_item_name = $tab_sap_inventoryfg->item_name;
 			$val_packaging = $tab_sap_inventoryfg->packaging;
 			$val_standar_packaging = $tab_sap_inventoryfg->standar_packing;
@@ -685,8 +693,8 @@ class DeliveryScheduleController extends Controller
 				// For all other conditions, set the status to 'Warning'
 				$data->status = 'Warning';
 			}
-			
-	
+
+
 
 			$data->save();
 		 }
@@ -709,20 +717,20 @@ class DeliveryScheduleController extends Controller
 				// Update the status to 'Danger'
 				$dataw->status = 'Danger';
 			}
-			
-			
+
+
 		//    if($today->diffInDays($dataw->delivery_date, false) == -5) {
 		// 	   // Update the status to 'Warning'
 		// 	   $dataw->status = 'Warning';
 		//    }
-		   
-   
+
+
 
 		   $dataw->save();
 		}
-	 
-		 
-	 
+
+
+
 		 // Output the updated data for verification
 		 return redirect()->route('indexfinalwip');
 	}

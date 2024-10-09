@@ -53,7 +53,7 @@
                 <tr>
                     <th>No Dokumen</th>
                     <th>Pelapor</th>
-                    <th>Dept</th>
+                    <th>Form Dept</th>
                     <th>Judul</th>
                     <th>Keterangan Laporan</th>
                     <th>PIC</th>
@@ -77,7 +77,7 @@
                     <tr>
                         <td>{{ $report['no_dokumen'] }}</td>
                         <td>{{ $report['pelapor'] }}</td>
-                        <td>{{ $report['dept'] }}</td>
+                        <td>{{ $report['from_department'] }}</td>
                         <td>{{ $report['judul'] }}</td>
                         <td>{{ $report['keterangan_laporan'] }}</td>
                         <td>{{ $report['pic'] }}</td>
