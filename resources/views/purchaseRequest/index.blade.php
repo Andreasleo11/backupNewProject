@@ -74,6 +74,9 @@
                                 <th class="fw-semibold align-content-center fs-5">Status</th>
                                 <th class="fw-semibold align-content-center fs-5">Approved Date</th>
                                 <th class="fw-semibold align-content-center fs-5">PO Number</th>
+                                @if (auth()->user()->department->name === 'PURCHASING')
+                                    <th class="fw-semibold align-content-center fs-5">Purpose</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -98,6 +101,14 @@
                                     </td>
                                     <td>@formatDate($pr->approved_at)</td>
                                     <td>{{ $pr->po_number }}</td>
+                                    @if (auth()->user()->department->name === 'PURCHASING')
+                                        @if ($pr->to_department == 'Purchasing' && $pr->from_department == 'MOULDING')
+                                            <td>{{ optional($pr->itemDetail->first())->purpose }}</td>
+                                        @else
+                                            <td></td>
+                                        @endif
+                                    @endif
+
                                 </tr>
                             @empty
                                 <tr>

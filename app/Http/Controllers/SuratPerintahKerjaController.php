@@ -263,6 +263,7 @@ class SuratPerintahKerjaController extends Controller
             ->whereMonth('tanggal_lapor', $month)
             ->get();
 
+
         // Initialize an array to store formatted report data
         $monthlyReport = [];
 

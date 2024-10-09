@@ -78,8 +78,7 @@ class PurchaseRequestController extends Controller
                     })
                         ->whereNotNull('autograph_2');
                 })->orWhere(function ($query) {
-                    $query->where('type', 'factory')
-                        ->whereNotNull('autograph_6');
+                    $query->where('type', 'factory');
                 });
             });
 

@@ -53,7 +53,7 @@ class ReportDataSheet implements FromCollection, WithHeadings, WithMapping
 
             foreach ($detail->defects as $defect) {
                 $rows[] = [
-                    $report->verify_date,
+                    $report->rec_date,
                     $report->customer,
                     $partNumber,
                     $partName,

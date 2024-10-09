@@ -725,13 +725,15 @@ class QaqcReportController extends Controller
         $datas = Report::with('details','details.defects')->get();
         // dd($datas);
          // Group by month
-    $groupedByMonth = $datas->groupBy(function($item) {
-        return Carbon::parse($item->rec_date)->format('Y-m'); // Assuming 'created_at' as the date field
-    });
+        $groupedByMonth = $datas->groupBy(function($item) {
+            return Carbon::parse($item->rec_date)->format('Y-m'); // Assuming 'created_at' as the date field
+
+        });
 
     $result = [];
 
     foreach ($groupedByMonth as $month => $reports) {
+        // dd($groupedByMonth['2024-09']);
         $result[$month] = [];
 
         // Group by customer within each month
@@ -756,6 +758,8 @@ class QaqcReportController extends Controller
                     'defects' => $detail->defects // Include defects if necessary
                 ];
 
+
+
                 foreach ($detail->defects as $defect) {
                     if ($defect->is_daijo) {
                         $result[$month][$customerId]['daijo_defect'] += $defect->quantity;
@@ -774,8 +778,9 @@ class QaqcReportController extends Controller
         }
     }
 
-    // dd($result['2024-03']['YANFENG AUTOMOTIVE INTERIOR SYSTEMS INDONESIA PT.']);
-    // dd($result);
+    // dd($result['2024-09']['YANFENG AUTOMOTIVE INTERIOR SYSTEMS INDONESIA PT.']);
+    //   dd($result['2024-09']['INDONESIA THAI SUMMIT PLASTECH PT.']);
+    // dd($result['2024-09']);
 
         return view('qaqc.monthlyreport', compact('result'));
     }
@@ -787,15 +792,9 @@ class QaqcReportController extends Controller
         $month = Carbon::parse($data)->month;
         $year = Carbon::parse($data)->year;
 
-        // Query reports for the specified month and year
-        $reports = Report::with('details', 'details.defects', 'details.defects.category')
-                         ->whereMonth('verify_date', $month)
-                         ->whereYear('verify_date', $year)
-                         ->get();
-
         $reports = Report::with(['details', 'details.defects', 'details.defects.category'])
-                            ->whereMonth('verify_date', $month)
-                            ->whereYear('verify_date', $year)
+                            ->whereMonth('rec_date', $month)
+                            ->whereYear('rec_date', $year)
                             ->get();
 
                             $summary = [];

@@ -29,8 +29,8 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
     public function collection()
     {
         $reports = Report::with('details', 'details.defects', 'details.defects.category')
-        ->whereMonth('verify_date', $this->month)
-        ->whereYear('verify_date', $this->year)
+        ->whereMonth('rec_date', $this->month)
+        ->whereYear('rec_date', $this->year)
         ->get();
 
         $this->calculateSummary($reports);
@@ -99,7 +99,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
      public function headings(): array
     {
         return [
-            'Verify Date',
+            'Rec Date',
             'Customer',
             'Part Number',
             'Part Name',
@@ -125,7 +125,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
 
             foreach ($detail->defects as $defect) {
                 $rows[] = [
-                    $report->verify_date,
+                    $report->rec_date,
                     $report->customer,
                     $partNumber,
                     $partName,
@@ -150,7 +150,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
         $sheets[] = new ReportDataSheet($this->month, $this->year, $this->collection());
         $sheets[] = new SummarySheet($this->summaryData);
         $sheets[] = new DefectReportSheet($this->defectData);
- 
+
         return $sheets;
     }
 }

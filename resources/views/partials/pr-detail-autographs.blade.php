@@ -240,6 +240,7 @@
                     ? ($showApprovalButtons = true)
                     : ($showApprovalButtons = false);
             }
+            $showApprovalButtons = $showApprovalButtons && !$purchaseRequest->autograph_5;
         @endphp
         @if ($showApprovalButtons && $purchaseRequest->status === 6 && $purchaseRequest->is_cancel === 0)
             <div class="row px-4 d-flex justify-content-center">
@@ -265,8 +266,6 @@
             </div>
         @endif
     </div>
-
-
 
     {{-- VERIFICATOR AUTOGRAPH --}}
     <div
