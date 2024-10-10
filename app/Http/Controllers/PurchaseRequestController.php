@@ -349,11 +349,11 @@ class PurchaseRequestController extends Controller
         if ($purchaseRequest->status !== 5) {
             // After Dept Head Autograph
             if ($purchaseRequest->autograph_2 !== null) {
-                if ($purchaseRequest->from_department === 'MOULDING' || $purchaseRequest->type === 'office') {
-                    // If it's moulding then direct to purchaser
+                if ($purchaseRequest->from_department === 'MOULDING' || $purchaseRequest->from_department === 'QA' || $purchaseRequest->from_department === 'QC' || $purchaseRequest->type === 'office') {
+                    // If it's moulding/qa/qc then direct to purchaser
                     $purchaseRequest->status = 6;
                 } elseif ($purchaseRequest->type === 'factory') {
-                    // Status when GM has not signed
+                    // When GM has not signed
                     $purchaseRequest->status = 7;
                 }
             }
@@ -371,13 +371,14 @@ class PurchaseRequestController extends Controller
                     $purchaseRequest->to_department === 'Maintenance'
                 ) {
                     if ($purchaseRequest->from_department === 'COMPUTER' || $purchaseRequest->from_department === 'PERSONALIA') {
+                        // To verificator
                         $purchaseRequest->status = 2;
                     } else {
                         // Direct to Director
                         $purchaseRequest->status = 3;
                     }
                 } elseif ($purchaseRequest->to_department === 'Computer' || $purchaseRequest->to_department === 'Personnel') {
-                    // Status when verificator has not signed
+                    // When verificator has not signed
                     $purchaseRequest->status = 2;
                 }
             }
