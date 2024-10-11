@@ -188,7 +188,7 @@ class DisciplinePageController extends Controller
         return $dataTable->render("setting.allyayasandisciplineindex", compact("employees"));
     }
 
-    
+
 
     public function setFilterValue(Request $request)
     {
@@ -431,7 +431,7 @@ class DisciplinePageController extends Controller
 
     public function exportYayasan(Request $request)
     {
-        
+
         $selectedMonth = $request->input('filter_status');
 
         $currentYear = Carbon::now()->year;
@@ -441,13 +441,13 @@ class DisciplinePageController extends Controller
 
         // Calculate the cutoff date, 6 months before the selected month
         $cutoffDate = $selectedDate->copy()->subMonths(6)->startOfMonth();
-        
-    
-        
+
+
+
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->where('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                    ->where('start_date', '<', $cutoffDate);
+                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $selectedMonth)
             ->get();
@@ -467,7 +467,7 @@ class DisciplinePageController extends Controller
             }
 
             $total = $data->total;
-            
+
             if ($total >= 91) {
                 $result[$employeeId]['nilai_A'] = 1;
                 $result[$employeeId]['nilai_B'] = 0; // Ensure nilai_B is set to 0
@@ -512,7 +512,7 @@ class DisciplinePageController extends Controller
 
 
         $user = Auth::user();
-       
+
         try {
 
             if ($user->department_id == 2) {
@@ -601,7 +601,7 @@ class DisciplinePageController extends Controller
                 })
                     ->get();
             }
-           
+
             return $dataTable->render("setting.disciplineyayasanindex", compact("employees", "user"));
         } catch (\Throwable $th) {
             abort(403, 'Departement anda tidak ada yayasan ');
@@ -674,7 +674,7 @@ class DisciplinePageController extends Controller
             } elseif ($user->department_id == 19) {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
-                    dd($employees);
+                    // dd($employees);
                     if (auth()->user()->name === 'popon') {
                         $query->where(function ($query) {
                             $query->where('Dept', '361')->orWhere('Dept', '362');
@@ -702,7 +702,7 @@ class DisciplinePageController extends Controller
                 })
                     ->get();
             }
-            
+
             return $dataTable->render("setting.disciplinemagangindex", compact("employees", "user"));
         } catch (\Throwable $th) {
             abort(403, 'Departement anda tidak ada Magang ');
@@ -1033,7 +1033,7 @@ class DisciplinePageController extends Controller
 
             $allData = array_merge($allData, $data[0]);
         }
-       
+
 
         $excelFileName = 'DisciplineDataYayasan.xlsx';
         $excelFilePath = public_path($excelFileName);
