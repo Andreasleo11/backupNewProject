@@ -220,6 +220,7 @@ class PurchaseRequestController extends Controller
         } elseif ($commonData['from_department'] === 'PERSONALIA') {
             $commonData['autograph_2'] = 'Bernadett.png';
             $commonData['autograph_user_2'] = 'Bernadett';
+            $commonData['status'] = 6;
         }
 
         $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();

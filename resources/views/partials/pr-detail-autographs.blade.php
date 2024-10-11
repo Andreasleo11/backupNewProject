@@ -168,7 +168,8 @@
     @if (
         $purchaseRequest->from_department !== 'MOULDING' &&
             $purchaseRequest->from_department !== 'QA' &&
-            $purchaseRequest->from_department !== 'QC')
+            $purchaseRequest->from_department !== 'QC' &&
+            $purchaseRequest->type !== 'office')
         <div class="my-2 col">
             <h2>GM</h2>
             <div class="autograph-box container" id="autographBox6"></div>
