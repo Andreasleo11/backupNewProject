@@ -568,7 +568,7 @@ class PurchaseRequestController extends Controller
     public function getItemNames(Request $request)
     {
         $itemName = $request->query('itemName');
-        info('AJAX request received for item name: ' . $itemName);
+        // info('AJAX request received for item name: ' . $itemName);
 
         // Fetch item names and prices from the database based on user input
         $items = MasterDataPr::where('name', 'like', "%$itemName%")
