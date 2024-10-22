@@ -12,6 +12,9 @@
                 <a href="{{ route('purchaserequest.create') }}" class="btn btn-primary">Create PR </a>
             @endif
         </div>
+        <div class="col-auto">
+            <a href="{{ route('purchaserequest.export.excel') }}" class="btn btn-outline-primary">Export Excel</a>
+        </div>
     </div>
 
     <form action="{{ route('purchaserequest.home') }}" method="get">

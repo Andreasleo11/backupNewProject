@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\DirectorPurchaseRequestDataTable;
+use App\Exports\PurchaseRequestsExport;
+use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
@@ -16,6 +18,7 @@ use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
 {
@@ -759,5 +762,12 @@ class PurchaseRequestController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Purchase request PO Number updated successfully!');
+    }
+
+    public function exportExcel()
+    {
+        $authDepartment = ucwords(strtolower(auth()->user()->department->name));
+        $purchaseRequestIds = PurchaseRequest::where('from_department', $authDepartment)->pluck('id');
+        return Excel::download(new PurchaseRequestWithDetailsExport($purchaseRequestIds), "purchase requests for $authDepartment .xlsx");
     }
 }
