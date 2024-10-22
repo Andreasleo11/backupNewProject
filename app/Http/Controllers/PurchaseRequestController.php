@@ -138,20 +138,9 @@ class PurchaseRequestController extends Controller
         // Fetch purchase requests with pagination
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
-            ->orWhere('user_id_create', $user->id)
-            ->paginate(10);
-
-        // Append filter parameters for pagination links
-        $purchaseRequests->appends([
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'status' => $status,
-            'branch' => $branch,
-        ]);
-
-        $purchaseRequests = $purchaseRequestsQuery
-            ->orderBy('created_at', 'desc')
-            ->orWhere('user_id_create', $user->id)
+            ->where(function($query) use ($user) {
+                $query->orWhere('user_id_create', $user->id);
+            })
             ->paginate(10);
 
         // Append the filter parameters to the pagination links
