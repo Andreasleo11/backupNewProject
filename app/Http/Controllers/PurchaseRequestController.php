@@ -491,7 +491,8 @@ class PurchaseRequestController extends Controller
         // Fetch purchase requests for the selected month
         $purchaseRequests = PurchaseRequest::with('itemDetail')
             ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
+            ->whereMonth('date_pr', $month)     
+            ->where('from_department', auth()->user()->department->name)
             ->get();
 
         // Pass the filtered data to the view
