@@ -19,6 +19,9 @@ class Kernel extends ConsoleKernel
             ->days([Schedule::MONDAY, Schedule::THURSDAY])
             ->everyFourHours()
             ->between('0:30', '9:35');
+
+        // Schedule the command to run daily at midnight
+        $schedule->command('logs:delete-old')->daily();
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\DirectorPurchaseRequestDataTable;
+use App\Exports\PurchaseRequestsExport;
+use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
@@ -16,6 +18,7 @@ use App\Models\MonhtlyPR;
 use Illuminate\Support\Facades\DB;
 use App\Models\MasterDataPr;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
 {
@@ -135,20 +138,9 @@ class PurchaseRequestController extends Controller
         // Fetch purchase requests with pagination
         $purchaseRequests = $purchaseRequestsQuery
             ->orderBy('created_at', 'desc')
-            ->orWhere('user_id_create', $user->id)
-            ->paginate(10);
-
-        // Append filter parameters for pagination links
-        $purchaseRequests->appends([
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'status' => $status,
-            'branch' => $branch,
-        ]);
-
-        $purchaseRequests = $purchaseRequestsQuery
-            ->orderBy('created_at', 'desc')
-            ->orWhere('user_id_create', $user->id)
+            ->where(function($query) use ($user) {
+                $query->orWhere('user_id_create', $user->id);
+            })
             ->paginate(10);
 
         // Append the filter parameters to the pagination links
@@ -499,7 +491,8 @@ class PurchaseRequestController extends Controller
         // Fetch purchase requests for the selected month
         $purchaseRequests = PurchaseRequest::with('itemDetail')
             ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
+            ->whereMonth('date_pr', $month)     
+            ->where('from_department', auth()->user()->department->name)
             ->get();
 
         // Pass the filtered data to the view
@@ -568,7 +561,7 @@ class PurchaseRequestController extends Controller
     public function getItemNames(Request $request)
     {
         $itemName = $request->query('itemName');
-        info('AJAX request received for item name: ' . $itemName);
+        // info('AJAX request received for item name: ' . $itemName);
 
         // Fetch item names and prices from the database based on user input
         $items = MasterDataPr::where('name', 'like', "%$itemName%")
@@ -759,5 +752,12 @@ class PurchaseRequestController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Purchase request PO Number updated successfully!');
+    }
+
+    public function exportExcel()
+    {
+        $authDepartment = ucwords(strtolower(auth()->user()->department->name));
+        $purchaseRequestIds = PurchaseRequest::where('from_department', $authDepartment)->pluck('id');
+        return Excel::download(new PurchaseRequestWithDetailsExport($purchaseRequestIds), "purchase requests for $authDepartment .xlsx");
     }
 }
