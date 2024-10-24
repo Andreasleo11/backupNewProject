@@ -78,8 +78,7 @@ class PurchaseRequestController extends Controller
                     $query->where(function ($query) {
                         $query->where('type', 'office')
                             ->orWhere('from_department', 'MOULDING');
-                    })
-                        ->whereNotNull('autograph_2');
+                    });
                 })->orWhere(function ($query) {
                     $query->where('type', 'factory');
                 });
@@ -491,7 +490,7 @@ class PurchaseRequestController extends Controller
         // Fetch purchase requests for the selected month
         $purchaseRequests = PurchaseRequest::with('itemDetail')
             ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)     
+            ->whereMonth('date_pr', $month)
             ->where('from_department', auth()->user()->department->name)
             ->get();
 

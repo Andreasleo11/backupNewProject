@@ -172,9 +172,9 @@ class MonthlyBudgetReport extends Model
                 } else {
                     $user = User::where('is_gm', 1)->first();
                 }
-                $cc = User::where('name', 'nur')->first();
             }
-
+            
+            $cc = User::where('name', 'nur')->first();
             $users = isset($user) ? array_merge($creator, [$user, $cc]) : $creator;
 
             // Ensure $users is not empty before sending notifications
