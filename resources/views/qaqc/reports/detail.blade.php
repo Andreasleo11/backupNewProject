@@ -111,15 +111,15 @@
             </div>
 
             <div class="col">
-                <h2>QC Head</h2>
+                <h2>QC/QA Head</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
                 <div class="container mt-2 border-1" id="autographuser3"></div>
                 @if (Auth::check() &&
-                        $currentUser->department->name == 'QC' &&
+                        ($currentUser->department->name == 'QC' || $currentUser->department->name == 'QA') &&
                         $currentUser->specification->name == 'HEAD' &&
                         ($report->autograph_1 || $report->autograph_2) != null)
                     <button id="btn3" class="btn btn-primary"
-                        onclick="addAutograph(3, {{ $report->id }}, {{ $user->id }})">Acc QC Head</button>
+                        onclick="addAutograph(3, {{ $report->id }}, {{ $user->id }})">Acc QC/QA Head</button>
                 @endif
             </div>
         </div>
