@@ -85,6 +85,8 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\MaintenanceInventoryController;
 use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
+use App\Http\Controllers\POController;
+
 
 
 
@@ -761,6 +763,15 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
+
+
+    Route::get('po-view', [POController::class, 'index']);
+    Route::get('po-upload-view', [POController::class, 'uploadview'])->name('pouploadview');
+    Route::post('/upload-pdf', [POController::class, 'upload'])->name('pdf.upload');
+    Route::get('/view-pdf/{filename}', [POController::class, 'viewPDF'])->name('pdf.view');
+    Route::post('/pdf/sign', [POController::class, 'signPDF'])->name('pdf.sign');
+    Route::post('/reject-pdf', [POController::class, 'rejectPDF'])->name('pdf.reject');
+    Route::get('/download-pdf/{filename}', [POController::class, 'downloadPDF'])->name('pdf.download');
 
 
 
