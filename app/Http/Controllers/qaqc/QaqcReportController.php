@@ -702,7 +702,6 @@ class QaqcReportController extends Controller
         return Excel::download(new ReportsExport(), 'reports-all-data.xlsx');
     }
 
-
     public function exportFormAdjustToExcel()
     {
         return Excel::download(new FormAdjustExport(), 'formadjust-all-data.xlsx');
@@ -717,9 +716,6 @@ class QaqcReportController extends Controller
         return redirect()->back()->with('success', 'Update do number berhasil!');
     }
 
-
-
-
     public function monthlyreport()
     {
         $datas = Report::with('details','details.defects')->get();
@@ -727,7 +723,6 @@ class QaqcReportController extends Controller
          // Group by month
         $groupedByMonth = $datas->groupBy(function($item) {
             return Carbon::parse($item->rec_date)->format('Y-m'); // Assuming 'created_at' as the date field
-
         });
 
     $result = [];
@@ -787,7 +782,6 @@ class QaqcReportController extends Controller
 
     public function showDetails(Request $request)
     {
-
         $data = $request->monthData;
         $month = Carbon::parse($data)->month;
         $year = Carbon::parse($data)->year;
@@ -797,47 +791,45 @@ class QaqcReportController extends Controller
                             ->whereYear('rec_date', $year)
                             ->get();
 
-                            $summary = [];
+        $summary = [];
 
-                            foreach ($reports as $report) {
-                                foreach ($report->details as $detail) {
-                                    $partName = $detail->part_name;
+        foreach ($reports as $report) {
+            foreach ($report->details as $detail) {
+                $partName = $detail->part_name;
 
-                                    if (!isset($summary[$partName])) {
-                                        // Initialize the summary for this part_name
-                                        $summary[$partName] = [
-                                            'part_name' => $partName,
-                                            'rec_quantity' => 0,
-                                            'defects' => []
-                                        ];
-                                    }
+                if (!isset($summary[$partName])) {
+                    // Initialize the summary for this part_name
+                    $summary[$partName] = [
+                        'part_name' => $partName,
+                        'rec_quantity' => 0,
+                        'defects' => []
+                    ];
+                }
 
-                                    // Sum the rec_quantity
-                                    $summary[$partName]['rec_quantity'] += $detail->rec_quantity;
+                // Sum the rec_quantity
+                $summary[$partName]['rec_quantity'] += $detail->rec_quantity;
 
-                                    foreach ($detail->defects as $defect) {
-                                        $categoryName = $defect->category->name;
-                                        $quantity = $defect->quantity; // Assuming 'quantity' is a field in the defect model
+                foreach ($detail->defects as $defect) {
+                    $categoryName = $defect->category->name;
+                    $quantity = $defect->quantity; // Assuming 'quantity' is a field in the defect model
 
-                                        if (!isset($summary[$partName]['defects'][$categoryName])) {
-                                            // Initialize the defects summary for this part_name
-                                            $summary[$partName]['defects'][$categoryName] = [
-                                                'category_name' => $categoryName,
-                                                'quantity' => 0
-                                            ];
-                                        }
+                    if (!isset($summary[$partName]['defects'][$categoryName])) {
+                        // Initialize the defects summary for this part_name
+                        $summary[$partName]['defects'][$categoryName] = [
+                            'category_name' => $categoryName,
+                            'quantity' => 0
+                        ];
+                    }
 
-                                        // Sum the quantity for each defect category
-                                        $summary[$partName]['defects'][$categoryName]['quantity'] += $quantity;
-                                    }
-                                }
-                            }
+                    // Sum the quantity for each defect category
+                    $summary[$partName]['defects'][$categoryName]['quantity'] += $quantity;
+                }
+            }
+        }
 
-                            // Convert the summary array to a collection for easier manipulation if needed
-                            // return collect($summary)->values();
-                            // dd($summary);
-
-
+        // Convert the summary array to a collection for easier manipulation if needed
+        // return collect($summary)->values();
+        // dd($summary);
 
         return view('qaqc.monthlyreportdetail',compact('reports'));
     }

@@ -128,7 +128,7 @@
             </li>
         @endif
 
-        @if ($department === 'QA' || $department === 'QC' || $user->role->name === 'SUPERADMIN')
+        @if ($department === 'QA' || $department === 'QC' || $department === 'BUSINESS' || $user->role->name === 'SUPERADMIN')
             <li class="sidebar-item" id="sidebar-item-qaqc">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">
@@ -579,6 +579,13 @@
                     <a href="{{ route('formkerusakan.index') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Form Kerusakan / Perbaikan
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('po.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Purchase Orders
                     </a>
                 </li>
             </ul>
