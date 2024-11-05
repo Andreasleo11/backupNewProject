@@ -581,6 +581,13 @@
                         Form Kerusakan / Perbaikan
                     </a>
                 </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('po.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Purchase Orders
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

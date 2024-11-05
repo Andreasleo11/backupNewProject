@@ -566,20 +566,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put("/edit/employee/{id}", [EmployeeMasterController::class, "editemployee"])->name('editemployee');
     Route::delete("/delete/employee/{linecode}", [EmployeeMasterController::class, "deleteemployee"])->name('deleteemployee');
 
-
-
     Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index")->middleware('permission:get-evaluation-index');
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
-    //
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/indexallyayasan", [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
-
-
-
 
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
@@ -592,7 +586,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
     Route::get("/disciplineupdate/step1",  [DisciplinePageController::class, 'step1'])->name('update.point');
     Route::get("/disciplineupdate/step2",  [DisciplinePageController::class, 'step2'])->name('update.excel');
-
 
     Route::get("/updatedept",  [DisciplinePageController::class, 'updateDept'])->name('update.dept');
 
@@ -613,11 +606,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
 
-    //
-
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
-    //
 
     Route::get("/formovertime/index", [FormOvertimeController::class, 'index'])->name("formovertime.index");
     Route::get("/formovertime/create", [FormOvertimeController::class, 'create'])->name("formovertime.create");
@@ -735,7 +725,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/items/types/{type}', [MasterInventoryController::class, 'getItems'])->name('items.get');
     Route::get('/items/available', [MasterInventoryController::class, 'getAvailableItems']);
 
-
     Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
     Route::get('maintenanceInventoryReports/create/{id?}', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
     Route::get('maintenanceInventoryReports/edit/{id}', [MaintenanceInventoryController::class, 'edit'])->name('maintenance.inventory.edit');
@@ -749,13 +738,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
     Route::delete('laporan-kerusakan-delete/{id}', [FormKerusakanController::class, 'destroy'])->name('laporan-kerusakan.destroy');
 
-
-
-
     Route::get('purc/evaluationsupplier/index', [PurchasingSupplierEvaluationController::class, 'index'])->name('purchasing.evaluationsupplier.index');
     Route::post('purc/evaluationsupplier/generate', [PurchasingSupplierEvaluationController::class, 'calculate'])->name('purchasing.evaluationsupplier.calculate');
-    Route::get('purc/evaluationsupplier/details/{id}', [PurchasingSupplierEvaluationController::class, 'details'])
-    ->name('purchasing.evaluationsupplier.details');
+    Route::get('purc/evaluationsupplier/details/{id}', [PurchasingSupplierEvaluationController::class, 'details'])->name('purchasing.evaluationsupplier.details');
     Route::get('purc/vendorclaim', [PurchasingSupplierEvaluationController::class, 'kriteria1'])->name('kriteria1');
     Route::get('purc/vendoraccuracygood', [PurchasingSupplierEvaluationController::class, 'kriteria2'])->name('kriteria2');
     Route::get('purc/vendorontimedelivery', [PurchasingSupplierEvaluationController::class, 'kriteria3'])->name('kriteria3');
@@ -763,17 +748,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
-
-
-    Route::get('po-view', [POController::class, 'index']);
-    Route::get('po-upload-view', [POController::class, 'uploadview'])->name('pouploadview');
+    Route::get('po-view', [POController::class, 'index'])->name('po.index');
+    Route::get('po-upload-view', [POController::class, 'uploadview'])->name('po.upload');
     Route::post('/upload-pdf', [POController::class, 'upload'])->name('pdf.upload');
     Route::get('/view-pdf/{filename}', [POController::class, 'viewPDF'])->name('pdf.view');
     Route::post('/pdf/sign', [POController::class, 'signPDF'])->name('pdf.sign');
     Route::post('/reject-pdf', [POController::class, 'rejectPDF'])->name('pdf.reject');
     Route::get('/download-pdf/{filename}', [POController::class, 'downloadPDF'])->name('pdf.download');
-
-
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

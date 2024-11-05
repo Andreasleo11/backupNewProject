@@ -16,7 +16,7 @@ class POController extends Controller
     public function index()
     {
         $datas = MasterPO::get();
-       
+
         return view('masterpo.index', compact('datas'));
     }
 
@@ -41,13 +41,12 @@ class POController extends Controller
         // Create a new MasterPO record using Eloquent
         $masterPO = new MasterPO();
         $masterPO->po_number = $request->input('po_number');
-        $masterPO->approved_date = Carbon::now();
         $masterPO->status = 1; // Initial status
         $masterPO->filename = $filename;
         $masterPO->save();
 
         // Redirect to the PDF viewer
-        return redirect()->route('masterpo.index');
+        return redirect()->route('po.index');
     }
 
     public function viewPDF($id)
@@ -60,13 +59,12 @@ class POController extends Controller
             abort(404, 'PDF file not found.');
         }
 
-        return view('masterpo.viewpo', ['filename' => $filename,
-    'id' => $id]);
+        return view('masterpo.viewpo', compact('data'));
     }
 
-    // public function signPDF(Request $request) version pake signature box 
+    // public function signPDF(Request $request) version pake signature box
     // {
-       
+
     //     // Load the original PDF
     // $filename = $request->input('filename');
     // $pdfPath = public_path("storage/pdfs/{$filename}");
@@ -98,91 +96,8 @@ class POController extends Controller
     // return response()->json(['message' => 'PDF signed successfully!']);
     // }
 
-    // view buat controller pake signature 
-    //     <!-- resources/views/viewpo.blade.php -->
-    // @extends('layouts.app')
 
-    // @section('content')
-    // <div class="container my-5">
-    //     <h1 class="text-3xl font-bold mb-4">View and Sign PO File</h1>
-
-    //     <div class="card shadow-sm p-4 mb-4">
-    //         <!-- PDF Display -->
-    //         <iframe src="{{ asset('storage/pdfs/' . $filename) }}" width="100%" height="600px"></iframe>
-    //     </div>
-
-    //     <!-- Signature Canvas -->
-    //     <div class="mt-4">
-    //         <p>Draw your signature below:</p>
-    //         <canvas id="signatureCanvas" width="500" height="200" style="border: 1px solid #ccc;"></canvas>
-    //         <button id="clearCanvas" class="btn btn-danger mt-2">Clear Signature</button>
-    //     </div>
-
-    //     <!-- Save Signature Button -->
-    //     <button id="saveSignature" class="btn btn-primary mt-4">Save Signature to PDF</button>
-    // </div>
-
-    // <script>
-    //     // Set up the canvas
-    //     const canvas = document.getElementById('signatureCanvas');
-    //     const ctx = canvas.getContext('2d');
-    //     let isDrawing = false;
-
-    //     // Set up event listeners for drawing
-    //     canvas.addEventListener('mousedown', (event) => {
-    //         isDrawing = true;
-    //         ctx.beginPath();
-    //         ctx.moveTo(event.offsetX, event.offsetY);
-    //     });
-
-    //     canvas.addEventListener('mousemove', (event) => {
-    //         if (isDrawing) {
-    //             ctx.lineTo(event.offsetX, event.offsetY);
-    //             ctx.stroke();
-    //         }
-    //     });
-
-    //     canvas.addEventListener('mouseup', () => {
-    //         isDrawing = false;
-    //     });
-
-    //     canvas.addEventListener('mouseleave', () => {
-    //         isDrawing = false;
-    //     });
-
-    //     // Clear the canvas
-    //     document.getElementById('clearCanvas').addEventListener('click', () => {
-    //         ctx.clearRect(0, 0, canvas.width, canvas.height);
-    //     });
-
-    //     // Save Signature to PDF
-    //     document.getElementById('saveSignature').addEventListener('click', function () {
-    //         const dataUrl = canvas.toDataURL('image/png');
-
-    //         // Send the signature data and PDF filename to the server
-    //         fetch('{{ route("pdf.sign") }}', {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-    //             },
-    //             body: JSON.stringify({
-    //                 signature: dataUrl,
-    //                 filename: '{{ $filename }}'
-    //             })
-    //         })
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             alert(data.message);
-    //             window.location.reload(); // Reload the page to show the signed PDF
-    //         })
-    //         .catch(error => console.error('Error:', error));
-    //     });
-    // </script>
-    // @endsection
-
-
-    public function signPDF(Request $request) // version click langsung keluar tanda tangan 
+    public function signPDF(Request $request) // version click langsung keluar tanda tangan
     {
         $id = $request->input('id');
             // Load the original PDF
@@ -216,6 +131,8 @@ class POController extends Controller
         $masterPO = MasterPO::find($id);
         if ($masterPO) {
             $masterPO->filename = basename($signedPdfPath); // Save only the file name, not the full path
+            $masterPO->approved_date = now();
+            $masterPO->status = 2;
             $masterPO->save();
         }
 
@@ -250,5 +167,5 @@ class POController extends Controller
     }
 
 
-    
+
 }
