@@ -128,7 +128,7 @@
             </li>
         @endif
 
-        @if ($department === 'QA' || $department === 'QC' || $user->role->name === 'SUPERADMIN')
+        @if ($department === 'QA' || $department === 'QC' || $department === 'BUSINESS' || $user->role->name === 'SUPERADMIN')
             <li class="sidebar-item" id="sidebar-item-qaqc">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">

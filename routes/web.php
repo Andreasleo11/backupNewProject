@@ -159,7 +159,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
 Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
-    Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC', 'checkSessionId'])->group(function () {
+    Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
         Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);

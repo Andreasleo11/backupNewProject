@@ -51,6 +51,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $monthlyBudgetReports = MonthlyBudgetReport::with('details')
             ->whereYear('report_date', $year)
             ->whereMonth('report_date', $month)
+            ->where('status', 6)
             ->get();
 
         // Separate the details based on dept_no
