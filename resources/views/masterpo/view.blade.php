@@ -97,7 +97,8 @@
                 <div class="mb-1">PO Number: <span class="text-secondary">{{ $purchaseOrder->po_number }}</span></div>
                 <div class="mb-1">
                     @if ($purchaseOrder->approved_date)
-                        Approved date: <span class="text-secondary">{{ $purchaseOrder->approved_date }}</span>
+                        Approved date: <span
+                            class="text-secondary">{{ $purchaseOrder->approved_date? \Carbon\Carbon::parse($purchaseOrder->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)'): '-' }}</span>
                     @elseif($purchaseOrder->reason)
                         Reject Reason : <span class="text-secondary">{{ $purchaseOrder->reason }}</span>
                     @endif
