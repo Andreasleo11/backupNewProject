@@ -8,6 +8,7 @@ use setasign\Fpdi\Fpdi;
 use App\Models\MasterPO;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 
@@ -15,17 +16,28 @@ class POController extends Controller
 {
     public function index()
     {
-        $datas = MasterPO::get();
+        $purchaseOrdersQuery = MasterPO::query();
 
-        return view('masterpo.index', compact('datas'));
+        $director = auth()->user()->department->name === 'DIRECTOR';
+        $notAdminUsers = auth()->user()->role->name !== 'SUPERADMIN';
+
+        if($director){
+            $purchaseOrdersQuery->where('status', 1);
+        } elseif($notAdminUsers) {
+            $purchaseOrdersQuery->where('status', '!=', 1)->where('creator_id', auth()->user()->id);
+        }
+
+        $data = $purchaseOrdersQuery->get();
+
+        return view('masterpo.index', compact('data'));
     }
 
-    public function uploadview()
+    public function create()
     {
-        return view('masterpo.poupload');
+        return view('masterpo.create');
     }
 
-    public function upload(Request $request)
+    public function store(Request $request)
     {
         // Validate the request inputs
         $request->validate([
@@ -43,23 +55,24 @@ class POController extends Controller
         $masterPO->po_number = $request->input('po_number');
         $masterPO->status = 1; // Initial status
         $masterPO->filename = $filename;
+        $masterPO->creator_id = auth()->user()->id;
         $masterPO->save();
 
         // Redirect to the PDF viewer
         return redirect()->route('po.index');
     }
 
-    public function viewPDF($id)
+    public function view($id)
     {
-        $data = MasterPO::find($id);
+        $purchaseOrder = MasterPO::find($id);
 
-        $filename = $data->filename;
+        $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
-        if (!Storage::exists('public/pdfs/' . $data->filename)) {
+        if (!Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
             abort(404, 'PDF file not found.');
         }
 
-        return view('masterpo.viewpo', compact('data'));
+        return view('masterpo.view', compact('purchaseOrder'));
     }
 
     // public function signPDF(Request $request) version pake signature box
@@ -166,6 +179,88 @@ class POController extends Controller
         ]);
     }
 
+    public function destroy($id)
+    {
+        try {
+            $po = MasterPO::find($id);
+
+            if (!$po) {
+                return redirect()->route('po.index')->with('error', 'PO not found!');
+            }
+
+            $po->delete();
+            return redirect()->route('po.index')->with('success', 'PO deleted successfully!');
+        } catch (\Exception $e) {
+            // Log the exception message for debugging
+            Log::error("Error deleting PO with ID {$id}: " . $e->getMessage());
+
+            return redirect()->route('po.index')->with('error', 'An error occurred while trying to delete the PO. Please try again later.');
+        }
+    }
+
+    public function signAll(Request $request)
+    {
+        $ids = $request->input('ids');
+
+        // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
+        $approvedPOs = MasterPO::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
+        $rejectedPOs = MasterPO::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
+
+        // If any approved or rejected POs are found, return an error
+        if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
+            $message = 'Cannot sign selected POs. ';
+
+            if ($approvedPOs->isNotEmpty()) {
+                $message .= 'The following PO Numbers are already approved: ' . $approvedPOs->join(', ') . '. ';
+            }
+
+            if ($rejectedPOs->isNotEmpty()) {
+                $message .= 'The following PO Numbers are already rejected: ' . $rejectedPOs->join(', ') . '.';
+            }
+
+            return response()->json(['message' => $message], 400);
+        }
+
+        // Proceed to sign POs if no conflicts
+        foreach ($ids as $id) {
+            $this->signPDF(new Request(['id' => $id, 'filename' => MasterPO::find($id)->filename]));
+        }
+
+        return response()->json(['message' => 'All selected POs signed successfully!']);
+    }
+
+    public function rejectAll(Request $request)
+    {
+        $ids = $request->input('ids');
+        $reason = $request->input('reason', 'No reason provided');
+
+        // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
+        $approvedPOs = MasterPO::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
+        $rejectedPOs = MasterPO::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
+
+        // If any approved or rejected POs are found, return an error
+        if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
+            $message = 'Cannot reject selected POs. ';
+
+            if ($approvedPOs->isNotEmpty()) {
+                $message .= 'The following PO Numbers are already approved: ' . $approvedPOs->join(', ') . '. ';
+            }
+
+            if ($rejectedPOs->isNotEmpty()) {
+                $message .= 'The following PO Numbers are already rejected: ' . $rejectedPOs->join(', ') . '.';
+            }
+
+            return response()->json(['message' => $message], 400);
+        }
+
+        // Proceed to reject POs if no conflicts
+        MasterPO::whereIn('id', $ids)->update([
+            'status' => 3,
+            'reason' => $reason
+        ]);
+
+        return response()->json(['message' => 'All selected POs rejected successfully!']);
+    }
 
 
 }

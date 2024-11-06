@@ -748,13 +748,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
-    Route::get('po-view', [POController::class, 'index'])->name('po.index');
-    Route::get('po-upload-view', [POController::class, 'uploadview'])->name('po.upload');
-    Route::post('/upload-pdf', [POController::class, 'upload'])->name('pdf.upload');
-    Route::get('/view-pdf/{filename}', [POController::class, 'viewPDF'])->name('pdf.view');
-    Route::post('/pdf/sign', [POController::class, 'signPDF'])->name('pdf.sign');
-    Route::post('/reject-pdf', [POController::class, 'rejectPDF'])->name('pdf.reject');
-    Route::get('/download-pdf/{filename}', [POController::class, 'downloadPDF'])->name('pdf.download');
+    Route::get('purchaseOrders', [POController::class, 'index'])->name('po.index');
+    Route::get('purchaseOrder/create', [POController::class, 'create'])->name('po.create');
+    Route::post('/purchaseOrder/store', [POController::class, 'store'])->name('po.store');
+    Route::get('/purchaseOrder/{id}', [POController::class, 'view'])->name('po.view');
+    Route::post('/purchaseOrder/sign', [POController::class, 'signPDF'])->name('po.sign');
+    Route::post('/purchaseOrder/reject-pdf', [POController::class, 'rejectPDF'])->name('po.reject');
+    Route::get('/download-pdf/{filename}', [POController::class, 'downloadPDF'])->name('po.download');
+    Route::delete('/purchaseOrder/{id}', [POController::class, 'destroy'])->name('po.destroy');
+    Route::post('/purchaseOrder/signAll', [POController::class, 'signAll'])->name('po.signAll');
+    Route::post('/purchaseOrder/rejectAll', [POController::class, 'rejectAll'])->name('po.rejectAll');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
