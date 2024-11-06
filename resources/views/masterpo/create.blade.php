@@ -12,7 +12,7 @@
         </nav>
 
         <div class="card shadow-sm p-4">
-            <form action="{{ route('pdf.upload') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('po.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <!-- PO Number Input -->

@@ -86,7 +86,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('po.index') }}">Purchase Orders</a></li>
-                <li class="breadcrumb-item active" aria-current="page">{{ $data->po_number }}</li>
+                <li class="breadcrumb-item active" aria-current="page">{{ $purchaseOrder->po_number }}</li>
             </ol>
         </nav>
     </div>
@@ -94,27 +94,31 @@
         <div class="text-center mt-2 mb-5">
             <div class="mb-3">
                 <h1 class="fs-2">Purchase Order </h1>
-                <div class="mb-1">PO Number: <span class="text-secondary">{{ $data->po_number }}</span></div>
+                <div class="mb-1">PO Number: <span class="text-secondary">{{ $purchaseOrder->po_number }}</span></div>
                 <div class="mb-1">
-                    @if ($data->approved_date)
-                        Approved date: <span class="text-secondary">{{ $data->approved_date }}</span>
-                    @elseif($data->reason)
-                        Reject Reason : <span class="text-secondary">{{ $data->reason }}</span>
+                    @if ($purchaseOrder->approved_date)
+                        Approved date: <span class="text-secondary">{{ $purchaseOrder->approved_date }}</span>
+                    @elseif($purchaseOrder->reason)
+                        Reject Reason : <span class="text-secondary">{{ $purchaseOrder->reason }}</span>
                     @endif
                 </div>
-                @include('partials.po-status')
+                @include('partials.po-status', ['po' => $purchaseOrder])
             </div>
         </div>
         <div class="card shadow-sm p-4 mb-4">
             <!-- PDF Display -->
-            <iframe src="{{ asset('storage/pdfs/' . $data->filename) }}" width="100%" height="600px"></iframe>
+            <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}" width="100%" height="700px"></iframe>
         </div>
         <div>
-            @if ($data->status === 1)
+            @php
+                $director = auth()->user()->department->name === 'DIRECTOR';
+                $admin = auth()->user()->role->name === 'SUPERADMIN';
+            @endphp
+            @if ($purchaseOrder->status === 1 && ($director || $admin))
                 <button id="saveSignature" class="btn btn-primary mt-4">Sign PDF</button>
                 <button id="rejectPO" class="btn btn-danger mt-4">Reject PO</button>
             @endif
-            <a href="{{ route('pdf.download', $data->filename) }}" class="btn btn-secondary mt-4">Download PDF</a>
+            <a href="{{ route('po.download', $purchaseOrder->filename) }}" class="btn btn-secondary mt-4">Download PDF</a>
         </div>
     </div>
 
@@ -122,15 +126,15 @@
         // Save Signature to PDF
         document.getElementById('saveSignature').addEventListener('click', function() {
             // Send the filename to the server to add the stored signature
-            fetch('{{ route('pdf.sign') }}', {
+            fetch('{{ route('po.sign') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        filename: '{{ $data->filename }}',
-                        id: '{{ $data->id }}'
+                        filename: '{{ $purchaseOrder->filename }}',
+                        id: '{{ $purchaseOrder->id }}'
                     })
                 })
                 .then(response => response.json())
@@ -147,15 +151,15 @@
             let reason = prompt("Please enter the reason for rejection:");
 
             if (reason) {
-                fetch('{{ route('pdf.reject') }}', {
+                fetch('{{ route('po.reject') }}', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({
-                            filename: '{{ $data->filename }}',
-                            id: '{{ $data->id }}',
+                            filename: '{{ $purchaseOrder->filename }}',
+                            id: '{{ $purchaseOrder->id }}',
                             reason: reason
                         })
                     })
