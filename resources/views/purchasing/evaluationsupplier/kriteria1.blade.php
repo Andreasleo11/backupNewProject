@@ -35,7 +35,7 @@
                     visibility: hidden;
                     /* Hide everything */
                 }
-
+                h1.mb-4,
                 .table-container,
                 .table-container * {
                     visibility: visible;
@@ -63,6 +63,16 @@
                     text-align: center;
                     font-size: 12px;
                     /* Adjust font size for better fit */
+                }
+
+                h1.mb-4 {
+                    position: absolute;
+                    top: 0;
+                    width: auto;
+                    text-align: center;
+                    font-size: 18px; /* Adjust font size for print */
+                    margin-top: 0;
+                    margin-bottom: 20px;
                 }
 
                 /* Optional: Remove header/footer space in print */
@@ -116,6 +126,7 @@
                             <th>Remarks</th>
                             <th>Reason</th>
                             <th>Risk</th>
+                            <th>Customer stopline</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,6 +146,7 @@
                                 <td>{{ $data->remarks }}</td>
                                 <td>{{ $data->reason }}</td>
                                 <td>{{ $data->risk }}</td>
+                                <td>{{ $data->customer_stopline }}</td>
                             </tr>
                         @empty
                             <tr>
