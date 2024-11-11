@@ -8,6 +8,7 @@ use setasign\Fpdi\Fpdi;
 use App\Models\MasterPO;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -167,17 +168,36 @@ class POController extends Controller
         return response()->json(['message' => 'PO rejected successfully.']);
     }
 
-    public function downloadPDF($filename)
+    public function downloadPDF($id)
     {
-        $path = storage_path("app/public/pdfs/{$filename}");
-        if (!file_exists($path)) {
-            abort(404, 'PDF file not found.');
-        }
+        try {
+            // Attempt to find the MasterPO record
+            $po = MasterPO::findOrFail($id);
 
-        return response()->download($path, $filename, [
-            'Content-Type' => 'application/pdf',
-        ]);
+            $filename = $po->filename;
+            $path = storage_path("app/public/pdfs/{$filename}");
+
+            // Check if the file exists in the specified path
+            if (!file_exists($path)) {
+                abort(404, 'PDF file not found.');
+            }
+
+            // Update the 'downloaded_at' timestamp for the PO
+            $po->update(['downloaded_at' => now()]);
+
+            // Return the response to download the PDF file
+            return response()->download($path, $filename, [
+                'Content-Type' => 'application/pdf',
+            ]);
+        } catch (ModelNotFoundException $e) {
+            // Handle the case where the MasterPO record is not found
+            return response()->json(['error' => 'Purchase order not found.'], 404);
+        } catch (\Exception $e) {
+            // Catch any other exceptions and return a generic error response
+            return response()->json(['error' => 'An error occurred while downloading the PDF.'], 500);
+        }
     }
+
 
     public function destroy($id)
     {

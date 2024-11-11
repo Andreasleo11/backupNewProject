@@ -8,103 +8,110 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Vendor Ontime Delivery</title>
-        <<style>
-            h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
-            }
-            .filter {
-            margin-bottom: 20px;
-            }
-            .filter form {
-            display: flex;
-            align-items: center;
-            }
-            .filter label {
-            margin-right: 10px;
-            }
-            .filter select {
-            padding: 5px;
-            margin-right: 10px;
-            }
-            button {
-            padding: 5px 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            }
-            button:hover {
-            background-color: #0056b3;
-            }
-            table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-            table, th, td {
-            border: 1px solid #ddd;
-            }
-            th, td {
-            padding: 10px;
-            text-align: center;
-            }
-            th {
-            background-color: #f8f9fa;
-            }
-            td {
-            background-color: #ffffff;
-            }
+        <style>
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .filter {
+        margin-bottom: 20px;
+    }
+    .filter form {
+        display: flex;
+        align-items: center;
+    }
+    .filter label {
+        margin-right: 10px;
+    }
+    .filter select {
+        padding: 5px;
+        margin-right: 10px;
+    }
+    button {
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    .printable-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .printable-table, th, td {
+        border: 1px solid #ddd;
+    }
+    th, td {
+        padding: 10px;
+        text-align: center;
+    }
+    th {
+        background-color: #f8f9fa;
+    }
+    td {
+        background-color: #ffffff;
+    }
 
-            /* PRINT STYLES */
-            @media print {
-            /* Hide everything except the table */
-            body * {
+    /* PRINT STYLES */
+    @media print {
+        /* Hide everything except the title and table */
+        body * {
             visibility: hidden;
-            }
-            table, table * {
+        }
+        h1,
+        .printable-table,
+        .printable-table * {
             visibility: visible;
-            }
-            table {
+        }
+
+        /* Position title and table */
+        h1 {
             position: absolute;
-            top: 0;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 18px;
+            margin: 0;
+            padding-bottom: 10px;
+        }
+
+        .printable-table {
+            position: absolute;
+            top: 50px;
             left: 0;
             width: 100%;
-            }
-
-            /* Remove margins for print */
-            @page {
-            margin: 0;
-            }
-
-            /* Adjust table width for print */
-            table {
-            width: 100%;
             font-size: 12px;
+            border-collapse: collapse;
             page-break-inside: auto;
-            }
+        }
 
-            tr {
+        /* Ensure table cells don't overflow */
+        .printable-table td,
+        .printable-table th {
+            word-wrap: break-word;
+            max-width: 100px;
+        }
+
+        /* Set minimal page margins for print */
+        @page {
+            margin: 10px;
+        }
+
+        /* Avoid breaking rows across pages */
+        .printable-table tr {
             page-break-inside: avoid;
             page-break-after: auto;
-            }
-
-            /* Ensure table cells don't overflow */
-            td, th {
-            word-wrap: break-word;
-            max-width: 100px; /* Adjust the max-width to prevent overflow */
-            }
-
-            /* Reduce font size for better fitting */
-            th, td {
-            font-size: 10px; /* Adjust as needed */
-            }
-            }
-            </style>
+        }
+    }
+</style>
     </head>
 
     <body>
@@ -131,7 +138,7 @@
         </div>
 
         <!-- Data Table -->
-        <table>
+        <table class="printable-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -157,7 +164,7 @@
                         <td>{{ $data->request_quantity }}</td>
                         <td>{{ \Carbon\Carbon::parse($data->actual_date)->format('d-m-Y') }}</td>
                         <td>{{ $data->actual_incoming_quantity }}</td>
-                    </tr>
+                     </tr>
                 @endforeach
             </tbody>
         </table>

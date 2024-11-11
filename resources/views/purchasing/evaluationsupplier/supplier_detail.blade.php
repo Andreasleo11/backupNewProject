@@ -220,8 +220,8 @@
                 </th>
                 <th>
                     <span>DI-F-P/PR/04/PU-002</span> <br>
-                    <span>13 October 2022</span><br>
-                    <span>-</span> <br>
+                    <span>4 November 2024</span><br>
+                    <span>-01</span> <br>
                     <span>1 dari 1</span>
                 </th>
             </tr>
@@ -283,8 +283,8 @@
                 <tbody>
                     <tr>
                         <td>1</td>
-                        <td>Kualitas barang mencakup 30%</td>
-                        <td>30</td>
+                        <td>Kualitas barang mencakup 20%</td>
+                        <td>20</td>
                     </tr>
                     <tr>
                         <td>2</td>
@@ -309,6 +309,11 @@
                     <tr>
                         <td>6</td>
                         <td>Sertifikasi supplier mencakup 10%</td>
+                        <td>10</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>Menyebabkan Customer StopLine</td>
                         <td>10</td>
                     <tr>
                         <td></td>
@@ -457,13 +462,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (['kualitas_barang', 'ketepatan_kuantitas_barang', 'ketepatan_waktu_pengiriman', 'kerjasama_permintaan_mendadak', 'respon_klaim', 'sertifikasi'] as $category)
+            @foreach (['kualitas_barang', 'ketepatan_kuantitas_barang', 'ketepatan_waktu_pengiriman', 'kerjasama_permintaan_mendadak', 'respon_klaim', 'sertifikasi','customer_stopline'] as $category)
                 <tr>
                     <td>
                         @php
                             $nameMap = [
                                 'kerjasama_permintaan_mendadak' => 'Kerjasama dalam Permintaan Mendadak',
                                 'sertifikasi' => 'Sertifikasi Supplier',
+                                'customer_stopline' => 'Menyebabkan Customer Stop Line',
                             ];
                         @endphp
                         {{ $nameMap[$category] ?? ucfirst(str_replace('_', ' ', $category)) }}
@@ -487,6 +493,7 @@
                     'kerjasama_permintaan_mendadak',
                     'respon_klaim',
                     'sertifikasi',
+                    'customer_stopline',
                 ];
 
                 foreach ($categories as $category) {

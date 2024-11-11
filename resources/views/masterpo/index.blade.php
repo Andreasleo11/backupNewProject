@@ -20,8 +20,10 @@
         <div class="mt-2">
             <div class="row">
                 <div class="col">
-                    <button id="sign-selected-btn" class="btn btn-outline-success my-1">Sign Selected</button>
-                    <button id="reject-selected-btn" class="btn btn-outline-danger my-1">Reject Selected</button>
+                    @if (auth()->user()->department->name === 'DIRECTOR')
+                        <button id="sign-selected-btn" class="btn btn-outline-success my-1">Sign Selected</button>
+                        <button id="reject-selected-btn" class="btn btn-outline-danger my-1">Reject Selected</button>
+                    @endif
                 </div>
                 <div class="col-md-3 text-end">
                     <input type="text" id="search-input" class="form-control mb-3" placeholder="Search...">
@@ -31,9 +33,13 @@
                 <table class="table table-hover">
                     <thead>
                         <tr class="text-center">
-                            <th><input type="checkbox" id="select-all"></th>
+                            @if (auth()->user()->department->name === 'DIRECTOR')
+                                <th><input type="checkbox" id="select-all"></th>
+                            @endif
                             <th>PO Number</th>
                             <th>Status</th>
+                            <th>Upload Date</th>
+                            <th>Uploaded By</th>
                             <th>Approved Date</th>
                             <th>Actions</th>
                         </tr>
@@ -41,9 +47,14 @@
                     <tbody>
                         @forelse ($data as $datum)
                             <tr class="text-center">
-                                <td><input type="checkbox" name="po-select[]" value="{{ $datum->id }}"></td>
+                                @if (auth()->user()->department->name === 'DIRECTOR')
+                                    <td><input type="checkbox" name="po-select[]" value="{{ $datum->id }}"></td>
+                                @endif
                                 <td>{{ $datum->po_number }}</td>
                                 <td>@include('partials.po-status', ['po' => $datum])</td>
+                                <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)') }}
+                                </td>
+                                <td>{{ $datum->user->name === auth()->user()->name ? 'me' : $datum->user->name }}</td>
                                 <td>{{ $datum->approved_date? \Carbon\Carbon::parse($datum->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)'): '-' }}
                                 </td>
                                 <td>

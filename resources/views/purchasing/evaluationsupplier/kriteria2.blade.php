@@ -77,46 +77,59 @@
             /* PRINT STYLES */
             @media print {
 
-                /* Hide everything except the table */
-                body * {
-                    visibility: hidden;
-                }
+                /* Hide everything initially */
+    body * {
+        visibility: hidden;
+    }
 
-                table,
-                table * {
-                    visibility: visible;
-                }
+    /* Ensure visibility of the title and table */
+    h1.mb-4,
+    .printable-table,
+    .printable-table * {
+        visibility: visible;
+    }
 
-                table {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                }
+    /* Style the title for print */
+    h1.mb-4 {
+        position: absolute;
+        top: 10px;
+        width: 100%;
+        text-align: center;
+        font-size: 18px; /* Adjust font size for print */
+        margin: 0;
+        padding-bottom: 10px;
+    }
 
-                /* Remove page margins for the table */
-                @page {
-                    margin: 0;
-                }
+    /* Adjust the table layout for print */
+    .printable-table {
+        position: absolute;
+        top: 50px; /* Position the table below the title */
+        left: 0;
+        width: 100%;
+        font-size: 12px;
+        border-collapse: collapse;
+        page-break-inside: auto;
+    }
 
-                /* Adjust table size to ensure it fits the page */
-                table {
-                    width: 100%;
-                    font-size: 12px;
-                    page-break-inside: auto;
-                }
+    /* Ensure table cells break gracefully without overflow */
+    .printable-table td,
+    .printable-table th {
+        padding: 8px;
+        border: 1px solid #ddd;
+        word-wrap: break-word;
+        max-width: 100px; /* Set max-width to prevent overflow */
+    }
 
-                tr {
-                    page-break-inside: avoid;
-                    page-break-after: auto;
-                }
+    /* Configure page settings */
+    @page {
+        margin: 10px; /* Adjust as needed for minimal print margin */
+    }
 
-                td,
-                th {
-                    word-wrap: break-word;
-                    max-width: 100px;
-                    /* Set max-width to prevent overflow */
-                }
+    /* Avoid page breaks within table rows */
+    .printable-table tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
             }
         </style>
     </head>
@@ -125,7 +138,7 @@
         <a href="{{ route('purchasing.evaluationsupplier.index') }}">
             <button type="button">Back to Supplier Evaluation</button>
         </a>
-        <h1>Vendor Accuracy Good</h1>
+        <h1 class="mb-4">Vendor Accuracy Good</h1>
 
         <!-- Filter Form -->
         <div class="filter">
@@ -145,7 +158,7 @@
         </div>
 
         <!-- Data Table -->
-        <table>
+        <table class="printable-table">
             <thead>
                 <tr>
                     <th>ID</th>
