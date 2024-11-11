@@ -52,10 +52,10 @@
                                 @endif
                                 <td>{{ $datum->po_number }}</td>
                                 <td>@include('partials.po-status', ['po' => $datum])</td>
-                                <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)') }}
+                                <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}
                                 </td>
-                                <td>{{ $datum->user->name === auth()->user()->name ? 'me' : $datum->user->name }}</td>
-                                <td>{{ $datum->approved_date? \Carbon\Carbon::parse($datum->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)'): '-' }}
+                                <td>{{ $datum->user->name }}</td>
+                                <td>{{ $datum->approved_date? \Carbon\Carbon::parse($datum->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)'): '-' }}
                                 </td>
                                 <td>
                                     <a href="{{ route('po.view', $datum->id) }}" class="btn btn-outline-primary">View</a>
