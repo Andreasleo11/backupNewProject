@@ -18,6 +18,7 @@ class PurchasingDetailEvaluationSupplier extends Model
         'kerjasama_permintaan_mendadak',
         'respon_klaim',
         'sertifikasi',
+        'customer_stopline',
     ];
 
     public function header()

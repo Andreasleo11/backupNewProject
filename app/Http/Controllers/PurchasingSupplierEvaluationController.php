@@ -108,6 +108,7 @@ class PurchasingSupplierEvaluationController extends Controller
                 'kerjasama_permintaan_mendadak' => null, // Placeholder for now, will be updated later
                 'respon_klaim' => null, // Placeholder for now, will be updated later
                 'sertifikasi' => null, // Placeholder for now, will be updated later
+                'customer_stopline' => null,
             ]);
         }
 
@@ -127,7 +128,7 @@ class PurchasingSupplierEvaluationController extends Controller
         if ($claims->isEmpty()) {
             // Vendor not found, set kualitas_barang to 30 for all details
             foreach ($data->details as $detail) {
-                $detail->kualitas_barang = 30;
+                $detail->kualitas_barang = 20;
                 $detail->save();
             }
         } else {
@@ -139,7 +140,7 @@ class PurchasingSupplierEvaluationController extends Controller
                 });
 
                 if ($monthlyClaims->isEmpty()) {
-                    $detail->kualitas_barang = 30; // No claims for this month
+                    $detail->kualitas_barang = 20; // No claims for this month
                 } else {
                     // Calculate points based on can_use status
                     $totalPoints = 0;
@@ -149,21 +150,73 @@ class PurchasingSupplierEvaluationController extends Controller
                         if (is_null($claim->risk) || $claim->risk == '') {
                             $totalPoints += 100; // risk is null or blank
                         } else if ($claim->risk == 'Low') {
-                            $totalPoints += 50;  // risk is 'Low'
-                        } else if ($claim->risk == 'High') {
-                            $totalPoints += 0;   // risk is 'High'
+                            $totalPoints += 5;  // risk is 'Low'
+                        } else if ($claim->risk == 'High') {// risk is 'High'
+                            $detail->kualitas_barang = 0;
+                            $detail->save();
+                            break;
                         }
                     }
 
                     // Calculate average and apply 30%
-                    $averagePoints = $totalPoints / $claimCount;
-                    $detail->kualitas_barang = $averagePoints * 0.30; // Apply 30%
+                    $averagePoints = 100 - $totalPoints;
+                    $detail->kualitas_barang = ceil($averagePoints * 0.20); // Apply 30%
                 }
 
                 $detail->save(); // Save the updated detail
             }
         }
         //kriteria 1 
+
+        //kriteria 7 
+        $claims = PurchasingVendorClaim::where('vendor_name', $supplierName)
+        ->whereYear('claim_start_date', $year)
+        ->get();
+
+        if ($claims->isEmpty()) {
+            // Vendor not found, set kualitas_barang to 30 for all details
+            foreach ($data->details as $detail) {
+                $detail->customer_stopline = 10;
+                $detail->save();
+            }
+        } else {
+            // Vendor found, process claims
+            foreach ($data->details as $detail) {
+                $month = Carbon::parse($detail->month)->format('m'); // Extract month from detail
+                $monthlyClaims = $claims->filter(function($claim) use ($month) {
+                    return Carbon::parse($claim->claim_start_date)->format('m') == $month;
+                });
+
+                if ($monthlyClaims->isEmpty()) {
+                    $detail->customer_stopline = 10; // No claims for this month
+                } else {
+                    // Calculate points based on can_use status
+                    $totalPoints = 0;
+                    $claimCount = $monthlyClaims->count();
+
+                    foreach ($monthlyClaims as $claim) {
+                        if (is_null($claim->customer_stopline) || $claim->customer_stopline == '') {
+                            $totalPoints += 100; // risk is null or blank
+                        } else if ($claim->customer_stopline == 'No') {
+                            $totalPoints += 100;  // risk is 'Low'
+                        } else if ($claim->customer_stopline == 'Yes') {// risk is 'High'
+                            $detail->customer_stopline = 0;
+                            $detail->save();
+                            break;
+                        }
+                    }
+
+                    // Calculate average and apply 30%
+                    $averagePoints =  $totalPoints / $claimCount;
+                    $detail->customer_stopline = ceil($averagePoints * 0.10); // Apply 30%
+                }
+
+                $detail->save(); // Save the updated detail
+            }
+        }
+
+        //kriteria 7 
+
 
         //kriteria 2 
         $accuracyGoods = PurchasingVendorAccuracyGood::where('vendor_name', $supplierName)
@@ -500,7 +553,8 @@ class PurchasingSupplierEvaluationController extends Controller
             'ketepatan_waktu_pengiriman' => 0,
             'kerjasama_permintaan_mendadak' => 0,
             'respon_klaim' => 0,
-            'sertifikasi' => 0
+            'sertifikasi' => 0,
+            'customer_stopline' =>0
         ];
 
         $categoryCounts = [
@@ -509,7 +563,8 @@ class PurchasingSupplierEvaluationController extends Controller
             'ketepatan_waktu_pengiriman' => 0,
             'kerjasama_permintaan_mendadak' => 0,
             'respon_klaim' => 0,
-            'sertifikasi' => 0
+            'sertifikasi' => 0,
+            'customer_stopline' => 0
         ];
 
         // Loop through each month and populate the result array
@@ -524,6 +579,7 @@ class PurchasingSupplierEvaluationController extends Controller
                 'kerjasama_permintaan_mendadak' => $detailsForMonth->kerjasama_permintaan_mendadak ?? 0,
                 'respon_klaim' => $detailsForMonth->respon_klaim ?? 0,
                 'sertifikasi' => $detailsForMonth->sertifikasi ?? 0,
+                'customer_stopline' =>$detailsForMonth->customer_stopline ?? 0,
             ];
 
             // Add to sums and counts (only if the value is greater than 0)
@@ -556,7 +612,7 @@ class PurchasingSupplierEvaluationController extends Controller
             $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
-        $datas = $query->get()->map(function ($data) {
+        $datas = $query->orderBy('claim_start_date', 'asc')->get()->map(function ($data) {
             $data->incoming_date = \Carbon\Carbon::parse($data->incoming_date)->format('d-m-Y');
             $data->claim_start_date = \Carbon\Carbon::parse($data->claim_start_date)->format('d-m-Y');
             $data->claim_finish_date = \Carbon\Carbon::parse($data->claim_finish_date)->format('d-m-Y');
