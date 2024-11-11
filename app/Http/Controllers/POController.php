@@ -20,11 +20,9 @@ class POController extends Controller
         $purchaseOrdersQuery = MasterPO::query();
 
         $director = auth()->user()->department->name === 'DIRECTOR';
-        $notAdminUsers = auth()->user()->role->name !== 'SUPERADMIN';
+        $notAdminUsers = auth()->user()->role->name !== 'SUPERADMIN' && !$director;
 
-        if($director){
-            $purchaseOrdersQuery->where('status', 1);
-        } elseif($notAdminUsers) {
+        if($notAdminUsers) {
             $purchaseOrdersQuery->where('status', '!=', 1)->where('creator_id', auth()->user()->id);
         }
 

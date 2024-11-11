@@ -26,6 +26,22 @@ class MasterPO extends Model
         'downloaded_at',
     ];
 
+    // Queries
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 2);
+    }
+
+    public function scopeWaiting($query)
+    {
+        return $query->where('status', 1);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 3);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'creator_id');

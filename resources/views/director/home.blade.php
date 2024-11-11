@@ -138,5 +138,41 @@
                 </div>
             </div>
         </div>
+        <div class="row mt-4">
+            <div class="col">
+                <div class="container">
+                    <div class="p-4 pb-0">
+                        <h4 class="text-secondary fs-3">Purchase Order Reports</h4>
+                    </div>
+                    <hr>
+                    <div class="container p-2 px-5">
+                        <div class="row justify-content-center">
+                            <div class="col">
+                                <a href="{{ route('po.index') }}">
+                                    <x-card title="Approved" :content="$poCounts['approved']" color="green" titleColor="text-success"
+                                        icon="<box-icon name='check' color='gray' size='lg'></box-icon>" />
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="{{ route('po.index') }}">
+                                    <x-card title="Waiting" :content="$poCounts['waiting']" color="orange" titleColor="text-warning"
+                                        icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
+                                </a>
+                            </div>
+
+                            <div class="col">
+                                <a href="{{ route('po.index') }}">
+                                    <x-card title="Rejected" :content="$poCounts['rejected']" color="red" titleColor="text-danger"
+                                        contentColor="text-secondary"
+                                        icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
