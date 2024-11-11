@@ -113,13 +113,12 @@
         <div>
             @php
                 $director = auth()->user()->department->name === 'DIRECTOR';
-                $admin = auth()->user()->role->name === 'SUPERADMIN';
             @endphp
-            @if ($purchaseOrder->status === 1 && ($director || $admin))
+            @if ($purchaseOrder->status === 1 && $director)
                 <button id="saveSignature" class="btn btn-primary mt-4">Sign PDF</button>
                 <button id="rejectPO" class="btn btn-danger mt-4">Reject PO</button>
             @endif
-            <a href="{{ route('po.download', $purchaseOrder->filename) }}" class="btn btn-secondary mt-4">Download PDF</a>
+            <a href="{{ route('po.download', $purchaseOrder->id) }}" class="btn btn-secondary mt-4">Download PDF</a>
         </div>
     </div>
 

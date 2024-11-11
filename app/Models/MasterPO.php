@@ -22,7 +22,8 @@ class MasterPO extends Model
         'status',
         'filename',
         'reason',
-        'creator_id'
+        'creator_id',
+        'downloaded_at',
     ];
 
     public function user()

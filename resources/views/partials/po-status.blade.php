@@ -5,3 +5,9 @@
 @elseif ($po->status === 3)
     <span class="badge text-bg-danger px-3 py-2 fs-6">Rejected</span>
 @endif
+
+@if ($po->downloaded_at)
+    <span class="badge text-bg-secondary py-2 fs-6">
+        <i class='bx bx-cloud-download'></i>
+    </span>
+@endif
