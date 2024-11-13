@@ -36,11 +36,19 @@
                             @if (auth()->user()->department->name === 'DIRECTOR')
                                 <th><input type="checkbox" id="select-all"></th>
                             @endif
-                            <th>PO Number</th>
-                            <th>Status</th>
-                            <th>Upload Date</th>
-                            <th>Uploaded By</th>
-                            <th>Approved Date</th>
+                            <th>PO Number <input type="text" class="form-control column-filter" data-column="0"
+                                    placeholder="Filter PO Number"></th>
+                            <th>Vendor Name <input type="text" class="form-control column-filter" data-column="1"
+                                    placeholder="Filter Vendor"></th>
+                            <th>PO Date <input type="date" class="form-control column-filter" data-column="2"></th>
+                            <th>Total <input type="text" class="form-control column-filter" data-column="3"
+                                    placeholder="Filter Total"></th>
+                            <th>Upload Date <input type="date" class="form-control column-filter" data-column="4"></th>
+                            <th>Uploaded By <input type="text" class="form-control column-filter" data-column="5"
+                                    placeholder="Filter By"></th>
+                            <th>Approved Date <input type="date" class="form-control column-filter" data-column="6"></th>
+                            <th>Status <input type="text" class="form-control column-filter" data-column="7"
+                                    placeholder="Filter Status"></th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -51,12 +59,15 @@
                                     <td><input type="checkbox" name="po-select[]" value="{{ $datum->id }}"></td>
                                 @endif
                                 <td>{{ $datum->po_number }}</td>
-                                <td>@include('partials.po-status', ['po' => $datum])</td>
+                                <td>{{ $datum->vendor_name }}</td>
+                                <td>{{ \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') }}</td>
+                                <td>{{ $datum->currency . ' ' . number_format($datum->total, 1, '.', ',') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}
                                 </td>
                                 <td>{{ $datum->user->name }}</td>
                                 <td>{{ $datum->approved_date? \Carbon\Carbon::parse($datum->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)'): '-' }}
                                 </td>
+                                <td>@include('partials.po-status', ['po' => $datum])</td>
                                 <td>
                                     <a href="{{ route('po.view', $datum->id) }}" class="btn btn-outline-primary">View</a>
                                     @if (auth()->user()->role->name === 'SUPERADMIN')
@@ -66,7 +77,6 @@
                                             'title' => 'Delete PO confirmation',
                                             'body' => "Are you sure want to delete this PO with id <strong>$datum->id</strong>?",
                                         ])
-
                                         <button class="btn btn-outline-danger my-1" data-bs-toggle="modal"
                                             data-bs-target="#delete-confirmation-modal-{{ $datum->id }}"><i
                                                 class='bx bx-trash-alt'></i> <span
@@ -88,7 +98,7 @@
     </div>
 
     <script>
-        // Search function
+        // General search function
         document.getElementById('search-input').addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('tbody tr');
@@ -96,6 +106,68 @@
             rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Column-specific filter functionality, including improved date filtering and handling empty cells
+        document.querySelectorAll('.column-filter').forEach(filter => {
+            filter.addEventListener('input', function() {
+                const filters = document.querySelectorAll('.column-filter');
+                const rows = document.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    let isVisible = true; // Assume row is visible initially
+
+                    filters.forEach(filter => {
+                        const column = filter.getAttribute('data-column');
+                        const value = filter.value.trim();
+                        const cell = row.cells[column];
+
+                        if (cell) {
+                            const cellText = cell.textContent.trim();
+
+                            // Check if the filter is a date input and has a value
+                            if (filter.type === 'date' && value) {
+                                const inputDate = value;
+
+                                // Only proceed if cellText is not empty or a placeholder like '-'
+                                if (cellText && cellText !== '-') {
+                                    // Extract only the date part (YYYY-MM-DD or DD-MM-YYYY) from cell content
+                                    let cellDate = cellText.split(' ')[
+                                    0]; // Remove any time part if present
+                                    if (cellDate.includes('-')) {
+                                        const parts = cellDate.split('-');
+                                        // Convert 'DD-MM-YYYY' to 'YYYY-MM-DD' if necessary
+                                        cellDate = parts[2].length === 4 ?
+                                            `${parts[2]}-${parts[1]}-${parts[0]}` :
+                                            cellDate;
+                                    }
+
+                                    // Log to debug date formats
+                                    console.log("Cell Date:", cellDate);
+                                    console.log("Input Date:", inputDate);
+
+                                    // Compare the normalized date formats
+                                    if (cellDate !== inputDate) {
+                                        isVisible =
+                                        false; // Hide row if date does not match
+                                    }
+                                } else {
+                                    isVisible =
+                                    false; // Hide row if cellText is empty or placeholder
+                                }
+                            } else if (filter.type !== 'date' && value) {
+                                // For non-date columns, check if the cell text includes the filter text (case-insensitive)
+                                if (!cellText.toLowerCase().includes(value.toLowerCase())) {
+                                    isVisible = false; // Hide row if text does not match
+                                }
+                            }
+                        }
+                    });
+
+                    // Apply visibility based on filter results
+                    row.style.display = isVisible ? '' : 'none';
+                });
             });
         });
 

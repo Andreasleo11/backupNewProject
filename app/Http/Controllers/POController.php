@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
@@ -36,29 +37,33 @@ class POController extends Controller
         return view('masterpo.create');
     }
 
-    public function store(Request $request)
+    public function store(StorePoRequest $request)
     {
-        // Validate the request inputs
-        $request->validate([
-            'po_number' => 'required|integer',
-            'pdf_file' => 'required|mimes:pdf|max:10240' // Max 10 MB
-        ]);
+        // Process validated data
+        $validated = $request->validated();
 
-        // Store the uploaded PDF
-        $file = $request->file('pdf_file');
-        $filename = Str::random(20) . '.pdf';
+        // Store the uploaded PDF with a unique filename
+        $file = $validated['pdf_file'];
+        $filename = 'PO_' . Str::random(10) . '_' . time() . '.pdf';
         $filePath = $file->storeAs('public/pdfs', $filename);
+
+        // Remove commas from the total and convert it to a float
+        $total = (float) str_replace(',', '', $validated['total']);
 
         // Create a new MasterPO record using Eloquent
         $masterPO = new MasterPO();
-        $masterPO->po_number = $request->input('po_number');
+        $masterPO->po_number = $validated['po_number'];
         $masterPO->status = 1; // Initial status
         $masterPO->filename = $filename;
-        $masterPO->creator_id = auth()->user()->id;
+        $masterPO->creator_id = auth()->id();
+        $masterPO->vendor_name = $validated['vendor_name'];
+        $masterPO->po_date = $validated['po_date'];
+        $masterPO->currency = $validated['currency'];
+        $masterPO->total = $total;
         $masterPO->save();
 
-        // Redirect to the PDF viewer
-        return redirect()->route('po.index');
+        // Redirect to the PDF viewer with a success message
+        return redirect()->route('po.index')->with('success', 'PO created successfully.');
     }
 
     public function view($id)
