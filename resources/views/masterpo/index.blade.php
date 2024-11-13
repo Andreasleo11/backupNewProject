@@ -21,14 +21,18 @@
             <div class="row">
                 <div class="col">
                     @if (auth()->user()->department->name === 'DIRECTOR')
-                        <button id="sign-selected-btn" class="btn btn-outline-success my-1">Sign Selected</button>
-                        <button id="reject-selected-btn" class="btn btn-outline-danger my-1">Reject Selected</button>
+                        <button id="sign-selected-btn" class="btn btn-outline-success ">Sign Selected</button>
+                        <button id="reject-selected-btn" class="btn btn-outline-danger ">Reject Selected</button>
                     @endif
                 </div>
-                <div class="col-md-3 text-end">
-                    <input type="text" id="search-input" class="form-control mb-3" placeholder="Search...">
+                <div class="col-md-3">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search...">
+                </div>
+                <div class="col-auto">
+                    <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
                 </div>
             </div>
+
             <div class="table-responsive mt-3">
                 <table class="table table-hover">
                     <thead>
@@ -110,6 +114,14 @@
             });
         });
 
+        const isDirector = document.getElementById('select-all') !== null;
+        const offset = isDirector ? 1 : 0;
+
+        // Assign data-column attributes dynamically
+        document.querySelectorAll('.column-filter').forEach((filter, index) => {
+            filter.setAttribute('data-column', index + offset);
+        });
+
         // Column-specific filter functionality, including improved date filtering and handling empty cells
         document.querySelectorAll('.column-filter').forEach(filter => {
             filter.addEventListener('input', function() {
@@ -135,7 +147,7 @@
                                 if (cellText && cellText !== '-') {
                                     // Extract only the date part (YYYY-MM-DD or DD-MM-YYYY) from cell content
                                     let cellDate = cellText.split(' ')[
-                                    0]; // Remove any time part if present
+                                        0]; // Remove any time part if present
                                     if (cellDate.includes('-')) {
                                         const parts = cellDate.split('-');
                                         // Convert 'DD-MM-YYYY' to 'YYYY-MM-DD' if necessary
@@ -151,11 +163,11 @@
                                     // Compare the normalized date formats
                                     if (cellDate !== inputDate) {
                                         isVisible =
-                                        false; // Hide row if date does not match
+                                            false; // Hide row if date does not match
                                     }
                                 } else {
                                     isVisible =
-                                    false; // Hide row if cellText is empty or placeholder
+                                        false; // Hide row if cellText is empty or placeholder
                                 }
                             } else if (filter.type !== 'date' && value) {
                                 // For non-date columns, check if the cell text includes the filter text (case-insensitive)
@@ -169,6 +181,21 @@
                     // Apply visibility based on filter results
                     row.style.display = isVisible ? '' : 'none';
                 });
+            });
+        });
+
+        document.getElementById('reset-filters-btn').addEventListener('click', function() {
+            // Clear all column filters
+            document.querySelectorAll('.column-filter').forEach(filter => {
+                filter.value = ''; // Clear the filter input
+            });
+
+            // Reset the general search filter
+            document.getElementById('search-input').value = '';
+
+            // Show all rows
+            document.querySelectorAll('tbody tr').forEach(row => {
+                row.style.display = ''; // Set all rows to visible
             });
         });
 
