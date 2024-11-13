@@ -141,6 +141,7 @@
                         </option>
                     @endforeach
                 </select>
+                
                 <button type="submit">Filter</button>
             </form>
         </div>

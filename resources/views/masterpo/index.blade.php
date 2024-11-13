@@ -97,6 +97,7 @@
         </div>
     </div>
 
+
     <script>
         // General search function
         document.getElementById('search-input').addEventListener('keyup', function() {

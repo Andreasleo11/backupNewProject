@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 use App\Models\MasterPO;
+use App\Models\File;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 
 class POController extends Controller
@@ -69,14 +71,17 @@ class POController extends Controller
     public function view($id)
     {
         $purchaseOrder = MasterPO::find($id);
-
+        
+        $user = Auth::user();
+        $files = File::where('doc_id', $purchaseOrder->po_number)->get();
+        
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
         if (!Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
             abort(404, 'PDF file not found.');
         }
 
-        return view('masterpo.view', compact('purchaseOrder'));
+        return view('masterpo.view', compact('purchaseOrder', 'user', 'files'));
     }
 
     // public function signPDF(Request $request) version pake signature box
