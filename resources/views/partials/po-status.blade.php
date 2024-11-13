@@ -9,7 +9,7 @@
 @if ($po->downloaded_at)
     <button data-bs-toggle="tooltip" data-bs-html="true"
         data-bs-title="Last time downloaded at : <br> {{ \Carbon\Carbon::parse($po->downloaded_at)->setTimezone('Asia/Jakarta')->format('d-m-y (h:i)') ?? '-' }}"
-        class="btn btn-secondary btn-sm align-items-center">
+        class="btn btn-secondary btn-sm align-items-center my-1">
         <i class='bx bx-cloud-download'></i></button>
 @endif
 <script type="module">
