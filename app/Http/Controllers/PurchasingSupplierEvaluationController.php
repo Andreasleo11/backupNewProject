@@ -610,6 +610,15 @@ class PurchasingSupplierEvaluationController extends Controller
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
             $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
+            
+        }
+
+        if ($request->filled('month')) {
+            $query->whereMonth('incoming_date', $request->month);
+        }
+    
+        if ($request->filled('year')) {
+            $query->whereYear('incoming_date', $request->year);
         }
 
         $datas = $query->orderBy('claim_start_date', 'asc')->get()->map(function ($data) {
@@ -634,6 +643,14 @@ class PurchasingSupplierEvaluationController extends Controller
             $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
+        if ($request->filled('month')) {
+            $query->whereMonth('incoming_date', $request->month);
+        }
+    
+        if ($request->filled('year')) {
+            $query->whereYear('incoming_date', $request->year);
+        }
+
         // Fetch data
         $datas = $query->get();
 
@@ -651,6 +668,14 @@ class PurchasingSupplierEvaluationController extends Controller
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
             $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
+        }
+        
+        if ($request->filled('month')) {
+            $query->whereMonth('request_date', $request->month);
+        }
+    
+        if ($request->filled('year')) {
+            $query->whereYear('request_date', $request->year);
         }
 
         // Fetch data
@@ -672,6 +697,15 @@ class PurchasingSupplierEvaluationController extends Controller
             $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
+        
+        if ($request->filled('month')) {
+            $query->whereMonth('incoming_date', $request->month);
+        }
+    
+        if ($request->filled('year')) {
+            $query->whereYear('incoming_date', $request->year);
+        }
+
         // Fetch data
         $datas = $query->get();
 
@@ -689,6 +723,15 @@ class PurchasingSupplierEvaluationController extends Controller
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
             $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
+        }
+
+        
+        if ($request->filled('month')) {
+            $query->whereMonth('cpar_response_date', $request->month);
+        }
+    
+        if ($request->filled('year')) {
+            $query->whereYear('cpar_response_date', $request->year);
         }
 
         // Fetch data

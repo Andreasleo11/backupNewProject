@@ -122,6 +122,33 @@
         </div>
     </div>
 
+
+    @php
+        $director = auth()->user()->department->name === 'DIRECTOR';
+    @endphp
+
+    @if (!$director)
+    <div class="text-end container mb-5">
+        @if ($user->id == $purchaseOrder->creator_id||$user->specification->name === 'PURCHASER' || $user->is_head === 1)
+            <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                <i class='bx bx-upload'></i> Upload
+            </button>
+
+            @include('partials.upload-files-modal', ['doc_id' => $purchaseOrder->po_number])
+        @endif
+    </div>
+
+
+    <section aria-label="uploaded">
+        @include('partials.uploaded-section', [
+            'showDeleteButton' =>
+                ($user->id === $purchaseOrder->creator_id) ||
+                ($user->specification->name === 'PURCHASER'),
+        ])
+    </section>
+
+    @endif
+
     <script>
         // Save Signature to PDF
         document.getElementById('saveSignature').addEventListener('click', function() {

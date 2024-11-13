@@ -168,7 +168,6 @@
                                         icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                                 </a>
                             </div>
-
                         </div>
                     </div>
                 </div>

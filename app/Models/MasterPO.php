@@ -24,6 +24,10 @@ class MasterPO extends Model
         'reason',
         'creator_id',
         'downloaded_at',
+        'vendor_name',
+        'po_date',
+        'currency',
+        'total',
     ];
 
     // Queries
