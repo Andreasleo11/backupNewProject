@@ -141,6 +141,26 @@
                         </option>
                     @endforeach
                 </select>
+
+                <label for="month">Select Month:</label>
+                <select name="month" id="month">
+                    <option value="">-- All Months --</option>
+                    @foreach (range(1, 12) as $month)
+                        <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
+                            {{ DateTime::createFromFormat('!m', $month)->format('F') }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <label for="year">Select Year:</label>
+                <select name="year" id="year">
+                    <option value="">-- All Years --</option>
+                    @foreach (range(2020, 2040) as $year)
+                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
                 <button type="submit">Filter</button>
             </form>
         </div>
