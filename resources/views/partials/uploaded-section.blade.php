@@ -54,15 +54,39 @@
                 </a>
                 @if ($showDeleteButton)
                     <div class="col d-flex">
-                        <a class="btn btn-outline-danger d-flex align-items-center "
-                            onclick="document.getElementById('deleteForm{{ $file->id }}').submit();">
+                        <!-- Button to trigger the modal -->
+                        <a class="btn btn-outline-danger d-flex align-items-center"
+                            data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ $file->id }}">
                             <i class='bx bxs-trash-alt bx-xs bx-tada-hover'></i>
-                            <form id="deleteForm{{ $file->id }}" action="{{ route('file.delete', $file->id) }}"
-                                method="post">
-                                @csrf @method('DELETE')</form>
                         </a>
+
+                        <!-- Modal for delete confirmation -->
+                        <div class="modal fade" id="confirmDeleteModal{{ $file->id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete this file?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                        <button type="button" class="btn btn-danger" onclick="document.getElementById('deleteForm{{ $file->id }}').submit();">Yes, Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete form (hidden) -->
+                        <form id="deleteForm{{ $file->id }}" action="{{ route('file.delete', $file->id) }}" method="post" style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
                     </div>
                 @endif
+
             </div>
         @empty
             <p>No Files Were Uploaded</p>

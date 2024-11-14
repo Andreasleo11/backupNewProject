@@ -452,6 +452,8 @@ class PurchasingSupplierEvaluationController extends Controller
                 $sertifikasiScore = 10;
             } elseif ($certificates->iso_9001_doc !== null && trim($certificates->iso_9001_doc) !== '') {
                 $sertifikasiScore = 8;
+            }elseif ($certificates->iso_14001_doc !== null && trim($certificates->iso_14001_doc) !== '') {
+                $sertifikasiScore = 8;
             }
 
             // Update all details in data with the calculated sertifikasi score
