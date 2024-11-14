@@ -16,7 +16,7 @@ class StorePoRequest extends FormRequest
         return [
             'po_number' => 'required|numeric|unique:master_po,po_number', // assuming `pos` is your table name
             'vendor_name' => 'required|string|max:255',
-            'po_date' => 'required|date',
+            'po_date' => 'required|string',
             'currency' => 'required|in:IDR,YUAN,USD',
             'total' => 'required|regex:/^\d{1,3}(,\d{3})*(\.\d+)?$/', // validates currency format
             'pdf_file' => 'required|file|mimes:pdf|max:2048', // max 2MB

@@ -31,7 +31,7 @@
                 <!-- PO Date Input -->
                 <div class="form-group mb-3">
                     <label for="po_date" class="form-label">PO Date</label>
-                    <input type="date" name="po_date" id="po_date" class="form-control" required>
+                    <input type="text" name="po_date" id="po_date" class="form-control" required>
                 </div>
 
                 <!-- Total Input -->

@@ -83,7 +83,9 @@ class PurchasingSupplierEvaluationController extends Controller
             'grade' => null, // Grade will be updated later
             'status' => null, // Status will be updated later
         ]);
-    
+        
+        $suppliercode = $header->vendor_code;
+        
         // Step 3: Find all months from PurchasingListPo where supplier_name matches and posting_date is in the same year
         $matchingPurchasingList = PurchasingListPo::where('supplier_name', $supplierName)
             ->whereYear('posting_date', $year)
@@ -439,13 +441,14 @@ class PurchasingSupplierEvaluationController extends Controller
 
 
         //kriteria 6 
-        $certificates = PurchasingVendorListCertificate::where('vendor_name', $supplierName)->first();
+        $certificates = PurchasingVendorListCertificate::where('vendor_code', $suppliercode)->first();
 
         if (!$certificates) {
             // If no certificates found, update all details in data to 0 for sertifikasi
             PurchasingDetailEvaluationSupplier::where('header_id', $header->id)
                 ->update(['sertifikasi' => 0]);
         } else {
+            
             $sertifikasiScore = 5; // Default value if both documents are null
 
             if ($certificates->iatf_16949_doc !== null && trim($certificates->iatf_16949_doc) !== '') {
