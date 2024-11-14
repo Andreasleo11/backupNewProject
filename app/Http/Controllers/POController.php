@@ -41,8 +41,20 @@ class POController extends Controller
 
     public function store(StorePoRequest $request)
     {
+         // Debug to see all incoming request data
+        $inputData = $request->all();
         // Process validated data
         $validated = $request->validated();
+
+        // Convert po_date from 'dd.mm.yy' to 'yyyy-mm-dd'
+        if (isset($validated['po_date'])) {
+            $date = \DateTime::createFromFormat('d.m.y', $validated['po_date']);
+            if ($date) {
+                $validated['po_date'] = $date->format('Y-m-d');
+            } else {
+                return redirect()->back()->withErrors(['po_date' => 'Invalid date format']);
+            }
+        }
 
         // Store the uploaded PDF with a unique filename
         $file = $validated['pdf_file'];
