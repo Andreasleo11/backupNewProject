@@ -28,6 +28,7 @@ class MasterPO extends Model
         'po_date',
         'currency',
         'total',
+        'tanggal_pembelian'
     ];
 
     // Queries
