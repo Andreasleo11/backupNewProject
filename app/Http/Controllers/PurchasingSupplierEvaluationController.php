@@ -657,7 +657,7 @@ class PurchasingSupplierEvaluationController extends Controller
         }
 
         // Fetch data
-        $datas = $query->get();
+        $datas = $query->orderBy('incoming_date','asc')->get();
 
         // Get unique vendor names for the dropdown
         $vendorNames = PurchasingVendorAccuracyGood::distinct('vendor_name')->pluck('vendor_name');
@@ -712,7 +712,7 @@ class PurchasingSupplierEvaluationController extends Controller
         }
 
         // Fetch data
-        $datas = $query->get();
+        $datas = $query->orderBy('incoming_date','asc')->get();
 
         // Get unique vendor names for the dropdown
         $vendorNames = PurchasingVendorUrgentRequest::distinct('vendor_name')->pluck('vendor_name');
