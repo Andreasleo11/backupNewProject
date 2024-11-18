@@ -34,6 +34,12 @@
                     <input type="text" name="po_date" id="po_date" class="form-control" required>
                 </div>
 
+                <!-- Tanggal Pembelian Input -->
+                <div class="form-group mb-3">
+                    <label for="tanggal_pembelian" class="form-label">Tanggal Pembelian</label>
+                    <input type="date" name="tanggal_pembelian" id="tanggal_pembelian" class="form-control" required>
+                </div>
+
                 <!-- Total Input -->
                 <div class="form-group mb-3">
                     <label for="total" class="form-label">Total</label>

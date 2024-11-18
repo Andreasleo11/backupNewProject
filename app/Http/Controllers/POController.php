@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-
+use Maatwebsite\Excel\Facades\Excel;
 
 class POController extends Controller
 {
@@ -41,8 +42,6 @@ class POController extends Controller
 
     public function store(StorePoRequest $request)
     {
-         // Debug to see all incoming request data
-        $inputData = $request->all();
         // Process validated data
         $validated = $request->validated();
 
@@ -52,7 +51,7 @@ class POController extends Controller
             if ($date) {
                 $validated['po_date'] = $date->format('Y-m-d');
             } else {
-                return redirect()->back()->withErrors(['po_date' => 'Invalid date format']);
+                return redirect()->back()->withInputs(['po_date' => 'Invalid date format']);
             }
         }
 
@@ -74,6 +73,7 @@ class POController extends Controller
         $masterPO->po_date = $validated['po_date'];
         $masterPO->currency = $validated['currency'];
         $masterPO->total = $total;
+        $masterPO->tanggal_pembelian = $validated['tanggal_pembelian'];
         $masterPO->save();
 
         // Redirect to the PDF viewer with a success message
@@ -83,10 +83,10 @@ class POController extends Controller
     public function view($id)
     {
         $purchaseOrder = MasterPO::find($id);
-        
+
         $user = Auth::user();
         $files = File::where('doc_id', $purchaseOrder->po_number)->get();
-        
+
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
         if (!Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
@@ -302,5 +302,30 @@ class POController extends Controller
         return response()->json(['message' => 'All selected POs rejected successfully!']);
     }
 
+    public function exportExcel(Request $request)
+    {
+        // dd($request->all);
+        $query = MasterPO::query();
 
+        // Apply filters if provided
+        if ($request->filled('po_number')) {
+            $query->where('po_number', 'LIKE', '%' . $request->po_number . '%');
+        }
+        if ($request->filled('vendor_name')) {
+            $query->where('vendor_name', 'LIKE', '%' . $request->vendor_name . '%');
+        }
+        if ($request->filled('po_date')) {
+            $query->whereDate('po_date', $request->po_date);
+        }
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // // Debugging the SQL query
+        // dd($query->toSql(), $query->getBindings());
+
+        $filteredData = $query->get();
+
+        return Excel::download(new PurchaseOrderExport($filteredData), 'purchase_orders.xlsx');
+    }
 }

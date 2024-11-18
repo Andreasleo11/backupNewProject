@@ -31,6 +31,16 @@
                 <div class="col-auto">
                     <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
                 </div>
+                <div class="col-auto">
+                    <form id="export-form" method="GET" action="{{ route('po.export') }}">
+                        <input type="hidden" name="po_number" id="export-po-number">
+                        <input type="hidden" name="vendor_name" id="export-vendor-name">
+                        <input type="hidden" name="po_date" id="export-po-date">
+                        <input type="hidden" name="status" id="export-status">
+                        <button type="submit" class="btn btn-outline-success">Export to Excel</button>
+                    </form>
+                </div>
+
             </div>
 
             <div class="table-responsive mt-3">
@@ -44,7 +54,27 @@
                                     placeholder="Filter PO Number"></th>
                             <th>Vendor Name <input type="text" class="form-control column-filter" data-column="1"
                                     placeholder="Filter Vendor"></th>
-                            <th>PO Date <input type="date" class="form-control column-filter" data-column="2"></th>
+                            <th>
+                                PO Date <input type="date" class="form-control column-filter" data-column="2">
+                                <select id="month-filter-po-date" class="form-select mt-1" data-column="2">
+                                    <option value="">All Month</option>
+                                    <option value="01">January</option>
+                                    <option value="02">February</option>
+                                    <option value="03">March</option>
+                                    <option value="04">April</option>
+                                    <option value="05">May</option>
+                                    <option value="06">June</option>
+                                    <option value="07">July</option>
+                                    <option value="08">August</option>
+                                    <option value="09">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </th>
+                            <th>
+                                Tanggal Pembelian <input type="date" class="form-control column-filter" data-column="2">
+                            </th>
                             <th>Total <input type="text" class="form-control column-filter" data-column="3"
                                     placeholder="Filter Total"></th>
                             <th>Upload Date <input type="date" class="form-control column-filter" data-column="4"></th>
@@ -64,7 +94,10 @@
                                 @endif
                                 <td>{{ $datum->po_number }}</td>
                                 <td>{{ $datum->vendor_name }}</td>
-                                <td>{{ \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') }}</td>
+                                <td>{{ $datum->po_date ? \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') : '-' }}
+                                </td>
+                                <td>{{ $datum->tanggal_pembelian ? \Carbon\Carbon::parse($datum->tanggal_pembelian)->format('d-m-Y') : '-' }}
+                                </td>
                                 <td>{{ $datum->currency . ' ' . number_format($datum->total, 1, '.', ',') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}
                                 </td>
@@ -73,7 +106,9 @@
                                 </td>
                                 <td>@include('partials.po-status', ['po' => $datum])</td>
                                 <td>
-                                    <a href="{{ route('po.view', $datum->id) }}" class="btn btn-outline-primary">View</a>
+                                    <a href="{{ route('po.view', $datum->id) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i></i>
+                                    </a>
                                     @if (auth()->user()->role->name === 'SUPERADMIN')
                                         @include('partials.delete-confirmation-modal', [
                                             'id' => $datum->id,
@@ -82,9 +117,10 @@
                                             'body' => "Are you sure want to delete this PO with id <strong>$datum->id</strong>?",
                                         ])
                                         <button class="btn btn-outline-danger my-1" data-bs-toggle="modal"
-                                            data-bs-target="#delete-confirmation-modal-{{ $datum->id }}"><i
-                                                class='bx bx-trash-alt'></i> <span
-                                                class="d-none d-sm-inline">Delete</span></button>
+                                            data-bs-target="#delete-confirmation-modal-{{ $datum->id }}">
+                                            <i class="bi bi-trash"></i>
+                                            <span class="d-none d-sm-inline">Delete</span>
+                                        </button>
                                     @endif
                                 </td>
                             </tr>
@@ -156,10 +192,6 @@
                                             cellDate;
                                     }
 
-                                    // Log to debug date formats
-                                    console.log("Cell Date:", cellDate);
-                                    console.log("Input Date:", inputDate);
-
                                     // Compare the normalized date formats
                                     if (cellDate !== inputDate) {
                                         isVisible =
@@ -199,12 +231,60 @@
             });
         });
 
+        document.getElementById('month-filter-po-date').addEventListener('change', function() {
+            const selectedMonth = this.value;
+            const rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const dateCell = row.cells[2]; // Assuming 'po_date' is in the third column (index 2)
+                console.log(dateCell);
+
+                if (dateCell) {
+                    const cellText = dateCell.textContent.trim();
+                    let isVisible = true;
+
+                    // Check if the date matches the selected month
+                    if (selectedMonth) {
+                        // Extract month from cell date in 'DD-MM-YYYY' or 'YYYY-MM-DD' format
+                        const cellMonth = cellText.includes('-') ? cellText.split('-')[1] : '';
+
+                        if (cellMonth !== selectedMonth) {
+                            isVisible = false; // Hide row if month does not match
+                        }
+                    }
+
+                    // Apply visibility based on the filter result
+                    row.style.display = isVisible ? '' : 'none';
+                }
+            });
+        });
+
+        document.getElementById('export-form').addEventListener('submit', function() {
+            const poNumber = document.querySelector('[data-column="0"]').value || '';
+            const vendorName = document.querySelector('[data-column="1"]').value || '';
+            const poDate = document.querySelector('[data-column="2"]').value || '';
+            const status = document.querySelector('[data-column="7"]').value || '';
+
+            console.log({
+                poNumber,
+                vendorName,
+                poDate,
+                status
+            }); // Debugging
+
+            document.getElementById('export-po-number').value = poNumber;
+            document.getElementById('export-vendor-name').value = vendorName;
+            document.getElementById('export-po-date').value = poDate;
+            document.getElementById('export-status').value = status;
+        });
+
         // JavaScript for select all functionality
         document.getElementById('select-all').addEventListener('change', function() {
             document.querySelectorAll('input[name="po-select[]"]').forEach(checkbox => {
                 checkbox.checked = this.checked;
             });
         });
+
 
         // Sign All functionality
         document.getElementById('sign-selected-btn').addEventListener('click', function() {
