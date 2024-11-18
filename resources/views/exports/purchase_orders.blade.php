@@ -4,7 +4,7 @@
             <th>PO Number</th>
             <th>Vendor Name</th>
             <th>PO Date</th>
-            <th>Tanggal Pembelian</th>
+            <th>Tanggal Pembayaran</th>
             <th>Total</th>
             <th>Upload Date</th>
             <th>Uploaded By</th>
@@ -18,7 +18,7 @@
                 <td>{{ $datum->po_number }}</td>
                 <td>{{ $datum->vendor_name }}</td>
                 <td>{{ $datum->po_date }}</td>
-                <td>{{ $datum->tanggal_pembelian }}</td>
+                <td>{{ $datum->tanggal_pembayaran }}</td>
                 <td>{{ $datum->total }}</td>
                 <td>{{ $datum->created_at }}</td>
                 <td>{{ $datum->user->name }}</td>

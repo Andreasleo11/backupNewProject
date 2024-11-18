@@ -28,7 +28,7 @@ class MasterPO extends Model
         'po_date',
         'currency',
         'total',
-        'tanggal_pembelian'
+        'tanggal_pembayaran',
     ];
 
     // Queries
@@ -94,6 +94,10 @@ class MasterPO extends Model
             'actionURL' => route('po.view', $this->id),
             'body' => "Notification for Purchase Order Report: <br>
                 - PO Number : {$this->po_number} <br>
+                - Vendor Name : {$this->vendor_name} <br>
+                - PO Date : {$this->po_date} <br>
+                - Total : {$this->currency} {$this->total} <br>
+                - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"
         ];
     }

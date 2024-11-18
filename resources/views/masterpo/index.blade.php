@@ -73,7 +73,7 @@
                                 </select>
                             </th>
                             <th>
-                                Tanggal Pembelian <input type="date" class="form-control column-filter" data-column="2">
+                                Tanggal Pembayaran <input type="date" class="form-control column-filter" data-column="2">
                             </th>
                             <th>Total <input type="text" class="form-control column-filter" data-column="3"
                                     placeholder="Filter Total"></th>
@@ -96,7 +96,7 @@
                                 <td>{{ $datum->vendor_name }}</td>
                                 <td>{{ $datum->po_date ? \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') : '-' }}
                                 </td>
-                                <td>{{ $datum->tanggal_pembelian ? \Carbon\Carbon::parse($datum->tanggal_pembelian)->format('d-m-Y') : '-' }}
+                                <td>{{ $datum->tanggal_pembayaran ? \Carbon\Carbon::parse($datum->tanggal_pembayaran)->format('d-m-Y') : '-' }}
                                 </td>
                                 <td>{{ $datum->currency . ' ' . number_format($datum->total, 1, '.', ',') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}

@@ -73,7 +73,7 @@ class POController extends Controller
         $masterPO->po_date = $validated['po_date'];
         $masterPO->currency = $validated['currency'];
         $masterPO->total = $total;
-        $masterPO->tanggal_pembelian = $validated['tanggal_pembelian'];
+        $masterPO->tanggal_pembayaran = $validated['tanggal_pembayaran'];
         $masterPO->save();
 
         // Redirect to the PDF viewer with a success message
