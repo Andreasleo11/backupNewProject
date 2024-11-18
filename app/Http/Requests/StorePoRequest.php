@@ -17,7 +17,7 @@ class StorePoRequest extends FormRequest
             'po_number' => 'required|numeric|unique:master_po,po_number', // assuming `pos` is your table name
             'vendor_name' => 'required|string|max:255',
             'po_date' => 'required|string',
-            'tanggal_pembelian' => 'required|date',
+            'tanggal_pembayaran' => 'required|date',
             'currency' => 'required|in:IDR,YUAN,USD',
             'total' => 'required|regex:/^\d{1,3}(,\d{3})*(\.\d+)?$/', // validates currency format
             'pdf_file' => 'required|file|mimes:pdf|max:2048', // max 2MB
@@ -34,8 +34,8 @@ class StorePoRequest extends FormRequest
             'vendor_name.string' => 'The vendor name must be a valid string.',
             'vendor_name.max' => 'The vendor name should not exceed 255 characters.',
             'po_date.required' => 'The PO date is required.',
-            'tanggal_pembelian.required' => 'The Tanggal Pembelian is required.',
-            'tanggal_pembelian.date' => 'The Tanggal Pembelian must be a valid date.',
+            'tanggal_pembayaran.required' => 'The Tanggal Pembayaran is required.',
+            'tanggal_pembayaran.date' => 'The Tanggal Pembayaran must be a valid date.',
             'currency.required' => 'Please select a currency.',
             'currency.in' => 'The selected currency is invalid.',
             'total.required' => 'The total amount is required.',

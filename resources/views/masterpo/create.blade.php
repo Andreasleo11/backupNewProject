@@ -19,43 +19,46 @@
                 <!-- PO Number Input -->
                 <div class="form-group mb-3">
                     <label for="po_number" class="form-label">PO Number</label>
-                    <input type="number" name="po_number" id="po_number" class="form-control" required>
+                    <input type="number" name="po_number" id="po_number" class="form-control"
+                        value="{{ old('po_number') }}" placeholder="2556622" required>
                 </div>
 
                 <!-- Vendor Name Input -->
                 <div class="form-group mb-3">
                     <label for="vendor_name" class="form-label">Vendor Name</label>
-                    <input type="text" name="vendor_name" id="vendor_name" class="form-control" required>
+                    <input type="text" name="vendor_name" id="vendor_name" class="form-control"
+                        value="{{ old('vendor_name') }}" placeholder="PT. MAJU TERUS" required>
                 </div>
 
                 <!-- PO Date Input -->
                 <div class="form-group mb-3">
                     <label for="po_date" class="form-label">PO Date</label>
-                    <input type="text" name="po_date" id="po_date" class="form-control" required>
+                    <input type="text" name="po_date" id="po_date" class="form-control" value="{{ old('po_date') }}"
+                        placeholder="18.11.24" required aria-describedby="poDateHelp">
+                    <div id="poDateHelp" class="form-text">PO Date must using dd.mm.yy format.</div>
                 </div>
 
-                <!-- Tanggal Pembelian Input -->
+                <!-- Tanggal Pembayaran Input -->
                 <div class="form-group mb-3">
-                    <label for="tanggal_pembelian" class="form-label">Tanggal Pembelian</label>
-                    <input type="date" name="tanggal_pembelian" id="tanggal_pembelian" class="form-control" required>
+                    <label for="tanggal_pembayaran" class="form-label">Tanggal Pembayaran</label>
+                    <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran" class="form-control"
+                        value="{{ old('tanggal_pembayaran') }}" required>
                 </div>
 
                 <!-- Total Input -->
                 <div class="form-group mb-3">
                     <label for="total" class="form-label">Total</label>
                     <div class="input-group">
-                        <!-- Currency Select (smaller) -->
                         <div class="col-auto">
                             <select name="currency" id="currency" class="form-select" required>
-                                <option value="IDR">Rp</option>
-                                <option value="YUAN">¥</option>
-                                <option value="USD">$</option>
+                                <option value="IDR" {{ old('currency') == 'IDR' ? 'selected' : '' }}>Rp</option>
+                                <option value="YUAN" {{ old('currency') == 'YUAN' ? 'selected' : '' }}>¥</option>
+                                <option value="USD" {{ old('currency') == 'USD' ? 'selected' : '' }}>$</option>
                             </select>
                         </div>
-
-                        <!-- Main Input -->
                         <div class="col ms-1">
-                            <input type="text" name="total" id="total" class="form-control" required>
+                            <input type="text" name="total" id="total" class="form-control"
+                                value="{{ old('total') }}" placeholder="1,498,000" required>
                         </div>
                     </div>
                 </div>
@@ -64,7 +67,8 @@
                 <div class="form-group mb-3">
                     <label for="pdf_file" class="form-label">Choose PDF File</label>
                     <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" class="form-control"
-                        required>
+                        aria-describedby="pdfFileHelp">
+                    <div id="pdfFileHelp" class="form-text">Maximum file size is 2 MB.</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-3">Create</button>
