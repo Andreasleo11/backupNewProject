@@ -30,7 +30,7 @@
                         <form id="export-form" method="GET" action="{{ route('po.export') }}">
                             <input type="hidden" name="po_number" id="export-po-number">
                             <input type="hidden" name="vendor_name" id="export-vendor-name">
-                            <input type="hidden" name="po_date" id="export-po-date">
+                            <input type="hidden" name="invoice_date" id="export-po-date">
                             <input type="hidden" name="status" id="export-status">
                             <button type="submit" class="btn btn-outline-success">Export to Excel</button>
                         </form>
@@ -56,12 +56,23 @@
                         @if (auth()->user()->department->name === 'DIRECTOR')
                             <th><input type="checkbox" id="select-all"></th>
                         @endif
-                        <th>PO Number <input type="text" class="form-control column-filter" data-column="0"
-                                placeholder="Filter PO Number"></th>
-                        <th>Vendor Name <input type="text" class="form-control column-filter" data-column="1"
-                                placeholder="Filter Vendor"></th>
                         <th>
-                            PO Date <input type="date" class="form-control column-filter" data-column="2">
+                            PO Number
+                            <input type="text" class="form-control column-filter" data-column="0"
+                                placeholder="Filter PO Number">
+                        </th>
+                        <th>
+                            Vendor Name
+                            <button class="btn btn-link btn-sm sort" data-column="1" data-order="asc">&#9650;</button>
+                            <button class="btn btn-link btn-sm sort" data-column="1" data-order="desc">&#9660;</button>
+                            <input type="text" class="form-control column-filter" data-column="1"
+                                placeholder="Filter Vendor">
+                        </th>
+                        <th>
+                            PO Date
+                            <button class="btn btn-link btn-sm sort" data-column="2" data-order="asc">&#9650;</button>
+                            <button class="btn btn-link btn-sm sort" data-column="2" data-order="desc">&#9660;</button>
+                            <input type="date" class="form-control column-filter" data-column="2">
                             <select id="month-filter-po-date" class="form-select mt-1" data-column="2">
                                 <option value="">All Month</option>
                                 <option value="01">January</option>
@@ -79,10 +90,17 @@
                             </select>
                         </th>
                         <th>
-                            Tanggal Pembayaran <input type="date" class="form-control column-filter" data-column="2">
+                            Tanggal Pembayaran
+                            <button class="btn btn-link btn-sm sort" data-column="3" data-order="asc">&#9650;</button>
+                            <button class="btn btn-link btn-sm sort" data-column="3" data-order="desc">&#9660;</button>
+                            <input type="date" class="form-control column-filter" data-column="2">
                         </th>
-                        <th>Total <input type="text" class="form-control column-filter" data-column="3"
-                                placeholder="Filter Total"></th>
+                        <th>Total
+                            <button class="btn btn-link btn-sm sort" data-column="4" data-order="asc">&#9650;</button>
+                            <button class="btn btn-link btn-sm sort" data-column="4" data-order="desc">&#9660;</button>
+                            <input type="text" class="form-control column-filter" data-column="3"
+                                placeholder="Filter Total">
+                        </th>
                         <th>Upload Date <input type="date" class="form-control column-filter" data-column="4"></th>
                         <th>Uploaded By <input type="text" class="form-control column-filter" data-column="5"
                                 placeholder="Filter By"></th>
@@ -100,7 +118,7 @@
                             @endif
                             <td>{{ $datum->po_number }}</td>
                             <td>{{ $datum->vendor_name }}</td>
-                            <td>{{ $datum->po_date ? \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') : '-' }}
+                            <td>{{ $datum->invoice_date ? \Carbon\Carbon::parse($datum->invoice_date)->format('d-m-Y') : '-' }}
                             </td>
                             <td>{{ $datum->tanggal_pembayaran ? \Carbon\Carbon::parse($datum->tanggal_pembayaran)->format('d-m-Y') : '-' }}
                             </td>
@@ -246,7 +264,7 @@
             const rows = document.querySelectorAll('tbody tr');
 
             rows.forEach(row => {
-                const dateCell = row.cells[2]; // Assuming 'po_date' is in the third column (index 2)
+                const dateCell = row.cells[2]; // Assuming 'invoice_date' is in the third column (index 2)
                 console.log(dateCell);
 
                 if (dateCell) {
@@ -342,6 +360,42 @@
             } else {
                 alert('Please select at least one PO to reject.');
             }
+        });
+
+        document.querySelectorAll('.sort').forEach(button => {
+            button.addEventListener('click', function() {
+                const column = parseInt(this.dataset.column, 10);
+                const order = this.dataset.order;
+                const tbody = document.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !==
+                    'none');
+
+                // Sort rows based on the selected column
+                rows.sort((a, b) => {
+                    const aText = a.cells[column]?.textContent.trim() || '';
+                    const bText = b.cells[column]?.textContent.trim() || '';
+
+                    // Parse as numbers if both values are numeric
+                    if (!isNaN(aText) && !isNaN(bText)) {
+                        return order === 'asc' ? aText - bText : bText - aText;
+                    }
+
+                    // Parse as dates if values are valid dates
+                    const aDate = Date.parse(aText);
+                    const bDate = Date.parse(bText);
+                    if (!isNaN(aDate) && !isNaN(bDate)) {
+                        return order === 'asc' ? aDate - bDate : bDate - aDate;
+                    }
+
+                    // Otherwise, compare as strings
+                    return order === 'asc' ?
+                        aText.localeCompare(bText) :
+                        bText.localeCompare(aText);
+                });
+
+                // Re-append rows in sorted order
+                rows.forEach(row => tbody.appendChild(row));
+            });
         });
     </script>
 @endsection

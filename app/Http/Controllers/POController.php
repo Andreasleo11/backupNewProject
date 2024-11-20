@@ -49,13 +49,13 @@ class POController extends Controller
         // Process validated data
         $validated = $request->validated();
 
-        // Convert po_date from 'dd.mm.yy' to 'yyyy-mm-dd'
-        if (isset($validated['po_date'])) {
-            $date = \DateTime::createFromFormat('d.m.y', $validated['po_date']);
+        // Convert invoice_date from 'dd.mm.yy' to 'yyyy-mm-dd'
+        if (isset($validated['invoice_date'])) {
+            $date = \DateTime::createFromFormat('d.m.y', $validated['invoice_date']);
             if ($date) {
-                $validated['po_date'] = $date->format('Y-m-d');
+                $validated['invoice_date'] = $date->format('Y-m-d');
             } else {
-                return redirect()->back()->withInputs(['po_date' => 'Invalid date format']);
+                return redirect()->back()->withInputs(['invoice_date' => 'Invalid date format']);
             }
         }
 
@@ -74,7 +74,7 @@ class POController extends Controller
         $masterPO->filename = $filename;
         $masterPO->creator_id = auth()->id();
         $masterPO->vendor_name = $validated['vendor_name'];
-        $masterPO->po_date = $validated['po_date'];
+        $masterPO->invoice_date = $validated['invoice_date'];
         $masterPO->currency = $validated['currency'];
         $masterPO->total = $total;
         $masterPO->tanggal_pembayaran = $validated['tanggal_pembayaran'];
@@ -318,8 +318,8 @@ class POController extends Controller
         if ($request->filled('vendor_name')) {
             $query->where('vendor_name', 'LIKE', '%' . $request->vendor_name . '%');
         }
-        if ($request->filled('po_date')) {
-            $query->whereDate('po_date', $request->po_date);
+        if ($request->filled('invoice_date')) {
+            $query->whereDate('invoice_date', $request->invoice_date);
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);
@@ -351,7 +351,7 @@ class POController extends Controller
         // Update the PO with validated data
         $po->po_number = $validatedData['po_number'];
         $po->vendor_name = $validatedData['vendor_name'];
-        $po->po_date = $validatedData['po_date'];
+        $po->invoice_date = $validatedData['invoice_date'];
         $po->tanggal_pembayaran = $validatedData['tanggal_pembayaran'];
         $po->currency = $validatedData['currency'];
         $po->total = str_replace(',', '', $validatedData['total']); // Remove commas from total

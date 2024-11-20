@@ -25,7 +25,7 @@ class MasterPO extends Model
         'creator_id',
         'downloaded_at',
         'vendor_name',
-        'po_date',
+        'invoice_date',
         'currency',
         'total',
         'tanggal_pembayaran',
@@ -95,7 +95,7 @@ class MasterPO extends Model
             'body' => "Notification for Purchase Order Report: <br>
                 - PO Number : {$this->po_number} <br>
                 - Vendor Name : {$this->vendor_name} <br>
-                - PO Date : {$this->po_date} <br>
+                - PO Date : {$this->invoice_date} <br>
                 - Total : {$this->currency} {$this->total} <br>
                 - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"

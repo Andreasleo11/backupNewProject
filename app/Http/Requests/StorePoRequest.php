@@ -16,7 +16,7 @@ class StorePoRequest extends FormRequest
         return [
             'po_number' => 'required|numeric|unique:master_po,po_number', // assuming `pos` is your table name
             'vendor_name' => 'required|string|max:255',
-            'po_date' => 'required|string',
+            'invoice_date' => 'required|string',
             'tanggal_pembayaran' => 'required|date',
             'currency' => 'required|in:IDR,YUAN,USD',
             'total' => 'required|regex:/^\d{1,3}(,\d{3})*(\.\d+)?$/', // validates currency format
@@ -33,7 +33,7 @@ class StorePoRequest extends FormRequest
             'vendor_name.required' => 'The vendor name is required.',
             'vendor_name.string' => 'The vendor name must be a valid string.',
             'vendor_name.max' => 'The vendor name should not exceed 255 characters.',
-            'po_date.required' => 'The PO date is required.',
+            'invoice_date.required' => 'The PO date is required.',
             'tanggal_pembayaran.required' => 'The Tanggal Pembayaran is required.',
             'tanggal_pembayaran.date' => 'The Tanggal Pembayaran must be a valid date.',
             'currency.required' => 'Please select a currency.',

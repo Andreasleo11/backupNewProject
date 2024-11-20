@@ -33,9 +33,9 @@
 
                 <!-- PO Date Input -->
                 <div class="form-group mb-3">
-                    <label for="po_date" class="form-label">PO Date</label>
-                    <input type="text" name="po_date" id="po_date" class="form-control"
-                        value="{{ old('po_date', $po->po_date) }}" required aria-describedby="poDateHelp">
+                    <label for="invoice_date" class="form-label">PO Date</label>
+                    <input type="text" name="invoice_date" id="invoice_date" class="form-control"
+                        value="{{ old('invoice_date', $po->invoice_date) }}" required aria-describedby="poDateHelp">
                     <div id="poDateHelp" class="form-text">PO Date must use dd.mm.yy format.</div>
                 </div>
 

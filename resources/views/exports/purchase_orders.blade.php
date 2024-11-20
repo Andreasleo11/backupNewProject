@@ -17,7 +17,7 @@
             <tr>
                 <td>{{ $datum->po_number }}</td>
                 <td>{{ $datum->vendor_name }}</td>
-                <td>{{ $datum->po_date }}</td>
+                <td>{{ $datum->invoice_date }}</td>
                 <td>{{ $datum->tanggal_pembayaran }}</td>
                 <td>{{ $datum->total }}</td>
                 <td>{{ $datum->created_at }}</td>
