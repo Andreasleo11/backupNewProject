@@ -3,7 +3,7 @@
         <tr>
             <th>PO Number</th>
             <th>Vendor Name</th>
-            <th>PO Date</th>
+            <th>Invoice Date</th>
             <th>Tanggal Pembayaran</th>
             <th>Total</th>
             <th>Upload Date</th>

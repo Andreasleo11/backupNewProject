@@ -31,12 +31,12 @@
                         value="{{ old('vendor_name', $po->vendor_name) }}" required>
                 </div>
 
-                <!-- PO Date Input -->
+                <!-- Invoice Date Input -->
                 <div class="form-group mb-3">
-                    <label for="invoice_date" class="form-label">PO Date</label>
+                    <label for="invoice_date" class="form-label">Invoice Date</label>
                     <input type="text" name="invoice_date" id="invoice_date" class="form-control"
                         value="{{ old('invoice_date', $po->invoice_date) }}" required aria-describedby="poDateHelp">
-                    <div id="poDateHelp" class="form-text">PO Date must use dd.mm.yy format.</div>
+                    <div id="poDateHelp" class="form-text">Invoice Date must use dd.mm.yy format.</div>
                 </div>
 
                 <!-- Tanggal Pembayaran Input -->

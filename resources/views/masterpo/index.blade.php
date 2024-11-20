@@ -69,7 +69,7 @@
                                 placeholder="Filter Vendor">
                         </th>
                         <th>
-                            PO Date
+                            Invoice Date
                             <button class="btn btn-link btn-sm sort" data-column="2" data-order="asc">&#9650;</button>
                             <button class="btn btn-link btn-sm sort" data-column="2" data-order="desc">&#9660;</button>
                             <input type="date" class="form-control column-filter" data-column="2">
