@@ -18,30 +18,37 @@
         </div>
 
         <div class="mt-2">
-            <div class="row">
-                <div class="col">
-                    @if (auth()->user()->department->name === 'DIRECTOR')
-                        <button id="sign-selected-btn" class="btn btn-outline-success ">Sign Selected</button>
-                        <button id="reject-selected-btn" class="btn btn-outline-danger ">Reject Selected</button>
-                    @endif
-                </div>
-                <div class="col-md-3">
-                    <input type="text" id="search-input" class="form-control" placeholder="Search...">
-                </div>
-                <div class="col-auto">
-                    <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
-                </div>
-                <div class="col-auto">
-                    <form id="export-form" method="GET" action="{{ route('po.export') }}">
-                        <input type="hidden" name="po_number" id="export-po-number">
-                        <input type="hidden" name="vendor_name" id="export-vendor-name">
-                        <input type="hidden" name="po_date" id="export-po-date">
-                        <input type="hidden" name="status" id="export-status">
-                        <button type="submit" class="btn btn-outline-success">Export to Excel</button>
-                    </form>
-                </div>
+            <div class="row align-items-center">
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex">
+                        @if (auth()->user()->department->name === 'DIRECTOR')
+                            <div class="col-auto me-2">
+                                <button id="sign-selected-btn" class="btn btn-outline-success">Sign Selected</button>
+                                <button id="reject-selected-btn" class="btn btn-outline-danger">Reject Selected</button>
+                            </div>
+                        @endif
+                        <div class="col-auto me-2">
+                            <form id="export-form" method="GET" action="{{ route('po.export') }}">
+                                <input type="hidden" name="po_number" id="export-po-number">
+                                <input type="hidden" name="vendor_name" id="export-vendor-name">
+                                <input type="hidden" name="po_date" id="export-po-date">
+                                <input type="hidden" name="status" id="export-status">
+                                <button type="submit" class="btn btn-outline-success">Export to Excel</button>
+                            </form>
+                        </div>
+                        <div class="col-auto">
+                            <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="col">
+                            <input type="text" id="search-input" class="form-control" placeholder="Search...">
+                        </div>
 
+                    </div>
+                </div>
             </div>
+
 
             <div class="table-responsive mt-3">
                 <table class="table table-hover">
