@@ -21,6 +21,7 @@ class UpdatePoRequest extends FormRequest
             ],
             'vendor_name' => 'required|string|max:255',
             'invoice_date' => 'required|string',
+            'invoice_number' => 'required|string',
             'tanggal_pembayaran' => 'required|date',
             'currency' => 'required|in:IDR,YUAN,USD',
             'total' => 'required|regex:/^\d{1,3}(,\d{3})*(\.\d+)?$/', // validates currency format
@@ -37,6 +38,8 @@ class UpdatePoRequest extends FormRequest
             'vendor_name.string' => 'The vendor name must be a valid string.',
             'vendor_name.max' => 'The vendor name should not exceed 255 characters.',
             'invoice_date.required' => 'The Invoice Date is required.',
+            'invoice_number.string' => 'The Invoice Number must be a valid string.',
+            'invoice_number.required' => 'The Invoice Number is required.',
             'tanggal_pembayaran.required' => 'The Tanggal Pembayaran is required.',
             'tanggal_pembayaran.date' => 'The Tanggal Pembayaran must be a valid date.',
             'currency.required' => 'Please select a currency.',

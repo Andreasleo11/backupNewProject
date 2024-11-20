@@ -11,9 +11,11 @@
                 </ol>
             </nav>
         </div>
-        <div class="col text-end">
-            <a href="{{ route('po.create') }}" class="btn btn-primary">+ Create</a>
-        </div>
+        @if (auth()->user()->department->name !== 'DIRECTOR')
+            <div class="col text-end">
+                <a href="{{ route('po.create') }}" class="btn btn-primary">+ Create</a>
+            </div>
+        @endif
     </div>
 
     <div class="mt-2">
@@ -30,7 +32,7 @@
                         <form id="export-form" method="GET" action="{{ route('po.export') }}">
                             <input type="hidden" name="po_number" id="export-po-number">
                             <input type="hidden" name="vendor_name" id="export-vendor-name">
-                            <input type="hidden" name="invoice_date" id="export-po-date">
+                            <input type="hidden" name="invoice_date" id="export-invoice-date">
                             <input type="hidden" name="status" id="export-status">
                             <button type="submit" class="btn btn-outline-success">Export to Excel</button>
                         </form>
@@ -73,7 +75,7 @@
                             <button class="btn btn-link btn-sm sort" data-column="2" data-order="asc">&#9650;</button>
                             <button class="btn btn-link btn-sm sort" data-column="2" data-order="desc">&#9660;</button>
                             <input type="date" class="form-control column-filter" data-column="2">
-                            <select id="month-filter-po-date" class="form-select mt-1" data-column="2">
+                            <select id="month-filter-invoice-date" class="form-select mt-1" data-column="2">
                                 <option value="">All Month</option>
                                 <option value="01">January</option>
                                 <option value="02">February</option>
@@ -90,22 +92,29 @@
                             </select>
                         </th>
                         <th>
-                            Tanggal Pembayaran
+                            Invoice Number
                             <button class="btn btn-link btn-sm sort" data-column="3" data-order="asc">&#9650;</button>
                             <button class="btn btn-link btn-sm sort" data-column="3" data-order="desc">&#9660;</button>
-                            <input type="date" class="form-control column-filter" data-column="2">
+                            <input type="text" class="form-control column-filter" data-column="3"
+                                placeholder="Filter Invoice Number">
                         </th>
-                        <th>Total
+                        <th>
+                            Tanggal Pembayaran
                             <button class="btn btn-link btn-sm sort" data-column="4" data-order="asc">&#9650;</button>
                             <button class="btn btn-link btn-sm sort" data-column="4" data-order="desc">&#9660;</button>
-                            <input type="text" class="form-control column-filter" data-column="3"
+                            <input type="date" class="form-control column-filter" data-column="4">
+                        </th>
+                        <th>Total
+                            <button class="btn btn-link btn-sm sort" data-column="5" data-order="asc">&#9650;</button>
+                            <button class="btn btn-link btn-sm sort" data-column="5" data-order="desc">&#9660;</button>
+                            <input type="text" class="form-control column-filter" data-column="5"
                                 placeholder="Filter Total">
                         </th>
-                        <th>Upload Date <input type="date" class="form-control column-filter" data-column="4"></th>
-                        <th>Uploaded By <input type="text" class="form-control column-filter" data-column="5"
+                        <th>Upload Date <input type="date" class="form-control column-filter" data-column="6"></th>
+                        <th>Uploaded By <input type="text" class="form-control column-filter" data-column="7"
                                 placeholder="Filter By"></th>
-                        <th>Approved Date <input type="date" class="form-control column-filter" data-column="6"></th>
-                        <th>Status <input type="text" class="form-control column-filter" data-column="7"
+                        <th>Approved Date <input type="date" class="form-control column-filter" data-column="8"></th>
+                        <th>Status <input type="text" class="form-control column-filter" data-column="9"
                                 placeholder="Filter Status"></th>
                         <th>Actions</th>
                     </tr>
@@ -120,6 +129,7 @@
                             <td>{{ $datum->vendor_name }}</td>
                             <td>{{ $datum->invoice_date ? \Carbon\Carbon::parse($datum->invoice_date)->format('d-m-Y') : '-' }}
                             </td>
+                            <td>{{ $datum->invoice_number }}</td>
                             <td>{{ $datum->tanggal_pembayaran ? \Carbon\Carbon::parse($datum->tanggal_pembayaran)->format('d-m-Y') : '-' }}
                             </td>
                             <td>{{ $datum->currency . ' ' . number_format($datum->total, 1, '.', ',') }}</td>
@@ -164,7 +174,6 @@
             </table>
         </div>
     </div>
-
 
     <script>
         // General search function
@@ -259,7 +268,7 @@
             });
         });
 
-        document.getElementById('month-filter-po-date').addEventListener('change', function() {
+        document.getElementById('month-filter-invoice-date').addEventListener('change', function() {
             const selectedMonth = this.value;
             const rows = document.querySelectorAll('tbody tr');
 
@@ -290,19 +299,19 @@
         document.getElementById('export-form').addEventListener('submit', function() {
             const poNumber = document.querySelector('[data-column="0"]').value || '';
             const vendorName = document.querySelector('[data-column="1"]').value || '';
-            const poDate = document.querySelector('[data-column="2"]').value || '';
+            const invoiceDate = document.querySelector('[data-column="2"]').value || '';
             const status = document.querySelector('[data-column="7"]').value || '';
 
             console.log({
                 poNumber,
                 vendorName,
-                poDate,
+                invoiceDate,
                 status
             }); // Debugging
 
             document.getElementById('export-po-number').value = poNumber;
             document.getElementById('export-vendor-name').value = vendorName;
-            document.getElementById('export-po-date').value = poDate;
+            document.getElementById('export-invoice-date').value = invoiceDate;
             document.getElementById('export-status').value = status;
         });
 

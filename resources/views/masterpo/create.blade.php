@@ -33,9 +33,16 @@
                 <!-- Invoice Date Input -->
                 <div class="form-group mb-3">
                     <label for="invoice_date" class="form-label">Invoice Date</label>
-                    <input type="text" name="invoice_date" id="invoice_date" class="form-control" value="{{ old('invoice_date') }}"
-                        placeholder="18.11.24" required aria-describedby="poDateHelp">
-                    <div id="poDateHelp" class="form-text">Invoice Date must using dd.mm.yy format.</div>
+                    <input type="text" name="invoice_date" id="invoice_date" class="form-control"
+                        value="{{ old('invoice_date') }}" placeholder="18.11.24" required aria-describedby="poDateHelp">
+                    <div id="poDateHelp" class="form-text">Invoice Date must use dd.mm.yy format.</div>
+                </div>
+
+                <!-- Invoice Number Input -->
+                <div class="form-group mb-3">
+                    <label for="invoice_number" class="form-label">Invoice Number</label>
+                    <input type="text" name="invoice_number" id="invoice_number" class="form-control"
+                        value="{{ old('invoice_number') }}" placeholder="98/MT/223/03" required>
                 </div>
 
                 <!-- Tanggal Pembayaran Input -->

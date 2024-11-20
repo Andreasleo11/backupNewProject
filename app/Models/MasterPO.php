@@ -29,6 +29,7 @@ class MasterPO extends Model
         'currency',
         'total',
         'tanggal_pembayaran',
+        'invoice_number',
     ];
 
     // Queries
@@ -96,6 +97,7 @@ class MasterPO extends Model
                 - PO Number : {$this->po_number} <br>
                 - Vendor Name : {$this->vendor_name} <br>
                 - Invoice Date : {$this->invoice_date} <br>
+                - Invoice Number : {$this->invoice_number} <br>
                 - Total : {$this->currency} {$this->total} <br>
                 - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"

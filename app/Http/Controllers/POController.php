@@ -75,6 +75,7 @@ class POController extends Controller
         $masterPO->creator_id = auth()->id();
         $masterPO->vendor_name = $validated['vendor_name'];
         $masterPO->invoice_date = $validated['invoice_date'];
+        $masterPO->invoice_number = $validated['invoice_number'];
         $masterPO->currency = $validated['currency'];
         $masterPO->total = $total;
         $masterPO->tanggal_pembayaran = $validated['tanggal_pembayaran'];
@@ -352,6 +353,7 @@ class POController extends Controller
         $po->po_number = $validatedData['po_number'];
         $po->vendor_name = $validatedData['vendor_name'];
         $po->invoice_date = $validatedData['invoice_date'];
+        $po->invoice_number = $validatedData['invoice_number'];
         $po->tanggal_pembayaran = $validatedData['tanggal_pembayaran'];
         $po->currency = $validatedData['currency'];
         $po->total = str_replace(',', '', $validatedData['total']); // Remove commas from total
