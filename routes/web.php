@@ -759,6 +759,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/purchaseOrder/signAll', [POController::class, 'signAll'])->name('po.signAll');
     Route::post('/purchaseOrder/rejectAll', [POController::class, 'rejectAll'])->name('po.rejectAll');
     Route::get('/purchase-orders/export', [POController::class, 'exportExcel'])->name('po.export');
+    Route::get('/purchaseOrder/{id}/edit', [POController::class, 'edit'])->name('po.edit');
+    Route::put('/purchaseOrder/{po}', [POController::class, 'update'])->name('po.update');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

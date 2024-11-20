@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
+use App\Http\Requests\UpdatePoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
@@ -330,5 +331,50 @@ class POController extends Controller
         $filteredData = $query->get();
 
         return Excel::download(new PurchaseOrderExport($filteredData), 'purchase_orders.xlsx');
+    }
+
+    public function edit($id)
+    {
+        $po = MasterPO::find($id);
+
+        return view('masterpo.edit', compact('po'));
+    }
+
+    public function update(UpdatePoRequest $request, $id)
+    {
+        // Validate the request (already done automatically by UpdatePoRequest)
+        $validatedData = $request->validated();
+
+        // Find the existing PO
+        $po = MasterPO::findOrFail($id);
+
+        // Update the PO with validated data
+        $po->po_number = $validatedData['po_number'];
+        $po->vendor_name = $validatedData['vendor_name'];
+        $po->po_date = $validatedData['po_date'];
+        $po->tanggal_pembayaran = $validatedData['tanggal_pembayaran'];
+        $po->currency = $validatedData['currency'];
+        $po->total = str_replace(',', '', $validatedData['total']); // Remove commas from total
+
+        // Check if a new PDF file is uploaded
+        if ($request->hasFile('pdf_file')) {
+            // Delete the old file if necessary (optional, depends on your setup)
+            if ($po->pdf_file) {
+                Storage::delete($po->pdf_file);
+            }
+
+            $file = $validatedData['pdf_file'];
+            $filename = 'PO_' . Str::random(10) . '_' . time() . '.pdf';
+            $filePath = $file->storeAs('public/pdfs', $filename);
+
+            // Store the new file and update the path
+            $po->filename = $filename;
+        }
+
+        // Save the changes
+        $po->save();
+
+        // Redirect back with a success message
+        return redirect()->route('po.index')->with('success', 'PO Successfully Updated!');
     }
 }
