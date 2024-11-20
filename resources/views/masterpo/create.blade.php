@@ -38,9 +38,9 @@
                     <div id="poDateHelp" class="form-text">PO Date must using dd.mm.yy format.</div>
                 </div>
 
-                <!-- Tanggal Pembayaran Input -->
+                <!-- Invoice Date Input -->
                 <div class="form-group mb-3">
-                    <label for="tanggal_pembayaran" class="form-label">Tanggal Pembayaran</label>
+                    <label for="tanggal_pembayaran" class="form-label">Invoice Date</label>
                     <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran" class="form-control"
                         value="{{ old('tanggal_pembayaran') }}" required>
                 </div>

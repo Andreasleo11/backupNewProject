@@ -4,7 +4,7 @@
             <th>PO Number</th>
             <th>Vendor Name</th>
             <th>PO Date</th>
-            <th>Tanggal Pembayaran</th>
+            <th>Invoice Date</th>
             <th>Total</th>
             <th>Upload Date</th>
             <th>Uploaded By</th>

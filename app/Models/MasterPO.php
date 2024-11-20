@@ -97,7 +97,7 @@ class MasterPO extends Model
                 - Vendor Name : {$this->vendor_name} <br>
                 - PO Date : {$this->invoice_date} <br>
                 - Total : {$this->currency} {$this->total} <br>
-                - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
+                - Invoice Date : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"
         ];
     }
