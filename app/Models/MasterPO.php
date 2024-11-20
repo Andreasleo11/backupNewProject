@@ -67,8 +67,8 @@ class MasterPO extends Model
                     3 => 'rejected'
                 ];
 
+                $report->sendNotification($statusMapping[$report->status]);
                 if (isset($statusMapping[$report->status])) {
-                    $report->sendNotification($statusMapping[$report->status]);
                 }
             }
         });
@@ -117,6 +117,13 @@ class MasterPO extends Model
         if ($event == 'created') {
             // Notify director on creation
             return User::whereHas('department', fn($query) => $query->where('name', 'DIRECTOR'))->get();
+        } elseif($event == 'approved') {
+             // Notify creator on approval or rejection
+             $deptHeadAccounting = User::where('name', 'benny')->first();
+             $accountingUser = User::where('name', 'nessa')->first();
+
+             // Combine deptHeadAccounting, accountingUser, and this->user
+             return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
         } else {
             // Notify creator on approval or rejection
             return collect([$this->user])->filter();
