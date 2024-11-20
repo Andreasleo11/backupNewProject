@@ -1,146 +1,149 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1>Purchase Orders</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('po.index') }}">Purchase Orders</a></li>
+                    <li class="breadcrumb-item active">List</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col text-end">
+            <a href="{{ route('po.create') }}" class="btn btn-primary">+ Create</a>
+        </div>
+    </div>
+
+    <div class="mt-2">
         <div class="row align-items-center">
-            <div class="col">
-                <h1>Purchase Orders</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('po.index') }}">Purchase Orders</a></li>
-                        <li class="breadcrumb-item active">List</li>
-                    </ol>
-                </nav>
-            </div>
-            <div class="col text-end">
-                <a href="{{ route('po.create') }}" class="btn btn-primary">+ Create</a>
+            <div class="d-flex justify-content-between">
+                <div class="d-flex">
+                    @if (auth()->user()->department->name === 'DIRECTOR')
+                        <div class="col-auto me-2">
+                            <button id="sign-selected-btn" class="btn btn-outline-success">Sign Selected</button>
+                            <button id="reject-selected-btn" class="btn btn-outline-danger">Reject Selected</button>
+                        </div>
+                    @endif
+                    <div class="col-auto me-2">
+                        <form id="export-form" method="GET" action="{{ route('po.export') }}">
+                            <input type="hidden" name="po_number" id="export-po-number">
+                            <input type="hidden" name="vendor_name" id="export-vendor-name">
+                            <input type="hidden" name="po_date" id="export-po-date">
+                            <input type="hidden" name="status" id="export-status">
+                            <button type="submit" class="btn btn-outline-success">Export to Excel</button>
+                        </form>
+                    </div>
+                    <div class="col-auto">
+                        <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="col">
+                        <input type="text" id="search-input" class="form-control" placeholder="Search...">
+                    </div>
+
+                </div>
             </div>
         </div>
 
-        <div class="mt-2">
-            <div class="row align-items-center">
-                <div class="d-flex justify-content-between">
-                    <div class="d-flex">
+
+        <div class="table-responsive mt-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr class="text-center">
                         @if (auth()->user()->department->name === 'DIRECTOR')
-                            <div class="col-auto me-2">
-                                <button id="sign-selected-btn" class="btn btn-outline-success">Sign Selected</button>
-                                <button id="reject-selected-btn" class="btn btn-outline-danger">Reject Selected</button>
-                            </div>
+                            <th><input type="checkbox" id="select-all"></th>
                         @endif
-                        <div class="col-auto me-2">
-                            <form id="export-form" method="GET" action="{{ route('po.export') }}">
-                                <input type="hidden" name="po_number" id="export-po-number">
-                                <input type="hidden" name="vendor_name" id="export-vendor-name">
-                                <input type="hidden" name="po_date" id="export-po-date">
-                                <input type="hidden" name="status" id="export-status">
-                                <button type="submit" class="btn btn-outline-success">Export to Excel</button>
-                            </form>
-                        </div>
-                        <div class="col-auto">
-                            <button id="reset-filters-btn" class="btn btn-secondary">Reset Filters</button>
-                        </div>
-                    </div>
-                    <div class="d-flex">
-                        <div class="col">
-                            <input type="text" id="search-input" class="form-control" placeholder="Search...">
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-
-            <div class="table-responsive mt-3">
-                <table class="table table-hover">
-                    <thead>
+                        <th>PO Number <input type="text" class="form-control column-filter" data-column="0"
+                                placeholder="Filter PO Number"></th>
+                        <th>Vendor Name <input type="text" class="form-control column-filter" data-column="1"
+                                placeholder="Filter Vendor"></th>
+                        <th>
+                            PO Date <input type="date" class="form-control column-filter" data-column="2">
+                            <select id="month-filter-po-date" class="form-select mt-1" data-column="2">
+                                <option value="">All Month</option>
+                                <option value="01">January</option>
+                                <option value="02">February</option>
+                                <option value="03">March</option>
+                                <option value="04">April</option>
+                                <option value="05">May</option>
+                                <option value="06">June</option>
+                                <option value="07">July</option>
+                                <option value="08">August</option>
+                                <option value="09">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </th>
+                        <th>
+                            Tanggal Pembayaran <input type="date" class="form-control column-filter" data-column="2">
+                        </th>
+                        <th>Total <input type="text" class="form-control column-filter" data-column="3"
+                                placeholder="Filter Total"></th>
+                        <th>Upload Date <input type="date" class="form-control column-filter" data-column="4"></th>
+                        <th>Uploaded By <input type="text" class="form-control column-filter" data-column="5"
+                                placeholder="Filter By"></th>
+                        <th>Approved Date <input type="date" class="form-control column-filter" data-column="6"></th>
+                        <th>Status <input type="text" class="form-control column-filter" data-column="7"
+                                placeholder="Filter Status"></th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($data as $datum)
                         <tr class="text-center">
                             @if (auth()->user()->department->name === 'DIRECTOR')
-                                <th><input type="checkbox" id="select-all"></th>
+                                <td><input type="checkbox" name="po-select[]" value="{{ $datum->id }}"></td>
                             @endif
-                            <th>PO Number <input type="text" class="form-control column-filter" data-column="0"
-                                    placeholder="Filter PO Number"></th>
-                            <th>Vendor Name <input type="text" class="form-control column-filter" data-column="1"
-                                    placeholder="Filter Vendor"></th>
-                            <th>
-                                PO Date <input type="date" class="form-control column-filter" data-column="2">
-                                <select id="month-filter-po-date" class="form-select mt-1" data-column="2">
-                                    <option value="">All Month</option>
-                                    <option value="01">January</option>
-                                    <option value="02">February</option>
-                                    <option value="03">March</option>
-                                    <option value="04">April</option>
-                                    <option value="05">May</option>
-                                    <option value="06">June</option>
-                                    <option value="07">July</option>
-                                    <option value="08">August</option>
-                                    <option value="09">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </th>
-                            <th>
-                                Tanggal Pembayaran <input type="date" class="form-control column-filter" data-column="2">
-                            </th>
-                            <th>Total <input type="text" class="form-control column-filter" data-column="3"
-                                    placeholder="Filter Total"></th>
-                            <th>Upload Date <input type="date" class="form-control column-filter" data-column="4"></th>
-                            <th>Uploaded By <input type="text" class="form-control column-filter" data-column="5"
-                                    placeholder="Filter By"></th>
-                            <th>Approved Date <input type="date" class="form-control column-filter" data-column="6"></th>
-                            <th>Status <input type="text" class="form-control column-filter" data-column="7"
-                                    placeholder="Filter Status"></th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($data as $datum)
-                            <tr class="text-center">
-                                @if (auth()->user()->department->name === 'DIRECTOR')
-                                    <td><input type="checkbox" name="po-select[]" value="{{ $datum->id }}"></td>
-                                @endif
-                                <td>{{ $datum->po_number }}</td>
-                                <td>{{ $datum->vendor_name }}</td>
-                                <td>{{ $datum->po_date ? \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') : '-' }}
-                                </td>
-                                <td>{{ $datum->tanggal_pembayaran ? \Carbon\Carbon::parse($datum->tanggal_pembayaran)->format('d-m-Y') : '-' }}
-                                </td>
-                                <td>{{ $datum->currency . ' ' . number_format($datum->total, 1, '.', ',') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}
-                                </td>
-                                <td>{{ $datum->user->name }}</td>
-                                <td>{{ $datum->approved_date? \Carbon\Carbon::parse($datum->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)'): '-' }}
-                                </td>
-                                <td>@include('partials.po-status', ['po' => $datum])</td>
-                                <td>
-                                    <a href="{{ route('po.view', $datum->id) }}" class="btn btn-outline-primary">
-                                        <i class="bi bi-eye"></i></i>
+                            <td>{{ $datum->po_number }}</td>
+                            <td>{{ $datum->vendor_name }}</td>
+                            <td>{{ $datum->po_date ? \Carbon\Carbon::parse($datum->po_date)->format('d-m-Y') : '-' }}
+                            </td>
+                            <td>{{ $datum->tanggal_pembayaran ? \Carbon\Carbon::parse($datum->tanggal_pembayaran)->format('d-m-Y') : '-' }}
+                            </td>
+                            <td>{{ $datum->currency . ' ' . number_format($datum->total, 1, '.', ',') }}</td>
+                            <td>{{ \Carbon\Carbon::parse($datum->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') }}
+                            </td>
+                            <td>{{ $datum->user->name }}</td>
+                            <td>{{ $datum->approved_date? \Carbon\Carbon::parse($datum->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)'): '-' }}
+                            </td>
+                            <td>@include('partials.po-status', ['po' => $datum])</td>
+                            <td>
+                                <a href="{{ route('po.view', $datum->id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye"></i></i> View
+                                </a>
+                                @if ($datum->status === 1)
+                                    <a href="{{ route('po.edit', $datum->id) }}" class="btn btn-outline-secondary my-1">
+                                        <i class="bi bi-pencil"></i></i> Edit
                                     </a>
-                                    @if (auth()->user()->role->name === 'SUPERADMIN')
-                                        @include('partials.delete-confirmation-modal', [
-                                            'id' => $datum->id,
-                                            'route' => 'po.destroy',
-                                            'title' => 'Delete PO confirmation',
-                                            'body' => "Are you sure want to delete this PO with id <strong>$datum->id</strong>?",
-                                        ])
-                                        <button class="btn btn-outline-danger my-1" data-bs-toggle="modal"
-                                            data-bs-target="#delete-confirmation-modal-{{ $datum->id }}">
-                                            <i class="bi bi-trash"></i>
-                                            <span class="d-none d-sm-inline">Delete</span>
-                                        </button>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="100" class="text-center">
-                                    No data
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                @endif
+                                @if (auth()->user()->role->name === 'SUPERADMIN')
+                                    @include('partials.delete-confirmation-modal', [
+                                        'id' => $datum->id,
+                                        'route' => 'po.destroy',
+                                        'title' => 'Delete PO confirmation',
+                                        'body' => "Are you sure want to delete this PO with id <strong>$datum->id</strong>?",
+                                    ])
+                                    <button class="btn btn-outline-danger my-1" data-bs-toggle="modal"
+                                        data-bs-target="#delete-confirmation-modal-{{ $datum->id }}">
+                                        <i class="bi bi-trash"></i>
+                                        <span class="d-none d-sm-inline">Delete</span>
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="100" class="text-center">
+                                No data
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 
