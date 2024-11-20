@@ -90,7 +90,7 @@
                             </select>
                         </th>
                         <th>
-                            Invoice Date
+                            Tanggal Pembayaran
                             <button class="btn btn-link btn-sm sort" data-column="3" data-order="asc">&#9650;</button>
                             <button class="btn btn-link btn-sm sort" data-column="3" data-order="desc">&#9660;</button>
                             <input type="date" class="form-control column-filter" data-column="2">
