@@ -315,6 +315,51 @@
             document.getElementById('export-status').value = status;
         });
 
+        document.querySelectorAll('.sort').forEach(button => {
+            button.addEventListener('click', function() {
+                const column = parseInt(this.dataset.column, 10); // Column index
+                const order = this.dataset.order; // Sorting order: 'asc' or 'desc'
+                const tbody = document.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !==
+                    'none');
+
+                // Function to parse cell value
+                const parseValue = value => {
+                    // Check if value is a number
+                    if (!isNaN(value) && value !== '') {
+                        return parseFloat(value);
+                    }
+
+                    // Check if value is a valid date
+                    const dateValue = Date.parse(value);
+                    if (!isNaN(dateValue)) {
+                        return dateValue;
+                    }
+
+                    // Return as string (case-insensitive)
+                    return value ? value.toLowerCase() : '';
+                };
+
+                // Sort rows based on parsed values
+                rows.sort((a, b) => {
+                    const aValue = parseValue(a.cells[column]?.textContent.trim() || '');
+                    const bValue = parseValue(b.cells[column]?.textContent.trim() || '');
+
+                    // Compare values for ascending or descending order
+                    if (aValue < bValue) {
+                        return order === 'asc' ? -1 : 1;
+                    }
+                    if (aValue > bValue) {
+                        return order === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                });
+
+                // Re-append sorted rows to the table body
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+
         // JavaScript for select all functionality
         document.getElementById('select-all').addEventListener('change', function() {
             document.querySelectorAll('input[name="po-select[]"]').forEach(checkbox => {
@@ -369,42 +414,6 @@
             } else {
                 alert('Please select at least one PO to reject.');
             }
-        });
-
-        document.querySelectorAll('.sort').forEach(button => {
-            button.addEventListener('click', function() {
-                const column = parseInt(this.dataset.column, 10);
-                const order = this.dataset.order;
-                const tbody = document.querySelector('tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !==
-                    'none');
-
-                // Sort rows based on the selected column
-                rows.sort((a, b) => {
-                    const aText = a.cells[column]?.textContent.trim() || '';
-                    const bText = b.cells[column]?.textContent.trim() || '';
-
-                    // Parse as numbers if both values are numeric
-                    if (!isNaN(aText) && !isNaN(bText)) {
-                        return order === 'asc' ? aText - bText : bText - aText;
-                    }
-
-                    // Parse as dates if values are valid dates
-                    const aDate = Date.parse(aText);
-                    const bDate = Date.parse(bText);
-                    if (!isNaN(aDate) && !isNaN(bDate)) {
-                        return order === 'asc' ? aDate - bDate : bDate - aDate;
-                    }
-
-                    // Otherwise, compare as strings
-                    return order === 'asc' ?
-                        aText.localeCompare(bText) :
-                        bText.localeCompare(aText);
-                });
-
-                // Re-append rows in sorted order
-                rows.forEach(row => tbody.appendChild(row));
-            });
         });
     </script>
 @endsection

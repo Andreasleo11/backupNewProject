@@ -207,8 +207,10 @@ class POController extends Controller
                 abort(404, 'PDF file not found.');
             }
 
-            // Update the 'downloaded_at' timestamp for the PO
-            $po->update(['downloaded_at' => now()]);
+            // Update the 'downloaded_at' timestamp for the PO only for creator_id
+            if($po->creator_id === auth()->user()->id){
+                $po->update(['downloaded_at' => now()]);
+            }
 
             // Return the response to download the PDF file
             return response()->download($path, $filename, [
