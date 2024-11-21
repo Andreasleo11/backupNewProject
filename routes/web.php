@@ -85,7 +85,7 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\MaintenanceInventoryController;
 use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
-use App\Http\Controllers\POController;
+use App\Http\Controllers\PurchaseOrderController;
 
 
 
@@ -748,19 +748,19 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
-    Route::get('purchaseOrders', [POController::class, 'index'])->name('po.index');
-    Route::get('purchaseOrder/create', [POController::class, 'create'])->name('po.create');
-    Route::post('/purchaseOrder/store', [POController::class, 'store'])->name('po.store');
-    Route::get('/purchaseOrder/{id}', [POController::class, 'view'])->name('po.view');
-    Route::post('/purchaseOrder/sign', [POController::class, 'signPDF'])->name('po.sign');
-    Route::post('/purchaseOrder/reject-pdf', [POController::class, 'rejectPDF'])->name('po.reject');
-    Route::get('/download-pdf/{filename}', [POController::class, 'downloadPDF'])->name('po.download');
-    Route::delete('/purchaseOrder/{id}', [POController::class, 'destroy'])->name('po.destroy');
-    Route::post('/purchaseOrder/signAll', [POController::class, 'signAll'])->name('po.signAll');
-    Route::post('/purchaseOrder/rejectAll', [POController::class, 'rejectAll'])->name('po.rejectAll');
-    Route::get('/purchase-orders/export', [POController::class, 'exportExcel'])->name('po.export');
-    Route::get('/purchaseOrder/{id}/edit', [POController::class, 'edit'])->name('po.edit');
-    Route::put('/purchaseOrder/{po}', [POController::class, 'update'])->name('po.update');
+    Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
+    Route::get('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
+    Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
+    Route::get('/purchaseOrder/{id}', [PurchaseOrderController::class, 'view'])->name('po.view');
+    Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'signPDF'])->name('po.sign');
+    Route::post('/purchaseOrder/reject-pdf', [PurchaseOrderController::class, 'rejectPDF'])->name('po.reject');
+    Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
+    Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
+    Route::post('/purchaseOrder/signAll', [PurchaseOrderController::class, 'signAll'])->name('po.signAll');
+    Route::post('/purchaseOrder/rejectAll', [PurchaseOrderController::class, 'rejectAll'])->name('po.rejectAll');
+    Route::get('/purchase-orders/export', [PurchaseOrderController::class, 'exportExcel'])->name('po.export');
+    Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
+    Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {

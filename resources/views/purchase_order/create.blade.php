@@ -83,7 +83,6 @@
         </div>
     </div>
 
-
     <script>
         document.getElementById('total').addEventListener('input', function(e) {
             // Get the raw input value and remove all commas

@@ -14,7 +14,7 @@ class StorePoRequest extends FormRequest
     public function rules()
     {
         return [
-            'po_number' => 'required|numeric|unique:master_po,po_number', // assuming `pos` is your table name
+            'po_number' => 'required|numeric|unique:purchase_orders,po_number',
             'vendor_name' => 'required|string|max:255',
             'invoice_date' => 'required|string',
             'invoice_number' => 'required|string',
