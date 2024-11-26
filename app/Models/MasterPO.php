@@ -25,9 +25,11 @@ class MasterPO extends Model
         'creator_id',
         'downloaded_at',
         'vendor_name',
-        'po_date',
+        'invoice_date',
         'currency',
         'total',
+        'tanggal_pembayaran',
+        'invoice_number',
     ];
 
     // Queries
@@ -66,8 +68,8 @@ class MasterPO extends Model
                     3 => 'rejected'
                 ];
 
+                $report->sendNotification($statusMapping[$report->status]);
                 if (isset($statusMapping[$report->status])) {
-                    $report->sendNotification($statusMapping[$report->status]);
                 }
             }
         });
@@ -93,6 +95,11 @@ class MasterPO extends Model
             'actionURL' => route('po.view', $this->id),
             'body' => "Notification for Purchase Order Report: <br>
                 - PO Number : {$this->po_number} <br>
+                - Vendor Name : {$this->vendor_name} <br>
+                - Invoice Date : {$this->invoice_date} <br>
+                - Invoice Number : {$this->invoice_number} <br>
+                - Total : {$this->currency} {$this->total} <br>
+                - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"
         ];
     }
@@ -112,6 +119,13 @@ class MasterPO extends Model
         if ($event == 'created') {
             // Notify director on creation
             return User::whereHas('department', fn($query) => $query->where('name', 'DIRECTOR'))->get();
+        } elseif($event == 'approved') {
+             // Notify creator on approval or rejection
+             $deptHeadAccounting = User::where('name', 'benny')->first();
+             $accountingUser = User::where('name', 'nessa')->first();
+
+             // Combine deptHeadAccounting, accountingUser, and this->user
+             return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
         } else {
             // Notify creator on approval or rejection
             return collect([$this->user])->filter();
