@@ -574,6 +574,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/discipline/indexallyayasan", [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
     Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
+    Route::get("/export/yayasan-full/discipline", [DisciplinePageController::class, 'exportYayasanFull'])->name('export.yayasan.full');
 
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
