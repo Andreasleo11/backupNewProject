@@ -39,6 +39,7 @@ class YayasanDisciplineFullExport implements FromCollection, WithHeadings, WithM
     {
         return [
             'ID',
+            'NIK',
             'Karyawan Name',
             'Status', 
             'Start Date',
@@ -65,6 +66,7 @@ class YayasanDisciplineFullExport implements FromCollection, WithHeadings, WithM
     {
         return [
             $row->id,
+            $row->karyawan->NIK ?? 'N/A',
             $row->karyawan->Nama ?? 'N/A', // Assuming 'karyawan' relation has 'name'
             $row->karyawan->status ?? 'N/A',
             $row->karyawan->start_date ?? 'N/A',
