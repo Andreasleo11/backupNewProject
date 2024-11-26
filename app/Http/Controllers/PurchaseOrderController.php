@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\PurchaseOrderDataTable;
 use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
 use App\Http\Requests\UpdatePoRequest;
@@ -10,8 +11,8 @@ use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 use App\Models\PurchaseOrder;
 use App\Models\File;
+use App\Models\PurchaseOrderDownloadLog;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -20,7 +21,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseOrderController extends Controller
 {
-    public function index()
+    public function index(PurchaseOrderDataTable $dataTable)
     {
         $purchaseOrdersQuery = PurchaseOrder::query();
 
@@ -36,8 +37,36 @@ class PurchaseOrderController extends Controller
 
         $data = $purchaseOrdersQuery->get();
 
-        return view('purchase_order.index', compact('data'));
+        // return view('purchase_order.index', compact('data'));
+        return $dataTable->render('purchase_order.index', compact('data'));
     }
+
+    public function approveSelected(Request $request)
+    {
+        $ids = $request->input('ids');
+        PurchaseOrder::whereIn('id', $ids)->update([
+            'status' => 2,
+            'approved_date' => now()
+        ]);
+        return response()->json(['message' => 'Selected purchase orders approved.']);
+    }
+
+    public function rejectSelected(Request $request)
+    {
+        $ids = $request->input('ids');
+        $reason = $request->input('reason');
+
+        if (!$ids || !$reason) {
+            return response()->json(['message' => 'Invalid request.'], 400);
+        }
+
+        PurchaseOrder::whereIn('id', $ids)->update([
+            'status' => 3,
+            'reason' => $reason
+        ]);
+        return response()->json(['message' => 'Selected purchase orders rejected.']);
+    }
+
 
     public function create()
     {
@@ -198,6 +227,12 @@ class PurchaseOrderController extends Controller
         try {
             // Attempt to find the PurchaseOrder record
             $po = PurchaseOrder::findOrFail($id);
+            // Log::info([
+            //     'user_id' => auth()->user()->id,
+            //     'purchase_order_id' => $po->id,
+            //     'last_downloaded_at' => now(),
+            // ]);
+            // dd('test');
 
             $filename = $po->filename;
             $path = storage_path("app/public/pdfs/{$filename}");
@@ -209,7 +244,12 @@ class PurchaseOrderController extends Controller
 
             // Update the 'downloaded_at' timestamp for the PO only for creator_id
             if($po->creator_id === auth()->user()->id){
-                $po->update(['downloaded_at' => now()]);
+                // $po->update(['downloaded_at' => now()]);
+                PurchaseOrderDownloadLog::create([
+                    'user_id' => auth()->user()->id,
+                    'purchase_order_id' => $po->id,
+                    'last_downloaded_at' => now(),
+                ]);
             }
 
             // Return the response to download the PDF file
@@ -220,8 +260,8 @@ class PurchaseOrderController extends Controller
             // Handle the case where the PurchaseOrder record is not found
             return response()->json(['error' => 'Purchase order not found.'], 404);
         } catch (\Exception $e) {
-            // Catch any other exceptions and return a generic error response
-            return response()->json(['error' => 'An error occurred while downloading the PDF.'], 500);
+            // Return the exception message for debugging purposes
+    return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 

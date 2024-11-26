@@ -6,9 +6,9 @@
     <span class="badge text-bg-danger px-3 py-2 fs-6">Rejected</span>
 @endif
 
-@if ($po->downloaded_at)
+@if ($po->latestDownloadLog)
     <button data-bs-toggle="tooltip" data-bs-html="true"
-        data-bs-title="Last time downloaded at : <br> {{ \Carbon\Carbon::parse($po->downloaded_at)->setTimezone('Asia/Jakarta')->format('d-m-y (h:i)') ?? '-' }}"
+        data-bs-title="Last downloaded at : <br> {{ \Carbon\Carbon::parse($po->latestDownloadLog->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:i)') ?? '-' }} by {{ $po->latestDownloadLog->user->name }}"
         class="btn btn-secondary btn-sm align-items-center my-1">
         <i class='bx bx-cloud-download'></i></button>
 @endif

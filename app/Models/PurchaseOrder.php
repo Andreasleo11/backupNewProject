@@ -51,6 +51,12 @@ class PurchaseOrder extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
+    public function latestDownloadLog()
+    {
+        return $this->hasOne(PurchaseOrderDownloadLog::class)->latestOfMany();
+    }
+
+
     protected static function boot()
     {
         parent::boot();

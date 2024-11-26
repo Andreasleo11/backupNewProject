@@ -1,0 +1,294 @@
+<?php
+
+namespace App\DataTables;
+
+use App\Models\PurchaseOrder;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Log;
+use Yajra\DataTables\EloquentDataTable;
+use Yajra\DataTables\Html\Builder as HtmlBuilder;
+use Yajra\DataTables\Html\Button;
+use Yajra\DataTables\Html\Column;
+use Yajra\DataTables\Html\Editor\Editor;
+use Yajra\DataTables\Html\Editor\Fields;
+use Yajra\DataTables\Html\SearchPane;
+use Yajra\DataTables\Services\DataTable;
+
+class PurchaseOrderDataTable extends DataTable
+{
+    protected $statusMap = [
+        1 => 'WAITING',
+        2 => 'APPROVED',
+        3 => 'REJECTED',
+    ];
+
+    /**
+     * Build DataTable class.
+     *
+     * @param QueryBuilder $query Results from query() method.
+     * @return \Yajra\DataTables\EloquentDataTable
+     */
+    public function dataTable(QueryBuilder $query): EloquentDataTable
+    {
+        return (new EloquentDataTable($query))
+            ->addColumn('checkbox', function ($po) {
+                return '<input type="checkbox" class="row-checkbox" value="' . $po->id . '">';
+            })
+            ->addColumn('creator_name', function ($po) {
+                return $po->user ? $po->user->name : 'N/A'; // Use the related user's name
+            })
+            ->editColumn('created_at', function ($po) {
+                return Carbon::parse($po->created_at)->format('d-m-Y H:i'); // Format data consistently
+            })
+            ->editColumn('invoice_date', function ($po) {
+                return Carbon::parse($po->invoice_date)->format('d-m-Y'); // Ensure consistent date format
+            })
+            ->editColumn('tanggal_pembayaran', function ($po) {
+                return Carbon::parse($po->tanggal_pembayaran)->setTimezone('Asia/Jakarta')->format('d-m-Y');
+            })
+            ->editColumn('approved_date', function ($po){
+                return Carbon::parse($po->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)');
+            })
+            ->addColumn('action', function($po){
+                return view('partials.po-actions', ['po' => $po])->render();
+            })
+            ->editColumn('total', function ($po) {
+                return $po->currency . ' ' . number_format($po->total, 1, '.', ',');
+            })
+            ->addColumn('status_label', function ($po) {
+                return view('partials.po-status', ['po' => $po])->render();
+            })
+            ->filter(function ($query) {
+                $request = request();
+
+                // Handle global search (default search bar functionality)
+                $globalSearch = $request->input('search.value', null);
+                if ($globalSearch) {
+                    $query->where(function ($q) use ($globalSearch) {
+                        $q->orWhere('po_number', 'like', "%{$globalSearch}%")
+                          ->orWhere('vendor_name', 'like', "%{$globalSearch}%")
+                          ->orWhere('invoice_date', 'like', "%{$globalSearch}%")
+                          ->orWhere('status', 'like', "%{$globalSearch}%"); // Add columns you want to search globally
+                    });
+                }
+
+                // Handle SearchPanes filter for status
+                $statusFilter = $request->input('searchPanes.status', null);
+                if ($statusFilter) {
+                    $query->whereIn('status', $statusFilter);
+                }
+            })
+            ->addColumn('status', function ($po) {
+                return $po->status;
+            })
+            ->searchPane(
+                'status', // Use the 'status' column for the Search Pane
+                fn() => collect([
+                    ['value' => 1, 'label' => 'Waiting'],
+                    ['value' => 2, 'label' => 'Approved'],
+                    ['value' => 3, 'label' => 'Rejected'],
+                ]),
+                // function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                //     return $query->whereIn('status', $values); // Filter by raw integer values
+                // }
+            )
+            ->searchPane(
+                'vendor_name', // Define SearchPane for the vendor_name column
+                fn() => PurchaseOrder::query()
+                    ->select('vendor_name as value', 'vendor_name as label')
+                    ->distinct()
+                    ->get(),
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                    return $query->whereIn('vendor_name', $values);
+                }
+            )
+            ->searchPane(
+                'invoice_date', // Use the 'invoice_date' column for the Search Pane
+                function () {
+                    // Retrieve distinct month-year combinations
+                    $dates = PurchaseOrder::query()
+                        ->selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as value, DATE_FORMAT(invoice_date, '%M %Y') as label")
+                        ->distinct()
+                        ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m')")
+                        ->get();
+
+                    // Convert the results into an array of options
+                    return $dates->map(function ($date) {
+                        return [
+                            'value' => $date->value, // e.g., "2024-01"
+                            'label' => $date->label, // e.g., "January 2024"
+                        ];
+                    })->toArray();
+                },
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                    // Filter by the selected month-year values
+                    return $query->where(function ($q) use ($values) {
+                        foreach ($values as $value) {
+                            $q->orWhere('invoice_date', 'like', $value . '%'); // Match YYYY-MM format
+                        }
+                    });
+                }
+            )
+            ->searchPane(
+                'tanggal_pembayaran', // Use the 'tanggal_pembayaran' column for the Search Pane
+                function () {
+                    // Retrieve distinct month-year combinations
+                    $dates = PurchaseOrder::query()
+                        ->selectRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') as value, DATE_FORMAT(tanggal_pembayaran, '%M %Y') as label")
+                        ->distinct()
+                        ->orderByRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m')")
+                        ->get();
+
+                    // Convert the results into an array of options
+                    return $dates->map(function ($date) {
+                        return [
+                            'value' => $date->value, // e.g., "2024-01"
+                            'label' => $date->label, // e.g., "January 2024"
+                        ];
+                    })->toArray();
+                },
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                    // Filter by the selected month-year values
+                    return $query->where(function ($q) use ($values) {
+                        foreach ($values as $value) {
+                            $q->orWhere('tanggal_pembayaran', 'like', $value . '%'); // Match YYYY-MM format
+                        }
+                    });
+                }
+            )
+            ->with('totalSum', function () use ($query) {
+                $selectedMonth = request('searchPanes')['invoice_date'] ?? null; // Get selected invoice date from SearchPanes
+
+                if ($selectedMonth) {
+                    // Filter records to match the selected month-year
+                    $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+                }
+
+                return $query->sum('total'); // Calculate the sum for filtered records
+            })
+            ->rawColumns(['checkbox', 'status_label', 'action'])
+            ->setRowId(function ($po) {
+                return 'row-' . $po->id; // Set a unique row ID
+            })
+            ;
+    }
+
+    /**
+     * Get query source of dataTable.
+     *
+     * @param \App\Models\PurchaseOrder $model
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function query(PurchaseOrder $model): QueryBuilder
+    {
+        return $model->newQuery()
+        ->select([
+            'id',
+            'creator_id',
+            'currency',
+            'po_number',
+            'vendor_name',
+            'invoice_date',
+            'invoice_number',
+            'tanggal_pembayaran',
+            'total',
+            'created_at',
+            'approved_date',
+            'status',
+        ])
+        ->with('user');
+    }
+
+    /**
+     * Optional method if you want to use html builder.
+     *
+     * @return \Yajra\DataTables\Html\Builder
+     */
+    public function html(): HtmlBuilder
+    {
+        return $this->builder()
+                    ->setTableId('purchaseorder-table')
+                    ->columns($this->getColumns())
+                    ->minifiedAjax()
+                    ->searchPanes(SearchPane::make())
+                    ->addColumnDef([
+                        'targets' => '_all',
+                        'searchPanes' => [
+                            'show' => true,
+                            'viewTotal' => true,
+                            'viewCount' => true,
+                        ],
+                    ])
+                    ->dom('PBfrtip')
+                    ->orderBy(2)
+                    ->buttons([
+                        Button::make()
+                            ->text('<i class=\'bx bx-check-circle\'></i> Approve Selected')
+                            ->attr(['id' => 'approve-selected-btn', 'class' => 'btn btn-success btn-sm']),
+                        Button::make()
+                            ->text('<i class=\'bx bx-x-circle\'></i> Reject Selected')
+                            ->attr(['id' => 'reject-selected-btn', 'class' => 'btn btn-danger btn-sm']),
+                        Button::make('excel')
+                            ->text('<i class=\'bx bx-spreadsheet\' style\'color:#ffffff\' ></i> Export to Excel')
+                            ->attr(['class' => 'btn btn-secondary btn-sm']),
+                        Button::make('csv'),
+                        Button::make('pdf'),
+                        Button::make('print'),
+                        // Button::make('reset'),
+                        // Button::make('reload')
+                    ]);
+    }
+
+    /**
+     * Get the dataTable columns definition.
+     *
+     * @return array
+     */
+    public function getColumns(): array
+    {
+        return [
+            Column::computed('checkbox')
+                ->title('<input type="checkbox" id="select-all">')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center')
+                ->width(10)
+                ->orderable(false)
+                ->searchable(false)
+                ->data('checkbox')
+                ->searchPanes(false),
+            Column::make('po_number')->searchPanes(false),
+            Column::make('vendor_name'),
+            Column::make('invoice_date'),
+            Column::make('invoice_number')->searchPanes(false),
+            Column::make('tanggal_pembayaran'),
+            Column::make('total')->searchPanes(false),
+            Column::make('created_at')->data('created_at')->title('Uploaded at')->searchPanes(false),
+            Column::make('creator_name')->data('creator_name')->title('Uploaded by')->searchPanes(false),
+            Column::make('approved_date')->searchPanes(false),
+            Column::make('status')->visible(false),
+            Column::computed('status_label')
+                ->title('Status')
+                ->searchPanes(false)
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
+            Column::computed('action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center')
+                ->searchPanes(false),
+        ];
+    }
+
+    /**
+     * Get filename for export.
+     *
+     * @return string
+     */
+    protected function filename(): string
+    {
+        return 'PurchaseOrder_' . date('YmdHis');
+    }
+}
