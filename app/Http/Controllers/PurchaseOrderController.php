@@ -21,24 +21,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseOrderController extends Controller
 {
-    public function index(PurchaseOrderDataTable $dataTable)
+    public function index(PurchaseOrderDataTable $dataTable, Request $request)
     {
-        $purchaseOrdersQuery = PurchaseOrder::query();
-
-        $director = auth()->user()->department->name === 'DIRECTOR';
-        $notAdminUsers = auth()->user()->role->name !== 'SUPERADMIN' && !$director;
-        $accountingUser = auth()->user()->department->name === 'ACCOUNTING';
-
-        if($accountingUser){
-            $purchaseOrdersQuery->where('status', 2);
-        }elseif($notAdminUsers) {
-            $purchaseOrdersQuery->where('status', '!=', 1)->where('creator_id', auth()->user()->id);
-        }
-
-        $data = $purchaseOrdersQuery->get();
-
-        // return view('purchase_order.index', compact('data'));
-        return $dataTable->render('purchase_order.index', compact('data'));
+        $month = $request->query('month');
+        return $dataTable->with(['month' => $month])->render('purchase_order.index');
     }
 
     public function approveSelected(Request $request)
@@ -420,5 +406,89 @@ class PurchaseOrderController extends Controller
 
         // Redirect back with a success message
         return redirect()->route('po.index')->with('success', 'PO Successfully Updated!');
+    }
+
+    public function dashboard(Request $request)
+    {
+        // Determine the current month in 'YYYY-MM' format
+        $currentMonth = now()->format('Y-m');
+
+        // Get the selected month from the request (default to the current month)
+        $selectedMonth = $request->get('month', $currentMonth);
+
+        // Base query for purchase orders
+        $query = PurchaseOrder::query()->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+
+        // Sum of totals for each month (for chart)
+        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Vendor with the highest total for the selected month
+        $highestVendor = $query->selectRaw('vendor_name, SUM(total) as total')
+            ->groupBy('vendor_name')
+            ->orderByDesc('total')
+            ->first();
+
+        // Total by vendor for the selected month
+        $vendorTotals = $query->selectRaw('vendor_name, SUM(total) as total')
+            ->groupBy('vendor_name')
+            ->orderByDesc('total')
+            ->get();
+
+        // List of available months for the filter dropdown
+        $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
+            ->distinct()
+            ->orderBy('month')
+            ->pluck('month');
+
+        return view('purchase_order.dashboard', compact(
+            'monthlyTotals',
+            'highestVendor',
+            'vendorTotals',
+            'availableMonths',
+            'selectedMonth'
+        ));
+    }
+
+
+    public function filter(Request $request)
+    {
+        $selectedMonth = $request->get('month');
+
+        // Base query for purchase orders filtered by the selected month
+        $query = PurchaseOrder::query();
+
+        if ($selectedMonth) {
+            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+        }
+
+        // Vendor with the highest total for the selected month
+        $highestVendor = $query->selectRaw('vendor_name, SUM(total) as total')
+            ->groupBy('vendor_name')
+            ->orderByDesc('total')
+            ->first();
+
+        // Total by vendor for the selected month
+        $vendorTotals = $query->selectRaw('vendor_name, SUM(total) as total')
+            ->groupBy('vendor_name')
+            ->orderByDesc('total')
+            ->get();
+
+        // Data for the chart
+        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        return response()->json([
+            'chartData' => [
+                'labels' => $monthlyTotals->pluck('month'),
+                'totals' => $monthlyTotals->pluck('total'),
+            ],
+            'highestVendor' => $highestVendor,
+            'vendorTotals' => $vendorTotals,
+        ]);
     }
 }

@@ -6,7 +6,7 @@
             <h1>Purchase Orders</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('po.index') }}">Purchase Orders</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('po.dashboard') }}">Purchase Orders</a></li>
                     <li class="breadcrumb-item active">List</li>
                 </ol>
             </nav>

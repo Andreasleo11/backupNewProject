@@ -28,7 +28,7 @@
                         <div class="form-group mt-3 row">
                             <label class="col-form-label col-sm-2">CC</label>
                             <div class="col">
-                                <textarea name="cc" id="ccInput" cols="30" rows="4" class="form-control semicolon-input">deni_qc@daijo.co.id; beata.qc@daijo.co.id; erizal@daijo.co.id; nurul_hidayati@daijo.co.id; herlina@daijo.co.id; srie@daijo.co.id; bayu@daijo.co.id; ekoqc@daijo.co.id; QA01_daijo@daijo.co.id; qa02_daijo@daijo.co.id; umi@daijo.co.id; yuli@daijo.co.id; emma@daijo.co.id; abdulrahim@daijo.co.id; raditya_qc@daijo.co.id; naya@daijo.co.id </textarea>
+                                <textarea name="cc" id="ccInput" cols="30" rows="4" class="form-control semicolon-input">deni_qc@daijo.co.id; beata.qc@daijo.co.id; erizal@daijo.co.id; nurul_hidayati@daijo.co.id; herlina@daijo.co.id; srie@daijo.co.id; bayu@daijo.co.id; ekoqc@daijo.co.id; QA01_daijo@daijo.co.id; qa02_daijo@daijo.co.id; umi@daijo.co.id; yuli@daijo.co.id; emma@daijo.co.id; abdulrahim@daijo.co.id; raditya_qc@daijo.co.id; naya@daijo.co.id, adi@daijo.co.id; </textarea>
                             </div>
                         </div>
                         <div class="form-group mt-3 row">

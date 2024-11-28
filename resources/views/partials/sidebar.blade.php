@@ -583,7 +583,7 @@
                 </li>
 
                 <li class="sidebar-item">
-                    <a href="{{ route('po.index') }}" class="sidebar-link">
+                    <a href="{{ route('po.dashboard') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Purchase Orders
                     </a>
