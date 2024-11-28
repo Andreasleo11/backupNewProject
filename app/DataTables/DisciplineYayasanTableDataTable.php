@@ -419,12 +419,14 @@ class DisciplineYayasanTableDataTable extends DataTable
             Column::make('Sakit'),
             Column::make('kemampuan_kerja'),
             Column::make('kecerdasan_kerja'),
-            Column::make('qualitas_kerja'),
+            Column::make('qualitas_kerja')
+                    ->title('Kualitas Kerja'),
             Column::make('disiplin_kerja'),
             Column::make('kepatuhan_kerja'),
             Column::make('lembur'),
             Column::make('efektifitas_kerja'),
-            Column::make('relawan'),
+            Column::make('relawan')
+                    ->title('Ringan Tangan'),
             Column::make('integritas'),
             Column::make('totaldiscipline')
                 ->title('Total Nilai Kedisiplinan')

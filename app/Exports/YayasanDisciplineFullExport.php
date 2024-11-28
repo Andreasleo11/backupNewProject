@@ -51,12 +51,12 @@ class YayasanDisciplineFullExport implements FromCollection, WithHeadings, WithM
             'Sakit',
             'Kemampuan Kerja',
             'Kecerdasan Kerja',
-            'Qualitas Kerja',
+            'Kualitas Kerja',
             'Disiplin Kerja',
             'Kepatuhan Kerja',
             'Lembur',
             'Efektifitas Kerja',
-            'Relawan',
+            'Ringan Tangan',
             'Integritas',
             'Total', // Add more column titles as needed
         ];
