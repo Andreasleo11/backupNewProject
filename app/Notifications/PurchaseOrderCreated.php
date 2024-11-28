@@ -2,13 +2,13 @@
 
 namespace App\Notifications;
 
-use App\Models\MasterPO;
+use App\Models\PurchaseOrder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class MasterPOApproved extends Notification implements ShouldQueue
+class PurchaseOrderCreated extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,7 +18,7 @@ class MasterPOApproved extends Notification implements ShouldQueue
     /**
      * Create a new notification instance.
      */
-    public function __construct(MasterPO $report, $details)
+    public function __construct(PurchaseOrder $report, $details)
     {
         $this->report = $report;
         $this->details = $details;
@@ -40,7 +40,7 @@ class MasterPOApproved extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('There\'s a Purchase Order has just approved!')
+                    ->line('There\'s a Purchase Order has just created!')
                     ->greeting($this->details['greeting'])
                     ->line(new \Illuminate\Support\HtmlString($this->details['body']))
                     ->action($this->details['actionText'], $this->details['actionURL']);
@@ -54,7 +54,7 @@ class MasterPOApproved extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Master PO with document number = ' . $this->report->id . ' has just been approved!',
+            'message' => 'Purchase Order with document number = ' . $this->report->id . ' has just been created!',
             'status' => $this->report->status
         ];
     }

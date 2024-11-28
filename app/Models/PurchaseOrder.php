@@ -2,19 +2,17 @@
 
 namespace App\Models;
 
-use App\Notifications\MasterPOApproved;
-use App\Notifications\MasterPOCreated;
-use App\Notifications\MasterPORejected;
+use App\Notifications\PurchaseOrderApproved;
+use App\Notifications\PurchaseOrderCreated;
+use App\Notifications\PurchaseOrderRejected;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
-class MasterPO extends Model
+class PurchaseOrder extends Model
 {
     use HasFactory;
-
-    protected $table = 'master_po';
 
     protected $fillable = [
         'po_number',
@@ -25,10 +23,11 @@ class MasterPO extends Model
         'creator_id',
         'downloaded_at',
         'vendor_name',
-        'po_date',
+        'invoice_date',
         'currency',
         'total',
         'tanggal_pembayaran',
+        'invoice_number',
     ];
 
     // Queries
@@ -51,6 +50,12 @@ class MasterPO extends Model
     {
         return $this->belongsTo(User::class, 'creator_id');
     }
+
+    public function latestDownloadLog()
+    {
+        return $this->hasOne(PurchaseOrderDownloadLog::class)->latestOfMany();
+    }
+
 
     protected static function boot()
     {
@@ -82,7 +87,7 @@ class MasterPO extends Model
         if ($users->isNotEmpty()) {
             Notification::send($users, $this->getNotificationInstance($event, $details));
         } else {
-            Log::warning("No valid users found to send the notification for Master PO {$event}.");
+            Log::warning("No valid users found to send the notification for Purchase Order {$event}.");
         }
     }
 
@@ -95,7 +100,8 @@ class MasterPO extends Model
             'body' => "Notification for Purchase Order Report: <br>
                 - PO Number : {$this->po_number} <br>
                 - Vendor Name : {$this->vendor_name} <br>
-                - PO Date : {$this->po_date} <br>
+                - Invoice Date : {$this->invoice_date} <br>
+                - Invoice Number : {$this->invoice_number} <br>
                 - Total : {$this->currency} {$this->total} <br>
                 - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"
@@ -133,9 +139,9 @@ class MasterPO extends Model
     private function getNotificationInstance($event, $details)
     {
         return match ($event) {
-            'created' => new MasterPOCreated($this, $details),
-            'approved' => new MasterPOApproved($this, $details),
-            'rejected' => new MasterPORejected($this, $details),
+            'created' => new PurchaseOrderCreated($this, $details),
+            'approved' => new PurchaseOrderApproved($this, $details),
+            'rejected' => new PurchaseOrderRejected($this, $details),
             default => null,
         };
     }

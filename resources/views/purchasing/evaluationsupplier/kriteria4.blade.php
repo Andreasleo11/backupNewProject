@@ -171,7 +171,7 @@
                 <tr>
                     <th>ID</th>
                     <th>PO No</th>
-                    <th>PO Date</th>
+                    <th>Invoice Date</th>
                     <th>Item Code</th>
                     <th>Description</th>
                     <th>Request Date</th>

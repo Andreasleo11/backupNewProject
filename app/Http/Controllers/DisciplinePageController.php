@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 use App\Exports\YayasanDisciplineExport;
+use App\Exports\YayasanDisciplineFullExport;
 
 
 class DisciplinePageController extends Controller
@@ -452,7 +453,7 @@ class DisciplinePageController extends Controller
             ->whereMonth('month', $selectedMonth)
             ->get();
 
-
+        
         $result = [];
         foreach ($employees as $data) {
             $employeeId = $data->karyawan->NIK;
@@ -499,6 +500,34 @@ class DisciplinePageController extends Controller
         $fileName = "DataYayasan_{$currentDate}.xlsx";
 
         return Excel::download(new YayasanDisciplineExport($result), $fileName);
+    }
+
+    public function exportYayasanFull(Request $request)
+    {
+       
+        $selectedMonth = $request->input('filter_status');
+
+        $currentYear = Carbon::now()->year;
+
+        // Create a Carbon instance for the selected month and year
+        $selectedDate = Carbon::createFromDate($currentYear, $selectedMonth, 1);
+
+        // Calculate the cutoff date, 6 months before the selected month
+        $cutoffDate = $selectedDate->copy()->subMonths(6)->startOfMonth();
+
+        $employees = EvaluationData::with('karyawan')
+            ->whereHas('karyawan', function ($query) use ($cutoffDate) {
+                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                ->where('start_date', '<', $cutoffDate);
+            })
+            ->whereMonth('month', $selectedMonth)
+            ->get();
+        
+        $currentDate = Carbon::now()->format('d-m-y'); // or any format you prefer
+
+        $fileName = "DataYayasanFull_{$currentDate}.xlsx";
+
+        return Excel::download(new YayasanDisciplineFullExport($employees), $fileName);
     }
 
     public function indexyayasan(DisciplineYayasanTableDataTable $dataTable)
