@@ -764,6 +764,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
     Route::post('purchase-orders/approve-selected', [PurchaseOrderController::class, 'approveSelected'])->name('purchase_orders.approve_selected');
     Route::post('purchase-orders/reject-selected', [PurchaseOrderController::class, 'rejectSelected'])->name('purchase_orders.reject_selected');
+    Route::get('purchaseOrders/dashboard', [PurchaseOrderController::class, 'dashboard'])->name('po.dashboard');
+    Route::get('/purchase-orders/filter', [PurchaseOrderController::class, 'filter']);
 
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION

@@ -104,16 +104,14 @@ class PurchaseOrderDataTable extends DataTable
                 }
             )
             ->searchPane(
-                'invoice_date', // Use the 'invoice_date' column for the Search Pane
+                'invoice_date',
                 function () {
-                    // Retrieve distinct month-year combinations
                     $dates = PurchaseOrder::query()
                         ->selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as value, DATE_FORMAT(invoice_date, '%M %Y') as label")
                         ->distinct()
                         ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m')")
                         ->get();
 
-                    // Convert the results into an array of options
                     return $dates->map(function ($date) {
                         return [
                             'value' => $date->value, // e.g., "2024-01"
@@ -198,6 +196,12 @@ class PurchaseOrderDataTable extends DataTable
             'status',
         ])
         ->with('user');
+
+        // Apply month filter if provided
+        $month = $this->request()->get('month');
+        if ($month) {
+            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month]);
+        }
     }
 
     /**
@@ -210,7 +214,7 @@ class PurchaseOrderDataTable extends DataTable
         return $this->builder()
                     ->setTableId('purchaseorder-table')
                     ->columns($this->getColumns())
-                    ->minifiedAjax()
+                    ->minifiedAjax(route('po.index'))
                     ->searchPanes(SearchPane::make())
                     ->addColumnDef([
                         'targets' => '_all',
