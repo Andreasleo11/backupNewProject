@@ -94,20 +94,44 @@
         <div class="text-center mt-2 mb-5">
             <div class="mb-3">
                 <h1 class="fs-2">Purchase Order </h1>
-                <div class="mb-1">PO Number: <span class="text-secondary">{{ $purchaseOrder->po_number }}</span></div>
-                <div class="mb-1">
+                <div>PO Number : <span class="text-secondary">{{ $purchaseOrder->po_number }}</span></div>
+                <div>Uploaded at
+                    <span class="text-secondary">{{ \Carbon\Carbon::parse($purchaseOrder->created_at)->format('d-m-Y') }} by
+                        {{ $purchaseOrder->user->name }}</span>
+                </div>
+                <div>
                     @if ($purchaseOrder->approved_date)
-                        Approved date: <span
+                        Approved at <span
                             class="text-secondary">{{ $purchaseOrder->approved_date? \Carbon\Carbon::parse($purchaseOrder->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)'): '-' }}</span>
                     @elseif($purchaseOrder->reason)
                         Reject Reason : <span class="text-secondary">{{ $purchaseOrder->reason }}</span>
                     @endif
                 </div>
-                @include('partials.po-status', ['po' => $purchaseOrder])
+                <div class="mt-2">
+                    @include('partials.po-status', ['po' => $purchaseOrder])
+                </div>
+                <hr>
+                <table class="table table-borderlesss mt-2">
+                    <tbody>
+                        <tr>
+                            <th>Vendor Name</th>
+                            <td>: {{ $purchaseOrder->vendor_name }}</td>
+                            <th>Invoice Number</th>
+                            <td>: {{ $purchaseOrder->invoice_number }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Pembayaran</th>
+                            <td>: {{ \Carbon\Carbon::parse($purchaseOrder->tanggal_pembayaran)->format('d-m-Y') }}</td>
+                            <th>Total</th>
+                            <td>: {{ $purchaseOrder->currency . ' ' . number_format($purchaseOrder->total, 2, '.', ',') }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="card shadow-sm p-4 mb-4">
-            <!-- PDF Display -->
             <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}" width="100%" height="700px"></iframe>
         </div>
         <div>
@@ -122,31 +146,27 @@
         </div>
     </div>
 
-
     @php
         $director = auth()->user()->department->name === 'DIRECTOR';
     @endphp
 
     @if (!$director)
-    <div class="text-end container mb-5">
-        @if ($user->id == $purchaseOrder->creator_id||$user->specification->name === 'PURCHASER' || $user->is_head === 1)
-            <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
-                <i class='bx bx-upload'></i> Upload
-            </button>
+        <div class="text-end container mb-5">
+            @if ($user->id == $purchaseOrder->creator_id || $user->specification->name === 'PURCHASER' || $user->is_head === 1)
+                <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                    <i class='bx bx-upload'></i> Upload
+                </button>
 
-            @include('partials.upload-files-modal', ['doc_id' => $purchaseOrder->po_number])
-        @endif
-    </div>
+                @include('partials.upload-files-modal', ['doc_id' => $purchaseOrder->po_number])
+            @endif
+        </div>
 
-
-    <section aria-label="uploaded">
-        @include('partials.uploaded-section', [
-            'showDeleteButton' =>
-                ($user->id === $purchaseOrder->creator_id) ||
-                ($user->specification->name === 'PURCHASER'),
-        ])
-    </section>
-
+        <section aria-label="uploaded">
+            @include('partials.uploaded-section', [
+                'showDeleteButton' =>
+                    $user->id === $purchaseOrder->creator_id || $user->specification->name === 'PURCHASER',
+            ])
+        </section>
     @endif
 
     <script>

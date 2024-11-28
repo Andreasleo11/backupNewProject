@@ -2,27 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\PurchaseOrderDataTable;
 use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
 use App\Http\Requests\UpdatePoRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
-use App\Models\MasterPO;
+use App\Models\PurchaseOrder;
 use App\Models\File;
+use App\Models\PurchaseOrderDownloadLog;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
-class POController extends Controller
+class PurchaseOrderController extends Controller
 {
-    public function index()
+    public function index(PurchaseOrderDataTable $dataTable)
     {
-        $purchaseOrdersQuery = MasterPO::query();
+        $purchaseOrdersQuery = PurchaseOrder::query();
 
         $director = auth()->user()->department->name === 'DIRECTOR';
         $notAdminUsers = auth()->user()->role->name !== 'SUPERADMIN' && !$director;
@@ -36,12 +37,40 @@ class POController extends Controller
 
         $data = $purchaseOrdersQuery->get();
 
-        return view('masterpo.index', compact('data'));
+        // return view('purchase_order.index', compact('data'));
+        return $dataTable->render('purchase_order.index', compact('data'));
     }
+
+    public function approveSelected(Request $request)
+    {
+        $ids = $request->input('ids');
+        PurchaseOrder::whereIn('id', $ids)->update([
+            'status' => 2,
+            'approved_date' => now()
+        ]);
+        return response()->json(['message' => 'Selected purchase orders approved.']);
+    }
+
+    public function rejectSelected(Request $request)
+    {
+        $ids = $request->input('ids');
+        $reason = $request->input('reason');
+
+        if (!$ids || !$reason) {
+            return response()->json(['message' => 'Invalid request.'], 400);
+        }
+
+        PurchaseOrder::whereIn('id', $ids)->update([
+            'status' => 3,
+            'reason' => $reason
+        ]);
+        return response()->json(['message' => 'Selected purchase orders rejected.']);
+    }
+
 
     public function create()
     {
-        return view('masterpo.create');
+        return view('purchase_order.create');
     }
 
     public function store(StorePoRequest $request)
@@ -67,19 +96,19 @@ class POController extends Controller
         // Remove commas from the total and convert it to a float
         $total = (float) str_replace(',', '', $validated['total']);
 
-        // Create a new MasterPO record using Eloquent
-        $masterPO = new MasterPO();
-        $masterPO->po_number = $validated['po_number'];
-        $masterPO->status = 1; // Initial status
-        $masterPO->filename = $filename;
-        $masterPO->creator_id = auth()->id();
-        $masterPO->vendor_name = $validated['vendor_name'];
-        $masterPO->invoice_date = $validated['invoice_date'];
-        $masterPO->invoice_number = $validated['invoice_number'];
-        $masterPO->currency = $validated['currency'];
-        $masterPO->total = $total;
-        $masterPO->tanggal_pembayaran = $validated['tanggal_pembayaran'];
-        $masterPO->save();
+        // Create a new PurchaseOrder record using Eloquent
+        $PurchaseOrder = new PurchaseOrder();
+        $PurchaseOrder->po_number = $validated['po_number'];
+        $PurchaseOrder->status = 1; // Initial status
+        $PurchaseOrder->filename = $filename;
+        $PurchaseOrder->creator_id = auth()->id();
+        $PurchaseOrder->vendor_name = $validated['vendor_name'];
+        $PurchaseOrder->invoice_date = $validated['invoice_date'];
+        $PurchaseOrder->invoice_number = $validated['invoice_number'];
+        $PurchaseOrder->currency = $validated['currency'];
+        $PurchaseOrder->total = $total;
+        $PurchaseOrder->tanggal_pembayaran = $validated['tanggal_pembayaran'];
+        $PurchaseOrder->save();
 
         // Redirect to the PDF viewer with a success message
         return redirect()->route('po.index')->with('success', 'PO created successfully.');
@@ -87,7 +116,7 @@ class POController extends Controller
 
     public function view($id)
     {
-        $purchaseOrder = MasterPO::find($id);
+        $purchaseOrder = PurchaseOrder::find($id);
 
         $user = Auth::user();
         $files = File::where('doc_id', $purchaseOrder->po_number)->get();
@@ -98,7 +127,7 @@ class POController extends Controller
             abort(404, 'PDF file not found.');
         }
 
-        return view('masterpo.view', compact('purchaseOrder', 'user', 'files'));
+        return view('purchase_order.view', compact('purchaseOrder', 'user', 'files'));
     }
 
     // public function signPDF(Request $request) version pake signature box
@@ -167,12 +196,12 @@ class POController extends Controller
         // Save the signed PDF
         $pdf->Output($signedPdfPath, 'F');
 
-        $masterPO = MasterPO::find($id);
-        if ($masterPO) {
-            $masterPO->filename = basename($signedPdfPath); // Save only the file name, not the full path
-            $masterPO->approved_date = now();
-            $masterPO->status = 2;
-            $masterPO->save();
+        $PurchaseOrder = PurchaseOrder::find($id);
+        if ($PurchaseOrder) {
+            $PurchaseOrder->filename = basename($signedPdfPath); // Save only the file name, not the full path
+            $PurchaseOrder->approved_date = now();
+            $PurchaseOrder->status = 2;
+            $PurchaseOrder->save();
         }
 
         return response()->json(['message' => 'PDF signed successfully!']);
@@ -180,7 +209,7 @@ class POController extends Controller
 
     public function rejectPDF(Request $request)
     {
-        $data = MasterPO::find($request->input('id'));
+        $data = PurchaseOrder::find($request->input('id'));
 
         if (!$data) {
             return response()->json(['message' => 'PO not found.'], 404);
@@ -196,8 +225,14 @@ class POController extends Controller
     public function downloadPDF($id)
     {
         try {
-            // Attempt to find the MasterPO record
-            $po = MasterPO::findOrFail($id);
+            // Attempt to find the PurchaseOrder record
+            $po = PurchaseOrder::findOrFail($id);
+            // Log::info([
+            //     'user_id' => auth()->user()->id,
+            //     'purchase_order_id' => $po->id,
+            //     'last_downloaded_at' => now(),
+            // ]);
+            // dd('test');
 
             $filename = $po->filename;
             $path = storage_path("app/public/pdfs/{$filename}");
@@ -207,19 +242,26 @@ class POController extends Controller
                 abort(404, 'PDF file not found.');
             }
 
-            // Update the 'downloaded_at' timestamp for the PO
-            $po->update(['downloaded_at' => now()]);
+            // Update the 'downloaded_at' timestamp for the PO only for creator_id
+            if($po->creator_id === auth()->user()->id){
+                // $po->update(['downloaded_at' => now()]);
+                PurchaseOrderDownloadLog::create([
+                    'user_id' => auth()->user()->id,
+                    'purchase_order_id' => $po->id,
+                    'last_downloaded_at' => now(),
+                ]);
+            }
 
             // Return the response to download the PDF file
             return response()->download($path, $filename, [
                 'Content-Type' => 'application/pdf',
             ]);
         } catch (ModelNotFoundException $e) {
-            // Handle the case where the MasterPO record is not found
+            // Handle the case where the PurchaseOrder record is not found
             return response()->json(['error' => 'Purchase order not found.'], 404);
         } catch (\Exception $e) {
-            // Catch any other exceptions and return a generic error response
-            return response()->json(['error' => 'An error occurred while downloading the PDF.'], 500);
+            // Return the exception message for debugging purposes
+    return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
@@ -227,7 +269,7 @@ class POController extends Controller
     public function destroy($id)
     {
         try {
-            $po = MasterPO::find($id);
+            $po = PurchaseOrder::find($id);
 
             if (!$po) {
                 return redirect()->route('po.index')->with('error', 'PO not found!');
@@ -248,8 +290,8 @@ class POController extends Controller
         $ids = $request->input('ids');
 
         // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
-        $approvedPOs = MasterPO::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
-        $rejectedPOs = MasterPO::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
+        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
+        $rejectedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
 
         // If any approved or rejected POs are found, return an error
         if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
@@ -268,7 +310,7 @@ class POController extends Controller
 
         // Proceed to sign POs if no conflicts
         foreach ($ids as $id) {
-            $this->signPDF(new Request(['id' => $id, 'filename' => MasterPO::find($id)->filename]));
+            $this->signPDF(new Request(['id' => $id, 'filename' => PurchaseOrder::find($id)->filename]));
         }
 
         return response()->json(['message' => 'All selected POs signed successfully!']);
@@ -280,8 +322,8 @@ class POController extends Controller
         $reason = $request->input('reason', 'No reason provided');
 
         // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
-        $approvedPOs = MasterPO::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
-        $rejectedPOs = MasterPO::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
+        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
+        $rejectedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
 
         // If any approved or rejected POs are found, return an error
         if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
@@ -299,7 +341,7 @@ class POController extends Controller
         }
 
         // Proceed to reject POs if no conflicts
-        MasterPO::whereIn('id', $ids)->update([
+        PurchaseOrder::whereIn('id', $ids)->update([
             'status' => 3,
             'reason' => $reason
         ]);
@@ -310,7 +352,7 @@ class POController extends Controller
     public function exportExcel(Request $request)
     {
         // dd($request->all);
-        $query = MasterPO::query();
+        $query = PurchaseOrder::query();
 
         // Apply filters if provided
         if ($request->filled('po_number')) {
@@ -336,9 +378,9 @@ class POController extends Controller
 
     public function edit($id)
     {
-        $po = MasterPO::find($id);
+        $po = PurchaseOrder::find($id);
 
-        return view('masterpo.edit', compact('po'));
+        return view('purchase_order.edit', compact('po'));
     }
 
     public function update(UpdatePoRequest $request, $id)
@@ -347,7 +389,7 @@ class POController extends Controller
         $validatedData = $request->validated();
 
         // Find the existing PO
-        $po = MasterPO::findOrFail($id);
+        $po = PurchaseOrder::findOrFail($id);
 
         // Update the PO with validated data
         $po->po_number = $validatedData['po_number'];
