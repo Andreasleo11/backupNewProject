@@ -59,12 +59,15 @@ class YayasanDisciplineFullExport implements FromCollection, WithHeadings, WithM
             'Ringan Tangan',
             'Integritas',
             'Total', // Add more column titles as needed
+            'Grade Akhir', //column baru 
         ];
     }
 
 
     public function map($row): array
     {
+        $grade = $this->determineGrade($row->total);
+
         return [
             $row->id,
             $row->karyawan->NIK ?? 'N/A',
@@ -87,6 +90,20 @@ class YayasanDisciplineFullExport implements FromCollection, WithHeadings, WithM
             $row->relawan,
             $row->integritas,
             $row->total,
+            $grade,
         ];
+    }
+
+    private function determineGrade($total)
+    {
+        if ($total >= 91) {
+            return 'A';
+        } elseif ($total >= 71) {
+            return 'B';
+        } elseif ($total >= 61) {
+            return 'C';
+        } else {
+            return 'D';
+        }
     }
 }

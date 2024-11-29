@@ -78,6 +78,10 @@
                 <a class="nav-link" id="repair-tab" data-toggle="tab" href="#repair" role="tab"
                     aria-controls="repair-history" aria-selected="false">Repair History</a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="maint-tab" data-toggle="tab" href="#maint" role="tab"
+                    aria-controls="maint" aria-selected="false">Maintenance History</a>
+            </li>
         </ul>
 
         <!-- Tab Contents -->
@@ -207,6 +211,46 @@
                                             <button type="submit" class="btn btn-warning">Update/Sync</button>
                                         </form>
                                     @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="13" class="text-center">No data available</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tab-pane fade" id="maint" role="tabpanel" aria-labelledby="maint-tab">
+                <h2>Maintenance History</h2>
+
+                <!-- Repair History Table -->
+                <!-- Replace this comment with your table or message for repair history -->
+                <table class="table table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nomor Dokumen</th>
+                            <th>Username</th>
+                            <th>Periode</th>
+                            <th>Created Date</th>
+                            <th>Revision Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      
+                        @forelse ($inventoryHistories as $data)
+                            <tr>
+                                <td>{{ $data->id }}</td>
+                                <td>{{ $data->no_dokumen }}</td>
+                                <td>{{ $data->master->username }}</td>
+                                <td>{{ $data->periode_caturwulan }}</td>
+                                <td>{{ $data->created_at }}</td>
+                                <td>{{ $data->revision_date }}</td>
+                                <td>
+                                <a href="{{ route('maintenance.inventory.show', $data->id) }}" class="btn btn-secondary">Detail</a>
                                 </td>
                             </tr>
                         @empty
