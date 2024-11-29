@@ -291,6 +291,8 @@ class MasterInventoryController extends BaseController
         $softwareTypes = SoftwareTypeInventory::get();
         $repairHistories = InventoryRepairHistory::where('master_id', $id)->get();
 
+        $inventoryHistories = HeaderMaintenanceInventoryReport::with('detail', 'detail.typecategory')->where('master_id',$id)->get();
+        
         $processedHistories = $repairHistories->map(function ($repairHistory) {
             if ($repairHistory->type === 'hardware') {
                 $repairHistory->typeDetails = $repairHistory->hardwareType; // Attach hardwareType details
@@ -301,7 +303,7 @@ class MasterInventoryController extends BaseController
         });
 
         // dd($processedHistories);
-        return view('masterinventory.detail', compact('data', 'depts', 'hardwareTypes', 'softwareTypes', 'processedHistories'));
+        return view('masterinventory.detail', compact('data', 'depts', 'hardwareTypes', 'softwareTypes', 'processedHistories', 'inventoryHistories'));
     }
 
 
