@@ -233,8 +233,8 @@ class PurchaseOrderDataTable extends DataTable
                         'targets' => '_all',
                         'searchPanes' => [
                             'show' => true,
-                            'viewTotal' => true,
-                            'viewCount' => true,
+                            'viewTotal' => false,
+                            'viewCount' => false,
                         ],
                     ])
                     ->dom('PBfrtip')
