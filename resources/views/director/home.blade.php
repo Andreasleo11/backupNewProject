@@ -148,21 +148,21 @@
                     <div class="container p-2 px-5">
                         <div class="row justify-content-center">
                             <div class="col">
-                                <a href="{{ route('po.index') }}">
+                                <a href="{{ route('po.dashboard') }}">
                                     <x-card title="Approved" :content="$poCounts['approved']" color="green" titleColor="text-success"
                                         icon="<box-icon name='check' color='gray' size='lg'></box-icon>" />
                                 </a>
                             </div>
 
                             <div class="col">
-                                <a href="{{ route('po.index') }}">
+                                <a href="{{ route('po.dashboard') }}">
                                     <x-card title="Waiting" :content="$poCounts['waiting']" color="orange" titleColor="text-warning"
                                         icon="<box-icon name='time' color='gray' size='lg'></box-icon>" />
                                 </a>
                             </div>
 
                             <div class="col">
-                                <a href="{{ route('po.index') }}">
+                                <a href="{{ route('po.dashboard') }}">
                                     <x-card title="Rejected" :content="$poCounts['rejected']" color="red" titleColor="text-danger"
                                         contentColor="text-secondary"
                                         icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
