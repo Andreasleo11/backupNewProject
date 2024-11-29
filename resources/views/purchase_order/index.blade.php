@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="p-2 fixed-bottom bg-dark shadow text-light text-center" style="opacity: 0.9;">
-        Total for this month: <div id="total-sum" class="fw-bold fs-4">IDR 0.00</div>
+        Total : <div id="total-sum" class="fw-bold fs-4">IDR 0.00</div>
     </div>
 
     <!-- Search Panes CSS -->
