@@ -53,8 +53,11 @@ class PurchaseOrderDataTable extends DataTable
             ->addColumn('action', function($po){
                 return view('partials.po-actions', ['po' => $po])->render();
             })
+            ->editColumn('currency', function($po){
+                return $po->currency;
+            })
             ->editColumn('total', function ($po) {
-                return $po->currency . ' ' . number_format($po->total, 1, '.', ',');
+                return number_format($po->total, 1, '.', ',');
             })
             ->addColumn('status_label', function ($po) {
                 return view('partials.po-status', ['po' => $po])->render();
@@ -82,6 +85,16 @@ class PurchaseOrderDataTable extends DataTable
             ->addColumn('status', function ($po) {
                 return $po->status;
             })
+            ->searchPane(
+                'currency',
+                PurchaseOrder::query()
+                    ->select('currency as value', 'currency as label')
+                    ->distinct()
+                    ->get(),
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                    return $query->whereIn('currency', $values);
+                }
+            )
             ->searchPane(
                 'status', // Use the 'status' column for the Search Pane
                 fn() => collect([
@@ -184,12 +197,12 @@ class PurchaseOrderDataTable extends DataTable
         ->select([
             'id',
             'creator_id',
-            'currency',
             'po_number',
             'vendor_name',
             'invoice_date',
             'invoice_number',
             'tanggal_pembayaran',
+            'currency',
             'total',
             'created_at',
             'approved_date',
@@ -220,8 +233,8 @@ class PurchaseOrderDataTable extends DataTable
                         'targets' => '_all',
                         'searchPanes' => [
                             'show' => true,
-                            'viewTotal' => true,
-                            'viewCount' => true,
+                            'viewTotal' => false,
+                            'viewCount' => false,
                         ],
                     ])
                     ->dom('PBfrtip')
@@ -267,6 +280,7 @@ class PurchaseOrderDataTable extends DataTable
             Column::make('invoice_date'),
             Column::make('invoice_number')->searchPanes(false),
             Column::make('tanggal_pembayaran'),
+            Column::make('currency'),
             Column::make('total')->searchPanes(false),
             Column::make('created_at')->data('created_at')->title('Uploaded at')->searchPanes(false),
             Column::make('creator_name')->data('creator_name')->title('Uploaded by')->searchPanes(false),

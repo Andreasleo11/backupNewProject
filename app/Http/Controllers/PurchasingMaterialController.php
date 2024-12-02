@@ -14,6 +14,8 @@ use App\Models\sapFctBomWipFirst;
 use App\Models\sapFctBomWipSecond;
 use App\Models\sapFctBomWipThird;
 use App\Models\sapFctBomWipFgCode;
+use App\Models\PurchasingUpdateLog;
+
 
 
 class PurchasingMaterialController extends Controller
@@ -21,6 +23,9 @@ class PurchasingMaterialController extends Controller
 
     public function storeDataInNewTable()
     {
+        $log = PurchasingUpdateLog::find(1);
+        $log->updated_at = Carbon::now();
+        $log->save();
         // function buat insert data
         $case1Data = SapForecast::whereNotIn('item_no', function ($query) {
             $query->select('fg_code')->from('sap_fct_bom_wip');

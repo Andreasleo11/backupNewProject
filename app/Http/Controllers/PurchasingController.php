@@ -9,6 +9,7 @@ use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\PurchasingContact;
+use App\Models\PurchasingUpdateLog;
 
 class PurchasingController extends Controller
 {
@@ -51,6 +52,8 @@ class PurchasingController extends Controller
 
     public function indexhome()
     {
+        $log = PurchasingUpdateLog::find(1);
+        
          // Retrieve forecasts from the foremindFinal table
          $forecasts = ForemindFinal::all();
          $transformedData = [];
@@ -98,6 +101,7 @@ class PurchasingController extends Controller
                 'mon' => $uniqueMonths,
                 'qforecast' => $qforecast,
                 'contacts' =>$contacts,
+                'log' => $log,
             ]);
     }
 
