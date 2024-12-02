@@ -15,7 +15,7 @@ use App\Models\sapFctBomWipSecond;
 use App\Models\sapFctBomWipThird;
 use App\Models\sapFctBomWipFgCode;
 use App\Models\PurchasingUpdateLog;
-
+use Carbon\Carbon;
 
 
 class PurchasingMaterialController extends Controller
@@ -45,7 +45,7 @@ class PurchasingMaterialController extends Controller
         $case4Data = SapForecast::whereHas('secondBomWip', function ($query) {
             $query->where('level', 2)->whereHas('semiSecondInventoryMtrForecast');
         })->with('secondBomWip.semiSecondInventoryMtrForecast')->get();
-    
+
         $case5Data = SapForecast::whereHas('thirdBomWip', function ($query) {
             $query->where('level', 3)->whereHas('semiThirdInventoryMtrForecast');
         })->with('thirdBomWip.semiThirdInventoryMtrForecast')->get();
@@ -57,12 +57,12 @@ class PurchasingMaterialController extends Controller
         $this->Insert_finalrest1($case3Data);
         $this->Insert_finalrest2($case4Data);
         $this->Insert_finalrest3($case5Data);
-     
+
     }
 
-    private function Insert_final($data) // DONE 
+    private function Insert_final($data) // DONE
     {
-        
+
         foreach ($data as $item) {
 
             $vendor_code = null;
@@ -83,7 +83,7 @@ class PurchasingMaterialController extends Controller
                 $item_group = $inventoryMtrData->item_group;
                 $material_quan = $inventoryMtrData->material_quantity;
                 $material_measure = $inventoryMtrData -> Measure;
-                $materialPrediction = $material_quan * $item->quantity;    
+                $materialPrediction = $material_quan * $item->quantity;
 
                 foremindFinal::create([
                     'forecast_code' => $item->forecast_code,
@@ -99,15 +99,15 @@ class PurchasingMaterialController extends Controller
                     'quantity_material' => $material_quan,
                     'material_prediction' => $materialPrediction,
                     'U/M' => $material_measure
-                           
+
                 ]);
-            }            
+            }
         }
     }
 
-    private function Insert_finalrest($data) // DONE 
+    private function Insert_finalrest($data) // DONE
     {
-        
+
         foreach ($data as $item) {
 
             $vendor_code = null;
@@ -119,7 +119,7 @@ class PurchasingMaterialController extends Controller
             $materialPrediction = null;
             $material_measure = null;
             // dd($item);
-            $bomWipI = $item->bomWip;    
+            $bomWipI = $item->bomWip;
             foreach($bomWipI as $bomWipItem){
                 $inventoryQu = $bomWipItem->rawMaterialFgcode;
 
@@ -132,7 +132,7 @@ class PurchasingMaterialController extends Controller
                         $material_quan = $inventoryQuantity->material_quantity;
                         $material_measure = $inventoryQuantity -> Measure;
                         $materialPrediction = $material_quan * $item->quantity;
-                    
+
                         foremindFinal::create([
                             'forecast_code' => $item->forecast_code,
                             'forecast_name' => $item->forecast_name,
@@ -146,19 +146,19 @@ class PurchasingMaterialController extends Controller
                             'material_name' => $material_name,
                             'quantity_material' => $material_quan,
                             'material_prediction' => $materialPrediction,
-                            'U/M' => $material_measure   
+                            'U/M' => $material_measure
                          ]);
                 }
-                   
+
             }
         }
     }
 
-   
 
-    private function Insert_finalrest1($data) // DONE 
+
+    private function Insert_finalrest1($data) // DONE
     {
-        
+
         foreach ($data as $item) {
 
             $vendor_code = null;
@@ -172,7 +172,7 @@ class PurchasingMaterialController extends Controller
             $material_measure = null;
             $semi_code = null;
             $bomWipI = $item->firstBomWip;
-                
+
             foreach($bomWipI as $bomWipItem){
                 $bom_quantity = $bomWipItem->bom_quantity;
                 $semi_code = $bomWipItem->semi_first;
@@ -203,19 +203,19 @@ class PurchasingMaterialController extends Controller
                         'quantity_material' => $material_quan,
                         'quantity_bomWip' => $bom_quantity,
                         'material_prediction' => $materialPrediction,
-                        'U/M' => $material_measure   
+                        'U/M' => $material_measure
                      ]);
-                    
+
                 }
-                   
+
             }
 
         }
     }
 
-    private function Insert_finalrest2($data) // DONE 
+    private function Insert_finalrest2($data) // DONE
     {
-        
+
         foreach ($data as $item) {
 
             $vendor_code = null;
@@ -230,7 +230,7 @@ class PurchasingMaterialController extends Controller
             $semi_code = null;
 
             $bomWipItem = $item->secondBomWip;
-                
+
                 foreach($bomWipItem as $bomWipItems){
                 $bom_quantity = $bomWipItems->bom_quantity;
                 $semi_code = $bomWipItems->semi_second;
@@ -320,7 +320,7 @@ class PurchasingMaterialController extends Controller
                         ]);
                     }
                 }
-              
+
         //     $existingRecord = foremindFinal::where([
         //         'forecast_code' => $item->forecast_code,
         //         'forecast_name' => $item->forecast_name,
@@ -339,10 +339,10 @@ class PurchasingMaterialController extends Controller
         //         // Add more unique fields as needed
         //     ])->first();
 
-        //     if (!$existingRecord) 
+        //     if (!$existingRecord)
         // {
-        
-        // }   
+
+        // }
         }
     }
 
