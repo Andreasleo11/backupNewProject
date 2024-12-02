@@ -8,7 +8,7 @@
 
 @if ($po->latestDownloadLog)
     <button data-bs-toggle="tooltip" data-bs-html="true"
-        data-bs-title="Last downloaded at : <br> {{ \Carbon\Carbon::parse($po->latestDownloadLog->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:i)') ?? '-' }} by {{ $po->latestDownloadLog->user->name }}"
+        data-bs-title="Last downloaded at : <br> {{ \Carbon\Carbon::parse($po->latestDownloadLog->created_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') ?? '-' }} by {{ $po->latestDownloadLog->user->name }}"
         class="btn btn-secondary btn-sm align-items-center my-1">
         <i class='bx bx-cloud-download'></i></button>
 @endif

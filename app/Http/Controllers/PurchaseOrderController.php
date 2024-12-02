@@ -110,7 +110,7 @@ class PurchaseOrderController extends Controller
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
         if (!Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
-            abort(404, 'PDF file not found.');
+            abort(500, 'PDF file not found.');
         }
 
         return view('purchase_order.view', compact('purchaseOrder', 'user', 'files'));
@@ -234,7 +234,6 @@ class PurchaseOrderController extends Controller
                 PurchaseOrderDownloadLog::create([
                     'user_id' => auth()->user()->id,
                     'purchase_order_id' => $po->id,
-                    'last_downloaded_at' => now(),
                 ]);
             }
 
@@ -416,25 +415,20 @@ class PurchaseOrderController extends Controller
         // Get the selected month from the request (default to the current month)
         $selectedMonth = $request->get('month', $currentMonth);
 
-        // Base query for purchase orders
-        $query = PurchaseOrder::query()->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+        // Query for vendor totals (distinct vendors with their totals)
+        $vendorTotals = PurchaseOrder::selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
+            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+            ->groupBy('vendor_name')
+            ->orderByDesc('total')
+            ->get();
+
+        // Query for the top vendor (the highest total vendor for the selected month)
+        $highestVendor = $vendorTotals->first();
 
         // Sum of totals for each month (for chart)
         $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
             ->groupBy('month')
             ->orderBy('month')
-            ->get();
-
-        // Vendor with the highest total for the selected month
-        $highestVendor = $query->selectRaw('vendor_name, SUM(total) as total')
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
-            ->first();
-
-        // Total by vendor for the selected month
-        $vendorTotals = $query->selectRaw('vendor_name, SUM(total) as total')
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
             ->get();
 
         // List of available months for the filter dropdown
@@ -452,11 +446,9 @@ class PurchaseOrderController extends Controller
         ));
     }
 
-
     public function filter(Request $request)
     {
         $selectedMonth = $request->get('month');
-
         // Base query for purchase orders filtered by the selected month
         $query = PurchaseOrder::query();
 
@@ -464,17 +456,13 @@ class PurchaseOrderController extends Controller
             $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
         }
 
-        // Vendor with the highest total for the selected month
-        $highestVendor = $query->selectRaw('vendor_name, SUM(total) as total')
-            ->groupBy('vendor_name')
-            ->orderByDesc('total')
-            ->first();
-
-        // Total by vendor for the selected month
-        $vendorTotals = $query->selectRaw('vendor_name, SUM(total) as total')
+        // Query for vendor totals (all vendors with their total amounts)
+        $vendorTotals = $query->selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
             ->groupBy('vendor_name')
             ->orderByDesc('total')
             ->get();
+        // Query for the top vendor (the highest total vendor)
+        $highestVendor = $vendorTotals->first();
 
         // Data for the chart
         $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
@@ -491,4 +479,37 @@ class PurchaseOrderController extends Controller
             'vendorTotals' => $vendorTotals,
         ]);
     }
+
+    public function vendorMonthlyTotals(Request $request)
+    {
+        $vendorName = $request->get('vendor');
+
+        if (!$vendorName) {
+            return response()->json(['error' => 'Vendor name is required'], 400);
+        }
+
+        // Query for monthly totals for the specified vendor
+        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
+            ->where('vendor_name', $vendorName)
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        return response()->json($monthlyTotals);
+    }
+
+    public function getVendorDetails(Request $request)
+    {
+        $vendorName = $request->query('vendor');
+        $selectedMonth = $request->query('month'); // Format: 'YYYY-MM'
+
+        $purchaseOrders = PurchaseOrder::where('vendor_name', $vendorName)
+            ->select('id', 'po_number', 'invoice_date', 'total', 'status')
+            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]) // Filter by selected month  
+            ->orderBy('invoice_date', 'desc')
+            ->get();
+
+        return response()->json($purchaseOrders);
+    }
+
 }

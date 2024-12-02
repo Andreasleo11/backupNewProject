@@ -79,6 +79,14 @@ class PurchaseOrder extends Model
         });
     }
 
+    public function getVendorNames()
+    {
+        $vendorNames = Vendor::pluck('name')->get();
+        return response()->json([
+            'vendorNames' => $vendorNames
+        ]);
+    }
+
     public function sendNotification($event)
     {
         $details = $this->prepareNotificationDetails();
