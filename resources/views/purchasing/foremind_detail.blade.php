@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+
+    <h1>Terakhir di update : {{ \Carbon\Carbon::parse($log->updated_at)->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</h1>
+
     <!-- Main content -->
     @include('partials.alert-success-error')
     <form method="GET" action="/foremind-detail/print" target="_blank">
