@@ -2,8 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\MasterPO;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\FromView;
 use Illuminate\Contracts\View\View;
 

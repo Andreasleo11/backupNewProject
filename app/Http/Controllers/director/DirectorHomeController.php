@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\director;
 
 use App\Http\Controllers\Controller;
-use App\Models\MasterPO;
+use App\Models\PurchaseOrder;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
 use App\Models\PurchaseRequest;
@@ -38,9 +38,9 @@ class DirectorHomeController extends Controller
         ];
 
         $poCounts = [
-            'approved' => MasterPO::approved()->count(),
-            'waiting' => MasterPO::waiting()->count(),
-            'rejected' => MasterPO::rejected()->count(),
+            'approved' => PurchaseOrder::approved()->count(),
+            'waiting' => PurchaseOrder::waiting()->count(),
+            'rejected' => PurchaseOrder::rejected()->count(),
         ];
 
         return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts'));
