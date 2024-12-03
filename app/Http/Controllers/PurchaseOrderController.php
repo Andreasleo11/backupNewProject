@@ -29,28 +29,34 @@ class PurchaseOrderController extends Controller
 
     public function approveSelected(Request $request)
     {
-        $ids = $request->input('ids');
-        PurchaseOrder::whereIn('id', $ids)->update([
-            'status' => 2,
-            'approved_date' => now()
-        ]);
-        return response()->json(['message' => 'Selected purchase orders approved.']);
+        if(auth()->user()->department->name === 'DIRECTOR'){
+            $ids = $request->input('ids');
+            PurchaseOrder::whereIn('id', $ids)->update([
+                'status' => 2,
+                'approved_date' => now()
+            ]);
+            return response()->json(['message' => 'Selected purchase orders approved.']);
+        }
+        return response()->json(['message' => 'No permission granted.']);
     }
 
     public function rejectSelected(Request $request)
     {
-        $ids = $request->input('ids');
-        $reason = $request->input('reason');
+        if(auth()->user()->department->name === 'DIRECTOR'){
+            $ids = $request->input('ids');
+            $reason = $request->input('reason');
 
-        if (!$ids || !$reason) {
-            return response()->json(['message' => 'Invalid request.'], 400);
+            if (!$ids || !$reason) {
+                return response()->json(['message' => 'Invalid request.'], 400);
+            }
+
+            PurchaseOrder::whereIn('id', $ids)->update([
+                'status' => 3,
+                'reason' => $reason
+            ]);
+            return response()->json(['message' => 'Selected purchase orders rejected.']);
         }
-
-        PurchaseOrder::whereIn('id', $ids)->update([
-            'status' => 3,
-            'reason' => $reason
-        ]);
-        return response()->json(['message' => 'Selected purchase orders rejected.']);
+        return response()->json(['message' => 'No permission granted.']);
     }
 
 
@@ -440,7 +446,7 @@ class PurchaseOrderController extends Controller
         // List of available months for the filter dropdown
         $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
             ->distinct()
-            ->orderBy('month')
+            ->orderByDesc('month')
             ->pluck('month');
 
         // Fetch counts for approved, waiting, and rejected using query scopes
