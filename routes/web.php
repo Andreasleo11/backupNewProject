@@ -753,11 +753,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
     Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
     Route::get('/purchaseOrder/{id}', [PurchaseOrderController::class, 'view'])->name('po.view');
-    Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'signPDF'])->name('po.sign');
+    Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'sign'])->name('po.sign');
     Route::post('/purchaseOrder/reject-pdf', [PurchaseOrderController::class, 'rejectPDF'])->name('po.reject');
     Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
     Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
-    Route::post('/purchaseOrder/signAll', [PurchaseOrderController::class, 'signAll'])->name('po.signAll');
     Route::post('/purchaseOrder/rejectAll', [PurchaseOrderController::class, 'rejectAll'])->name('po.rejectAll');
     Route::get('/purchase-orders/export', [PurchaseOrderController::class, 'exportExcel'])->name('po.export');
     Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
