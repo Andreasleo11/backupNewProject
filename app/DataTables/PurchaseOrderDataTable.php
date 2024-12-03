@@ -169,11 +169,40 @@ class PurchaseOrderDataTable extends DataTable
                 }
             )
             ->with('totalSum', function () use ($query) {
-                $selectedMonth = request('searchPanes')['invoice_date'] ?? null; // Get selected invoice date from SearchPanes
+                $selectedMonthInvoiceDate = request('searchPanes')['invoice_date'] ?? null; // Get selected invoice date from SearchPanes
 
-                if ($selectedMonth) {
+                if ($selectedMonthInvoiceDate) {
                     // Filter records to match the selected month-year
-                    $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+                    $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonthInvoiceDate]);
+                }
+
+                $selectedMonthTanggalPembayaran = request('searchPanes')['tanggal_pembayaran'] ?? null; // Get selected invoice date from SearchPanes
+
+                if ($selectedMonthTanggalPembayaran) {
+                    // Filter records to match the selected month-year
+                    $query->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$selectedMonthTanggalPembayaran]);
+                }
+
+                $status = request('searchPanes')['status'] ?? null;
+                if($status){
+                    $query->where('status', $status);
+                }
+
+                $vendorName = request('searchPanes')['vendor_name'] ?? null;
+                if($vendorName){
+                    $query->where('vendor_name', $vendorName);
+                }
+
+                // Apply all filters dynamically from DataTable's request
+                $request = request();
+                $globalSearch = $request->input('search.value', null);
+                if ($globalSearch) {
+                    $query->where(function ($q) use ($globalSearch) {
+                        $q->orWhere('po_number', 'like', "%{$globalSearch}%")
+                        ->orWhere('vendor_name', 'like', "%{$globalSearch}%")
+                        ->orWhere('invoice_date', 'like', "%{$globalSearch}%")
+                        ->orWhere('status', 'like', "%{$globalSearch}%");
+                    });
                 }
 
                 return $query->sum('total'); // Calculate the sum for filtered records

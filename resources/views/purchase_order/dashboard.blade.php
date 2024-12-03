@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        .vendor-row {
+            cursor: pointer;
+        }
+    </style>
     <div class="container mt-4">
 
         <div class="row mb-3 justify-content-between">
@@ -13,6 +18,91 @@
                     </ol>
                 </nav>
             </div>
+        </div>
+
+        <div class="row">
+            <!-- Total Monthly Chart -->
+            <div class="col">
+                <div class="card">
+                    <div class="ps-3 pt-3">
+                        <div class="h4">Monthly Totals</div>
+                        <div class="text-secondary">Sum of all purchase order total for each month.</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlyTotalsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="ps-3 pt-3">
+                        <div class="h4">Purchase Counts</div>
+                        <div class="text-secondary">Purchase count based on their statuses.</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="poStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="topVendorsModal" tabindex="-1" aria-labelledby="topVendorsModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="topVendorsModalLabel">Top Vendors</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="list-group" id="topVendorsList">
+                            @forelse ($topVendors as $index => $vendor)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>#{{ $index + 1 }}: {{ $vendor->vendor_name }}</strong>
+                                    </div>
+                                    <span class="badge bg-primary fs-5">IDR {{ number_format($vendor->total, 2) }}</span>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-center">
+                                    No data available for the selected month.
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- <!-- Top Vendors -->
+        <div class="row mt-4">
+            <div class="col">
+                <div class="card">
+                    <div class="p-3">
+                        <div class="h4">Top Vendors</div>
+                        <div class="text-secondary">Vendors with the highest sum of total based on the selected month.</div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group" id="topVendorList">
+                            @forelse ($topVendors as $index => $vendor)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>#{{ $index + 1 }}: {{ $vendor->vendor_name }}</strong>
+                                    </div>
+                                    <span class="badge bg-primary fs-5">IDR {{ number_format($vendor->total, 2) }}</span>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-center">
+                                    No data available for the selected month.
+                                </li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
+
+        <div class="row mt-4 justify-content-end">
             <div class="col-auto">
                 <!-- Month Filter -->
                 <select id="monthFilter" class="form-select d-inline-block w-auto">
@@ -24,41 +114,14 @@
                 </select>
             </div>
             <div class="col-auto">
+                <button class="btn btn-outline-primary " id="viewTopVendorsButton">View Top
+                    Vendors</button>
+            </div>
+            <div class="col-auto">
                 <form id="checkDetailForm" action="{{ route('po.index') }}" method="GET">
                     <input type="hidden" name="month" id="selectedMonthInput">
                     <button type="button" class="btn btn-primary" id="checkDetailButton">Check Detail</button>
                 </form>
-            </div>
-        </div>
-
-        <div class="row">
-            <!-- Total Monthly Chart -->
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="ps-3 pt-3">
-                        <div class="h4">Monthly Totals</div>
-                        <div class="text-secondary">Sum of all purchase order total for each month.</div>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="monthlyTotalsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Highest Vendor -->
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="p-3">
-                        <div class="h4">Top Vendor</div>
-                        <div class="text-secondary">Vendor with the highest sum of total based on the selected month.
-                        </div>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 id="highestVendorName">{{ $highestVendor?->vendor_name ?? 'N/A' }}</h5>
-                        <p class="fs-5 fw-bold">Total: IDR <span
-                                id="highestVendorTotal">{{ number_format($highestVendor?->total ?? 0, 2) }}</span></p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -130,10 +193,11 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>PO Number</th>
                                 <th>Invoice Date</th>
+                                <th>PO Number</th>
                                 <th>Total</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="vendorPOTableBody">
@@ -151,7 +215,40 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('monthlyTotalsChart').getContext('2d');
+            const statusChartCtx = document.getElementById('poStatusChart').getContext('2d');
+            const statusData = @json($statusCounts); // Pass data from backend
+
+            new Chart(statusChartCtx, {
+                type: 'pie', // Pie chart for visualizing proportions
+                data: {
+                    labels: ['Approved', 'Waiting', 'Rejected'],
+                    datasets: [{
+                        data: [statusData.approved, statusData.waiting, statusData.rejected],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)', // Approved - Green
+                            'rgba(255, 205, 86, 0.6)', // Waiting - Yellow
+                            'rgba(255, 99, 132, 0.6)' // Rejected - Red
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(255, 99, 132, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
+            const monthlyTotalsChartCtx = document.getElementById('monthlyTotalsChart').getContext('2d');
             let monthlyTotalsChart = null;
 
             // Initialize Chart
@@ -159,7 +256,7 @@
                 if (monthlyTotalsChart) {
                     monthlyTotalsChart.destroy();
                 }
-                monthlyTotalsChart = new Chart(ctx, {
+                monthlyTotalsChart = new Chart(monthlyTotalsChartCtx, {
                     type: 'bar',
                     data: {
                         labels: data.labels,
@@ -195,19 +292,8 @@
                         // Update Chart
                         updateChart(data.chartData);
 
-                        // Update Top Vendor
-                        const highestVendorName = document.getElementById('highestVendorName');
-                        const highestVendorTotal = document.getElementById('highestVendorTotal');
-                        if (highestVendorName && highestVendorTotal) {
-                            if (data.highestVendor) {
-                                highestVendorName.textContent = data.highestVendor.vendor_name;
-                                highestVendorTotal.textContent = new Intl.NumberFormat().format(data
-                                    .highestVendor.total);
-                            } else {
-                                highestVendorName.textContent = 'No data available for the selected month.';
-                                highestVendorTotal.textContent = '';
-                            }
-                        }
+                        // Store topVendors for later use
+                        window.topVendorsData = data.topVendors;
 
                         // Update Vendors Table
                         const tableBody = document.getElementById('vendorTableBody');
@@ -216,20 +302,20 @@
                             if (data.vendorTotals.length > 0) {
                                 data.vendorTotals.forEach(vendor => {
                                     tableBody.innerHTML += `
-                                <tr class="vendor-row" data-vendor="${vendor.vendor_name}">
-                                    <td>${vendor.vendor_name}</td>
-                                    <td>IDR ${new Intl.NumberFormat().format(vendor.total)}</td>
-                                    <td>${vendor.po_count}</td>
-                                    <td>
-                                        <button class="btn btn-outline-primary rowDetailButton" data-vendor="${vendor.vendor_name}">Detail</button>
-                                    </td>
-                                </tr>`;
+                                    <tr class="vendor-row" data-vendor="${vendor.vendor_name}">
+                                        <td>${vendor.vendor_name}</td>
+                                        <td>IDR ${new Intl.NumberFormat().format(vendor.total)}</td>
+                                        <td>${vendor.po_count}</td>
+                                        <td>
+                                            <button class="btn btn-outline-primary rowDetailButton" data-vendor="${vendor.vendor_name}">Detail</button>
+                                        </td>
+                                    </tr>`;
                                 });
                             } else {
                                 tableBody.innerHTML = `
-                            <tr>
-                                <td colspan="2" class="text-center">No data available for the selected month.</td>
-                            </tr>`;
+                                    <tr>
+                                        <td colspan="2" class="text-center">No data available for the selected month.</td>
+                                    </tr>`;
                             }
                         }
 
@@ -347,23 +433,38 @@
                             modalBody.innerHTML = '';
 
                             if (data.length > 0) {
-                                data.forEach(po => {
-                                    // Render the status dynamically based on po.status
-                                    const statusBadge = getStatusBadge(po.status);
-                                    modalBody.innerHTML += `
-                                <tr>
-                                    <td>${po.po_number}</td>
-                                    <td>${po.invoice_date}</td>
-                                    <td>IDR ${new Intl.NumberFormat().format(po.total)}</td>
-                                    <td>${statusBadge}</td>
-                                    <td><a href="/purchaseOrder/${po.id}" class="btn btn-outline-secondary">View</a></td>
-                                </tr>`;
+                                // Group data by invoice_date
+                                const groupedData = data.reduce((acc, po) => {
+                                    if (!acc[po.invoice_date]) {
+                                        acc[po.invoice_date] = [];
+                                    }
+                                    acc[po.invoice_date].push(po);
+                                    return acc;
+                                }, {});
+
+                                // Render grouped rows with rowspan
+                                Object.keys(groupedData).forEach((invoiceDate) => {
+                                    const rows = groupedData[invoiceDate];
+                                    rows.forEach((po, index) => {
+                                        modalBody.innerHTML += `
+                                        <tr>
+                                            ${
+                                                index === 0
+                                                    ? `<td rowspan="${rows.length}">${invoiceDate}</td>` // Add rowspan to the first row of the group
+                                                    : ''
+                                            }
+                                            <td>${po.po_number}</td>
+                                            <td>IDR ${new Intl.NumberFormat().format(po.total)}</td>
+                                            <td>${getStatusBadge(po.status)}</td>
+                                            <td><a href="/purchaseOrder/${po.id}" class="btn btn-outline-secondary">View</a></td>
+                                        </tr>`;
+                                    });
                                 });
                             } else {
                                 modalBody.innerHTML = `
-                            <tr>
-                                <td colspan="5" class="text-center">No purchase orders found for this vendor in the selected month.</td>
-                            </tr>`;
+                                <tr>
+                                    <td colspan="5" class="text-center">No purchase orders found for this vendor in the selected month.</td>
+                                </tr>`;
                             }
 
                             // Show the modal
@@ -386,6 +487,34 @@
                     return `<span class="badge bg-warning">Pending</span>`;
             }
         }
+
+        function showTopVendorsModal() {
+            const topVendorsList = document.getElementById('topVendorsList');
+            topVendorsList.innerHTML = ''; // Clear existing content
+
+            if (window.topVendorsData && window.topVendorsData.length > 0) {
+                window.topVendorsData.forEach((vendor, index) => {
+                    topVendorsList.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>#${index + 1}: ${vendor.vendor_name}</strong>
+                    </div>
+                    <span class="badge bg-primary fs-5">IDR ${new Intl.NumberFormat().format(vendor.total)}</span>
+                </li>`;
+                });
+            } else {
+                topVendorsList.innerHTML = `
+                <li class="list-group-item text-center">
+                    No data available for the selected month.
+                </li>`;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('topVendorsModal'));
+            modal.show();
+        }
+
+        // Event listener for the button
+        document.getElementById('viewTopVendorsButton').addEventListener('click', showTopVendorsModal);
 
         document.getElementById('checkDetailButton').addEventListener('click', function() {
             const selectedMonth = document.getElementById('monthFilter').value;

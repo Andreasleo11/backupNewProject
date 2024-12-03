@@ -6,7 +6,7 @@
             <h1>Purchase Orders</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('po.dashboard') }}">Purchase Orders</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('po.dashboard') }}">Dashboard</a></li>
                     <li class="breadcrumb-item active">List</li>
                 </ol>
             </nav>
@@ -26,7 +26,7 @@
         </div>
     </div>
     <div class="p-2 fixed-bottom bg-dark shadow text-light text-center" style="opacity: 0.9;">
-        Total : <div id="total-sum" class="fw-bold fs-4">IDR 0.00</div>
+        Total based on the applied filter : <div id="total-sum" class="fw-bold fs-4">IDR 0.00</div>
     </div>
 
     <!-- Search Panes CSS -->
