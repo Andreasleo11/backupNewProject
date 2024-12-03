@@ -61,7 +61,8 @@
                                     <div>
                                         <strong>#{{ $index + 1 }}: {{ $vendor->vendor_name }}</strong>
                                     </div>
-                                    <span class="badge bg-primary fs-5">IDR {{ number_format($vendor->total, 2) }}</span>
+                                    <span class="badge bg-primary-subtle text-primary fs-5">IDR
+                                        {{ number_format($vendor->total, 2) }}</span>
                                 </li>
                             @empty
                                 <li class="list-group-item text-center">
@@ -499,7 +500,7 @@
                     <div>
                         <strong>#${index + 1}: ${vendor.vendor_name}</strong>
                     </div>
-                    <span class="badge bg-primary fs-5">IDR ${new Intl.NumberFormat().format(vendor.total)}</span>
+                    <span class="badge bg-primary-subtle text-primary fs-5">IDR ${new Intl.NumberFormat().format(vendor.total)}</span>
                 </li>`;
                 });
             } else {

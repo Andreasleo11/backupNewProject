@@ -12,7 +12,6 @@ use setasign\Fpdi\Fpdi;
 use App\Models\PurchaseOrder;
 use App\Models\File;
 use App\Models\PurchaseOrderDownloadLog;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -31,10 +30,17 @@ class PurchaseOrderController extends Controller
     {
         if(auth()->user()->department->name === 'DIRECTOR'){
             $ids = $request->input('ids');
-            PurchaseOrder::whereIn('id', $ids)->update([
-                'status' => 2,
-                'approved_date' => now()
-            ]);
+            $purchaseOrders = PurchaseOrder::whereIn('id', $ids)->get();
+
+            foreach ($purchaseOrders as $po) {
+                $signedPdfPath = $this->signPDF($po->id, $po->filename);
+                $po->update([
+                    'filename' => basename($signedPdfPath),
+                    'status' => 2,
+                    'approved_date' => now(),
+                ]);
+            }
+
             return response()->json(['message' => 'Selected purchase orders approved.']);
         }
         return response()->json(['message' => 'No permission granted.']);
@@ -157,11 +163,25 @@ class PurchaseOrderController extends Controller
     // }
 
 
-    public function signPDF(Request $request) // version click langsung keluar tanda tangan
+    public function sign(Request $request) // version click langsung keluar tanda tangan
     {
         $id = $request->input('id');
-            // Load the original PDF
         $filename = $request->input('filename');
+        $signedPdfPath = $this->signPDF($id, $filename);
+
+        $PurchaseOrder = PurchaseOrder::find($id);
+        if ($PurchaseOrder) {
+            $PurchaseOrder->filename = basename($signedPdfPath); // Save only the file name, not the full path
+            $PurchaseOrder->approved_date = now();
+            $PurchaseOrder->status = 2;
+            $PurchaseOrder->save();
+        }
+
+        return response()->json(['message' => 'PDF signed successfully!']);
+    }
+
+    private function signPDF($id, $filename)
+    {
         $pdfPath = public_path("storage/pdfs/{$filename}");
         $signedPdfPath = str_replace('.pdf', '_signed.pdf', $pdfPath);
 
@@ -188,15 +208,7 @@ class PurchaseOrderController extends Controller
         // Save the signed PDF
         $pdf->Output($signedPdfPath, 'F');
 
-        $PurchaseOrder = PurchaseOrder::find($id);
-        if ($PurchaseOrder) {
-            $PurchaseOrder->filename = basename($signedPdfPath); // Save only the file name, not the full path
-            $PurchaseOrder->approved_date = now();
-            $PurchaseOrder->status = 2;
-            $PurchaseOrder->save();
-        }
-
-        return response()->json(['message' => 'PDF signed successfully!']);
+        return $signedPdfPath;
     }
 
     public function rejectPDF(Request $request)
@@ -274,37 +286,6 @@ class PurchaseOrderController extends Controller
 
             return redirect()->route('po.index')->with('error', 'An error occurred while trying to delete the PO. Please try again later.');
         }
-    }
-
-    public function signAll(Request $request)
-    {
-        $ids = $request->input('ids');
-
-        // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
-        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
-        $rejectedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
-
-        // If any approved or rejected POs are found, return an error
-        if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
-            $message = 'Cannot sign selected POs. ';
-
-            if ($approvedPOs->isNotEmpty()) {
-                $message .= 'The following PO Numbers are already approved: ' . $approvedPOs->join(', ') . '. ';
-            }
-
-            if ($rejectedPOs->isNotEmpty()) {
-                $message .= 'The following PO Numbers are already rejected: ' . $rejectedPOs->join(', ') . '.';
-            }
-
-            return response()->json(['message' => $message], 400);
-        }
-
-        // Proceed to sign POs if no conflicts
-        foreach ($ids as $id) {
-            $this->signPDF(new Request(['id' => $id, 'filename' => PurchaseOrder::find($id)->filename]));
-        }
-
-        return response()->json(['message' => 'All selected POs signed successfully!']);
     }
 
     public function rejectAll(Request $request)
