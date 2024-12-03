@@ -253,6 +253,29 @@ class PurchaseOrderDataTable extends DataTable
      */
     public function html(): HtmlBuilder
     {
+        $buttons = [
+            Button::make('excel')
+                ->text('<i class=\'bx bx-spreadsheet\' style\'color:#ffffff\' ></i> Export to Excel')
+                ->attr(['class' => 'btn btn-secondary btn-sm']),
+            Button::make('csv'),
+            Button::make('pdf'),
+            Button::make('print'),
+            // Button::make('reset'),
+            // Button::make('reload')
+        ];
+
+        // Add conditional buttons for directors
+        if (auth()->user()->department->name === 'DIRECTOR') {
+            $buttons = array_merge([
+                Button::make()
+                    ->text('<i class=\'bx bx-check-circle\'></i> Approve Selected')
+                    ->attr(['id' => 'approve-selected-btn', 'class' => 'btn btn-success btn-sm']),
+                Button::make()
+                    ->text('<i class=\'bx bx-x-circle\'></i> Reject Selected')
+                    ->attr(['id' => 'reject-selected-btn', 'class' => 'btn btn-danger btn-sm']),
+            ], $buttons);
+        }
+
         return $this->builder()
                     ->setTableId('purchaseorder-table')
                     ->columns($this->getColumns())
@@ -266,24 +289,9 @@ class PurchaseOrderDataTable extends DataTable
                             'viewCount' => false,
                         ],
                     ])
-                    ->dom('PBfrtip')
+                    ->dom('PBflrtip')
                     ->orderBy(2)
-                    ->buttons([
-                        Button::make()
-                            ->text('<i class=\'bx bx-check-circle\'></i> Approve Selected')
-                            ->attr(['id' => 'approve-selected-btn', 'class' => 'btn btn-success btn-sm']),
-                        Button::make()
-                            ->text('<i class=\'bx bx-x-circle\'></i> Reject Selected')
-                            ->attr(['id' => 'reject-selected-btn', 'class' => 'btn btn-danger btn-sm']),
-                        Button::make('excel')
-                            ->text('<i class=\'bx bx-spreadsheet\' style\'color:#ffffff\' ></i> Export to Excel')
-                            ->attr(['class' => 'btn btn-secondary btn-sm']),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        // Button::make('reset'),
-                        // Button::make('reload')
-                    ]);
+                    ->buttons($buttons);
     }
 
     /**
