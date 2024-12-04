@@ -31,10 +31,8 @@ class PurchaseOrderDataTable extends DataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        return (new EloquentDataTable($query))
-            ->addColumn('checkbox', function ($po) {
-                return '<input type="checkbox" class="row-checkbox" value="' . $po->id . '">';
-            })
+        $rawColumns = ['status_label', 'action'];
+        $dataTable = (new EloquentDataTable($query))
             ->addColumn('creator_name', function ($po) {
                 return $po->user ? $po->user->name : 'N/A'; // Use the related user's name
             })
@@ -48,7 +46,7 @@ class PurchaseOrderDataTable extends DataTable
                 return Carbon::parse($po->tanggal_pembayaran)->setTimezone('Asia/Jakarta')->format('d-m-Y');
             })
             ->editColumn('approved_date', function ($po){
-                return Carbon::parse($po->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)');
+                return $po->approved_date ? Carbon::parse($po->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') : "";
             })
             ->addColumn('action', function($po){
                 return view('partials.po-actions', ['po' => $po])->render();
@@ -207,11 +205,19 @@ class PurchaseOrderDataTable extends DataTable
 
                 return $query->sum('total'); // Calculate the sum for filtered records
             })
-            ->rawColumns(['checkbox', 'status_label', 'action'])
+            ->rawColumns($rawColumns)
             ->setRowId(function ($po) {
                 return 'row-' . $po->id; // Set a unique row ID
-            })
-            ;
+            });
+
+             // Conditionally add the checkbox column for directors
+            if (auth()->user()->department->name === 'DIRECTOR') {
+                $dataTable->addColumn('checkbox', function ($po) {
+                    return '<input type="checkbox" class="row-checkbox" value="' . $po->id . '">';
+                });
+                $dataTable->rawColumns(array_merge(['checkbox'], $rawColumns));
+            }
+        return $dataTable;
     }
 
     /**
@@ -301,17 +307,7 @@ class PurchaseOrderDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
-            Column::computed('checkbox')
-                ->title('<input type="checkbox" id="select-all">')
-                ->exportable(false)
-                ->printable(false)
-                ->addClass('text-center')
-                ->width(10)
-                ->orderable(false)
-                ->searchable(false)
-                ->data('checkbox')
-                ->searchPanes(false),
+        $columns = [
             Column::make('po_number')->searchPanes(false),
             Column::make('vendor_name'),
             Column::make('invoice_date'),
@@ -335,7 +331,26 @@ class PurchaseOrderDataTable extends DataTable
                 ->addClass('text-center')
                 ->searchPanes(false),
         ];
+
+        // Conditionally add the checkbox column for directors
+        if (auth()->user()->department->name === 'DIRECTOR') {
+            array_unshift($columns,
+                Column::computed('checkbox')
+                    ->title('<input type="checkbox" id="select-all">')
+                    ->exportable(false)
+                    ->printable(false)
+                    ->addClass('text-center')
+                    ->width(10)
+                    ->orderable(false)
+                    ->searchable(false)
+                    ->data('checkbox')
+                    ->searchPanes(false)
+            );
+        }
+
+        return $columns;
     }
+
 
     /**
      * Get filename for export.

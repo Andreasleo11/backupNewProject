@@ -18,7 +18,7 @@
         @endif
     </div>
 
-    <div class="card pe-3">
+    <div class="card pe-3 mb-5">
         <div class="table-responsive">
             <div class="card-body">
                 {{ $dataTable->table() }}
@@ -73,8 +73,8 @@
                             alert(response.message);
                             table.ajax.reload();
                         },
-                        error: function() {
-                            alert('An error occurred.');
+                        error: function(error) {
+                            alert('An error occurred: ' + error);
                         },
                     });
                 } else {
