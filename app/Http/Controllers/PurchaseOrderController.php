@@ -6,6 +6,7 @@ use App\DataTables\PurchaseOrderDataTable;
 use App\Exports\PurchaseOrderExport;
 use App\Http\Requests\StorePoRequest;
 use App\Http\Requests\UpdatePoRequest;
+use App\Jobs\POSignPDFJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
@@ -33,12 +34,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrders = PurchaseOrder::whereIn('id', $ids)->get();
 
             foreach ($purchaseOrders as $po) {
-                $signedPdfPath = $this->signPDF($po->id, $po->filename);
-                $po->update([
-                    'filename' => basename($signedPdfPath),
-                    'status' => 2,
-                    'approved_date' => now(),
-                ]);
+                POSignPDFJob::dispatch($po);
             }
 
             return response()->json(['message' => 'Selected purchase orders approved.']);
