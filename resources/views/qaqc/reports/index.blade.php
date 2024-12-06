@@ -106,10 +106,12 @@
         $.fn.dataTable.ext.search.push(
             function(settings, data, dataIndex) {
                 var selectedMonth = $('#monthPicker').val();
-                if (!selectedMonth) return true;
+                if (!selectedMonth) return true; // Skip filter if no month is selected
 
-                var date = new Date(data[0]); // Assuming the date is in the first column
+                var recDate = data[3]; // Ensure this matches the 'rec_date' column index
+                var date = new Date(recDate);
                 var month = ('0' + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear();
+
                 return month === selectedMonth;
             }
         );
