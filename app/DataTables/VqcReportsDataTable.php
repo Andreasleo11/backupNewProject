@@ -53,13 +53,19 @@ class VqcReportsDataTable extends DataTable
      */
     public function query(Report $model): QueryBuilder
     {
-        $query = Report::query();
+        $query = $model->newQuery();
 
-        if(request()->has('month') && request('month')){
+        if ($search = request('search')['value'] ?? null) {
+            $query->where('doc_num', 'LIKE', "%{$search}%")
+                ->orWhere('invoice_no', 'LIKE', "%{$search}%")
+                ->orWhere('customer', 'LIKE', "%{$search}%");
+        }
+
+        if (request()->has('month') && request('month')) {
             $month = request('month');
             $date = Carbon::createFromFormat('m-Y', $month);
-            $query->whereMonth('created_at', $date->month)
-                ->whereYear('created_at', $date->year);
+            $query->whereMonth('rec_date', $date->month)
+                ->whereYear('rec_date', $date->year);
         }
 
         if (request()->has('status')) {
@@ -68,10 +74,6 @@ class VqcReportsDataTable extends DataTable
                 $query->approved();
             } elseif ($status === 'rejected') {
                 $query->rejected();
-            } elseif ($status === 'waitingSignature') {
-                $query->waitingSignature();
-            } elseif ($status === 'waitingApproval') {
-                $query->waitingApproval();
             }
         }
 
@@ -92,14 +94,15 @@ class VqcReportsDataTable extends DataTable
                         'month' => 'function() {return $("#monthPicker").val(); }'
                     ])
                     ->dom('Bfrtip')
+                    ->parameters([
+                        'searching' => true, // Ensure search is enabled
+                    ])
                     ->orderBy(4)
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
                         Button::make('pdf'),
                         Button::make('print'),
-                        // Button::make('reset'),
-                        // Button::make('reload')
                     ]);
     }
 
@@ -111,18 +114,18 @@ class VqcReportsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('doc_num')->addClass('text-center align-middle')->orderable(false),
-            Column::make('invoice_no')->addClass('text-center align-middle')->orderable(false),
-            Column::make('customer')->addClass('text-center align-middle'),
-            Column::make('rec_date')->addClass('text-center align-middle'),
-            Column::make('verify_date')->addClass('text-center align-middle'),
+            Column::make('doc_num')->addClass('text-center align-middle')->orderable(false)->searchable(true),
+            Column::make('invoice_no')->addClass('text-center align-middle')->orderable(false)->searchable(true),
+            Column::make('customer')->addClass('text-center align-middle')->searchable(true),
+            Column::make('rec_date')->addClass('text-center align-middle')->searchable(true),
+            Column::make('verify_date')->addClass('text-center align-middle')->searchable(true),
             Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->addClass('text-center align-middle'),
-            Column::make('status')->addClass('text-center align-middle')->orderable(false),
-            Column::make('description')->title('Reject Reason')->addClass('text-center align-middle'),
-            Column::make('approved_at')->title('Approved Date')->addClass('text-center align-middle'),
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center align-middle')->searchable(false),
+            Column::make('status')->addClass('text-center align-middle')->orderable(false)->searchable(false),
+            Column::make('description')->title('Reject Reason')->addClass('text-center align-middle')->searchable(true),
+            Column::make('approved_at')->title('Approved Date')->addClass('text-center align-middle')->searchable(true),
         ];
     }
 
