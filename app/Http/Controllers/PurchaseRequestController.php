@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\DirectorPurchaseRequestDataTable;
+use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestsExport;
 use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Controllers\Controller;
@@ -22,7 +23,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, PurchaseRequestsDataTable $dataTable)
     {
         // Get user information
         $user = Auth::user();
@@ -150,7 +151,8 @@ class PurchaseRequestController extends Controller
             'branch' => $branch,
         ]);
 
-        return view('purchaseRequest.index', compact('purchaseRequests'));
+        // return view('purchaseRequest.index', compact('purchaseRequests'));
+        return $dataTable->render('purchaseRequest.index');
     }
 
     public function getChartData(Request $request, $year, $month)
