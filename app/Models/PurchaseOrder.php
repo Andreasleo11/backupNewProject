@@ -46,6 +46,15 @@ class PurchaseOrder extends Model
         return $query->where('status', 3);
     }
 
+    public function scopeApprovedForCurrentMonth($query)
+    {
+        return $query->where('status', 2)
+                    ->whereBetween('created_at', [
+                        now()->startOfMonth(),
+                        now()->endOfMonth()
+                    ]);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'creator_id');

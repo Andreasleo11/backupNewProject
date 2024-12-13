@@ -22,6 +22,16 @@ class Kernel extends ConsoleKernel
 
         // Schedule the command to run daily at midnight
         $schedule->command('logs:delete-old')->daily();
+
+        $schedule->call(function() {
+            // Replace with the actual user or fetch users dynamically
+            $user = \App\Models\User::where('email', 'benny@daijo.co.id')->first();
+
+            if ($user) {
+                $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
+                $user->notify(new \App\Notifications\MonthlyPOStatus($poCount));
+            }
+        })->monthlyOn(20, '07:30');;
     }
 
     /**
