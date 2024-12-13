@@ -171,7 +171,7 @@
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
                                 <th rowspan="2">DO Number</th>
-                                @if ($report->is_approve !== 0 && $report->is_approve !== 1)
+                                @if ($report->is_approve !== 0)
                                     <th rowspan="2">Action</th>
                                 @endif
                             </tr>
@@ -235,7 +235,7 @@
                                     <td>
                                         <button data-bs-target="#edit-do-number-{{ $detail->id }}"
                                             data-bs-toggle="modal"
-                                            class="btn btn-primary btn-sm @if ($report->is_approve === 1 || $report->is_approve === 0) d-none @endif">Edit
+                                            class="btn btn-primary btn-sm @if ($report->is_approve === 1) d-none @endif">Edit
                                             DO Number</button>
                                     </td>
                                 </tr>

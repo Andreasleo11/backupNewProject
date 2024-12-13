@@ -1,47 +1,91 @@
 @extends('layouts.app')
 
 @section('content')
+    <style>
+        @keyframes rainbow {
+            0% {
+                color: red;
+            }
 
-    <h1>Terakhir di update : {{ \Carbon\Carbon::parse($log->updated_at)->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</h1>
+            14% {
+                color: orange;
+            }
+
+            28% {
+                color: yellow;
+            }
+
+            42% {
+                color: green;
+            }
+
+            57% {
+                color: blue;
+            }
+
+            71% {
+                color: indigo;
+            }
+
+            85% {
+                color: violet;
+            }
+
+            100% {
+                color: red;
+            }
+        }
+
+        .rainbow-text {
+            animation: rainbow 3s linear infinite;
+            font-weight: bold;
+        }
+    </style>
+
+    <h1 class="rainbow-text">
+        Terakhir di update :
+        {{ \Carbon\Carbon::parse($log->updated_at)->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}
+    </h1>
+
 
     <!-- Main content -->
     @include('partials.alert-success-error')
     <form method="GET" action="/foremind-detail/print" target="_blank">
-    @csrf
-    <div class="form-group">
-        <div class="row align-items-center g-3">
-            <div class="col-auto">
-                <label class="form-label" for="vendor_code">Select Vendor Name (for Internal)</label>
-            </div>
-            <div class="col-auto">
-                <select class="form-select" id="vendor_code" name="vendor_code" required>
-                    <option value="" selected disabled>Select Vendor Name</option>
-                    @foreach($contacts as $contact)
-                        <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col">
-                <button class="btn btn-primary" type="submit">Submit</button>
+        @csrf
+        <div class="form-group">
+            <div class="row align-items-center g-3">
+                <div class="col-auto">
+                    <label class="form-label" for="vendor_code">Select Vendor Name (for Internal)</label>
+                </div>
+                <div class="col-auto">
+                    <select class="form-select" id="vendor_code" name="vendor_code" required>
+                        <option value="" selected disabled>Select Vendor Name</option>
+                        @foreach ($contacts as $contact)
+                            <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col">
+                    <button class="btn btn-primary" type="submit">Submit</button>
+                </div>
             </div>
         </div>
-    </div>
-</form>
-    <form method="GET" action="/foremind-detail/printCustomer" target="_blank"> 
+    </form>
+    <form method="GET" action="/foremind-detail/printCustomer" target="_blank">
         @csrf
         <div class="form-group mt-2">
             <div class="row align-items-center g-3">
                 <div class="col-auto">
-                    <label class="form-label for="vendor_code" >Enter Vendor Code(for Customer)</label>
+                    <label class="form-label for="vendor_code">Enter Vendor Code(for Customer)</label>
                 </div>
                 <div class="col-auto">
-                <select class="form-select" id="vendor_code" name="vendor_code" required>
-                    <option value="" selected disabled>Select Vendor Name</option>
-                    @foreach($contacts as $contact)
-                        <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
-                    @endforeach
-                </select>
-            </div>
+                    <select class="form-select" id="vendor_code" name="vendor_code" required>
+                        <option value="" selected disabled>Select Vendor Name</option>
+                        @foreach ($contacts as $contact)
+                            <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col">
                     <button class="btn btn-primary" type="submit">Submit</button>
                 </div>
