@@ -61,7 +61,7 @@ class PurchaseOrderDataTable extends DataTable
                 return view('partials.po-status', ['po' => $po])->render();
             })
             ->filter(function ($query) {
-                $request = request();
+                $request = request(); 
 
                 // Handle global search (default search bar functionality)
                 $globalSearch = $request->input('search.value', null);

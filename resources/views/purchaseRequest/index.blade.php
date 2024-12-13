@@ -16,8 +16,13 @@
             <a href="{{ route('purchaserequest.export.excel') }}" class="btn btn-outline-primary">Export Excel</a>
         </div>
     </div>
+    <div class="table"></div>
+    <div class="table-responsive">
+        {{ $dataTable->table() }}
+    </div>
+    </div>
 
-    <form action="{{ route('purchaserequest.home') }}" method="get">
+    {{-- <form action="{{ route('purchaserequest.home') }}" method="get">
         <div class="div mt-3 row">
             <div class="col-auto">
                 <label for="start_date" class="form-label">Start date</label>
@@ -126,5 +131,15 @@
         <div class="d-flex justify-content-end mt-3">
             {{ $purchaseRequests->links() }}
         </div>
-    </section>
+    </section> --}}
+
+    <!-- Search Panes CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.1.1/css/searchPanes.bootstrap5.min.css">
+
+    <!-- Search Panes JS -->
+    <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/dataTables.searchPanes.min.js"></script>
+    <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/searchPanes.bootstrap5.min.js"></script>
 @endsection
+@push('extraJs')
+    {{ $dataTable->scripts() }}
+@endpush

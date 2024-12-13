@@ -857,4 +857,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         return (new App\Notifications\SPKUpdated($spk, $details))->toMail(auth()->user());
     });
+
+    Route::get('/po-notification', function() {
+        $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
+        return (new \App\Notifications\MonthlyPOStatus($poCount))->toMail(auth()->user());
+    });
 });
