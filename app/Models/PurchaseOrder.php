@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Notifications\PurchaseOrderApproved;
+use App\Notifications\PurchaseOrderCanceled;
 use App\Notifications\PurchaseOrderCreated;
 use App\Notifications\PurchaseOrderRejected;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,6 +29,9 @@ class PurchaseOrder extends Model
         'total',
         'tanggal_pembayaran',
         'invoice_number',
+        'purchase_order_category_id',
+        'parent_po_number',
+        'revision_count',
     ];
 
     // Queries
@@ -44,6 +48,11 @@ class PurchaseOrder extends Model
     public function scopeRejected($query)
     {
         return $query->where('status', 3);
+    }
+
+    public function scopeCanceled($query)
+    {
+        return $query->where('status', 4);
     }
 
     public function scopeApprovedForCurrentMonth($query)
@@ -65,6 +74,10 @@ class PurchaseOrder extends Model
         return $this->hasOne(PurchaseOrderDownloadLog::class)->latestOfMany();
     }
 
+    public function category()
+    {
+        return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
+    }
 
     protected static function boot()
     {
@@ -78,9 +91,11 @@ class PurchaseOrder extends Model
             if ($report->isDirty('status')) {
                 $statusMapping = [
                     2 => 'approved',
-                    3 => 'rejected'
+                    3 => 'rejected',
+                    4 => 'canceled',
                 ];
 
+                // Send a notification based on the new status
                 $report->sendNotification($statusMapping[$report->status]);
                 if (isset($statusMapping[$report->status])) {
                 }
@@ -110,16 +125,17 @@ class PurchaseOrder extends Model
 
     private function prepareNotificationDetails()
     {
+        $total = number_format($this->total, 2, '.', ',');
         return [
             'greeting' => 'Purchase Order Notification',
             'actionText' => 'Check Now',
             'actionURL' => route('po.view', $this->id),
-            'body' => "Notification for Purchase Order Report: <br>
+            'body' => "Details of the Purchase Order: <br>
                 - PO Number : {$this->po_number} <br>
                 - Vendor Name : {$this->vendor_name} <br>
                 - Invoice Date : {$this->invoice_date} <br>
                 - Invoice Number : {$this->invoice_number} <br>
-                - Total : {$this->currency} {$this->total} <br>
+                - Total : {$this->currency} {$total} <br>
                 - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
                 - Status : {$this->getStatusText($this->status)}"
         ];
@@ -131,6 +147,7 @@ class PurchaseOrder extends Model
             1 => 'WAITING',
             2 => 'APPROVED',
             3 => 'REJECTED',
+            4 => 'CANCELED',
             default => 'UNDEFINED',
         };
     }
@@ -138,17 +155,17 @@ class PurchaseOrder extends Model
     private function getNotificationUsers($event)
     {
         if ($event == 'created') {
-            // Notify director on creation
             return User::whereHas('department', fn($query) => $query->where('name', 'DIRECTOR'))->get();
         } elseif($event == 'approved') {
-             // Notify creator on approval or rejection
              $deptHeadAccounting = User::where('name', 'benny')->first();
              $accountingUser = User::where('name', 'nessa')->first();
 
-             // Combine deptHeadAccounting, accountingUser, and this->user
              return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
+        } elseif($event == 'canceled') {
+            $director = User::whereHas('department', fn($query) => $query->where('name', 'DIRECTOR'))->first();
+
+            return collect([$this->user, $director])->filter();
         } else {
-            // Notify creator on approval or rejection
             return collect([$this->user])->filter();
         }
     }
@@ -159,6 +176,7 @@ class PurchaseOrder extends Model
             'created' => new PurchaseOrderCreated($this, $details),
             'approved' => new PurchaseOrderApproved($this, $details),
             'rejected' => new PurchaseOrderRejected($this, $details),
+            'canceled' => new PurchaseOrderCanceled($this, $details),
             default => null,
         };
     }

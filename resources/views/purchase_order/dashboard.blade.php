@@ -22,7 +22,7 @@
 
         <div class="row">
             <!-- Total Monthly Chart -->
-            <div class="col">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="ps-3 pt-3">
                         <div class="h4">Monthly Totals</div>
@@ -33,14 +33,25 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card">
                     <div class="ps-3 pt-3">
-                        <div class="h4">Purchase Counts</div>
-                        <div class="text-secondary">Purchase count based on their statuses.</div>
+                        <div class="h4">PO by Status Chart</div>
+                        <div class="text-secondary">Purchase Order count based on their statuses.</div>
                     </div>
                     <div class="card-body">
                         <canvas id="poStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="ps-3 pt-3">
+                        <div class="h4">PO by Category Chart</div>
+                        <div class="text-secondary">Purchase Order count based on their categories.</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="poCategoryChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -51,7 +62,7 @@
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="topVendorsModalLabel">Top Vendors</h5>
+                        <h5 class="modal-title" id="topVendorsModalLabel">Top 5 Vendors with the Highest Total</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -115,7 +126,7 @@
                 </select>
             </div>
             <div class="col-auto">
-                <button class="btn btn-outline-primary " id="viewTopVendorsButton">View Top
+                <button class="btn btn-outline-primary " id="viewTopVendorsButton">View 5 Top
                     Vendors</button>
             </div>
             <div class="col-auto">
@@ -216,24 +227,68 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const categoryChartData = @json($categoryChartData);
+
+            const categoryChartCtx = document.getElementById('poCategoryChart').getContext('2d');
+            const categoryData = categoryChartData.map(item => item.count); // Extract counts
+            const categoryLabels = categoryChartData.map(item => item.label); // Extract labels
+
+            new Chart(categoryChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: categoryLabels, // Category names
+                    datasets: [{
+                        data: categoryData, // Purchase order counts
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)', // Green
+                            'rgba(255, 205, 86, 0.6)', // Yellow
+                            'rgba(255, 99, 132, 0.6)', // Red
+                            'rgba(54, 162, 235, 0.6)', // Blue
+                            'rgba(153, 102, 255, 0.6)' // Purple (Add more as needed)
+                        ],
+                        borderColor: [
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+
             const statusChartCtx = document.getElementById('poStatusChart').getContext('2d');
             const statusData = @json($statusCounts); // Pass data from backend
 
             new Chart(statusChartCtx, {
                 type: 'pie', // Pie chart for visualizing proportions
                 data: {
-                    labels: ['Approved', 'Waiting', 'Rejected'],
+                    labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
                     datasets: [{
-                        data: [statusData.approved, statusData.waiting, statusData.rejected],
+                        data: [statusData.approved, statusData.waiting, statusData.rejected,
+                            statusData.canceled
+                        ],
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.6)', // Approved - Green
                             'rgba(255, 205, 86, 0.6)', // Waiting - Yellow
-                            'rgba(255, 99, 132, 0.6)' // Rejected - Red
+                            'rgba(255, 99, 132, 0.6)', // Rejected - Red
+                            'rgba(0, 0, 0, 0.3)' // Canceled - Gray
                         ],
                         borderColor: [
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 205, 86, 1)',
-                            'rgba(255, 99, 132, 1)'
+                            'rgba(75, 192, 192, 1)', // Approved - Green
+                            'rgba(255, 205, 86, 1)', // Waiting - Yellow
+                            'rgba(255, 99, 132, 1)', // Rejected - Red
+                            'rgba(0, 0, 0, 0.3)' // Canceled - Gray
                         ],
                         borderWidth: 1
                     }]
@@ -323,7 +378,6 @@
                         showModal();
                     })
                     .catch(error => console.error('Error loading data:', error));
-
 
             }
 
@@ -484,6 +538,8 @@
                     return `<span class="badge bg-success">Approved</span>`;
                 case 'Rejected':
                     return `<span class="badge bg-danger">Rejected</span>`;
+                case 'Canceled':
+                    return `<span class="badge bg-danger-subtle text-danger">Canceled</span>`;
                 default:
                     return `<span class="badge bg-warning">Pending</span>`;
             }

@@ -14,7 +14,9 @@ class StorePoRequest extends FormRequest
     public function rules()
     {
         return [
+            'parent_po_number' => 'nullable|numeric',
             'po_number' => 'required|numeric|unique:purchase_orders,po_number',
+            'purchase_order_category_id' => 'required|numeric|exists:purchase_order_categories,id',
             'vendor_name' => 'required|string|max:255',
             'invoice_date' => 'required|string',
             'invoice_number' => 'required|string',
@@ -28,9 +30,13 @@ class StorePoRequest extends FormRequest
     public function messages()
     {
         return [
+            'parent_po_number.numeric' => 'The PO number must be a number.',
             'po_number.required' => 'The PO number is required.',
             'po_number.numeric' => 'The PO number must be a number.',
             'po_number.unique' => 'This PO number already exists.',
+            'purchase_order_category_id.required' => 'The category is required.',
+            'purchase_order_category_id.numeric' => 'The category must be a number.',
+            'purchase_order_category_id.exists' => 'This category not exists.',
             'vendor_name.required' => 'The vendor name is required.',
             'vendor_name.string' => 'The vendor name must be a valid string.',
             'vendor_name.max' => 'The vendor name should not exceed 255 characters.',

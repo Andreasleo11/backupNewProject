@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use setasign\Fpdi\Fpdi;
 use App\Models\PurchaseOrder;
 use App\Models\File;
+use App\Models\PurchaseOrderCategory;
 use App\Models\PurchaseOrderDownloadLog;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
@@ -62,9 +63,12 @@ class PurchaseOrderController extends Controller
     }
 
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('purchase_order.create');
+        $categories = PurchaseOrderCategory::all();
+        $parentPONumber = $request->parent_po_number;
+
+        return view('purchase_order.create', compact('categories', 'parentPONumber'));
     }
 
     public function store(StorePoRequest $request)
@@ -91,18 +95,30 @@ class PurchaseOrderController extends Controller
         $total = (float) str_replace(',', '', $validated['total']);
 
         // Create a new PurchaseOrder record using Eloquent
-        $PurchaseOrder = new PurchaseOrder();
-        $PurchaseOrder->po_number = $validated['po_number'];
-        $PurchaseOrder->status = 1; // Initial status
-        $PurchaseOrder->filename = $filename;
-        $PurchaseOrder->creator_id = auth()->id();
-        $PurchaseOrder->vendor_name = $validated['vendor_name'];
-        $PurchaseOrder->invoice_date = $validated['invoice_date'];
-        $PurchaseOrder->invoice_number = $validated['invoice_number'];
-        $PurchaseOrder->currency = $validated['currency'];
-        $PurchaseOrder->total = $total;
-        $PurchaseOrder->tanggal_pembayaran = $validated['tanggal_pembayaran'];
-        $PurchaseOrder->save();
+        $purchaseOrder = new PurchaseOrder();
+        $purchaseOrder->po_number = $validated['po_number'];
+        $purchaseOrder->status = 1;
+        $purchaseOrder->filename = $filename;
+        $purchaseOrder->creator_id = auth()->id();
+        $purchaseOrder->vendor_name = $validated['vendor_name'];
+        $purchaseOrder->invoice_date = $validated['invoice_date'];
+        $purchaseOrder->invoice_number = $validated['invoice_number'];
+        $purchaseOrder->currency = $validated['currency'];
+        $purchaseOrder->total = $total;
+        $purchaseOrder->purchase_order_category_id = $validated['purchase_order_category_id'];
+        $purchaseOrder->tanggal_pembayaran = $validated['tanggal_pembayaran'];
+        if($validated['parent_po_number']) {
+            $purchaseOrder->parent_po_number = $validated['parent_po_number'];
+        }
+        $purchaseOrder->save();
+
+        // Update the canceled po revision_count
+        if($validated['parent_po_number']){
+            $parentPO = PurchaseOrder::where('po_number', $validated['parent_po_number'])->first();
+            $parentPO->update([
+                'revision_count' => $parentPO->revision_count + 1
+            ]);
+        }
 
         // Redirect to the PDF viewer with a success message
         return redirect()->route('po.index')->with('success', 'PO created successfully.');
@@ -111,6 +127,7 @@ class PurchaseOrderController extends Controller
     public function view($id)
     {
         $purchaseOrder = PurchaseOrder::find($id);
+        $revisions = PurchaseOrder::where('parent_po_number', $purchaseOrder->po_number)->get();
 
         $user = Auth::user();
         $files = File::where('doc_id', $purchaseOrder->po_number)->get();
@@ -121,7 +138,7 @@ class PurchaseOrderController extends Controller
             abort(500, 'PDF file not found.');
         }
 
-        return view('purchase_order.view', compact('purchaseOrder', 'user', 'files'));
+        return view('purchase_order.view', compact('purchaseOrder', 'user', 'files', 'revisions'));
     }
 
     // public function signPDF(Request $request) version pake signature box
@@ -434,7 +451,26 @@ class PurchaseOrderController extends Controller
                 ->count(),
             'rejected' => PurchaseOrder::rejected()
                 ->count(),
+            'canceled' => PurchaseOrder::canceled()
+                ->count(),
         ];
+
+        // Fetch Purchase Order counts grouped by category
+        $poByCategory = PurchaseOrder::selectRaw('purchase_order_category_id, COUNT(*) as count')
+            ->groupBy('purchase_order_category_id')
+            ->get();
+
+        // Fetch category names for better readability
+        $categories = PurchaseOrderCategory::whereIn('id', $poByCategory->pluck('purchase_order_category_id'))
+            ->pluck('name', 'id'); // Returns [id => name]
+
+        // Format data for chart
+        $categoryChartData = $poByCategory->map(function ($po) use ($categories) {
+            return [
+                'label' => $categories[$po->purchase_order_category_id] ?? 'Unknown',
+                'count' => $po->count,
+            ];
+        });
 
         return view('purchase_order.dashboard', compact(
             'monthlyTotals',
@@ -443,6 +479,7 @@ class PurchaseOrderController extends Controller
             'availableMonths',
             'selectedMonth',
             'statusCounts',
+            'categoryChartData',
         ));
     }
 
@@ -517,6 +554,17 @@ class PurchaseOrderController extends Controller
             ->get();
 
         return response()->json($purchaseOrders);
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $cancelReason = $request->description;
+        PurchaseOrder::find($id)->update([
+            'reason' => $cancelReason,
+            'status' => 4,
+            'approved_date' => null,
+        ]);
+        return redirect()->back()->with('success', 'Purchase Order cancelled successfully!');
     }
 
 }

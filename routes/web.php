@@ -750,7 +750,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
     Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
-    Route::get('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
+    Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
     Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
     Route::get('/purchaseOrder/{id}', [PurchaseOrderController::class, 'view'])->name('po.view');
     Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'sign'])->name('po.sign');
@@ -767,6 +767,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/purchase-orders/filter', [PurchaseOrderController::class, 'filter']);
     Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
     Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);
+    Route::put('/purchase-orders/cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name('po.cancel');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
@@ -861,5 +862,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/po-notification', function() {
         $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
         return (new \App\Notifications\MonthlyPOStatus($poCount))->toMail(auth()->user());
+    });
+
+    Route::get('/send-test-email', function () {
+        Illuminate\Support\Facades\Mail::raw('This is a test email to check configuration.', function ($message) {
+            $message->to('raymond@daijo.co.id') // Replace with your email
+                    ->subject('Test Email');
+        });
+
+        return 'Test email sent!';
     });
 });

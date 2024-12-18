@@ -19,6 +19,7 @@ class UpdatePoRequest extends FormRequest
                 'required',
                 'numeric',
             ],
+            'purchase_order_category_id' => 'required|numeric|exists:purchase_order_categories,id',
             'vendor_name' => 'required|string|max:255',
             'invoice_date' => 'required|string',
             'invoice_number' => 'required|string',
@@ -34,6 +35,9 @@ class UpdatePoRequest extends FormRequest
         return [
             'po_number.required' => 'The PO number is required.',
             'po_number.numeric' => 'The PO number must be a number.',
+            'purchase_order_category_id.required' => 'The category is required.',
+            'purchase_order_category_id.numeric' => 'The category must be a number.',
+            'purchase_order_category_id.exists' => 'This category not exists.',
             'vendor_name.required' => 'The vendor name is required.',
             'vendor_name.string' => 'The vendor name must be a valid string.',
             'vendor_name.max' => 'The vendor name should not exceed 255 characters.',
