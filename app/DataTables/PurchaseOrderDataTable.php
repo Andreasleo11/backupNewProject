@@ -51,9 +51,6 @@ class PurchaseOrderDataTable extends DataTable
             ->addColumn('action', function($po){
                 return view('partials.po-actions', ['po' => $po])->render();
             })
-            ->editColumn('currency', function($po){
-                return $po->currency;
-            })
             ->editColumn('total', function ($po) {
                 return number_format($po->total, 1, '.', ',');
             })
@@ -61,7 +58,7 @@ class PurchaseOrderDataTable extends DataTable
                 return view('partials.po-status', ['po' => $po])->render();
             })
             ->filter(function ($query) {
-                $request = request(); 
+                $request = request();
 
                 // Handle global search (default search bar functionality)
                 $globalSearch = $request->input('search.value', null);
@@ -99,6 +96,7 @@ class PurchaseOrderDataTable extends DataTable
                     ['value' => 1, 'label' => 'Waiting'],
                     ['value' => 2, 'label' => 'Approved'],
                     ['value' => 3, 'label' => 'Rejected'],
+                    ['value' => 4, 'label' => 'Canceled'],
                 ]),
                 // function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
                 //     return $query->whereIn('status', $values); // Filter by raw integer values
@@ -166,6 +164,17 @@ class PurchaseOrderDataTable extends DataTable
                     });
                 }
             )
+            ->searchPane(
+                'category.name',
+                fn() => \App\Models\PurchaseOrderCategory::query()
+                    ->select('id as value', 'name as label')
+                    ->distinct()
+                    ->get(),
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                    // Filter the query based on the selected categories
+                    return $query->whereIn('purchase_order_category_id', $values);
+                }
+            )
             ->with('totalSum', function () use ($query) {
                 $selectedMonthInvoiceDate = request('searchPanes')['invoice_date'] ?? null; // Get selected invoice date from SearchPanes
 
@@ -191,25 +200,32 @@ class PurchaseOrderDataTable extends DataTable
                     $query->where('vendor_name', $vendorName);
                 }
 
-                // Apply all filters dynamically from DataTable's request
-                $request = request();
-                $globalSearch = $request->input('search.value', null);
-                if ($globalSearch) {
-                    $query->where(function ($q) use ($globalSearch) {
-                        $q->orWhere('po_number', 'like', "%{$globalSearch}%")
-                        ->orWhere('vendor_name', 'like', "%{$globalSearch}%")
-                        ->orWhere('invoice_date', 'like', "%{$globalSearch}%")
-                        ->orWhere('status', 'like', "%{$globalSearch}%");
-                    });
+                $categoryId = request('searchPanes')['category.name'] ?? null;
+                if($categoryId){
+                    $query->where('purchase_order_category_id', $categoryId);
                 }
+
+                // // Apply all filters dynamically from DataTable's request
+                // $request = request();
+                // $globalSearch = $request->input('search.value', null);
+                // if ($globalSearch) {
+                //     $query->where(function ($q) use ($globalSearch) {
+                //         $q->orWhere('po_number', 'like', "%{$globalSearch}%")
+                //         ->orWhere('vendor_name', 'like', "%{$globalSearch}%")
+                //         ->orWhere('invoice_date', 'like', "%{$globalSearch}%")
+                //         ->orWhere('status', 'like', "%{$globalSearch}%")
+                //         ->orWhere('invoice_number', 'like', "%{$globalSearch}%");
+                //         // ->orWhere('category', 'like', "%{$globalSearch}%");
+                //     });
+                // }
 
                 return $query->sum('total'); // Calculate the sum for filtered records
             })
+
             ->rawColumns($rawColumns)
             ->setRowId(function ($po) {
                 return 'row-' . $po->id; // Set a unique row ID
             });
-
              // Conditionally add the checkbox column for directors
             if (auth()->user()->department->name === 'DIRECTOR') {
                 $dataTable->addColumn('checkbox', function ($po) {
@@ -228,9 +244,10 @@ class PurchaseOrderDataTable extends DataTable
      */
     public function query(PurchaseOrder $model): QueryBuilder
     {
-        return $model->newQuery()
+        return $model::with(['category'])->newQuery()
         ->select([
             'id',
+            'purchase_order_category_id',
             'creator_id',
             'po_number',
             'vendor_name',
@@ -296,7 +313,7 @@ class PurchaseOrderDataTable extends DataTable
                         ],
                     ])
                     ->dom('PBflrtip')
-                    ->orderBy(2)
+                    ->orderBy(3)
                     ->buttons($buttons);
     }
 
@@ -309,6 +326,7 @@ class PurchaseOrderDataTable extends DataTable
     {
         $columns = [
             Column::make('po_number')->searchPanes(false),
+            Column::make('category')->data('category.name')->orderable(false)->searchable(false),
             Column::make('vendor_name'),
             Column::make('invoice_date'),
             Column::make('invoice_number')->searchPanes(false),

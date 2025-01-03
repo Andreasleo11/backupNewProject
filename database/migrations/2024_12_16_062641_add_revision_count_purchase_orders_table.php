@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('purchase_orders', function (Blueprint $table) {
-            $table->dropColumn('downloaded_at');
+            $table->integer('revision_count')->default(0);
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('purchase_orders', function (Blueprint $table) {
-            $table->datetime('downloaded_at');
+            $table->dropColumn('revision_count');
         });
     }
 };

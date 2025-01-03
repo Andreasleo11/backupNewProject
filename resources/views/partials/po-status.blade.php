@@ -4,6 +4,8 @@
     <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
 @elseif ($po->status === 3)
     <span class="badge text-bg-danger px-3 py-2 fs-6">Rejected</span>
+@elseif($po->status === 4)
+    <span class="badge text-danger bg-danger-subtle px-3 py-2 fs-6">Canceled</span>
 @endif
 
 @if ($po->latestDownloadLog)

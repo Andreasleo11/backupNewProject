@@ -472,7 +472,6 @@
                 <span>Other</span>
             </a>
             <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-
                 <li class="sidebar-item">
                     <a href="{{ $department === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
                         class="sidebar-link">
@@ -586,6 +585,13 @@
                     <a href="{{ route('po.dashboard') }}" class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Purchase Orders
+                    </a>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('waiting_purchase_orders.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Waiting PO
                     </a>
                 </li>
             </ul>

@@ -13,7 +13,11 @@
         </div>
         @if (auth()->user()->department->name !== 'DIRECTOR')
             <div class="col text-end">
-                <a href="{{ route('po.create') }}" class="btn btn-primary">+ Create</a>
+                <form action="{{ route('po.create') }}" method="post">
+                    @csrf
+                    <input type="hidden" name="parentPONumber" value="">
+                    <button type="submit" class="btn btn-primary">+ Create</button>
+                </form>
             </div>
         @endif
     </div>
@@ -138,6 +142,7 @@
                     1: 'WAITING',
                     2: 'APPROVED',
                     3: 'REJECTED',
+                    4: 'CANCELED',
                 };
 
                 const invalidRows = [];

@@ -15,7 +15,13 @@
         <div class="card shadow-sm p-4">
             <form action="{{ route('po.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-
+                @if ($parentPONumber)
+                    <div class="form-group mb-3">
+                        <label for="parent_po_number" class="form-label">Parent PO Number</label>
+                        <input class="form-control bg-secondary-subtle" type="text" id="parent_po_number"
+                            name="parent_po_number" value="{{ old('parent_po_number', $parentPONumber) }}" readonly>
+                    </div>
+                @endif
                 <!-- PO Number Input -->
                 <div class="form-group mb-3">
                     <label for="po_number" class="form-label">PO Number</label>
@@ -50,6 +56,21 @@
                     <label for="tanggal_pembayaran" class="form-label">Tanggal Pembayaran</label>
                     <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran" class="form-control"
                         value="{{ old('tanggal_pembayaran') }}" required>
+                </div>
+
+                <!-- Purchase Order Category Input -->
+                <div class="form-group mb-3">
+                    <label for="purchase_order_category_id" class="form-label">Category</label>
+                    <select name="purchase_order_category_id" id="purchase_order_category_id" class="form-select">
+                        <option value="" {{ old('purchase_order_category_id') == '' ? 'selected' : '' }}>--Select
+                            Category--</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('purchase_order_category_id') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <!-- Total Input -->

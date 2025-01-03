@@ -18,4 +18,13 @@
         <i class="bi bi-trash"></i>
         <span class="d-none d-sm-inline">Delete</span>
     </button>
+@elseif ($po->status === 2 && auth()->user()->department->name === 'ACCOUNTING')
+    @include('partials.cancel-confirmation-modal', [
+        'id' => $po->id,
+        'route' => route('po.cancel', $po->id),
+    ])
+    <button class="btn btn-outline-danger my-1" data-bs-target="#cancel-confirmation-modal-{{ $po->id }}"
+        data-bs-toggle="modal">
+        <i class='bx bx-x-circle'></i>
+        <span class="d-none d-sm-inline">Cancel</span> </button>
 @endif
