@@ -176,6 +176,8 @@ class PurchaseRequestsDataTable extends DataTable
             $query->where('from_department', $userDepartmentName);
         }
 
+        $query->orWhere('user_id_create', auth()->user()->id);
+
         return $query;
     }
 
