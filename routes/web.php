@@ -86,10 +86,7 @@ use App\Http\Controllers\MaintenanceInventoryController;
 use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
-
-
-
-
+use App\Http\Controllers\WaitingPurchaseOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -872,4 +869,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
         return 'Test email sent!';
     });
+
+    Route::resource('waiting_purchase_orders', WaitingPurchaseOrderController::class);
+
 });
