@@ -138,7 +138,7 @@
                                     @forelse ($revisions as $revision)
                                         <tr>
                                             <td>{{ $revision->po_number }}</td>
-                                            <td>{{ $revision->category->name }}</td>
+                                            <td>{{ $revision->category->name ?? '' }}</td>
                                             <td>{{ $revision->vendor_name }}</td>
                                             <td>{{ $revision->invoice_date }}</td>
                                             <td>{{ $revision->invoice_number }}</td>
