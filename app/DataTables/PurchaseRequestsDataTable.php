@@ -47,7 +47,7 @@ class PurchaseRequestsDataTable extends DataTable
                 return Carbon::parse($pr->date_pr)->setTimezone('Asia/Jakarta')->format('d-m-Y');
             })
             ->editColumn('approved_at', function($pr){
-                return Carbon::parse($pr->approved_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)');
+                return $pr->approved_date ? Carbon::parse($pr->approved_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') : '';
             })
             ->searchPane(
                 'branch',
@@ -175,6 +175,8 @@ class PurchaseRequestsDataTable extends DataTable
         } else {
             $query->where('from_department', $userDepartmentName);
         }
+
+        // $query->orWhere('user_id_create', auth()->user()->id);
 
         return $query;
     }

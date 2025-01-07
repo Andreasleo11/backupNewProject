@@ -23,7 +23,7 @@ class StorePoRequest extends FormRequest
             'tanggal_pembayaran' => 'required|date',
             'currency' => 'required|in:IDR,YUAN,USD',
             'total' => 'required|regex:/^\d{1,3}(,\d{3})*(\.\d+)?$/', // validates currency format
-            'pdf_file' => 'required|file|mimes:pdf|max:2048', // max 2MB
+            'pdf_file' => 'required|file|mimes:pdf|max:5120', // max 5MB
         ];
     }
 
@@ -51,7 +51,7 @@ class StorePoRequest extends FormRequest
             'total.regex' => 'The total must be a valid currency format.',
             'pdf_file.required' => 'Please upload a PDF file.',
             'pdf_file.mimes' => 'The file must be a PDF.',
-            'pdf_file.max' => 'The PDF file size should not exceed 2MB.',
+            'pdf_file.max' => 'The PDF file size should not exceed 5MB.',
         ];
     }
 }
