@@ -136,6 +136,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         // Loop through each detail to group by name and dept_no
         foreach ($report->details as $detail) {
             $name = $detail->name;
+            $spec = $detail->spec;
             $deptNo = $detail->dept_no;
             $uom = $detail->uom;
             $detailId = $detail->id;
@@ -150,12 +151,22 @@ class MonthlyBudgetSummaryReportController extends Controller
 
             $found = false;
             foreach ($groupedDetails[$name]['items'] as &$item) {
-                if ($item['dept_no'] === $deptNo && $item['uom'] === $uom) {
-                    // If found, accumulate quantity and track ID for deletion
-                    $item['quantity'] += $detail->quantity;
-                    $detailsToDelete[] = $detailId;
-                    $found = true;
-                    break;
+                if($item['dept_no'] === 363) {
+                    if ($item['dept_no'] === $deptNo && $item['uom'] === $uom && $item['spec'] === $spec) {
+                        // If found, accumulate quantity and track ID for deletion
+                        $item['quantity'] += $detail->quantity;
+                        $detailsToDelete[] = $detailId;
+                        $found = true;
+                        break;
+                    }
+                } else {
+                    if ($item['dept_no'] === $deptNo && $item['uom'] === $uom) {
+                        // If found, accumulate quantity and track ID for deletion
+                        $item['quantity'] += $detail->quantity;
+                        $detailsToDelete[] = $detailId;
+                        $found = true;
+                        break;
+                    }
                 }
             }
 
