@@ -16,8 +16,9 @@ class SapRejectImport implements ToModel
             */
             return new SapReject([
                 'item_no'  => $row[0],
-                'warehouse'  => $row[1],
-                'in_stock'  => $row[2],
+                'item_description'  => $row[1],
+                'item_group'  => $row[2],
+                'in_stock'  => $row[3],
             ]);
         
         }

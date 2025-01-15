@@ -100,6 +100,7 @@ class DeliveryScheduleController extends Controller
 
 			// Map the inventory data based on fg_code
 			$inventoryMap = $inventoryData->keyBy('item_code');
+		
 
 			// Combine the grouped data with the inventory data
 			$result = $itemCounts->map(function($group) use ($inventoryMap, $rejectdatas) {

@@ -710,6 +710,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
     Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name('masterinventory.delete');
 
+    Route::post('masterinventory/generate/qr/{id}', [MasterInventoryController::class, 'generateQr'])->name('generate.hardware.qrcode');
+
     // Route to handle adding new types
     Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
     Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');

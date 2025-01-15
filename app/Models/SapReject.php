@@ -15,7 +15,8 @@ class SapReject extends Model
 
     protected $fillable = [
         'item_no',
-        'warehouse',
+        'item_description',
+        'item_group',
         'in_stock',   
     ];
 }

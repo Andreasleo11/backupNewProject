@@ -100,6 +100,7 @@
                                 <th>Hardware Name</th>
                                 <th>Tanggal Pembelian</th>
                                 <th>Last Update</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -110,6 +111,15 @@
                                     <td>{{ $hardware->hardware_name }}</td>
                                     <td>{{ $hardware->remark }}</td>
                                     <td>{{ $hardware->updated_at->format('Y-m-d') }}</td>
+                                    <td>
+                                        <!-- Button to generate QR Code -->
+                                        <form action="{{ route('generate.hardware.qrcode', $hardware->id) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-primary">
+                                                Generate QR Code
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
