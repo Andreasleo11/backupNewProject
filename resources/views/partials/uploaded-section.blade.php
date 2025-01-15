@@ -1,4 +1,4 @@
-<div class="container border rounded-2 p-3">
+<div class="container border rounded-2 p-3 mt-4">
     <h4>Files</h4>
     <div class="row">
         @forelse ($files as $file)

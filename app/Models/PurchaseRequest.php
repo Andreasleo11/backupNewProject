@@ -157,7 +157,7 @@ class PurchaseRequest extends Model
         static::updated(function ($pr) {
             $statusChanged = $pr->isDirty('status');
 
-            if ($statusChanged) {
+            if ($statusChanged && $pr->status != 8) {
                 $pr->sendNotification('updated');
             }
         });

@@ -16,6 +16,24 @@
                         @csrf
 
                         <div class="form-group mt-5 col-md-2">
+                            <label class="form-label fs-5 fw-bold">Draft</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="is_draft" id="yesRadio" value="1"
+                                    {{ old('is_draft') == '1' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="yesRadio">
+                                    Yes
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="is_draft" id="noRadio" value="0"
+                                    checked>
+                                <label class="form-check-label" for="noRadio">
+                                    No
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-5 col-md-2">
                             <label class="form-label fs-5 fw-bold">Branch</label>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="branch" id="jakartaRadio"
