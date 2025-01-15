@@ -11,6 +11,7 @@
         "creagia/laravel-sign-pad": "^2.1",
         "datatables.net/datatables.net-dt": "^2.0",
         "doctrine/dbal": "^3.9",
+        "endroid/qr-code": "^6.0",
         "guzzlehttp/guzzle": "^7.8",
         "h4cc/wkhtmltoimage-amd64": "0.12.x",
         "h4cc/wkhtmltopdf-amd64": "0.12.x",

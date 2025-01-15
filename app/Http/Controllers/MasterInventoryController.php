@@ -577,4 +577,13 @@ class MasterInventoryController extends BaseController
     {
         return Excel::download(new InventoryMasterExport, 'listKomputer.xlsx');
     }
+
+
+    public function generateQr($id)
+    {
+        $data = DetailHardware::with('masterInventory','hardwareType')->find($id);
+       
+        $qrData = $data->brand . '~' . $data->hardwareType->name . '~' . $data->hardware_name;
+        dd($qrData);
+    }
 }
