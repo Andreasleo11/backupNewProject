@@ -146,6 +146,7 @@ class UpdateDailyController extends Controller
             $excelFileName = $this->processSapRejectFiles($uploadedFiles);
             try {
                 $this->importSapRejectFile($excelFileName);
+                
             } catch (\Throwable $th) {
                 //throw $th;
                 return redirect()->back()->with(['error' => 'Failed to Import Sap LineProduction']);
@@ -563,8 +564,16 @@ class UpdateDailyController extends Controller
             // Remove the first column
            foreach ($data[0] as &$row) {
                array_shift($row);
-           }
 
+                $totalRejectIndex = count($row) - 1;
+                if (isset($row[$totalRejectIndex])) {
+                    // Ensure the value is numeric before applying the formatting
+                    if (is_numeric($row[$totalRejectIndex])) {
+                        $row[$totalRejectIndex] = number_format((float)$row[$totalRejectIndex], 0, '.', '');
+                    }
+                }
+           }
+           
            // Append data from this file to the allData array
            $allData = array_merge($allData, $data[0]);
        }
@@ -582,7 +591,7 @@ class UpdateDailyController extends Controller
     {
             // Import the Excel file using the DelschedImport class
         Excel::import(new SapRejectImport, public_path('storage/AutomateFile/' . $excelFileName));
-
+       
             // If the import is successful, return a success message
         return 'Excel file imported successfully.';
     }
