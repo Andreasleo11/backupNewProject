@@ -31,6 +31,7 @@ class PurchaseRequestsDataTable extends DataTable
         5 => 'REJECTED',
         6 => 'WAITING FOR PURCHASER',
         7 => 'WAITING FOR GM',
+        8 => 'DRAFT',
     ];
 
     public function dataTable(QueryBuilder $query): EloquentDataTable
@@ -171,12 +172,12 @@ class PurchaseRequestsDataTable extends DataTable
 
             $query->whereNotNull('autograph_1');
         } elseif ($user->role->name === 'SUPERADMIN') {
-            $query->whereNotNull('autograph_1');
+            // no need to filter anyting
         } else {
             $query->where('from_department', $userDepartmentName);
         }
 
-        // $query->orWhere('user_id_create', auth()->user()->id);
+        $query->orWhere('user_id_create', auth()->user()->id);
 
         return $query;
     }
@@ -235,7 +236,7 @@ class PurchaseRequestsDataTable extends DataTable
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('text-center'),
-            Column::make('approved_at')->title('approved_date')->data('approved_at'),
+            Column::make('approved_at')->title('Approved Date')->data('approved_at'),
             Column::make('po_number')
         ];
     }
