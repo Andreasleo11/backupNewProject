@@ -10,7 +10,7 @@
             </ol>
         </nav>
 
-        <h1 class="h2 mb-3 fw-bold">Add Training</h1>
+        <h2 class="h2 mb-3 fw-bold">Add Training</h2>
         <div class="card">
             <div class="card-body">
                 <x-employee-training-form :action="route('employee_trainings.store')" :employees="$employees" submit-label="Save" />

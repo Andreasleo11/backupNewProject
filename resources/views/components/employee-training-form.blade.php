@@ -36,4 +36,13 @@
             <button type="submit" class="btn btn-success">{{ $submitLabel }}</button>
         </div>
     </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            new TomSelect('#employee_id', {
+                create: false, // Disable creating new options
+                maxItems: 1, // Limit to a single selection
+                placeholder: 'Select an employee',
+            });
+        });
+    </script>
 </div>

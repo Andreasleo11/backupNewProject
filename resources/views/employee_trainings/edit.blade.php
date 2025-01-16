@@ -10,7 +10,7 @@
             </ol>
         </nav>
 
-        <h1 class="h2 mb-3 fw-bold">Edit Training</h1>
+        <h2 class="h2 mb-3 fw-bold">Edit Training</h2>
         <div class="card">
             <div class="card-body">
                 <x-employee-training-form :action="route('employee_trainings.update', $training->id)" method="PUT" :employees="$employees" :employee-id="$training->employee_id"

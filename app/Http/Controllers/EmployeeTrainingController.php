@@ -60,7 +60,10 @@ class EmployeeTrainingController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Fetch the specific training record and its associated employee
+        $training = \App\Models\EmployeeTraining::with('employee')->findOrFail($id);
+
+        return view('employee_trainings.show', compact('training'));
     }
 
     /**

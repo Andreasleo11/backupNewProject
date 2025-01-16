@@ -13,7 +13,7 @@
             </ol>
         </nav>
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h1 fw-bold">Employee Trainings</h1>
+            <span class="h2 fw-bold">Employee Trainings</span>
             <a href="{{ route('employee_trainings.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Add New Training
             </a>
