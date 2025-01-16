@@ -31,20 +31,29 @@ class SendTrainingReminders extends Command
     {
         $targetDate = Carbon::today()->subDays(75);
 
-        $trainings = EmployeeTraining::whereDate('last_training_at', '=', $targetDate)
+        // Fetch trainings 2.5 months or older
+        $trainings = EmployeeTraining::whereDate('last_training_at', '>=', $targetDate)
             ->with('employee')
             ->get();
 
-        $userToBeNotified = \App\Models\User::whereHas('department', function($query){
-            $query->where('name', 'HRD')->where('is_head', 1);
-        })->first();
-        
-        foreach($trainings as $training) {
-            if($training->employee && $userToBeNotified){
-                $userToBeNotified->notify(new TrainingReminderNotification($training));
+        // Fetch users to be notified
+        $usersToBeNotified = User::whereHas('department', function ($query) {
+            $query->where(function ($query) {
+                $query->where('name', 'HRD')->where('is_head', 1);
+            });
+        })->get();
+
+        // dd($usersToBeNotified->pluck('email'));
+
+        foreach ($trainings as $training) {
+            if ($training->employee) {
+                foreach ($usersToBeNotified as $user) {
+                    $user->notify(new TrainingReminderNotification($training));
+                }
             }
         }
 
         $this->info('Employee Training reminders sent successfully for trainings 2.5 months old.');
     }
+
 }

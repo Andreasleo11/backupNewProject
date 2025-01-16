@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class TrainingReminderNotification extends Notification
+class TrainingReminderNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -43,7 +43,7 @@ class TrainingReminderNotification extends Notification
                     ->line('Employee NIK: ' . $this->training->employee->NIK)
                     ->line('Training Description: ' . $this->training->description)
                     ->line('Last Training Date: ' . \Carbon\Carbon::parse($this->training->last_training_at)->format('d-m-Y'))
-                    ->action('View All Trainings', route('employee_trainings.index'))
+                    ->action('View Training Details', route('employee_trainings.show', $this->training->id))
                     ->line('Thank you!');
     }
 
