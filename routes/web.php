@@ -87,6 +87,7 @@ use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
+use App\Http\Controllers\EmployeeTrainingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -873,5 +874,5 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     });
 
     Route::resource('waiting_purchase_orders', WaitingPurchaseOrderController::class);
-
+    Route::resource('employee_trainings', EmployeeTrainingController::class);
 });

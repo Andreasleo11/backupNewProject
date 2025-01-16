@@ -594,6 +594,13 @@
                         Waiting PO
                     </a>
                 </li>
+
+                <li class="sidebar-item">
+                    <a href="{{ route('employee_trainings.index') }}" class="sidebar-link">
+                        <i class='bx bx-file'></i>
+                        Employee Training
+                    </a>
+                </li>
             </ul>
         </li>
     </ul>

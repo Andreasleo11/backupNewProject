@@ -1,0 +1,6 @@
+<a href="{{ route('employee_trainings.edit', $training->id) }}" class="btn btn-warning btn-sm">Edit</a>
+<form action="{{ route('employee_trainings.destroy', $training->id) }}" method="POST" class="d-inline">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+</form>

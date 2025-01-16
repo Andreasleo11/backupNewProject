@@ -32,6 +32,8 @@ class Kernel extends ConsoleKernel
                 $user->notify(new \App\Notifications\MonthlyPOStatus($poCount));
             }
         })->monthlyOn(20, '07:30');;
+
+        $schedule->command('send:training-reminders')->dailyAt('08:00');
     }
 
     /**
