@@ -69,6 +69,8 @@
             DIRECTOR</span>
     @elseif($pr->status === 4)
         <span class="badge approved-bg px-3 py-2 fs-6">APPROVED</span>
+    @elseif($pr->status === 8)
+        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fs-6">DRAFT</span>
     @endif
 @endif
 <script type="module">

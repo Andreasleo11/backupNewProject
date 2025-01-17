@@ -4,6 +4,22 @@
         <h2>Maker</h2>
         <div class="autograph-box container" id="autographBox1"></div>
         <div class="container mt-2" id="autographuser1"></div>
+        @if (auth()->user()->email === $purchaseRequest->createdBy->email && !$purchaseRequest->autograph_1)
+            <div class="col-auto">
+                @include('partials.approve-pr-confirmation-modal', [
+                    'title' => 'Sign confirmation',
+                    'body' => 'Are you sure want to sign <strong>' . $purchaseRequest->doc_num . '</strong>?',
+                    'confirmButton' => [
+                        'id' => 'btn1',
+                        'class' => 'btn btn-success',
+                        'onclick' => 'addAutograph(1, ' . $purchaseRequest->id . ', ' . $user->id . ')',
+                        'text' => 'Confirm',
+                    ],
+                ])
+                <button data-bs-toggle="modal" data-bs-target="#approve-pr-confirmation-modal"
+                    class="btn btn-primary">Sign</button>
+            </div>
+        @endif
     </div>
 
     @php

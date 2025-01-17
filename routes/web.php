@@ -87,6 +87,7 @@ use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
+use App\Http\Controllers\EmployeeTrainingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -863,15 +864,12 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         return (new \App\Notifications\MonthlyPOStatus($poCount))->toMail(auth()->user());
     });
 
-    Route::get('/send-test-email', function () {
-        Illuminate\Support\Facades\Mail::raw('This is a test email to check configuration.', function ($message) {
-            $message->to('raymond@daijo.co.id') // Replace with your email
-                    ->subject('Test Email');
-        });
-
-        return 'Test email sent!';
+    Route::get('/training-notification', function(){
+        $training = \App\Models\EmployeeTraining::find(1);
+        return (new \App\Notifications\TrainingReminderNotification($training))->toMail(auth()->user());
     });
 
     Route::resource('waiting_purchase_orders', WaitingPurchaseOrderController::class);
-
+    Route::resource('employee_trainings', EmployeeTrainingController::class);
+    Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });

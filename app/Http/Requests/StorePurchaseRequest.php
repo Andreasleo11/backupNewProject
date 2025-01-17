@@ -46,6 +46,7 @@ class StorePurchaseRequest extends FormRequest
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
             'items.*.price' => ['required', new SanitizedNumeric],
+            'is_draft' => 'required|boolean',
         ];
     }
 
@@ -67,6 +68,8 @@ class StorePurchaseRequest extends FormRequest
             'items.required' => 'At least one item is required.',
             'items.*.name.required' => 'Each item must have a name.',
             'items.*.price.required' => 'Each item must have a price.',
+            'is_draft.required' => 'The draft field is required.',
+            'is_draft.boolean' => 'The draft should be boolean.',
         ];
     }
 }

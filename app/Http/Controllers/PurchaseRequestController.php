@@ -179,6 +179,7 @@ class PurchaseRequestController extends Controller
     public function insert(StorePurchaseRequest $request)
     {
         $items = $request->input('items', []);
+        $isDraft = $request->is_draft;
 
         // Process each item
         $processedItems = array_map(function ($item) {
@@ -203,6 +204,12 @@ class PurchaseRequestController extends Controller
             'status' => 1,
             'branch' => $request->branch,
         ];
+
+        if($isDraft){
+            $commonData['autograph_1'] = null;
+            $commonData['autograph_user_1'] = null;
+            $commonData['status'] = 8;
+        }
 
         if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
             if ($request->is_import === 'true') {
@@ -341,6 +348,10 @@ class PurchaseRequestController extends Controller
     {
         // If PR not Rejected
         if ($purchaseRequest->status !== 5) {
+            if($purchaseRequest->autograph_1 !== null) {
+                $purchaseRequest->status = 1;
+            }
+
             // After Dept Head Autograph
             if ($purchaseRequest->autograph_2 !== null) {
                 if ($purchaseRequest->from_department === 'MOULDING' || $purchaseRequest->from_department === 'QA' || $purchaseRequest->from_department === 'QC' || $purchaseRequest->type === 'office') {

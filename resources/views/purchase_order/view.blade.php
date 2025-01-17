@@ -56,7 +56,7 @@
                         </tr>
                         <tr>
                             <th>Category</th>
-                            <td>: {{ $purchaseOrder->category->name }}</td>
+                            <td>: {{ $purchaseOrder->category->name ?? '' }}</td>
                             <th></th>
                             <td></td>
                         </tr>
