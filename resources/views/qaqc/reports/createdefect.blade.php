@@ -114,8 +114,8 @@
                                                         <thead class="text-center align-middle">
                                                             <tr>
                                                                 <th class="py-3">#</th>
-                                                                <th>Customer Defect</th>
                                                                 <th>Daijo Defect</th>
+                                                                <th>Customer Defect</th>
                                                                 <th>Supplier Defect</th>
                                                                 <th>Remarks</th>
                                                                 <th>Action</th>
@@ -130,16 +130,16 @@
                                                                         <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
                                                                         </td>
                                                                         <td></td>
+                                                                    @elseif($defect->is_customer)
+                                                                        <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
+                                                                        </td>
+                                                                        <td></td>
+                                                                        <td></td>
                                                                     @elseif($defect->is_supplier)
                                                                         <td></td>
                                                                         <td></td>
                                                                         <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
                                                                         </td>
-                                                                    @else
-                                                                        <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
-                                                                        </td>
-                                                                        <td></td>
-                                                                        <td></td>
                                                                     @endif
                                                                     <td>{{ $defect->remarks ?? '-' }}</td>
                                                                     <td>

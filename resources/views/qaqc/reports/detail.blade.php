@@ -200,7 +200,7 @@
                                     <td>{{ $detail->cant_use }}</td>
                                     <td colspan="3" class="p-0">
                                         @foreach ($detail->defects as $defect)
-                                            @if ($defect->is_daijo === 1)
+                                            @if ($defect->is_daijo)
                                                 <table class="table table-borderless mb-0">
                                                     <tbody class="text-center">
                                                         <td style="background-color: transparent; width:33%;">
