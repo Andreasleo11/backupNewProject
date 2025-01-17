@@ -381,11 +381,13 @@ class QaqcReportController extends Controller
         foreach($report->details as $pd){
             $data1 = json_decode($pd->daijo_defect_detail);
             $data2 = json_decode($pd->customer_defect_detail);
-            $data3 = json_decode($pd->remark);
+            $data3 = json_decode($pd->supplier_defect_detail);
+            $data4 = json_decode($pd->remark);
 
             $pd->daijo_defect_detail = $data1;
             $pd->customer_defect_detail = $data2;
-            $pd->remark = $data3;
+            $pd->supplier_defect_detail = $data3;
+            $pd->remark = $data4;
         }
 
         $autographNames = [
@@ -407,11 +409,13 @@ class QaqcReportController extends Controller
         foreach($report->details as $pd){
             $data1 = json_decode($pd->daijo_defect_detail);
             $data2 = json_decode($pd->customer_defect_detail);
-            $data3 = json_decode($pd->remark);
+            $data3 = json_decode($pd->supplier_defect_detail);
+            $data4 = json_decode($pd->remark);
 
             $pd->daijo_defect_detail = $data1;
             $pd->customer_defect_detail = $data2;
-            $pd->remark = $data3;
+            $pd->supplier_defect_detail = $data3;
+            $pd->remark = $data4;
         }
 
         $autographNames = [
@@ -507,8 +511,10 @@ class QaqcReportController extends Controller
             "detail_id" => "required|int",
             "quantity_customer" => "nullable|int",
             "quantity_daijo" => 'nullable|int',
-            "customer_defect_category" => 'nullable|int',
+            "quantity_supplier" => 'nullable|int',
             "daijo_defect_category" => 'nullable|int',
+            "customer_defect_category" => 'nullable|int',
+            "supplier_defect_category" => 'nullable|int',
             "remark" => "nullable|string",
             "other_remark" => 'nullable|string',
         ]);
@@ -528,30 +534,27 @@ class QaqcReportController extends Controller
 
         }
 
-        // Create customer defect if checkbox is checked
-        if ($request->has('check_customer') && $request->has('check_daijo')) {
+        if ($request->has('check_customer')) {
             Defect::create(array_merge($commonData, [
-                'category_id' => $request->daijo_defect_category,
-                'is_daijo' => true,
-                'quantity' => $request->quantity_daijo,
+                'category_id' => $request->customer_defect_category,
+                'is_customer' => true,
+                'quantity' => $request->quantity_customer,
             ]));
+        }
 
-            Defect::create(array_merge($commonData, [
-                'category_id' => $request->customer_defect_category,
-                'is_daijo' => false,
-                'quantity' => $request->quantity_customer,
-            ]));
-        } else if ($request->has('check_customer')) {
-            Defect::create(array_merge($commonData, [
-                'category_id' => $request->customer_defect_category,
-                'is_daijo' => false,
-                'quantity' => $request->quantity_customer,
-            ]));
-        } else if ($request->has('check_daijo')) {
+        if ($request->has('check_daijo')) {
             Defect::create(array_merge($commonData, [
                 'category_id' => $request->daijo_defect_category,
                 'is_daijo' => true,
                 'quantity' => $request->quantity_daijo,
+            ]));
+        }
+
+        if ($request->has('check_supplier')) {
+            Defect::create(array_merge($commonData, [
+                'category_id' => $request->supplier_defect_category,
+                'is_supplier' => true,
+                'quantity' => $request->quantity_supplier,
             ]));
         }
 
@@ -624,11 +627,13 @@ class QaqcReportController extends Controller
         foreach($report->details as $pd){
             $data1 = json_decode($pd->daijo_defect_detail);
             $data2 = json_decode($pd->customer_defect_detail);
-            $data3 = json_decode($pd->remark);
+            $data3 = json_decode($pd->supplier_defect_detail);
+            $data4 = json_decode($pd->remark);
 
             $pd->daijo_defect_detail = $data1;
             $pd->customer_defect_detail = $data2;
-            $pd->remark = $data3;
+            $pd->supplier_defect_detail = $data3;
+            $pd->remark = $data4;
         }
 
         $autographNames = [
@@ -742,6 +747,7 @@ class QaqcReportController extends Controller
                         'total_price' => 0,
                         'daijo_defect' => 0,
                         'customer_defect' => 0,
+                        'supplier_defect' => 0,
                         'cant_use' => 0,
                         'details' => []
                     ];
@@ -758,7 +764,9 @@ class QaqcReportController extends Controller
                 foreach ($detail->defects as $defect) {
                     if ($defect->is_daijo) {
                         $result[$month][$customerId]['daijo_defect'] += $defect->quantity;
-                    } else {
+                    } elseif($defect->is_supplier) {
+                        $result[$month][$customerId]['supplier_defect'] += $defect->quantity;
+                    } elseif($defect->is_customer) {
                         $result[$month][$customerId]['customer_defect'] += $defect->quantity;
                     }
                 }

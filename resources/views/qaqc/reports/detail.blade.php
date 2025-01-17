@@ -168,6 +168,7 @@
                                 <th rowspan="2">Can't Use</th>
                                 <th colspan="3">Daijo Defect</th>
                                 <th colspan="3">Customer Defect</th>
+                                <th colspan="3">Supplier Defect</th>
                                 <th rowspan="2">Price Per Quantity</th>
                                 <th rowspan="2">Total</th>
                                 <th rowspan="2">DO Number</th>
@@ -176,6 +177,9 @@
                                 @endif
                             </tr>
                             <tr>
+                                <th>Quantity</th>
+                                <th>Category</th>
+                                <th>Remark</th>
                                 <th>Quantity</th>
                                 <th>Category</th>
                                 <th>Remark</th>
@@ -213,7 +217,24 @@
                                     </td>
                                     <td colspan="3" class="p-0">
                                         @foreach ($detail->defects as $defect)
-                                            @if (!$defect->is_daijo)
+                                            @if ($defect->is_customer)
+                                                <table class="table table-borderless mb-0">
+                                                    <tbody class="text-center">
+                                                        <td style="background-color: transparent; width:33%;">
+                                                            {{ $defect->quantity }}</td>
+                                                        <td style="background-color: transparent; width:34%;">
+                                                            {{ $defect->quantity . ' : ' . ($defect->category?->name ?? '-') }}
+                                                        </td>
+                                                        <td style="background-color: transparent"> {{ $defect->remarks }}
+                                                        </td>
+                                                    </tbody>
+                                                </table>
+                                            @endif
+                                        @endforeach
+                                    </td>
+                                    <td colspan="3" class="p-0">
+                                        @foreach ($detail->defects as $defect)
+                                            @if ($defect->is_supplier)
                                                 <table class="table table-borderless mb-0">
                                                     <tbody class="text-center">
                                                         <td style="background-color: transparent; width:33%;">

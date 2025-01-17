@@ -15,6 +15,8 @@ class Defect extends Model
         'detail_id',
         'category_id',
         'is_daijo',
+        'is_customer',
+        'is_supplier',
         'quantity',
         'remarks',
     ];
