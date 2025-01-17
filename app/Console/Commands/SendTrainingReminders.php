@@ -40,10 +40,11 @@ class SendTrainingReminders extends Command
         $usersToBeNotified = User::whereHas('department', function ($query) {
             $query->where(function ($query) {
                 $query->where('name', 'HRD')->where('is_head', 1);
-            });
+            })->orWhere('name', 'PERSONALIA');
         })->get();
 
         // dd($usersToBeNotified->pluck('email'));
+        // dd($trainings->pluck('id'));
 
         foreach ($trainings as $training) {
             if ($training->employee) {

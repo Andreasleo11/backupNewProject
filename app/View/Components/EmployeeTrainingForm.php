@@ -14,6 +14,7 @@ class EmployeeTrainingForm extends Component
     public $employeeId;
     public $description;
     public $lastTrainingAt;
+    public $evaluated;
     public $submitLabel;
 
     /**
@@ -26,6 +27,7 @@ class EmployeeTrainingForm extends Component
         $employeeId = null,
         $description = null,
         $lastTrainingAt = null,
+        $evaluated = null,
         $submitLabel = 'Save'
     ) {
         $this->action = $action;
@@ -34,6 +36,7 @@ class EmployeeTrainingForm extends Component
         $this->employeeId = $employeeId;
         $this->description = $description;
         $this->lastTrainingAt = $lastTrainingAt;
+        $this->evaluated = $evaluated;
         $this->submitLabel = $submitLabel;
     }
 

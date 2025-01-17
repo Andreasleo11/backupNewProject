@@ -47,7 +47,8 @@ class EmployeeTrainingController extends Controller
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'description' => 'required|string|max:255',
-            'last_training_at' => 'nullable|date',
+            'last_training_at' => 'required|date',
+            'evaluated' => 'nullable|boolean',
         ]);
 
         EmployeeTraining::create($request->all());
@@ -84,7 +85,8 @@ class EmployeeTrainingController extends Controller
         $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'description' => 'required|string|max:255',
-            'last_training_at' => 'nullable|date',
+            'last_training_at' => 'required|date',
+            'evaluated' => 'nullable|boolean',
         ]);
 
         $training = EmployeeTraining::findOrFail($id);
@@ -102,5 +104,16 @@ class EmployeeTrainingController extends Controller
         $training->delete();
 
         return redirect()->route('employee_trainings.index')->with('success', 'Training record deleted successfully.');
+    }
+
+    /**
+     * Update the evaluation status of the specified resource.
+     */
+     public function evaluate(string $id)
+     {
+         $training = EmployeeTraining::findOrFail($id);
+         $training->update(['evaluated' => true]);
+
+         return redirect()->route('employee_trainings.index')->with('success', 'Training record evaluated successfully.');
     }
 }

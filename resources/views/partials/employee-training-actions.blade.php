@@ -5,3 +5,11 @@
     @method('DELETE')
     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
 </form>
+@if (!$training->evaluated)
+    <form action="{{ route('employee_trainings.evaluate', $training->id) }}" method="post" class="d-inline">
+        @csrf
+        @method('PATCH')
+        <button type="submit" class="btn btn-success btn-sm"
+            onclick="return confirm('Are you sure?')">Evaluate</button>
+    </form>
+@endif

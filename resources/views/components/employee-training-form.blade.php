@@ -31,6 +31,23 @@
             <div class="invalid-feedback">Please provide a valid training date.</div>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Evaluated</label>
+            <div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="evaluated" id="evaluated_yes" value="1"
+                        {{ isset($evaluated) && $evaluated == true ? 'checked' : '' }}>
+                    <label class="form-check-label" for="evaluated_yes">Yes</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="evaluated" id="evaluated_no" value="0"
+                        {{ isset($evaluated) && $evaluated == false ? 'checked' : '' }}>
+                    <label class="form-check-label" for="evaluated_no">No</label>
+                </div>
+            </div>
+            <div class="invalid-feedback">Please specify if the training has been evaluated.</div>
+        </div>
+
         <div class="d-flex justify-content-end">
             <a href="{{ route('employee_trainings.index') }}" class="btn btn-secondary me-2">Cancel</a>
             <button type="submit" class="btn btn-success">{{ $submitLabel }}</button>
