@@ -32,7 +32,7 @@ class SendTrainingReminders extends Command
         $targetDate = Carbon::today()->subDays(75);
 
         // Fetch trainings 2.5 months or older
-        $trainings = EmployeeTraining::whereDate('last_training_at', '>=', $targetDate)
+        $trainings = EmployeeTraining::whereDate('last_training_at', '<=', $targetDate)
             ->with('employee')
             ->get();
 

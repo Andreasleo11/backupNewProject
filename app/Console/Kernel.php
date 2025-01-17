@@ -31,9 +31,9 @@ class Kernel extends ConsoleKernel
                 $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
                 $user->notify(new \App\Notifications\MonthlyPOStatus($poCount));
             }
-        })->monthlyOn(20, '07:30');;
+        })->monthlyOn(20, '00:30');;
 
-        $schedule->command('send:training-reminders')->dailyAt('08:00');
+        $schedule->command('send:training-reminders')->dailyAt('01:00');
     }
 
     /**
