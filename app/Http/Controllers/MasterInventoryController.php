@@ -17,6 +17,16 @@ use App\Models\DetailMaintenanceInventoryReport;
 use App\Exports\InventoryMasterExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Label\Label;
+use Endroid\QrCode\Logo\Logo;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Writer\ValidationException;
+
 class MasterInventoryController extends BaseController
 {
     public function index(Request $request)
@@ -584,6 +594,23 @@ class MasterInventoryController extends BaseController
         $data = DetailHardware::with('masterInventory','hardwareType')->find($id);
        
         $qrData = $data->brand . '~' . $data->hardwareType->name . '~' . $data->hardware_name;
-        dd($qrData);
+        
+        $qrCodeWriter = new PngWriter();
+        $qrcoded = null;
+
+        $qrCode = new QrCode(data: $qrData, errorCorrectionLevel: ErrorCorrectionLevel::High, size: 100,
+                margin: 5);
+
+        $writer = new PngWriter();
+        $qrCodeResult = $writer->write($qrCode);
+
+        // Get the PNG image as a string
+        $qrCodeImage = $qrCodeResult->getString();
+
+        // Base64 encode the image to embed in HTML
+        $qrcoded = base64_encode($qrCodeImage);
+
+        return view('masterinventory.qrcode', compact('qrcoded', 'data'));
+       
     }
 }

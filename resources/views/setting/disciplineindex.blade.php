@@ -154,12 +154,6 @@
         {{ $dataTable->scripts() }}
 
         <script type="module">
-            document.getElementById('other-route-button').addEventListener('click', function () {
-                const filterStatus = document.getElementById('status-filter').value;
-                const url = `{{ route('export.yayasan.full') }}?filter_status=${filterStatus}`;
-                window.location.href = url;
-            });
-
             document.addEventListener('DOMContentLoaded', (event) => {
                 const selectElement = document.getElementById('status-filter');
                 const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-11
@@ -340,6 +334,13 @@
                     });
                 }
             }
+
+
+            document.getElementById('other-route-button').addEventListener('click', function () {
+                const filterStatus = document.getElementById('status-filter').value;
+                const url = `{{ route('export.yayasan.full') }}?filter_status=${filterStatus}`;
+                window.location.href = url;
+            });
         </script>
     @endpush
 @endsection
