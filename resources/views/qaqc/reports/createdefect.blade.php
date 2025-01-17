@@ -116,6 +116,7 @@
                                                                 <th class="py-3">#</th>
                                                                 <th>Customer Defect</th>
                                                                 <th>Daijo Defect</th>
+                                                                <th>Supplier Defect</th>
                                                                 <th>Remarks</th>
                                                                 <th>Action</th>
                                                             </tr>
@@ -128,9 +129,16 @@
                                                                         <td></td>
                                                                         <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
                                                                         </td>
+                                                                        <td></td>
+                                                                    @elseif($defect->is_supplier)
+                                                                        <td></td>
+                                                                        <td></td>
+                                                                        <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
+                                                                        </td>
                                                                     @else
                                                                         <td>{{ $defect->quantity . ' : ' . $defect->category->name }}
                                                                         </td>
+                                                                        <td></td>
                                                                         <td></td>
                                                                     @endif
                                                                     <td>{{ $defect->remarks ?? '-' }}</td>
@@ -149,7 +157,7 @@
                                                                 </tr>
                                                             @empty
                                                                 <tr>
-                                                                    <td colspan="5" class="text-center">No Data</td>
+                                                                    <td colspan="6" class="text-center">No Data</td>
                                                                 </tr>
                                                             @endforelse
                                                         </tbody>
@@ -227,9 +235,13 @@
             const checkCustomerDefect{{ $detail->id }} = document.getElementById(
                 'checkCustomerDefect{{ $detail->id }}');
             const checkDaijoDefect{{ $detail->id }} = document.getElementById('checkDaijoDefect{{ $detail->id }}');
+            const checkSupplierDefect{{ $detail->id }} = document.getElementById(
+                'checkSupplierDefect{{ $detail->id }}');
             const customerDefectGroup{{ $detail->id }} = document.getElementById(
                 'customerDefectGroup{{ $detail->id }}');
             const daijoDefectGroup{{ $detail->id }} = document.getElementById('daijoDefectGroup{{ $detail->id }}');
+            const supplierDefectGroup{{ $detail->id }} = document.getElementById(
+                'supplierDefectGroup{{ $detail->id }}');
             const remarkSelect{{ $detail->id }} = document.getElementById('remark{{ $detail->id }}');
             const otherInput{{ $detail->id }} = document.getElementById('other_remark{{ $detail->id }}');
 
@@ -246,6 +258,14 @@
                     daijoDefectGroup{{ $detail->id }}.style.display = 'block';
                 } else {
                     daijoDefectGroup{{ $detail->id }}.style.display = 'none';
+                }
+            });
+
+            checkSupplierDefect{{ $detail->id }}.addEventListener('change', function() {
+                if (this.checked) {
+                    supplierDefectGroup{{ $detail->id }}.style.display = 'block';
+                } else {
+                    supplierDefectGroup{{ $detail->id }}.style.display = 'none';
                 }
             });
 

@@ -132,6 +132,7 @@
                 <th class="align-middle">Can't Use</th>
                 <th class="align-middle">Daijo Defect Detail</th>
                 <th class="align-middle">Customer Defect Detail</th>
+                <th class="align-middle">Supplier Defect Detail</th>
                 <th class="align-middle">Price per Quantity</th>
                 <th class="align-middle">Total</th>
                 <th class="align-middle">DO Number</th>
@@ -157,7 +158,15 @@
                     </td>
                     <td>
                         @foreach ($detail->defects as $defect)
-                            @if (!$defect->is_daijo)
+                            @if (!$defect->is_customer)
+                                {{ $defect->quantity . ' : ' . ($defect->category ? $defect->category->name : '-') . ' (' . $defect->remarks . ') ' }}
+                                <br>
+                            @endif
+                        @endforeach
+                    </td>
+                    <td>
+                        @foreach ($detail->defects as $defect)
+                            @if ($defect->is_supplier)
                                 {{ $defect->quantity . ' : ' . ($defect->category ? $defect->category->name : '-') . ' (' . $defect->remarks . ') ' }}
                                 <br>
                             @endif
