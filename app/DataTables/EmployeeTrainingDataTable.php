@@ -39,6 +39,12 @@ class EmployeeTrainingDataTable extends DataTable
             ->filterColumn('employee_dept', function ($query, $keyword) {
                 $query->whereRaw("LOWER(employees.Dept) LIKE ?", ["%{$keyword}%"]);
             })
+            ->editColumn('evaluated', function ($training) {
+                return $training->evaluated
+                    ? '<span class="badge bg-success">Yes</span>'
+                    : '<span class="badge bg-danger">No</span>';
+            })
+            ->rawColumns(['evaluated'])
             ->setRowId('id');
     }
 
@@ -76,8 +82,6 @@ class EmployeeTrainingDataTable extends DataTable
                         Button::make('csv'),
                         Button::make('pdf'),
                         Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
                     ]);
     }
 
@@ -95,6 +99,7 @@ class EmployeeTrainingDataTable extends DataTable
             Column::make('employee_dept')->title('Dept')->data('employee_dept'),
             Column::make('description'),
             Column::make('last_training_at'),
+            Column::make('evaluated'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

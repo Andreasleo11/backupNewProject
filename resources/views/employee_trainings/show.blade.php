@@ -38,8 +38,17 @@
                         </h6>
                         <div class="p-3">
                             <p class="mb-2"><strong>Description:</strong> {{ $training->description }}</p>
-                            <p class="mb-0"><strong>Last Training Date:</strong>
+                            <p class="mb-2"><strong>Last Training Date:</strong>
                                 {{ \Carbon\Carbon::parse($training->last_training_at)->format('d-m-Y') }}</p>
+                            <p class="mb-0">
+                                <strong>Evaluated: </strong>
+                                @if ($training->evaluated)
+                                    <span class="badge bg-success">Yes</span>
+                                @else
+                                    <span class="badge bg-danger">No</span>
+                                @endif
+                            </p>
+
                         </div>
                     </div>
                 </div>

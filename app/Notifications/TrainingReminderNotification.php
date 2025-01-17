@@ -37,14 +37,11 @@ class TrainingReminderNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject('Training Reminder')
-                    ->greeting('Training Reminder')
-                    ->line('Employee Name: ' . $this->training->employee->Nama)
-                    ->line('Employee NIK: ' . $this->training->employee->NIK)
-                    ->line('Training Description: ' . $this->training->description)
-                    ->line('Last Training Date: ' . \Carbon\Carbon::parse($this->training->last_training_at)->format('d-m-Y'))
-                    ->action('View Training Details', route('employee_trainings.show', $this->training->id))
-                    ->line('Thank you!');
+                    ->subject('Training Reminder untuk Evaluasi 3 Bulan')
+                    ->greeting('Training Reminder untuk Evaluasi 3 Bulan')
+                    ->markdown('emails.training_reminder', [
+                        'training' => $this->training,
+                    ]);
     }
 
     /**

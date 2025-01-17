@@ -172,7 +172,7 @@ class PurchaseRequestsDataTable extends DataTable
 
             $query->whereNotNull('autograph_1');
         } elseif ($user->role->name === 'SUPERADMIN') {
-            // no need to filter anyting
+            $query->whereNot('from_department', 'ADMIN');
         } else {
             $query->where('from_department', $userDepartmentName);
         }

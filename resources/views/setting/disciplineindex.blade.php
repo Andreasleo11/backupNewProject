@@ -52,20 +52,20 @@
             </div>
 
             <div class="col-auto">
-                <?php echo date('Y'); ?>
+                <?php echo date('Y') - 1; ?>
             </div>
             <div class="col text-end" id="filtered-employees">
                 <!-- Filtered employees will be displayed here -->
             </div>
 
-            @if ($user->name === 'timotius' || $user->name === 'ani' )
+            @if ($user->name === 'timotius' || $user->name === 'ani')
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">Export Yayasan</button>
                 </div>
 
                 <div class="col-auto">
-                <!-- New Button -->
-                <button type="button" class="btn btn-secondary" id="other-route-button">Export Yayasan Full</button>
+                    <!-- New Button -->
+                    <button type="button" class="btn btn-secondary" id="other-route-button">Export Yayasan Full</button>
                 </div>
             @endif
             <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
@@ -154,12 +154,6 @@
         {{ $dataTable->scripts() }}
 
         <script type="module">
-            document.getElementById('other-route-button').addEventListener('click', function () {
-                const filterStatus = document.getElementById('status-filter').value;
-                const url = `{{ route('export.yayasan.full') }}?filter_status=${filterStatus}`;
-                window.location.href = url;
-            });
-
             document.addEventListener('DOMContentLoaded', (event) => {
                 const selectElement = document.getElementById('status-filter');
                 const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-11
@@ -340,6 +334,13 @@
                     });
                 }
             }
+
+
+            document.getElementById('other-route-button').addEventListener('click', function () {
+                const filterStatus = document.getElementById('status-filter').value;
+                const url = `{{ route('export.yayasan.full') }}?filter_status=${filterStatus}`;
+                window.location.href = url;
+            });
         </script>
     @endpush
 @endsection

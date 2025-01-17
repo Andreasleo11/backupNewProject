@@ -14,7 +14,7 @@
         <div class="card">
             <div class="card-body">
                 <x-employee-training-form :action="route('employee_trainings.update', $training->id)" method="PUT" :employees="$employees" :employee-id="$training->employee_id"
-                    :description="$training->description" :last-training-at="$training->last_training_at" submit-label="Update" />
+                    :description="$training->description" :last-training-at="$training->last_training_at" :evaluated="$training->evaluated" submit-label="Update" />
             </div>
         </div>
     </div>

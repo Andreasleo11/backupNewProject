@@ -13,6 +13,7 @@ class EmployeeTraining extends Model
         'employee_id',
         'description',
         'last_training_at',
+        'evaluated'
     ];
 
     public function employee()
