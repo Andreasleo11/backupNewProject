@@ -438,10 +438,13 @@ class DisciplineTableDataTable extends DataTable
                 ->searchable(false)
                 ->exportable(false)
                 ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
-            Column::make('kerajinan_kerja')->addClass('align-middle text-center'),
-            Column::make('kerapian_kerja')->addClass('align-middle text-center'),
+            Column::make('kerajinan_kerja')->addClass('align-middle text-center')
+            ->title('Kinerja Kerja'),
+            Column::make('kerapian_kerja')->addClass('align-middle text-center')
+            ->title('Kerapian'),
             Column::make('loyalitas')->addClass('align-middle text-center'),
-            Column::make('perilaku_kerja')->addClass('align-middle text-center'),
+            Column::make('perilaku_kerja')->addClass('align-middle text-center')
+            ->title('Etika dan Kesopanan'),
             Column::make('prestasi')->addClass('align-middle text-center'),
             Column::make('totaldiscipline')
                 ->title('Total Nilai Kedisiplinan')
