@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\director;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\PurchaseOrder;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
@@ -43,6 +44,17 @@ class DirectorHomeController extends Controller
             'rejected' => PurchaseOrder::rejected()->count(),
         ];
 
-        return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts'));
+        $employees = Employee::all();
+
+        // Flatten the data structure
+        $chartData = $employees->map(function ($employee) {
+            return [
+                'Branch' => $employee->Branch,
+                'Dept' => $employee->Dept,
+                'Status' => $employee->employee_status,
+            ];
+        });
+
+        return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData'));
     }
 }
