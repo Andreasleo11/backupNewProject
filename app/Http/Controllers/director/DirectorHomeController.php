@@ -9,6 +9,7 @@ use App\Models\PurchaseOrder;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
 use App\Models\PurchaseRequest;
+use App\Models\EmployeeWarningLog;
 use App\Models\Report;
 use Illuminate\Http\Request;
 
@@ -68,4 +69,18 @@ class DirectorHomeController extends Controller
             ->render('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
         // return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
     }
+
+    public function storeWarningLog(Request $request)
+    {
+        $request->validate([
+            'NIK' => 'required',
+            'warning_type' => 'required',
+            'reason' => 'required',
+        ]);
+
+        EmployeeWarningLog::create($request->all());
+
+        return redirect()->back()->with('success', 'Warning log has been created');
+    }
+    
 }
