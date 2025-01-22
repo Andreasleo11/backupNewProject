@@ -174,9 +174,10 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="container">
-            <h1>Employee Chart</h1>
+
+    <div class="container-fluid mt-5">
+        <div class="row">
+            <h1>HRIS Dashboard</h1>
 
             <!-- Legend Selection -->
             <div class="mb-4">
@@ -187,7 +188,6 @@
                     <option value="Branch">Branch</option>
                 </select>
             </div>
-
 
             <!-- Branch Filter -->
             <div class="mb-4">
@@ -213,21 +213,44 @@
                 </select>
             </div>
 
-            <div class="col-md-4 text-center">
+            <div class="col-md-4">
                 <!-- Pie Chart -->
+                <h3 class="fs-4">Employee Chart</h3>
                 <canvas id="employeeChart" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-8">
+                <!-- Employee Table -->
+                <h3>Filtered Employees</h3>
+                <div class="table-responsive">
+                    {{ $dataTable->table() }}
+                </div>
             </div>
         </div>
 
+        {{ $dataTable->scripts() }}
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script type="module">
+            $(document).ready(function() {
+                const table = $('#employeewithevaluation-table').DataTable();
+                console.log($("#branchFilter").val()); // Should not return undefined
+                console.log($("#deptFilter").val());
+                console.log($("#statusFilter").val());
+
+                $('#branchFilter, #deptFilter, #statusFilter').on('change', function() {
+                    table.ajax.reload(); // Reloads the DataTable with updated filters
+                });
+            });
+        </script>
         <script>
             const chartData = @json($chartData);
+            const tableData = @json($employees);
 
             const branchFilter = document.getElementById('branchFilter');
             const deptFilter = document.getElementById('deptFilter');
             const statusFilter = document.getElementById('statusFilter');
-            const legendFilter = document.getElementById('legendFilter'); // New Legend Selector
+            const legendFilter = document.getElementById('legendFilter'); // Optional if legend selection is added
             const ctx = document.getElementById('employeeChart').getContext('2d');
+            const employeeTableBody = document.getElementById('employeewithevaluation-table').querySelector('tbody');
 
             // Initialize empty pie chart
             let employeeChart = new Chart(ctx, {
@@ -259,12 +282,11 @@
                 },
             });
 
-            // Function to filter data and group by selected legend
+            // Function to filter data based on current selections
             function getFilteredData() {
                 const selectedBranch = branchFilter.value;
                 const selectedDept = deptFilter.value;
                 const selectedStatus = statusFilter.value;
-                const selectedLegend = legendFilter.value;
 
                 // Filter the data
                 const filteredData = chartData.filter(item => {
@@ -273,22 +295,58 @@
                         (!selectedStatus || item.Status === selectedStatus);
                 });
 
-                // Group the filtered data by the selected legend
-                const groupedData = filteredData.reduce((acc, item) => {
-                    const key = item[selectedLegend];
-                    acc[key] = (acc[key] || 0) + 1;
-                    return acc;
-                }, {});
-
-                return groupedData;
+                return filteredData;
             }
+
+            // function updateTable() {
+            //     const selectedBranch = branchFilter.value;
+            //     const selectedDept = deptFilter.value;
+            //     const selectedStatus = statusFilter.value;
+
+            //     // Filter the joined data
+            //     const filteredData = tableData.filter(item => {
+            //         return (!selectedBranch || item.Branch === selectedBranch) &&
+            //             (!selectedDept || item.Dept === selectedDept) &&
+            //             (!selectedStatus || item.employee_status === selectedStatus);
+            //     });
+
+            //     // Clear the table
+            //     employeeTableBody.innerHTML = '';
+
+            //     // Populate the table with filtered data
+            //     filteredData.forEach(employee => {
+            //         const row = document.createElement('tr');
+            //         row.innerHTML = `
+    //             <td>${employee.NIK}</td>
+    //             <td>${employee.Nama}</td>
+    //             <td>${employee.Dept}</td>
+    //             <td>${employee.Branch}</td>
+    //             <td>${employee.employee_status}</td>
+    //             <td>${employee.Month || '-'}</td>
+    //             <td>${employee.Alpha || '-'}</td>
+    //             <td>${employee.Telat || '-'}</td>
+    //             <td>${employee.Izin || '-'}</td>
+    //             <td>${employee.Sakit || '-'}</td>
+    //             <td>${employee.total || '-'}</td>
+    //         `;
+            //         employeeTableBody.appendChild(row);
+            //     });
+            // }
 
             // Function to update the chart
             function updateChart() {
                 const filteredData = getFilteredData();
+                const selectedLegend = legendFilter.value; // Get the selected legend (Status, Dept, or Branch)
 
-                const labels = Object.keys(filteredData);
-                const data = Object.values(filteredData);
+                // Group data for the chart
+                const groupedData = filteredData.reduce((acc, item) => {
+                    const key = item[selectedLegend]; // Use the selected legend dynamically
+                    acc[key] = (acc[key] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const labels = Object.keys(groupedData);
+                const data = Object.values(groupedData);
 
                 employeeChart.data.labels = labels;
                 employeeChart.data.datasets[0].data = data;
@@ -299,24 +357,24 @@
             }
 
             function updateDropdowns() {
-                const selectedLegend = legendFilter.value;
+                const selectedLegend = legendFilter.value; // Get the selected legend
                 const selectedBranch = branchFilter.value;
                 const selectedDept = deptFilter.value;
                 const selectedStatus = statusFilter.value;
 
-                // Hide or disable the dropdown corresponding to the selected legend
+                // Hide or show filters based on the selected legend
                 if (selectedLegend === "Branch") {
-                    branchFilter.parentElement.style.display = "none"; // Hide the Branch filter
-                    deptFilter.parentElement.style.display = "block"; // Show Dept filter
-                    statusFilter.parentElement.style.display = "block"; // Show Status filter
+                    branchFilter.parentElement.style.display = "none";
+                    deptFilter.parentElement.style.display = "block";
+                    statusFilter.parentElement.style.display = "block";
                 } else if (selectedLegend === "Dept") {
-                    branchFilter.parentElement.style.display = "block"; // Show Branch filter
-                    deptFilter.parentElement.style.display = "none"; // Hide the Dept filter
-                    statusFilter.parentElement.style.display = "block"; // Show Status filter
+                    branchFilter.parentElement.style.display = "block";
+                    deptFilter.parentElement.style.display = "none";
+                    statusFilter.parentElement.style.display = "block";
                 } else if (selectedLegend === "Status") {
-                    branchFilter.parentElement.style.display = "block"; // Show Branch filter
-                    deptFilter.parentElement.style.display = "block"; // Show Dept filter
-                    statusFilter.parentElement.style.display = "none"; // Hide the Status filter
+                    branchFilter.parentElement.style.display = "block";
+                    deptFilter.parentElement.style.display = "block";
+                    statusFilter.parentElement.style.display = "none";
                 }
 
                 // Populate Branch dropdown dynamically
@@ -363,30 +421,32 @@
             }
 
             // Event listeners for dropdowns
-            legendFilter.addEventListener('change', () => {
-                updateDropdowns(); // Adjust dropdowns based on new legend
-                updateChart();
-            });
-
             branchFilter.addEventListener('change', () => {
                 updateDropdowns();
                 updateChart();
+                // updateTable();
             });
 
             deptFilter.addEventListener('change', () => {
                 updateDropdowns();
                 updateChart();
+                // updateTable();
             });
 
             statusFilter.addEventListener('change', () => {
                 updateDropdowns();
                 updateChart();
+                // updateTable();
             });
 
-            // Initial load
+            legendFilter.addEventListener('change', () => {
+                updateDropdowns(); // Update dropdown options and visibility
+                updateChart(); // Update the chart with the new legend
+            });
+
             updateDropdowns();
             updateChart();
+            // updateTable();
         </script>
-
     </div>
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\director;
 
+use App\DataTables\EmployeeWithEvaluationDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\PurchaseOrder;
@@ -9,10 +10,11 @@ use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
 use App\Models\PurchaseRequest;
 use App\Models\Report;
+use Illuminate\Http\Request;
 
 class DirectorHomeController extends Controller
 {
-    public function index()
+    public function index(EmployeeWithEvaluationDataTable $dataTable, Request $request)
     {
         $reportCounts = [
             'approved' => Report::approved()->count(),
@@ -46,7 +48,6 @@ class DirectorHomeController extends Controller
 
         $employees = Employee::all();
 
-        // Flatten the data structure
         $chartData = $employees->map(function ($employee) {
             return [
                 'Branch' => $employee->Branch,
@@ -55,6 +56,16 @@ class DirectorHomeController extends Controller
             ];
         });
 
-        return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData'));
+        $branch = $request->get('branch');
+        $dept = $request->get('dept');
+        $status = $request->get('status');
+
+        return $dataTable->with([
+                'branch' => $branch,
+                'dept' =>  $dept,
+                'status' => $status,
+            ])
+            ->render('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
+        // return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
     }
 }
