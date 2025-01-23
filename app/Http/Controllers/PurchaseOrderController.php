@@ -66,7 +66,7 @@ class PurchaseOrderController extends Controller
     public function create(Request $request)
     {
         $categories = PurchaseOrderCategory::all();
-        $parentPONumber = $request->parent_po_number;
+        $parentPONumber = $request->get('parent_po_number', null);
 
         return view('purchase_order.create', compact('categories', 'parentPONumber'));
     }
@@ -107,20 +107,21 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->total = $total;
         $purchaseOrder->purchase_order_category_id = $validated['purchase_order_category_id'];
         $purchaseOrder->tanggal_pembayaran = $validated['tanggal_pembayaran'];
-        if($validated['parent_po_number']) {
+
+        if (!empty($validated['parent_po_number'])) {
             $purchaseOrder->parent_po_number = $validated['parent_po_number'];
+
+            // Update the canceled PO revision_count
+            $parentPO = PurchaseOrder::where('po_number', $validated['parent_po_number'])->first();
+            if ($parentPO) {
+                $parentPO->update([
+                    'revision_count' => $parentPO->revision_count + 1
+                ]);
+            }
         }
+
         $purchaseOrder->save();
 
-        // Update the canceled po revision_count
-        if($validated['parent_po_number']){
-            $parentPO = PurchaseOrder::where('po_number', $validated['parent_po_number'])->first();
-            $parentPO->update([
-                'revision_count' => $parentPO->revision_count + 1
-            ]);
-        }
-
-        // Redirect to the PDF viewer with a success message
         return redirect()->route('po.index')->with('success', 'PO created successfully.');
     }
 
