@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    @include('partials.alert-success-error')
     <div class="row">
         <div class="col">
             <div class="container">
@@ -64,7 +65,6 @@
                                     icon="<box-icon name='x-circle' color='gray' size='lg'></box-icon>" />
                             </a>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -232,9 +232,6 @@
         <script type="module">
             $(document).ready(function() {
                 const table = $('#employeewithevaluation-table').DataTable();
-                console.log($("#branchFilter").val()); // Should not return undefined
-                console.log($("#deptFilter").val());
-                console.log($("#statusFilter").val());
 
                 $('#branchFilter, #deptFilter, #statusFilter').on('change', function() {
                     table.ajax.reload(); // Reloads the DataTable with updated filters
@@ -297,41 +294,6 @@
 
                 return filteredData;
             }
-
-            // function updateTable() {
-            //     const selectedBranch = branchFilter.value;
-            //     const selectedDept = deptFilter.value;
-            //     const selectedStatus = statusFilter.value;
-
-            //     // Filter the joined data
-            //     const filteredData = tableData.filter(item => {
-            //         return (!selectedBranch || item.Branch === selectedBranch) &&
-            //             (!selectedDept || item.Dept === selectedDept) &&
-            //             (!selectedStatus || item.employee_status === selectedStatus);
-            //     });
-
-            //     // Clear the table
-            //     employeeTableBody.innerHTML = '';
-
-            //     // Populate the table with filtered data
-            //     filteredData.forEach(employee => {
-            //         const row = document.createElement('tr');
-            //         row.innerHTML = `
-    //             <td>${employee.NIK}</td>
-    //             <td>${employee.Nama}</td>
-    //             <td>${employee.Dept}</td>
-    //             <td>${employee.Branch}</td>
-    //             <td>${employee.employee_status}</td>
-    //             <td>${employee.Month || '-'}</td>
-    //             <td>${employee.Alpha || '-'}</td>
-    //             <td>${employee.Telat || '-'}</td>
-    //             <td>${employee.Izin || '-'}</td>
-    //             <td>${employee.Sakit || '-'}</td>
-    //             <td>${employee.total || '-'}</td>
-    //         `;
-            //         employeeTableBody.appendChild(row);
-            //     });
-            // }
 
             // Function to update the chart
             function updateChart() {

@@ -43,7 +43,9 @@ class EmployeeWithEvaluationDataTable extends DataTable
             ->filterColumn('Month', function ($query, $keyword) {
                 $query->where('latest_evaluation.Month', 'like', "%{$keyword}%");
             })
-            ->addColumn('action', 'employeewithevaluation.action')
+            ->addColumn('action', function($employee){
+                return view('partials.employee-with-evaluation-actions', ['employee' => $employee])->render();
+            })
             ->setRowId('id');
     }
 
@@ -146,9 +148,7 @@ class EmployeeWithEvaluationDataTable extends DataTable
             Column::make('total')->searchable(false),
             Column::computed('action')
                   ->exportable(false)
-                  ->printable(false)
-                  ->width(60)
-                  ->addClass('text-center'),
+                  ->printable(false),
         ];
     }
 

@@ -61,17 +61,20 @@ class DirectorHomeController extends Controller
         $dept = $request->get('dept');
         $status = $request->get('status');
 
+        $warningLogs = EmployeeWarningLog::all();
+
         return $dataTable->with([
                 'branch' => $branch,
                 'dept' =>  $dept,
                 'status' => $status,
             ])
-            ->render('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
+            ->render('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees', 'warningLogs'));
         // return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
     }
 
     public function storeWarningLog(Request $request)
     {
+
         $request->validate([
             'NIK' => 'required',
             'warning_type' => 'required',
@@ -82,5 +85,5 @@ class DirectorHomeController extends Controller
 
         return redirect()->back()->with('success', 'Warning log has been created');
     }
-    
+
 }
