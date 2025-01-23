@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\director;
 
+use App\DataTables\EmployeeWithEvaluationDataTable;
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\PurchaseOrder;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
 use App\Models\PurchaseRequest;
+use App\Models\EmployeeWarningLog;
 use App\Models\Report;
+use Illuminate\Http\Request;
 
 class DirectorHomeController extends Controller
 {
-    public function index()
+    public function index(EmployeeWithEvaluationDataTable $dataTable, Request $request)
     {
         $reportCounts = [
             'approved' => Report::approved()->count(),
@@ -43,6 +47,43 @@ class DirectorHomeController extends Controller
             'rejected' => PurchaseOrder::rejected()->count(),
         ];
 
-        return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts'));
+        $employees = Employee::all();
+
+        $chartData = $employees->map(function ($employee) {
+            return [
+                'Branch' => $employee->Branch,
+                'Dept' => $employee->Dept,
+                'Status' => $employee->employee_status,
+            ];
+        });
+
+        $branch = $request->get('branch');
+        $dept = $request->get('dept');
+        $status = $request->get('status');
+
+        $warningLogs = EmployeeWarningLog::all();
+
+        return $dataTable->with([
+                'branch' => $branch,
+                'dept' =>  $dept,
+                'status' => $status,
+            ])
+            ->render('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees', 'warningLogs'));
+        // return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
     }
+
+    public function storeWarningLog(Request $request)
+    {
+
+        $request->validate([
+            'NIK' => 'required',
+            'warning_type' => 'required',
+            'reason' => 'required',
+        ]);
+
+        EmployeeWarningLog::create($request->all());
+
+        return redirect()->back()->with('success', 'Warning log has been created');
+    }
+
 }
