@@ -43,14 +43,14 @@
                     <td  colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;" >{{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
                        <!-- Blank cell with colspan="10" -->
                     </tr>
-                    <tr>
+                    <!-- <tr>
                     <td style="vertical-align: middle; height:60px; font-size: 18px;">ATT</td>
                     <td  colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;"> {{ $contact->persontocontact }} </td>
                     </tr>
                     <tr>
                     <td style="vertical-align: middle; height:60px; font-size: 18px;">FR </td>
                     <td  colspan="12" style="vertical-align: middle; height:60px; font-size: 18px;">{{ $contact->p_member }}</td>
-                    </tr>
+                    </tr> -->
                     <tr>
                     <td colspan="13"   align="center" style="vertical-align: middle; font-size: 30px;" >Forecast Report</td>
                     </tr>
