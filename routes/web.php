@@ -254,6 +254,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected')->middleware('permission:reject-selected-director');
 
         Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
+        Route::post('/filter-employees', [DirectorHomeController::class, 'filterEmployees'])->name('filter.employees');
+        Route::post('/get-employees-by-category', [DirectorHomeController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+        Route::post('/get-employees-by-department', [DirectorHomeController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+        Route::post('/get-employees-by-chart-category', [DirectorHomeController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
+
     });
 
     Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
@@ -874,4 +879,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::resource('waiting_purchase_orders', WaitingPurchaseOrderController::class);
     Route::resource('employee_trainings', EmployeeTrainingController::class);
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
+});
+
+Route::get('/employee-dashboard', function (\App\DataTables\EmployeeWithEvaluationDataTable $dataTable) {
+    return $dataTable->render('employee-dashboard');
 });

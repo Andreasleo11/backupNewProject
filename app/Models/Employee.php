@@ -29,4 +29,9 @@ class Employee extends Model
     {
         return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'NIK');
     }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'Dept', 'dept_no');
+    }
 }
