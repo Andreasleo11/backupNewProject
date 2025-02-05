@@ -8,7 +8,12 @@ import TomSelect from "tom-select";
 import { Fancybox } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import SignaturePad from "signature_pad";
+import { Chart, registerables } from "chart.js";
 
+// Register all necessary components
+Chart.register(...registerables);
+
+window.Chart = Chart;
 window.TomSelect = TomSelect;
 window.Fancybox = Fancybox;
 window.SignaturePad = SignaturePad;
