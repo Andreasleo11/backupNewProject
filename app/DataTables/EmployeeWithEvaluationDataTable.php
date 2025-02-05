@@ -25,14 +25,31 @@ class EmployeeWithEvaluationDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addColumn('totalkehadiran', '
+            @php
+
+            $total = 100;
+
+            $countalpha = $Alpha * 10;
+            $countizin = $Izin * 2;
+            $counttelat = $Telat * 0.5;
+
+            $all = $total - ($countalpha + $countizin + $counttelat + $Sakit);
+
+            if($all < 0)
+            {
+                $all = 0;
+            }
+            @endphp
+            {{ $all }}')
             ->filterColumn('NIK', function ($query, $keyword) {
                 $query->where('employees.NIK', 'like', "%{$keyword}%");
             })
             ->filterColumn('Nama', function ($query, $keyword) {
                 $query->where('employees.Nama', 'like', "%{$keyword}%");
             })
-            ->filterColumn('Dept', function ($query, $keyword) {
-                $query->where('employees.Dept', 'like', "%{$keyword}%");
+            ->filterColumn('department_name', function ($query, $keyword) {
+                $query->where('departments.name', 'like', "%{$keyword}%");
             })
             ->filterColumn('Branch', function ($query, $keyword) {
                 $query->where('employees.Branch', 'like', "%{$keyword}%");
@@ -41,7 +58,7 @@ class EmployeeWithEvaluationDataTable extends DataTable
                 $query->where('employees.employee_status', 'like', "%{$keyword}%");
             })
             ->filterColumn('Month', function ($query, $keyword) {
-                $query->where('latest_evaluation.Month', 'like', "%{$keyword}%");
+                $query->where('evaluation.Month', 'like', "%{$keyword}%");
             })
             ->addColumn('action', function($employee){
                 return view('partials.employee-with-evaluation-actions', ['employee' => $employee])->render();
@@ -52,38 +69,35 @@ class EmployeeWithEvaluationDataTable extends DataTable
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\EmployeeWithEvaluation $model
+     * @param \App\Models\Employee $model
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(Employee $model): QueryBuilder
     {
         $query = $model->newQuery()
+            ->leftJoin('departments', 'employees.Dept', '=', 'departments.dept_no') // Join the departments table
             ->leftJoinSub(
                 DB::table('evaluation_datas')
-                    ->select('NIK', 'Month', 'Alpha', 'Telat', 'Izin', 'Sakit', 'total')
-                    ->whereIn('id', function ($query) {
-                        $query->select(DB::raw('MAX(id)'))
-                            ->from('evaluation_datas')
-                            ->groupBy('NIK');
-                    }),
-                'latest_evaluation',
+                    ->select('id','NIK', 'Month', 'Alpha', 'Telat', 'Izin', 'Sakit', 'total'),
+                'evaluation',
                 'employees.NIK',
                 '=',
-                'latest_evaluation.NIK'
+                'evaluation.NIK'
             )
             ->select(
                 'employees.id',
                 'employees.NIK',
                 'employees.Nama',
-                'employees.Dept',
+                'employees.Gender',
+                'departments.name as department_name', // Select the department name
                 'employees.Branch',
                 'employees.employee_status',
-                'latest_evaluation.Month',
-                'latest_evaluation.Alpha',
-                'latest_evaluation.Telat',
-                'latest_evaluation.Izin',
-                'latest_evaluation.Sakit',
-                'latest_evaluation.total'
+                'evaluation.Month',
+                'evaluation.Alpha',
+                'evaluation.Telat',
+                'evaluation.Izin',
+                'evaluation.Sakit',
+                'evaluation.total'
             );
 
         // Apply filters
@@ -92,11 +106,23 @@ class EmployeeWithEvaluationDataTable extends DataTable
         }
 
         if ($this->request()->get('dept')) {
-            $query->where('employees.Dept', $this->request()->get('dept'));
+            $query->where('departments.dept_no', $this->request()->get('dept')); // Use dept_no from departments table
         }
 
         if ($this->request()->get('status')) {
             $query->where('employees.employee_status', $this->request()->get('status'));
+        }
+
+        if ($this->request()->get('gender')) {
+            $query->where('employees.Gender', $this->request()->get('gender'));
+        }
+
+        if($this->request()->get('monthYear')) {
+            $monthYear = explode("-", $this->request()->get('monthYear'));
+            $month = $monthYear[0]; // Get month
+            $year = $monthYear[1];  // Get year
+            $query->whereMonth('Month', $month)
+                ->whereYear('Month', $year);
         }
 
         return $query;
@@ -116,6 +142,8 @@ class EmployeeWithEvaluationDataTable extends DataTable
                         'branch' => '$("#branchFilter").val() || null',
                         'dept' => '$("#deptFilter").val() || null',
                         'status' => '$("#statusFilter").val() || null',
+                        'gender' => '$("#genderFilter").val() || null',
+                        'monthYear' => '$("#monthYearFilter").val() || null',
                     ])
                     //->dom('Bfrtip')
                     ->orderBy(1)
@@ -124,6 +152,13 @@ class EmployeeWithEvaluationDataTable extends DataTable
                         Button::make('csv'),
                         Button::make('pdf'),
                         Button::make('print'),
+                    ])->parameters([
+                        'initComplete' => 'function() {
+                            let table = $("#employeewithevaluation-table").DataTable();
+                            $("#branchFilter, #deptFilter, #statusFilter, #genderFilter, #monthYearFilter").on("change", function() {
+                                table.ajax.reload();
+                            });
+                        }',
                     ]);
     }
 
@@ -137,7 +172,8 @@ class EmployeeWithEvaluationDataTable extends DataTable
         return [
             Column::make('nik')->title('NIK')->data('NIK'),
             Column::make('nama')->title('Name')->data('Nama'),
-            Column::make('dept')->title('Dept')->data('Dept'),
+            Column::make('Gender'),
+            Column::make('department_name'),
             Column::make('branch')->title('Branch')->data('Branch'),
             Column::make('status')->title('Status')->data('employee_status'),
             Column::make('Month'),
@@ -145,7 +181,11 @@ class EmployeeWithEvaluationDataTable extends DataTable
             Column::make('Telat')->searchable(false),
             Column::make('Izin')->searchable(false),
             Column::make('Sakit')->searchable(false),
-            Column::make('total')->searchable(false),
+            Column::make('totalkehadiran')
+                ->title('Total Nilai Kehadiran')
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false),
