@@ -252,13 +252,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/director/pr/index', [DirectorPurchaseRequestController::class, 'index'])->name('director.pr.index')->middleware('permission:get-pr-director');
         Route::put('/director/pr/approveSelected', [DirectorPurchaseRequestController::class, 'approveSelected'])->name('director.pr.approveSelected')->middleware('permission:approve-selected-director');
         Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected')->middleware('permission:reject-selected-director');
-
-        Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
-        Route::post('/filter-employees', [DirectorHomeController::class, 'filterEmployees'])->name('filter.employees');
-        Route::post('/get-employees-by-category', [DirectorHomeController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
-        Route::post('/get-employees-by-department', [DirectorHomeController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
-        Route::post('/get-employees-by-chart-category', [DirectorHomeController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
-
     });
 
     Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
@@ -884,3 +877,15 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 Route::get('/employee-dashboard', function (\App\DataTables\EmployeeWithEvaluationDataTable $dataTable) {
     return $dataTable->render('employee-dashboard');
 });
+
+
+Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
+Route::post('/filter-employees', [DirectorHomeController::class, 'filterEmployees'])->name('filter.employees');
+Route::post('/get-employees-by-category', [DirectorHomeController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+Route::post('/get-employees-by-department', [DirectorHomeController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+Route::post('/get-employees-by-chart-category', [DirectorHomeController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
+Route::get('/employees/{id}/warnings', function ($id) {
+    $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
+    return response()->json($warnings);
+});
+
