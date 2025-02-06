@@ -74,19 +74,27 @@ class DirectorHomeController extends Controller
                 'alpha' => EvaluationData::whereIn('NIK', $activeEmployees)
                                         ->whereMonth('Month', $selectedMonth)
                                         ->whereYear('Month', $selectedYear)
-                                        ->sum('Alpha'),
+                                        ->where('Alpha', '>', 0) // Count only employees who have Alpha > 0
+                                        ->distinct()
+                                        ->count('NIK'),
                 'telat' => EvaluationData::whereIn('NIK', $activeEmployees)
                                         ->whereMonth('Month', $selectedMonth)
                                         ->whereYear('Month', $selectedYear)
-                                        ->sum('Telat'),
+                                        ->where('Telat', '>', 0) // Count only employees who have Telat > 0
+                                        ->distinct()
+                                        ->count('NIK'),
                 'izin'  => EvaluationData::whereIn('NIK', $activeEmployees)
                                         ->whereMonth('Month', $selectedMonth)
                                         ->whereYear('Month', $selectedYear)
-                                        ->sum('Izin'),
+                                        ->where('Izin', '>', 0) // Count only employees who have Izin > 0
+                                        ->distinct()
+                                        ->count('NIK'),
                 'sakit' => EvaluationData::whereIn('NIK', $activeEmployees)
                                         ->whereMonth('Month', $selectedMonth)
                                         ->whereYear('Month', $selectedYear)
-                                        ->sum('Sakit'),
+                                        ->where('Sakit', '>', 0) // Count only employees who have Sakit > 0
+                                        ->distinct()
+                                        ->count('NIK'),
             ];
         } else {
             $employeeData = [

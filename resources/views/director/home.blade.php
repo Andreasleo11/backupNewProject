@@ -196,9 +196,13 @@
 
         <div class="mt-2">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                data-bs-target="#filteredEmployeesModal">
+                data-bs-target="#filteredEmployeesModal" id="viewFilteredEmployeesBtn">
                 View Filtered Employees
             </button>
+
+            @include('partials.view-warning-logs-modal')
+
+            @include('partials.add-warning-logs-modal')
         </div>
 
         <!-- Modal -->

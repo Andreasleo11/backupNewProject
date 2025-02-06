@@ -2,7 +2,7 @@
     <div class="row">
         <div class="container-fluid">
             <div class="row">
-                <h1 class=" fs-1">HRIS Dashboard</h1>
+                <h1 class=" fs-1">Employee Dashboard</h1>
 
                 <div class="col">
                     <div class="alert alert-warning d-flex align-items-center" id="riskAlert" role="alert">
