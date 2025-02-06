@@ -92,6 +92,7 @@ class EmployeeWithEvaluationDataTable extends DataTable
                 'departments.name as department_name', // Select the department name
                 'employees.Branch',
                 'employees.employee_status',
+                'evaluation.id as evaluation_id',
                 'evaluation.Month',
                 'evaluation.Alpha',
                 'evaluation.Telat',
@@ -99,6 +100,8 @@ class EmployeeWithEvaluationDataTable extends DataTable
                 'evaluation.Sakit',
                 'evaluation.total'
             );
+
+        // \Illuminate\Support\Facades\Log::info($query->toSql());
 
         // Apply filters
         if ($this->request()->get('branch')) {
