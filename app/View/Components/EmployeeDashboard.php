@@ -18,6 +18,7 @@ class EmployeeDashboard extends Component
     public $monthYearOptions;
     public $employeeData;
     public $employees;
+    public $latestYear;
 
     /**
      * Create a new component instance.
@@ -75,6 +76,15 @@ class EmployeeDashboard extends Component
             'izin'  => EvaluationData::sum('Izin'),
             'sakit' => EvaluationData::sum('Sakit'),
         ];
+
+        // Get the latest year available from evaluation_datas table
+        $latestYear = EvaluationData::selectRaw('YEAR(Month) as year')
+            ->orderByDesc('year')
+            ->limit(1)
+            ->value('year');
+
+        // If no data exists, default to the current year
+        $this->latestYear = $latestYear ?? date('Y');
     }
 
     /**
