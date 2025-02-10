@@ -17,12 +17,70 @@
                     <div class="row mb-4">
                         <div class="col">
                             <div class="card mt-4">
-                                <div class="card-body">
-                                    <p class="card-text text-secondary fs-5">Total Employees
-                                    </p>
-                                    <span class="fw-bold badge text-bg-dark fs-4"
-                                        id="totalEmployees">{{ $employeeData['total'] }}</span>
+                                <button class="btn btn-light text-start" data-bs-toggle="modal"
+                                    data-bs-target="#departmentEmployeeModal">
+                                    <div class="card-body">
+                                        <p class="card-text text-secondary fs-5">Total Employees
+                                        </p>
+                                        <span class="fw-bold badge text-bg-dark fs-4"
+                                            id="totalEmployees">{{ $employeeData['total'] }}</span>
+                                    </div>
+                                </button>
+
+                                <!-- Employee Count by Department Modal -->
+                                <div class="modal fade" id="departmentEmployeeModal" tabindex="-1"
+                                    aria-labelledby="departmentEmployeeModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h3 class="modal-title" id="departmentEmployeeModalLabel">Employee Count
+                                                    by Department</h3>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Department</th>
+                                                                @php
+                                                                    // Extract unique statuses dynamically
+                                                                    $uniqueStatuses = collect($departmentEmployeeCounts)
+                                                                        ->flatMap(
+                                                                            fn($dept) => array_keys(
+                                                                                $dept['breakdown']->toArray(),
+                                                                            ),
+                                                                        ) // Convert to array
+                                                                        ->unique();
+                                                                @endphp
+
+                                                                @foreach ($uniqueStatuses as $status)
+                                                                    <th>{{ $status }}</th>
+                                                                @endforeach
+                                                                <th>Total</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($departmentEmployeeCounts as $department => $counts)
+                                                                <tr>
+                                                                    <td>{{ $counts['label'] }}</td>
+                                                                    @foreach ($uniqueStatuses as $status)
+                                                                        <td>{{ $counts['breakdown']->get($status, '') }}
+                                                                        </td> <!-- Use ->get() to avoid errors -->
+                                                                    @endforeach
+                                                                    <td><strong>{{ $counts['total_count'] }}</strong>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
                         <div class="col">
@@ -119,7 +177,7 @@
                     <!-- Employee Category Cards -->
                     <div class="row">
                         @foreach (['Alpha' => 'danger', 'Telat' => 'warning', 'Izin' => 'primary', 'Sakit' => 'success'] as $category => $color)
-                            <div class="col">
+                            <div class="col col-md-6 col-xl-3">
                                 <div class="card mt-4" data-category="{{ $category }}">
                                     <button class="btn btn-light open-modal" data-category="{{ $category }}"
                                         data-bs-toggle="modal" data-bs-target="#employeeByCategoryModal">
@@ -170,8 +228,28 @@
                     </div>
 
                     <div class="row mt-5">
-                        <h3 class="text-secondary">Employee Count per Department</h3>
+                        {{-- <h3 class="text-secondary">Employee Count per Department</h3>
                         <canvas class="mt-3" id="departmentEmployeeChart"></canvas>
+
+                        <h3 class="text-secondary">Employee Count per Month</h3> --}}
+
+
+                        <!-- Year Selection -->
+                        <div class="col-md-3 mb-3">
+                            <label for="yearFilter" class="form-label">Select Year</label>
+                            <select id="yearFilter" class="form-select">
+                                @for ($i = $latestYear; $i >= $latestYear - 5; $i--)
+                                    <option value="{{ $i }}" {{ $i == $latestYear ? 'selected' : '' }}>
+                                        {{ $i }}
+                                    </option>
+                                @endfor
+                            </select>
+                        </div>
+
+                        <!-- Employee Count Chart -->
+                        <div class="col-12">
+                            <canvas id="employeeCountChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -242,49 +320,121 @@
         </div>
     </div>
 
-    {{-- Employee List Modal Script --}}
-    <script type="module">
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = new bootstrap.Modal(document.getElementById('employeeByCategoryModal'));
+    {{-- <div class="row mt-5">
 
-            document.querySelectorAll('.open-modal').forEach(button => {
-                button.addEventListener('click', function() {
-                    let category = this.getAttribute('data-category');
-                    let monthYear = document.getElementById('monthYearFilter')
-                        .value; // Get selected month-year filter
+    </div> --}}
 
-                    document.getElementById('modalCategoryTitle').innerText =
-                        `${category} category`;
-                    document.getElementById('categoryCountTitle').innerText =
-                        category; // Set table column title
-                    document.getElementById('modalMonthTitle').innerText = monthYear;
+</div>
 
-                    fetch("{{ route('getEmployeesByCategory') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector(
-                                    'meta[name="csrf-token"]').getAttribute("content")
-                            },
-                            body: JSON.stringify({
-                                category: category,
-                                monthYear: monthYear
-                            })
+<script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        const yearFilter = document.getElementById('yearFilter');
+        const chartElement = document.getElementById('employeeCountChart');
+
+        if (!chartElement) {
+            console.error("Canvas element not found!");
+            return;
+        }
+
+        const ctx = chartElement.getContext('2d');
+
+        let employeeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ],
+                datasets: [{
+                    label: 'Employee Count',
+                    data: Array(12).fill(0), // Initialize with zeros
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function fetchEmployeeCount(year) {
+            fetch(`{{ route('getEmployeeCountByMonth', '') }}/${year}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Received Data:", data);
+                    employeeChart.data.datasets[0].data = Object.values(data);
+                    employeeChart.update();
+                })
+                .catch(error => console.error("Error fetching employee counts:", error));
+        }
+
+        // Load current year's data initially
+        if (yearFilter) {
+            fetchEmployeeCount(yearFilter.value);
+
+            // Update chart when year changes
+            yearFilter.addEventListener('change', function() {
+                fetchEmployeeCount(this.value);
+            });
+        }
+    });
+</script>
+
+
+{{-- Employee List Modal Script --}}
+<script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = new bootstrap.Modal(document.getElementById('employeeByCategoryModal'));
+
+        document.querySelectorAll('.open-modal').forEach(button => {
+            button.addEventListener('click', function() {
+                let category = this.getAttribute('data-category');
+                let monthYear = document.getElementById('monthYearFilter')
+                    .value; // Get selected month-year filter
+
+                document.getElementById('modalCategoryTitle').innerText =
+                    `${category} category`;
+                document.getElementById('categoryCountTitle').innerText =
+                    category; // Set table column title
+                document.getElementById('modalMonthTitle').innerText = monthYear;
+
+                fetch("{{ route('getEmployeesByCategory') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]').getAttribute("content")
+                        },
+                        body: JSON.stringify({
+                            category: category,
+                            monthYear: monthYear
                         })
-                        .then(response => response.json())
-                        .then(data => {
-                            let tableBody = document.getElementById("employeeByCategoryList");
-                            tableBody.innerHTML = ""; // Clear previous data
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        let tableBody = document.getElementById("employeeByCategoryList");
+                        tableBody.innerHTML = ""; // Clear previous data
 
-                            let totalCount = 0; // Initialize total count variable
+                        let totalCount = 0; // Initialize total count variable
 
-                            // console.log(data);
-                            if (data.length > 0) {
-                                data.forEach((emp, index) => {
-                                    totalCount += parseInt(emp.category_count) ||
-                                        0; // Sum up category count
+                        // console.log(data);
+                        if (data.length > 0) {
+                            data.forEach((emp, index) => {
+                                totalCount += parseInt(emp.category_count) ||
+                                    0; // Sum up category count
 
-                                    let row = `<tr>
+                                let row = `<tr>
                                             <td>${index + 1}</td> <!-- Row Number -->
                                             <td>${emp.NIK}</td>
                                             <td>${emp.Nama}</td>
@@ -292,518 +442,518 @@
                                             <td>${emp.employee_status}</td>
                                             <td>${emp.category_count}</td> <!-- Show category count -->
                                         </tr>`;
-                                    tableBody.innerHTML += row;
-                                });
+                                tableBody.innerHTML += row;
+                            });
 
-                                // Append total count row
-                                let totalRow = `<tr class="fw-bold">
+                            // Append total count row
+                            let totalRow = `<tr class="fw-bold">
                                                 <td colspan="5" class="text-end">Total ${category}:</td>
                                                 <td>${totalCount}</td>
                                             </tr>`;
-                                tableBody.innerHTML += totalRow;
-                            } else {
-                                tableBody.innerHTML =
-                                    `<tr><td colspan="6" class="text-center">No employees found</td></tr>`;
-                            }
+                            tableBody.innerHTML += totalRow;
+                        } else {
+                            tableBody.innerHTML =
+                                `<tr><td colspan="6" class="text-center">No employees found</td></tr>`;
+                        }
 
-                            modal.show();
-                        })
-                        .catch(error => console.error("Error fetching data:", error));
-                });
+                        modal.show();
+                    })
+                    .catch(error => console.error("Error fetching data:", error));
             });
         });
-    </script>
+    });
+</script>
 
 
-    {{-- Department Employee Chart Scipt --}}
-    <script type="module">
-        document.addEventListener('DOMContentLoaded', function() {
-            const barData = {!! json_encode($departmentEmployeeCounts) !!}; // Pass data from Laravel
+{{-- Department Employee Chart Scipt --}}
+<script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        const barData = {!! json_encode($departmentEmployeeCounts) !!}; // Pass data from Laravel
 
-            // Convert object to an array
-            const barDataArray = Object.values(barData);
+        // Convert object to an array
+        const barDataArray = Object.values(barData);
 
-            // Extract unique employee statuses (keys from "breakdown")
-            const allStatuses = [...new Set(barDataArray.flatMap(item => Object.keys(item.breakdown)))];
+        // Extract unique employee statuses (keys from "breakdown")
+        const allStatuses = [...new Set(barDataArray.flatMap(item => Object.keys(item.breakdown)))];
 
-            // Extract department names
-            const labels = barDataArray.map(item => item.label);
+        // Extract department names
+        const labels = barDataArray.map(item => item.label);
 
-            // Create datasets dynamically based on available statuses
-            const datasets = allStatuses.map(status => ({
-                label: status,
-                data: barDataArray.map(item => item.breakdown[status] ||
-                    0), // Fill missing values with 0
-                backgroundColor: getRandomColor(), // Assign a unique color
-                borderColor: 'rgba(0, 0, 0, 0.8)',
-                borderWidth: 1
-            }));
+        // Create datasets dynamically based on available statuses
+        const datasets = allStatuses.map(status => ({
+            label: status,
+            data: barDataArray.map(item => item.breakdown[status] ||
+                0), // Fill missing values with 0
+            backgroundColor: getRandomColor(), // Assign a unique color
+            borderColor: 'rgba(0, 0, 0, 0.8)',
+            borderWidth: 1
+        }));
 
-            // Add total employee count as a separate dataset (bar with different color)
-            datasets.push({
-                label: 'Total Employees',
-                data: barDataArray.map(item => item.total_count), // Total employees per department
-                backgroundColor: 'rgba(255, 99, 132, 0.6)', // Different color for total count
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 2,
-                type: 'line', // Line chart overlay on top of bar chart
-                fill: false
-            });
+        // Add total employee count as a separate dataset (bar with different color)
+        datasets.push({
+            label: 'Total Employees',
+            data: barDataArray.map(item => item.total_count), // Total employees per department
+            backgroundColor: 'rgba(255, 99, 132, 0.6)', // Different color for total count
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 2,
+            type: 'line', // Line chart overlay on top of bar chart
+            fill: false
+        });
 
-            // Chart.js instance
-            const ctx = document.getElementById('departmentEmployeeChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: datasets
+        // Chart.js instance
+        const ctx = document.getElementById('departmentEmployeeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+                onClick: function(event, elements) {
+                    if (elements.length > 0) {
+                        let clickedIndex = elements[0].index; // Get department index
+                        let datasetIndex = elements[0].datasetIndex; // Get clicked status index
+                        let department = labels[clickedIndex]; // Get department name
+                        let status = datasets[datasetIndex].label; // Get status name
+
+                        // If "Total Employees" bar is clicked, show all employees in the department
+                        if (status === "Total Employees") {
+                            status = null; // No status filtering
                         }
-                    },
-                    onClick: function(event, elements) {
-                        if (elements.length > 0) {
-                            let clickedIndex = elements[0].index; // Get department index
-                            let datasetIndex = elements[0].datasetIndex; // Get clicked status index
-                            let department = labels[clickedIndex]; // Get department name
-                            let status = datasets[datasetIndex].label; // Get status name
 
-                            // If "Total Employees" bar is clicked, show all employees in the department
-                            if (status === "Total Employees") {
-                                status = null; // No status filtering
-                            }
-
-                            // Update modal title
-                            let modalTitle = `Employees in ${department}`;
-                            if (status) {
-                                modalTitle += ` (${status})`;
-                            }
-                            document.getElementById("modalDepartmentTitle").innerText = modalTitle;
-
-                            // Fetch employees and show modal
-                            fetchEmployeeByDepartmentData(department, status);
+                        // Update modal title
+                        let modalTitle = `Employees in ${department}`;
+                        if (status) {
+                            modalTitle += ` (${status})`;
                         }
+                        document.getElementById("modalDepartmentTitle").innerText = modalTitle;
+
+                        // Fetch employees and show modal
+                        fetchEmployeeByDepartmentData(department, status);
                     }
                 }
-            });
+            }
+        });
 
-            // Function to fetch employees by department
-            function fetchEmployeeByDepartmentData(department, status) {
-                fetch("{{ route('getEmployeesByDepartment') }}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
-                                "content")
-                        },
-                        body: JSON.stringify({
-                            department: department,
-                            status: status
-                        })
+        // Function to fetch employees by department
+        function fetchEmployeeByDepartmentData(department, status) {
+            fetch("{{ route('getEmployeesByDepartment') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            "content")
+                    },
+                    body: JSON.stringify({
+                        department: department,
+                        status: status
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        let tableBody = document.getElementById("employeeByDepartmentList");
-                        tableBody.innerHTML = ""; // Clear previous data
+                })
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById("employeeByDepartmentList");
+                    tableBody.innerHTML = ""; // Clear previous data
 
-                        if (data.length > 0) {
-                            data.forEach((emp, index) => {
-                                let row = `<tr>
+                    if (data.length > 0) {
+                        data.forEach((emp, index) => {
+                            let row = `<tr>
                         <td>${index + 1}</td> <!-- Row Number -->
                         <td>${emp.NIK}</td>
                         <td>${emp.Nama}</td>
                         <td>${emp.employee_status}</td>
                     </tr>`;
-                                tableBody.innerHTML += row;
-                            });
-                        } else {
-                            tableBody.innerHTML =
-                                `<tr><td colspan="4" class="text-center">No employees found</td></tr>`;
-                        }
+                            tableBody.innerHTML += row;
+                        });
+                    } else {
+                        tableBody.innerHTML =
+                            `<tr><td colspan="4" class="text-center">No employees found</td></tr>`;
+                    }
 
-                        // Show the modal
-                        let employeeModal = new bootstrap.Modal(document.getElementById(
-                            "employeeByDepartmentModal"));
-                        employeeModal.show();
-                    })
-                    .catch(error => console.error("Error fetching data:", error));
-            }
-
-            // Function to generate random colors for datasets
-            function getRandomColor() {
-                return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
-            }
-        });
-    </script>
-
-    {{-- month year filter script --}}
-    <script type="module">
-        // Fetch employee data on page load
-        fetchEmployeeData($('#monthYearFilter').val());
-
-        $('#monthYearFilter').on('change', function() {
-            fetchEmployeeData(this.value);
-        });
-
-        function fetchEmployeeData(monthYear) {
-            fetch("{{ route('filter.employees') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-                    },
-                    body: JSON.stringify({
-                        monthYear: monthYear
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("totalEmployees").innerText = data.total;
-                    document.getElementById("alpha").innerText = data.alpha;
-                    document.getElementById("telat").innerText = data.telat;
-                    document.getElementById("izin").innerText = data.izin;
-                    document.getElementById("sakit").innerText = data.sakit;
+                    // Show the modal
+                    let employeeModal = new bootstrap.Modal(document.getElementById(
+                        "employeeByDepartmentModal"));
+                    employeeModal.show();
                 })
                 .catch(error => console.error("Error fetching data:", error));
         }
-    </script>
 
-    {{-- dynamic active filter script for pie chart and table --}}
-    <script>
-        // Call updateActiveFilters whenever a filter changes
-        branchFilter.addEventListener('change', updateActiveFilters);
-        deptFilter.addEventListener('change', updateActiveFilters);
-        statusFilter.addEventListener('change', updateActiveFilters);
-        genderFilter.addEventListener('change', updateActiveFilters);
-        legendFilter.addEventListener('change', updateActiveFilters);
-
-        // Initial call to set the active filters on page load
-        updateActiveFilters();
-
-        function updateActiveFilters() {
-            document.getElementById('currentLegendFilter').textContent = legendFilter.value;
-            document.getElementById('currentBranchFilter').textContent = branchFilter.value || 'All';
-            document.getElementById('currentDeptFilter').textContent = deptFilter.value || 'All';
-            document.getElementById('currentStatusFilter').textContent = statusFilter.value || 'All';
-            document.getElementById('currentGenderFilter').textContent = genderFilter.value || 'All';
+        // Function to generate random colors for datasets
+        function getRandomColor() {
+            return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
         }
-    </script>
+    });
+</script>
 
-    {{-- pie chart employee filter script --}}
-    <script type="module">
-        const chartData = @json($chartData);
-        const tableData = @json($employees);
+{{-- month year filter script --}}
+<script type="module">
+    // Fetch employee data on page load
+    fetchEmployeeData($('#monthYearFilter').val());
 
-        const branchFilter = document.getElementById('branchFilter');
-        const deptFilter = document.getElementById('deptFilter');
-        const statusFilter = document.getElementById('statusFilter');
-        const genderFilter = document.getElementById('genderFilter');
-        const legendFilter = document.getElementById('legendFilter'); // Optional if legend selection is added
-        const ctx = document.getElementById('pieChart').getContext('2d');
-        const employeeTableBody = document.getElementById('employeewithevaluation-table').querySelector('tbody');
+    $('#monthYearFilter').on('change', function() {
+        fetchEmployeeData(this.value);
+    });
 
-        // Initialize empty pie chart
-        let employeeChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [],
-                }],
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(tooltipItem) {
-                                const value = tooltipItem.raw; // Get the count value
-                                const total = tooltipItem.dataset.data.reduce((sum, val) => sum + val,
-                                    0); // Calculate total count
-                                const percentage = ((value / total) * 100).toFixed(2); // Calculate percentage
-                                return `${tooltipItem.label}: ${value} (${percentage}%)`; // Combine count and percentage
-                            },
+    function fetchEmployeeData(monthYear) {
+        fetch("{{ route('filter.employees') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                },
+                body: JSON.stringify({
+                    monthYear: monthYear
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("totalEmployees").innerText = data.total;
+                document.getElementById("alpha").innerText = data.alpha;
+                document.getElementById("telat").innerText = data.telat;
+                document.getElementById("izin").innerText = data.izin;
+                document.getElementById("sakit").innerText = data.sakit;
+            })
+            .catch(error => console.error("Error fetching data:", error));
+    }
+</script>
+
+{{-- dynamic active filter script for pie chart and table --}}
+<script>
+    // Call updateActiveFilters whenever a filter changes
+    branchFilter.addEventListener('change', updateActiveFilters);
+    deptFilter.addEventListener('change', updateActiveFilters);
+    statusFilter.addEventListener('change', updateActiveFilters);
+    genderFilter.addEventListener('change', updateActiveFilters);
+    legendFilter.addEventListener('change', updateActiveFilters);
+
+    // Initial call to set the active filters on page load
+    updateActiveFilters();
+
+    function updateActiveFilters() {
+        document.getElementById('currentLegendFilter').textContent = legendFilter.value;
+        document.getElementById('currentBranchFilter').textContent = branchFilter.value || 'All';
+        document.getElementById('currentDeptFilter').textContent = deptFilter.value || 'All';
+        document.getElementById('currentStatusFilter').textContent = statusFilter.value || 'All';
+        document.getElementById('currentGenderFilter').textContent = genderFilter.value || 'All';
+    }
+</script>
+
+{{-- pie chart employee filter script --}}
+<script type="module">
+    const chartData = @json($chartData);
+    const tableData = @json($employees);
+
+    const branchFilter = document.getElementById('branchFilter');
+    const deptFilter = document.getElementById('deptFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const genderFilter = document.getElementById('genderFilter');
+    const legendFilter = document.getElementById('legendFilter'); // Optional if legend selection is added
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    const employeeTableBody = document.getElementById('employeewithevaluation-table').querySelector('tbody');
+
+    // Initialize empty pie chart
+    let employeeChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+            }],
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(tooltipItem) {
+                            const value = tooltipItem.raw; // Get the count value
+                            const total = tooltipItem.dataset.data.reduce((sum, val) => sum + val,
+                                0); // Calculate total count
+                            const percentage = ((value / total) * 100).toFixed(2); // Calculate percentage
+                            return `${tooltipItem.label}: ${value} (${percentage}%)`; // Combine count and percentage
                         },
                     },
                 },
-                onClick: function(event, elements) {
-                    if (elements.length > 0) {
-                        let clickedIndex = elements[0].index;
-                        let clickedCategory = employeeChart.data.labels[clickedIndex];
-
-                        // Get active filters
-                        const selectedBranch = branchFilter.value;
-                        const selectedDept = deptFilter.value;
-                        const selectedStatus = statusFilter.value;
-                        const selectedGender = genderFilter.value;
-                        const selectedLegend = legendFilter.value; // Legend filter (Dept, Branch, Status)
-
-                        fetchEmployeeData(clickedCategory, selectedBranch, selectedDept, selectedStatus,
-                            selectedGender, selectedLegend);
-                    }
-                }
             },
-        });
+            onClick: function(event, elements) {
+                if (elements.length > 0) {
+                    let clickedIndex = elements[0].index;
+                    let clickedCategory = employeeChart.data.labels[clickedIndex];
 
-        // Function to fetch employees based on active filters
-        function fetchEmployeeData(category, branch, dept, status, gender, legend) {
-            fetch("{{ route('getEmployeesByChartCategory') }}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
-                    },
-                    body: JSON.stringify({
-                        category,
-                        branch,
-                        dept,
-                        status,
-                        gender,
-                        legend
-                    })
+                    // Get active filters
+                    const selectedBranch = branchFilter.value;
+                    const selectedDept = deptFilter.value;
+                    const selectedStatus = statusFilter.value;
+                    const selectedGender = genderFilter.value;
+                    const selectedLegend = legendFilter.value; // Legend filter (Dept, Branch, Status)
+
+                    fetchEmployeeData(clickedCategory, selectedBranch, selectedDept, selectedStatus,
+                        selectedGender, selectedLegend);
+                }
+            }
+        },
+    });
+
+    // Function to fetch employees based on active filters
+    function fetchEmployeeData(category, branch, dept, status, gender, legend) {
+        fetch("{{ route('getEmployeesByChartCategory') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                },
+                body: JSON.stringify({
+                    category,
+                    branch,
+                    dept,
+                    status,
+                    gender,
+                    legend
                 })
-                .then(response => response.json())
-                .then(data => {
-                    let tableBody = document.getElementById("employeeList");
-                    tableBody.innerHTML = "";
+            })
+            .then(response => response.json())
+            .then(data => {
+                let tableBody = document.getElementById("employeeList");
+                tableBody.innerHTML = "";
 
-                    if (data.length > 0) {
-                        data.forEach((emp, index) => {
-                            let row = `<tr>
+                if (data.length > 0) {
+                    data.forEach((emp, index) => {
+                        let row = `<tr>
                         <td>${index + 1}</td>
                         <td>${emp.NIK}</td>
                         <td>${emp.Nama}</td>
                         <td>${emp.department_name}</td>
                         <td>${emp.employee_status}</td>
                     </tr>`;
-                            tableBody.innerHTML += row;
-                        });
-                    } else {
-                        tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No employees found</td></tr>`;
-                    }
-
-                    document.getElementById("modalTitle").innerText = `Employees in ${category}`;
-                    let employeeModal = new bootstrap.Modal(document.getElementById("employeeModal"));
-                    employeeModal.show();
-                })
-                .catch(error => console.error("Error fetching data:", error));
-        }
-
-        ctx.onclick = function(event) {
-            const points = employeeChart.getElementsAtEventForMode(event, 'nearest', {
-                intersect: true
-            }, true);
-            if (points.length) {
-                const clickedLabel = employeeChart.data.labels[points[0].index];
-                // Filter table
-                table.column(selectedLegend).search(clickedLabel).draw();
-            }
-        };
-
-
-        // Function to filter data based on current selections
-        function getFilteredData() {
-            const selectedBranch = branchFilter.value;
-            const selectedDept = deptFilter.value;
-            const selectedStatus = statusFilter.value;
-            const selectedGender = genderFilter.value;
-
-            // Filter the data
-            const filteredData = chartData.filter(item => {
-                return (!selectedBranch || item.Branch === selectedBranch) &&
-                    (!selectedDept || item.Dept.dept_no === selectedDept) &&
-                    (!selectedStatus || item.Status === selectedStatus) &&
-                    (!selectedGender || item.Gender === selectedGender);
-            });
-
-            const totalEmployees = filteredData.length;
-            const statusRatios = filteredData.reduce((acc, item) => {
-                acc[item.Status] = (acc[item.Status] || 0) + 1;
-                return acc;
-            }, {});
-
-            const ratio = ((statusRatios['KONTRAK'] || 0) / totalEmployees) * 100;
-            const riskAlert = document.getElementById('riskAlert');
-            const riskText = document.getElementById('riskText');
-
-
-            if (ratio > 50) {
-                riskText.textContent = `Ratio karyawan Kontrak dengan status karyawan lainnya: ${ratio.toFixed(2)}%`;
-                riskAlert.classList.remove('d-none'); // Remove d-none to make it visible
-            } else {
-                riskText.textContent = '';
-                riskAlert.classList.add('d-none'); // Add d-none to hide it again
-            }
-
-            return filteredData;
-        }
-
-        // Function to update the chart
-        function updateChart() {
-            const filteredData = getFilteredData();
-            const selectedLegend = legendFilter.value; // Get the selected legend (Status, Dept, or Branch)
-
-            // Group data for the chart
-            const groupedData = filteredData.reduce((acc, item) => {
-                let key;
-
-                if (selectedLegend === "Dept") {
-                    // If legend is "Dept", use the department name or dept_no as the key
-                    key = item.Dept.name; // Use item.Dept.dept_no if needed
+                        tableBody.innerHTML += row;
+                    });
                 } else {
-                    // For "Branch" or "Status", use the respective property
-                    key = item[selectedLegend];
+                    tableBody.innerHTML = `<tr><td colspan="5" class="text-center">No employees found</td></tr>`;
                 }
 
-                acc[key] = (acc[key] || 0) + 1;
-                return acc;
-            }, {});
+                document.getElementById("modalTitle").innerText = `Employees in ${category}`;
+                let employeeModal = new bootstrap.Modal(document.getElementById("employeeModal"));
+                employeeModal.show();
+            })
+            .catch(error => console.error("Error fetching data:", error));
+    }
 
-            const labels = Object.keys(groupedData);
-            const data = Object.values(groupedData);
+    ctx.onclick = function(event) {
+        const points = employeeChart.getElementsAtEventForMode(event, 'nearest', {
+            intersect: true
+        }, true);
+        if (points.length) {
+            const clickedLabel = employeeChart.data.labels[points[0].index];
+            // Filter table
+            table.column(selectedLegend).search(clickedLabel).draw();
+        }
+    };
 
-            const dominantCount = Math.max(...data);
-            const dominantCategory = dominantCount === -Infinity ? 'undefined' : labels[data.indexOf(dominantCount)];
-            document.getElementById('dominantCategory').textContent =
-                `${dominantCategory} (${dominantCount === -Infinity ? 'undefined' : dominantCount})`;
 
-            employeeChart.data.labels = labels;
-            employeeChart.data.datasets[0].data = data;
-            employeeChart.data.datasets[0].backgroundColor = labels.map(() =>
-                `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`
-            );
+    // Function to filter data based on current selections
+    function getFilteredData() {
+        const selectedBranch = branchFilter.value;
+        const selectedDept = deptFilter.value;
+        const selectedStatus = statusFilter.value;
+        const selectedGender = genderFilter.value;
 
-            employeeChart.update();
+        // Filter the data
+        const filteredData = chartData.filter(item => {
+            return (!selectedBranch || item.Branch === selectedBranch) &&
+                (!selectedDept || item.Dept.dept_no === selectedDept) &&
+                (!selectedStatus || item.Status === selectedStatus) &&
+                (!selectedGender || item.Gender === selectedGender);
+        });
+
+        const totalEmployees = filteredData.length;
+        const statusRatios = filteredData.reduce((acc, item) => {
+            acc[item.Status] = (acc[item.Status] || 0) + 1;
+            return acc;
+        }, {});
+
+        const ratio = ((statusRatios['KONTRAK'] || 0) / totalEmployees) * 100;
+        const riskAlert = document.getElementById('riskAlert');
+        const riskText = document.getElementById('riskText');
+
+
+        if (ratio > 50) {
+            riskText.textContent = `Ratio karyawan Kontrak dengan status karyawan lainnya: ${ratio.toFixed(2)}%`;
+            riskAlert.classList.remove('d-none'); // Remove d-none to make it visible
+        } else {
+            riskText.textContent = '';
+            riskAlert.classList.add('d-none'); // Add d-none to hide it again
         }
 
+        return filteredData;
+    }
 
-        function updateDropdowns() {
-            const selectedLegend = legendFilter.value; // Get the selected legend
-            const selectedBranch = branchFilter.value;
-            const selectedDept = deptFilter.value;
-            const selectedStatus = statusFilter.value;
-            const selectedGender = genderFilter.value;
+    // Function to update the chart
+    function updateChart() {
+        const filteredData = getFilteredData();
+        const selectedLegend = legendFilter.value; // Get the selected legend (Status, Dept, or Branch)
 
-            // Disable filters based on the selected legend and reset their values
-            if (selectedLegend === "Branch") {
-                branchFilter.disabled = true;
-                branchFilter.value = ""; // Reset to "All"
-                deptFilter.disabled = false;
-                statusFilter.disabled = false;
-            } else if (selectedLegend === "Dept") {
-                branchFilter.disabled = false;
-                deptFilter.disabled = true;
-                deptFilter.value = ""; // Reset to "All"
-                statusFilter.disabled = false;
-            } else if (selectedLegend === "Status") {
-                branchFilter.disabled = false;
-                deptFilter.disabled = false;
-                statusFilter.disabled = true;
-                statusFilter.value = ""; // Reset to "All"
+        // Group data for the chart
+        const groupedData = filteredData.reduce((acc, item) => {
+            let key;
+
+            if (selectedLegend === "Dept") {
+                // If legend is "Dept", use the department name or dept_no as the key
+                key = item.Dept.name; // Use item.Dept.dept_no if needed
+            } else {
+                // For "Branch" or "Status", use the respective property
+                key = item[selectedLegend];
             }
 
-            // Populate Branch dropdown dynamically (exclude the legend if it's "Branch")
-            if (selectedLegend !== "Branch") {
-                const branchOptions = [...new Set(chartData
-                    .filter(item => (!selectedDept || item.Dept.dept_no === selectedDept) &&
-                        (!selectedStatus || item.Status === selectedStatus))
-                    .map(item => item.Branch))];
-                branchFilter.innerHTML = '<option value="" selected>All</option>';
-                branchOptions.forEach(branch => {
-                    const option = document.createElement('option');
-                    option.value = branch;
-                    option.textContent = branch;
-                    branchFilter.appendChild(option);
-                });
-                branchFilter.value = selectedBranch && branchOptions.includes(selectedBranch) ? selectedBranch : "";
-            }
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
 
-            // Populate Dept dropdown dynamically (exclude the legend if it's "Dept")
-            if (selectedLegend !== "Dept") {
-                const deptOptions = [...new Set(chartData
-                    .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
-                        (!selectedStatus || item.Status === selectedStatus))
-                    .map(item => JSON.stringify(item.Dept)))];
-                deptFilter.innerHTML = '<option value="" selected>All</option>';
-                deptOptions.forEach(dept => {
-                    const deptObj = JSON.parse(dept);
-                    const option = document.createElement('option');
-                    option.value = deptObj.dept_no;
-                    option.textContent = deptObj.name;
-                    deptFilter.appendChild(option);
-                });
-                deptFilter.value = selectedDept && deptOptions.some(dept => JSON.parse(dept).dept_no === selectedDept) ?
-                    selectedDept :
-                    "";
-            }
+        const labels = Object.keys(groupedData);
+        const data = Object.values(groupedData);
 
-            // Populate Status dropdown dynamically (exclude the legend if it's "Status")
-            if (selectedLegend !== "Status") {
-                const statusOptions = [...new Set(chartData
-                    .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
-                        (!selectedDept || item.Dept.dept_no === selectedDept))
-                    .map(item => item.Status))];
-                statusFilter.innerHTML = '<option value="" selected>All</option>';
-                statusOptions.forEach(status => {
-                    const option = document.createElement('option');
-                    option.value = status;
-                    option.textContent = status;
-                    statusFilter.appendChild(option);
-                });
-                statusFilter.value = selectedStatus && statusOptions.includes(selectedStatus) ? selectedStatus : "";
-            }
+        const dominantCount = Math.max(...data);
+        const dominantCategory = dominantCount === -Infinity ? 'undefined' : labels[data.indexOf(dominantCount)];
+        document.getElementById('dominantCategory').textContent =
+            `${dominantCategory} (${dominantCount === -Infinity ? 'undefined' : dominantCount})`;
 
-            // Populate Gender dropdown dynamically
-            const genderOptions = [...new Set(chartData
-                .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
-                    (!selectedDept || item.Dept.dept_no === selectedDept) &&
+        employeeChart.data.labels = labels;
+        employeeChart.data.datasets[0].data = data;
+        employeeChart.data.datasets[0].backgroundColor = labels.map(() =>
+            `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`
+        );
+
+        employeeChart.update();
+    }
+
+
+    function updateDropdowns() {
+        const selectedLegend = legendFilter.value; // Get the selected legend
+        const selectedBranch = branchFilter.value;
+        const selectedDept = deptFilter.value;
+        const selectedStatus = statusFilter.value;
+        const selectedGender = genderFilter.value;
+
+        // Disable filters based on the selected legend and reset their values
+        if (selectedLegend === "Branch") {
+            branchFilter.disabled = true;
+            branchFilter.value = ""; // Reset to "All"
+            deptFilter.disabled = false;
+            statusFilter.disabled = false;
+        } else if (selectedLegend === "Dept") {
+            branchFilter.disabled = false;
+            deptFilter.disabled = true;
+            deptFilter.value = ""; // Reset to "All"
+            statusFilter.disabled = false;
+        } else if (selectedLegend === "Status") {
+            branchFilter.disabled = false;
+            deptFilter.disabled = false;
+            statusFilter.disabled = true;
+            statusFilter.value = ""; // Reset to "All"
+        }
+
+        // Populate Branch dropdown dynamically (exclude the legend if it's "Branch")
+        if (selectedLegend !== "Branch") {
+            const branchOptions = [...new Set(chartData
+                .filter(item => (!selectedDept || item.Dept.dept_no === selectedDept) &&
                     (!selectedStatus || item.Status === selectedStatus))
-                .map(item => item.Gender))];
-            genderFilter.innerHTML = '<option value="" selected>All</option>';
-            genderOptions.forEach(gender => {
+                .map(item => item.Branch))];
+            branchFilter.innerHTML = '<option value="" selected>All</option>';
+            branchOptions.forEach(branch => {
                 const option = document.createElement('option');
-                option.value = gender;
-                option.textContent = gender === 'M' ? 'Male' : 'Female';
-                genderFilter.appendChild(option);
+                option.value = branch;
+                option.textContent = branch;
+                branchFilter.appendChild(option);
             });
-            genderFilter.value = selectedGender && genderOptions.includes(selectedGender) ? selectedGender : "";
+            branchFilter.value = selectedBranch && branchOptions.includes(selectedBranch) ? selectedBranch : "";
         }
 
+        // Populate Dept dropdown dynamically (exclude the legend if it's "Dept")
+        if (selectedLegend !== "Dept") {
+            const deptOptions = [...new Set(chartData
+                .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
+                    (!selectedStatus || item.Status === selectedStatus))
+                .map(item => JSON.stringify(item.Dept)))];
+            deptFilter.innerHTML = '<option value="" selected>All</option>';
+            deptOptions.forEach(dept => {
+                const deptObj = JSON.parse(dept);
+                const option = document.createElement('option');
+                option.value = deptObj.dept_no;
+                option.textContent = deptObj.name;
+                deptFilter.appendChild(option);
+            });
+            deptFilter.value = selectedDept && deptOptions.some(dept => JSON.parse(dept).dept_no === selectedDept) ?
+                selectedDept :
+                "";
+        }
 
-        // Event listeners for dropdowns
-        branchFilter.addEventListener('change', () => {
-            updateDropdowns();
-            updateChart();
+        // Populate Status dropdown dynamically (exclude the legend if it's "Status")
+        if (selectedLegend !== "Status") {
+            const statusOptions = [...new Set(chartData
+                .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
+                    (!selectedDept || item.Dept.dept_no === selectedDept))
+                .map(item => item.Status))];
+            statusFilter.innerHTML = '<option value="" selected>All</option>';
+            statusOptions.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = status;
+                statusFilter.appendChild(option);
+            });
+            statusFilter.value = selectedStatus && statusOptions.includes(selectedStatus) ? selectedStatus : "";
+        }
+
+        // Populate Gender dropdown dynamically
+        const genderOptions = [...new Set(chartData
+            .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
+                (!selectedDept || item.Dept.dept_no === selectedDept) &&
+                (!selectedStatus || item.Status === selectedStatus))
+            .map(item => item.Gender))];
+        genderFilter.innerHTML = '<option value="" selected>All</option>';
+        genderOptions.forEach(gender => {
+            const option = document.createElement('option');
+            option.value = gender;
+            option.textContent = gender === 'M' ? 'Male' : 'Female';
+            genderFilter.appendChild(option);
         });
+        genderFilter.value = selectedGender && genderOptions.includes(selectedGender) ? selectedGender : "";
+    }
 
-        deptFilter.addEventListener('change', () => {
-            updateDropdowns();
-            updateChart();
-        });
 
-        statusFilter.addEventListener('change', () => {
-            updateDropdowns();
-            updateChart();
-        });
-
-        genderFilter.addEventListener('change', () => {
-            updateChart();
-        });
-
-        legendFilter.addEventListener('change', () => {
-            updateDropdowns(); // Update dropdown options and visibility
-            updateChart(); // Update the chart with the new legend
-        });
-
+    // Event listeners for dropdowns
+    branchFilter.addEventListener('change', () => {
         updateDropdowns();
         updateChart();
-    </script>
+    });
+
+    deptFilter.addEventListener('change', () => {
+        updateDropdowns();
+        updateChart();
+    });
+
+    statusFilter.addEventListener('change', () => {
+        updateDropdowns();
+        updateChart();
+    });
+
+    genderFilter.addEventListener('change', () => {
+        updateChart();
+    });
+
+    legendFilter.addEventListener('change', () => {
+        updateDropdowns(); // Update dropdown options and visibility
+        updateChart(); // Update the chart with the new legend
+    });
+
+    updateDropdowns();
+    updateChart();
+</script>
 </div>
