@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
 use App\Http\Controllers\MonthlyBudgetReportSummaryDetailController;
@@ -874,18 +875,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });
 
-Route::get('/employee-dashboard', function (\App\DataTables\EmployeeWithEvaluationDataTable $dataTable) {
-    return $dataTable->render('employee-dashboard');
-});
-
+Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
 
 Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
-Route::post('/filter-employees', [DirectorHomeController::class, 'filterEmployees'])->name('filter.employees');
-Route::post('/get-employees-by-category', [DirectorHomeController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
-Route::post('/get-employees-by-department', [DirectorHomeController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
-Route::post('/get-employees-by-chart-category', [DirectorHomeController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
+Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
+Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
 Route::get('/employees/{id}/warnings', function ($id) {
     $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
     return response()->json($warnings);
 });
-
+Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])
+    ->name('getEmployeeCountByMonth');
