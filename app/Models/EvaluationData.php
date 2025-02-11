@@ -39,6 +39,7 @@ class EvaluationData extends Model
         'pengawas',
         'depthead',
         'generalmanager',
+        'remark',
     ];
 
     public function karyawan()
