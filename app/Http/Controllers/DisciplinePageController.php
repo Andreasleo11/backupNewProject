@@ -1184,6 +1184,12 @@ class DisciplinePageController extends Controller
                             'generalmanager' => null,    // Set general to null
                         ]);
                         $i += 1;
+                    }else {
+                        // If no changes, still update depthead and generalmanager to null
+                        EvaluationData::where('id', $record->id)->update([
+                            'depthead' => null,
+                            'generalmanager' => null,
+                        ]);
                     }
                 }
             }
