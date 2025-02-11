@@ -28,8 +28,7 @@
     <button class="btn btn-danger" id="lock-data-btn" data-bs-target="#lock-confirmation-modal-1" data-bs-toggle="modal"><i
             class='bx bxs-lock'></i> Lock Data</button>
 
-
-    <form method="GET" action="{{ route('export.yayasan') }}">
+    <form method="GET" action="{{ route('export.yayasan.first.time') }}">
         <div class="row align-items-center mt-3">
             <div class="col-auto">
                 <div class="form-label">Filter Bulan</div>

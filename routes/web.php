@@ -100,6 +100,7 @@ use App\Http\Controllers\EmployeeTrainingController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/user-list', [UserRoleController::class, 'User']);
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -481,6 +482,10 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () {
 
     Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
+    Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation'])->name('file.upload.evaluation');
+    
+    Route::get('/get-files', [FileController::class, 'getFiles']);
+    
     Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 
     // PR
@@ -572,12 +577,21 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/indexallyayasan", [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
-    Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
+    Route::get("/firstimeexport/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan.first.time');
     Route::get("/export/yayasan-full/discipline", [DisciplinePageController::class, 'exportYayasanFull'])->name('export.yayasan.full');
 
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
     Route::post("/approve-data-yayasan/depthead", [DisciplinePageController::class, 'approve_depthead'])->name('approve.data.depthead');
+
+
+    Route::post("/reject-data-yayasan/depthead", [DisciplinePageController::class, 'reject_depthead_button'])->name('reject.depthead.yayasan');
+    Route::post("/reject-data-yayasan/hrd", [DisciplinePageController::class, 'reject_hrd_button'])->name('reject.hrd.yayasan');
+
+    Route::post('/approve-data-depthead/yayasan', [DisciplinePageController::class, 'approve_depthead_button'])->name('approve.depthead.yayasan');
+    Route::post('/approve-data-hrd/yayasan', [DisciplinePageController::class, 'approve_hrd_button'])->name('approve.hrd.yayasan');
+  
+
     Route::post("/approve-data-yayasan/gm", [DisciplinePageController::class, 'approve_gm'])->name('approve.data.gm');
 
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
@@ -605,6 +619,12 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
 
     Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
+
+
+    Route::get('/exportyayasandateinput', [DisciplinePageController::class, 'dateExport'])->name('exportyayasan.dateinput');
+    Route::get('/exportyayasansummary', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('exportyayasan.summary');
+    Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasanJpayrollFunction'])->name('export.yayasan.jpayroll');
+
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
