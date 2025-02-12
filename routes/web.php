@@ -572,6 +572,10 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index")->middleware('permission:get-evaluation-index');
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
+
+    Route::get("/weekly-evaluation/index", [EvaluationDataController::class, 'weeklyIndex'])->name("weekly.evaluation.index")->middleware('permission:get-evaluation-index');
+    Route::post("/weeklyprocessevaluationdata", [EvaluationDataController::class, 'updateWeekly'])->name("WeeklyUpdateEvaluation");
+
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");

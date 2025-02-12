@@ -78,7 +78,9 @@ class EmployeeDataTable extends DataTable
             Column::make('Nama'),
             Column::make('Dept'),
             Column::make('start_date'),
+            Column::make('end_date'),
             Column::make('status'),
+            Column::make('jatah_cuti_taun'),
             Column::computed('action')
             ->exportable(false)
             ->printable(false)

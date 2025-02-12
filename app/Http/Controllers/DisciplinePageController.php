@@ -17,6 +17,7 @@ use App\Imports\DesciplineYayasanDataImport;
 use App\Models\EvaluationData;
 use App\Models\Employee;
 use App\Models\Department;
+use App\Models\EvaluationDataWeekly;
 
 use Carbon\Carbon;
 
@@ -804,12 +805,21 @@ class DisciplinePageController extends Controller
     public function updateDept()
     {
         $datas = EvaluationData::with('karyawan')->get();
+        $weeklyDatas = EvaluationDataWeekly::with('karyawan')->get();
 
         foreach ($datas as $data) {
             if ($data->karyawan) {
                 $data->dept = $data->karyawan->Dept;
                 $data->save();
             }
+        }
+
+        foreach ($weeklyDatas as $weeklyData) {
+            if($weeklyData->karyawan) {
+                $weeklyData->dept = $weeklyData->karyawan->Dept;
+                $weeklyData->save();
+            }
+           
         }
 
         return redirect()->route('home')->with('success', 'Data updated successfully');;
@@ -1203,7 +1213,8 @@ class DisciplinePageController extends Controller
     {
         // Fetch all EvaluationData records
         $evaluationDataRecords = EvaluationData::all();
-
+       
+     
         foreach ($evaluationDataRecords as $evaluationData) {
             // Fetch the corresponding Employee record
             $employee = Employee::where('NIK', $evaluationData->NIK)->first();
