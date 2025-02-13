@@ -18,6 +18,9 @@ class Employee extends Model
         'start_date',
         'status',
         'level',
+        'jatah_cuti_taun',
+        'end_date',
+        'employee_status',
     ];
 
     public function evaluationData()

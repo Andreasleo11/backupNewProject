@@ -527,6 +527,14 @@
                                 Magang
                             </a>
                         </li>
+                    @if($user->role->name === 'SUPERADMIN')
+                        <li class="sidebar-item">
+                            <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Export Yayasan Jpayroll
+                            </a>
+                        </li>
+                    @endif
                     </ul>
                 </li>
 

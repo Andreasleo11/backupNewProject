@@ -7,8 +7,8 @@
 <strong>Last Training Date:</strong> {{ \Carbon\Carbon::parse($training->last_training_at)->format('d-m-Y') }} <br>
 <strong>Evaluated:</strong> {{ $training->evaluated ? 'Yes' : 'No' }}
 
-<x-mail::button :url="route('employee_trainings.show', $training->id)">
-View Order
+<x-mail::button :url="url('/employee_trainings/' . $training->id)">
+    View Order
 </x-mail::button>
 
 Thank you! <br>

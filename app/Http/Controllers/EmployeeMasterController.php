@@ -43,17 +43,28 @@ class EmployeeMasterController extends Controller
 
     public function editemployee(Request $request, $id)
     {
-        $newemployees = Employee::where('id', $id)->get();
+        $newemployee = Employee::where('id', $id)->first();
         // dd($newemployee);
 
-        foreach($newemployees as $newemployee){
-        // dd($newline)
-        $newemployee->where('id', $request->id)->update([
+        if (!$newemployee) {
+            return redirect()->route('index.employeesmaster')->with(['error' => 'User not found!']);
+        }
+    
+        $updateData = [
             'Nama' => $request->Nama,
             'Dept' => $request->Dept,
             'status' => $request->status,
-        ]);
+            'end_date' => $request->end_date,
+            'jatah_cuti_taun' => $request->jatah_cuti_taun,
+        ];
+    
+        // If end_date is not null, set employee_status to "NOT ACTIVE"
+        if (!is_null($request->end_date)) {
+            $updateData['employee_status'] = 'NOT ACTIVE';
         }
+    
+        // Update the employee record
+        $newemployee->update($updateData);
 
         return redirect()->route('index.employeesmaster')->with(['success' => 'User updated successfully!']);
 

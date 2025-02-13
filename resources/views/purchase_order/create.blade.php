@@ -15,13 +15,14 @@
         <div class="card shadow-sm p-4">
             <form action="{{ route('po.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                @if ($parentPONumber)
+                @if (!empty($parentPONumber))
                     <div class="form-group mb-3">
                         <label for="parent_po_number" class="form-label">Parent PO Number</label>
                         <input class="form-control bg-secondary-subtle" type="text" id="parent_po_number"
                             name="parent_po_number" value="{{ old('parent_po_number', $parentPONumber) }}" readonly>
                     </div>
                 @endif
+
                 <!-- PO Number Input -->
                 <div class="form-group mb-3">
                     <label for="po_number" class="form-label">PO Number</label>

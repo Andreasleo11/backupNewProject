@@ -25,6 +25,23 @@ class EmployeeWithEvaluationDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addColumn('totalkehadiran', '
+            @php
+
+            $total = 100;
+
+            $countalpha = $Alpha * 10;
+            $countizin = $Izin * 2;
+            $counttelat = $Telat * 0.5;
+
+            $all = $total - ($countalpha + $countizin + $counttelat + $Sakit);
+
+            if($all < 0)
+            {
+                $all = 0;
+            }
+            @endphp
+            {{ $all }}')
             ->filterColumn('NIK', function ($query, $keyword) {
                 $query->where('employees.NIK', 'like', "%{$keyword}%");
             })
@@ -167,7 +184,11 @@ class EmployeeWithEvaluationDataTable extends DataTable
             Column::make('Telat')->searchable(false),
             Column::make('Izin')->searchable(false),
             Column::make('Sakit')->searchable(false),
-            Column::make('total')->searchable(false),
+            Column::make('totalkehadiran')
+                ->title('Total Nilai Kehadiran')
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false),

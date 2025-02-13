@@ -53,8 +53,23 @@
                         value="{{ old('tanggal_pembayaran', $po->tanggal_pembayaran) }}" required>
                 </div>
 
-                <!-- Total Input -->
+                <!-- Purchase Order Category Input -->
                 <div class="form-group mb-3">
+                    <label for="purchase_order_category_id" class="form-label">Category</label>
+                    <select name="purchase_order_category_id" id="purchase_order_category_id" class="form-select">
+                        <option value="" {{ old('purchase_order_category_id') == '' ? 'selected' : '' }}>--Select
+                            Category--</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}"
+                                {{ old('purchase_order_category_id', $po->purchase_order_category_id) == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Total Input -->
+                <div class="form-group mb-4">
                     <label for="total" class="form-label">Total</label>
                     <div class="input-group">
                         <div class="col-auto">
@@ -74,9 +89,19 @@
                     </div>
                 </div>
 
+
+
                 <!-- PDF File Input -->
                 <div class="form-group mb-3">
-                    <label for="pdf_file" class="form-label">Choose PDF File</label>
+                    <!-- Check if there's an existing file -->
+                    @if ($po->filename)
+                        <div class="mb-2">
+                            <p><strong>Current File:</strong> <a href="{{ asset('storage/pdfs/' . $po->filename) }}"
+                                    target="_blank">{{ basename($po->filename) }}</a></p>
+                        </div>
+                    @else
+                        <label for="pdf_file" class="form-label">Choose PDF File</label>
+                    @endif
                     <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" class="form-control"
                         aria-describedby="pdfFileHelp">
                     <div id="pdfFileHelp" class="form-text">Maximum file size is 2 MB. Leave blank if no changes.</div>

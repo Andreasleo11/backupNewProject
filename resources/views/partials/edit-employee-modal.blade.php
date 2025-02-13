@@ -39,6 +39,28 @@
                             </div>
                         </div>
                     </div>
+                     <!-- New End Date Field -->
+                     <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="end_date" class="form-label">End Date :</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="date" name="end_date" class="form-control" id="end_date" value="{{$data->end_date}}">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- New Jatah Cuti Tahun Field -->
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="jatah_cuti_taun" class="form-label">Jatah Cuti Tahun :</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="number" name="jatah_cuti_taun" class="form-control" id="jatah_cuti_taun" value="{{$data->jatah_cuti_taun}}">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

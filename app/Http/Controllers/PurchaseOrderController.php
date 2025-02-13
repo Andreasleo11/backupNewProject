@@ -66,7 +66,7 @@ class PurchaseOrderController extends Controller
     public function create(Request $request)
     {
         $categories = PurchaseOrderCategory::all();
-        $parentPONumber = $request->parent_po_number;
+        $parentPONumber = $request->get('parent_po_number', null);
 
         return view('purchase_order.create', compact('categories', 'parentPONumber'));
     }
@@ -88,8 +88,8 @@ class PurchaseOrderController extends Controller
 
         // Store the uploaded PDF with a unique filename
         $file = $validated['pdf_file'];
-        $filename = 'PO_' . Str::random(10) . '_' . time() . '.pdf';
-        $filePath = $file->storeAs('public/pdfs', $filename);
+        $filename = 'PO_' . $validated['po_number'] . '_' . time() . '.pdf';
+        $file->storeAs('public/pdfs', $filename);
 
         // Remove commas from the total and convert it to a float
         $total = (float) str_replace(',', '', $validated['total']);
@@ -107,21 +107,22 @@ class PurchaseOrderController extends Controller
         $purchaseOrder->total = $total;
         $purchaseOrder->purchase_order_category_id = $validated['purchase_order_category_id'];
         $purchaseOrder->tanggal_pembayaran = $validated['tanggal_pembayaran'];
-        if($validated['parent_po_number']) {
+
+        if (!empty($validated['parent_po_number'])) {
             $purchaseOrder->parent_po_number = $validated['parent_po_number'];
+
+            // Update the canceled PO revision_count
+            $parentPO = PurchaseOrder::where('po_number', $validated['parent_po_number'])->first();
+            if ($parentPO) {
+                $parentPO->update([
+                    'revision_count' => $parentPO->revision_count + 1
+                ]);
+            }
         }
+
         $purchaseOrder->save();
 
-        // Update the canceled po revision_count
-        if($validated['parent_po_number']){
-            $parentPO = PurchaseOrder::where('po_number', $validated['parent_po_number'])->first();
-            $parentPO->update([
-                'revision_count' => $parentPO->revision_count + 1
-            ]);
-        }
-
-        // Redirect to the PDF viewer with a success message
-        return redirect()->route('po.index')->with('success', 'PO created successfully.');
+        return redirect()->back()->with('success', 'PO created successfully.');
     }
 
     public function view($id)
@@ -140,41 +141,6 @@ class PurchaseOrderController extends Controller
 
         return view('purchase_order.view', compact('purchaseOrder', 'user', 'files', 'revisions'));
     }
-
-    // public function signPDF(Request $request) version pake signature box
-    // {
-
-    //     // Load the original PDF
-    // $filename = $request->input('filename');
-    // $pdfPath = public_path("storage/pdfs/{$filename}");
-    // $signedPdfPath = str_replace('.pdf', '_signed.pdf', $pdfPath);
-
-    // // Initialize FPDI
-    // $pdf = new Fpdi();
-    // $pageCount = $pdf->setSourceFile($pdfPath);
-
-    // // Path to the stored signature file
-    // $signaturePath = public_path('storage/autographs/Djoni.png');
-
-    // // Loop through each page and add it to the new PDF
-    // for ($pageIndex = 1; $pageIndex <= $pageCount; $pageIndex++) {
-    //     $pdf->AddPage();
-    //     $templateId = $pdf->importPage($pageIndex);
-    //     $pdf->useTemplate($templateId, 0, 0, 210);
-
-    //     // Check if this is the last page
-    //     if ($pageIndex === $pageCount) {
-    //         $pdf->SetFont('Arial', '', 12); // Set font before adding text if necessary
-    //         $pdf->Image($signaturePath, 40, 250, 40, 20); // Position the signature on the last page
-    //     }
-    // }
-
-    // // Save the signed PDF
-    // $pdf->Output($signedPdfPath, 'F');
-
-    // return response()->json(['message' => 'PDF signed successfully!']);
-    // }
-
 
     public function sign(Request $request) // version click langsung keluar tanda tangan
     {
@@ -244,12 +210,6 @@ class PurchaseOrderController extends Controller
         try {
             // Attempt to find the PurchaseOrder record
             $po = PurchaseOrder::findOrFail($id);
-            // Log::info([
-            //     'user_id' => auth()->user()->id,
-            //     'purchase_order_id' => $po->id,
-            //     'last_downloaded_at' => now(),
-            // ]);
-            // dd('test');
 
             $filename = $po->filename;
             $path = storage_path("app/public/pdfs/{$filename}");
@@ -363,9 +323,10 @@ class PurchaseOrderController extends Controller
 
     public function edit($id)
     {
+        $categories = PurchaseOrderCategory::all();
         $po = PurchaseOrder::find($id);
 
-        return view('purchase_order.edit', compact('po'));
+        return view('purchase_order.edit', compact('po', 'categories'));
     }
 
     public function update(UpdatePoRequest $request, $id)
@@ -383,18 +344,19 @@ class PurchaseOrderController extends Controller
         $po->invoice_number = $validatedData['invoice_number'];
         $po->tanggal_pembayaran = $validatedData['tanggal_pembayaran'];
         $po->currency = $validatedData['currency'];
+        $po->purchase_order_category_id = $validatedData['purchase_order_category_id'];
         $po->total = str_replace(',', '', $validatedData['total']); // Remove commas from total
 
         // Check if a new PDF file is uploaded
         if ($request->hasFile('pdf_file')) {
             // Delete the old file if necessary (optional, depends on your setup)
-            if ($po->pdf_file) {
-                Storage::delete($po->pdf_file);
+            if ($po->filename) {
+                Storage::delete($po->filename);
             }
 
             $file = $validatedData['pdf_file'];
-            $filename = 'PO_' . Str::random(10) . '_' . time() . '.pdf';
-            $filePath = $file->storeAs('public/pdfs', $filename);
+            $filename = 'PO_' . $po->po_number . '_' . time() . '.pdf';
+            $file->storeAs('public/pdfs', $filename);
 
             // Store the new file and update the path
             $po->filename = $filename;
@@ -404,7 +366,7 @@ class PurchaseOrderController extends Controller
         $po->save();
 
         // Redirect back with a success message
-        return redirect()->route('po.index')->with('success', 'PO Successfully Updated!');
+        return redirect()->back()->with('success', 'PO Successfully Updated!');
     }
 
     public function dashboard(Request $request)

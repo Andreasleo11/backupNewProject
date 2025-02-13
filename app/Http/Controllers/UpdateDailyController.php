@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
+ini_set('max_execution_time', 100000);
 
 use App\Http\Controllers\Controller;
 use App\Exports\BomWip;
@@ -77,7 +78,6 @@ class UpdateDailyController extends Controller
         }
 
         elseif ($selectedOption === 'sap_delsched') {
-            DB::table('sap_delsched')->truncate();
             $excelFileName = $this->processDelschedFiles($uploadedFiles);
             try {
                 $this->importDelschedFile($excelFileName);
@@ -339,11 +339,66 @@ class UpdateDailyController extends Controller
 
     private function importDelschedFile($excelFileName)
     {
+        // Get the file path
+        $filePath = public_path('storage/AutomateFile/' . $excelFileName);
 
-            // Import the Excel file using the DelschedImport class
-        Excel::import(new DelschedImport, public_path('storage/AutomateFile/' . $excelFileName));
+        // Read the CSV file into an array
+        $data = array_map('str_getcsv', file($filePath));
 
-            // If the import is successful, return a success message
+        // Remove the first row (header)
+        array_shift($data);
+
+        // Initialize an array to hold the processed data
+        $processedData = [];
+
+        // Loop through the rows and process them
+        foreach ($data as $row) {
+            $itemCode = $row[0]; // Assuming item_code is in column 1
+            $deliveryDate = $row[1]; // Assuming delivery_date is in column 2
+            $deliveryQty = $row[2]; // Assuming delivery_qty is in column 3
+            $soNumber = $row[3]; // Assuming so_number is in column 4, but it can be null
+
+            // Prepare the data for insertion
+            $processedData[] = [
+                'item_code' => $itemCode,
+                'delivery_date' => $deliveryDate,
+                'delivery_qty' => $deliveryQty,
+                'so_number' => $soNumber,
+            ];
+        }
+
+        // Collect all unique combinations of item_code and delivery_date for fast checking
+        $uniqueCombination = collect($processedData)
+            ->map(fn($row) => ['item_code' => $row['item_code'], 'delivery_date' => $row['delivery_date']])
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Get the existing records with the same item_code and delivery_date in a batch query
+        $existingRecords = DB::table('sap_delsched')
+            ->whereIn(DB::raw('CONCAT(item_code, "-", delivery_date)'), 
+                collect($uniqueCombination)->map(fn($item) => $item['item_code'] . '-' . $item['delivery_date'])->toArray())
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->item_code . '-' . $item->delivery_date;
+            });
+
+        // Filter out the rows that already exist in the database (using unique combination of item_code + delivery_date)
+        $insertData = [];
+        foreach ($processedData as $row) {
+            $key = $row['item_code'] . '-' . $row['delivery_date'];
+            
+            // If this combination does not exist in the existing records, add it to insertData
+            if (!isset($existingRecords[$key])) {
+                $insertData[] = $row;
+            }
+        }
+
+        // Insert all the new records in one batch
+        if (count($insertData) > 0) {
+            DB::table('sap_delsched')->insert($insertData);
+        }
+
         return 'Excel file imported successfully.';
     }
 

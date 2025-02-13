@@ -18,7 +18,10 @@
         <i class="bi bi-trash"></i>
         <span class="d-none d-sm-inline">Delete</span>
     </button>
-@elseif ($po->status === 2 && auth()->user()->department->name === 'ACCOUNTING')
+@endif
+@if (
+    ($po->status === 2 && auth()->user()->department->name === 'ACCOUNTING') ||
+        auth()->user()->role->name === 'SUPERADMIN')
     @include('partials.cancel-confirmation-modal', [
         'id' => $po->id,
         'route' => route('po.cancel', $po->id),
