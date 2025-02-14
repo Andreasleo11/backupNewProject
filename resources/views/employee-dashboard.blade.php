@@ -12,6 +12,7 @@
         </div>
     </div>
 
+
     <!-- Modal -->
     <div class="modal fade" id="filteredEmployeesModal" tabindex="-1" aria-labelledby="filteredEmployeesModalLabel"
         aria-hidden="true">
@@ -23,8 +24,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        {{ $dataTable->table() }}
-                        {{ $dataTable->scripts() }}
+                        {!! $dataTableEmployeeWithEvaluation->table(['id' => 'employeewithevaluation-table']) !!}
+                        {!! $dataTableEmployeeWithEvaluation->scripts() !!}
                     </div>
                 </div>
             </div>

@@ -39,6 +39,16 @@
                                                     aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
+                                                <div class="d-flex mb-3 justify-content-between align-items-center">
+                                                    <div>
+                                                        <h4>Summary</h4>
+                                                    </div>
+                                                    <div>
+                                                        <button type="submit" class="btn btn-outline-primary"
+                                                            data-bs-target="#allEmployeesModal"
+                                                            data-bs-toggle="modal">Employee List ></button>
+                                                    </div>
+                                                </div>
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered">
                                                         <thead>
@@ -81,6 +91,26 @@
                                     </div>
                                 </div>
 
+                                <!-- All Employees Modal -->
+                                <div class="modal fade" id="allEmployeesModal" tabindex="-1"
+                                    aria-labelledby="allEmployeesModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-xl">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h3 class="modal-title" id="allEmployeesModalLabel">All Employees
+                                                    (Employee List)</h3>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive">
+                                                    {!! $dataTableEmployee->table(['id' => 'employee-table']) !!}
+                                                    {!! $dataTableEmployee->scripts() !!}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="col">
@@ -164,27 +194,40 @@
                     </div>
                 </div>
 
-                <div class="col">
-                    <label for="monthYearFilter" class="form-label">Select Available Report</label>
-                    <select id="monthYearFilter" name="monthYear" class="form-select">
-                        {{-- <option value="">All</option> --}}
-                        @foreach ($monthYearOptions as $option)
-                            <option value="{{ $option['value'] }}" {{ $loop->last ? 'selected' : '' }}>
-                                {{ $option['name'] }}</option>
-                        @endforeach
-                    </select>
+                <div class="col mt-4">
+                    <div class="row">
+                        <div class="col">
+                            <label for="monthYearFilter" class="form-label">Select Month</label>
+                            <select id="monthYearFilter" name="monthYear" class="form-select">
+                                {{-- <option value="">All</option> --}}
+                                @foreach ($monthYearOptions as $option)
+                                    <option value="{{ $option['value'] }}" {{ $loop->last ? 'selected' : '' }}>
+                                        {{ $option['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col">
+                            <label for="weekFilter" class="form-label">Select Week</label>
+                            <input type="week" id="weekFilter" class="form-control" value="{{ $latestWeek }}">
+                        </div>
+                    </div>
 
                     <!-- Employee Category Cards -->
                     <div class="row">
                         @foreach (['Alpha' => 'danger', 'Telat' => 'warning', 'Izin' => 'primary', 'Sakit' => 'success'] as $category => $color)
                             <div class="col col-md-6 col-xl-3">
                                 <div class="card mt-4" data-category="{{ $category }}">
-                                    <button class="btn btn-light open-modal" data-category="{{ $category }}"
-                                        data-bs-toggle="modal" data-bs-target="#employeeByCategoryModal">
+                                    <button class="btn btn-light open-category-modal"
+                                        data-category="{{ $category }}" data-bs-toggle="modal"
+                                        data-bs-target="#employeeByCategoryModal">
                                         <div class="card-body text-start">
+                                            <span class="card-text text-secondary fs-4">{{ $category }}</span>
+                                            <br>
                                             <span class="fw-bold badge text-bg-{{ $color }} fs-3"
                                                 id="{{ strtolower($category) }}">{{ $employeeData[strtolower($category)] }}</span>
-                                            <p class="card-text text-secondary fs-4">{{ $category }}</p>
+                                            <br>
+                                            <span class="text-secondary">employees</span>
                                         </div>
                                     </button>
                                 </div>
@@ -204,7 +247,7 @@
                                 </div>
                                 <div class="modal-body">
                                     <h5 class="text-secondary" id="modalCategoryTitle"></h5>
-                                    <p class="fw-bold" id="modalMonthTitle"></p>
+                                    <p class="fw-bold" id="modalSubtitle"></p>
                                     <div class="table-responsive">
                                         <table class="table table-bordered">
                                             <thead>
@@ -212,6 +255,7 @@
                                                     <th>No.</th>
                                                     <th>NIK</th>
                                                     <th>Name</th>
+                                                    <th>Gender</th>
                                                     <th>Department</th>
                                                     <th>Status</th>
                                                     <th id="categoryCountTitle"></th> <!-- Dynamic Category Column -->
@@ -228,14 +272,21 @@
                     </div>
 
                     <div class="row mt-5">
+
+                        <!-- Bar Chart -->
+                        <div class="col-12">
+                            <canvas id="weeklyEvaluationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="row mt-5">
                         {{-- <h3 class="text-secondary">Employee Count per Department</h3>
-                        <canvas class="mt-3" id="departmentEmployeeChart"></canvas>
+                        <canvas class="mt-3" id="departmentEmployeeChart"></canvas> --}}
 
-                        <h3 class="text-secondary">Employee Count per Month</h3> --}}
-
+                        {{-- <h3 class="text-secondary">Employee Count per Month</h3> --}}
 
                         <!-- Year Selection -->
-                        <div class="col-md-3 mb-3">
+                        {{-- <div class="col-md-3 mb-3">
                             <label for="yearFilter" class="form-label">Select Year</label>
                             <select id="yearFilter" class="form-select">
                                 @for ($i = $latestYear; $i >= $latestYear - 5; $i--)
@@ -249,7 +300,7 @@
                         <!-- Employee Count Chart -->
                         <div class="col-12">
                             <canvas id="employeeCountChart"></canvas>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -301,7 +352,7 @@
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead>
-                                    <tr>
+                                    <tr id="tableHead">
                                         <th>No.</th>
                                         <th>NIK</th>
                                         <th>Name</th>
@@ -326,7 +377,205 @@
 
 </div>
 
+{{-- Weekly bar chart script  --}}
 <script type="module">
+    document.addEventListener('DOMContentLoaded', function() {
+        const weekFilter = document.getElementById('weekFilter');
+        const ctx = document.getElementById('weeklyEvaluationChart').getContext('2d');
+
+        let weeklyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                        label: 'Alpha',
+                        data: [],
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    },
+                    {
+                        label: 'Telat',
+                        data: [],
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    },
+                    {
+                        label: 'Izin',
+                        data: [],
+                        backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                    },
+                    {
+                        label: 'Sakit',
+                        data: [],
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    },
+                    {
+                        label: 'Total',
+                        data: [],
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        type: 'line',
+                        fill: false,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+                onClick: function(event, elements) {
+                    if (elements.length > 0) {
+                        let clickedIndex = elements[0].index; // Get the department index
+                        let datasetIndex = elements[0]
+                            .datasetIndex; // Get which dataset (Alpha, Telat, etc.)
+                        let department = weeklyChart.data.labels[
+                            clickedIndex]; // Get department name
+                        let category = weeklyChart.data.datasets[datasetIndex]
+                            .label; // Get category (Alpha, Telat, etc.)
+
+                        // Extract Year and Week Number from 'YYYY-WWW' format
+                        const [year, week] = weekFilter.value.split('-W');
+
+                        fetchEmployeeList(department, category, year, week);
+                    }
+                },
+            },
+        });
+
+        function fetchWeeklyEvaluation(weekValue) {
+            if (!weekValue) {
+                console.error("Week value is missing");
+                return;
+            }
+
+            // Extract Year and Week Number
+            const [year, week] = weekValue.split('-W');
+            const branch = document.getElementById('branchFilter').value || '';
+            const department = document.getElementById('deptFilter').value || '';
+            const status = document.getElementById('statusFilter').value || '';
+            const gender = document.getElementById('genderFilter').value || '';
+
+            let url = `{{ route('getWeeklyEvaluationData', ['year' => '__YEAR__', 'week' => '__WEEK__']) }}`;
+            url = url.replace('__YEAR__', year).replace('__WEEK__', week);
+
+            // Append filters as query parameters
+            url +=
+                `?branch=${encodeURIComponent(branch)}&department=${encodeURIComponent(department)}&status=${encodeURIComponent(status)}&gender=${encodeURIComponent(gender)}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const labels = Object.keys(data);
+                    const alphaData = labels.map(dept => data[dept]?.breakdown?.Alpha || 0);
+                    const telatData = labels.map(dept => data[dept]?.breakdown?.Telat || 0);
+                    const izinData = labels.map(dept => data[dept]?.breakdown?.Izin || 0);
+                    const sakitData = labels.map(dept => data[dept]?.breakdown?.Sakit || 0);
+                    const totalData = labels.map(dept => data[dept]?.total_count ||
+                        0); // Total distinct NIK
+
+                    // Update chart data
+                    weeklyChart.data.labels = labels;
+                    weeklyChart.data.datasets[0].data = alphaData;
+                    weeklyChart.data.datasets[1].data = telatData;
+                    weeklyChart.data.datasets[2].data = izinData;
+                    weeklyChart.data.datasets[3].data = sakitData;
+                    weeklyChart.data.datasets[4].data = totalData; // Update Total Count dataset
+
+                    weeklyChart.update();
+                })
+                .catch(error => console.error("Error fetching data:", error));
+        }
+
+        // Load current week's data
+        fetchWeeklyEvaluation(weekFilter.value);
+
+        // Update chart when week changes
+        weekFilter.addEventListener('change', function() {
+            fetchWeeklyEvaluation(this.value);
+        });
+
+        // Function to fetch and show employees in a modal
+        function fetchEmployeeList(department, category, year, week) {
+            let url =
+                `{{ route('getEmployeesByCategoryAndWeek', ['department' => '__DEPT__', 'category' => '__CAT__', 'year' => '__YEAR__', 'week' => '__WEEK__']) }}`;
+            url = url.replace('__DEPT__', encodeURIComponent(department))
+                .replace('__CAT__', encodeURIComponent(category))
+                .replace('__YEAR__', year)
+                .replace('__WEEK__', week);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let tableBody = document.getElementById("employeeList");
+                    let tableHead = document.getElementById("tableHead");
+                    tableBody.innerHTML = "";
+
+                    // Extract employees and total count
+                    const employees = data.employees || [];
+                    const totalCategory = data.total_selected_category ?? null;
+
+                    // Reset table head
+                    tableHead.innerHTML = `
+                    <th>No.</th>
+                    <th>NIK</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                `;
+
+                    // If a category is selected, add an extra column for it
+                    let showCategoryColumn = category !== "total" && employees.some(emp => emp
+                        .category_total !== undefined);
+                    if (showCategoryColumn) {
+                        tableHead.innerHTML +=
+                            `<th>${category.charAt(0).toUpperCase() + category.slice(1)}</th>`;
+                    }
+
+                    if (employees.length > 0) {
+                        employees.forEach((emp, index) => {
+                            let row = `<tr>
+                            <td>${index + 1}</td>
+                            <td>${emp.NIK}</td>
+                            <td>${emp.Nama}</td>
+                            <td>${emp.department_name}</td>
+                            <td>${emp.employee_status}</td>
+                            ${showCategoryColumn ? `<td>${emp.category_total}</td>` : ""}
+                        </tr>`;
+                            tableBody.innerHTML += row;
+                        });
+
+                        // Append total row if a specific category is selected
+                        if (showCategoryColumn && totalCategory !== null) {
+                            let totalRow = `<tr class="fw-bold">
+                            <td colspan="5" class="text-end">Total ${category}:</td>
+                            <td>${totalCategory}</td>
+                        </tr>`;
+                            tableBody.innerHTML += totalRow;
+                        }
+                    } else {
+                        tableBody.innerHTML =
+                            `<tr><td colspan="${showCategoryColumn ? 6 : 5}" class="text-center">No employees found</td></tr>`;
+                    }
+
+                    // Update modal title dynamically
+                    document.getElementById("modalTitle").innerText =
+                        category === "total" ?
+                        `Total Employees in ${department}` :
+                        `Employees in ${department} - ${category}`;
+
+                    // Show modal
+                    let employeeModal = new bootstrap.Modal(document.getElementById("employeeModal"));
+                    employeeModal.show();
+                })
+                .catch(error => console.error("Error fetching employee data:", error));
+        }
+
+    });
+</script>
+
+{{-- Employee Count chart script --}}
+{{-- <script type="module">
     document.addEventListener('DOMContentLoaded', function() {
         const yearFilter = document.getElementById('yearFilter');
         const chartElement = document.getElementById('employeeCountChart');
@@ -372,7 +621,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log("Received Data:", data);
+                    // console.log("Received Data:", data);
                     employeeChart.data.datasets[0].data = Object.values(data);
                     employeeChart.update();
                 })
@@ -389,25 +638,34 @@
             });
         }
     });
-</script>
-
+</script> --}}
 
 {{-- Employee List Modal Script --}}
 <script type="module">
     document.addEventListener('DOMContentLoaded', function() {
         const modal = new bootstrap.Modal(document.getElementById('employeeByCategoryModal'));
 
-        document.querySelectorAll('.open-modal').forEach(button => {
+        document.querySelectorAll('.open-category-modal').forEach(button => {
             button.addEventListener('click', function() {
                 let category = this.getAttribute('data-category');
-                let monthYear = document.getElementById('monthYearFilter')
-                    .value; // Get selected month-year filter
+                let monthYear = document.getElementById('monthYearFilter').value;
+                let branch = document.getElementById('branchFilter').value;
+                let department = document.getElementById('deptFilter').value;
+                let status = document.getElementById('statusFilter').value;
+                let gender = document.getElementById('genderFilter').value;
+                let week = document.getElementById('weekFilter').value
 
                 document.getElementById('modalCategoryTitle').innerText =
                     `${category} category`;
-                document.getElementById('categoryCountTitle').innerText =
-                    category; // Set table column title
-                document.getElementById('modalMonthTitle').innerText = monthYear;
+                document.getElementById('categoryCountTitle').innerText = category;
+
+                // Create an array of selected filters, excluding empty values
+                let filters = [monthYear, branch, department, status, gender, week].filter(
+                    value =>
+                    value.trim() !== "");
+
+                // Set the subtitle with only active filters, joined by commas
+                document.getElementById('modalSubtitle').innerText = filters.join(', ');
 
                 fetch("{{ route('getEmployeesByCategory') }}", {
                         method: "POST",
@@ -418,7 +676,12 @@
                         },
                         body: JSON.stringify({
                             category: category,
-                            monthYear: monthYear
+                            monthYear: monthYear,
+                            branch: branch,
+                            department: department,
+                            status: status,
+                            gender: gender,
+                            week: week,
                         })
                     })
                     .then(response => response.json())
@@ -438,6 +701,7 @@
                                             <td>${index + 1}</td> <!-- Row Number -->
                                             <td>${emp.NIK}</td>
                                             <td>${emp.Nama}</td>
+                                            <td>${emp.Gender}</td>
                                             <td>${emp.department_name}</td>
                                             <td>${emp.employee_status}</td>
                                             <td>${emp.category_count}</td> <!-- Show category count -->
@@ -447,13 +711,13 @@
 
                             // Append total count row
                             let totalRow = `<tr class="fw-bold">
-                                                <td colspan="5" class="text-end">Total ${category}:</td>
+                                                <td colspan="6" class="text-end">Total ${category}:</td>
                                                 <td>${totalCount}</td>
                                             </tr>`;
                             tableBody.innerHTML += totalRow;
                         } else {
                             tableBody.innerHTML =
-                                `<tr><td colspan="6" class="text-center">No employees found</td></tr>`;
+                                `<tr><td colspan="7" class="text-center">No employees found</td></tr>`;
                         }
 
                         modal.show();
@@ -466,7 +730,7 @@
 
 
 {{-- Department Employee Chart Scipt --}}
-<script type="module">
+{{-- <script type="module">
     document.addEventListener('DOMContentLoaded', function() {
         const barData = {!! json_encode($departmentEmployeeCounts) !!}; // Pass data from Laravel
 
@@ -588,18 +852,27 @@
             return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
         }
     });
-</script>
+</script> --}}
 
 {{-- month year filter script --}}
 <script type="module">
     // Fetch employee data on page load
-    fetchEmployeeData($('#monthYearFilter').val());
+    fetchEmployeeData();
 
-    $('#monthYearFilter').on('change', function() {
-        fetchEmployeeData(this.value);
-    });
+    // Attach event listener for all filters
+    $('#monthYearFilter, #weekFilter, #branchFilter, #deptFilter, #statusFilter, #genderFilter')
+        .on('change', function() {
+            fetchEmployeeData();
+        });
 
-    function fetchEmployeeData(monthYear) {
+    function fetchEmployeeData() {
+        let monthYear = $('#monthYearFilter').val();
+        let week = $('#weekFilter').val(); // New Week Filter
+        let branch = $('#branchFilter').val();
+        let department = $('#deptFilter').val();
+        let status = $('#statusFilter').val();
+        let gender = $('#genderFilter').val();
+
         fetch("{{ route('filter.employees') }}", {
                 method: "POST",
                 headers: {
@@ -607,12 +880,17 @@
                     "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
                 },
                 body: JSON.stringify({
-                    monthYear: monthYear
+                    monthYear: monthYear,
+                    week: week,
+                    branch: branch,
+                    department: department,
+                    status: status,
+                    gender: gender,
                 })
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("totalEmployees").innerText = data.total;
+                console.log(data);
                 document.getElementById("alpha").innerText = data.alpha;
                 document.getElementById("telat").innerText = data.telat;
                 document.getElementById("izin").innerText = data.izin;
@@ -622,8 +900,19 @@
     }
 </script>
 
-{{-- dynamic active filter script for pie chart and table --}}
-<script>
+{{-- pie chart employee filter script --}}
+<script type="module">
+    const chartData = @json($chartData);
+    const tableData = @json($employees);
+
+    const branchFilter = document.getElementById('branchFilter');
+    const deptFilter = document.getElementById('deptFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const genderFilter = document.getElementById('genderFilter');
+    const legendFilter = document.getElementById('legendFilter'); // Optional if legend selection is added
+    const ctx = document.getElementById('pieChart').getContext('2d');
+    const employeeTableBody = document.getElementById('employeewithevaluation-table').querySelector('tbody');
+
     // Call updateActiveFilters whenever a filter changes
     branchFilter.addEventListener('change', updateActiveFilters);
     deptFilter.addEventListener('change', updateActiveFilters);
@@ -641,20 +930,6 @@
         document.getElementById('currentStatusFilter').textContent = statusFilter.value || 'All';
         document.getElementById('currentGenderFilter').textContent = genderFilter.value || 'All';
     }
-</script>
-
-{{-- pie chart employee filter script --}}
-<script type="module">
-    const chartData = @json($chartData);
-    const tableData = @json($employees);
-
-    const branchFilter = document.getElementById('branchFilter');
-    const deptFilter = document.getElementById('deptFilter');
-    const statusFilter = document.getElementById('statusFilter');
-    const genderFilter = document.getElementById('genderFilter');
-    const legendFilter = document.getElementById('legendFilter'); // Optional if legend selection is added
-    const ctx = document.getElementById('pieChart').getContext('2d');
-    const employeeTableBody = document.getElementById('employeewithevaluation-table').querySelector('tbody');
 
     // Initialize empty pie chart
     let employeeChart = new Chart(ctx, {
@@ -927,7 +1202,6 @@
         genderFilter.value = selectedGender && genderOptions.includes(selectedGender) ? selectedGender : "";
     }
 
-
     // Event listeners for dropdowns
     branchFilter.addEventListener('change', () => {
         updateDropdowns();
@@ -956,4 +1230,3 @@
     updateDropdowns();
     updateChart();
 </script>
-</div>
