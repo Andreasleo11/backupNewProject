@@ -4,12 +4,12 @@
     <div class="p-5">
         @include('partials.alert-success-error')
         <x-employee-dashboard />
-        <div class="mt-2">
+        {{-- <div class="mt-2">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filteredEmployeesModal"
                 id="viewFilteredEmployeesBtn">
                 View Filtered Employees
             </button>
-        </div>
+        </div> --}}
     </div>
 
 
