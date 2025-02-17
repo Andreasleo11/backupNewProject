@@ -85,7 +85,7 @@ class EmployeeDataTable extends DataTable
             Column::make('start_date'),
             Column::make('end_date'),
             Column::make('status'),
-            Column::make('jatah_cuti_taun'),
+            Column::make('jatah_cuti_tahun'),
         ];
 
         // Conditionally add the action column if a user is authenticated
