@@ -236,18 +236,18 @@
                             <input type="week" id="weekFilter" class="form-control" value="{{ $latestWeek }}">
                         </div>
 
-                        <!-- Display selected week range -->
-                        <div class="col">
-                            <label class="form-label">Selected Week Range:</label>
-                            <p id="weekRange" class="fw-bold text-secondary"></p>
-                        </div>
+                    </div>
+
+                    <!-- Display selected week range -->
+                    <div class="mt-3">
+                        <p id="weekRange" class="fw-bold text-secondary text-center fs-3"></p>
                     </div>
 
                     <!-- Employee Category Cards -->
                     <div class="row">
                         @foreach (['Alpha' => 'danger', 'Telat' => 'warning', 'Izin' => 'primary', 'Sakit' => 'success'] as $category => $color)
                             <div class="col col-md-6 col-xl-3">
-                                <div class="card mt-4" data-category="{{ $category }}">
+                                <div class="card mt-2" data-category="{{ $category }}">
                                     <button class="btn btn-light open-category-modal"
                                         data-category="{{ $category }}" data-bs-toggle="modal"
                                         data-bs-target="#employeeByCategoryModal">
@@ -302,7 +302,6 @@
                     </div>
 
                     <div class="row mt-5">
-
                         <!-- Bar Chart -->
                         <div class="col-12">
                             <canvas id="weeklyEvaluationChart"></canvas>
