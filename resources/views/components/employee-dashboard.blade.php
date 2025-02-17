@@ -61,8 +61,15 @@
                                                                             fn($dept) => array_keys(
                                                                                 $dept['breakdown']->toArray(),
                                                                             ),
-                                                                        ) // Convert to array
+                                                                        )
                                                                         ->unique();
+
+                                                                    // Initialize totals array
+                                                                    $statusTotals = array_fill_keys(
+                                                                        $uniqueStatuses->toArray(),
+                                                                        0,
+                                                                    );
+                                                                    $grandTotal = 0;
                                                                 @endphp
 
                                                                 @foreach ($uniqueStatuses as $status)
@@ -76,20 +83,37 @@
                                                                 <tr>
                                                                     <td>{{ $counts['label'] }}</td>
                                                                     @foreach ($uniqueStatuses as $status)
-                                                                        <td>{{ $counts['breakdown']->get($status, '') }}
-                                                                        </td> <!-- Use ->get() to avoid errors -->
+                                                                        @php
+                                                                            $countValue = $counts['breakdown']->get(
+                                                                                $status,
+                                                                                0,
+                                                                            );
+                                                                            $statusTotals[$status] += $countValue; // Sum each column
+                                                                        @endphp
+                                                                        <td>{{ $countValue }}</td>
                                                                     @endforeach
+                                                                    @php $grandTotal += $counts['total_count']; @endphp
                                                                     <td><strong>{{ $counts['total_count'] }}</strong>
                                                                     </td>
                                                                 </tr>
                                                             @endforeach
                                                         </tbody>
+                                                        <tfoot>
+                                                            <tr class="table-secondary fw-bold">
+                                                                <td>Total</td>
+                                                                @foreach ($uniqueStatuses as $status)
+                                                                    <td>{{ $statusTotals[$status] }}</td>
+                                                                @endforeach
+                                                                <td>{{ $grandTotal }}</td>
+                                                            </tr>
+                                                        </tfoot>
                                                     </table>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
 
                                 <!-- All Employees Modal -->
                                 <div class="modal fade" id="allEmployeesModal" tabindex="-1"
@@ -210,6 +234,12 @@
                         <div class="col">
                             <label for="weekFilter" class="form-label">Select Week</label>
                             <input type="week" id="weekFilter" class="form-control" value="{{ $latestWeek }}">
+                        </div>
+
+                        <!-- Display selected week range -->
+                        <div class="col">
+                            <label class="form-label">Selected Week Range:</label>
+                            <p id="weekRange" class="fw-bold text-secondary"></p>
                         </div>
                     </div>
 
@@ -376,6 +406,52 @@
     </div> --}}
 
 </div>
+
+{{-- Week range script --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const weekFilter = document.getElementById("weekFilter");
+        const weekRange = document.getElementById("weekRange");
+
+        function getWeekRange(weekInputValue) {
+            if (!weekInputValue) return "No week selected";
+
+            const [year, week] = weekInputValue.split("-W").map(Number);
+            const firstDayOfYear = new Date(year, 0, 1);
+            const daysOffset = (week - 1) * 7;
+
+            // Calculate the first day of the week (Monday)
+            const firstWeekDay = new Date(firstDayOfYear.setDate(firstDayOfYear.getDate() + daysOffset));
+            const dayOfWeek = firstWeekDay.getDay();
+            const weekStart = new Date(firstWeekDay);
+            const weekEnd = new Date(firstWeekDay);
+
+            if (dayOfWeek !== 1) { // Adjust to Monday if not already Monday
+                const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+                weekStart.setDate(weekStart.getDate() + diff);
+            }
+            weekEnd.setDate(weekStart.getDate() + 6);
+
+            // Format dates (YYYY-MM-DD)
+            const options = {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            };
+            return `${weekStart.toLocaleDateString(undefined, options)} - ${weekEnd.toLocaleDateString(undefined, options)}`;
+        }
+
+        function updateWeekRange() {
+            weekRange.textContent = getWeekRange(weekFilter.value);
+        }
+
+        // Update when input changes
+        weekFilter.addEventListener("change", updateWeekRange);
+
+        // Set initial value
+        updateWeekRange();
+    });
+</script>
 
 {{-- Weekly bar chart script  --}}
 <script type="module">
