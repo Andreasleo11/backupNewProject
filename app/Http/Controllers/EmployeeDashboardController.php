@@ -2,91 +2,167 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\EmployeeDataTable;
 use App\DataTables\EmployeeWithEvaluationDataTable;
 use App\Models\Employee;
 use App\Models\EvaluationData;
+use App\Models\EvaluationDataWeekly;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class EmployeeDashboardController extends Controller
 {
+    public function index(EmployeeWithEvaluationDataTable $employeeWithEvaluationDataTable)
+    {
+        $departmentEmployeeCounts = $this->getEmployeeCountByDepartment();
+
+        $dataTableEmployeeWithEvaluation = $employeeWithEvaluationDataTable->html();
+
+        return view('employee-dashboard', compact('departmentEmployeeCounts', 'dataTableEmployeeWithEvaluation'));
+    }
+
+    public function getEmployeesData(EmployeeDataTable $employeeDataTable)
+    {
+        return $employeeDataTable->render('employee-dashboard');
+    }
+
+    public function getEmployeeWithEvaluationData(EmployeeWithEvaluationDataTable $employeeWithEvaluationDataTable)
+    {
+        return $employeeWithEvaluationDataTable->render('employee-dashboard');
+    }
+
     public function filterEmployees(Request $request)
     {
         $selectedMonthYear = $request->input('monthYear');
+        $selectedWeek = $request->input('week');
+        $selectedBranch = $request->input('branch');
+        $selectedDepartment = $request->input('department');
+        $selectedStatus = $request->input('status');
+        $selectedGender = $request->input('gender');
 
-        $activeEmployees = Employee::pluck('NIK')->toArray(); // Get existing NIKs from employees table
+        $activeEmployeesQuery = Employee::query();
+
+        // Apply filters for Employees table
+        if ($selectedBranch) {
+            $activeEmployeesQuery->where('Branch', $selectedBranch);
+        }
+        if ($selectedDepartment) {
+            $activeEmployeesQuery->where('Dept', $selectedDepartment);
+        }
+        if ($selectedStatus) {
+            $activeEmployeesQuery->where('employee_status', $selectedStatus);
+        }
+        if ($selectedGender) {
+            $activeEmployeesQuery->where('Gender', $selectedGender);
+        }
+
+        $activeEmployees = $activeEmployeesQuery->pluck('NIK')->toArray(); // Get filtered NIKs
+
+        $employeeData = [
+            'total' => count($activeEmployees), // Total employees after filters
+            'alpha' => 0,
+            'telat' => 0,
+            'izin'  => 0,
+            'sakit' => 0,
+        ];
 
         if ($selectedMonthYear) {
             [$selectedMonth, $selectedYear] = explode('-', $selectedMonthYear);
 
+            // Base Query for filtering
+            $evaluationQuery = EvaluationDataWeekly::whereIn('NIK', $activeEmployees)
+                ->whereMonth('Month', $selectedMonth)
+                ->whereYear('Month', $selectedYear);
 
-            $employeeData = [
-                'total' => Employee::distinct('NIK')->count(),
-                'alpha' => EvaluationData::whereIn('NIK', $activeEmployees)
-                                        ->whereMonth('Month', $selectedMonth)
-                                        ->whereYear('Month', $selectedYear)
-                                        ->where('Alpha', '>', 0) // Count only employees who have Alpha > 0
-                                        ->distinct()
-                                        ->count('NIK'),
-                'telat' => EvaluationData::whereIn('NIK', $activeEmployees)
-                                        ->whereMonth('Month', $selectedMonth)
-                                        ->whereYear('Month', $selectedYear)
-                                        ->where('Telat', '>', 0) // Count only employees who have Telat > 0
-                                        ->distinct()
-                                        ->count('NIK'),
-                'izin'  => EvaluationData::whereIn('NIK', $activeEmployees)
-                                        ->whereMonth('Month', $selectedMonth)
-                                        ->whereYear('Month', $selectedYear)
-                                        ->where('Izin', '>', 0) // Count only employees who have Izin > 0
-                                        ->distinct()
-                                        ->count('NIK'),
-                'sakit' => EvaluationData::whereIn('NIK', $activeEmployees)
-                                        ->whereMonth('Month', $selectedMonth)
-                                        ->whereYear('Month', $selectedYear)
-                                        ->where('Sakit', '>', 0) // Count only employees who have Sakit > 0
-                                        ->distinct()
-                                        ->count('NIK'),
-            ];
-        } else {
-            $employeeData = [
-                'total' => Employee::distinct('NIK')->count(),
-                'alpha' => EvaluationData::whereIn('NIK', $activeEmployees)->sum('Alpha'),
-                'telat' => EvaluationData::whereIn('NIK', $activeEmployees)->sum('Telat'),
-                'izin'  => EvaluationData::whereIn('NIK', $activeEmployees)->sum('Izin'),
-                'sakit' => EvaluationData::whereIn('NIK', $activeEmployees)->sum('Sakit'),
-            ];
+            // If Week is selected, filter by week
+            if (!empty($selectedWeek)) {
+                [$year, $weekNumber] = explode('-W', $selectedWeek);
+
+                // Get the start and end dates of the selected week
+                $startDate = Carbon::now()->setISODate($year, $weekNumber)->startOfWeek()->toDateString();
+                $endDate = Carbon::now()->setISODate($year, $weekNumber)->endOfWeek()->toDateString();
+
+                \Illuminate\Support\Facades\Log::info("startDate : $startDate");
+                \Illuminate\Support\Facades\Log::info("endDate: $endDate");
+
+                // Apply week range filter
+                $evaluationQuery->whereBetween('Month', [$startDate, $endDate]);
+            }
+
+            // Count employees per category only if value > 0
+            $employeeData['alpha'] = (clone $evaluationQuery)->where('Alpha', '>', 0)->distinct()->count('NIK');
+            $employeeData['telat'] = (clone $evaluationQuery)->where('Telat', '>', 0)->distinct()->count('NIK');
+            $employeeData['izin'] = (clone $evaluationQuery)->where('Izin', '>', 0)->distinct()->count('NIK');
+            $employeeData['sakit'] = (clone $evaluationQuery)->where('Sakit', '>', 0)->distinct()->count('NIK');
         }
-
 
         return response()->json($employeeData);
     }
 
+
     public function getEmployeesByCategory(Request $request)
     {
-        $category = strtolower($request->category); // Convert to lowercase
-        $monthYear = $request->monthYear; // Get selected month-year filter
+        $category = strtolower($request->category);
+        $monthYear = $request->monthYear;
+        $branch = $request->branch;
+        $department = $request->department;
+        $status = $request->status;
+        $gender = $request->gender;
+        $week = $request->week;
 
         if (!in_array($category, ['alpha', 'telat', 'izin', 'sakit'])) {
             return response()->json([]);
         }
 
-        $query = EvaluationData::join('employees', 'evaluation_datas.NIK', '=', 'employees.NIK')
+        \Illuminate\Support\Facades\Log::info($request->all());
+
+        $query = EvaluationDataWeekly::join('employees', 'evaluation_data_weekly.NIK', '=', 'employees.NIK')
                     ->join('departments', 'employees.Dept', '=', 'departments.dept_no')
                     ->select(
                         'employees.NIK',
                         'employees.Nama',
+                        'employees.Gender',
                         'departments.name as department_name',
                         'employees.employee_status',
-                        "evaluation_datas.$category as category_count"
+                        "evaluation_data_weekly.$category as category_count"
                     );
-        // Apply Month-Year filter if selected
+
         if (!empty($monthYear)) {
             [$month, $year] = explode('-', $monthYear);
-            $query->whereMonth('evaluation_datas.Month', $month)
-                    ->whereYear('evaluation_datas.Month', $year)
-                    ->where("evaluation_datas.$category", '>', 0)
-                    ->orderByDesc("evaluation_datas.$category") // Order by highest count first
-                    ->groupBy('employees.NIK', 'employees.Nama', 'departments.name', 'employees.employee_status', "evaluation_datas.$category"); // Ensure uniqueness
+            $query->whereMonth('evaluation_data_weekly.Month', $month)
+                    ->whereYear('evaluation_data_weekly.Month', $year)
+                    ->where("evaluation_data_weekly.$category", '>', 0)
+                    ->orderByDesc("evaluation_data_weekly.$category") // Order by highest count first
+                    ->groupBy('employees.NIK', 'employees.Nama', 'employees.Gender', 'departments.name', 'employees.employee_status', "evaluation_data_weekly.$category"); // Ensure uniqueness
+        }
+
+        // Apply Week filter (Extracting Start & End Date)
+        if (!empty($week)) {
+            [$year, $weekNumber] = explode('-W', $week);
+
+            // Get the start and end dates of the selected week
+            $startDate = Carbon::now()->setISODate($year, $weekNumber)->startOfWeek()->toDateString();
+            $endDate = Carbon::now()->setISODate($year, $weekNumber)->endOfWeek()->toDateString();
+
+            // Apply the filter
+            $query->whereBetween('evaluation_data_weekly.Month', [$startDate, $endDate]);
+        }
+
+        if (!empty($branch)) {
+            $query->where('employees.Branch', $branch);
+        }
+
+        if (!empty($department)) {
+            $query->where('employees.Dept', $department);
+        }
+
+        if (!empty($status)) {
+            $query->where('employees.employee_status', $status);
+        }
+
+        if (!empty($gender)) {
+            $query->where('employees.Gender', $gender);
         }
 
         $employees = $query->get();
@@ -198,16 +274,6 @@ class EmployeeDashboardController extends Controller
     }
 
     /**
-     * Controller Index Method
-     */
-    public function index(EmployeeWithEvaluationDataTable $dataTable)
-    {
-        $departmentEmployeeCounts = $this->getEmployeeCountByDepartment();
-
-        return $dataTable->render('employee-dashboard', compact('departmentEmployeeCounts'));
-    }
-
-    /**
      * Get employee count grouped by month for a given year.
      *
      * @param int|null $year
@@ -245,4 +311,116 @@ class EmployeeDashboardController extends Controller
         }
     }
 
+    public function getWeeklyEvaluationData(Request $request, $year, $week)
+    {
+        $startDate = Carbon::now()->setISODate($year, $week)->startOfWeek();
+        $endDate = Carbon::now()->setISODate($year, $week)->endOfWeek();
+
+        $query = EvaluationDataWeekly::join('employees', 'evaluation_data_weekly.NIK', '=', 'employees.NIK')
+            ->join('departments', 'employees.Dept', '=', 'departments.dept_no')
+            ->whereBetween('evaluation_data_weekly.Month', [$startDate, $endDate]);
+
+        // **Apply Filters if Provided**
+        if ($request->has('branch') && $request->branch) {
+            $query->where('employees.Branch', $request->branch);
+        }
+        if ($request->has('department') && $request->department) {
+            $query->where('departments.dept_no', $request->department);
+        }
+        if ($request->has('status') && $request->status) {
+            $query->where('employees.employee_status', $request->status);
+        }
+        if ($request->has('gender') && $request->gender) {
+            $query->where('employees.Gender', $request->gender);
+        }
+
+        $data = $query
+            ->select(
+                'departments.name as department_name',
+                DB::raw('COUNT(DISTINCT CASE WHEN Alpha > 0 THEN employees.NIK END) as Alpha'),
+                DB::raw('COUNT(DISTINCT CASE WHEN Telat > 0 THEN employees.NIK END) as Telat'),
+                DB::raw('COUNT(DISTINCT CASE WHEN Izin > 0 THEN employees.NIK END) as Izin'),
+                DB::raw('COUNT(DISTINCT CASE WHEN Sakit > 0 THEN employees.NIK END) as Sakit'),
+                DB::raw('COUNT(CASE WHEN (Alpha > 0 OR Telat > 0 OR Izin > 0 OR Sakit > 0) THEN 1 END) as total_count')
+            )
+            ->groupBy('departments.name')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [
+                    $item->department_name => [
+                        'label' => $item->department_name,
+                        'breakdown' => [
+                            'Alpha' => $item->Alpha,
+                            'Telat' => $item->Telat,
+                            'Izin' => $item->Izin,
+                            'Sakit' => $item->Sakit,
+                        ],
+                        'total_count' => $item->total_count,
+                    ]
+                ];
+            })
+            ->toArray();
+
+        return response()->json($data);
+    }
+
+    public function getEmployeesByCategoryAndWeek($department, $category, $year, $week)
+    {
+        $category = strtolower($category);
+        $validCategories = ['alpha', 'telat', 'izin', 'sakit'];
+
+        // Initialize total category sum
+        $totalCategorySum = 0;
+
+        $query = EvaluationDataWeekly::join('employees', 'evaluation_data_weekly.NIK', '=', 'employees.NIK')
+            ->join('departments', 'employees.Dept', '=', 'departments.dept_no')
+            ->whereYear('Month', $year)
+            ->where(DB::raw('WEEK(Month, 1)'), $week)
+            ->where('departments.name', $department);
+
+        if ($category === "total") {
+            // Retrieve all employees where ANY category > 0
+            $query->where(function ($q) use ($validCategories) {
+                foreach ($validCategories as $cat) {
+                    $q->orWhere("evaluation_data_weekly.$cat", '>', 0);
+                }
+            });
+
+            // Select only basic employee data without category_total
+            $query->select(
+                'employees.NIK',
+                'employees.Nama',
+                'departments.name as department_name',
+                'employees.employee_status'
+            );
+        } else {
+            if (!in_array($category, $validCategories)) {
+                return response()->json([]); // Return empty if invalid category
+            }
+
+            // Add category total only if a valid category is selected
+            $query->where("evaluation_data_weekly.$category", '>', 0)
+                ->select(
+                    'employees.NIK',
+                    'employees.Nama',
+                    'departments.name as department_name',
+                    'employees.employee_status',
+                    DB::raw("SUM(evaluation_data_weekly.$category) as category_total")
+                );
+        }
+
+        $query->groupBy('employees.NIK', 'employees.Nama', 'departments.name', 'employees.employee_status');
+
+        $employees = $query->get();
+
+        // Calculate total sum of selected category (only if category is not "total")
+        if ($category !== "total") {
+            $totalCategorySum = $employees->sum('category_total');
+        }
+
+        return response()->json([
+            'employees' => $employees,
+            'total_selected_category' => $category !== "total" ? $totalCategorySum : null
+        ]);
+    }
 }

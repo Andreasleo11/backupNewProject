@@ -483,9 +483,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
     Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation'])->name('file.upload.evaluation');
-    
+
     Route::get('/get-files', [FileController::class, 'getFiles']);
-    
+
     Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 
     // PR
@@ -602,7 +602,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::post('/approve-data-depthead/yayasan', [DisciplinePageController::class, 'approve_depthead_button'])->name('approve.depthead.yayasan');
     Route::post('/approve-data-hrd/yayasan', [DisciplinePageController::class, 'approve_hrd_button'])->name('approve.hrd.yayasan');
-  
+
 
     Route::post("/approve-data-yayasan/gm", [DisciplinePageController::class, 'approve_gm'])->name('approve.data.gm');
 
@@ -918,5 +918,10 @@ Route::get('/employees/{id}/warnings', function ($id) {
     $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
     return response()->json($warnings);
 });
-Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])
-    ->name('getEmployeeCountByMonth');
+Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
+Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
+Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
+Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
+Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
+
+

@@ -3,7 +3,6 @@
 namespace App\DataTables;
 
 use App\Models\Employee;
-use App\Models\EmployeeWithEvaluation;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
@@ -13,6 +12,7 @@ use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
 use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
+
 
 class EmployeeWithEvaluationDataTable extends DataTable
 {
@@ -141,7 +141,7 @@ class EmployeeWithEvaluationDataTable extends DataTable
         return $this->builder()
                     ->setTableId('employeewithevaluation-table')
                     ->columns($this->getColumns())
-                    ->minifiedAjax('', null, [
+                    ->minifiedAjax(route('employee-dashboard.getEmployeeWithEvaluationData'), null, [
                         'branch' => '$("#branchFilter").val() || null',
                         'dept' => '$("#deptFilter").val() || null',
                         'status' => '$("#statusFilter").val() || null',

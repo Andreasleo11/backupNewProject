@@ -24,8 +24,10 @@ class EmployeeDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
         ->addColumn('action', '
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-employee-modal{{$id}}"><i class="bx bx-edit"></i></button>
-        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-trash"></i></button>
+            @if(auth()->user())
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-employee-modal{{$id}}"><i class="bx bx-edit"></i></button>
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{str_replace(\' \', \'\',$id)}}"><i class="bx bx-trash"></i></button>
+            @endif
         ')
             ->setRowId('id');
     }
@@ -51,17 +53,19 @@ class EmployeeDataTable extends DataTable
         return $this->builder()
                     ->setTableId('employee-table')
                     ->columns($this->getColumns())
-                    ->minifiedAjax()
+                    ->minifiedAjax(route('employee-dashboard.getEmployeesData'))
                     //->dom('Bfrtip')
                     ->orderBy(1)
-                    ->selectStyleSingle()
                     ->buttons([
                         Button::make('excel'),
                         Button::make('csv'),
                         Button::make('pdf'),
                         Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
+                        Button::make('reload'),
+                    ])
+                    ->parameters([
+                        'autoWidth'  => false,
+                        'responsive' => true,
                     ]);
     }
 
@@ -72,7 +76,8 @@ class EmployeeDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
+        // Build the base columns
+        $columns = [
             Column::make('id'),
             Column::make('NIK'),
             Column::make('Nama'),
@@ -80,14 +85,21 @@ class EmployeeDataTable extends DataTable
             Column::make('start_date'),
             Column::make('end_date'),
             Column::make('status'),
-            Column::make('jatah_cuti_taun'),
-            Column::computed('action')
-            ->exportable(false)
-            ->printable(false)
-            ->addClass('text-center')
-            ->addClass('align-middle'),
+            Column::make('jatah_cuti_tahun'),
         ];
+
+        // Conditionally add the action column if a user is authenticated
+        if (auth()->user()) {
+            $columns[] = Column::computed('action')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center')
+                ->addClass('align-middle');
+        }
+
+        return $columns;
     }
+
 
     /**
      * Get filename for export.
