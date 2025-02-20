@@ -6,13 +6,15 @@
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal"> Info </a>
 
 
-    @if (!$user->is_head && !$user->is_gm)
+    <!-- @if (!$user->is_head && !$user->is_gm)
         @include('partials.upload-excel-file-discipline-yayasan-modal')
         <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
             data-bs-target="#upload-excel-file-discipline-yayasan-modal">Upload
             File
             Excel</button>
-    @endif
+    @endif -->
+
+    
     @php
         foreach ($employees as $employee) {
             if ($employee->pengawas) {
