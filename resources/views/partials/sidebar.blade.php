@@ -527,6 +527,24 @@
                                 Magang
                             </a>
                         </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('format.evaluation.year.allin') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Evaluasi Individu ALL IN
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('format.evaluation.year.yayasan') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Evaluasi Individu Yayasan
+                            </a>
+                        </li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('format.evaluation.year.magang') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                Evaluasi Individu Magang
+                            </a>
+                        </li>
                     @if($user->role->name === 'SUPERADMIN')
                         <li class="sidebar-item">
                             <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">

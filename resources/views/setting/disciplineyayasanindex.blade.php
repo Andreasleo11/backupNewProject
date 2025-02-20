@@ -6,13 +6,15 @@
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal"> Info </a>
 
 
-    @if (!$user->is_head && !$user->is_gm)
+    <!-- @if (!$user->is_head && !$user->is_gm)
         @include('partials.upload-excel-file-discipline-yayasan-modal')
         <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
             data-bs-target="#upload-excel-file-discipline-yayasan-modal">Upload
             File
             Excel</button>
-    @endif
+    @endif -->
+
+    
     @php
         foreach ($employees as $employee) {
             if ($employee->pengawas) {
@@ -466,5 +468,21 @@
                 var filterYear = this.value;
                 setFilterValues(filterMonth, filterYear);
             });
+
+            $(document).ready(function () {
+                let dataTable = $('#disciplineyayasantable-table').DataTable();
+
+                // Intercept the print button click to modify the title dynamically
+                $(document).on('click', '.buttons-print', function () {
+                    let formattedMonth = $("#bulanDepthead").val() || "All Months";
+                    let formattedYear = $("#tahunDepthead").val() || "All Years";
+                    console.log("asw:", formattedMonth);
+                    console.log("pp:", formattedYear);
+                    // Modify the title dynamically
+                    $(".dt-buttons .buttons-print").attr("title", "Report for " + formattedMonth + "/" + formattedYear);
+                });
+            });
+            
+
         </script>
     @endsection
