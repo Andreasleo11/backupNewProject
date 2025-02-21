@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\EvaluationData;
 use App\Models\Employee;
 use App\Models\Department;
+use App\Models\Employee;
+use App\Models\Department;
 use App\Exports\EvaluationDataExp;
 use App\Imports\EvaluationDataImport;
 use App\Models\EvaluationDataWeekly;

@@ -70,6 +70,9 @@
 
                         <div class="col-md-4">
                             <div class="form-group">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
                                 <label for="disiplin_kerja" class="form-label">Disiplin Kerja:</label>
                                 {{-- <input type="text" maxlength="1" name="disiplin_kerja" class="form-control" id="disiplin_kerja" pattern="[A-E]" value="{{$employee->disiplin_kerja}}"> --}}
                                 <input type="text" maxlength="1" name="disiplin_kerja" class="form-control"
@@ -112,8 +115,10 @@
                     </div>
                 </div>
 
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>
