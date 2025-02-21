@@ -75,7 +75,7 @@ class PurchaseOrderController extends Controller
     {
         // Process validated data
         $validated = $request->validated();
-
+        // dd($validated);
         // Convert invoice_date from 'dd.mm.yy' to 'yyyy-mm-dd'
         if (isset($validated['invoice_date'])) {
             $date = \DateTime::createFromFormat('d.m.y', $validated['invoice_date']);
@@ -122,12 +122,13 @@ class PurchaseOrderController extends Controller
 
         $purchaseOrder->save();
 
-        return redirect()->back()->with('success', 'PO created successfully.');
+        return redirect()->route('po.index')->with('success', 'PO created successfully.');
     }
 
     public function view($id)
     {
         $purchaseOrder = PurchaseOrder::find($id);
+
         $revisions = PurchaseOrder::where('parent_po_number', $purchaseOrder->po_number)->get();
 
         $user = Auth::user();

@@ -245,7 +245,13 @@ class DisciplineYayasanTableDataTable extends DataTable
             }
         @endphp
         {{ $grade }}')
-            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-yayasan-modal-{{str_replace(\' \', \'\',$id)}}"  {{ ($is_lock === 1) ? "disabled" : ""  }}><i class="bx bx-edit"></i></button>
+            ->addColumn('action', '<button class="btn btn-primary edit-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#edit-discipline-yayasan-modal"
+                                            data-id="{{ $id }}"
+                                            {{ ($is_lock === 1) ? "disabled" : ""  }}>
+                                             <i class="bx bx-edit"></i>
+                                    </button>
         ')
             ->setRowId('id')
             ->setRowAttr([
@@ -262,10 +268,10 @@ class DisciplineYayasanTableDataTable extends DataTable
                             return 'table-success';
                             }
                         }
-                       
+
 
                     }
-                    
+
                     return '';  // Default to no style if depthead is null
                 },
             ]);
