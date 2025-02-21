@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
     <style>
         @keyframes rainbow {
             0% {
@@ -55,13 +57,15 @@
         <div class="form-group">
             <div class="row align-items-center g-3">
                 <div class="col-auto">
-                    <label class="form-label" for="vendor_code">Select Vendor Name (for Internal)</label>
+                    <label class="form-label" for="vendor_code_internal">Select Vendor Name (for Internal)</label>
                 </div>
-                <div class="col-auto">
-                    <select class="form-select" id="vendor_code" name="vendor_code" required>
+                <div class="col">
+                    <select class="form-select" id="vendor_code_internal" name="vendor_code" required>
                         <option value="" selected disabled>Select Vendor Name</option>
                         @foreach ($contacts as $contact)
-                            <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
+                            <option value="{{ $contact->vendor_code }}">
+                                {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -71,18 +75,22 @@
             </div>
         </div>
     </form>
+
+    <!-- Form for Customer Vendor Selection -->
     <form method="GET" action="/foremind-detail/printCustomer" target="_blank">
         @csrf
         <div class="form-group mt-2">
             <div class="row align-items-center g-3">
                 <div class="col-auto">
-                    <label class="form-label for="vendor_code">Enter Vendor Code(for Customer)</label>
+                    <label class="form-label" for="vendor_code_customer">Enter Vendor Code (for Customer)</label>
                 </div>
-                <div class="col-auto">
-                    <select class="form-select" id="vendor_code" name="vendor_code" required>
+                <div class="col">
+                    <select class="form-select" id="vendor_code_customer" name="vendor_code" required>
                         <option value="" selected disabled>Select Vendor Name</option>
                         @foreach ($contacts as $contact)
-                            <option value="{{ $contact->vendor_code }}">{{ $contact->vendor_name }}</option>
+                            <option value="{{ $contact->vendor_code }}">
+                                {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -194,4 +202,25 @@
     <div class="mt-3 text-end ">
         {{ $materials->links() }}
     </div>
+
+    <!-- Initialize Tom Select -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            new TomSelect("#vendor_code_internal", {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+
+            new TomSelect("#vendor_code_customer", {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+        });
+    </script>
 @endsection

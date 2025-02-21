@@ -342,7 +342,7 @@ class DisciplineMagangDataTable extends DataTable
                         $query->where('Dept', '330');
                     }
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 2) {
+        } elseif (Auth::user()->department_id == 2 || Auth::user()->department_id == 1) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {

@@ -628,6 +628,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
     Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name('magang.import');
 
+    Route::get('/evaluationDatas/{id}', [DisciplinePageController::class, 'getEvaluationData']);
+
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
 
     Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');

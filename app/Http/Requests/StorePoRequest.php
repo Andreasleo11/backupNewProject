@@ -15,7 +15,7 @@ class StorePoRequest extends FormRequest
     {
         return [
             'parent_po_number' => 'nullable|numeric',
-            'po_number' => 'required|numeric|unique:purchase_orders,po_number',
+            'po_number' => 'required|numeric',
             'purchase_order_category_id' => 'required|numeric|exists:purchase_order_categories,id',
             'vendor_name' => 'required|string|max:255',
             'invoice_date' => 'required|string',
