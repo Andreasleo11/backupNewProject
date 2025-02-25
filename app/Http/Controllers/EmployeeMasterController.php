@@ -13,7 +13,7 @@ class EmployeeMasterController extends Controller
     {
         $datas = Employee::get();
         return $dataTable->render("setting.employeeindex", compact("datas"));
-        
+
     }
 
     public function addemployee(Request $request)
@@ -22,14 +22,16 @@ class EmployeeMasterController extends Controller
         $validatedData = $request->validate([
             'NIK' => 'required',
             'Nama' => 'required',
+            'Gender' => 'required',
             'Dept' => 'required',
             'start_date' => 'required',
             'status' => 'required',
         ]);
 
-        $employe = Employee::create([
+        Employee::create([
             'NIK' => $validatedData['NIK'],
             'Nama' => $validatedData['Nama'],
+            'Gender' => $validatedData['Gender'],
             'Dept' => $validatedData['Dept'],
             'start_date' => $validatedData['start_date'],
             'status' => $validatedData['status'],
@@ -49,20 +51,21 @@ class EmployeeMasterController extends Controller
         if (!$newemployee) {
             return redirect()->route('index.employeesmaster')->with(['error' => 'User not found!']);
         }
-    
+
         $updateData = [
             'Nama' => $request->Nama,
+            'Gender' => $request->Gender,
             'Dept' => $request->Dept,
             'status' => $request->status,
             'end_date' => $request->end_date,
-            'jatah_cuti_taun' => $request->jatah_cuti_taun,
+            'jatah_cuti_tahun' => $request->jatah_cuti_tahun,
         ];
-    
+
         // If end_date is not null, set employee_status to "NOT ACTIVE"
         if (!is_null($request->end_date)) {
             $updateData['employee_status'] = 'NOT ACTIVE';
         }
-    
+
         // Update the employee record
         $newemployee->update($updateData);
 
@@ -76,6 +79,6 @@ class EmployeeMasterController extends Controller
         return redirect()->back()->with(['success' => 'User deleted successfully!']);
 
     }
-    
+
 
 }

@@ -1,7 +1,7 @@
 <div class="modal" tabindex="-1" class="modal fade" id="add-new-employee" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{route('addemployee')}}">
+            <form method="POST" action="{{ route('addemployee') }}">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Add Employee</h5>
@@ -31,6 +31,16 @@
                     <div class="form-group mt-4">
                         <div class="row">
                             <div class="col-sm-3 col-form-label">
+                                <label for="Gender" class="form-label">Gender:</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="text" name="Gender" class="form-control" id="Gender">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
                                 <label for="Dept" class="form-label">Dept:</label>
                             </div>
                             <div class="col-sm-9">
@@ -51,7 +61,7 @@
                     <div class="form-group mt-4">
                         <div class="row">
                             <div class="col-sm-3 col-form-label">
-                                <label for="status" class="form-label">  Status:</label>
+                                <label for="status" class="form-label"> Status:</label>
                             </div>
                             <div class="col-sm-9">
                                 <input type="text" name="status" class="form-control" id="status">
