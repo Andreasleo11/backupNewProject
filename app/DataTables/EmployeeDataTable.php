@@ -82,6 +82,7 @@ class EmployeeDataTable extends DataTable
             Column::make('NIK'),
             Column::make('Nama'),
             Column::make('Gender'),
+            Column::make('Branch'),
             Column::make('Dept'),
             Column::make('start_date'),
             Column::make('end_date'),

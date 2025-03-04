@@ -31,7 +31,8 @@ class EmployeeDashboard extends Component
         $this->dataTableEmployee = $employeeDataTable->html();
 
         // Fetch all employees
-        $employees = Employee::all();
+        $employeesQuery = Employee::whereNull('end_date');
+        $employees = $employeesQuery->get();
         $this->employees = $employees;
 
         // Prepare chart data
@@ -48,7 +49,7 @@ class EmployeeDashboard extends Component
         });
 
         // Department-wise employee count with status breakdown
-        $this->departmentEmployeeCounts = Employee::join('departments', 'employees.Dept', '=', 'departments.dept_no')
+        $this->departmentEmployeeCounts = $employeesQuery->join('departments', 'employees.Dept', '=', 'departments.dept_no')
             ->select('departments.name as department_name', 'employees.employee_status', DB::raw('COUNT(*) as count'))
             ->groupBy('departments.name', 'employees.employee_status')
             ->get()
@@ -70,11 +71,13 @@ class EmployeeDashboard extends Component
             ->map(fn ($item) => [
                 'value' => Carbon::parse($item->Month)->format('m-Y'),
                 'name' => Carbon::parse($item->Month)->format('F Y'),
-            ]);
+            ])
+            ->unique('value')
+            ->values();
 
         // Initial employee data
         $this->employeeData = [
-            'total' => Employee::distinct('NIK')->count(),
+            'total' => $employees->count(),
             'alpha' => EvaluationDataWeekly::sum('Alpha'),
             'telat' => EvaluationDataWeekly::sum('Telat'),
             'izin'  => EvaluationDataWeekly::sum('Izin'),
