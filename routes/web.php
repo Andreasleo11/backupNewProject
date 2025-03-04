@@ -578,6 +578,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
+    Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
+    Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
+    Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
+    Route::post('/getformatyayasan',[EvaluationDataController::class, 'getFormatYearyayasan'] )->name('get.format');
+    Route::post('/getformatallin',[EvaluationDataController::class, 'getFormatYearallin'] )->name('get.format.allin');
+    Route::post('/getformatmagang',[EvaluationDataController::class, 'getFormatYearmagang'] )->name('get.format.magang');
+    Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name('single.employee');
+
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/indexallyayasan", [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
@@ -619,6 +627,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/edit/yayasandiscipline/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('updateyayasan');
     Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
     Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name('magang.import');
+
+    Route::get('/evaluationDatas/{id}', [DisciplinePageController::class, 'getEvaluationData']);
 
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
 
