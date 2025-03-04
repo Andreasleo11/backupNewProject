@@ -2,7 +2,7 @@
     <div class="row">
         <div class="container-fluid">
             <div class="row">
-                <h1 class=" fs-1">Employee Dashboard</h1>
+                <h1 class="fs-1">Employee Dashboard</h1>
 
                 <div class="col">
                     <div class="alert alert-warning d-flex align-items-center" id="riskAlert" role="alert">
@@ -114,7 +114,6 @@
                                     </div>
                                 </div>
 
-
                                 <!-- All Employees Modal -->
                                 <div class="modal fade" id="allEmployeesModal" tabindex="-1"
                                     aria-labelledby="allEmployeesModalLabel" aria-hidden="true">
@@ -218,7 +217,7 @@
                     </div>
                 </div>
 
-                <div class="col mt-4">
+                <div class="col mt-3">
                     <div class="row">
                         <div class="col">
                             <label for="monthYearFilter" class="form-label">Select Month</label>
@@ -237,80 +236,83 @@
                         </div>
 
                     </div>
-
-                    <!-- Display selected week range -->
-                    <div class="mt-3">
-                        <p id="weekRange" class="fw-bold text-secondary text-center fs-3"></p>
-                    </div>
-
-                    <!-- Employee Category Cards -->
-                    <div class="row">
-                        @foreach (['Alpha' => 'danger', 'Telat' => 'warning', 'Izin' => 'primary', 'Sakit' => 'success'] as $category => $color)
-                            <div class="col col-md-6 col-xl-3">
-                                <div class="card mt-2" data-category="{{ $category }}">
-                                    <button class="btn btn-light open-category-modal"
-                                        data-category="{{ $category }}" data-bs-toggle="modal"
-                                        data-bs-target="#employeeByCategoryModal">
-                                        <div class="card-body text-start">
-                                            <span class="card-text text-secondary fs-4">{{ $category }}</span>
-                                            <br>
-                                            <span class="fw-bold badge text-bg-{{ $color }} fs-3"
-                                                id="{{ strtolower($category) }}">{{ $employeeData[strtolower($category)] }}</span>
-                                            <br>
-                                            <span class="text-secondary">employees</span>
-                                        </div>
-                                    </button>
-                                </div>
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <!-- Display selected week range -->
+                            <div class="mt-3">
+                                <p id="weekRange" class="fw-bold text-secondary text-center fs-3"></p>
                             </div>
-                        @endforeach
-                    </div>
 
-                    <!-- Employee By Category Modal -->
-                    <div class="modal fade" id="employeeByCategoryModal" tabindex="-1"
-                        aria-labelledby="employeeByCategoryModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h3 class="modal-title" id="employeeByCategoryModalLabel">Employee List</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <h5 class="text-secondary" id="modalCategoryTitle"></h5>
-                                    <p class="fw-bold" id="modalSubtitle"></p>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>No.</th>
-                                                    <th>NIK</th>
-                                                    <th>Name</th>
-                                                    <th>Gender</th>
-                                                    <th>Department</th>
-                                                    <th>Status</th>
-                                                    <th id="categoryCountTitle"></th> <!-- Dynamic Category Column -->
-                                                </tr>
-                                            </thead>
-                                            <tbody id="employeeByCategoryList">
-                                                <!-- Employee data will be inserted here dynamically -->
-                                            </tbody>
-                                        </table>
+                            <!-- Employee Category Cards -->
+                            <div class="row">
+                                @foreach (['Alpha' => 'danger', 'Telat' => 'warning', 'Izin' => 'primary', 'Sakit' => 'success'] as $category => $color)
+                                    <div class="col col-md-6 col-xl-3">
+                                        <div class="card mt-2" data-category="{{ $category }}">
+                                            <button class="btn btn-light open-category-modal"
+                                                data-category="{{ $category }}" data-bs-toggle="modal"
+                                                data-bs-target="#employeeByCategoryModal">
+                                                <div class="card-body text-start">
+                                                    <span
+                                                        class="card-text text-secondary fs-4">{{ $category }}</span>
+                                                    <br>
+                                                    <span class="fw-bold badge text-bg-{{ $color }} fs-3"
+                                                        id="{{ strtolower($category) }}">{{ $employeeData[strtolower($category)] }}</span>
+                                                    <br>
+                                                    <span class="text-secondary">employees</span>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <!-- Employee By Category Modal -->
+                            <div class="modal fade" id="employeeByCategoryModal" tabindex="-1"
+                                aria-labelledby="employeeByCategoryModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h3 class="modal-title" id="employeeByCategoryModalLabel">Employee List
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <h5 class="text-secondary" id="modalCategoryTitle"></h5>
+                                            <p class="fw-bold" id="modalSubtitle"></p>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>No.</th>
+                                                            <th>NIK</th>
+                                                            <th>Name</th>
+                                                            <th>Gender</th>
+                                                            <th>Department</th>
+                                                            <th>Status</th>
+                                                            <th id="categoryCountTitle"></th>
+                                                            <!-- Dynamic Category Column -->
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="employeeByCategoryList">
+                                                        <!-- Employee data will be inserted here dynamically -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="row mt-5">
+                                <!-- Bar Chart -->
+                                <div class="col-12">
+                                    <canvas id="weeklyEvaluationChart"></canvas>
+                                </div>
+                            </div>
                         </div>
                     </div>
-
                     <div class="row mt-5">
-                        <!-- Bar Chart -->
-                        <div class="col-12">
-                            <canvas id="weeklyEvaluationChart"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="row mt-5">
-                        {{-- <h3 class="text-secondary">Employee Count per Department</h3>
-                        <canvas class="mt-3" id="departmentEmployeeChart"></canvas> --}}
 
                         {{-- <h3 class="text-secondary">Employee Count per Month</h3> --}}
 
@@ -334,6 +336,24 @@
                 </div>
             </div>
         </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row justify-content-center">
+                    <div class="col-md-4">
+                        <hr>
+                    </div>
+                </div>
+                <div class="text-secondary fw-bold text-center fs-3">Employee Count per Department</div>
+                <div class="row justify-content-center">
+                    <div class="col-md-4 ">
+                        <hr>
+                    </div>
+                </div>
+                <!-- Add a Toggle Button -->
+                <button id="toggleChartView" class="btn btn-primary mt-2">Show Detailed Breakdown</button>
+                <canvas class="mt-3" id="departmentEmployeeChart"></canvas>
+            </div>
+        </div>
 
         <!-- Employee By Department Modal -->
         <div class="modal fade" id="employeeByDepartmentModal" tabindex="-1"
@@ -354,6 +374,7 @@
                                         <th>No.</th>
                                         <th>NIK</th>
                                         <th>Name</th>
+                                        <th>Branch</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -413,7 +434,16 @@
         const weekRange = document.getElementById("weekRange");
 
         function getWeekRange(weekInputValue) {
-            if (!weekInputValue) return "No week selected";
+            const monthFilter = document.getElementById('monthYearFilter');
+            const monthFilterValue = monthFilter.value;
+
+            if (!weekInputValue) {
+                if (!monthFilterValue) {
+                    return "No month year and week selected";
+                } else {
+                    return monthFilter.innerText
+                }
+            }
 
             const [year, week] = weekInputValue.split("-W").map(Number);
             const firstDayOfYear = new Date(year, 0, 1);
@@ -805,7 +835,7 @@
 
 
 {{-- Department Employee Chart Scipt --}}
-{{-- <script type="module">
+<script type="module">
     document.addEventListener('DOMContentLoaded', function() {
         const barData = {!! json_encode($departmentEmployeeCounts) !!}; // Pass data from Laravel
 
@@ -818,66 +848,83 @@
         // Extract department names
         const labels = barDataArray.map(item => item.label);
 
-        // Create datasets dynamically based on available statuses
-        const datasets = allStatuses.map(status => ({
-            label: status,
-            data: barDataArray.map(item => item.breakdown[status] ||
-                0), // Fill missing values with 0
-            backgroundColor: getRandomColor(), // Assign a unique color
-            borderColor: 'rgba(0, 0, 0, 0.8)',
-            borderWidth: 1
-        }));
+        let showDetailedChart = false; // Flag to track the chart mode
+        let chartInstance = null;
 
-        // Add total employee count as a separate dataset (bar with different color)
-        datasets.push({
-            label: 'Total Employees',
-            data: barDataArray.map(item => item.total_count), // Total employees per department
-            backgroundColor: 'rgba(255, 99, 132, 0.6)', // Different color for total count
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 2,
-            type: 'line', // Line chart overlay on top of bar chart
-            fill: false
-        });
+        // Function to generate the chart
+        function generateChart(showDetailed) {
+            // Destroy existing chart if it exists
+            chartInstance?.destroy();
 
-        // Chart.js instance
-        const ctx = document.getElementById('departmentEmployeeChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+            // Create datasets dynamically based on the mode
+            const datasets = showDetailed ?
+                allStatuses.map(status => ({
+                    label: status,
+                    data: barDataArray.map(item => item.breakdown[status] || 0),
+                    backgroundColor: getRandomColor(),
+                    borderColor: 'rgba(0, 0, 0, 0.8)',
+                    borderWidth: 1
+                })) : [{
+                    label: 'Total Employees',
+                    data: barDataArray.map(item => item.total_count),
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }];
+
+            // Chart.js instance
+            const ctx = document.getElementById('departmentEmployeeChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
                 },
-                onClick: function(event, elements) {
-                    if (elements.length > 0) {
-                        let clickedIndex = elements[0].index; // Get department index
-                        let datasetIndex = elements[0].datasetIndex; // Get clicked status index
-                        let department = labels[clickedIndex]; // Get department name
-                        let status = datasets[datasetIndex].label; // Get status name
-
-                        // If "Total Employees" bar is clicked, show all employees in the department
-                        if (status === "Total Employees") {
-                            status = null; // No status filtering
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
                         }
+                    },
+                    onClick: function(event, elements) {
+                        if (elements.length > 0) {
+                            let clickedIndex = elements[0].index; // Get department index
+                            let datasetIndex = elements[0].datasetIndex; // Get clicked status index
+                            let department = labels[clickedIndex]; // Get department name
+                            let status = datasets[datasetIndex].label; // Get status name
 
-                        // Update modal title
-                        let modalTitle = `Employees in ${department}`;
-                        if (status) {
-                            modalTitle += ` (${status})`;
+                            // If "Total Employees" bar is clicked, show all employees in the department
+                            if (status === "Total Employees") {
+                                status = null; // No status filtering
+                            }
+
+                            // Update modal title
+                            let modalTitle = `Employees in ${department}`;
+                            if (status) {
+                                modalTitle += ` (${status})`;
+                            }
+                            document.getElementById("modalDepartmentTitle").innerText = modalTitle;
+
+                            // Fetch employees and show modal
+                            fetchEmployeeByDepartmentData(department, status);
                         }
-                        document.getElementById("modalDepartmentTitle").innerText = modalTitle;
-
-                        // Fetch employees and show modal
-                        fetchEmployeeByDepartmentData(department, status);
                     }
                 }
-            }
+            });
+        }
+
+        // Generate the initial detailed chart
+        generateChart(showDetailedChart);
+
+        // Add event listener to toggle chart view
+        document.getElementById("toggleChartView").addEventListener("click", function() {
+            showDetailedChart = !showDetailedChart; // Toggle flag
+            generateChart(showDetailedChart); // Regenerate chart
+
+            // Update button text
+            this.innerText = showDetailedChart ? "Show Total Employees Only" :
+                "Show Detailed Breakdown";
         });
 
         // Function to fetch employees by department
@@ -905,6 +952,7 @@
                         <td>${index + 1}</td> <!-- Row Number -->
                         <td>${emp.NIK}</td>
                         <td>${emp.Nama}</td>
+                        <td>${emp.Branch}</td>
                         <td>${emp.employee_status}</td>
                     </tr>`;
                             tableBody.innerHTML += row;
@@ -927,7 +975,7 @@
             return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.6)`;
         }
     });
-</script> --}}
+</script>
 
 {{-- month year filter script --}}
 <script type="module">
