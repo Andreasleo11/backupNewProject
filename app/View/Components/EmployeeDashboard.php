@@ -31,7 +31,8 @@ class EmployeeDashboard extends Component
         $this->dataTableEmployee = $employeeDataTable->html();
 
         // Fetch all employees
-        $employees = Employee::all();
+        $employeesQuery = Employee::whereNull('end_date');
+        $employees = $employeesQuery->get();
         $this->employees = $employees;
 
         // Prepare chart data
