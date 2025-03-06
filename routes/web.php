@@ -241,7 +241,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete')->middleware('permission:delete-important-doc');
     });
 
-    Route::middleware(['checkDepartment:DIRECTOR'])->group(function () {
+    Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
 
         Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index')->middleware('permission:get-vqc-reports-director');

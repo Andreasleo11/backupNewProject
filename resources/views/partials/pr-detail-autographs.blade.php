@@ -379,7 +379,7 @@
             }
         @endphp
         @if (
-            $user->department->name == 'DIRECTOR' &&
+            $user->specification->name == 'DIRECTOR' &&
                 $purchaseRequest->status == 3 &&
                 $isApproveNotEmpty &&
                 $purchaseRequest->is_cancel === 0)

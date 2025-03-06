@@ -72,7 +72,7 @@
                                                 @if ($department->id === $authUser->department->id)
                                                     <option value="{{ $department->name }}" selected>{{ $department->name }}
                                                     </option>
-                                                @elseif ($department->name === 'HRD' || $department->name === 'DIRECTOR')
+                                                @elseif ($department->name === 'HRD' || $specification->name === 'DIRECTOR')
                                                 @else
                                                     <option value="{{ $department->name }}">{{ $department->name }}</option>
                                                 @endif

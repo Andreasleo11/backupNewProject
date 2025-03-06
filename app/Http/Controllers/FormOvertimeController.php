@@ -28,7 +28,7 @@ class FormOvertimeController extends Controller
         // Filter the data based on the user's departement_id
         if ($user->specification->name === 'VERIFICATOR') {
             $dataheaderQuery->where('is_approve', 1);
-        } elseif ($user->department->name === 'DIRECTOR') {
+        } elseif ($user->specification->name === 'DIRECTOR') {
             $dataheaderQuery->where('status', 9);
         } elseif ($user->is_gm) {
             $dataheaderQuery
@@ -303,7 +303,7 @@ class FormOvertimeController extends Controller
 
     private function sendNotification($report)
     {
-        $director = User::whereHas('department', function ($query) {
+        $director = User::whereHas('specification', function ($query) {
             $query->where('name', 'DIRECTOR');
         })->first();
 

@@ -28,7 +28,7 @@
                     <div>
                         @if ($purchaseOrder->approved_date)
                             Approved at <span
-                                class="text-secondary">{{ $purchaseOrder->approved_date? \Carbon\Carbon::parse($purchaseOrder->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)'): '-' }}</span>
+                                class="text-secondary">{{ $purchaseOrder->approved_date ? \Carbon\Carbon::parse($purchaseOrder->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (h:m)') : '-' }}</span>
                         @elseif($purchaseOrder->reason)
                             Reason : <span class="text-secondary">{{ $purchaseOrder->reason }}</span>
                         @endif
@@ -68,9 +68,6 @@
             <iframe src="{{ asset('storage/pdfs/' . $purchaseOrder->filename) }}" width="100%" height="700px"></iframe>
         </div>
         <div>
-            @php
-                $director = auth()->user()->department->name === 'DIRECTOR';
-            @endphp
             @if ($purchaseOrder->status === 1 && $director)
                 <button id="saveSignature" class="btn btn-primary mt-4">Sign PDF</button>
                 <button id="rejectPO" class="btn btn-danger mt-4">Reject PO</button>
@@ -79,9 +76,6 @@
         </div>
     </div>
 
-    @php
-        $director = auth()->user()->department->name === 'DIRECTOR';
-    @endphp
 
     @if (!$director)
         <div class="text-end container mb-2">

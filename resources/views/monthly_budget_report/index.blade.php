@@ -24,7 +24,7 @@
             <div class="col text-end">
                 @php
                     $showCreateButton = false;
-                    if (!$authUser->is_head && !$authUser->is_gm && $authUser->department->name !== 'DIRECTOR') {
+                    if (!$authUser->is_head && !$authUser->is_gm && $authUser->department->name !== 'MANAGEMENT') {
                         $showCreateButton = true;
                     }
                 @endphp

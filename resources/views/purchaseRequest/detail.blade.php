@@ -21,7 +21,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a
-                        href="{{ auth()->user()->department->name === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}">Purchase
+                        href="{{ auth()->user()->specification->name === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}">Purchase
                         Requests</a></li>
                 <li class="breadcrumb-item active">Detail</li>
             </ol>
@@ -132,7 +132,7 @@
                                 <th colspan="2" class="align-middle">Unit Price</th>
                                 <th rowspan="2" class="align-middle">Subtotal</th>
                                 @if (
-                                    $user->department->name === 'DIRECTOR' ||
+                                    $user->specification->name === 'DIRECTOR' ||
                                         $user->specification->name == 'VERIFICATOR' ||
                                         ((($user->department->name === $purchaseRequest->from_department && $user->is_head == 1) ||
                                             ($user->is_head == 1 && $purchaseRequest->from_department == 'STORE')) &&
@@ -196,7 +196,7 @@
                                             @elseif($detail->is_approve === 0)
                                                 table-danger text-decoration-line-through
                                             @elseif($detail->is_approve === null)
-                                                @if ($user->department->name === 'DIRECTOR')
+                                                @if ($user->specification->name === 'DIRECTOR')
                                                 @elseif ($detail->is_approve_by_verificator === 1)
                                                     table-success
                                                 @elseif($detail->is_approve_by_verificator === 0)
@@ -318,7 +318,7 @@
 
                                     {{-- Button approve reject per item --}}
                                     @if (!$purchaseRequest->is_cancel)
-                                        @if ($user->department->name === 'DIRECTOR' && $purchaseRequest->status === 3)
+                                        @if ($user->specification->name === 'DIRECTOR' && $purchaseRequest->status === 3)
                                             <td>
                                                 @if ($detail->is_approve === null)
                                                     <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"

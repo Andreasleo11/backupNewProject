@@ -24,6 +24,7 @@
         @php
             $user = Auth::user();
             $department = $user->department->name;
+            $specification = $user->specification->name;
         @endphp
 
         @if ($department === 'ADMIN' || $user->role->name === 'SUPERADMIN')
@@ -251,7 +252,7 @@
                 </ul>
             </li>
         @endif
-        @if ($department === 'DIRECTOR')
+        @if ($specification === 'DIRECTOR')
             <li class="sidebar-item" id="sidebar-item-director">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#director" aria-expanded="false" aria-controls="director">
@@ -473,7 +474,7 @@
             </a>
             <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                 <li class="sidebar-item">
-                    <a href="{{ $department === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
+                    <a href="{{ $specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
                         class="sidebar-link">
                         <i class='bx bx-file'></i>
                         Purchase Request

@@ -289,8 +289,8 @@ class PurchaseRequest extends Model
                     $user = $verificator ?: $this->createdBy;
                     break;
                 case 3:
-                    $director = User::with('department')
-                        ->whereHas('department', function ($query) {
+                    $director = User::with('specification')
+                        ->whereHas('specification', function ($query) {
                             $query->where('name', 'DIRECTOR');
                         })
                         ->first();

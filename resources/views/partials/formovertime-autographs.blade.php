@@ -85,7 +85,7 @@
                 <div class="autograph-box container" id="autographBox4"></div>
                 <div class="container mt-2" id="autographuser4"></div>
 
-                @if (Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_4)
+                @if (Auth::check() && $currentUser->specification->name == 'DIRECTOR' && $header->autograph_4)
                     <button id="btn4" class="btn btn-primary"
                         onclick="addAutograph(4 , {{ $header->id }})">Accept</button>
                     @if ($header->autograph_4 === null)
@@ -166,7 +166,7 @@
                     <div class="autograph-box container" id="autographBox4"></div>
                     <div class="container mt-2" id="autographuser4"></div>
 
-                    @if (Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_3)
+                    @if (Auth::check() && $currentUser->specification > name == 'DIRECTOR' && $header->autograph_3)
                         <button id="btn4" class="btn btn-primary"
                             onclick="addAutograph(4 , {{ $header->id }})">Accept</button>
                         @if ($header->autograph_4 === null)
@@ -185,7 +185,7 @@
                     <div class="autograph-box container" id="autographBox3"></div>
                     <div class="container mt-2" id="autographuser3"></div>
 
-                    @if (Auth::check() && $currentUser->department->name == 'DIRECTOR' && $header->autograph_2)
+                    @if (Auth::check() && $currentUser->specification->name == 'DIRECTOR' && $header->autograph_2)
                         <button id="btn3" class="btn btn-primary"
                             onclick="addAutograph(3 , {{ $header->id }})">Accept</button>
                         @if ($header->autograph_3 === null)
