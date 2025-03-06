@@ -370,7 +370,14 @@ class DisciplineYayasanTableDataTable extends DataTable
                         $query->where('Dept', '330');
                     }
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 2) {
+        } elseif (Auth::user()->email === "raditya_qa@daijo.co.id") {
+            // Get data for department 341
+            return $model::with('karyawan')
+                ->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '341')
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                })->newQuery();
+        } elseif (Auth::user()->department_id == 2 || Auth::user()->department_id == 1) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
