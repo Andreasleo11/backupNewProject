@@ -466,7 +466,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
     });
 
-    Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function () {
+    Route::middleware(['checkDepartment:MAINTENANCE MACHINE'])->group(function () {
         Route::get('mm/home', [MMHomeController::class, 'index'])->name('mm.home');
     });
 

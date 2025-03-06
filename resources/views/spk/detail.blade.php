@@ -71,7 +71,7 @@
                                         @if (
                                             ($authUser->department->name == 'COMPUTER' ||
                                                 $authUser->department->name == 'MAINTENANCE' ||
-                                                $authUser->department->name == 'MAINTENANCE MOULDING' ||
+                                                $authUser->department->name == 'MAINTENANCE MACHINE' ||
                                                 $authUser->department->name == 'PERSONALIA') &&
                                                 ($report->status_laporan !== 4 && $report->status_laporan !== 5))
                                             <button type="button" class="btn btn-primary" id="editButton">Edit</button>
@@ -178,7 +178,7 @@
                                             <textarea name="keterangan_laporan" id="keterangan_laporan" class="form-control" rows="5">{{ $report->keterangan_laporan }}</textarea>
                                         </div>
                                     </div>
-                                    @if ($report->to_department === 'MAINTENANCE MOULDING')
+                                    @if ($report->to_department === 'MAINTENANCE MACHINE')
                                         <div class="form-group mt-3 row">
                                             <label for="inlineRadio"
                                                 class="fw-semibold col col-form-label fw-semibold">For </label>
@@ -466,7 +466,7 @@
                 picInput.refreshOptions();
             }
 
-            @if ($report->to_department === 'MAINTENANCE MOULDING')
+            @if ($report->to_department === 'MAINTENANCE MACHINE')
                 const radioMould = document.getElementById('inlineRadioMould');
                 const radioMachine = document.getElementById('inlineRadioMachine');
 
