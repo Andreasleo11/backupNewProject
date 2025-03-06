@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\EvaluationData;
 use App\Models\Employee;
 use App\Models\Department;
-use App\Models\Employee;
-use App\Models\Department;
 use App\Exports\EvaluationDataExp;
 use App\Imports\EvaluationDataImport;
 use App\Models\EvaluationDataWeekly;
@@ -285,7 +283,9 @@ class EvaluationDataController extends Controller
 
         $statuses = Employee::whereIn('employee_status', ['MAGANG'])
         ->distinct()
-        ->pluck('status');
+        ->pluck('status','start_date');
+        $magang = 1;
+
 
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
         $allowedDepartments = Employee::whereIn('status', $statuses)
@@ -304,7 +304,7 @@ class EvaluationDataController extends Controller
 
 
          // Pass employees and the selected year to the view
-         return view('test', compact('employees', 'year'));
+         return view('test', compact('employees', 'year','magang'));
     }
 
     public function getFormatYearYayasan(Request $request)
