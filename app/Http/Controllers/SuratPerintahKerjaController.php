@@ -156,13 +156,19 @@ class SuratPerintahKerjaController extends Controller
         $users = null;
         switch ($report->to_department) {
             case 'COMPUTER':
-                $users = User::where('department_id', 15)->get();
+                $users = User::whereHas('department', function($query){
+                    $query->where('name', 'COMPUTER');
+                })->get();
                 break;
             case 'MAINTENANCE':
-                $users = User::where('department_id', 18)->get();
+                $users = User::whereHas('department', function($query){
+                    $query->where('name', 'MAINTENANCE');
+                });
                 break;
             case 'HRD':
-                $users = User::where('department_id', 22)->get();
+                $users = User::whereHas('department', function($query){
+                    $query->where('name', 'PERSONALIA');
+                });
                 break;
             default:
                 // Handle other departments if needed
