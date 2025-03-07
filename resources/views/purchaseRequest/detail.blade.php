@@ -58,7 +58,7 @@
                     class="p-2 {{ ($purchaseRequest->user_id_create === $user->id && $purchaseRequest->status === 1) ||
                     ($purchaseRequest->status === 1 && $user->is_head) ||
                     ($purchaseRequest->status === 6 && $user->specification->name === 'PURCHASER') ||
-                    (($purchaseRequest->status === 2 && $user->department->name === 'HRD') ||
+                    (($purchaseRequest->status === 2 && $user->department->name == 'PERSONALIA' && $user->is_head === 1) ||
                         ($purchaseRequest->status === 7 && $user->is_gm))
                         ? ''
                         : 'd-none' }}">
@@ -310,7 +310,8 @@
                                             $showDeptHeadItemApprove = true;
                                         } elseif (
                                             $purchaseRequest->from_department === 'PERSONALIA' &&
-                                            auth()->user()->department->name === 'HRD'
+                                            (auth()->user()->department->name === 'PERSONALIA' &&
+                                                auth()->user()->is_head === 1)
                                         ) {
                                             $showDeptHeadItemApprove = true;
                                         }

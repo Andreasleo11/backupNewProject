@@ -28,7 +28,7 @@ class PurchaseRequestController extends Controller
         // Get user information
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
-        $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
+        $isPersonaliaHead = $userDepartmentName === "PERSONALIA" && $user->is_head === 1;
         $isHead = $user->is_head === 1;
         $isPurchaser = $user->specification->name === "PURCHASER";
         $isGM = $user->is_gm === 1;
@@ -36,7 +36,7 @@ class PurchaseRequestController extends Controller
         // Determine conditions based on user department and role
         $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');
 
-        if ($isHRDHead) {
+        if ($isPersonaliaHead) {
             $purchaseRequestsQuery->where(function ($query) {
                 $query->whereNotNull('autograph_1')
                     ->whereNotNull('autograph_2')

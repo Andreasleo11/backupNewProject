@@ -165,7 +165,7 @@ class SuratPerintahKerjaController extends Controller
                     $query->where('name', 'MAINTENANCE');
                 });
                 break;
-            case 'HRD':
+            case 'PERSONALIA':
                 $users = User::whereHas('department', function($query){
                     $query->where('name', 'PERSONALIA');
                 });

@@ -258,7 +258,7 @@ class DisciplineMagangDataTable extends DataTable
     public function query(EvaluationData $model): QueryBuilder
     {
         $userDepartment = Auth::user()->department->name;
-        if ($userDepartment == 'MAINTENANCE MOULDING') {
+        if ($userDepartment == 'MAINTENANCE MACHINE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {

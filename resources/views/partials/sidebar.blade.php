@@ -235,7 +235,7 @@
                 </ul>
             </li>
         @endif
-        @if ($department === 'HRD' || $user->role->name === 'SUPERADMIN')
+        @if (($department === 'PERSONALIA' && auth()->user()->is_head === 1) || $user->role->name === 'SUPERADMIN')
             <li class="sidebar-item" id="sidebar-item-hrd">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
                     data-bs-target="#hrd" aria-expanded="false" aria-controls="hrd">
@@ -546,14 +546,14 @@
                                 Evaluasi Individu Magang
                             </a>
                         </li>
-                    @if($user->role->name === 'SUPERADMIN')
-                        <li class="sidebar-item">
-                            <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Export Yayasan Jpayroll
-                            </a>
-                        </li>
-                    @endif
+                        @if ($user->role->name === 'SUPERADMIN')
+                            <li class="sidebar-item">
+                                <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Export Yayasan Jpayroll
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </li>
 

@@ -81,7 +81,7 @@ class DisciplinePageController extends Controller
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($userDepartment == 'HRD') {
+            } elseif ($userDepartment == 'PERSONALIA') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '310')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
@@ -153,7 +153,7 @@ class DisciplinePageController extends Controller
                     $query->where('Dept', '311')->where('level', 5);
                 })
                     ->get();
-            } elseif ($userDepartment == 'MAINTENANCE MOULDING') {
+            } elseif ($userDepartment == 'MAINTENANCE MACHINE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')->where('level', 5);
                 })
@@ -603,7 +603,7 @@ class DisciplinePageController extends Controller
                     }
                 })
                     ->get();
-            } elseif ($userDepartment == 'MAINTENANCE MOULDING') {
+            } elseif ($userDepartment == 'MAINTENANCE MACHINE') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
@@ -705,7 +705,7 @@ class DisciplinePageController extends Controller
                     }
                 })
                     ->get();
-            } elseif ($userDepartment == 'MAINTENANCE MOULDING') {
+            } elseif ($userDepartment == 'MAINTENANCE MACHINE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);

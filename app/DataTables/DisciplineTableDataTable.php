@@ -287,7 +287,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '07119')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif ($isHead && $userDepartment == 'HRD') {
+        } elseif ($isHead && $userDepartment == 'PERSONALIA') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {

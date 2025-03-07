@@ -105,7 +105,7 @@ class PurchaseRequestsDataTable extends DataTable
     {
         $user = auth()->user();
         $userDepartmentName = $user->department->name ?? null;
-        $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
+        $isPersonaliaHead = $userDepartmentName === "PERSONALIA" && $user->is_head === 1;
         $isHead = $user->is_head === 1;
         $isPurchaser = $user->specification->name === "PURCHASER";
         $isGM = $user->is_gm === 1;
@@ -113,7 +113,7 @@ class PurchaseRequestsDataTable extends DataTable
         // Initialize the query
         $query = $model->newQuery()->with('files', 'createdBy');
 
-        if ($isHRDHead) {
+        if ($isPersonaliaHead) {
             $query->where(function ($query) {
                 $query->whereNotNull('autograph_1')
                     ->whereNotNull('autograph_2')

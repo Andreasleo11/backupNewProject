@@ -131,7 +131,11 @@
             // }
 
             if ($user->is_head == 1 && $purchaseRequest->status == 1 && $isApproveNotEmpty) {
-                if ($user->department->name === 'HRD' && $purchaseRequest->from_department === 'PERSONALIA') {
+                if (
+                    $user->department->name === 'PERSONALIA' &&
+                    $user->is_head == 1 &&
+                    $purchaseRequest->from_department === 'PERSONALIA'
+                ) {
                     $showDeptHeadApprovalButtons = true;
                 } elseif ($user->department->name === 'LOGISTIC' && $purchaseRequest->from_department === 'STORE') {
                     $showDeptHeadApprovalButtons = true;
@@ -318,7 +322,7 @@
             }
         @endphp
         @if (
-            $user->department->name == 'HRD' &&
+            $user->department->name == 'PERSONALIA' &&
                 $user->is_head == 1 &&
                 $purchaseRequest->status == 2 &&
                 $isApproveNotEmpty &&

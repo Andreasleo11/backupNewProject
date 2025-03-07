@@ -91,27 +91,12 @@ class PurchaseRequest extends Model
 
         static::created(function ($pr) {
             // Map department names to codes
-            $departmentCodes = [
-                'Accounting' => 'ACU',
-                'Assembly' => 'ASM',
-                'Business' => 'BUS',
+            $toDepartmentCodes = [
                 'Computer' => 'CP',
-                'HRD' => 'HRD',
                 'Personnel' => 'HRD',
                 'Maintenance' => 'MT',
-                'Maintenance Machine' => 'MTM',
-                'Moulding' => 'MLD',
-                'Plastic Injection' => 'PI',
-                'PPIC' => 'PIC',
                 'Purchasing' => 'PUR',
-                'QA' => 'QA',
-                'QC' => 'QC',
-                'Second Process' => 'SPC',
-                'Store' => 'STR',
-                'Logistic' => 'LOG',
-                'PE' => 'PE'
             ];
-
 
             // Map branches to area codes
             $branchCodes = [
@@ -123,8 +108,8 @@ class PurchaseRequest extends Model
             $date = $pr->created_at->format('ymd'); // Day-Month-Year format (e.g., '240819' for August 24, 2019)
 
             // Get the department code
-            $department = $pr->to_department;
-            $branchCode = $departmentCodes[$department] ?? 'UNK'; // Use 'UNK' for unknown departments
+            $toDepartment = $pr->to_department;
+            $toDepartmentCode = $toDepartmentCodes[$toDepartment] ?? 'UNK'; // Use 'UNK' for unknown departments
 
             // Get the area code from the branch
             $branch = $pr->branch;
@@ -146,9 +131,9 @@ class PurchaseRequest extends Model
             $increment = str_pad($lastIncrement + 1, 3, '0', STR_PAD_LEFT);
 
             // Build the docNum
-            $docNum = "{$branchCode}/PR/{$areaCode}/{$date}/{$increment}";
+            $docNum = "{$toDepartmentCode}/PR/{$areaCode}/{$date}/{$increment}";
 
-            $prNo = substr($department, 0, 4) . '-' . $pr->id;
+            $prNo = substr($toDepartment, 0, 4) . '-' . $pr->id;
 
             $pr->update(['pr_no' => $prNo, 'doc_num' => $docNum]);
             $pr->sendNotification('created');

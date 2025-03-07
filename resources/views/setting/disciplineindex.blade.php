@@ -6,7 +6,7 @@
 
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
-    @if ($user->department->name === 'HRD' || $user->department->name === 'PERSONALIA')
+    @if ($user->department->name === 'PERSONALIA')
         <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Selain Yayasan</a>
         <a href="{{ route('allyayasandiscipline.index') }}" class="btn btn-outline-primary">List All Yayasan</a>
     @endif
