@@ -35,7 +35,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('send:training-reminders')->dailyAt('01:00');
 
-        $schedule->command('email:daily-stock-report')->dailyAt('07:03');
+        $schedule->command('email:daily-stock-report')->dailyAt('02:00');
     }
 
     /**
