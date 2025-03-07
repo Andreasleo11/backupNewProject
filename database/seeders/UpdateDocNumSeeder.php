@@ -20,7 +20,7 @@ class UpdateDocNumSeeder extends Seeder
             'HRD' => 'HRD',
             'Personnel' => 'HRD',
             'Maintenance' => 'MT',
-            'Maintenance Moulding' => 'MTM',
+            'Maintenance Machine' => 'MTM',
             'Moulding' => 'MLD',
             'Plastic Injection' => 'PI',
             'PPIC' => 'PIC',

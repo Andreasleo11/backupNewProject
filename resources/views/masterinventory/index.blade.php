@@ -27,7 +27,7 @@
             <div class="col text-end">
                 @php
                     $showCreateButton =
-                        !$authUser->is_head && !$authUser->is_gm && $authUser->department->name !== 'DIRECTOR';
+                        !$authUser->is_head && !$authUser->is_gm && $authUser->department->name !== 'MANAGEMENT';
                 @endphp
                 @if ($showCreateButton)
                     <a href="{{ route('masterinventory.createpage') }}" class="btn btn-primary">New Inventory</a>
@@ -108,17 +108,17 @@
                                             class="btn btn-secondary my-1">Detail</a>
                                         <a href="{{ route('maintenance.inventory.create', ['id' => $data->id]) }}"
                                             class="btn btn-outline-success my-1">Create Maintenance</a>
-                                            @include('partials.delete-confirmation-modal', [
-                                                'id' => $data->id,
-                                                'route' => 'masterinventory.delete',
-                                                'title' => 'Delete Master Inventory confirmation',
-                                                'body' => "Are you sure want to delete this data with id <strong>$data->id</strong>?",
-                                            ])
+                                        @include('partials.delete-confirmation-modal', [
+                                            'id' => $data->id,
+                                            'route' => 'masterinventory.delete',
+                                            'title' => 'Delete Master Inventory confirmation',
+                                            'body' => "Are you sure want to delete this data with id <strong>$data->id</strong>?",
+                                        ])
 
-                                            <button class="btn btn-danger my-1" data-bs-toggle="modal"
-                                                data-bs-target="#delete-confirmation-modal-{{ $data->id }}"><i
-                                                    class='bx bx-trash-alt'></i> <span
-                                                    class="d-none d-sm-inline">Delete</span></button>
+                                        <button class="btn btn-danger my-1" data-bs-toggle="modal"
+                                            data-bs-target="#delete-confirmation-modal-{{ $data->id }}"><i
+                                                class='bx bx-trash-alt'></i> <span
+                                                class="d-none d-sm-inline">Delete</span></button>
                                     </td>
                                 </tr>
                             @empty
@@ -145,7 +145,6 @@
     </div>
     <script type="module" src="{{ asset('js/filter.js') }}"></script>
     <script type="module">
-
         $(document).ready(function() {
             // Filter input
             $('#filter-all').on('keyup', function() {

@@ -204,7 +204,7 @@
                                             @endphp
 
                                             {{-- Edit Feature --}}
-                                            {{-- @if (($pr->status == 1 && $user->specification->name == 'PURCHASER') || ($pr->status == 6 && $user->is_head == 1) || ($pr->status == 2 && $user->department->name == 'HRD'))
+                                            {{-- @if (($pr->status == 1 && $user->specification->name == 'PURCHASER') || ($pr->status == 6 && $user->is_head == 1) || ($pr->status == 2 && ($user->department->name == 'PERSONALIA' && $user->is_head == 1)))
                                             <a href="{{ route('purchaserequest.edit', $pr->id) }}" class="btn btn-primary">
                                                 <i class='bx bx-edit'></i> Edit
                                             </a>

@@ -11,7 +11,7 @@
                 </ol>
             </nav>
         </div>
-        @if (auth()->user()->department->name !== 'DIRECTOR')
+        @if (auth()->user()->department->name !== 'MANAGEMENT')
             <div class="col text-end">
                 <form action="{{ route('po.create') }}" method="post">
                     @csrf

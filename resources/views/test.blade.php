@@ -147,7 +147,9 @@ h3 {
             <div class="page-break">
             <!-- <h2>Evaluasi Yayasan {{ now()->format('F Y') }}</h2> Add this line -->
                 <div class="employee-info">
-                    @if($magang == 1)
+                    @if($magang == 1 || $magang === null)
+                    <h3>Employee Details </h3>
+                    @else
                     <h3>Employee Details </h3>
                     @endif
                     

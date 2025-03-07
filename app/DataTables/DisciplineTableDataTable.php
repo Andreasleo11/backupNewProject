@@ -186,7 +186,10 @@ class DisciplineTableDataTable extends DataTable
      */
     public function query(EvaluationData $model): QueryBuilder
     {
-        if (Auth::user()->is_head == 1 && Auth::user()->department_id == 15) {
+        $isHead = Auth::user()->is_head;
+        $userDepartment = Auth::user()->department->name;
+
+        if ($isHead && $userDepartment == 'COMPUTER') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -194,7 +197,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '06060')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 25) {
+        } elseif ($isHead && $userDepartment == 'MAINTENANCE MACHINE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -202,7 +205,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '07180')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 21) {
+        } elseif ($isHead && $userDepartment == 'PPIC') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -210,7 +213,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '05932')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 9) {
+        } elseif ($isHead && $userDepartment == 'PE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -218,7 +221,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00015')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 11) {
+        } elseif ($isHead && $userDepartment == 'PLASTIC INJECTION') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -226,7 +229,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '06054')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 16) {
+        } elseif ($isHead && $userDepartment == 'MOULDING') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -234,7 +237,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '06361')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 20) {
+        } elseif ($isHead && $userDepartment == 'ASEEMBLY') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -242,7 +245,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00238')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 19) {
+        } elseif ($isHead && $userDepartment == 'SECOND PROCESS') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -250,7 +253,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00021')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 18) {
+        } elseif ($isHead && $userDepartment == 'MAINTENANCE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -258,7 +261,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00299')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 24) {
+        } elseif ($isHead && $userDepartment == 'LOGISTIC') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -268,7 +271,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00179')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 17) {
+        } elseif ($isHead && $userDepartment == 'STORE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -276,7 +279,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '06974')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 5) {
+        } elseif ($isHead && $userDepartment == 'PURCHASING') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -284,7 +287,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '07119')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 7) {
+        } elseif ($isHead && $userDepartment == 'PERSONALIA') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -300,7 +303,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00001')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 8) {
+        } elseif ($isHead && $userDepartment == 'BUSINESS') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -308,7 +311,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00145')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 3) {
+        } elseif ($isHead && $userDepartment == 'ACCOUNTING') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -326,7 +329,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '00033')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 2) {
+        } elseif ($isHead && $userDepartment == 'QC') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -334,7 +337,7 @@ class DisciplineTableDataTable extends DataTable
                         ->where('NIK', '!=', '06960')
                         ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->is_head == 1 && Auth::user()->department_id == 1) {
+        } elseif ($isHead && $userDepartment == 'QA') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {

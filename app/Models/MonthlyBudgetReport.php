@@ -166,14 +166,14 @@ class MonthlyBudgetReport extends Model
                         $query->where('name', '!=', 'design');
                     })->first();
                 } elseif ($this->department->name === "QA" || $this->department->name === "QC") {
-                    $user = User::with('department')->whereHas('department', function ($query) {
+                    $user = User::with('specification')->whereHas('specification', function ($query) {
                         $query->where('name', 'DIRECTOR');
                     })->first();
                 } else {
                     $user = User::where('is_gm', 1)->first();
                 }
             }
-            
+
             $cc = User::where('name', 'nur')->first();
             $users = isset($user) ? array_merge($creator, [$user, $cc]) : $creator;
 

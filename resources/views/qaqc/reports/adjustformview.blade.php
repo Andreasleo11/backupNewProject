@@ -24,14 +24,14 @@
             <div class="col">
                 @php
                     $currentUser = Auth::user();
-                   
+
                 @endphp
                 <h3>QC Head</h3>
                 <div class="autograph-box container" id="autographBox1"></div>
                 <div class="container mt-2" id="autographuser1"></div>
                 @if (Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'HEAD')
                     <button id="btn1" class="btn btn-primary" onclick="addAutograph(1, {{ $datas->id }})">Acc QC Head</button>
-                @endif 
+                @endif
             </div>
 
             <div class="col">
@@ -97,7 +97,7 @@
                     <div class="autograph-box container" id="autographBox7"></div>
                     <div class="container mt-2 border-1" id="autographuser7"></div>
                     @if (Auth::check() &&
-                            $currentUser->department->name == 'DIRECTOR')
+                            $currentUser->specification->name == 'DIRECTOR')
                         <button id="btn7" class="btn btn-primary"
                             onclick="addAutograph(7, {{ $datas->id }})">Acc Director</button>
                     @endif
@@ -260,7 +260,7 @@
                 var autographNameBox = document.getElementById('autographuser' + i);
                 var btnId = document.getElementById('btn' + i);
                 console.log('testbox:', autographInput);
-                
+
 
 
 
@@ -290,6 +290,6 @@
             checkAutographStatus({{ $datas->id }});
         };
     </script>
- 
+
 
 @endsection

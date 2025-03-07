@@ -34,6 +34,8 @@ class Kernel extends ConsoleKernel
         })->monthlyOn(20, '00:30');;
 
         $schedule->command('send:training-reminders')->dailyAt('01:00');
+
+        $schedule->command('email:daily-stock-report')->dailyAt('02:00');
     }
 
     /**

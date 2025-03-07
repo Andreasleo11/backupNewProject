@@ -36,7 +36,7 @@
                 class="p-2 {{ ($purchaseRequest->user_id_create === $user->id && $purchaseRequest->status === 1) ||
                 ($purchaseRequest->status === 1 && $user->is_head) ||
                 ($purchaseRequest->status === 6 && $user->specification->name === 'PURCHASER') ||
-                (($purchaseRequest->status === 2 && $user->department->name === 'HRD') ||
+                (($purchaseRequest->status === 2 && $user->department->name == 'PERSONALIA' && $user->is_head === 1) ||
                     ($purchaseRequest->status === 7 && $user->is_gm))
                     ? ''
                     : 'd-none' }}">
@@ -120,7 +120,7 @@
                                     Approve
                                 </th>
                             @elseif (
-                                $user->department->name === 'DIRECTOR' ||
+                                $user->specification->name === 'DIRECTOR' ||
                                     $user->specification->name == 'VERIFICATOR' ||
                                     ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1))
                                 <th rowspan="2" class="align-middle">Is Approve</th>
@@ -155,7 +155,7 @@
                                     @elseif($detail->is_approve === 0)
                                         table-danger text-decoration-line-through
                                     @elseif($detail->is_approve === null)
-                                        @if ($user->department->name === 'DIRECTOR')
+                                        @if ($user->specification->name === 'DIRECTOR')
                                         @elseif ($detail->is_approve_by_verificator === 1)
                                             table-success
                                         @elseif($detail->is_approve_by_verificator === 0)
@@ -295,7 +295,7 @@
                                             {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
                                         @endif
                                     </td>
-                                @elseif ($user->department->name === 'DIRECTOR')
+                                @elseif ($user->specification->name === 'DIRECTOR')
                                     <td>
                                         @if ($detail->is_approve === null)
                                             <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"

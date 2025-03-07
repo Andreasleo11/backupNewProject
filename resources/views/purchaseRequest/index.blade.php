@@ -8,7 +8,7 @@
             <h1 class="h1">Purchase Requisition List</h1>
         </div>
         <div class="col-auto">
-            @if (Auth::user()->department->name !== 'DIRECTOR')
+            @if (Auth::user()->specification->name !== 'DIRECTOR')
                 <a href="{{ route('purchaserequest.create') }}" class="btn btn-primary">Create PR </a>
             @endif
         </div>

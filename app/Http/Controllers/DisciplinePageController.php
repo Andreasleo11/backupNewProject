@@ -37,6 +37,7 @@ class DisciplinePageController extends Controller
     public function index(DisciplineTableDataTable $dataTable)
     {
         $user = Auth::user();
+        $userDepartment = $user->department->name;
 
         $employees = null;
 
@@ -56,103 +57,103 @@ class DisciplinePageController extends Controller
         }
         //PEER LOGIC UNTUK HANDLE ORANG ORANG DIBAWAH DEPT HEADNYA SAJA - HARUS DIHANDLE MANUAL
         elseif ($user->is_head == 1) {
-            if ($user->department_id == 2) {
+            if ($userDepartment == 'QC') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '340')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 1) {
+            } elseif ($userDepartment == 'QA') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '341')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 3) {
+            } elseif ($userDepartment == 'ACCOUNTING') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '100')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 8) {
+            } elseif ($userDepartment == 'BUSINESS') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '200')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 7) {
+            } elseif ($userDepartment == 'PERSONALIA') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '310')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 5) {
+            } elseif ($userDepartment == 'PURCHASING') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '320')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 17) {
+            } elseif ($userDepartment == 'STORE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '330')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 24) {
+            } elseif ($userDepartment == 'LOGISTIC') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '331')->orWhere('Dept', '330')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 18) {
+            } elseif ($userDepartment == 'MAINTENANCE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '350')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 19) {
+            } elseif ($userDepartment == 'SECOND PROCESS') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '361')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 20) {
+            } elseif ($userDepartment == 'ASSEMBLY') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 16) {
+            } elseif ($userDepartment == 'MOULDING') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '363')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 11) {
+            } elseif ($userDepartment == 'PLASTIC INJECTION') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '390')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 9) {
+            } elseif ($userDepartment == 'PE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '500')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 15) {
+            } elseif ($userDepartment == 'COMPUTER') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '600')
                         ->where('status', '!=', 'YAYASAN')->where('level', 5);
                 })
 
                     ->get();
-            } elseif ($user->department_id == 21) {
+            } elseif ($userDepartment == 'PPIC') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')->where('level', 5);
                 })
                     ->get();
-            } elseif ($user->department_id == 25) {
+            } elseif ($userDepartment == 'MAINTENANCE MACHINE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')->where('level', 5);
                 })
@@ -550,9 +551,10 @@ class DisciplinePageController extends Controller
 
 
         $user = Auth::user();
+        $userDepartment = $user->department->name;
 
         try {
-            if ($user->department_id == 2 || $user->department_id == 1) {
+            if ($userDepartment == 'QC' || $userDepartment == 'QA') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
 
@@ -570,25 +572,25 @@ class DisciplinePageController extends Controller
                     $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->paginate(10);
-            } elseif ($user->department_id == 11) {
+            } elseif ($userDepartment == 'PLASTIC INJECTION') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '390')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 24) {
+            } elseif ($userDepartment == 'LOGISTIC') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '331')->orWhere('Dept', '330')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 16) {
+            } elseif ($userDepartment == 'MOULDING') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '363')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 17) {
+            } elseif ($userDepartment == 'STORE') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
 
@@ -601,13 +603,13 @@ class DisciplinePageController extends Controller
                     }
                 })
                     ->get();
-            } elseif ($user->department_id == 25) {
+            } elseif ($userDepartment == 'MAINTENANCE MACHINE') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 19) {
+            } elseif ($userDepartment == 'SECOND PROCESS') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
 
@@ -619,19 +621,19 @@ class DisciplinePageController extends Controller
                         $query->where('Dept', '361');
                     }
                 })->get();
-            } elseif ($user->department_id == 20) {
+            } elseif ($userDepartment == 'ASSEMBLY') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 18) {
+            } elseif ($userDepartment == 'MAINTENANCE') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '350')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 21) {
+            } elseif ($userDepartment == 'PPIC') {
                 $employees = EvaluationData::with('karyawan', 'department')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
@@ -650,10 +652,11 @@ class DisciplinePageController extends Controller
     {
         //value yang dipake yayasan
         $user = Auth::user();
+        $userDepartment = $user->department->name;
         // dd($user);
         try {
 
-            if ($user->department_id == 2 || $user->department_id == 1) {
+            if ($userDepartment == 'QC' || $userDepartment == 'QA') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
 
@@ -671,25 +674,25 @@ class DisciplinePageController extends Controller
                     $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 11) {
+            } elseif ($userDepartment == 'PLASTIC INJECTION') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '390')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 24) {
+            } elseif ($userDepartment == 'LOGISTIC') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '331')->orWhere('Dept', '330')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 16) {
+            } elseif ($userDepartment == 'MOULDING') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '363')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 17) {
+            } elseif ($userDepartment == 'STORE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
 
@@ -702,13 +705,13 @@ class DisciplinePageController extends Controller
                     }
                 })
                     ->get();
-            } elseif ($user->department_id == 25) {
+            } elseif ($userDepartment == 'MAINTENANCE MACHINE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '351')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 19) {
+            } elseif ($userDepartment == 'SECOND PROCESS') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                     // dd($employees);
@@ -720,19 +723,19 @@ class DisciplinePageController extends Controller
                         $query->where('Dept', '361');
                     }
                 })->get();
-            } elseif ($user->department_id == 20) {
+            } elseif ($userDepartment == 'ASSEMBLY') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 18) {
+            } elseif ($userDepartment == 'MAINTENANCE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '350')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                     ->get();
-            } elseif ($user->department_id == 9) {
+            } elseif ($userDepartment == 'PE') {
                 $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '500')
                         ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);

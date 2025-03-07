@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
     @include('partials.info-discipline-page-yayasan-modal')
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal"> Info </a>
 
@@ -23,7 +22,7 @@
         }
     @endphp
 
-    @if ($user->is_head && !$user->is_gm || $user->email === "fery@daijo.co.id")
+    @if (($user->is_head && !$user->is_gm) || $user->email === 'fery@daijo.co.id')
         <form method="POST" action="{{ route('approve.data.depthead') }}" id="lock-form">
             @csrf
             <input type="hidden" name="filter_month" id="filter-month-input">
@@ -85,7 +84,7 @@
                 </div>
                 <div class="col-auto">
                     <select name="filter_dept" id="dept-filter" class="form-select">
-                        <option value="351">Maintenance Moulding</option>
+                        <option value="351">Maintenance Machine</option>
                         <option value="311">PPIC</option>
                         <option value="390">Plastic Injection</option>
                         <option value="363">Moulding</option>
@@ -120,7 +119,7 @@
 
         {{ $dataTable->scripts() }}
 
-      
+
 
         <script type="module">
             $(function() {
