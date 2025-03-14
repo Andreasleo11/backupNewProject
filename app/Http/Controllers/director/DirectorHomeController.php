@@ -10,6 +10,7 @@ use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport;
 use App\Models\PurchaseRequest;
 use App\Models\EmployeeWarningLog;
+use App\Models\EvaluationData;
 use App\Models\Report;
 use Illuminate\Http\Request;
 
@@ -47,34 +48,17 @@ class DirectorHomeController extends Controller
             'rejected' => PurchaseOrder::rejected()->count(),
         ];
 
-        $employees = Employee::all();
-
-        $chartData = $employees->map(function ($employee) {
-            return [
-                'Branch' => $employee->Branch,
-                'Dept' => $employee->Dept,
-                'Status' => $employee->employee_status,
-            ];
-        });
-
-        $branch = $request->get('branch');
-        $dept = $request->get('dept');
-        $status = $request->get('status');
-
-        $warningLogs = EmployeeWarningLog::all();
-
-        return $dataTable->with([
-                'branch' => $branch,
-                'dept' =>  $dept,
-                'status' => $status,
-            ])
-            ->render('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees', 'warningLogs'));
-        // return view('director.home', compact('reportCounts', 'purchaseRequestCounts', 'monthlyBudgetReportsCounts', 'monthlyBudgetSummaryReportsCounts', 'poCounts', 'chartData', 'employees'));
+        return $dataTable->render('director.home', compact(
+            'reportCounts',
+            'purchaseRequestCounts',
+            'monthlyBudgetReportsCounts',
+            'monthlyBudgetSummaryReportsCounts',
+            'poCounts',
+        ));
     }
 
     public function storeWarningLog(Request $request)
     {
-
         $request->validate([
             'NIK' => 'required',
             'warning_type' => 'required',
@@ -85,5 +69,4 @@ class DirectorHomeController extends Controller
 
         return redirect()->back()->with('success', 'Warning log has been created');
     }
-
 }

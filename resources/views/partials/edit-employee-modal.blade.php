@@ -1,7 +1,8 @@
-<div class="modal" tabindex="-1" class="modal fade" id="edit-employee-modal{{$data->id}}" aria-labelledby="editModalLabel" aria-hidden="true">
+<div class="modal" tabindex="-1" class="modal fade" id="edit-employee-modal{{ $data->id }}"
+    aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{route('editemployee', $data->id)}}">
+            <form method="POST" action="{{ route('editemployee', $data->id) }}">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
@@ -15,7 +16,19 @@
                                 <label for="Nama" class="form-label">Nama : </label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="Nama" class="form-control" id="Nama" value="{{$data->Nama}}">
+                                <input type="text" name="Nama" class="form-control" id="Nama"
+                                    value="{{ $data->Nama }}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="Gender" class="form-label">Gender : </label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="text" name="Gender" class="form-control" id="Gender"
+                                    value="{{ $data->Gender }}">
                             </div>
                         </div>
                     </div>
@@ -25,7 +38,8 @@
                                 <label for="Dept" class="form-label">Dept :</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="Dept" class="form-control" id="Dept" value="{{$data->Dept}}"> 
+                                <input type="text" name="Dept" class="form-control" id="Dept"
+                                    value="{{ $data->Dept }}">
                             </div>
                         </div>
                     </div>
@@ -35,7 +49,32 @@
                                 <label for="status" class="form-label">Status :</label>
                             </div>
                             <div class="col-sm-9">
-                                <input type="text" name="status" class="form-control" id="status" value="{{$data->status}}">
+                                <input type="text" name="status" class="form-control" id="status"
+                                    value="{{ $data->status }}">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- New End Date Field -->
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="end_date" class="form-label">End Date :</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="date" name="end_date" class="form-control" id="end_date"
+                                    value="{{ $data->end_date }}">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- New Jatah Cuti Tahun Field -->
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="jatah_cuti_tahun" class="form-label">Jatah Cuti Tahun :</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="number" name="jatah_cuti_taun" class="form-control" id="jatah_cuti_tahun"
+                                    value="{{ $data->jatah_cuti_tahun }}">
                             </div>
                         </div>
                     </div>

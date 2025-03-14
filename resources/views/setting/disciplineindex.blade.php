@@ -6,7 +6,7 @@
 
     <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
 
-    @if ($user->department_id === 7 || $user->department_id === 22)
+    @if ($user->department->name === 'PERSONALIA')
         <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Selain Yayasan</a>
         <a href="{{ route('allyayasandiscipline.index') }}" class="btn btn-outline-primary">List All Yayasan</a>
     @endif
@@ -28,8 +28,7 @@
     <button class="btn btn-danger" id="lock-data-btn" data-bs-target="#lock-confirmation-modal-1" data-bs-toggle="modal"><i
             class='bx bxs-lock'></i> Lock Data</button>
 
-
-    <form method="GET" action="{{ route('export.yayasan') }}">
+    <form method="GET" action="{{ route('export.yayasan.first.time') }}">
         <div class="row align-items-center mt-3">
             <div class="col-auto">
                 <div class="form-label">Filter Bulan</div>
@@ -336,7 +335,7 @@
             }
 
 
-            document.getElementById('other-route-button').addEventListener('click', function () {
+            document.getElementById('other-route-button').addEventListener('click', function() {
                 const filterStatus = document.getElementById('status-filter').value;
                 const url = `{{ route('export.yayasan.full') }}?filter_status=${filterStatus}`;
                 window.location.href = url;

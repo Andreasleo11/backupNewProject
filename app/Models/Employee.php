@@ -14,10 +14,16 @@ class Employee extends Model
     protected $fillable = [
         'NIK',
         'Nama',
+        'Gender',
         'Dept',
         'start_date',
         'status',
         'level',
+        'jatah_cuti_tahun',
+        'end_date',
+        'employee_status',
+        'Branch',
+        'Grade',
     ];
 
     public function evaluationData()
@@ -28,5 +34,10 @@ class Employee extends Model
     public function warningLogs()
     {
         return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'NIK');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'Dept', 'dept_no');
     }
 }

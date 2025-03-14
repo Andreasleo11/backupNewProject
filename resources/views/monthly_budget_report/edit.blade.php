@@ -27,7 +27,7 @@
                                     class="form-control bg-secondary-subtle">
                                 {{-- <select name="dept_no" id="dept_no" required>
                                     @foreach ($departments as $department)
-                                        @if ($department->name !== 'DIRECTOR')
+                                        @if ($department->name !== 'MANAGEMENT')
                                             <option value="{{ $department->dept_no }}"
                                                 {{ $report->department->id === $department->id ? 'selected' : '' }}>
                                                 {{ $department->name }}</option>

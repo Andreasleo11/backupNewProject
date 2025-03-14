@@ -181,7 +181,7 @@ class SuratPerintahKerja extends Model
                 $users = User::whereHas('department', function ($query) {
                     $query->where('name', 'COMPUTER');
                 })->get();
-            } elseif ($this->to_department === 'MAINTENANCE MOULDING') {
+            } elseif ($this->to_department === 'MAINTENANCE MACHINE') {
                 switch ($this->status_laporan) {
                     case 1:
                         $user = User::where('is_head', true)->whereHas('department', function ($query) {

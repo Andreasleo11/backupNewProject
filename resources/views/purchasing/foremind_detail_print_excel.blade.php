@@ -14,6 +14,15 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                        <td style="vertical-align: middle; height:60px; font-size: 18px;">Nama Vendor</td>
+                        <td colspan="14" style="vertical-align: middle; height:60px; font-size: 18px;">{{$vendorName}}</td>
+                        </tr>
+                        <tr>
+                        <td style="vertical-align: middle; height:60px; font-size: 18px;">Date</td>
+                        <td  colspan="14" style="vertical-align: middle; height:60px; font-size: 18px;" >{{ now()->timezone('Asia/Jakarta')->format('d-m-Y H:i:s') }}</td>
+                        <!-- Blank cell with colspan="10" -->
+                        </tr>
+                        <tr>
                             <td colspan="15" align="center" style="vertical-align: middle; font-size: 30px;">Forecast
                                 Report Internal</td>
                         </tr>
@@ -72,7 +81,7 @@
 
                                     <!-- Add a blank row to separate material codes -->
                                     <tr>
-                                        <td colspan="13" style="height:60px;"></td>
+                                        <td colspan="13" style="height:16px;"></td>
                                     </tr>
                                 @endif
                                 <!-- Reset monthly total predictions for the new material code -->

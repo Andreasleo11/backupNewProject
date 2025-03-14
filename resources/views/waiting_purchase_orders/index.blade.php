@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    @include('partials.alert-success-error')
     <div class="container mt-5">
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">

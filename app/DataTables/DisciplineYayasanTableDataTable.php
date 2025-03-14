@@ -29,197 +29,197 @@ class DisciplineYayasanTableDataTable extends DataTable
 
         $total = 0;
 
-        if($kemampuan_kerja === "A")
-        {
-            $total += 17;
-        }
-        elseif($kemampuan_kerja === "B")
-        {
-            $total += 14;
-        }
-        elseif($kemampuan_kerja === "C")
-        {
-            $total += 11;
-        }
-        elseif($kemampuan_kerja === "D")
-        {
-            $total += 8;
-        }
-        elseif($kemampuan_kerja === "E")
-        {
-            $total += 0;
-        }
-        if($kecerdasan_kerja  === "A")
-        {
-            $total += 16;
-        }
-        elseif($kecerdasan_kerja === "B")
-        {
-            $total += 13;
-        }
-        elseif($kecerdasan_kerja === "C")
-        {
-            $total += 10;
-        }
-        elseif($kecerdasan_kerja === "D")
-        {
-            $total += 7;
-        }
-        elseif($kecerdasan_kerja === "E")
-        {
-            $total += 0;
-        }
+            if($kemampuan_kerja === "A")
+            {
+                $total += 17;
+            }
+            elseif($kemampuan_kerja === "B")
+            {
+                $total += 14;
+            }
+            elseif($kemampuan_kerja === "C")
+            {
+                $total += 11;
+            }
+            elseif($kemampuan_kerja === "D")
+            {
+                $total += 8;
+            }
+            elseif($kemampuan_kerja === "E")
+            {
+                $total += 0;
+            }
+            if($kecerdasan_kerja  === "A")
+            {
+                $total += 16;
+            }
+            elseif($kecerdasan_kerja === "B")
+            {
+                $total += 13;
+            }
+            elseif($kecerdasan_kerja === "C")
+            {
+                $total += 10;
+            }
+            elseif($kecerdasan_kerja === "D")
+            {
+                $total += 7;
+            }
+            elseif($kecerdasan_kerja === "E")
+            {
+                $total += 0;
+            }
 
-        if($qualitas_kerja  === "A")
-        {
-            $total += 11;
-        }
-        elseif($qualitas_kerja  === "B")
-        {
-            $total += 9;
-        }
-        elseif($qualitas_kerja  === "C")
-        {
-            $total += 7;
-        }
-        elseif($qualitas_kerja  === "D")
-        {
-            $total += 4;
-        }
-        elseif($qualitas_kerja  === "E")
-        {
-            $total += 0;
-        }
+            if($qualitas_kerja  === "A")
+            {
+                $total += 11;
+            }
+            elseif($qualitas_kerja  === "B")
+            {
+                $total += 9;
+            }
+            elseif($qualitas_kerja  === "C")
+            {
+                $total += 7;
+            }
+            elseif($qualitas_kerja  === "D")
+            {
+                $total += 4;
+            }
+            elseif($qualitas_kerja  === "E")
+            {
+                $total += 0;
+            }
 
-        if($disiplin_kerja  === "A")
-        {
-            $total += 8;
-        }
-        elseif($disiplin_kerja  === "B")
-        {
-            $total += 6;
-        }
-        elseif($disiplin_kerja  === "C")
-        {
-            $total += 5;
-        }
-        elseif($disiplin_kerja  === "D")
-        {
-            $total += 3;
-        }
-        elseif($disiplin_kerja  === "E")
-        {
-            $total += 0;
-        }
+            if($disiplin_kerja  === "A")
+            {
+                $total += 8;
+            }
+            elseif($disiplin_kerja  === "B")
+            {
+                $total += 6;
+            }
+            elseif($disiplin_kerja  === "C")
+            {
+                $total += 5;
+            }
+            elseif($disiplin_kerja  === "D")
+            {
+                $total += 3;
+            }
+            elseif($disiplin_kerja  === "E")
+            {
+                $total += 0;
+            }
 
-        if($kepatuhan_kerja  === "A")
-        {
-            $total += 10;
-        }
-        elseif($kepatuhan_kerja  === "B")
-        {
-            $total += 8;
-        }
-        elseif($kepatuhan_kerja  === "C")
-        {
-            $total += 6;
-        }
-        elseif($kepatuhan_kerja  === "D")
-        {
-            $total += 4;
-        }
-        elseif($kepatuhan_kerja  === "E")
-        {
-            $total += 0;
-        }
+            if($kepatuhan_kerja  === "A")
+            {
+                $total += 10;
+            }
+            elseif($kepatuhan_kerja  === "B")
+            {
+                $total += 8;
+            }
+            elseif($kepatuhan_kerja  === "C")
+            {
+                $total += 6;
+            }
+            elseif($kepatuhan_kerja  === "D")
+            {
+                $total += 4;
+            }
+            elseif($kepatuhan_kerja  === "E")
+            {
+                $total += 0;
+            }
 
-        if($lembur  === "A")
-        {
-            $total += 10;
-        }
-        elseif($lembur  === "B")
-        {
-            $total += 8;
-        }
-        elseif($lembur  === "C")
-        {
-            $total += 6;
-        }
-        elseif($lembur  === "D")
-        {
-            $total += 4;
-        }
-        elseif($lembur  === "E")
-        {
-            $total += 0;
-        }
+            if($lembur  === "A")
+            {
+                $total += 10;
+            }
+            elseif($lembur  === "B")
+            {
+                $total += 8;
+            }
+            elseif($lembur  === "C")
+            {
+                $total += 6;
+            }
+            elseif($lembur  === "D")
+            {
+                $total += 4;
+            }
+            elseif($lembur  === "E")
+            {
+                $total += 0;
+            }
 
-          if($efektifitas_kerja   === "A")
-        {
-            $total += 10;
-        }
-        elseif($efektifitas_kerja   === "B")
-        {
-            $total += 8;
-        }
-        elseif($efektifitas_kerja   === "C")
-        {
-            $total += 6;
-        }
-        elseif($efektifitas_kerja   === "D")
-        {
-            $total += 4;
-        }
-        elseif($efektifitas_kerja   === "E")
-        {
-            $total += 0;
-        }
+            if($efektifitas_kerja   === "A")
+            {
+                $total += 10;
+            }
+            elseif($efektifitas_kerja   === "B")
+            {
+                $total += 8;
+            }
+            elseif($efektifitas_kerja   === "C")
+            {
+                $total += 6;
+            }
+            elseif($efektifitas_kerja   === "D")
+            {
+                $total += 4;
+            }
+            elseif($efektifitas_kerja   === "E")
+            {
+                $total += 0;
+            }
 
 
-            if($relawan === "A")
-        {
-            $total += 10;
-        }
-        elseif($relawan === "B")
-        {
-            $total += 8;
-        }
-        elseif($relawan === "C")
-        {
-            $total += 6;
-        }
-        elseif($relawan    === "D")
-        {
-            $total += 4;
-        }
-        elseif($relawan    === "E")
-        {
-            $total += 0;
-        }
+                if($relawan === "A")
+            {
+                $total += 10;
+            }
+            elseif($relawan === "B")
+            {
+                $total += 8;
+            }
+            elseif($relawan === "C")
+            {
+                $total += 6;
+            }
+            elseif($relawan    === "D")
+            {
+                $total += 4;
+            }
+            elseif($relawan    === "E")
+            {
+                $total += 0;
+            }
 
-           if($integritas     === "A")
-        {
-            $total += 8;
-        }
-        elseif($integritas     === "B")
-        {
-            $total += 6;
-        }
-        elseif($integritas     === "C")
-        {
-            $total += 5;
-        }
-        elseif($integritas     === "D")
-        {
-            $total += 3;
-        }
-        elseif($integritas     === "E")
-        {
-            $total += 0;
-        }
+            if($integritas     === "A")
+            {
+                $total += 8;
+            }
+            elseif($integritas     === "B")
+            {
+                $total += 6;
+            }
+            elseif($integritas     === "C")
+            {
+                $total += 5;
+            }
+            elseif($integritas     === "D")
+            {
+                $total += 3;
+            }
+            elseif($integritas     === "E")
+            {
+                $total += 0;
+            }
 
-        $totalakhir = 0;
-        $totalakhir = $total;
+            $totalakhir = 0;
+            $totalakhir = $total;
 
 
         @endphp {{ $totalakhir }}')
@@ -227,27 +227,54 @@ class DisciplineYayasanTableDataTable extends DataTable
             ->addColumn('grade', '
         @php
 
-        if($total >= 91)
-        {
-            $grade = "A";
-        }
-        elseif($total >=71 && $total <=90)
-        {
-            $grade = "B";
-        }
-        elseif($total >= 61 && $total <=70)
-        {
-            $grade = "C";
-        }
-        else
-        {
-            $grade = "D";
-        }
+            if($total >= 91)
+            {
+                $grade = "A";
+            }
+            elseif($total >=71 && $total <=90)
+            {
+                $grade = "B";
+            }
+            elseif($total >= 61 && $total <=70)
+            {
+                $grade = "C";
+            }
+            else
+            {
+                $grade = "D";
+            }
         @endphp
         {{ $grade }}')
-            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-yayasan-modal-{{str_replace(\' \', \'\',$id)}}"  {{ ($is_lock === 1) ? "disabled" : ""  }}><i class="bx bx-edit"></i></button>
+            ->addColumn('action', '<button class="btn btn-primary edit-button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#edit-discipline-yayasan-modal"
+                                            data-id="{{ $id }}"
+                                            {{ ($is_lock === 1) ? "disabled" : ""  }}>
+                                             <i class="bx bx-edit"></i>
+                                    </button>
         ')
-            ->setRowId('id');
+            ->setRowId('id')
+            ->setRowAttr([
+                'class' => function ($row) {
+                    // Directly accessing depthead
+                    if (isset($row->depthead) && $row->depthead !== null) {
+                        if($row->depthead === 'rejected')
+                        {
+                            return 'table-danger';
+                        }else{
+                            if(isset($row->generalmanager) && $row->generalmanager !== null){
+                                return 'table-primary';
+                            }else{
+                            return 'table-success';
+                            }
+                        }
+
+
+                    }
+
+                    return '';  // Default to no style if depthead is null
+                },
+            ]);
     }
 
     /**
@@ -258,7 +285,9 @@ class DisciplineYayasanTableDataTable extends DataTable
      */
     public function query(EvaluationData $model): QueryBuilder
     {
-        if (Auth::user()->department_id == 25) {
+        $userDepartment = Auth::user()->department->name;
+
+        if ($userDepartment == 'MAINTENANCE MACHINE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -276,35 +305,35 @@ class DisciplineYayasanTableDataTable extends DataTable
                 ->whereHas('karyawan', function ($query) {
                     $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 21) {
+        } elseif ($userDepartment == 'PPIC') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '311')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 11) {
+        } elseif ($userDepartment == 'PLASTIC INJECTION') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('dept', '390')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 16) {
+        } elseif ($userDepartment == 'MOULDING') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '363')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 20) {
+        } elseif ($userDepartment == 'ASSEMBLY') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '362')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 19) {
+        } elseif ($userDepartment == 'SECOND PROCESS') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -313,14 +342,14 @@ class DisciplineYayasanTableDataTable extends DataTable
                     })
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 18) {
+        } elseif ($userDepartment == 'MAINTENANCE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query->where('Dept', '350')
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 24) {
+        } elseif ($userDepartment == 'LOGISTIC') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -329,7 +358,7 @@ class DisciplineYayasanTableDataTable extends DataTable
                     })
                         ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 17) {
+        } elseif ($userDepartment == 'STORE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -343,7 +372,14 @@ class DisciplineYayasanTableDataTable extends DataTable
                         $query->where('Dept', '330');
                     }
                 })->newQuery();
-        } elseif (Auth::user()->department_id == 2) {
+        } elseif (Auth::user()->email === "raditya_qa@daijo.co.id") {
+            // Get data for department 341
+            return $model::with('karyawan')
+                ->whereHas('karyawan', function ($query) {
+                    $query->where('Dept', '341')
+                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                })->newQuery();
+        } elseif ($userDepartment == 'QC' || $userDepartment == 'QA') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
@@ -450,6 +486,11 @@ class DisciplineYayasanTableDataTable extends DataTable
                 ->printable(false)
                 ->addClass('text-center')
                 ->addClass('align-middle'),
+            Column::make('remark')
+                ->title('Remark Reject')
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass('align-middle')->orderable(false),
         ];
     }
 

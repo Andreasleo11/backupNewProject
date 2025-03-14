@@ -26,7 +26,14 @@
             </select>
         </div>
         <div class="col-auto">
-            <?php echo date('Y'); ?>
+            <div class="form-label">Filter Tahun</div>
+        </div>
+        <div class="col-auto">
+            <select name="filter_year" id="year-filter" class="form-select">
+                @for($year = 2020; $year <= date('Y'); $year++)
+                    <option value="{{ $year }}" @if($year == date('Y')) selected @endif>{{ $year }}</option>
+                @endfor
+            </select>
         </div>
         <div class="col text-end" id="filtered-employees">
             <!-- Filtered employees will be displayed here --> 

@@ -12,6 +12,12 @@ use App\Models\Role;
 class UserRoleController extends Controller
 {
 
+    public function User()
+    {
+        $users = User::all(); // Get all users
+        return response()->json($users);
+    }
+
     public function assignRoleToME()
     {
         $roleId = 1;

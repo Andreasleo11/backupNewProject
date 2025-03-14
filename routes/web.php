@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
 use App\Http\Controllers\MonthlyBudgetReportSummaryDetailController;
@@ -99,6 +100,7 @@ use App\Http\Controllers\EmployeeTrainingController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/user-list', [UserRoleController::class, 'User']);
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -239,7 +241,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete')->middleware('permission:delete-important-doc');
     });
 
-    Route::middleware(['checkDepartment:DIRECTOR'])->group(function () {
+    Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
 
         Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index')->middleware('permission:get-vqc-reports-director');
@@ -252,8 +254,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/director/pr/index', [DirectorPurchaseRequestController::class, 'index'])->name('director.pr.index')->middleware('permission:get-pr-director');
         Route::put('/director/pr/approveSelected', [DirectorPurchaseRequestController::class, 'approveSelected'])->name('director.pr.approveSelected')->middleware('permission:approve-selected-director');
         Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected')->middleware('permission:reject-selected-director');
-
-        Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
     });
 
     Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
@@ -466,7 +466,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
     });
 
-    Route::middleware(['checkDepartment:MAINTENANCE MOULDING'])->group(function () {
+    Route::middleware(['checkDepartment:MAINTENANCE MACHINE'])->group(function () {
         Route::get('mm/home', [MMHomeController::class, 'index'])->name('mm.home');
     });
 
@@ -482,6 +482,10 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () {
 
     Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
+    Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation'])->name('file.upload.evaluation');
+
+    Route::get('/get-files', [FileController::class, 'getFiles']);
+
     Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 
     // PR
@@ -568,17 +572,38 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 
     Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index")->middleware('permission:get-evaluation-index');
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
+
+    Route::get("/weekly-evaluation/index", [EvaluationDataController::class, 'weeklyIndex'])->name("weekly.evaluation.index")->middleware('permission:get-evaluation-index');
+    Route::post("/weeklyprocessevaluationdata", [EvaluationDataController::class, 'updateWeekly'])->name("WeeklyUpdateEvaluation");
+
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
+
+    Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
+    Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
+    Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
+    Route::post('/getformatyayasan',[EvaluationDataController::class, 'getFormatYearyayasan'] )->name('get.format');
+    Route::post('/getformatallin',[EvaluationDataController::class, 'getFormatYearallin'] )->name('get.format.allin');
+    Route::post('/getformatmagang',[EvaluationDataController::class, 'getFormatYearmagang'] )->name('get.format.magang');
+    Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name('single.employee');
 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
     Route::get("/discipline/indexallyayasan", [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
     Route::get("/discipline/index", [DisciplinePageController::class, 'index'])->name("discipline.index")->middleware('permission:get-discipline-index');
-    Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan');
+    Route::get("/firstimeexport/yayasan/discipline", [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan.first.time');
     Route::get("/export/yayasan-full/discipline", [DisciplinePageController::class, 'exportYayasanFull'])->name('export.yayasan.full');
 
     Route::post("/lock-data/discipline", [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
     Route::post("/approve-data-yayasan/depthead", [DisciplinePageController::class, 'approve_depthead'])->name('approve.data.depthead');
+
+
+    Route::post("/reject-data-yayasan/depthead", [DisciplinePageController::class, 'reject_depthead_button'])->name('reject.depthead.yayasan');
+    Route::post("/reject-data-yayasan/hrd", [DisciplinePageController::class, 'reject_hrd_button'])->name('reject.hrd.yayasan');
+
+    Route::post('/approve-data-depthead/yayasan', [DisciplinePageController::class, 'approve_depthead_button'])->name('approve.depthead.yayasan');
+    Route::post('/approve-data-hrd/yayasan', [DisciplinePageController::class, 'approve_hrd_button'])->name('approve.hrd.yayasan');
+
+
     Route::post("/approve-data-yayasan/gm", [DisciplinePageController::class, 'approve_gm'])->name('approve.data.gm');
 
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
@@ -603,9 +628,17 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
     Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name('magang.import');
 
+    Route::get('/evaluationDatas/{id}', [DisciplinePageController::class, 'getEvaluationData']);
+
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
 
     Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
+
+
+    Route::get('/exportyayasandateinput', [DisciplinePageController::class, 'dateExport'])->name('exportyayasan.dateinput');
+    Route::get('/exportyayasansummary', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('exportyayasan.summary');
+    Route::get("/export/yayasan/discipline", [DisciplinePageController::class, 'exportYayasanJpayrollFunction'])->name('export.yayasan.jpayroll');
+
 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
@@ -875,3 +908,22 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::resource('employee_trainings', EmployeeTrainingController::class);
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });
+
+Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
+
+Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
+Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
+Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
+Route::get('/employees/{id}/warnings', function ($id) {
+    $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
+    return response()->json($warnings);
+});
+Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
+Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
+Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
+Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
+Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
+
+

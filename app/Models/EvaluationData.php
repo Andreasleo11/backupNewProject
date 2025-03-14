@@ -39,11 +39,17 @@ class EvaluationData extends Model
         'pengawas',
         'depthead',
         'generalmanager',
+        'remark',
     ];
 
     public function karyawan()
     {
         return $this->belongsTo(Employee::class, 'NIK', 'NIK');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'dept', 'dept_no');
     }
 
   

@@ -23,7 +23,7 @@ class MonthlyBudgetReportController extends Controller
         $authUser = auth()->user();
         $isHead = $authUser->is_head === 1;
         $isGm = $authUser->is_gm === 1;
-        $isDirector = $authUser->department->name === 'DIRECTOR';
+        $isDirector = $authUser->specification->name === 'DIRECTOR';
 
         $reportsQuery = Report::with('department', 'details');
 

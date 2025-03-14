@@ -28,7 +28,7 @@ class PurchaseRequestController extends Controller
         // Get user information
         $user = Auth::user();
         $userDepartmentName = $user->department->name;
-        $isHRDHead = $userDepartmentName === "HRD" && $user->is_head === 1;
+        $isPersonaliaHead = $userDepartmentName === "PERSONALIA" && $user->is_head === 1;
         $isHead = $user->is_head === 1;
         $isPurchaser = $user->specification->name === "PURCHASER";
         $isGM = $user->is_gm === 1;
@@ -36,7 +36,7 @@ class PurchaseRequestController extends Controller
         // Determine conditions based on user department and role
         $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');
 
-        if ($isHRDHead) {
+        if ($isPersonaliaHead) {
             $purchaseRequestsQuery->where(function ($query) {
                 $query->whereNotNull('autograph_1')
                     ->whereNotNull('autograph_2')
@@ -317,7 +317,7 @@ class PurchaseRequestController extends Controller
         // Filter itemDetail based on user role
         $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
             $detail->quantity = $this->formatDecimal($detail->quantity);
-            if ($user->department->name === "DIRECTOR") {
+            if ($user->specification->name === "DIRECTOR") {
                 if ($purchaseRequest->type === 'factory') {
                     if ($purchaseRequest->to_department === 'Computer') {
                         return $detail->is_approve_by_head && $detail->is_approve_by_gm && $detail->is_approve_by_verificator;
@@ -454,7 +454,7 @@ class PurchaseRequestController extends Controller
         // Save $imagePath to the database for the specified $reportId and $section
         $pr = PurchaseRequest::find($prId);
 
-        if (Auth::user()->department->name === 'DIRECTOR') {
+        if (Auth::user()->specification->name === 'DIRECTOR') {
             $pr->update([
                 "autograph_{$section}" => $imagePath,
                 "autograph_user_{$section}" => $username,
@@ -721,7 +721,7 @@ class PurchaseRequestController extends Controller
         // Filter itemDetail based on user role
         $filteredItemDetail = $purchaseRequest->itemDetail->filter(function ($detail) use ($user, $purchaseRequest) {
             $detail->quantity = $this->formatDecimal($detail->quantity);
-            if ($user->department->name === "DIRECTOR") {
+            if ($user->specification->name === "DIRECTOR") {
                 if ($purchaseRequest->type === 'factory') {
                     if ($purchaseRequest->to_department === 'Computer') {
                         return $detail->is_approve_by_head && $detail->is_approve_by_gm && $detail->is_approve_by_verificator;
