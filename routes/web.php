@@ -569,6 +569,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post("/employeemaster/add", [EmployeeMasterController::class, "addemployee"])->name('addemployee');
     Route::put("/edit/employee/{id}", [EmployeeMasterController::class, "editemployee"])->name('editemployee');
     Route::delete("/delete/employee/{linecode}", [EmployeeMasterController::class, "deleteemployee"])->name('deleteemployee');
+    Route::get('/import-annual-leave-quota', [EmployeeMasterController::class, 'showImportForm'])->name('import.annual-leave-quota.form');
+    Route::post('/import-annual-leave-quota', [EmployeeMasterController::class, 'importAnnualLeaveQuota'])->name('import.annual-leave-quota');
 
     Route::get("/evaluation/index", [EvaluationDataController::class, 'index'])->name("evaluation.index")->middleware('permission:get-evaluation-index');
     Route::post("/processevaluationdata", [EvaluationDataController::class, 'update'])->name("UpdateEvaluation");
@@ -925,5 +927,3 @@ Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'get
 Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
 Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
 Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
-
-
