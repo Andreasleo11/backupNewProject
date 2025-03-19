@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\DataTables\EmployeeDataTable;
 use App\Http\Controllers\Controller;
+use App\Imports\AnnualLeaveQuotaImport;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EmployeeMasterController extends Controller
 {
@@ -13,8 +15,6 @@ class EmployeeMasterController extends Controller
     {
         $datas = Employee::get();
         return $dataTable->render("setting.employeeindex", compact("datas"));
-
-
     }
 
     public function addemployee(Request $request)
@@ -74,7 +74,7 @@ class EmployeeMasterController extends Controller
             $updateData['employee_status'] = 'NOT ACTIVE';
             $updateData['status'] = 'NOT ACTIVE';
         }
-    
+
         // Update the employee record
         $newemployee->update($updateData);
 
@@ -88,6 +88,22 @@ class EmployeeMasterController extends Controller
         return redirect()->back()->with(['success' => 'User deleted successfully!']);
 
     }
-    
+
+    public function showImportForm()
+    {
+        return view('employee.import');
+    }
+
+
+    public function importAnnualLeaveQuota(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,csv,xls'
+        ]);
+
+        Excel::import(new AnnualLeaveQuotaImport, $request->file('file'));
+
+        return back()->with('success', 'Annual leave quotas updated successfully!');
+    }
 
 }
