@@ -380,23 +380,23 @@ class PurchaseOrderController extends Controller
         $selectedMonth = $request->get('month', $currentMonth);
 
         // Query for vendor totals (distinct vendors with their totals)
-        $vendorTotals = PurchaseOrder::selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
+        $vendorTotals = PurchaseOrder::selectRaw('vendor_name, COUNT(id) as po_count, SUM(total_before_tax) as total_before_tax')
             ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
             ->groupBy('vendor_name')
-            ->orderByDesc('total')
+            ->orderByDesc('total_before_tax')
             ->get();
 
         // Fetch top 5 vendors
         $topVendors = PurchaseOrder::selectRaw('vendor_name')
-            ->selectRaw('SUM(total) as total')
+            ->selectRaw('SUM(total_before_tax) as total')
             ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
             ->groupBy('vendor_name')
-            ->orderByDesc('total')
+            ->orderByDesc('total_before_tax')
             ->take(5)
             ->get();
 
         // Sum of totals for each month (for chart)
-        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
+        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total_before_tax) as total_before_tax")
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -458,21 +458,21 @@ class PurchaseOrderController extends Controller
         }
 
         // Query for vendor totals (all vendors with their total amounts)
-        $vendorTotals = $query->selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
+        $vendorTotals = $query->selectRaw('vendor_name, COUNT(id) as po_count, SUM(total_before_tax) as total')
             ->groupBy('vendor_name')
-            ->orderByDesc('total')
+            ->orderByDesc('total_before_tax')
             ->get();
 
         // Fetch top 5 vendors
         $topVendors = $query->select('vendor_name')
-            ->selectRaw('SUM(total) as total')
+            ->selectRaw('SUM(total_before_tax) as total')
             ->groupBy('vendor_name')
-            ->orderByDesc('total')
+            ->orderByDesc('total_before_tax')
             ->take(5)
             ->get();
 
         // Data for the chart
-        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
+        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total_before_tax) as total")
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -480,7 +480,7 @@ class PurchaseOrderController extends Controller
         return response()->json([
             'chartData' => [
                 'labels' => $monthlyTotals->pluck('month'),
-                'totals' => $monthlyTotals->pluck('total'),
+                'totals' => $monthlyTotals->pluck('total_before_tax'),
             ],
             'topVendors' => $topVendors,
             'vendorTotals' => $vendorTotals,
@@ -511,10 +511,10 @@ class PurchaseOrderController extends Controller
         $selectedMonth = $request->query('month'); // Format: 'YYYY-MM'
 
         $purchaseOrders = PurchaseOrder::where('vendor_name', $vendorName)
-            ->select('id', 'po_number', 'invoice_date', 'total', 'status')
+            ->select('id', 'po_number', 'invoice_date', 'total_before_tax', 'status')
             ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]) // Filter by selected month
             ->orderBy('invoice_date', 'desc')
-            ->orderByDesc('total')
+            ->orderByDesc('total_before_tax')
             ->get();
 
         return response()->json($purchaseOrders);

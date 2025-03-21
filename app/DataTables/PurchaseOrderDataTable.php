@@ -33,17 +33,11 @@ class PurchaseOrderDataTable extends DataTable
     {
         $rawColumns = ['status_label', 'action'];
         $dataTable = (new EloquentDataTable($query))
-            ->addColumn('creator_name', function ($po) {
-                return $po->user ? $po->user->name : 'N/A'; // Use the related user's name
-            })
             ->editColumn('created_at', function ($po) {
                 return Carbon::parse($po->created_at)->format('d-m-Y H:i'); // Format data consistently
             })
-            ->editColumn('invoice_date', function ($po) {
-                return Carbon::parse($po->invoice_date)->format('d-m-Y'); // Ensure consistent date format
-            })
             ->editColumn('tanggal_pembayaran', function ($po) {
-                return Carbon::parse($po->tanggal_pembayaran)->setTimezone('Asia/Jakarta')->format('d-m-Y');
+                return $po->tanggal_pembayaran != null ? Carbon::parse($po->tanggal_pembayaran)->setTimezone('Asia/Jakarta')->format('d-m-Y') : '';
             })
             ->editColumn('approved_date', function ($po){
                 return $po->approved_date ? Carbon::parse($po->approved_date)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') : "";
@@ -51,8 +45,8 @@ class PurchaseOrderDataTable extends DataTable
             ->addColumn('action', function($po){
                 return view('partials.po-actions', ['po' => $po])->render();
             })
-            ->editColumn('total', function ($po) {
-                return number_format($po->total, 1, '.', ',');
+            ->editColumn('total_before_tax', function ($po) {
+                return number_format($po->total_before_tax, 1, '.', ',');
             })
             ->addColumn('status_label', function ($po) {
                 return view('partials.po-status', ['po' => $po])->render();
@@ -66,7 +60,6 @@ class PurchaseOrderDataTable extends DataTable
                     $query->where(function ($q) use ($globalSearch) {
                         $q->orWhere('po_number', 'like', "%{$globalSearch}%")
                           ->orWhere('vendor_name', 'like', "%{$globalSearch}%")
-                          ->orWhere('invoice_date', 'like', "%{$globalSearch}%")
                           ->orWhere('status', 'like', "%{$globalSearch}%"); // Add columns you want to search globally
                     });
                 }
@@ -80,16 +73,6 @@ class PurchaseOrderDataTable extends DataTable
             ->addColumn('status', function ($po) {
                 return $po->status;
             })
-            ->searchPane(
-                'currency',
-                PurchaseOrder::query()
-                    ->select('currency as value', 'currency as label')
-                    ->distinct()
-                    ->get(),
-                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn('currency', $values);
-                }
-            )
             ->searchPane(
                 'status', // Use the 'status' column for the Search Pane
                 fn() => collect([
@@ -113,28 +96,13 @@ class PurchaseOrderDataTable extends DataTable
                 }
             )
             ->searchPane(
-                'invoice_date',
-                function () {
-                    $dates = PurchaseOrder::query()
-                        ->selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as value, DATE_FORMAT(invoice_date, '%M %Y') as label")
-                        ->distinct()
-                        ->orderByRaw("DATE_FORMAT(invoice_date, '%Y-%m')")
-                        ->get();
-
-                    return $dates->map(function ($date) {
-                        return [
-                            'value' => $date->value, // e.g., "2024-01"
-                            'label' => $date->label, // e.g., "January 2024"
-                        ];
-                    })->toArray();
-                },
+                'vendor_code', // Define SearchPane for the vendor_code column
+                fn() => PurchaseOrder::query()
+                    ->select('vendor_code as value', 'vendor_code as label')
+                    ->distinct()
+                    ->get(),
                 function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    // Filter by the selected month-year values
-                    return $query->where(function ($q) use ($values) {
-                        foreach ($values as $value) {
-                            $q->orWhere('invoice_date', 'like', $value . '%'); // Match YYYY-MM format
-                        }
-                    });
+                    return $query->whereIn('vendor_code', $values);
                 }
             )
             ->searchPane(
@@ -176,50 +144,28 @@ class PurchaseOrderDataTable extends DataTable
                 }
             )
             ->with('totalSum', function () use ($query) {
-                $selectedMonthInvoiceDate = request('searchPanes')['invoice_date'] ?? null; // Get selected invoice date from SearchPanes
-
-                if ($selectedMonthInvoiceDate) {
-                    // Filter records to match the selected month-year
-                    $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonthInvoiceDate]);
-                }
-
-                $selectedMonthTanggalPembayaran = request('searchPanes')['tanggal_pembayaran'] ?? null; // Get selected invoice date from SearchPanes
+                $selectedMonthTanggalPembayaran = request('searchPanes')['tanggal_pembayaran'] ?? null; // Get selected tanggal pembayaran from SearchPanes
+                $status = request('searchPanes')['status'] ?? null;
+                $vendorName = request('searchPanes')['vendor_name'] ?? null;
+                $categoryId = request('searchPanes')['category.name'] ?? null;
 
                 if ($selectedMonthTanggalPembayaran) {
-                    // Filter records to match the selected month-year
                     $query->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$selectedMonthTanggalPembayaran]);
                 }
 
-                $status = request('searchPanes')['status'] ?? null;
                 if($status){
                     $query->where('status', $status);
                 }
 
-                $vendorName = request('searchPanes')['vendor_name'] ?? null;
                 if($vendorName){
                     $query->where('vendor_name', $vendorName);
                 }
 
-                $categoryId = request('searchPanes')['category.name'] ?? null;
                 if($categoryId){
                     $query->where('purchase_order_category_id', $categoryId);
                 }
 
-                // // Apply all filters dynamically from DataTable's request
-                // $request = request();
-                // $globalSearch = $request->input('search.value', null);
-                // if ($globalSearch) {
-                //     $query->where(function ($q) use ($globalSearch) {
-                //         $q->orWhere('po_number', 'like', "%{$globalSearch}%")
-                //         ->orWhere('vendor_name', 'like', "%{$globalSearch}%")
-                //         ->orWhere('invoice_date', 'like', "%{$globalSearch}%")
-                //         ->orWhere('status', 'like', "%{$globalSearch}%")
-                //         ->orWhere('invoice_number', 'like', "%{$globalSearch}%");
-                //         // ->orWhere('category', 'like', "%{$globalSearch}%");
-                //     });
-                // }
-
-                return $query->sum('total'); // Calculate the sum for filtered records
+                return $query->sum('total_before_tax'); // Calculate the sum for filtered records
             })
 
             ->rawColumns($rawColumns)
@@ -248,25 +194,23 @@ class PurchaseOrderDataTable extends DataTable
         ->select([
             'id',
             'purchase_order_category_id',
-            'creator_id',
             'po_number',
+            'vendor_code',
             'vendor_name',
-            'invoice_date',
-            'invoice_number',
             'tanggal_pembayaran',
-            'currency',
-            'total',
+            'total_before_tax',
             'created_at',
             'approved_date',
+            'remark',
             'status',
         ])
         ->with('user');
 
         // Apply month filter if provided
-        $month = $this->request()->get('month');
-        if ($month) {
-            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month]);
-        }
+        // $month = $this->request()->get('month');
+        // if ($month) {
+        //     $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$month]);
+        // }
     }
 
     /**
@@ -283,8 +227,6 @@ class PurchaseOrderDataTable extends DataTable
             Button::make('csv'),
             Button::make('pdf'),
             Button::make('print'),
-            // Button::make('reset'),
-            // Button::make('reload')
         ];
 
         // Add conditional buttons for directors
@@ -327,16 +269,14 @@ class PurchaseOrderDataTable extends DataTable
         $columns = [
             Column::make('po_number')->searchPanes(false),
             Column::make('category')->data('category.name')->orderable(false)->searchable(false),
+            Column::make('vendor_code'),
             Column::make('vendor_name'),
-            Column::make('invoice_date'),
-            Column::make('invoice_number')->searchPanes(false),
             Column::make('tanggal_pembayaran'),
-            Column::make('currency'),
-            Column::make('total')->searchPanes(false),
+            Column::make('total_before_tax')->searchPanes(false),
             Column::make('created_at')->data('created_at')->title('Uploaded at')->searchPanes(false),
-            Column::make('creator_name')->data('creator_name')->title('Uploaded by')->searchPanes(false),
             Column::make('approved_date')->searchPanes(false),
             Column::make('status')->visible(false),
+            Column::make('remark')->searchPanes(false),
             Column::computed('status_label')
                 ->title('Status')
                 ->searchPanes(false)
@@ -368,7 +308,6 @@ class PurchaseOrderDataTable extends DataTable
 
         return $columns;
     }
-
 
     /**
      * Get filename for export.

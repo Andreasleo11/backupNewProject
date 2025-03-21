@@ -165,7 +165,7 @@
                                     @foreach ($vendorTotals as $vendor)
                                         <tr class="vendor-row" data-vendor="{{ $vendor->vendor_name }}">
                                             <td>{{ $vendor->vendor_name }}</td>
-                                            <td>IDR {{ number_format($vendor->total, 2) }}</td>
+                                            <td>IDR {{ number_format($vendor->total_before_tax, 2) }}</td>
                                             <td>{{ $vendor->po_count }}</td>
                                             <td>Action</td>
                                         </tr>
@@ -224,8 +224,7 @@
 @endsection
 
 @push('extraJs')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
+    <script type="module">
         document.addEventListener('DOMContentLoaded', function() {
             const categoryChartData = @json($categoryChartData);
 
@@ -360,7 +359,7 @@
                                     tableBody.innerHTML += `
                                     <tr class="vendor-row" data-vendor="${vendor.vendor_name}">
                                         <td>${vendor.vendor_name}</td>
-                                        <td>IDR ${new Intl.NumberFormat().format(vendor.total)}</td>
+                                        <td>IDR ${new Intl.NumberFormat().format(vendor.total_before_tax)}</td>
                                         <td>${vendor.po_count}</td>
                                         <td>
                                             <button class="btn btn-outline-primary rowDetailButton" data-vendor="${vendor.vendor_name}">Detail</button>
@@ -407,7 +406,7 @@
                                 const ctx = document.getElementById('vendorMonthlyTotalsChart')
                                     .getContext('2d');
                                 const chartLabels = data.map(item => item.month);
-                                const chartData = data.map(item => item.total);
+                                const chartData = data.map(item => item.total_before_tax);
 
                                 // Destroy the chart if it already exists to avoid overlay
                                 if (window.vendorChart) {
@@ -509,7 +508,7 @@
                                                     : ''
                                             }
                                             <td>${po.po_number}</td>
-                                            <td>IDR ${new Intl.NumberFormat().format(po.total)}</td>
+                                            <td>IDR ${new Intl.NumberFormat().format(po.total_before_tax)}</td>
                                             <td>${getStatusBadge(po.status)}</td>
                                             <td><a href="/purchaseOrder/${po.id}" class="btn btn-outline-secondary">View</a></td>
                                         </tr>`;

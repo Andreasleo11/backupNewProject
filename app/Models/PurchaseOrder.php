@@ -16,22 +16,35 @@ class PurchaseOrder extends Model
     use HasFactory;
 
     protected $fillable = [
+        'creator_id',
         'po_number',
+        'vendor_name',
         'approved_date',
+        // 'invoice_date',
+        // 'invoice_number',
         'status',
+        // 'currency',
+        // 'purchase_order_category_id',
         'filename',
         'reason',
-        'creator_id',
         'downloaded_at',
-        'vendor_name',
-        'invoice_date',
-        'currency',
         'total',
         'tanggal_pembayaran',
-        'invoice_number',
-        'purchase_order_category_id',
         'parent_po_number',
         'revision_count',
+        'remark',
+        // rename total -> total_before_tax
+        'total_before_tax',
+        // new fields
+        'vendor_code',
+        'posting_date',
+        'delivery_date',
+        'sales_employee_name',
+        'total_tax',
+        'bill_to',
+        'ship_to',
+        'payment_terms',
+        'contact_person_name',
     ];
 
     // Queries
@@ -79,13 +92,18 @@ class PurchaseOrder extends Model
         return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
     }
 
+    public function items()
+    {
+        return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_number', 'po_number');
+    }
+
     protected static function boot()
     {
         parent::boot();
 
-        static::created(function ($report) {
-            $report->sendNotification('created');
-        });
+        // static::created(function ($report) {
+        //     $report->sendNotification('created');
+        // });
 
         static::updated(function ($report) {
             if ($report->isDirty('status')) {

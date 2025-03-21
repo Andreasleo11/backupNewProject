@@ -89,6 +89,7 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
+use App\Http\Controllers\PurchaseOrderImportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -925,5 +926,8 @@ Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'get
 Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
 Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
 Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
+
+Route::get('/import-purchase-orders', [PurchaseOrderImportController::class, 'index'])->name('purchase_orders.import.index');
+Route::post('/import-purchase-orders', [PurchaseOrderImportController::class, 'import'])->name('purchase_orders.import.import');
 
 
