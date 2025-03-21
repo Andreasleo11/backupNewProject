@@ -73,10 +73,8 @@ class PurchaseOrderImport implements ToCollection, WithHeadingRow, WithChunkRead
                             // **Update existing PO**
 
                             $firstRow = $items->first();
-
+ 
                             $purchaseOrder->update([
-                                'status' => 0,
-                                'filename' => null,
                                 'vendor_name' => $firstRow['vendor_name'],
                                 'vendor_code' => $firstRow['vendor_code'],
                                 'posting_date' => Carbon::createFromFormat('d.m.y', trim($firstRow['created_at']))->format('Y-m-d'),
@@ -84,7 +82,6 @@ class PurchaseOrderImport implements ToCollection, WithHeadingRow, WithChunkRead
                                 'sales_employee_name' => $firstRow['sales_employee_name'],
                                 'total_before_tax' => floatval(str_replace(',', '', $firstRow['document_total'])),
                                 'total_tax' => floatval(str_replace(['.', ','], ['', '.'], $firstRow['total_tax'])),
-                                'tanggal_pembayaran' => null,
                                 'bill_to' => $firstRow['bill_to'],
                                 'ship_to' => $firstRow['ship_to'],
                                 'remark' => $firstRow['remarks'],
@@ -168,7 +165,7 @@ class PurchaseOrderImport implements ToCollection, WithHeadingRow, WithChunkRead
         } catch (\Exception $e) {
              // Notify user if import fails
              Log::error("❌ Purchase Order Import Failed. Exception: " . $e->getMessage() );
-            //  $this->notifyUser('error', 'Purchase Order Import Failed. ' . $e->getMessage());
+             $this->notifyUser('error', 'Purchase Order Import Failed. ' . $e->getMessage());
         }
     }
 
