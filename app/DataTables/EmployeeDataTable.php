@@ -40,7 +40,8 @@ class EmployeeDataTable extends DataTable
      */
     public function query(Employee $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()
+            ->whereNull('end_date');
     }
 
     /**

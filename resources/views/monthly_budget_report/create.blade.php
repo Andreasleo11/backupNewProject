@@ -24,7 +24,7 @@
                                 <label class="form-label fs-5 fw-bold">Dept No</label>
                                 <select name="dept_no" id="dept_no" required>
                                     @foreach ($departments as $department)
-                                        @if ($department->name !== 'DIRECTOR')
+                                        @if ($department->name !== 'MANAGEMENT')
                                             <option value="{{ $department->dept_no }}"
                                                 {{ auth()->user()->department->id === $department->id ? 'selected' : '' }}>
                                                 {{ $department->name }}</option>

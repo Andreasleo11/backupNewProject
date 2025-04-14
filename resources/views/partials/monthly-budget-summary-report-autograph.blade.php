@@ -101,7 +101,7 @@
                 @php
                     $showApprovedApproval = false;
                     if ($report->created_autograph && $report->is_known_autograph && !$report->approved_autograph) {
-                        if ($authUser->department->name === 'DIRECTOR') {
+                        if ($authUser->specification->name === 'DIRECTOR') {
                             $showApprovedApproval = true;
                         }
                     }

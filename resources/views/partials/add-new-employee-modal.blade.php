@@ -68,6 +68,36 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="employee_status" class="form-label"> Employee Status:</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="text" name="employee_status" class="form-control" id="employee_status">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="branch" class="form-label"> Branch :</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="text" name="branch" class="form-control" id="branch">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mt-4">
+                        <div class="row">
+                            <div class="col-sm-3 col-form-label">
+                                <label for="Grade" class="form-label"> Grade :</label>
+                            </div>
+                            <div class="col-sm-9">
+                                <input type="text" name="Grade" class="form-control" id="Grade">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -72,7 +72,7 @@
                                                 @if ($department->id === $authUser->department->id)
                                                     <option value="{{ $department->name }}" selected>{{ $department->name }}
                                                     </option>
-                                                @elseif ($department->name === 'HRD' || $department->name === 'DIRECTOR')
+                                                @elseif (($department->name === 'PERSONALIA' && auth()->user()->is_head === 1) || $specification->name === 'DIRECTOR')
                                                 @else
                                                     <option value="{{ $department->name }}">{{ $department->name }}</option>
                                                 @endif
@@ -88,7 +88,7 @@
                                             <option value="" selected disabled>Select to department..</option>
                                             <option value="COMPUTER">COMPUTER</option>
                                             <option value="MAINTENANCE">MAINTENANCE</option>
-                                            <option value="MAINTENANCE MOULDING">MAINTENANCE MOULDING</option>
+                                            <option value="MAINTENANCE MACHINE">MAINTENANCE MACHINE</option>
                                             <option value="PERSONALIA">PERSONALIA</option>
                                         </select>
                                     </div>
@@ -236,7 +236,7 @@
                 case 'MAINTENANCE':
                     toDeptCode = 'MT';
                     break;
-                case 'MAINTENANCE MOULDING':
+                case 'MAINTENANCE MACHINE':
                     toDeptCode = 'MM';
                     break;
                 default:
@@ -257,14 +257,14 @@
             // Toggle part number, part name, and machine fields based on department selection
             const partFields = document.querySelector('.part-fields');
             const forFields = document.querySelector('.for-fields');
-            if (toDepartment === 'MAINTENANCE MOULDING') {
+            if (toDepartment === 'MAINTENANCE MACHINE') {
                 partFields.classList.remove('d-none');
             } else {
                 partFields.classList.add('d-none');
             }
 
             const typeFields = document.querySelector('.type-field');
-            if (toDepartment === 'MAINTENANCE' || toDepartment === 'MAINTENANCE MOULDING') {
+            if (toDepartment === 'MAINTENANCE' || toDepartment === 'MAINTENANCE MACHINE') {
                 typeFields.classList.remove('d-none');
             } else {
                 typeFields.classList.add('d-none');

@@ -101,8 +101,8 @@ class SendPREmailNotification extends Command
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 3:
-                $user = User::with('department')
-                    ->whereHas('department', function ($query) {
+                $user = User::with('specification')
+                    ->whereHas('specification', function ($query) {
                         $query->where('name', 'DIRECTOR');
                     })
                     ->first();

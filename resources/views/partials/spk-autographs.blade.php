@@ -91,7 +91,7 @@
     </div>
 
     {{-- PPIC AUTOGRAPH --}}
-    <div class="col my-3 {{ $report->to_department === 'MAINTENANCE MOULDING' ? '' : 'd-none' }}">
+    <div class="col my-3 {{ $report->to_department === 'MAINTENANCE MACHINE' ? '' : 'd-none' }}">
         <h3>PPIC</h3>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographUser2"></div>

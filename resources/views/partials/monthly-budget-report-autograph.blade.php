@@ -108,7 +108,7 @@
                                 $showApprovedAutograph = true;
                             }
                         } elseif ($report->department->name === 'QC' || $report->department->name === 'QA') {
-                            if ($authUser->department->name === 'DIRECTOR') {
+                            if ($authUser->specification->name === 'DIRECTOR') {
                                 $showApprovedAutograph = true;
                             }
                         } elseif (!$report->department->is_office) {

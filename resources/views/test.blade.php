@@ -51,6 +51,22 @@ h3 {
     page-break-before: always;
 }
 
+.signature-container {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+    .signature-box {
+        width: 30%;
+        text-align: center;
+        border-bottom: 2px solid black;
+        padding-top: 10px;
+    }
+    .signature-box p {
+        margin: 0;
+        font-weight: bold;
+    }
+
 /* Printing Styles */
 @media print {
     /* Set A4 page size */
@@ -131,7 +147,12 @@ h3 {
             <div class="page-break">
             <!-- <h2>Evaluasi Yayasan {{ now()->format('F Y') }}</h2> Add this line -->
                 <div class="employee-info">
-                    <h3>Employee Details</h3>
+                    @if($magang == 1 || $magang === null)
+                    <h3>Employee Details </h3>
+                    @else
+                    <h3>Employee Details </h3>
+                    @endif
+                    
                     <div class="row">
                         <div class="col-md-4">
                             <p><strong>NIK:</strong> {{ $user->NIK }}</p>
@@ -146,6 +167,7 @@ h3 {
                         <div class="col-md-4">
                             <p><strong>Status:</strong> {{ $user->status }}</p>
                             <p><strong>Start Date:</strong> {{ \Carbon\Carbon::parse($user->start_date)->format('d M Y') }}</p>
+                            <p><strong>Evaluasi Periode {{$user->start_date}} Sampai {{ \Carbon\Carbon::now()->year }}</strong></p>
                         </div>
                     </div>
                 </div>
@@ -158,48 +180,66 @@ h3 {
                             <tr>
                                 <th>Assessment Area</th>
                                 <th>Aspect</th>
-                                <th>Score</th>
+                                <th colspan="5">Score <br>(lingkari atau coret nilai)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td rowspan="3"><strong>Kemampuan Kerja</strong></td>
                                 <td>A1 Kemampuan Melakukan Pekerjaan<br>
-                                <small>Range Nilai 17 - 15,3 - 13,6 - 11,9 - 0</small>
                                 </td>
-                                <td><input type="text" class="form-control" name="kemampuan_kerja_A1"></td>
+                                            <td>17</td>
+                                            <td>15.3</td>
+                                            <td>13.6</td>
+                                            <td>11.9</td>
+                                            <td>0</td>
                             </tr>
                             <tr>
                                 <td>A2 Kecerdasan Melakukan Pekerjaan<br>
-                                <small>Range Nilai 16 - 14,4 - 12,8 - 11,2 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="kemampuan_kerja_A2"></td>
+                                            <td>16</td>
+                                            <td>14.4</td>
+                                            <td>12.8</td>
+                                            <td>11.2</td>
+                                            <td>0</td>
                             </tr>
                             <tr>
                                 <td>A3 Kwantitas dan Kwalitas Pekerjaan<br>
-                                <small>Range Nilai 11 - 9,9 - 8,8 - 7,2 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="kemampuan_kerja_A3"></td>
+                                            <td>11</td>
+                                            <td>9.9</td>
+                                            <td>8.8</td>
+                                            <td>7.2</td>
+                                            <td>0</td>
                             </tr>
 
                             <tr>
                                 <td rowspan="3"><strong>Sikap and Kelakuan</strong></td>
                                 <td>B1 Kesopanan dan Kejujuran<br>
-                                <small>Range Nilai 8 - 7,2 - 6,4 - 5,6 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="sikap_kelakuan_B1"></td>
+                                            <td>8</td>
+                                            <td>7.2</td>
+                                            <td>6.4</td>
+                                            <td>5.6</td>
+                                            <td>0</td>
                             </tr>
                             <tr>
                                 <td>B2 Loyalitas dan Tanggung Jawab<br>
-                                <small>Range Nilai 10 - 9 - 8 - 7 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="sikap_kelakuan_B2"></td>
+                                            <td>10</td>
+                                            <td>9</td>
+                                            <td>8</td>
+                                            <td>7</td>
+                                            <td>0</td>
                             </tr>
                             <tr>
                                 <td>B3 Kerjasama dan Ketaatan<br>
-                                <small>Range Nilai 10 - 9 - 8 - 7 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="sikap_kelakuan_B3"></td>
+                                            <td>10</td>
+                                            <td>9</td>
+                                            <td>8</td>
+                                            <td>7</td>
+                                            <td>0</td>
                             </tr>
 
 
@@ -208,23 +248,61 @@ h3 {
                             <tr>
                                 <td rowspan="3"><strong>Disiplin and Kerapian</strong></td>
                                 <td>C1 Disiplin Waktu<br>
-                                <small>Range Nilai 10 - 9 - 8 - 7 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="disiplin_kerapian_C1"></td>
+                                            <td>10</td>
+                                            <td>9</td>
+                                            <td>8</td>
+                                            <td>7</td>
+                                            <td>0</td>
                             </tr>
                             <tr>
                                 <td>C2 Kebersihan Lingkungan Kerja<br>
-                                <small>Range Nilai 10 - 9 - 8 - 7 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="disiplin_kerapian_C2"></td>
+                                            <td>10</td>
+                                            <td>9</td>
+                                            <td>8</td>
+                                            <td>7</td>
+                                            <td>0</td>
                             </tr>
                             <tr>
                                 <td>C3 Kerapihan Pakaian dan Peralatan<br>
-                                <small>Range Nilai 8 - 7,2 - 6,4 - 5,6 - 0</small>
                             </td>
-                                <td><input type="text" class="form-control" name="disiplin_kerapian_C3"></td>
+                                            <td>8</td>
+                                            <td>7.2</td>
+                                            <td>6.4</td>
+                                            <td>5.6</td>
+                                            <td>0</td>
+                            </tr>
+                            <tr >
+                                <td colspan = "2">
+                                    Total Nilai
+                                </td>
+                                <td colspan= "5">
+                                </td>
+                            </tr>
+                            <tr >
+                                <td colspan = "2" style="text-align: center;">
+                                    Total Grade <br>
+                                    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+                                    <div style="border: 1px solid black; padding: 10px; width: 80px; text-align: center;">100-91 = A</div>
+                                    <div style="border: 1px solid black; padding: 10px; width: 80px; text-align: center;">90-81 = B</div>
+                                    <div style="border: 1px solid black; padding: 10px; width: 80px; text-align: center;">80-71 = C</div>
+                                    <div style="border: 1px solid black; padding: 10px; width: 80px; text-align: center;">70-61 = D</div>
+                                    <div style="border: 1px solid black; padding: 10px; width: 80px; text-align: center;">61-0 = E</div>
+                                </div>
+                                </td>
+                                <td colspan= "5">
+                                </td>
+                            </tr>
+                            <tr >
+                                <td colspan = "2">
+                                  Layak (1) Diperpanjang Atau Tidak (2)
+                                </td>
+                                <td colspan= "5">
+                                </td>
                             </tr>
                         </tbody>
+                        
                     </table>
                 </div>
 
@@ -294,6 +372,22 @@ h3 {
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            
+            <div class="signature-container">
+                    <div class="signature-box">
+                        <p>Yang Menyetujui</p>
+                        <br><br><br>
+                    </div>
+                    <div class="signature-box">
+                        <p>Yang Menyetujui</p>
+                        <br><br><br>
+                    </div> 
+                    <div class="signature-box">
+                        <p>Yang Menyetujui</p>
+                        <br><br><br>
+                    </div>
                 </div>
             </div>
             
