@@ -34,6 +34,8 @@ class Kernel extends ConsoleKernel
         })->monthlyOn(20, '00:30');;
 
         $schedule->command('send:training-reminders')->dailyAt('01:00');
+
+        $schedule->command('employee-dashboard:update-from-api')->dailyAt('09:00')->timezone('Asia/Jakarta');
     }
 
     /**

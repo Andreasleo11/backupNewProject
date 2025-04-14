@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Employee extends Model
 {
     use HasFactory;
-    public $timestamps = false;
     public $incrementing = false;
 
     protected $fillable = [
@@ -22,6 +21,8 @@ class Employee extends Model
         'jatah_cuti_tahun',
         'end_date',
         'employee_status',
+        'Grade',
+        'Branch'
     ];
 
     public function evaluationData()
