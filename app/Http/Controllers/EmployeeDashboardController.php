@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\DataTables\EmployeeDataTable;
 use App\DataTables\EmployeeWithEvaluationDataTable;
+use App\Jobs\SyncEmployeesJob;
 use App\Models\Employee;
-use App\Models\EvaluationData;
 use App\Models\EvaluationDataWeekly;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -67,35 +67,37 @@ class EmployeeDashboardController extends Controller
             'sakit' => 0,
         ];
 
-        if ($selectedMonthYear) {
+        // Base Query for filtering
+        $evaluationQuery = EvaluationDataWeekly::whereIn('NIK', $activeEmployees);
+
+        if (!empty($selectedMonthYear)) {
             [$selectedMonth, $selectedYear] = explode('-', $selectedMonthYear);
 
-            // Base Query for filtering
-            $evaluationQuery = EvaluationDataWeekly::whereIn('NIK', $activeEmployees)
+            $evaluationQuery
                 ->whereMonth('Month', $selectedMonth)
                 ->whereYear('Month', $selectedYear);
-
-            // If Week is selected, filter by week
-            if (!empty($selectedWeek)) {
-                [$year, $weekNumber] = explode('-W', $selectedWeek);
-
-                // Get the start and end dates of the selected week
-                $startDate = Carbon::now()->setISODate($year, $weekNumber)->startOfWeek()->toDateString();
-                $endDate = Carbon::now()->setISODate($year, $weekNumber)->endOfWeek()->toDateString();
-
-                // \Illuminate\Support\Facades\Log::info("startDate : $startDate");
-                // \Illuminate\Support\Facades\Log::info("endDate: $endDate");
-
-                // Apply week range filter
-                $evaluationQuery->whereBetween('Month', [$startDate, $endDate]);
-            }
-
-            // Count employees per category only if value > 0
-            $employeeData['alpha'] = (clone $evaluationQuery)->where('Alpha', '>', 0)->distinct()->count('NIK');
-            $employeeData['telat'] = (clone $evaluationQuery)->where('Telat', '>', 0)->distinct()->count('NIK');
-            $employeeData['izin'] = (clone $evaluationQuery)->where('Izin', '>', 0)->distinct()->count('NIK');
-            $employeeData['sakit'] = (clone $evaluationQuery)->where('Sakit', '>', 0)->distinct()->count('NIK');
         }
+
+        // If Week is selected, filter by week
+        if (!empty($selectedWeek)) {
+            [$year, $weekNumber] = explode('-W', $selectedWeek);
+
+            // Get the start and end dates of the selected week
+            $startDate = Carbon::now()->setISODate($year, $weekNumber)->startOfWeek()->toDateString();
+            $endDate = Carbon::now()->setISODate($year, $weekNumber)->endOfWeek()->toDateString();
+
+            // \Illuminate\Support\Facades\Log::info("startDate : $startDate");
+            // \Illuminate\Support\Facades\Log::info("endDate: $endDate");
+
+            // Apply week range filter
+            $evaluationQuery->whereBetween('Month', [$startDate, $endDate]);
+        }
+
+        // Count employees per category only if value > 0
+        $employeeData['alpha'] = (clone $evaluationQuery)->where('Alpha', '>', 0)->distinct()->count('NIK');
+        $employeeData['telat'] = (clone $evaluationQuery)->where('Telat', '>', 0)->distinct()->count('NIK');
+        $employeeData['izin'] = (clone $evaluationQuery)->where('Izin', '>', 0)->distinct()->count('NIK');
+        $employeeData['sakit'] = (clone $evaluationQuery)->where('Sakit', '>', 0)->distinct()->count('NIK');
 
         return response()->json($employeeData);
     }
@@ -125,7 +127,7 @@ class EmployeeDashboardController extends Controller
                         'employees.Gender',
                         'departments.name as department_name',
                         'employees.employee_status',
-                        "evaluation_data_weekly.$category as category_count"
+                        DB::raw("SUM(evaluation_data_weekly.$category) as category_count")
                     );
 
         if (!empty($monthYear)) {
@@ -164,6 +166,17 @@ class EmployeeDashboardController extends Controller
         if (!empty($gender)) {
             $query->where('employees.Gender', $gender);
         }
+
+       // Only fetch employees with non-zero evaluation count in selected category
+        $query->having('category_count', '>', 0)
+        ->groupBy(
+            'employees.NIK',
+            'employees.Nama',
+            'employees.Gender',
+            'departments.name',
+            'employees.employee_status'
+        )
+        ->orderByDesc('category_count');
 
         $employees = $query->get();
 
@@ -423,4 +436,12 @@ class EmployeeDashboardController extends Controller
             'total_selected_category' => $category !== "total" ? $totalCategorySum : null
         ]);
     }
+
+    public function updateEmployeeData()
+    {
+        SyncEmployeesJob::dispatch('10000', now()->year);
+
+        return redirect()->back()->with('success', 'Sync job dispatched successfully. You can check progress shortly.');
+    }
+
 }

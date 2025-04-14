@@ -10,7 +10,6 @@ class EvaluationDataWeekly extends Model
     use HasFactory;
 
     protected $table = 'evaluation_data_weekly';
-    public $timestamps = false;
     public $incrementing = false;
 
     protected $fillable = [
