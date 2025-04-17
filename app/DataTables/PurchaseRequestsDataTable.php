@@ -130,7 +130,6 @@ class PurchaseRequestsDataTable extends DataTable
             });
         } elseif ($isGM) {
             $query->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
                 ->whereNull('autograph_6')
                 ->where(function ($query) use ($userDepartmentName) {
                     $query->where('type', 'factory');
@@ -140,6 +139,10 @@ class PurchaseRequestsDataTable extends DataTable
                         $query->where('from_department', '!=', 'MOULDING');
                     }
                 });
+            // Pawarid case
+            if($userDepartmentName !== 'PLASTIC INJECTION'){
+                $query->whereNotNull('autograph_2');
+            }
         } elseif ($isHead) {
             $query->where(function ($query) use ($userDepartmentName) {
                 $query->where('from_department', $userDepartmentName);
