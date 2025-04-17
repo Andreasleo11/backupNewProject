@@ -205,6 +205,10 @@ class PurchaseRequestController extends Controller
             'branch' => $request->branch,
         ];
 
+        if($commonData['branch'] == 'KARAWANG' && $commonData['from_department'] == 'PLASTIC INJECTION'){
+            $commonData['status'] = 7;
+        }
+
         if($isDraft){
             $commonData['autograph_1'] = null;
             $commonData['autograph_user_1'] = null;
@@ -263,7 +267,7 @@ class PurchaseRequestController extends Controller
                     'currency' => $currency
                 ];
 
-                if ($purchaseRequest->from_department == 'PERSONALIA') {
+                if ($purchaseRequest->from_department == 'PERSONALIA' || $purchaseRequest->from_department == 'PLASTIC INJECTION' && $purchaseRequest->branch == 'KARAWANG') {
                     $commonData['is_approve_by_head'] = 1;
                 }
 
