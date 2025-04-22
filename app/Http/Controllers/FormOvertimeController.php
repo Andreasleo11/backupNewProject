@@ -137,7 +137,8 @@ class FormOvertimeController extends Controller
             'create_date' => $request->input('date_form_overtime'),
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'status' => $status,
-            'is_design' => $request->input('design')
+            'is_design' => $request->input('design'),
+            'is_export' =>  0
         ];
 
         // dd($headerData);

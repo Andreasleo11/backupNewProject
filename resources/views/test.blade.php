@@ -167,7 +167,7 @@ h3 {
                         <div class="col-md-4">
                             <p><strong>Status:</strong> {{ $user->status }}</p>
                             <p><strong>Start Date:</strong> {{ \Carbon\Carbon::parse($user->start_date)->format('d M Y') }}</p>
-                            <p><strong>Evaluasi Periode {{$user->start_date}} Sampai {{ \Carbon\Carbon::now()->year }}</strong></p>
+                            <p><strong>Evaluasi Periode {{$year}}</strong></p>
                         </div>
                     </div>
                 </div>
