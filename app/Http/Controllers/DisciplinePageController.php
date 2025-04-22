@@ -1372,52 +1372,44 @@ class DisciplinePageController extends Controller
 
 
 
+        
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                ->where('start_date', '<', $cutoffDate);
+                    ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $selectedMonth)
             ->get()
             ->groupBy('dept');
-
 
         $actualdata = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                ->where('start_date', '<', $cutoffDate);
+                    ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $selectedMonth)
-            ->where('depthead', '!=', null)
+            ->whereNotNull('depthead')
+            ->where('depthead', '!=', '')
             ->get()
             ->groupBy('dept');
 
-
-        // Initialize the result array to hold department statuses
+        // Initialize department statuses
         $departmentStatus = [];
 
         $departments = Department::pluck('name', 'dept_no');
 
-        // Compare the employees and actual data grouped by department
+        // Loop through employees to assign department names and statuses
         foreach ($employees as $dept_no => $employeeGroup) {
-            // Get the department name from the dept_no
-            $departmentName = $departments->get($dept_no, 'Unknown Department');  // Default to 'Unknown Department' if not found
+            $departmentName = $departments->get($dept_no, 'Unknown Department');
 
-            // Get the count of employees in the department
-            $employeeCount = $employeeGroup->count();
-
-            // Get the count of actual data in the department
-            $actualCount = isset($actualdata[$dept_no]) ? $actualdata[$dept_no]->count() : 0;
-
-            // Compare the counts and set the status accordingly
-            if ($employeeCount === $actualCount) {
-                $departmentStatus[$departmentName] = 'Ready';
-            } else {
-                $departmentStatus[$departmentName] = 'Not Ready';
-            }
+            // Check if department has valid `depthead` entries in `$actualdata`
+            $departmentStatus[$departmentName] = isset($actualdata[$dept_no]) ? 'Ready' : 'Not Ready';
         }
 
-            return view('setting.exportYayasanJpayroll', compact('departmentStatus', 'selectedMonth', 'currentYear'));
+        // // Debugging output (remove in production)
+        // dd($departmentStatus);
+
+        return view('setting.exportYayasanJpayroll', compact('departmentStatus', 'selectedMonth', 'currentYear'));
 
     }
 
