@@ -23,7 +23,7 @@
     @endforeach
 @endif
 
-{{-- <script>
+<script>
     const closeAlertButtons = document.querySelectorAll('.close-alert');
     setTimeout(() => {
         if (closeAlertButtons) {
@@ -31,5 +31,5 @@
                 btn.click();
             });
         }
-    }, 5000);
-</script> --}}
+    }, 3000);
+</script>

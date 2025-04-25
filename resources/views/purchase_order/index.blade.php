@@ -11,13 +11,14 @@
                 </ol>
             </nav>
         </div>
-        @if (auth()->user()->department->name !== 'MANAGEMENT')
+        @if (auth()->user()->specification->name === 'ADMIN')
             <div class="col text-end">
-                <form action="{{ route('po.create') }}" method="post">
+                {{-- <form action="{{ route('po.create') }}" method="post">
                     @csrf
                     <input type="hidden" name="parentPONumber" value="">
                     <button type="submit" class="btn btn-primary">+ Create</button>
-                </form>
+                </form> --}}
+                <a href="{{ route('purchase_orders.import.index') }}" class="btn btn-primary">Upload</a>
             </div>
         @endif
     </div>

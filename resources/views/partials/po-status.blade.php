@@ -1,11 +1,15 @@
-@if ($po->status === 1)
-    <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting</span>
-@elseif ($po->status === 2)
+@if ($po->status === 'waiting')
+    <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting Approval</span>
+@elseif ($po->status === 'approved')
     <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
-@elseif ($po->status === 3)
+@elseif ($po->status === 'rejected')
     <span class="badge text-bg-danger px-3 py-2 fs-6">Rejected</span>
-@elseif($po->status === 4)
-    <span class="badge text-danger bg-danger-subtle px-3 py-2 fs-6">Canceled</span>
+@elseif($po->status === 'cancelled')
+    <span class="badge text-danger bg-danger-subtle px-3 py-2 fs-6">Cancelled</span>
+@elseif($po->status === 'open')
+    <span class="badge text-primary bg-primary-subtle px-3 py-2 fs-6">Open</span>
+@elseif($po->status === 'closed')
+    <span class="badge text-bg-secondary px-3 py-2 fs-6">Closed</span>
 @endif
 
 @if ($po->latestDownloadLog)

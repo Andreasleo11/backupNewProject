@@ -7,10 +7,18 @@
         }
     </style>
     <div class="container mt-4">
-
-        <div class="row mb-3 justify-content-between">
-            <div class="col">
-                <h1>Purchase Order Dashboard</h1>
+        <div class="row mb-3">
+            <div class="col-auto">
+                <div class="d-flex align-items-center gap-3">
+                    <h1 class="text-nowrap">Purchase Order Dashboard</h1>
+                    <select class="form-select" id="yearFilter">
+                        @foreach ($availableYears as $year)
+                            <option value="{{ $year }}" {{ $selectedYear === $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('po.dashboard') }}">Purchase Orders</a></li>
@@ -86,41 +94,13 @@
             </div>
         </div>
 
-        {{-- <!-- Top Vendors -->
-        <div class="row mt-4">
-            <div class="col">
-                <div class="card">
-                    <div class="p-3">
-                        <div class="h4">Top Vendors</div>
-                        <div class="text-secondary">Vendors with the highest sum of total based on the selected month.</div>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group" id="topVendorList">
-                            @forelse ($topVendors as $index => $vendor)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>#{{ $index + 1 }}: {{ $vendor->vendor_name }}</strong>
-                                    </div>
-                                    <span class="badge bg-primary fs-5">IDR {{ number_format($vendor->total, 2) }}</span>
-                                </li>
-                            @empty
-                                <li class="list-group-item text-center">
-                                    No data available for the selected month.
-                                </li>
-                            @endforelse
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
-
         <div class="row mt-4 justify-content-end">
             <div class="col-auto">
                 <!-- Month Filter -->
                 <select id="monthFilter" class="form-select d-inline-block w-auto">
                     @foreach ($availableMonths as $month)
-                        <option value="{{ $month }}" {{ $selectedMonth === $month ? 'selected' : '' }}>
-                            {{ $month }}
+                        <option value="{{ $month['number'] }}" {{ $selectedMonth === $month['number'] ? 'selected' : '' }}>
+                            {{ $month['name'] }}
                         </option>
                     @endforeach
                 </select>
@@ -132,7 +112,14 @@
             <div class="col-auto">
                 <form id="checkDetailForm" action="{{ route('po.index') }}" method="GET">
                     <input type="hidden" name="month" id="selectedMonthInput">
-                    <button type="button" class="btn btn-primary" id="checkDetailButton">Check Detail</button>
+                    <button type="button" class="btn btn-primary" id="checkDetailButton">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                            style="fill: rgba(255, 255, 255, 1);transform: ;msFilter:;">
+                            <path d="M3 2h2v20H3zm7 4h7v2h-7zm0 4h7v2h-7z"></path>
+                            <path d="M19 2H6v20h13c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2zm0 18H8V4h11v16z"></path>
+                        </svg>
+                        PO List
+                    </button>
                 </form>
             </div>
         </div>
@@ -149,6 +136,7 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
+                                    <th>#</th>
                                     <th>Vendor Name</th>
                                     <th>Total</th>
                                     <th>PO Count</th>
@@ -158,18 +146,13 @@
                             <tbody id="vendorTableBody">
                                 @if ($vendorTotals->isEmpty())
                                     <tr>
-                                        <td colspan="3" class="text-center">No data available for the selected month.
+                                        <td colspan="20" class="text-center">No data available for the selected month.
                                         </td>
                                     </tr>
                                 @else
-                                    @foreach ($vendorTotals as $vendor)
-                                        <tr class="vendor-row" data-vendor="{{ $vendor->vendor_name }}">
-                                            <td>{{ $vendor->vendor_name }}</td>
-                                            <td>IDR {{ number_format($vendor->total_before_tax, 2) }}</td>
-                                            <td>{{ $vendor->po_count }}</td>
-                                            <td>Action</td>
-                                        </tr>
-                                    @endforeach
+                                    <tr>
+                                        <td colspan="20" class="text-center">Loading</td>
+                                    </tr>
                                 @endif
                             </tbody>
                         </table>
@@ -205,7 +188,7 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>Invoice Date</th>
+                                <th>Tanggal Pembayaran</th>
                                 <th>PO Number</th>
                                 <th>Total</th>
                                 <th>Status</th>
@@ -220,7 +203,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 
 @push('extraJs')
@@ -229,7 +211,7 @@
             const categoryChartData = @json($categoryChartData);
 
             const categoryChartCtx = document.getElementById('poCategoryChart').getContext('2d');
-            const categoryData = categoryChartData.map(item => item.count); // Extract counts
+            var categoryData = categoryChartData.map(item => item.count); // Extract counts
             const categoryLabels = categoryChartData.map(item => item.label); // Extract labels
 
             new Chart(categoryChartCtx, {
@@ -267,27 +249,34 @@
             });
 
             const statusChartCtx = document.getElementById('poStatusChart').getContext('2d');
-            const statusData = @json($statusCounts); // Pass data from backend
+            var statusData = @json($statusCounts); // Pass data from backend
 
+            function getStatusChart() {
+
+            }
             new Chart(statusChartCtx, {
                 type: 'pie', // Pie chart for visualizing proportions
                 data: {
-                    labels: ['Approved', 'Waiting', 'Rejected', 'Canceled'],
+                    labels: ['Approved', 'Waiting', 'Rejected', 'Cancelled', 'Open', 'Closed'],
                     datasets: [{
                         data: [statusData.approved, statusData.waiting, statusData.rejected,
-                            statusData.canceled
+                            statusData.cancelled, statusData.open, statusData.closed
                         ],
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.6)', // Approved - Green
                             'rgba(255, 205, 86, 0.6)', // Waiting - Yellow
                             'rgba(255, 99, 132, 0.6)', // Rejected - Red
-                            'rgba(0, 0, 0, 0.3)' // Canceled - Gray
+                            'rgba(0, 0, 0, 0.3)', // Canceled - Gray
+                            'rgba(54, 162, 235, 0.6)', // Open - Blue
+                            'rgba(153, 102, 255, 0.6)' // Closed - Purple
                         ],
                         borderColor: [
                             'rgba(75, 192, 192, 1)', // Approved - Green
                             'rgba(255, 205, 86, 1)', // Waiting - Yellow
                             'rgba(255, 99, 132, 1)', // Rejected - Red
-                            'rgba(0, 0, 0, 0.3)' // Canceled - Gray
+                            'rgba(0, 0, 0, 0.3)', // Canceled - Gray
+                            'rgba(54, 162, 235, 1)', // Open - Blue
+                            'rgba(153, 102, 255, 1)' // Closed - Purple
                         ],
                         borderWidth: 1
                     }]
@@ -340,8 +329,8 @@
             }
 
             // Function to load data from the filter endpoint
-            function loadData(selectedMonth) {
-                fetch(`/purchase-orders/filter?month=${selectedMonth}`)
+            function loadData(selectedMonth, selectedYear) {
+                fetch(`/purchase-orders/filter?month=${selectedMonth}&year=${selectedYear}`)
                     .then(response => response.json())
                     .then(data => {
                         // Update Chart
@@ -355,11 +344,12 @@
                         if (tableBody) {
                             tableBody.innerHTML = '';
                             if (data.vendorTotals.length > 0) {
-                                data.vendorTotals.forEach(vendor => {
+                                data.vendorTotals.forEach((vendor, index) => {
                                     tableBody.innerHTML += `
                                     <tr class="vendor-row" data-vendor="${vendor.vendor_name}">
+                                        <td>${index + 1}</td>
                                         <td>${vendor.vendor_name}</td>
-                                        <td>IDR ${new Intl.NumberFormat().format(vendor.total_before_tax)}</td>
+                                        <td>IDR ${new Intl.NumberFormat().format(vendor.total)}</td>
                                         <td>${vendor.po_count}</td>
                                         <td>
                                             <button class="btn btn-outline-primary rowDetailButton" data-vendor="${vendor.vendor_name}">Detail</button>
@@ -369,7 +359,7 @@
                             } else {
                                 tableBody.innerHTML = `
                                     <tr>
-                                        <td colspan="2" class="text-center">No data available for the selected month.</td>
+                                        <td colspan="20" class="text-center">No data available for the selected month-year.</td>
                                     </tr>`;
                             }
                         }
@@ -377,7 +367,6 @@
                         showModal();
                     })
                     .catch(error => console.error('Error loading data:', error));
-
             }
 
             function showModal() {
@@ -406,7 +395,7 @@
                                 const ctx = document.getElementById('vendorMonthlyTotalsChart')
                                     .getContext('2d');
                                 const chartLabels = data.map(item => item.month);
-                                const chartData = data.map(item => item.total_before_tax);
+                                const chartData = data.map(item => item.total);
 
                                 // Destroy the chart if it already exists to avoid overlay
                                 if (window.vendorChart) {
@@ -453,15 +442,24 @@
                 });
             }
 
-
             // Trigger the filter method on page load with the default selected month
             const initialMonth = document.getElementById('monthFilter').value;
-            loadData(initialMonth);
+            const initialYear = document.getElementById('yearFilter').value;
+            loadData(initialMonth, initialYear);
 
-            // Handle Month Filter Change
+
             document.getElementById('monthFilter').addEventListener('change', function() {
-                const selectedMonth = this.value;
-                loadData(selectedMonth);
+                const selectedYear = document.getElementById('yearFilter').value;
+                categoryData = categoryChartData.map(item => item.count);
+                statusData = @json($statusCounts);
+                loadData(this.value, selectedYear);
+            });
+
+            document.getElementById('yearFilter').addEventListener('change', function() {
+                const selectedMonth = document.getElementById('monthFilter').value;
+                categoryData = categoryChartData.map(item => item.count);
+                statusData = @json($statusCounts);
+                loadData(selectedMonth, this.value);
             });
 
             // Handle Detail Button Clicks
@@ -473,9 +471,11 @@
                     const vendorName = detailButton.getAttribute('data-vendor');
                     const selectedMonth = document.getElementById('monthFilter')
                         .value; // Get the selected month
+                    const selectedYear = document.getElementById('yearFilter')
+                        .value; // Get the selected year
 
                     fetch(
-                            `/purchase-orders/vendor-details?vendor=${encodeURIComponent(vendorName)}&month=${encodeURIComponent(selectedMonth)}`
+                            `/purchase-orders/vendor-details?vendor=${encodeURIComponent(vendorName)}&month=${encodeURIComponent(selectedMonth)}&year=${encodeURIComponent(selectedYear)}`
                         )
                         .then(response => response.json())
                         .then(data => {
@@ -483,32 +483,32 @@
                             const modalBody = document.getElementById('vendorPOTableBody');
 
                             modalTitle.innerHTML =
-                                `Purchase Orders for <strong>${vendorName}</strong> (${selectedMonth})`;
+                                `Purchase Orders for <strong>${vendorName}</strong> (${selectedMonth}-${selectedYear})`;
                             modalBody.innerHTML = '';
 
                             if (data.length > 0) {
-                                // Group data by invoice_date
+                                // Group data by tanggal_pembayaran
                                 const groupedData = data.reduce((acc, po) => {
-                                    if (!acc[po.invoice_date]) {
-                                        acc[po.invoice_date] = [];
+                                    if (!acc[po.tanggal_pembayaran]) {
+                                        acc[po.tanggal_pembayaran] = [];
                                     }
-                                    acc[po.invoice_date].push(po);
+                                    acc[po.tanggal_pembayaran].push(po);
                                     return acc;
                                 }, {});
 
                                 // Render grouped rows with rowspan
-                                Object.keys(groupedData).forEach((invoiceDate) => {
-                                    const rows = groupedData[invoiceDate];
+                                Object.keys(groupedData).forEach((tanggalPembayaran) => {
+                                    const rows = groupedData[tanggalPembayaran];
                                     rows.forEach((po, index) => {
                                         modalBody.innerHTML += `
                                         <tr>
                                             ${
                                                 index === 0
-                                                    ? `<td rowspan="${rows.length}">${invoiceDate}</td>` // Add rowspan to the first row of the group
+                                                    ? `<td rowspan="${rows.length}">${tanggalPembayaran}</td>` // Add rowspan to the first row of the group
                                                     : ''
                                             }
                                             <td>${po.po_number}</td>
-                                            <td>IDR ${new Intl.NumberFormat().format(po.total_before_tax)}</td>
+                                            <td>IDR ${new Intl.NumberFormat().format(po.total)}</td>
                                             <td>${getStatusBadge(po.status)}</td>
                                             <td><a href="/purchaseOrder/${po.id}" class="btn btn-outline-secondary">View</a></td>
                                         </tr>`;
@@ -517,7 +517,7 @@
                             } else {
                                 modalBody.innerHTML = `
                                 <tr>
-                                    <td colspan="5" class="text-center">No purchase orders found for this vendor in the selected month.</td>
+                                    <td colspan="5" class="text-center">No purchase orders found for this vendor in the selected month-year.</td>
                                 </tr>`;
                             }
 
@@ -533,14 +533,26 @@
         // Helper function to render the status badge
         function getStatusBadge(status) {
             switch (status) {
-                case 'Approved':
-                    return `<span class="badge bg-success">Approved</span>`;
-                case 'Rejected':
-                    return `<span class="badge bg-danger">Rejected</span>`;
-                case 'Canceled':
+                case 'approved':
+                    return `<span class="badge text-bg-success">Approved</span>`;
+                    break;
+                case 'rejected':
+                    return `<span class="badge text-bg-danger">Rejected</span>`;
+                    break;
+                case 'cancelled':
                     return `<span class="badge bg-danger-subtle text-danger">Canceled</span>`;
+                    break;
+                case 'open':
+                    return `<span class="badge bg-primary-subtle text-primary">Open</span>`;
+                    break;
+                case 'closed':
+                    return `<span class="badge bg-secondary">Closed</span>`;
+                    break;
+                case 'waiting':
+                    return `<span class="badge bg-danger-subtle text-danger">Waiting Approval</span>`;
+                    break;
                 default:
-                    return `<span class="badge bg-warning">Pending</span>`;
+                    return `<span class="badge bg-dark-subtle text-dark">Unknown</span>`;
             }
         }
 
@@ -574,6 +586,7 @@
 
         document.getElementById('checkDetailButton').addEventListener('click', function() {
             const selectedMonth = document.getElementById('monthFilter').value;
+            const selectedYear = document.getElementById('yearFilter').value;
             document.getElementById('selectedMonthInput').value = selectedMonth;
             document.getElementById('checkDetailForm').submit();
         });

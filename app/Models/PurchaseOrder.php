@@ -20,11 +20,7 @@ class PurchaseOrder extends Model
         'po_number',
         'vendor_name',
         'approved_date',
-        // 'invoice_date',
-        // 'invoice_number',
         'status',
-        // 'currency',
-        // 'purchase_order_category_id',
         'filename',
         'reason',
         'downloaded_at',
@@ -32,9 +28,7 @@ class PurchaseOrder extends Model
         'tanggal_pembayaran',
         'parent_po_number',
         'revision_count',
-        'remark',
-        // rename total -> total_before_tax
-        'total_before_tax',
+        'remarks',
         // new fields
         'vendor_code',
         'posting_date',
@@ -45,32 +39,45 @@ class PurchaseOrder extends Model
         'ship_to',
         'payment_terms',
         'contact_person_name',
+        'currency',
+        'category',
+        'is_need_sign',
     ];
 
     // Queries
     public function scopeApproved($query)
     {
-        return $query->where('status', 2);
+        return $query->where('status', 'approved');
     }
 
     public function scopeWaiting($query)
     {
-        return $query->where('status', 1);
+        return $query->where('status', 'waiting');
     }
 
     public function scopeRejected($query)
     {
-        return $query->where('status', 3);
+        return $query->where('status', 'rejected');
     }
 
-    public function scopeCanceled($query)
+    public function scopeCancelled($query)
     {
-        return $query->where('status', 4);
+        return $query->where('status', 'cancelled');
+    }
+
+    public function scopeOpen($query)
+    {
+        return $query->where('status', 'open');
+    }
+
+    public function scopeClosed($query)
+    {
+        return $query->where('status', 'closed');
     }
 
     public function scopeApprovedForCurrentMonth($query)
     {
-        return $query->where('status', 2)
+        return $query->where('status', 'approved')
                     ->whereBetween('created_at', [
                         now()->startOfMonth(),
                         now()->endOfMonth()
@@ -79,17 +86,22 @@ class PurchaseOrder extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'creator_id');
+        return $this->belongsTo(User::class, 'creator_id', 'id');
+    }
+
+    public function getSalesUserAttribute()
+    {
+        // Try to extract the email from sales_employee_name
+        if (preg_match('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', $this->sales_employee_name, $matches)) {
+            return \App\Models\User::where('email', $matches[0])->first();
+        }
+
+        return null;
     }
 
     public function latestDownloadLog()
     {
         return $this->hasOne(PurchaseOrderDownloadLog::class)->latestOfMany();
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
     }
 
     public function items()
@@ -107,23 +119,15 @@ class PurchaseOrder extends Model
 
         static::updated(function ($report) {
             if ($report->isDirty('status')) {
-                $statusMapping = [
-                    2 => 'approved',
-                    3 => 'rejected',
-                    4 => 'canceled',
-                ];
-
                 // Send a notification based on the new status
-                $report->sendNotification($statusMapping[$report->status]);
-                if (isset($statusMapping[$report->status])) {
-                }
+                $report->sendNotification($report->status);
             }
         });
     }
 
     public function getVendorNames()
     {
-        $vendorNames = Vendor::pluck('name')->get();
+        $vendorNames = Vendor::pluck('name');
         return response()->json([
             'vendorNames' => $vendorNames
         ]);
@@ -155,19 +159,8 @@ class PurchaseOrder extends Model
                 - Invoice Number : {$this->invoice_number} <br>
                 - Total : {$this->currency} {$total} <br>
                 - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
-                - Status : {$this->getStatusText($this->status)}"
+                - Status: " . strtoupper($this->status)
         ];
-    }
-
-    private function getStatusText($status)
-    {
-        return match ($status) {
-            1 => 'WAITING',
-            2 => 'APPROVED',
-            3 => 'REJECTED',
-            4 => 'CANCELED',
-            default => 'UNDEFINED',
-        };
     }
 
     private function getNotificationUsers($event)
@@ -191,7 +184,7 @@ class PurchaseOrder extends Model
     private function getNotificationInstance($event, $details)
     {
         return match ($event) {
-            'created' => new PurchaseOrderCreated($this, $details),
+            // 'created' => new PurchaseOrderCreated($this, $details),
             'approved' => new PurchaseOrderApproved($this, $details),
             'rejected' => new PurchaseOrderRejected($this, $details),
             'canceled' => new PurchaseOrderCanceled($this, $details),

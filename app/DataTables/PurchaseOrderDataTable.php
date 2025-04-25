@@ -45,10 +45,10 @@ class PurchaseOrderDataTable extends DataTable
             ->addColumn('action', function($po){
                 return view('partials.po-actions', ['po' => $po])->render();
             })
-            ->editColumn('total_before_tax', function ($po) {
-                return number_format($po->total_before_tax, 1, '.', ',');
+            ->editColumn('total', function ($po) {
+                return number_format($po->total, 1, '.', ',');
             })
-            ->addColumn('status_label', function ($po) {
+            ->addColumn('status', function ($po) {
                 return view('partials.po-status', ['po' => $po])->render();
             })
             ->filter(function ($query) {
@@ -70,20 +70,15 @@ class PurchaseOrderDataTable extends DataTable
                     $query->whereIn('status', $statusFilter);
                 }
             })
-            ->addColumn('status', function ($po) {
-                return $po->status;
-            })
             ->searchPane(
                 'status', // Use the 'status' column for the Search Pane
-                fn() => collect([
-                    ['value' => 1, 'label' => 'Waiting'],
-                    ['value' => 2, 'label' => 'Approved'],
-                    ['value' => 3, 'label' => 'Rejected'],
-                    ['value' => 4, 'label' => 'Canceled'],
-                ]),
-                // function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                //     return $query->whereIn('status', $values); // Filter by raw integer values
-                // }
+                fn() => PurchaseOrder::query()
+                    ->select('status as value', 'status as label')
+                    ->distinct()
+                    ->get(),
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                    return $query->whereIn('status', $values); // Filter by raw integer values
+                }
             )
             ->searchPane(
                 'vendor_name', // Define SearchPane for the vendor_name column
@@ -133,21 +128,21 @@ class PurchaseOrderDataTable extends DataTable
                 }
             )
             ->searchPane(
-                'category.name',
-                fn() => \App\Models\PurchaseOrderCategory::query()
-                    ->select('id as value', 'name as label')
+                'category', // Define SearchPane for the category column
+                fn() => PurchaseOrder::query()
+                    ->select('category as value', 'category as label')
                     ->distinct()
                     ->get(),
                 function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    // Filter the query based on the selected categories
-                    return $query->whereIn('purchase_order_category_id', $values);
+                    return $query->whereIn('category', $values);
                 }
             )
             ->with('totalSum', function () use ($query) {
                 $selectedMonthTanggalPembayaran = request('searchPanes')['tanggal_pembayaran'] ?? null; // Get selected tanggal pembayaran from SearchPanes
                 $status = request('searchPanes')['status'] ?? null;
                 $vendorName = request('searchPanes')['vendor_name'] ?? null;
-                $categoryId = request('searchPanes')['category.name'] ?? null;
+                $vendorCode = request('searchPanes')['vendor_code'] ?? null;
+                $category = request('searchPanes')['category'] ?? null;
 
                 if ($selectedMonthTanggalPembayaran) {
                     $query->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$selectedMonthTanggalPembayaran]);
@@ -161,11 +156,15 @@ class PurchaseOrderDataTable extends DataTable
                     $query->where('vendor_name', $vendorName);
                 }
 
-                if($categoryId){
-                    $query->where('purchase_order_category_id', $categoryId);
+                if($vendorCode){
+                    $query->where('vendor_code', $vendorCode);
                 }
 
-                return $query->sum('total_before_tax'); // Calculate the sum for filtered records
+                if($category){
+                    $query->where('category', $category);
+                }
+
+                return $query->sum('total'); // Calculate the sum for filtered records
             })
 
             ->rawColumns($rawColumns)
@@ -190,18 +189,18 @@ class PurchaseOrderDataTable extends DataTable
      */
     public function query(PurchaseOrder $model): QueryBuilder
     {
-        return $model::with(['category'])->newQuery()
+        return $model->newQuery()
         ->select([
             'id',
-            'purchase_order_category_id',
+            'category',
             'po_number',
             'vendor_code',
             'vendor_name',
             'tanggal_pembayaran',
-            'total_before_tax',
+            'total',
             'created_at',
             'approved_date',
-            'remark',
+            'remarks',
             'status',
         ])
         ->with('user');
@@ -268,21 +267,15 @@ class PurchaseOrderDataTable extends DataTable
     {
         $columns = [
             Column::make('po_number')->searchPanes(false),
-            Column::make('category')->data('category.name')->orderable(false)->searchable(false),
+            Column::make('category'),
             Column::make('vendor_code'),
             Column::make('vendor_name'),
             Column::make('tanggal_pembayaran'),
-            Column::make('total_before_tax')->searchPanes(false),
+            Column::make('total')->searchPanes(false),
             Column::make('created_at')->data('created_at')->title('Uploaded at')->searchPanes(false),
             Column::make('approved_date')->searchPanes(false),
-            Column::make('status')->visible(false),
-            Column::make('remark')->searchPanes(false),
-            Column::computed('status_label')
-                ->title('Status')
-                ->searchPanes(false)
-                ->exportable(false)
-                ->printable(false)
-                ->addClass('text-center'),
+            Column::make('status'),
+            Column::make('remarks')->searchPanes(false),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

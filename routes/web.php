@@ -804,6 +804,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
     Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);
     Route::put('/purchase-orders/cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name('po.cancel');
+    Route::get('/purchase-orders/{id}/pdf', [PurchaseOrderController::class, 'exportPdf'])->name('po.export.pdf');
 
     // FOR DEBUG ONLY: VIEWING MONTHLY NOTIFICATION
     Route::get('/notification', function () {
@@ -929,5 +930,3 @@ Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week
 
 Route::get('/import-purchase-orders', [PurchaseOrderImportController::class, 'index'])->name('purchase_orders.import.index');
 Route::post('/import-purchase-orders', [PurchaseOrderImportController::class, 'import'])->name('purchase_orders.import.import');
-
-

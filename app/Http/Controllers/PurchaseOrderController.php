@@ -14,16 +14,20 @@ use App\Models\PurchaseOrder;
 use App\Models\File;
 use App\Models\PurchaseOrderCategory;
 use App\Models\PurchaseOrderDownloadLog;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
+use Illuminate\Support\Facades\File as StorageFile;
 
 class PurchaseOrderController extends Controller
 {
     public function index(PurchaseOrderDataTable $dataTable, Request $request)
     {
+        // PurchaseOrder::whereNotNull('approved_date')->update(['approved_image' =>'djoni.png']);
         $month = $request->query('month');
         return $dataTable->with(['month' => $month])->render('purchase_order.index');
     }
@@ -54,7 +58,7 @@ class PurchaseOrderController extends Controller
             }
 
             PurchaseOrder::whereIn('id', $ids)->update([
-                'status' => 3,
+                'status' => 'rejected',
                 'reason' => $reason
             ]);
             return response()->json(['message' => 'Selected purchase orders rejected.']);
@@ -137,9 +141,9 @@ class PurchaseOrderController extends Controller
 
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
-        if (!Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
-            abort(500, 'PDF file not found.');
-        }
+        // if (!Storage::exists('public/pdfs/' . $purchaseOrder->filename)) {
+        //     abort(500, 'PDF file not found.');
+        // }
 
         return view('purchase_order.view', compact('purchaseOrder', 'user', 'files', 'revisions', 'director'));
     }
@@ -269,8 +273,8 @@ class PurchaseOrderController extends Controller
         $reason = $request->input('reason', 'No reason provided');
 
         // Fetch all requested PO records and separate by 'APPROVED' and 'REJECTED' statuses
-        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 2)->pluck('po_number');
-        $rejectedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 3)->pluck('po_number');
+        $approvedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 'approved')->pluck('po_number');
+        $rejectedPOs = PurchaseOrder::whereIn('id', $ids)->where('status', 'rejected')->pluck('po_number');
 
         // If any approved or rejected POs are found, return an error
         if ($approvedPOs->isNotEmpty() || $rejectedPOs->isNotEmpty()) {
@@ -289,7 +293,7 @@ class PurchaseOrderController extends Controller
 
         // Proceed to reject POs if no conflicts
         PurchaseOrder::whereIn('id', $ids)->update([
-            'status' => 3,
+            'status' => 'rejected',
             'reason' => $reason
         ]);
 
@@ -325,7 +329,8 @@ class PurchaseOrderController extends Controller
 
     public function edit($id)
     {
-        $categories = PurchaseOrderCategory::all();
+        $categories = PurchaseOrder::whereNotNull('category')->distinct()->pluck('category');
+
         $po = PurchaseOrder::find($id);
 
         return view('purchase_order.edit', compact('po', 'categories'));
@@ -333,79 +338,70 @@ class PurchaseOrderController extends Controller
 
     public function update(UpdatePoRequest $request, $id)
     {
-        // Validate the request (already done automatically by UpdatePoRequest)
         $validatedData = $request->validated();
 
-        // Find the existing PO
         $po = PurchaseOrder::findOrFail($id);
 
-        // Update the PO with validated data
-        $po->po_number = $validatedData['po_number'];
-        $po->vendor_name = $validatedData['vendor_name'];
-        $po->invoice_date = $validatedData['invoice_date'];
-        $po->invoice_number = $validatedData['invoice_number'];
         $po->tanggal_pembayaran = $validatedData['tanggal_pembayaran'];
         $po->currency = $validatedData['currency'];
-        $po->purchase_order_category_id = $validatedData['purchase_order_category_id'];
-        $po->total = str_replace(',', '', $validatedData['total']); // Remove commas from total
+        $po->category = $validatedData['category'];
+        $po->total = str_replace(',', '', $validatedData['total']);
+        $po->is_need_sign = $validatedData['is_need_sign'] === '1' ? 1 : 0;
 
-        // Check if a new PDF file is uploaded
-        if ($request->hasFile('pdf_file')) {
-            // Delete the old file if necessary (optional, depends on your setup)
-            if ($po->filename) {
-                Storage::delete($po->filename);
-            }
-
-            $file = $validatedData['pdf_file'];
-            $filename = 'PO_' . $po->po_number . '_' . time() . '.pdf';
-            $file->storeAs('public/pdfs', $filename);
-
-            // Store the new file and update the path
-            $po->filename = $filename;
-        }
-
-        // Save the changes
         $po->save();
 
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'PO Successfully Updated!');
+        return redirect()->back()->withInput()->with('success', 'PO Successfully Updated!');
     }
 
     public function dashboard(Request $request)
     {
-        // Determine the current month in 'YYYY-MM' format
-        $currentMonth = now()->format('Y-m');
+        $currentMonth = now()->format('m');
+        $currentYear = now()->format('Y');
 
-        // Get the selected month from the request (default to the current month)
-        $selectedMonth = $request->get('month', $currentMonth);
+        // Get the selected month and year from the request, with defaults
+        $selectedMonth = str_pad($request->get('month', $currentMonth), 2, '0', STR_PAD_LEFT); // ensure 2-digit format
+        $selectedYear = $request->get('year', $currentYear);
 
-        // Query for vendor totals (distinct vendors with their totals)
-        $vendorTotals = PurchaseOrder::selectRaw('vendor_name, COUNT(id) as po_count, SUM(total_before_tax) as total_before_tax')
-            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+        // Combine year and month for filtering
+        $selectedYearMonth = "{$selectedYear}-{$selectedMonth}";
+
+        // Query for vendor totals
+        $vendorTotals = PurchaseOrder::selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
+            ->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$selectedYearMonth])
             ->groupBy('vendor_name')
-            ->orderByDesc('total_before_tax')
+            ->orderByDesc('total')
             ->get();
 
         // Fetch top 5 vendors
-        $topVendors = PurchaseOrder::selectRaw('vendor_name')
-            ->selectRaw('SUM(total_before_tax) as total')
-            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth])
+        $topVendors = PurchaseOrder::selectRaw('vendor_name, SUM(total) as total')
+            ->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$selectedYearMonth])
             ->groupBy('vendor_name')
-            ->orderByDesc('total_before_tax')
+            ->orderByDesc('total')
             ->take(5)
             ->get();
 
         // Sum of totals for each month (for chart)
-        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total_before_tax) as total_before_tax")
+        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') as month, SUM(total) as total")
             ->groupBy('month')
             ->orderBy('month')
             ->get();
 
+        $availableYears = PurchaseOrder::selectRaw("DATE_FORMAT(tanggal_pembayaran,'%Y') as year")
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year');
+
         // List of available months for the filter dropdown
-        $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month")
+        $availableMonths = PurchaseOrder::selectRaw("DATE_FORMAT(tanggal_pembayaran, '%m') as month")
             ->distinct()
             ->orderByDesc('month')
-            ->pluck('month');
+            ->pluck('month')
+            ->map(function($month) {
+                return [
+                    'name' => Carbon::createFromFormat('m', $month)->format('F'), // 'F' gives the full month name
+                    'number' => $month
+                ];
+            });
 
         // Fetch counts for approved, waiting, and rejected using query scopes
         $statusCounts = [
@@ -415,26 +411,18 @@ class PurchaseOrderController extends Controller
                 ->count(),
             'rejected' => PurchaseOrder::rejected()
                 ->count(),
-            'canceled' => PurchaseOrder::canceled()
+            'cancelled' => PurchaseOrder::cancelled()
+                ->count(),
+            'closed' => PurchaseOrder::closed()
+                ->count(),
+            'open' => PurchaseOrder::open()
                 ->count(),
         ];
 
         // Fetch Purchase Order counts grouped by category
-        $poByCategory = PurchaseOrder::selectRaw('purchase_order_category_id, COUNT(*) as count')
-            ->groupBy('purchase_order_category_id')
+        $categoryChartData = PurchaseOrder::selectRaw('category as label, COUNT(*) as count')
+            ->groupBy('category')
             ->get();
-
-        // Fetch category names for better readability
-        $categories = PurchaseOrderCategory::whereIn('id', $poByCategory->pluck('purchase_order_category_id'))
-            ->pluck('name', 'id'); // Returns [id => name]
-
-        // Format data for chart
-        $categoryChartData = $poByCategory->map(function ($po) use ($categories) {
-            return [
-                'label' => $categories[$po->purchase_order_category_id] ?? 'Unknown',
-                'count' => $po->count,
-            ];
-        });
 
         return view('purchase_order.dashboard', compact(
             'monthlyTotals',
@@ -444,43 +432,77 @@ class PurchaseOrderController extends Controller
             'selectedMonth',
             'statusCounts',
             'categoryChartData',
+            'availableYears',
+            'selectedYear',
         ));
     }
 
     public function filter(Request $request)
     {
-        $selectedMonth = $request->get('month');
-        // Base query for purchase orders filtered by the selected month
+        $selectedMonth = str_pad($request->get('month'), 2, '0', STR_PAD_LEFT); // Ensure 2-digit month
+        $selectedYear = $request->get('year');
+
+        // Base query for purchase orders
         $query = PurchaseOrder::query();
 
-        if ($selectedMonth) {
-            $query->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]);
+        // Filter by month and year if both are selected
+        if ($selectedMonth && $selectedYear) {
+            $yearMonth = "{$selectedYear}-{$selectedMonth}";
+            $query->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$yearMonth]);
+        } elseif ($selectedYear) {
+            $query->whereYear('tanggal_pembayaran', $selectedYear);
+        } elseif ($selectedMonth) {
+            $query->whereMonth('tanggal_pembayaran', $selectedMonth);
         }
 
+        // Data for the chart
+        $queryMonthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') as month, SUM(total) as total")
+            ->groupBy('month')
+            ->orderBy('month');
+        if($selectedYear){
+            $queryMonthlyTotals->whereYear('tanggal_pembayaran', $selectedYear);
+        }
+        $monthlyTotals = $queryMonthlyTotals->get();
+
         // Query for vendor totals (all vendors with their total amounts)
-        $vendorTotals = $query->selectRaw('vendor_name, COUNT(id) as po_count, SUM(total_before_tax) as total')
+        $vendorTotals = $query->selectRaw('vendor_name, COUNT(id) as po_count, SUM(total) as total')
             ->groupBy('vendor_name')
-            ->orderByDesc('total_before_tax')
+            ->orderByDesc('total')
             ->get();
 
         // Fetch top 5 vendors
         $topVendors = $query->select('vendor_name')
-            ->selectRaw('SUM(total_before_tax) as total')
+            ->selectRaw('SUM(total) as total')
             ->groupBy('vendor_name')
-            ->orderByDesc('total_before_tax')
+            ->orderByDesc('total')
             ->take(5)
             ->get();
 
-        // Data for the chart
-        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total_before_tax) as total")
-            ->groupBy('month')
-            ->orderBy('month')
+        // Fetch counts for approved, waiting, and rejected using query scopes
+        $statusCounts = [
+            'approved' => $query->approved()
+                ->count(),
+            'waiting' => $query->waiting()
+                ->count(),
+            'rejected' => $query->rejected()
+                ->count(),
+            'cancelled' => $query->cancelled()
+                ->count(),
+            'closed' => $query->closed()
+                ->count(),
+            'open' => $query->open()
+                ->count(),
+        ];
+
+        // Fetch Purchase Order counts grouped by category
+        $categoryChartData = $query->selectRaw('category as label, COUNT(*) as count')
+            ->groupBy('category')
             ->get();
 
         return response()->json([
             'chartData' => [
                 'labels' => $monthlyTotals->pluck('month'),
-                'totals' => $monthlyTotals->pluck('total_before_tax'),
+                'totals' => $monthlyTotals->pluck('total'),
             ],
             'topVendors' => $topVendors,
             'vendorTotals' => $vendorTotals,
@@ -490,45 +512,87 @@ class PurchaseOrderController extends Controller
     public function vendorMonthlyTotals(Request $request)
     {
         $vendorName = $request->get('vendor');
+        $selectedMonth = str_pad($request->get('month'), 2, '0', STR_PAD_LEFT); // Ensure 2-digit month
+        $selectedYear = $request->get('year');
 
         if (!$vendorName) {
             return response()->json(['error' => 'Vendor name is required'], 400);
         }
 
-        // Query for monthly totals for the specified vendor
-        $monthlyTotals = PurchaseOrder::selectRaw("DATE_FORMAT(invoice_date, '%Y-%m') as month, SUM(total) as total")
-            ->where('vendor_name', $vendorName)
-            ->groupBy('month')
-            ->orderBy('month')
+        $query = PurchaseOrder::query()
+            ->where('vendor_name', $vendorName);
+
+        if ($selectedMonth && $selectedYear) {
+            $yearMonth = "{$selectedYear}-{$selectedMonth}";
+            $query->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$yearMonth]);
+        } elseif ($selectedYear) {
+            $query->whereYear('tanggal_pembayaran', $selectedYear);
+        } elseif ($selectedMonth) {
+            $query->whereMonth('tanggal_pembayaran', $selectedMonth);
+        }
+
+        $purchaseOrders = $query
+            ->select('id', 'po_number', 'total', 'status', 'tanggal_pembayaran')
+            ->orderBy('tanggal_pembayaran')
             ->get();
 
-        return response()->json($monthlyTotals);
+        return response()->json($purchaseOrders);
     }
 
     public function getVendorDetails(Request $request)
     {
         $vendorName = $request->query('vendor');
-        $selectedMonth = $request->query('month'); // Format: 'YYYY-MM'
+        $month = str_pad($request->query('month'), 2, '0', STR_PAD_LEFT);
+        $year = $request->query('year');
+
+        if (!$vendorName || !$month || !$year) {
+            return response()->json([], 400); // Return bad request if missing params
+        }
+
+        $yearMonth = "{$year}-{$month}";
 
         $purchaseOrders = PurchaseOrder::where('vendor_name', $vendorName)
-            ->select('id', 'po_number', 'invoice_date', 'total_before_tax', 'status')
-            ->whereRaw("DATE_FORMAT(invoice_date, '%Y-%m') = ?", [$selectedMonth]) // Filter by selected month
-            ->orderBy('invoice_date', 'desc')
-            ->orderByDesc('total_before_tax')
+            ->select('id', 'po_number', 'tanggal_pembayaran', 'total', 'status')
+            ->whereRaw("DATE_FORMAT(tanggal_pembayaran, '%Y-%m') = ?", [$yearMonth])
+            ->orderBy('tanggal_pembayaran', 'desc')
+            ->orderByDesc('total')
             ->get();
 
         return response()->json($purchaseOrders);
     }
+
 
     public function cancel(Request $request, $id)
     {
         $cancelReason = $request->description;
         PurchaseOrder::find($id)->update([
             'reason' => $cancelReason,
-            'status' => 4,
+            'status' => 'cancelled',
             'approved_date' => null,
         ]);
         return redirect()->back()->with('success', 'Purchase Order cancelled successfully!');
     }
 
+    public function exportPdf($id)
+    {
+
+        $purchaseOrder = PurchaseOrder::with('items')->findOrFail($id);
+
+        $pdf = PDF::loadView('purchase_order.pdf', compact('purchaseOrder'))
+                ->setPaper('a4')
+                ->setOptions([
+                    'enable-local-file-access' => true,
+                    'margin-top' => 10,
+                    'margin-bottom' => 10,
+                    'margin-left' => 10,
+                    'margin-right' => 10,
+                    'dpi' => 96,
+                    'disable-smart-shrinking' => false,
+                    'no-outline' => true,
+                ]);
+
+        $filename = 'PO_' . $purchaseOrder->po_number . '.pdf';
+
+        return $pdf->download($filename);
+    }
 }
