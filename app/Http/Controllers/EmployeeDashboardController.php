@@ -13,23 +13,32 @@ use Illuminate\Support\Facades\DB;
 
 class EmployeeDashboardController extends Controller
 {
-    public function index(EmployeeWithEvaluationDataTable $employeeWithEvaluationDataTable)
+    protected $employeeWithEvaluationDataTable;
+    protected $employeeDataTable;
+
+    public function __construct(EmployeeWithEvaluationDataTable $dataTable1, EmployeeDataTable $dataTable2)
+    {
+        $this->employeeWithEvaluationDataTable = $dataTable1;
+        $this->employeeDataTable = $dataTable2;
+    }
+
+    public function index()
     {
         $departmentEmployeeCounts = $this->getEmployeeCountByDepartment();
 
-        $dataTableEmployeeWithEvaluation = $employeeWithEvaluationDataTable->html();
+        $dataTableEmployeeWithEvaluation = $this->employeeWithEvaluationDataTable->html();
 
         return view('employee-dashboard', compact('departmentEmployeeCounts', 'dataTableEmployeeWithEvaluation'));
     }
 
-    public function getEmployeesData(EmployeeDataTable $employeeDataTable)
+    public function getEmployeesData()
     {
-        return $employeeDataTable->render('employee-dashboard');
+        return $this->employeeDataTable->render('employee-dashboard');
     }
 
-    public function getEmployeeWithEvaluationData(EmployeeWithEvaluationDataTable $employeeWithEvaluationDataTable)
+    public function getEmployeeWithEvaluationData()
     {
-        return $employeeWithEvaluationDataTable->render('employee-dashboard');
+        return $this->employeeWithEvaluationDataTable->render('employee-dashboard');
     }
 
     public function filterEmployees(Request $request)
@@ -40,6 +49,10 @@ class EmployeeDashboardController extends Controller
         $selectedDepartment = $request->input('department');
         $selectedStatus = $request->input('status');
         $selectedGender = $request->input('gender');
+
+        if(auth()->user()->department->name !== 'MANAGEMENT'){
+            $selectedDepartment = auth()->user()->department->dept_no ?? $request->input('department');
+        }
 
         $activeEmployeesQuery = Employee::query();
 
