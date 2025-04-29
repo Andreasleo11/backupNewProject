@@ -22,6 +22,7 @@ class EmployeeDashboard extends Component
     public $latestWeek;
     public $weeklyEvaluationData;
     public $latestUpdatedAt;
+    public $authUser;
 
     /**
      * Create a new component instance.
@@ -31,8 +32,18 @@ class EmployeeDashboard extends Component
     {
         $this->dataTableEmployee = $employeeDataTable->html();
 
+        $this->authUser = auth()->user();
+
         // Fetch all employees
         $employeesQuery = Employee::whereNull('end_date');
+        $user = $this->authUser;
+
+        if($user && $user->department && $user->department->name !== 'MANAGEMENT'){
+            $employeesQuery->whereHas('department', function($query) use ($user){
+                $query->where('id', $user->department->id);
+            });
+        }
+
         $employees = $employeesQuery->get();
         $this->employees = $employees;
 

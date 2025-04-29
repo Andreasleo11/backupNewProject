@@ -3,7 +3,9 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="d-flex align-items-center">
-                    <h1 class="fs-1">Employee Dashboard</h1>
+                    <h1 class="fs-1">Employee Dashboard
+                        {{ $authUser && $authUser->department->name !== 'MANAGEMENT' ? ucwords(strtolower($authUser->department->name)) : '' }}
+                    </h1>
                     <div class="ms-3">
                         <button id="updateButton" type="submit" class="btn btn-primary" onclick="startSyncProgress()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -16,7 +18,9 @@
                         </button>
                     </div>
                     <div class="ms-auto">
-                        <h5 class="text-secondary fw-bold"><span id="currentDateTime"></span></span></text>
+                        <h5 class="text-secondary fw-bold">
+                            <span id="currentDateTime"></span>
+                        </h5>
                     </div>
                 </div>
                 <text class="text-secondary">Last updated at <strong>{{ $latestUpdatedAt ?? 'No Data' }}</strong></text>
@@ -188,7 +192,6 @@
                                     <div class="mb-4">
                                         <label for="deptFilter" class="form-label">Filter by Department</label>
                                         <select id="deptFilter" class="form-select">
-                                            <option value="" selected>All</option>
                                         </select>
                                     </div>
 
@@ -415,11 +418,6 @@
             </div>
         </div>
     </div>
-
-    {{-- <div class="row mt-5">
-
-    </div> --}}
-
 </div>
 
 {{-- Week range script --}}
@@ -1004,7 +1002,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 document.getElementById("alpha").innerText = data.alpha;
                 document.getElementById("telat").innerText = data.telat;
                 document.getElementById("izin").innerText = data.izin;
@@ -1271,7 +1268,7 @@
                 .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
                     (!selectedStatus || item.Status === selectedStatus))
                 .map(item => JSON.stringify(item.Dept)))];
-            deptFilter.innerHTML = '<option value="" selected>All</option>';
+            deptFilter.innerHTML = '<option value="">All</option>';
             deptOptions.forEach(dept => {
                 const deptObj = JSON.parse(dept);
                 const option = document.createElement('option');
@@ -1279,6 +1276,7 @@
                 option.textContent = deptObj.name;
                 deptFilter.appendChild(option);
             });
+
             deptFilter.value = selectedDept && deptOptions.some(dept => JSON.parse(dept).dept_no === selectedDept) ?
                 selectedDept :
                 "";
@@ -1343,4 +1341,12 @@
 
     updateDropdowns();
     updateChart();
+
+    const authDepartmentDeptNo =
+        {{ $authUser->department->name !== 'MANAGEMENT' ? $authUser->department->dept_no ?? 'null' : 'null' }};
+    if (authDepartmentDeptNo) {
+        deptFilter.value = authDepartmentDeptNo;
+        updateChart();
+        updateDropdowns();
+    }
 </script>
