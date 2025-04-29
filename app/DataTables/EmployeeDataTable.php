@@ -40,7 +40,13 @@ class EmployeeDataTable extends DataTable
      */
     public function query(Employee $model): QueryBuilder
     {
-        return $model->newQuery();
+        $query = $model->newQuery()->with('department');
+        $user = auth()->user();
+
+        if($user && !($user->is_head || $user->department->name === 'MANAGEMENT')){
+            $query->where('Dept', $user->department->dept_no);
+        }
+        return $query;
     }
 
     /**

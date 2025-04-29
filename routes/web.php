@@ -908,34 +908,58 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::resource('employee_trainings', EmployeeTrainingController::class);
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });
+Route::middleware(['auth', 'is.head'])->group(function () {
+    Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
+    Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
+    Route::get('/sync-progress/{companyArea}', function ($companyArea) {
+        $cacheKey = "sync_progress  _{$companyArea}";
+        $progress = Illuminate\Support\Facades\Cache::get($cacheKey, 0);
 
-Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
-Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
-Route::get('/sync-progress/{companyArea}', function ($companyArea) {
-    $cacheKey = "sync_progress_{$companyArea}";
-    $progress = Illuminate\Support\Facades\Cache::get($cacheKey, 0);
+        if ($progress > 100) {
+            Illuminate\Support\Facades\Cache::forget($cacheKey);
+            $progress = 0; // Reset to 0 or whatever makes sense for your UI
+        }
 
-    if ($progress > 100) {
-        Illuminate\Support\Facades\Cache::forget($cacheKey);
-        $progress = 0; // Reset to 0 or whatever makes sense for your UI
+        return response()->json(['progress' => $progress]);
+    });
+    Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
+    Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
+    Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+    Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+    Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
+    Route::get('/employees/{id}/warnings', function ($id) {
+        $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
+        return response()->json($warnings);
+    });
+    Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
+    Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
+    Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
+    Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
+    Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
+});
+
+
+Route::get('/autologin', function (\Illuminate\Http\Request $request) {
+    // dd($request->all());
+    if (! $request->hasValidSignature()) {
+        abort(403, 'Invalid or expired link.');
     }
 
-    return response()->json(['progress' => $progress]);
+    $user = \App\Models\User::where('name', $request->name)->firstOrFail();
+
+    Auth::login($user);
+
+    return redirect('/'); // or wherever you want to redirect after login
+})->name('autologin');
+
+Route::get('/director-login', function(){
+    $user = \App\Models\User::where('name', 'djoni')->first();
+
+    $link = URL::temporarySignedRoute(
+        'autologin',
+        now()->addMinutes(30),
+        ['name' => $user->name]
+    );
+
+    return redirect($link);
 });
-
-Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
-Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
-Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
-Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
-Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
-Route::get('/employees/{id}/warnings', function ($id) {
-    $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
-    return response()->json($warnings);
-});
-Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
-Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
-Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
-Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
-Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
-
-

@@ -12,7 +12,6 @@
         </div> --}}
     </div>
 
-
     <!-- Modal -->
     <div class="modal fade" id="filteredEmployeesModal" tabindex="-1" aria-labelledby="filteredEmployeesModalLabel"
         aria-hidden="true">
