@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class IsHead
+class IsHeadOrManagement
 {
     /**
      * Handle an incoming request.
@@ -15,10 +15,12 @@ class IsHead
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->is_head != 1) {
-            abort(403, 'Unauthorized access.');
+        $user = auth()->user();
+
+        if ($user && ($user->is_head == 1 || $user->department?->name === 'MANAGEMENT')) {
+            return $next($request);
         }
 
-        return $next($request);
+        abort(403, 'Unauthorized access.');
     }
 }
