@@ -21,8 +21,8 @@ class Employee extends Model
         'jatah_cuti_tahun',
         'end_date',
         'employee_status',
+        'Branch',
         'Grade',
-        'Branch'
     ];
 
     public function evaluationData()

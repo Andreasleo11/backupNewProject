@@ -155,14 +155,14 @@ class PurchaseOrder extends Model
     private function getNotificationUsers($event)
     {
         if ($event == 'created') {
-            return User::whereHas('department', fn($query) => $query->where('name', 'DIRECTOR'))->get();
+            return User::whereHas('specification', fn($query) => $query->where('name', 'DIRECTOR'))->get();
         } elseif($event == 'approved') {
              $deptHeadAccounting = User::where('name', 'benny')->first();
              $accountingUser = User::where('name', 'nessa')->first();
 
              return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
         } elseif($event == 'canceled') {
-            $director = User::whereHas('department', fn($query) => $query->where('name', 'DIRECTOR'))->first();
+            $director = User::whereHas('specification', fn($query) => $query->where('name', 'DIRECTOR'))->first();
 
             return collect([$this->user, $director])->filter();
         } else {

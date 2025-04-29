@@ -14,7 +14,7 @@
             <h1 class="h1 fw-bold">Form Overtime List</h1>
         </div>
         <div class="col-auto">
-            @if (Auth::user()->department->name !== 'DIRECTOR')
+            @if (Auth::user()->department->name !== 'MANAGEMENT')
                 <a href="{{ route('formovertime.create') }}" class="btn btn-primary">Create Form Overtime </a>
             @endif
         </div>

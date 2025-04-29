@@ -15,11 +15,10 @@
                 <h2 class="fw-bold">Management Stock</h1>
             </div>
             <div class="col-auto">
-                @if (Auth::user()->department->name !== 'DIRECTOR')
+                @if (Auth::user()->department->name !== 'MANAGEMENT')
                     <a href="{{ route('transaction.list') }}" class="btn btn-primary">List Transaction</a>
                     <a href="{{ route('testing.request') }}" class="btn btn-primary">Request Stock</a>
                     <a href="{{ route('mastertinta.transaction.index') }}" class="btn btn-primary">Edit Stock</a>
-                    
                 @endif
 
             </div>
@@ -43,13 +42,13 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($datas as $data)
-                                    <tr>
-                                        <td>{{ $data->stockType->name }}</td>
-                                        <td>{{ $data->department->dept_no }}</td>
-                                        <td>{{ $data->stock_code }}</td>
-                                        <td>{{ $data->stock_description }}</td>
-                                        <td>{{ $data->stock_quantity }}</td>
-                                    </tr>
+                                        <tr>
+                                            <td>{{ $data->stockType->name }}</td>
+                                            <td>{{ $data->department->dept_no }}</td>
+                                            <td>{{ $data->stock_code }}</td>
+                                            <td>{{ $data->stock_description }}</td>
+                                            <td>{{ $data->stock_quantity }}</td>
+                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>

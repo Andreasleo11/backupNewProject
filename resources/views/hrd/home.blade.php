@@ -3,7 +3,7 @@
 @section('content')
 
 <section aria-label="header">
-    <h2 class="mb-5">HRD Dashboard</h2>
+    <h2 class="mb-5">Important Docs</h2>
 </section>
 @if ($importantDocs->isNotEmpty())
 

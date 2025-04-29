@@ -14,7 +14,7 @@
                             </div>
                         @endif
 
-                        {{ __('MAINTENANCE MOULDING HOME') }}
+                        {{ __('MAINTENANCE MACHINE HOME') }}
                     </div>
                 </div>
             </div>

@@ -16,7 +16,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $reportsQuery = Report::with('details', 'user');
         $authUser = auth()->user();
 
-        if ($authUser->department->name === 'DIRECTOR') {
+        if ($authUser->specification->name === 'DIRECTOR') {
             $reportsQuery->where('status', 4)->orWhere('status', 5)->orWhere('status', 6);
         } elseif ($authUser->is_head && $authUser->specification->name === 'DESIGN') {
             $reportsQuery->where('status', 3);

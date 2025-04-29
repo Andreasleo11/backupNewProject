@@ -154,7 +154,7 @@ class MonthlyBudgetSummaryReport extends Model
                 })->where('is_head', 1)->first();
                 array_push($users, $mouldingHead);
             } elseif ($this->status == 4) {
-                $director = User::with('department')->whereHas('department', function ($query) {
+                $director = User::with('specification')->whereHas('specification', function ($query) {
                     $query->where('name', 'DIRECTOR');
                 })->first();
                 array_push($users, $director);
