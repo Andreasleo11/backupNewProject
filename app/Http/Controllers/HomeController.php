@@ -26,19 +26,16 @@ class HomeController extends Controller
     {
         $user = auth()->user();
 
-
         if ($user->role_id == 1) {
             return redirect()->route('superadmin.home');
         } else if ($user->role_id == 2){
-            // dd($user->department->name);
             $department = $user->department->name;
+
             if($department === "QC" || $department === "QA"){
                 return redirect()->route('qaqc.home');
             }
+
             $abbrString = $this->abbreviateString($department);
-            // if($abbrString === 'mu') {
-            //     return view('MU.home');
-            // }
             return redirect()->route($abbrString . '.home');
         } else {
             return view('welcome');
