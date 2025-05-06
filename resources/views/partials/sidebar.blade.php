@@ -342,294 +342,301 @@
 
         {{-- PUBLIC FEATURE --}}
 
-        <li class="sidebar-item" id="sidebar-item-list">
-            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#inventoryitem" aria-expanded="false" aria-controls="setting">
-                <i class='bx bxs-component'></i>
-                <span>Inventory</span>
-            </a>
-            <ul id="inventoryitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        FG Stock Monitoring
-                    </a>
-                </li>
+        @php
+            use Illuminate\Support\Str;
+            $dashboardUser = Str::contains(auth()->user()->email, 'dashboard');
+        @endphp
 
-                <li class="sidebar-list">
-                    <a href="{{ route('inventoryfg') }}" class="sidebar-link">
-                        <i class='bx bx-cube'></i>
-                        Inventory FG
-                    </a>
-                </li>
-
-                <li class="sidebar-list">
-                    <a href="{{ route('inventorymtr') }}" class="sidebar-link">
-                        <i class='bx bx-cube'></i>
-                        Inventory MTR
-                    </a>
-                </li>
-
-                <li class="sidebar-list">
-                    <a href="{{ route('invlinelist') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Machine and Line list
-                    </a>
-                </li>
-            </ul>
-        </li>
-
-
-        <li class="sidebar-item" id="sidebar-item-list">
-            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#storeoption" aria-expanded="false" aria-controls="setting">
-                <i class='bx bxs-component'></i>
-                <span>Store</span>
-            </a>
-            <ul id="storeoption" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-list">
-                    <a href="{{ route('barcodeindex') }}" class="sidebar-link">
-                        <i class='bx bx-cube'></i>
-                        Create Barcode
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Barcode Feature
-                    </a>
-                </li>
-
-                <li class="sidebar-list">
-                    <a href="{{ route('inandout.index') }}" class="sidebar-link">
-                        <i class='bx bx-cube'></i>
-                        Scan Barcode
-                    </a>
-                </li>
-
-                <li class="sidebar-list">
-                    <a href="{{ route('missingbarcode.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Missing Barcode Generator
-                    </a>
-                </li>
-
-                @if ($user && $user->name === 'raymond')
-                    <li class="sidebar-list">
-                        <a href="{{ route('list.barcode') }}" class="sidebar-link">
+        @if (!$dashboardUser)
+            <li class="sidebar-item" id="sidebar-item-list">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#inventoryitem" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bxs-component'></i>
+                    <span>Inventory</span>
+                </a>
+                <ul id="inventoryitem" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
-                            Report History
+                            FG Stock Monitoring
                         </a>
                     </li>
-                @endif
 
-                <li class="sidebar-list">
-                    <a href="{{ route('barcode.historytable') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Report History Table Style
-                    </a>
-                </li>
+                    <li class="sidebar-list">
+                        <a href="{{ route('inventoryfg') }}" class="sidebar-link">
+                            <i class='bx bx-cube'></i>
+                            Inventory FG
+                        </a>
+                    </li>
 
-                <li class="sidebar-list">
-                    <a href="{{ route('stockallbarcode') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        STOCK Item
-                    </a>
-                </li>
+                    <li class="sidebar-list">
+                        <a href="{{ route('inventorymtr') }}" class="sidebar-link">
+                            <i class='bx bx-cube'></i>
+                            Inventory MTR
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('invlinelist') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Machine and Line list
+                        </a>
+                    </li>
+                </ul>
+            </li>
 
 
+            <li class="sidebar-item" id="sidebar-item-list">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#storeoption" aria-expanded="false" aria-controls="setting">
+                    <i class='bx bxs-component'></i>
+                    <span>Store</span>
+                </a>
+                <ul id="storeoption" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-list">
+                        <a href="{{ route('barcodeindex') }}" class="sidebar-link">
+                            <i class='bx bx-cube'></i>
+                            Create Barcode
+                        </a>
+                    </li>
 
-                <li class="sidebar-list">
-                    <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        List All Item Barcode
-                    </a>
-                </li>
-            </ul>
-        </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Barcode Feature
+                        </a>
+                    </li>
 
-        <li class="sidebar-item" id="sidebar-item-stock-management">
-            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
-                <i class='bx bxs-component'></i>
-                <span>Stock Management</span>
-            </a>
-            <ul id="stock-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Master Stock
-                    </a>
-                </li>
+                    <li class="sidebar-list">
+                        <a href="{{ route('inandout.index') }}" class="sidebar-link">
+                            <i class='bx bx-cube'></i>
+                            Scan Barcode
+                        </a>
+                    </li>
 
-            </ul>
-        </li>
+                    <li class="sidebar-list">
+                        <a href="{{ route('missingbarcode.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Missing Barcode Generator
+                        </a>
+                    </li>
 
-        <li class="sidebar-item" id="sidebar-item-other">
-            <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                data-bs-target="#other" aria-expanded="false" aria-controls="other">
-                <i class='bx bx-dots-horizontal-rounded'></i>
-                <span>Other</span>
-            </a>
-            <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                <li class="sidebar-item">
-                    <a href="{{ $specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
-                        class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Purchase Request
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('formovertime.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Overtime
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('formcuti.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Cuti
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Keluar
-                    </a>
-                </li>
-
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#employee-evaluation-nested-dropdown" aria-expanded="false"
-                        aria-controls="employee-evaluation-nested-dropdown">
-                        <i class='bx bx-file'></i>
-                        <span>Employee Evaluation</span>
-                    </a>
-                    <ul id="employee-evaluation-nested-dropdown" class="sidebar-dropdown list-unstyled collapse">
-                        <li class="sidebar-item">
-                            <a href="{{ route('discipline.index') }}" class="sidebar-link">
+                    @if ($user && $user->name === 'raymond')
+                        <li class="sidebar-list">
+                            <a href="{{ route('list.barcode') }}" class="sidebar-link">
                                 <i class='bx bx-file'></i>
-                                All
+                                Report History
                             </a>
                         </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('yayasan.table') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Yayasan
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('magang.table') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Magang
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('format.evaluation.year.allin') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Evaluasi Individu ALL IN
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('format.evaluation.year.yayasan') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Evaluasi Individu Yayasan
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('format.evaluation.year.magang') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Evaluasi Individu Magang
-                            </a>
-                        </li>
-                        @if ($user->role->name === 'SUPERADMIN')
+                    @endif
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('barcode.historytable') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Report History Table Style
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('stockallbarcode') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            STOCK Item
+                        </a>
+                    </li>
+
+
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            List All Item Barcode
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li class="sidebar-item" id="sidebar-item-stock-management">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#stock-management" aria-expanded="false" aria-controls="stock-management">
+                    <i class='bx bxs-component'></i>
+                    <span>Stock Management</span>
+                </a>
+                <ul id="stock-management" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Master Stock
+                        </a>
+                    </li>
+
+                </ul>
+            </li>
+
+            <li class="sidebar-item" id="sidebar-item-other">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                    data-bs-target="#other" aria-expanded="false" aria-controls="other">
+                    <i class='bx bx-dots-horizontal-rounded'></i>
+                    <span>Other</span>
+                </a>
+                <ul id="other" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                        <a href="{{ $specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
+                            class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Purchase Request
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Overtime
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('formcuti.home') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Cuti
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Keluar
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                            data-bs-target="#employee-evaluation-nested-dropdown" aria-expanded="false"
+                            aria-controls="employee-evaluation-nested-dropdown">
+                            <i class='bx bx-file'></i>
+                            <span>Employee Evaluation</span>
+                        </a>
+                        <ul id="employee-evaluation-nested-dropdown" class="sidebar-dropdown list-unstyled collapse">
                             <li class="sidebar-item">
-                                <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">
+                                <a href="{{ route('discipline.index') }}" class="sidebar-link">
                                     <i class='bx bx-file'></i>
-                                    Export Yayasan Jpayroll
+                                    All
                                 </a>
                             </li>
-                        @endif
-                    </ul>
-                </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('yayasan.table') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Yayasan
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('magang.table') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Magang
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('format.evaluation.year.allin') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Evaluasi Individu ALL IN
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('format.evaluation.year.yayasan') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Evaluasi Individu Yayasan
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('format.evaluation.year.magang') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Evaluasi Individu Magang
+                                </a>
+                            </li>
+                            @if ($user->role->name === 'SUPERADMIN')
+                                <li class="sidebar-item">
+                                    <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">
+                                        <i class='bx bx-file'></i>
+                                        Export Yayasan Jpayroll
+                                    </a>
+                                </li>
+                            @endif
+                        </ul>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('indexds') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Delivery Schedule
-                    </a>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('indexds') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Delivery Schedule
+                        </a>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Monthly PR
-                    </a>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Monthly PR
+                        </a>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-                        data-bs-target="#monthly-budget-nested-dropdown" aria-expanded="false"
-                        aria-controls="monthly-budget-nested-dropdown">
-                        <i class='bx bx-file'></i>
-                        <span>Monthly Budget</span>
-                    </a>
-                    <ul id="monthly-budget-nested-dropdown" class="sidebar-dropdown list-unstyled collapse">
-                        <li class="sidebar-item">
-                            <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Reports
-                            </a>
-                        </li>
-                        <li class="sidebar-item">
-                            <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
-                                <i class='bx bx-file'></i>
-                                Summary Reports
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                            data-bs-target="#monthly-budget-nested-dropdown" aria-expanded="false"
+                            aria-controls="monthly-budget-nested-dropdown">
+                            <i class='bx bx-file'></i>
+                            <span>Monthly Budget</span>
+                        </a>
+                        <ul id="monthly-budget-nested-dropdown" class="sidebar-dropdown list-unstyled collapse">
+                            <li class="sidebar-item">
+                                <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Reports
+                                </a>
+                            </li>
+                            <li class="sidebar-item">
+                                <a href="{{ route('monthly.budget.summary.report.index') }}" class="sidebar-link">
+                                    <i class='bx bx-file'></i>
+                                    Summary Reports
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('spk.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        SPK
-                    </a>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('spk.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            SPK
+                        </a>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('formkerusakan.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Form Kerusakan / Perbaikan
-                    </a>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('formkerusakan.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Form Kerusakan / Perbaikan
+                        </a>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('po.dashboard') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Purchase Orders
-                    </a>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('po.dashboard') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Purchase Orders
+                        </a>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('waiting_purchase_orders.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Waiting PO
-                    </a>
-                </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('waiting_purchase_orders.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Waiting PO
+                        </a>
+                    </li>
 
-                <li class="sidebar-item">
-                    <a href="{{ route('employee_trainings.index') }}" class="sidebar-link">
-                        <i class='bx bx-file'></i>
-                        Employee Training
-                    </a>
-                </li>
-            </ul>
-        </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('employee_trainings.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Employee Training
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
     </ul>
 </aside>
 
