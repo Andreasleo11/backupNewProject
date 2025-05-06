@@ -11,7 +11,7 @@
         "laravel-datatables-vite": "^0.5.2",
         "laravel-vite-plugin": "^1.0.0",
         "sass": "^1.56.1",
-        "vite": "^5.0.0"
+        "vite": "^6.3.4"
     },
     "dependencies": {
         "@fancyapps/ui": "^5.0.36",
