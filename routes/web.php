@@ -100,6 +100,7 @@ use App\Http\Controllers\EmployeeTrainingController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
 Route::get('/', function () {
@@ -583,9 +584,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
     Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
     Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
-    Route::post('/getformatyayasan',[EvaluationDataController::class, 'getFormatYearyayasan'] )->name('get.format');
-    Route::post('/getformatallin',[EvaluationDataController::class, 'getFormatYearallin'] )->name('get.format.allin');
-    Route::post('/getformatmagang',[EvaluationDataController::class, 'getFormatYearmagang'] )->name('get.format.magang');
+    Route::post('/getformatyayasan', [EvaluationDataController::class, 'getFormatYearyayasan'])->name('get.format');
+    Route::post('/getformatallin', [EvaluationDataController::class, 'getFormatYearallin'])->name('get.format.allin');
+    Route::post('/getformatmagang', [EvaluationDataController::class, 'getFormatYearmagang'])->name('get.format.magang');
     Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name('single.employee');
 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
@@ -896,12 +897,12 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         return (new App\Notifications\SPKUpdated($spk, $details))->toMail(auth()->user());
     });
 
-    Route::get('/po-notification', function() {
+    Route::get('/po-notification', function () {
         $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
         return (new \App\Notifications\MonthlyPOStatus($poCount))->toMail(auth()->user());
     });
 
-    Route::get('/training-notification', function(){
+    Route::get('/training-notification', function () {
         $training = \App\Models\EmployeeTraining::find(1);
         return (new \App\Notifications\TrainingReminderNotification($training))->toMail(auth()->user());
     });
@@ -955,10 +956,10 @@ Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     return redirect('/'); // or wherever you want to redirect after login
 })->name('autologin');
 
-Route::get('/director-login', function(){
-    $user = \App\Models\User::where('name', 'djoni')->first();
+Route::get('/dashboard-employee-login', function () {
+    $user = \App\Models\User::where('name', 'dashboardemployee')->first();
 
-    $link = URL::temporarySignedRoute(
+    $link = \Illuminate\Support\Facades\URL::temporarySignedRoute(
         'autologin',
         now()->addMinutes(30),
         ['name' => $user->name]
