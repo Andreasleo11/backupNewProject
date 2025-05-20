@@ -13,6 +13,7 @@ use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
 use App\Imports\OvertimeImport;
 use App\Exports\OvertimeExport;
+use App\Exports\OvertimeExportExample;
 use App\Models\User;
 use App\Notifications\FormOvertimeNotification;
 use Maatwebsite\Excel\Facades\Excel;
@@ -78,6 +79,11 @@ class FormOvertimeController extends Controller
         $departements = Department::get();
 
         return view("formovertime.create", compact("employees", "departements"));
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');
     }
 
 

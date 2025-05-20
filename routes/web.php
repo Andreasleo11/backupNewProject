@@ -692,7 +692,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
-
+    Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
