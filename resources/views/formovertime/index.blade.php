@@ -43,6 +43,9 @@
                                     <td> @formatDate($fot->create_date) </td>
                                     <td>
                                         @include('partials.formovertime-status', ['fot' => $fot])
+                                         @if($fot->is_push == 1)
+                                            <i class="bx bx-check-circle text-success ms-1" title="Pushed to JPayroll"></i>
+                                        @endif
                                     </td>
                                     <td>
                                         <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"
