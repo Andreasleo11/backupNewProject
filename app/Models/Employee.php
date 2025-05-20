@@ -19,6 +19,7 @@ class Employee extends Model
         'status',
         'level',
         'jatah_cuti_tahun',
+        'organization_structure',
         'end_date',
         'employee_status',
         'Branch',
@@ -39,4 +40,5 @@ class Employee extends Model
     {
         return $this->belongsTo(Department::class, 'Dept', 'dept_no');
     }
+
 }

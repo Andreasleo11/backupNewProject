@@ -291,4 +291,26 @@ class JPayrollService
         }
     }
 
+   private function showOvertimePerEmployee(string $companyArea, string $nik, ?string $noVoucher = null, ?string $date1 = null, ?string $date2 = null): array 
+   {
+        $params = [
+            'CompanyArea' => $companyArea,
+            'NIK'         => $nik,
+            'NoVoucher'   => $noVoucher, //optional
+            'Date1'       => $date1, // Format: "DD/MM/YYYY"
+            'Date2'       => $date2, // Format: "DD/MM/YYYY"
+        ];
+
+        // Validasi hanya CompanyArea dan NIK yang wajib
+        $validation = ApiHelper::validateParams($params, ['CompanyArea', 'NIK']);
+        if ($validation) return $validation;
+
+        // Kirim request ke API
+        $response = $this->request('API_View_Overtime.php', array_filter($params));
+
+        return ApiHelper::handleApiResponse($response);
+    }
+
+
+
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
@@ -143,7 +145,7 @@ class FormOvertimeController extends Controller
 
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
-        $this->sendNotification($headerovertime);
+       
 
         if ($uploadedFiles) {
 
@@ -151,6 +153,8 @@ class FormOvertimeController extends Controller
         } else {
             $this->detailOvertimeInsert($request, $headerovertime->id);
         }
+
+         $this->sendNotification($headerovertime);
 
         return redirect()->route('formovertime.index');
     }
@@ -298,7 +302,13 @@ class FormOvertimeController extends Controller
         }
 
         $headerForm->save();
-        $this->sendNotification($headerForm);
+  
+        if ($headerForm->is_approve == 1) {
+            $this->pushSingleHeaderToJPayroll($headerForm->id);
+        }
+        
+        //  $this->sendNotification($headerForm);
+
         return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
     }
 
@@ -459,5 +469,86 @@ class FormOvertimeController extends Controller
     {
         DetailFormOvertime::find($id)->delete();
         return redirect()->back()->with('success', 'Form Overtime Detail deleted successfully!');
+    }
+
+
+    public function pushSingleHeaderToJPayroll($headerId)
+    {
+        $header = HeaderFormOvertime::with(['details.employee'])->find($headerId);
+
+        if (!$header || $header->is_push == 1) {
+            return; // Jangan push ulang
+        }
+      
+        $result = collect();
+        foreach ($header->details as $detail) {
+             
+            $result->push([
+                 'OTType'      => '1',
+                          
+                'OTDate'       => Carbon::parse($header->create_date)->format('d/m/Y'),
+                'JobDesc'      => $detail->job_desc,
+                'Department'   => $detail->employee->organization_structure ?? 0,
+                'StartDate'    => Carbon::parse($detail->start_date)->format('d/m/Y'),
+                'StartTime'    => Carbon::parse($detail->start_time)->format('H:i'),
+                'EndDate'      => Carbon::parse($detail->end_date)->format('d/m/Y'),
+                'EndTime'      => Carbon::parse($detail->end_time)->format('H:i'),
+                'BreakTime'    => $detail->break,
+                'Remark'       => $detail->remarks,
+                'Choice'       => '1',
+                'CompanyArea'  => '10000',
+                   'EmpList'      => [
+                                    'NIK1' => $detail->NIK
+                                    ]
+            ]);
+        }
+        $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
+        $allSuccess = true;
+
+        foreach ($result as $payload) {
+            try {
+               $response = Http::withHeaders([
+                    'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
+                    'Content-Type' => 'application/json'
+                ])->post($url, $payload);
+
+                $responseData = [
+                    'NIK' => $payload['EmpList']['NIK1'],
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ];
+                $responses[] = $responseData;
+
+                if ($response->successful()) {
+                    Log::info("✅ Success push for NIK: " . $payload['EmpList']['NIK1'], $responseData);
+                } else {
+                    Log::error("❌ Failed push for NIK: " . $payload['EmpList']['NIK1'], $responseData);
+                    $allSuccess = false;
+                }
+            } catch (\Exception $e) {
+                $responses[] = [
+                    'NIK' => $payload['EmpList']['NIK1'],
+                    'status' => 'exception',
+                    'error' => $e->getMessage()
+                ];
+                Log::error("❌ Exception push for NIK: " . $payload['EmpList']['NIK1'], [
+                    'error' => $e->getMessage()
+                ]);
+                $allSuccess = false;
+            }
+        }
+
+        if ($allSuccess) {
+            $header->is_push = 1;
+            $header->save();
+            Log::info("✅ All data pushed successfully. Header ID: $headerId marked as pushed.");
+        } else {
+            Log::warning("⚠️ Not all data pushed successfully. Header ID: $headerId NOT marked as pushed.");
+        }
+
+        return response()->json([
+            'success' => $allSuccess,
+            'responses' => $responses
+        ]);
     }
 }

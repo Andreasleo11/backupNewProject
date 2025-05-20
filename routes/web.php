@@ -101,6 +101,41 @@ use App\Http\Controllers\EmployeeTrainingController;
 |
 */
 
+Route::get('/test-overtime', function () {
+    $params = [
+        'CompanyArea' => "10000",            // Mandatory
+        'NIK'         => "05551",         // Mandatory              // Optional
+        'Date1'       => "01/05/2022",       // Optional
+        'Date2'       => "30/04/2025"       // Optional
+    ];
+
+    // Filter null values (biar gak dikirim kalau kosong)
+    $filteredParams = array_filter($params);
+
+      $response = Http::asJson()
+    ->withHeaders([
+        'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
+    ])
+    ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
+
+
+    // Dump response untuk debugging
+    if ($response->successful()) {
+        return response()->json([
+            'success' => true,
+            'data' => $response->json(),
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+    }
+});
+
+
+Route::get('/push-overtime-data/{headerId}', [FormOvertimeController::class, 'pushSingleHeaderToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
 Route::get('/', function () {

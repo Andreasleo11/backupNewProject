@@ -67,11 +67,11 @@
                                         <td class="table-bordered">{{ $currentMaterialMeasure }}</td>
                                         @foreach ($monthlyTotals as $monthlyTotal)
                                             <td class="table-bordered">
-                                                <strong>{{ $monthlyTotal }}</strong>
+                                                <strong>{{ number_format($monthlyTotal, 2) }}</strong>
                                             </td>
                                         @endforeach
                                         <td class="table-bordered">
-                                            <strong>{{ array_sum($monthlyTotals) }}</strong>
+                                            <strong>{{ number_format(array_sum($monthlyTotals), 2) }}</strong>
                                         </td>
                                         <td class="table-bordered">{{ $currentCustomer }}</td>
                                     </tr>
