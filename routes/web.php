@@ -135,7 +135,7 @@ Route::get('/test-overtime', function () {
 });
 
 
-Route::get('/push-overtime-data/{headerId}', [FormOvertimeController::class, 'pushSingleHeaderToJPayroll']);
+Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
 Route::get('/', function () {

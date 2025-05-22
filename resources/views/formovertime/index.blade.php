@@ -44,7 +44,10 @@
                                     <td>
                                         @include('partials.formovertime-status', ['fot' => $fot])
                                          @if($fot->is_push == 1)
-                                            <i class="bx bx-check-circle text-success ms-1" title="Pushed to JPayroll"></i>
+                                            <span class="text-success">
+                                                <i class="bx bx-check-circle me-1" title="Pushed to JPayroll"></i>
+                                                Finish by Bu Bernadett
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
