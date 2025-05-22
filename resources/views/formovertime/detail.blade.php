@@ -148,10 +148,24 @@
                                                 'title' => 'Delete item detail',
                                                 'body' => 'Are you sure want to delete this?',
                                             ])
-                                                <button class="btn btn-danger btn-sm"
+                                                <!-- <button class="btn btn-danger btn-sm"
                                                     data-bs-target="#delete-confirmation-modal-{{ $data->id }}"
-                                                    data-bs-toggle="modal">Delete</button>
+                                                    data-bs-toggle="modal">Delete</button> -->
+                                                @if ($data->is_processed == 1 && $data->status === 'Approved')
+                                                    <span class="text-success fw-bold">APPROVED</span>
+                                                @elseif ($data->status === 'Rejected')
+                                                    <span class="text-danger fw-bold">REJECTED</span>
+                                                @else
+                                                    <button class="btn btn-success btn-sm" onclick="handleOvertimeAction({{ $data->id }}, 'approve')">
+                                                        Approve
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="handleOvertimeAction({{ $data->id }}, 'reject')">
+                                                        Reject
+                                                    </button>
+                                                @endif
                                             </td>
+                                           
+
                                         @endif
                                 </tr>
                             @empty
@@ -264,6 +278,38 @@
                     autographNameBox.style.display = 'block';
                 }
             }
+        }
+
+        function handleOvertimeAction(detailId, actionType) {
+            if (!['approve', 'reject'].includes(actionType)) {
+                alert('Aksi tidak valid.');
+                return;
+            }
+
+            if (!confirm(`Yakin ingin ${actionType === 'approve' ? 'menyetujui' : 'menolak'} lembur ini?`)) {
+                return;
+            }
+
+            fetch(`/push-overtime-detail/${detailId}?action=${actionType}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Berhasil diproses.');
+                    location.reload(); // Refresh agar data update
+                } else {
+                    alert(data.message || 'Gagal memproses.');
+                    console.error(data);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan saat proses.');
+            });
         }
 
         // Call the function to check autograph status on page load
