@@ -21,57 +21,65 @@ use Illuminate\Support\Facades\Auth;
 
 class FormOvertimeController extends Controller
 {
-    public function index()
-    {
-        // Get the authenticated user
-        $user = Auth::user();
+    public function index(Request $request)
+{
+    $user = Auth::user();
 
-        $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
+    $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
 
-        // Filter the data based on the user's departement_id
-        if ($user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where('is_approve', 1);
-        } elseif ($user->specification->name === 'DIRECTOR') {
-            $dataheaderQuery->where('status', 9);
-        } elseif ($user->is_gm) {
-            $dataheaderQuery
-                ->whereNotNull('autograph_2')
-                ->whereHas(
-                    'Relationdepartement',
-                    function ($query) {
-                        $query->where('is_office', false)->where(function ($query) {
-                            $query->where('name', '!=', 'QA')
-                                ->where('name', '!=', 'QC');
-                        });
-                    }
-                );
-        } elseif ($user->is_head) {
-            $dataheaderQuery->where('dept_id', $user->department->id);
-
-            if ($user->department->name === 'LOGISTIC') {
-                $dataheaderQuery->orWhere(function ($query) {
-                    $query->whereHas(
-                        'Relationdepartement',
-                        function ($query) {
-                            $query->where('name', 'STORE');
-                        }
-                    );
+    // === FILTER BERDASARKAN ROLE USER ===
+    if ($user->specification->name === 'VERIFICATOR') {
+        $dataheaderQuery->where('is_approve', 1);
+    } elseif ($user->specification->name === 'DIRECTOR') {
+        $dataheaderQuery->where('status', 9);
+    } elseif ($user->is_gm) {
+        $dataheaderQuery
+            ->whereNotNull('autograph_2')
+            ->whereHas('Relationdepartement', function ($query) {
+                $query->where('is_office', false)->where(function ($query) {
+                    $query->where('name', '!=', 'QA')
+                          ->where('name', '!=', 'QC');
                 });
-            }
+            });
+    } elseif ($user->is_head) {
+        $dataheaderQuery->where('dept_id', $user->department->id);
 
-            $dataheaderQuery->where('status', 1);
-        } else {
-            $dataheaderQuery
-                ->where('dept_id', $user->department_id);
+        if ($user->department->name === 'LOGISTIC') {
+            $dataheaderQuery->orWhere(function ($query) {
+                $query->whereHas('Relationdepartement', function ($query) {
+                    $query->where('name', 'STORE');
+                });
+            });
         }
 
-        $dataheader = $dataheaderQuery
-            ->orderBy('id', 'desc')
-            ->orWhere('user_id', auth()->user()->id)
-            ->get();
-
-        return view("formovertime.index", compact("dataheader"));
+        $dataheaderQuery->where('status', 1);
+    } else {
+        $dataheaderQuery->where('dept_id', $user->department_id);
     }
+
+    // === FILTER TAMBAHAN ===
+    if ($request->filled('date')) {
+        $dataheaderQuery->whereDate('create_date', $request->input('date'));
+    }
+
+    if ($request->filled('dept')) {
+        $dataheaderQuery->where('dept_id', $request->input('dept'));
+    }
+
+    if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
+        $dataheaderQuery->where('is_push', $request->input('status'));
+    }
+
+    $dataheader = $dataheaderQuery
+        ->orderBy('id', 'desc')
+        ->orWhere('user_id', $user->id)
+        ->get();
+
+    $departments = Department::all();
+
+    return view("formovertime.index", compact("dataheader", "departments"));
+}
+
 
     public function create()
     {
