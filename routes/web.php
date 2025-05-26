@@ -89,6 +89,7 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
+use App\Http\Controllers\EmployeeDailyReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -137,6 +138,18 @@ Route::get('/test-overtime', function () {
 
 Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
+
+
+Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
+Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
+Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+
+Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
+Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
+Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
+Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
+
+
 
 Route::get('/', function () {
     if (Auth::check()) {

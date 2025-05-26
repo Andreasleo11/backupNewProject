@@ -11,6 +11,13 @@
 </head>
 <body>
 
+     <div class="container mt-3">
+        <a href="{{ route('employee-login') }}" class="btn btn-danger">
+            <i class="fas fa-user-clock me-1"></i> Daily Employee Job
+        </a>
+    </div>
+
+
     @if($message = Session::get('error'))
         <div class="container mt-3">
             <div class="alert alert-danger alert-dismissible fade show">

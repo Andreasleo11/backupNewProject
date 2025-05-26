@@ -13,6 +13,7 @@ class Employee extends Model
     protected $fillable = [
         'NIK',
         'Nama',
+        'date_birth',
         'Gender',
         'Dept',
         'start_date',
@@ -24,6 +25,10 @@ class Employee extends Model
         'employee_status',
         'Branch',
         'Grade',
+    ];
+
+    protected $casts = [
+        'date_birth' => 'date',  // biar otomatis jadi Carbon instance
     ];
 
     public function evaluationData()
