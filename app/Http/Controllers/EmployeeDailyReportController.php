@@ -100,6 +100,7 @@ class EmployeeDailyReportController extends Controller
 
             // Cek report_type & jam bekerja
             $existingSameTime = EmployeeDailyReport::where('employee_id', $employeeId)
+                ->where('work_date', $reportData['work_date'])
                 ->where('work_time', $reportData['work_time'])
                 ->where('report_type', $reportData['report_type'])
                 ->first();
