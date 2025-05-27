@@ -669,6 +669,103 @@ class FormOvertimeController extends Controller
     }
 
 
+    public function pushAllDetailsToJPayroll($headerId)
+    {
+        $header = HeaderFormOvertime::with('details.employee')->find($headerId);
+
+        if (!$header) {
+            return response()->json(['error' => 'Header tidak ditemukan'], 404);
+        }
+
+        if ($header->is_push == 1) {
+            return response()->json(['error' => 'Header sudah dipush sebelumnya'], 400);
+        }
+
+        $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
+
+        $successCount = 0;
+        $failed = [];
+
+        foreach ($header->details as $detail) {
+            // Skip jika statusnya Rejected
+            if ($detail->status === 'Rejected') {
+                continue;
+            }
+
+            $employee = $detail->employee;
+
+            $payload = [
+                'OTType'      => '1',
+                'OTDate'      => Carbon::parse($header->create_date)->format('d/m/Y'),
+                'JobDesc'     => $detail->job_desc,
+                'Department'  => $employee->organization_structure ?? 0,
+                'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
+                'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
+                'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
+                'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
+                'BreakTime'   => $detail->break,
+                'Remark'      => $detail->remarks,
+                'Choice'      => '1',
+                'CompanyArea' => '10000',
+                'EmpList'     => [
+                    'NIK1' => $detail->NIK
+                ]
+            ];
+
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
+                    'Content-Type' => 'application/json'
+                ])->post($url, $payload);
+
+                $responseData = [
+                    'NIK' => $detail->NIK,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ];
+
+                if ($response->successful()) {
+                    $detail->is_processed = 1;
+                    $detail->status = 'Approved';
+                    $detail->save();
+
+                    Log::info("✅ Success push for detail ID: $detail->id", $responseData);
+                    $successCount++;
+                } else {
+                    Log::error("❌ Failed push for detail ID: $detail->id", $responseData);
+                    $failed[] = [
+                        'detail_id' => $detail->id,
+                        'NIK' => $detail->NIK,
+                        'reason' => 'Push gagal',
+                        'response' => $responseData
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::error("❌ Exception push for detail ID: $detail->id", [
+                    'error' => $e->getMessage()
+                ]);
+                $failed[] = [
+                    'detail_id' => $detail->id,
+                    'NIK' => $detail->NIK,
+                    'reason' => 'Exception: ' . $e->getMessage()
+                ];
+            }
+        }
+
+        // Setelah semua proses, cek apakah semua detail sudah diapprove atau direject
+        $this->checkAndUpdateHeaderPushStatus($headerId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Proses push selesai',
+            'total_success' => $successCount,
+            'total_failed' => count($failed),
+            'failed_details' => $failed
+        ]);
+    }
+
+
+
     private function checkAndUpdateHeaderPushStatus($headerId)
     {
         $header = HeaderFormOvertime::with('details')->find($headerId);

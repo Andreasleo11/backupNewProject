@@ -180,4 +180,81 @@ class EmployeeDailyReportController extends Controller
         return redirect()->route('employee-login')->with('success', 'Logout berhasil.');
     }
 
+
+   public function indexDepthead(Request $request)
+    {
+        $user = auth()->user();
+
+        if (!$user->is_head) {
+            abort(403, 'Anda tidak memiliki akses');
+        }
+
+        $query = EmployeeDailyReport::query();
+
+        if ($user->name !== 'Bernadett') {
+            $deptId = $user->department->dept_no;
+            $query->where('departement_id', $deptId);
+        }
+
+        // Untuk dropdown: ambil daftar unik employee_id + employee_name
+        $employeesDropdown = (clone $query)
+            ->select('employee_id', \DB::raw('MIN(employee_name) as employee_name'))
+            ->groupBy('employee_id')
+            ->get();
+
+        // Filter berdasarkan dropdown pilih
+        $filterEmployeeId = $request->input('filter_employee_id');
+        if ($filterEmployeeId) {
+            $query->where('employee_id', $filterEmployeeId);
+        }
+
+        $employees = $query
+            ->select('employee_id', \DB::raw('MIN(employee_name) as employee_name'))
+            ->groupBy('employee_id')
+            ->get()
+            ->map(function ($employee) {
+                $latest = EmployeeDailyReport::where('employee_id', $employee->employee_id)
+                    ->orderByDesc('work_date')
+                    ->orderByDesc('work_time')
+                    ->first();
+
+                $employee->latest_work_date = $latest->work_date ?? '-';
+                $employee->latest_work_time = $latest->work_time ?? '-';
+
+                return $employee;
+            });
+
+        return view('dailyreport.depthead_index', compact('employees', 'employeesDropdown', 'filterEmployeeId'));
+    }
+
+    public function showDepthead($employee_id)
+    {
+        $user = auth()->user();
+
+        if (!$user->is_head) {
+            abort(403, 'Akses ditolak');
+        }
+
+        $query = EmployeeDailyReport::where('employee_id', $employee_id);
+
+        // Kalau bukan Bernadett, batasi hanya laporan dari departemen user
+        if ($user->name !== 'Bernadett') {
+            $query->where('departement_id', $user->department->dept_no);
+        }
+
+        $reports = $query->orderByDesc('work_date')
+                        ->orderByDesc('work_time')
+                        ->get();
+
+        if ($reports->isEmpty()) {
+            return redirect()->route('reports.depthead.index')
+                            ->with('warning', 'Laporan tidak ditemukan atau bukan dari departemen Anda.');
+        }
+
+        $employee_name = $reports->first()->employee_name;
+
+        return view('dailyreport.depthead_show', compact('reports', 'employee_name', 'employee_id'));
+    }
+
+
 }
