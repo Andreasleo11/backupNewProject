@@ -14,6 +14,23 @@
         </form>
     </div>
 
+    {{-- Filter Tanggal --}}
+    <div class="max-w-7xl mx-auto mb-4">
+        <form method="GET" action="{{ route('daily-report.user') }}" class="flex items-center gap-4">
+            <label for="filter_date" class="text-sm font-medium text-gray-700">Filter Tanggal:</label>
+            <input type="date" id="filter_date" name="filter_date"
+                   value="{{ request('filter_date') }}"
+                   class="border border-gray-300 rounded px-3 py-2">
+            <button type="submit"
+                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Filter
+            </button>
+            @if(request('filter_date'))
+                <a href="{{ route('daily-report.user') }}" class="text-sm text-red-600 hover:underline">Reset</a>
+            @endif
+        </form>
+    </div>
+
     <div class="max-w-7xl mx-auto bg-white shadow-md rounded p-6">
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white border border-gray-200">
@@ -35,9 +52,7 @@
                             <td class="px-4 py-2 border">{{ $report->submitted_at }}</td>
                             <td class="px-4 py-2 border">{{ $report->employee_name }}</td>
                             <td class="px-4 py-2 border">{{ \Carbon\Carbon::parse($report->work_date)->format('d/m/Y') }}</td>
-                            <td class="px-4 py-2 border">
-                                    {{ $report->work_time}}
-                            </td>
+                            <td class="px-4 py-2 border">{{ $report->work_time }}</td>
                             <td class="px-4 py-2 border">{{ $report->work_description }}</td>
                             <td class="px-4 py-2 border">
                                 @if($report->proof_url)
@@ -49,7 +64,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-2 text-center text-gray-500">Tidak ada data laporan.</td>
+                            <td colspan="7" class="px-4 py-2 text-center text-gray-500">Tidak ada data laporan.</td>
                         </tr>
                     @endforelse
                 </tbody>

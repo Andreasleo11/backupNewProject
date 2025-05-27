@@ -157,11 +157,17 @@ class EmployeeDailyReportController extends Controller
         return back()->withErrors(['password' => 'Password salah.']);
     }
 
-    public function dashboardDailyReport()
+    public function dashboardDailyReport(Request $request)
     {
         $employeeNik = Session::get('employee_nik');
-        // Ambil semua laporan daily berdasarkan nik employee
-        $reports = EmployeeDailyReport::where('employee_id', $employeeNik)->get();
+
+        $query = EmployeeDailyReport::where('employee_id', $employeeNik);
+
+        if ($request->filled('filter_date')) {
+            $query->whereDate('work_date', $request->filter_date);
+        }
+
+        $reports = $query->orderBy('work_date', 'desc')->get();
 
         return view('dailyreport.dashboard', compact('reports'));
     }
