@@ -227,7 +227,7 @@ class EmployeeDailyReportController extends Controller
         return view('dailyreport.depthead_index', compact('employees', 'employeesDropdown', 'filterEmployeeId'));
     }
 
-    public function showDepthead($employee_id)
+    public function showDepthead(Request $request, $employee_id)
     {
         $user = auth()->user();
 
@@ -237,23 +237,22 @@ class EmployeeDailyReportController extends Controller
 
         $query = EmployeeDailyReport::where('employee_id', $employee_id);
 
-        // Kalau bukan Bernadett, batasi hanya laporan dari departemen user
         if ($user->name !== 'Bernadett') {
             $query->where('departement_id', $user->department->dept_no);
+        }
+
+        // Ambil tanggal filter dari request
+        $filter_date = $request->input('filter_date');
+
+        if ($filter_date) {
+            $query->whereDate('work_date', $filter_date);
         }
 
         $reports = $query->orderByDesc('work_date')
                         ->orderByDesc('work_time')
                         ->get();
 
-        if ($reports->isEmpty()) {
-            return redirect()->route('reports.depthead.index')
-                            ->with('warning', 'Laporan tidak ditemukan atau bukan dari departemen Anda.');
-        }
-
-        $employee_name = $reports->first()->employee_name;
-
-        return view('dailyreport.depthead_show', compact('reports', 'employee_name', 'employee_id'));
+        return view('dailyreport.depthead_show', compact('reports', 'employee_id', 'filter_date'));
     }
 
 
