@@ -54,6 +54,18 @@
             @endif
         </div>
     </div>
+     @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+                        <button 
+                            id="btnPushAll" 
+                            data-header-id="{{ $header->id }}" 
+                            class="bg-red-600 hover:bg-red-700 text-black font-semibold px-4 py-2 rounded">
+                            Push All to JPayroll
+                        </button>
+
+                        <!-- Tempat notifikasi -->
+                        <div id="pushAllResult" class="mt-2 text-sm"></div>
+                    @endif
+
 
     @include('partials.formovertime-autographs')
 
@@ -81,6 +93,7 @@
                         </div>
                     </div>
                     <hr>
+
                     <div class="table-responsive mt-4">
                         <table class="table table-bordered table-hover text-center table-striped mb-0">
                             <thead>
@@ -311,6 +324,44 @@
                 alert('Terjadi kesalahan saat proses.');
             });
         }
+
+        document.getElementById('btnPushAll').addEventListener('click', function() {
+        const headerId = this.dataset.headerId;
+
+        if (!confirm("Apakah Anda yakin ingin mem-push semua data detail yang belum ditolak (Rejected)?")) {
+            return;
+        }
+
+        // Tampilkan loader
+        document.getElementById('pushAllLoader').classList.remove('hidden');
+        document.getElementById('pushAllResult').innerText = '';
+
+        fetch(`/overtime/push-all/${headerId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('pushAllLoader').classList.add('hidden');
+            
+            if (data.success) {
+                document.getElementById('pushAllResult').innerHTML = 
+                    `<span class="text-green-600 font-semibold">✅ ${data.message}</span>`;
+            } else {
+                document.getElementById('pushAllResult').innerHTML = 
+                    `<span class="text-red-600 font-semibold">❌ ${data.message}</span>`;
+            }
+        })
+        .catch(error => {
+            document.getElementById('pushAllLoader').classList.add('hidden');
+            document.getElementById('pushAllResult').innerHTML = 
+                `<span class="text-red-600 font-semibold">❌ Terjadi kesalahan saat memproses.</span>`;
+            console.error('Error:', error);
+        });
+    });
 
         // Call the function to check autograph status on page load
         window.onload = function() {

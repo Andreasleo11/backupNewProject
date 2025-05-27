@@ -137,8 +137,11 @@ Route::get('/test-overtime', function () {
 
 
 Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
+Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
+Route::get('/test/depthead', [EmployeeDailyReportController::class, 'indexDepthead'])->name('reports.depthead.index');
+Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 
 Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
 Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
