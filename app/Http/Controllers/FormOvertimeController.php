@@ -138,6 +138,7 @@ class FormOvertimeController extends Controller
 
         $userIdCreate = Auth::id();
         $deptId = $request->input('from_department');
+        $branch = $request->input('branch');
 
         $department = Department::find($deptId);
 
@@ -151,6 +152,7 @@ class FormOvertimeController extends Controller
             'user_id' => $userIdCreate,
             'dept_id' => $request->input('from_department'),
             'create_date' => $request->input('date_form_overtime'),
+            'branch' => $branch,
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'status' => $status,
             'is_design' => $request->input('design'),

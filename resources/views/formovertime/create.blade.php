@@ -116,6 +116,15 @@
                                 </select>
                             </div>
 
+                            <div class="form-group mt-3">
+                                <label class="form-label fs-5 fw-bold" for="branch">Branch</label>
+                                <select class="form-select" name="branch" id="branch" required>
+                                    <option value="" selected disabled>Select branch..</option>
+                                    <option value="Jakarta">Jakarta</option>
+                                    <option value="Karawang">Karawang</option>
+                                </select>
+                            </div>
+
                             <div id="designFieldContainer"></div>
 
                             <div class="form-group mt-3">
