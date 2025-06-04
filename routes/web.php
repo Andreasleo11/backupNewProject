@@ -89,6 +89,8 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
+use App\Http\Controllers\InspectionReportController;
+use Illuminate\Support\Facades\URL;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,20 +102,23 @@ use App\Http\Controllers\EmployeeTrainingController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 Route::get('/user-list', [UserRoleController::class, 'User']);
+
+// Route::get('/', fn() => view('welcome'))->name('/');
 
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
     }
-    return view('auth.login');
+    return redirect('login');
 })->name('/');
 
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
+// Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
 Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
@@ -583,9 +588,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
     Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
     Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
-    Route::post('/getformatyayasan',[EvaluationDataController::class, 'getFormatYearyayasan'] )->name('get.format');
-    Route::post('/getformatallin',[EvaluationDataController::class, 'getFormatYearallin'] )->name('get.format.allin');
-    Route::post('/getformatmagang',[EvaluationDataController::class, 'getFormatYearmagang'] )->name('get.format.magang');
+    Route::post('/getformatyayasan', [EvaluationDataController::class, 'getFormatYearyayasan'])->name('get.format');
+    Route::post('/getformatallin', [EvaluationDataController::class, 'getFormatYearallin'])->name('get.format.allin');
+    Route::post('/getformatmagang', [EvaluationDataController::class, 'getFormatYearmagang'])->name('get.format.magang');
     Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name('single.employee');
 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
@@ -896,12 +901,12 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         return (new App\Notifications\SPKUpdated($spk, $details))->toMail(auth()->user());
     });
 
-    Route::get('/po-notification', function() {
+    Route::get('/po-notification', function () {
         $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
         return (new \App\Notifications\MonthlyPOStatus($poCount))->toMail(auth()->user());
     });
 
-    Route::get('/training-notification', function(){
+    Route::get('/training-notification', function () {
         $training = \App\Models\EmployeeTraining::find(1);
         return (new \App\Notifications\TrainingReminderNotification($training))->toMail(auth()->user());
     });
@@ -955,7 +960,7 @@ Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     return redirect('/'); // or wherever you want to redirect after login
 })->name('autologin');
 
-Route::get('/director-login', function(){
+Route::get('/director-login', function () {
     $user = \App\Models\User::where('name', 'djoni')->first();
 
     $link = URL::temporarySignedRoute(
@@ -966,3 +971,7 @@ Route::get('/director-login', function(){
 
     return redirect($link);
 });
+
+Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
+Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
+Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
