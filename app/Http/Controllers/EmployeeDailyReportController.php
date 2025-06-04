@@ -189,26 +189,35 @@ class EmployeeDailyReportController extends Controller
             abort(403, 'Anda tidak memiliki akses');
         }
 
-        $query = EmployeeDailyReport::query();
+        // Ambil karyawan master sesuai departemen (jika user bukan Bernadett)
+        $employeeQuery = Employee::query();
 
         if ($user->name !== 'Bernadett') {
             $deptId = $user->department->dept_no;
-            $query->where('departement_id', $deptId);
+            $employeeQuery->where('Dept', $deptId);
         }
 
-        // Untuk dropdown: ambil daftar unik employee_id + employee_name
-        $employeesDropdown = (clone $query)
+        $employeesMaster = $employeeQuery->get();
+
+        // Ambil daftar NIK employee_id dari master
+        $employeeIds = $employeesMaster->pluck('NIK')->toArray();
+
+        // Query EmployeeDailyReport, tapi hanya untuk employee_id yg ada di master
+        $reportQuery = EmployeeDailyReport::whereIn('employee_id', $employeeIds);
+
+        // Untuk dropdown: ambil daftar unik employee_id + employee_name dari data laporan harian yang sudah difilter
+        $employeesDropdown = (clone $reportQuery)
             ->select('employee_id', \DB::raw('MIN(employee_name) as employee_name'))
             ->groupBy('employee_id')
             ->get();
 
-        // Filter berdasarkan dropdown pilih
+        // Filter dropdown
         $filterEmployeeId = $request->input('filter_employee_id');
-        if ($filterEmployeeId) {
-            $query->where('employee_id', $filterEmployeeId);
+        if ($filterEmployeeId && in_array($filterEmployeeId, $employeeIds)) {
+            $reportQuery->where('employee_id', $filterEmployeeId);
         }
 
-        $employees = $query
+        $employees = $reportQuery
             ->select('employee_id', \DB::raw('MIN(employee_name) as employee_name'))
             ->groupBy('employee_id')
             ->get()
