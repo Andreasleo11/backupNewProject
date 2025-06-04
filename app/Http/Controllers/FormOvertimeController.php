@@ -132,7 +132,6 @@ class FormOvertimeController extends Controller
         }
     }
 
-
     public function insert(Request $request)
     {
         $uploadedFiles = $request->file('excel_file');
@@ -149,6 +148,14 @@ class FormOvertimeController extends Controller
             $status = 6;
         }
 
+        $date     = $request->input('date_form_overtime');   // e.g. "2025-06-04"
+        $isPlanned = $date                                   // make sure the field is present
+            && Carbon::parse($date)                 // turn the string into a Carbon object
+            ->lt(now());                    // true if the date is *before* now()
+
+        $isPlanned = $request->filled('date_form_overtime')
+            && Carbon::parse($request->date_form_overtime)->isPast();
+
         $headerData = [
             'user_id' => $userIdCreate,
             'dept_id' => $request->input('from_department'),
@@ -157,12 +164,12 @@ class FormOvertimeController extends Controller
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'status' => $status,
             'is_design' => $request->input('design'),
-            'is_export' =>  0
+            'is_export' =>  0,
+            'is_planned' => $isPlanned,
         ];
 
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
-
 
         if ($uploadedFiles) {
 
@@ -219,10 +226,7 @@ class FormOvertimeController extends Controller
     public function detail($id)
     {
         $header = HeaderFormOvertime::with('Relationuser', 'Relationdepartement')->find($id);
-
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
-
-
         $employees = Employee::get();
         $departements = Department::get();
         // dd($header);
@@ -484,88 +488,6 @@ class FormOvertimeController extends Controller
         return redirect()->back()->with('success', 'Form Overtime Detail deleted successfully!');
     }
 
-
-    // public function pushSingleHeaderToJPayroll($headerId)
-    // {
-    //     $header = HeaderFormOvertime::with(['details.employee'])->find($headerId);
-
-    //     if (!$header || $header->is_push == 1) {
-    //         return; // Jangan push ulang
-    //     }
-
-    //     $result = collect();
-    //     foreach ($header->details as $detail) {
-
-    //         $result->push([
-    //              'OTType'      => '1',
-
-    //             'OTDate'       => Carbon::parse($header->create_date)->format('d/m/Y'),
-    //             'JobDesc'      => $detail->job_desc,
-    //             'Department'   => $detail->employee->organization_structure ?? 0,
-    //             'StartDate'    => Carbon::parse($detail->start_date)->format('d/m/Y'),
-    //             'StartTime'    => Carbon::parse($detail->start_time)->format('H:i'),
-    //             'EndDate'      => Carbon::parse($detail->end_date)->format('d/m/Y'),
-    //             'EndTime'      => Carbon::parse($detail->end_time)->format('H:i'),
-    //             'BreakTime'    => $detail->break,
-    //             'Remark'       => $detail->remarks,
-    //             'Choice'       => '1',
-    //             'CompanyArea'  => '10000',
-    //                'EmpList'      => [
-    //                                 'NIK1' => $detail->NIK
-    //                                 ]
-    //         ]);
-    //     }
-    //     $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
-    //     $allSuccess = true;
-
-    //     foreach ($result as $payload) {
-    //         try {
-    //            $response = Http::withHeaders([
-    //                 'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
-    //                 'Content-Type' => 'application/json'
-    //             ])->post($url, $payload);
-
-    //             $responseData = [
-    //                 'NIK' => $payload['EmpList']['NIK1'],
-    //                 'status' => $response->status(),
-    //                 'body' => $response->body()
-    //             ];
-    //             $responses[] = $responseData;
-
-    //             if ($response->successful()) {
-    //                 Log::info("✅ Success push for NIK: " . $payload['EmpList']['NIK1'], $responseData);
-    //             } else {
-    //                 Log::error("❌ Failed push for NIK: " . $payload['EmpList']['NIK1'], $responseData);
-    //                 $allSuccess = false;
-    //             }
-    //         } catch (\Exception $e) {
-    //             $responses[] = [
-    //                 'NIK' => $payload['EmpList']['NIK1'],
-    //                 'status' => 'exception',
-    //                 'error' => $e->getMessage()
-    //             ];
-    //             Log::error("❌ Exception push for NIK: " . $payload['EmpList']['NIK1'], [
-    //                 'error' => $e->getMessage()
-    //             ]);
-    //             $allSuccess = false;
-    //         }
-    //     }
-
-    //     if ($allSuccess) {
-    //         $header->is_push = 1;
-    //         $header->save();
-    //         Log::info("✅ All data pushed successfully. Header ID: $headerId marked as pushed.");
-    //     } else {
-    //         Log::warning("⚠️ Not all data pushed successfully. Header ID: $headerId NOT marked as pushed.");
-    //     }
-
-    //     return response()->json([
-    //         'success' => $allSuccess,
-    //         'responses' => $responses
-    //     ]);
-    // }
-
-
     public function pushSingleDetailToJPayroll($detailId, Request $request)
     {
         $action = $request->query('action'); // 'approve' atau 'reject'
@@ -766,8 +688,6 @@ class FormOvertimeController extends Controller
             'failed_details' => $failed
         ]);
     }
-
-
 
     private function checkAndUpdateHeaderPushStatus($headerId)
     {
