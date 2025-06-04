@@ -39,7 +39,7 @@ class SendTrainingReminders extends Command
         // Fetch users to be notified
         $usersToBeNotified = User::whereHas('department', function ($query) {
             $query->where(function ($query) {
-                $query->where('name', 'PERSONALIA');
+                $query->where('name', 'PERSONALIA')->whereNot('email', 'nur@daijo.co.id');
             });
         })->get();
 
@@ -56,5 +56,4 @@ class SendTrainingReminders extends Command
 
         $this->info('Employee Training reminders sent successfully for trainings 2.5 months old.');
     }
-
 }

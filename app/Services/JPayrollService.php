@@ -164,6 +164,7 @@ class JPayrollService
                 'Grade' => $item['GradeCode'],
                 'employee_status' => match (true) {
                     $item['EmployeeStatus'] === 'ALL IN MANAJEMEN' || str_contains($item['EmployeeStatus'], 'ALL IN ASING') => 'TETAP',
+                    str_contains($item['EmployeeStatus'], 'KONTRAK GAMA') => 'MAGANG',
                     str_contains($item['EmployeeStatus'], 'TETAP') => 'TETAP',
                     str_contains($item['EmployeeStatus'], 'YAYASAN') => 'YAYASAN',
                     str_contains($item['EmployeeStatus'], 'KONTRAK') => 'KONTRAK',
@@ -291,8 +292,8 @@ class JPayrollService
         }
     }
 
-   private function showOvertimePerEmployee(string $companyArea, string $nik, ?string $noVoucher = null, ?string $date1 = null, ?string $date2 = null): array 
-   {
+    private function showOvertimePerEmployee(string $companyArea, string $nik, ?string $noVoucher = null, ?string $date1 = null, ?string $date2 = null): array
+    {
         $params = [
             'CompanyArea' => $companyArea,
             'NIK'         => $nik,
@@ -310,7 +311,4 @@ class JPayrollService
 
         return ApiHelper::handleApiResponse($response);
     }
-
-
-
 }

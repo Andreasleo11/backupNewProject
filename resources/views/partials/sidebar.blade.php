@@ -22,6 +22,19 @@
         </li>
 
         @php
+            $deptHead = Auth::user()->is_head;
+        @endphp
+
+        @if ($deptHead)
+            <li class="sidebar-item" id="sidebar-item-dashboard-employee">
+                <a href="{{ route('employee.dashboard') }}" class="sidebar-link">
+                    <i class='bx bx-line-chart'></i>
+                    <span>Dashboard Employee</span>
+                </a>
+            </li>
+        @endif
+
+        @php
             $user = Auth::user();
             $department = $user->department->name;
             $specification = $user->specification->name;
@@ -487,7 +500,7 @@
                         </a>
                     </li>
 
-                     <li class="sidebar-item">
+                    <li class="sidebar-item">
                         <a href="{{ route('reports.depthead.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Job Report

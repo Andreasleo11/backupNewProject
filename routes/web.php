@@ -89,6 +89,7 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
+use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 
 /*
@@ -102,6 +103,9 @@ use App\Http\Controllers\EmployeeDailyReportController;
 |
 */
 
+Route::get('/user-list', [UserRoleController::class, 'User']);
+
+// Route::get('/', fn() => view('welcome'))->name('/');
 Route::get('/test-overtime', function () {
     $params = [
         'CompanyArea' => "10000",            // Mandatory
@@ -113,11 +117,11 @@ Route::get('/test-overtime', function () {
     // Filter null values (biar gak dikirim kalau kosong)
     $filteredParams = array_filter($params);
 
-      $response = Http::asJson()
-    ->withHeaders([
-        'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
-    ])
-    ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
+    $response = Http::asJson()
+        ->withHeaders([
+            'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
+        ])
+        ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
 
 
     // Dump response untuk debugging
@@ -152,20 +156,18 @@ Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name(
 Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
 Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
-
-
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
     }
-    return view('auth.login');
+    return redirect('login');
 })->name('/');
 
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
+// Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
 Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
@@ -281,7 +283,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
     });
 
-    Route::middleware(['checkDepartment:HRD'])->group(function () {
+    Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
         Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
 
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index')->middleware('permission:get-important-docs');
@@ -709,7 +711,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
     Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
-    
+
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
@@ -1005,7 +1007,7 @@ Route::get('/autologin', function (\Illuminate\Http\Request $request) {
 
     Auth::login($user);
 
-    return redirect('/'); // or wherever you want to redirect after login
+    return redirect()->route('employee.dashboard'); // or wherever you want to redirect after login
 })->name('autologin');
 
 Route::get('/dashboard-employee-login', function () {
@@ -1019,3 +1021,7 @@ Route::get('/dashboard-employee-login', function () {
 
     return redirect($link);
 });
+
+Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
+Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
+Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
