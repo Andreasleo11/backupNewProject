@@ -89,6 +89,7 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
+use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 
 /*
@@ -102,6 +103,9 @@ use App\Http\Controllers\EmployeeDailyReportController;
 |
 */
 
+Route::get('/user-list', [UserRoleController::class, 'User']);
+
+// Route::get('/', fn() => view('welcome'))->name('/');
 Route::get('/test-overtime', function () {
     $params = [
         'CompanyArea' => "10000",            // Mandatory
@@ -152,20 +156,18 @@ Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name(
 Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
 Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
-
-
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
     }
-    return view('auth.login');
+    return redirect('login');
 })->name('/');
 
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
+// Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
 Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
@@ -1019,3 +1021,7 @@ Route::get('/dashboard-employee-login', function () {
 
     return redirect($link);
 });
+
+Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
+Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
+Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');

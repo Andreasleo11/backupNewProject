@@ -27,7 +27,7 @@ class HomeController extends Controller
         $user = auth()->user();
 
         if ($user->role_id == 1) {
-            return redirect()->route('superadmin.home');
+            return view('superadmin_home');
         } else if ($user->role_id == 2){
             $department = $user->department->name;
 
