@@ -22,63 +22,63 @@ use Illuminate\Support\Facades\Auth;
 class FormOvertimeController extends Controller
 {
     public function index(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
+        $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
 
-    // === FILTER BERDASARKAN ROLE USER ===
-    if ($user->specification->name === 'VERIFICATOR') {
-        $dataheaderQuery->where('is_approve', 1);
-    } elseif ($user->specification->name === 'DIRECTOR') {
-        $dataheaderQuery->where('status', 9);
-    } elseif ($user->is_gm) {
-        $dataheaderQuery
-            ->whereNotNull('autograph_2')
-            ->whereHas('Relationdepartement', function ($query) {
-                $query->where('is_office', false)->where(function ($query) {
-                    $query->where('name', '!=', 'QA')
-                          ->where('name', '!=', 'QC');
+        // === FILTER BERDASARKAN ROLE USER ===
+        if ($user->specification->name === 'VERIFICATOR') {
+            $dataheaderQuery->where('is_approve', 1);
+        } elseif ($user->specification->name === 'DIRECTOR') {
+            $dataheaderQuery->where('status', 9);
+        } elseif ($user->is_gm) {
+            $dataheaderQuery
+                ->whereNotNull('autograph_2')
+                ->whereHas('Relationdepartement', function ($query) {
+                    $query->where('is_office', false)->where(function ($query) {
+                        $query->where('name', '!=', 'QA')
+                            ->where('name', '!=', 'QC');
+                    });
                 });
-            });
-    } elseif ($user->is_head) {
-        $dataheaderQuery->where('dept_id', $user->department->id);
+        } elseif ($user->is_head) {
+            $dataheaderQuery->where('dept_id', $user->department->id);
 
-        if ($user->department->name === 'LOGISTIC') {
-            $dataheaderQuery->orWhere(function ($query) {
-                $query->whereHas('Relationdepartement', function ($query) {
-                    $query->where('name', 'STORE');
+            if ($user->department->name === 'LOGISTIC') {
+                $dataheaderQuery->orWhere(function ($query) {
+                    $query->whereHas('Relationdepartement', function ($query) {
+                        $query->where('name', 'STORE');
+                    });
                 });
-            });
+            }
+
+            $dataheaderQuery->where('status', 1);
+        } else {
+            $dataheaderQuery->where('dept_id', $user->department_id);
         }
 
-        $dataheaderQuery->where('status', 1);
-    } else {
-        $dataheaderQuery->where('dept_id', $user->department_id);
+        // === FILTER TAMBAHAN ===
+        if ($request->filled('date')) {
+            $dataheaderQuery->whereDate('create_date', $request->input('date'));
+        }
+
+        if ($request->filled('dept')) {
+            $dataheaderQuery->where('dept_id', $request->input('dept'));
+        }
+
+        if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
+            $dataheaderQuery->where('is_push', $request->input('status'));
+        }
+
+        $dataheader = $dataheaderQuery
+            ->orderBy('id', 'desc')
+            ->orWhere('user_id', $user->id)
+            ->get();
+
+        $departments = Department::all();
+
+        return view("formovertime.index", compact("dataheader", "departments"));
     }
-
-    // === FILTER TAMBAHAN ===
-    if ($request->filled('date')) {
-        $dataheaderQuery->whereDate('create_date', $request->input('date'));
-    }
-
-    if ($request->filled('dept')) {
-        $dataheaderQuery->where('dept_id', $request->input('dept'));
-    }
-
-    if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
-        $dataheaderQuery->where('is_push', $request->input('status'));
-    }
-
-    $dataheader = $dataheaderQuery
-        ->orderBy('id', 'desc')
-        ->orWhere('user_id', $user->id)
-        ->get();
-
-    $departments = Department::all();
-
-    return view("formovertime.index", compact("dataheader", "departments"));
-}
 
 
     public function create()
@@ -108,19 +108,20 @@ class FormOvertimeController extends Controller
         $department = Department::where('id', $deptid)->first();
         $dept_no = $department ? $department->dept_no : null;
 
-
         // Fetch item names and prices from the database based on user input
         if ($dept_no) {
             if ($nik) {
                 // Fetch employees based on NIK and department number
                 $pegawais = Employee::where('NIK', 'like', '%' . $nik . '%')
                     ->where('Dept', $dept_no)
+                    ->whereNull('end_date')
                     ->select('NIK', 'nama')
                     ->get();
             } elseif ($nama) {
                 // Fetch employees based on Nama and department number
                 $pegawais = Employee::where('Nama', 'like', '%' . $nama . '%')
                     ->where('Dept', $dept_no)
+                    ->whereNull('end_date')
                     ->select('NIK', 'nama')
                     ->get();
             }
@@ -161,7 +162,7 @@ class FormOvertimeController extends Controller
 
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
-       
+
 
         if ($uploadedFiles) {
 
@@ -170,7 +171,7 @@ class FormOvertimeController extends Controller
             $this->detailOvertimeInsert($request, $headerovertime->id);
         }
 
-         $this->sendNotification($headerovertime);
+        $this->sendNotification($headerovertime);
 
         return redirect()->route('formovertime.index');
     }
@@ -318,7 +319,7 @@ class FormOvertimeController extends Controller
         }
 
         $headerForm->save();
-        
+
         //  $this->sendNotification($headerForm);
 
         return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
@@ -343,7 +344,7 @@ class FormOvertimeController extends Controller
         $deptHead = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
 
         switch ($report->status) {
-                // Send to Dept Head
+            // Send to Dept Head
             case 1:
                 if ($report->Relationdepartement->name === 'STORE') {
                     $user = User::where('is_head', 1)->whereHas('department', function ($query) {
@@ -356,22 +357,22 @@ class FormOvertimeController extends Controller
                 }
                 $status = 'Waiting for Dept Head';
                 break;
-                // Send to Verificator
+            // Send to Verificator
             case 2:
                 $user = $verificator;
                 $status = 'Waiting to Verificator';
                 break;
-                // Send to GM
+            // Send to GM
             case 3:
                 $user = $gm;
                 $status = 'Waiting for GM';
                 break;
-                // Send to Director
+            // Send to Director
             case 9:
                 $user = $director;
                 $status = 'Waiting for Director';
                 break;
-                // Send to Supervisor
+            // Send to Supervisor
             case 6:
                 $user = $supervisor;
                 $status = 'Waiting for Supervisor';
@@ -491,13 +492,13 @@ class FormOvertimeController extends Controller
     //     if (!$header || $header->is_push == 1) {
     //         return; // Jangan push ulang
     //     }
-      
+
     //     $result = collect();
     //     foreach ($header->details as $detail) {
-             
+
     //         $result->push([
     //              'OTType'      => '1',
-                          
+
     //             'OTDate'       => Carbon::parse($header->create_date)->format('d/m/Y'),
     //             'JobDesc'      => $detail->job_desc,
     //             'Department'   => $detail->employee->organization_structure ?? 0,
@@ -584,7 +585,7 @@ class FormOvertimeController extends Controller
             $detail->status = 'Rejected';
             $detail->save();
 
-             $this->checkAndUpdateHeaderPushStatus($detail->header_id);
+            $this->checkAndUpdateHeaderPushStatus($detail->header_id);
 
             return response()->json([
                 'success' => true,
@@ -592,7 +593,7 @@ class FormOvertimeController extends Controller
             ]);
         }
 
-       
+
 
         // Jika bukan approve, maka tidak valid
         if ($action !== 'approve') {

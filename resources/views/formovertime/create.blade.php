@@ -110,7 +110,7 @@
                                     @foreach ($departements as $department)
                                         <option value="{{ $department->id }}"
                                             {{ $department->id === auth()->user()->department->id ? 'selected' : '' }}>
-                                            {{ $department->name }}
+                                            {{ $department->name === 'MAINTENANCE MACHINE' ? 'MAINTENANCE TOOL & MACHINE' : $department->name }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -144,9 +144,8 @@
                             </div>
 
                             <div class="form-group mt-3" id="fileUploadSection">
-                                 <div class="d-flex justify-content-end mb-3">
-                                    <a href="{{ route('formovertime.template.download') }}" 
-                                    class="btn btn-primary">
+                                <div class="d-flex justify-content-end mb-3">
+                                    <a href="{{ route('formovertime.template.download') }}" class="btn btn-primary">
                                         Download Template Overtime
                                     </a>
                                 </div>
@@ -230,13 +229,14 @@
             const departmentDropdown = document.getElementById('fromDepartmentDropdown');
             const designFieldContainer = document.getElementById('designFieldContainer');
 
-            departmentDropdown.addEventListener('change', function() {
+            function updateDesignField() {
                 // Clear the design field container
                 designFieldContainer.innerHTML = '';
 
-                // Check if the selected department is Moulding
-                const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex]
-                    .text;
+                // Get the selected department
+                const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex].text;
+
+                // Check if the selected department is MOULDING
                 if (selectedDepartment === 'MOULDING') {
                     // Create the Design field
                     const designFormGroup = document.createElement('div');
@@ -270,7 +270,13 @@
                     // Append the Design field to the container
                     designFieldContainer.appendChild(designFormGroup);
                 }
-            });
+            }
+
+            // Trigger saat halaman pertama kali load
+            updateDesignField();
+
+            // Trigger juga saat dropdown berubah
+            departmentDropdown.addEventListener('change', updateDesignField);
         });
 
         // Counter for creating unique IDs for items

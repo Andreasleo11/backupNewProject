@@ -14,7 +14,6 @@ class HomeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-
     }
 
     /**
@@ -28,10 +27,12 @@ class HomeController extends Controller
 
         if ($user->role_id == 1) {
             return view('superadmin_home');
-        } else if ($user->role_id == 2){
+        } else if ($user->specification->name === 'DIRECTOR') {
+            return redirect()->route('director.home');
+        } else if ($user->role_id == 2) {
             $department = $user->department->name;
 
-            if($department === "QC" || $department === "QA"){
+            if ($department === "QC" || $department === "QA") {
                 return redirect()->route('qaqc.home');
             }
 
@@ -42,7 +43,8 @@ class HomeController extends Controller
         }
     }
 
-    private function abbreviateString($string) {
+    private function abbreviateString($string)
+    {
         // Check if the string contains multiple words
         if (strpos($string, ' ') !== false) {
             // Convert the string to lowercase

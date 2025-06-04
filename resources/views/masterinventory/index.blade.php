@@ -80,12 +80,12 @@
                         <thead>
                             <tr>
                                 <th class="sortable">No</th>
-                                <th class="sortable" data-column="ip_address">IP Address</th>
+                                <th class="sortable" data-column="ip_address">No Asset</th>
                                 <th class="sortable" data-column="username">Username</th>
                                 <th class="sortable" data-column="dept">Department</th>
                                 <th class="sortable" data-column="type">Type</th>
-                                <th class="sortable" data-column="purpose">Purpose</th>
-                                <th class="sortable" data-column="brand">Brand</th>
+                                <th class="sortable" data-column="purpose">Tanggal Pembelian</th>
+                                <th class="sortable" data-column="brand">Status</th>
                                 <th class="sortable" data-column="os">OS</th>
                                 <th class="sortable" data-column="description">Description</th>
                                 <th colspan="2" class="text-center">Actions</th>

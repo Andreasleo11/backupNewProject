@@ -62,7 +62,7 @@
                                 Report</td>
                         </tr>
                         <tr>
-                            <td colspan="13"></td>
+                            <td></td>
                         </tr>
                         <tr>
                             <th align="center" style="vertical-align: middle; height:60px; font-size: 18px;">No</th>
@@ -102,11 +102,11 @@
                                             {{ $currentMaterialMeasure }}</td>
                                         @foreach ($monthlyTotals as $monthlyTotal)
                                             <td class="table-bordered" align="center" style="vertical-align: middle;">
-                                                <strong>{{ $monthlyTotal }}</strong>
+                                                <strong>{{ round($monthlyTotal, 2) }}</strong>
                                             </td>
                                         @endforeach
                                         <td class="table-bordered" align="center" style="vertical-align: middle;">
-                                            <strong>{{ array_sum($monthlyTotals) }}</strong>
+                                            <strong>{{ round(array_sum($monthlyTotals), 2) }}</strong>
                                         </td>
                                         <td class="table-bordered" rowspan="2" align="center"
                                             style="vertical-align: middle;"></td>
@@ -115,13 +115,16 @@
                                     </tr>
                                     <tr>
                                         <td colspan="4" align=right style="vertical-align: middle;">
-                                            <strong>Total</strong></td>
+                                            <strong>Total</strong>
+                                        </td>
                                         @foreach ($monthlyTotals as $monthlyTotal)
                                             <td align="center" style="vertical-align: middle;">
-                                                <strong>{{ number_format($monthlyTotal, 2) }}</strong></td>
+                                                <strong>{{ round($monthlyTotal, 2) }}</strong>
+                                            </td>
                                         @endforeach
                                         <td align="center" style="vertical-align: middle;">
-                                            <strong>{{ number_format(array_sum($monthlyTotals), 2) }}</strong></td>
+                                            <strong>{{ round(array_sum($monthlyTotals), 2) }}</strong>
+                                        </td>
                                         <td></td> <!-- Empty cell for customer -->
                                     </tr>
                                     <tr>
@@ -163,11 +166,11 @@
                                 {{ $currentMaterialMeasure }}</td>
                             @foreach ($monthlyTotals as $monthlyTotal)
                                 <td class="table-bordered" align="center" style="vertical-align: middle;">
-                                    <strong>{{ $monthlyTotal }}</strong>
+                                    <strong>{{ round($monthlyTotal, 2) }}</strong>
                                 </td>
                             @endforeach
                             <td class="table-bordered" align="center" style="vertical-align: middle;">
-                                <strong>{{ array_sum($monthlyTotals) }}</strong>
+                                <strong>{{ round(array_sum($monthlyTotals), 2) }}</strong>
                             </td>
                             <td class="table-bordered" rowspan="2" align="center" style="vertical-align: middle;">
                             </td>
@@ -178,10 +181,12 @@
                             <td colspan="4" align=right style="vertical-align: middle;"><strong>Total</strong></td>
                             @foreach ($monthlyTotals as $monthlyTotal)
                                 <td align="center" style="vertical-align: middle;">
-                                    <strong>{{ $monthlyTotal }}</strong></td>
+                                    <strong>{{ round(array_sum($monthlyTotal), 2) }}</strong>
+                                </td>
                             @endforeach
                             <td align="center" style="vertical-align: middle;">
-                                <strong>{{ array_sum($monthlyTotals) }}</strong></td>
+                                <strong>{{ round(array_sum($monthlyTotals), 2) }}</strong>
+                            </td>
                             <td></td> <!-- Empty cell for customer -->
                         </tr>
                     </tbody>

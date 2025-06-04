@@ -47,8 +47,7 @@ class DisciplinePageController extends Controller
                     ->where('status', '!=', 'YAYASAN')->where('level', 5);
             })
                 ->get();
-        }
-        elseif ($user->email === "ani_apriani@daijo.co.id" || $user->email === "bernadett@daijo.co.id") {
+        } elseif ($user->email === "ani_apriani@daijo.co.id" || $user->email === "bernadett@daijo.co.id") {
             $employees = EvaluationData::with('karyawan')->whereHas('karyawan', function ($query) {
                 $query->where('Dept', '310')
                     ->where('status', '!=', 'YAYASAN')->where('level', 5);
@@ -458,7 +457,7 @@ class DisciplinePageController extends Controller
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                ->where('start_date', '<', $cutoffDate);
+                    ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $selectedMonth)
             ->get();
@@ -528,7 +527,7 @@ class DisciplinePageController extends Controller
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                ->where('start_date', '<', $cutoffDate);
+                    ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $selectedMonth)
             ->get();
@@ -648,7 +647,7 @@ class DisciplinePageController extends Controller
         }
     }
 
-    public function indexmagang (DisciplineMagangDataTable $dataTable)
+    public function indexmagang(DisciplineMagangDataTable $dataTable)
     {
         //value yang dipake yayasan
         $user = Auth::user();
@@ -754,7 +753,6 @@ class DisciplinePageController extends Controller
         $evaluationData = EvaluationData::find($id);
         $pengawas = Auth::user();
 
-
         // Update the specific fields for this user
         $evaluationData->update([
             'kemampuan_kerja' => $request->kemampuan_kerja,
@@ -816,11 +814,10 @@ class DisciplinePageController extends Controller
         }
 
         foreach ($weeklyDatas as $weeklyData) {
-            if($weeklyData->karyawan) {
+            if ($weeklyData->karyawan) {
                 $weeklyData->dept = $weeklyData->karyawan->Dept;
                 $weeklyData->save();
             }
-
         }
 
         return redirect()->route('home')->with('success', 'Data updated successfully');;
@@ -878,7 +875,7 @@ class DisciplinePageController extends Controller
             'pengawas' => $pengawas->name
         ]);
 
-      // Reset approvals if previously rejected
+        // Reset approvals if previously rejected
         if ($evaluationData->generalmanager === 'rejected' || $evaluationData->depthead === 'rejected') {
             $evaluationData->update([
                 'depthead' => null,
@@ -886,7 +883,7 @@ class DisciplinePageController extends Controller
             ]);
         }
 
-      // Reset approvals if previously rejected
+        // Reset approvals if previously rejected
         if ($evaluationData->generalmanager === 'rejected' || $evaluationData->depthead === 'rejected') {
             $evaluationData->update([
                 'depthead' => null,
@@ -1211,7 +1208,7 @@ class DisciplinePageController extends Controller
                             'generalmanager' => null,    // Set general to null
                         ]);
                         $i += 1;
-                    }else {
+                    } else {
                         // If no changes, still update depthead and generalmanager to null
                         EvaluationData::where('id', $record->id)->update([
                             'depthead' => null,
@@ -1262,7 +1259,7 @@ class DisciplinePageController extends Controller
             ->whereMonth('Month', $filterMonth)
             ->get();
 
-        foreach($employees as $employee) {
+        foreach ($employees as $employee) {
             // dd($employee);
             $employee->depthead = Auth::user()->name;
             $employee->save();
@@ -1288,7 +1285,7 @@ class DisciplinePageController extends Controller
             ->whereMonth('Month', $filterMonth)
             ->get();
 
-        foreach($employees as $employee) {
+        foreach ($employees as $employee) {
             // dd($employee);
             $employee->depthead = 'rejected';
             $employee->remark = $remark;
@@ -1315,7 +1312,7 @@ class DisciplinePageController extends Controller
             ->whereMonth('Month', $filterMonth)
             ->get();
 
-        foreach($employees as $employee) {
+        foreach ($employees as $employee) {
             // dd($employee);
             $employee->depthead = 'rejected';
             $employee->generalmanager = 'rejected';
@@ -1341,7 +1338,7 @@ class DisciplinePageController extends Controller
             ->whereMonth('Month', $filterMonth)
             ->get();
 
-        foreach($employees as $employee) {
+        foreach ($employees as $employee) {
             // dd($employee);
             $employee->generalmanager = Auth::user()->name;
             $employee->save();
@@ -1372,7 +1369,7 @@ class DisciplinePageController extends Controller
 
 
 
-        
+
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
@@ -1410,7 +1407,6 @@ class DisciplinePageController extends Controller
         // dd($departmentStatus);
 
         return view('setting.exportYayasanJpayroll', compact('departmentStatus', 'selectedMonth', 'currentYear'));
-
     }
 
     public function exportYayasanJpayrollFunction(Request $request)
@@ -1428,8 +1424,8 @@ class DisciplinePageController extends Controller
 
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->whereIn('status', ['YAYASAN','YAYASAN KARAWANG'])
-                ->where('start_date', '<', $cutoffDate);
+                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                    ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $selectedMonth)
             ->get();
@@ -1483,7 +1479,8 @@ class DisciplinePageController extends Controller
         return Excel::download(new YayasanDisciplineExport($result), $fileName);
     }
 
-    public function getEvaluationData($id){
+    public function getEvaluationData($id)
+    {
         $employee = EvaluationData::with(['karyawan', 'department'])->findOrFail($id);
         return response()->json($employee);
     }

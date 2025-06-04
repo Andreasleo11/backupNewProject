@@ -117,11 +117,11 @@ Route::get('/test-overtime', function () {
     // Filter null values (biar gak dikirim kalau kosong)
     $filteredParams = array_filter($params);
 
-      $response = Http::asJson()
-    ->withHeaders([
-        'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
-    ])
-    ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
+    $response = Http::asJson()
+        ->withHeaders([
+            'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
+        ])
+        ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
 
 
     // Dump response untuk debugging
@@ -283,7 +283,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
     });
 
-    Route::middleware(['checkDepartment:HRD'])->group(function () {
+    Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
         Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
 
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index')->middleware('permission:get-important-docs');
@@ -711,7 +711,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
     Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
-    
+
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
@@ -1007,7 +1007,7 @@ Route::get('/autologin', function (\Illuminate\Http\Request $request) {
 
     Auth::login($user);
 
-    return redirect('/'); // or wherever you want to redirect after login
+    return redirect()->route('employee.dashboard'); // or wherever you want to redirect after login
 })->name('autologin');
 
 Route::get('/dashboard-employee-login', function () {
