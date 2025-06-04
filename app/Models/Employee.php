@@ -13,16 +13,22 @@ class Employee extends Model
     protected $fillable = [
         'NIK',
         'Nama',
+        'date_birth',
         'Gender',
         'Dept',
         'start_date',
         'status',
         'level',
         'jatah_cuti_tahun',
+        'organization_structure',
         'end_date',
         'employee_status',
         'Branch',
         'Grade',
+    ];
+
+    protected $casts = [
+        'date_birth' => 'date',  // biar otomatis jadi Carbon instance
     ];
 
     public function evaluationData()
@@ -39,4 +45,5 @@ class Employee extends Model
     {
         return $this->belongsTo(Department::class, 'Dept', 'dept_no');
     }
+
 }

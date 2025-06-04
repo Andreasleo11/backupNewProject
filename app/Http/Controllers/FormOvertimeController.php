@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
@@ -11,6 +13,7 @@ use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
 use App\Imports\OvertimeImport;
 use App\Exports\OvertimeExport;
+use App\Exports\OvertimeExportExample;
 use App\Models\User;
 use App\Notifications\FormOvertimeNotification;
 use Maatwebsite\Excel\Facades\Excel;
@@ -18,57 +21,65 @@ use Illuminate\Support\Facades\Auth;
 
 class FormOvertimeController extends Controller
 {
-    public function index()
-    {
-        // Get the authenticated user
-        $user = Auth::user();
+    public function index(Request $request)
+{
+    $user = Auth::user();
 
-        $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
+    $dataheaderQuery = HeaderFormOvertime::with('Relationuser', 'Relationdepartement');
 
-        // Filter the data based on the user's departement_id
-        if ($user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where('is_approve', 1);
-        } elseif ($user->specification->name === 'DIRECTOR') {
-            $dataheaderQuery->where('status', 9);
-        } elseif ($user->is_gm) {
-            $dataheaderQuery
-                ->whereNotNull('autograph_2')
-                ->whereHas(
-                    'Relationdepartement',
-                    function ($query) {
-                        $query->where('is_office', false)->where(function ($query) {
-                            $query->where('name', '!=', 'QA')
-                                ->where('name', '!=', 'QC');
-                        });
-                    }
-                );
-        } elseif ($user->is_head) {
-            $dataheaderQuery->where('dept_id', $user->department->id);
-
-            if ($user->department->name === 'LOGISTIC') {
-                $dataheaderQuery->orWhere(function ($query) {
-                    $query->whereHas(
-                        'Relationdepartement',
-                        function ($query) {
-                            $query->where('name', 'STORE');
-                        }
-                    );
+    // === FILTER BERDASARKAN ROLE USER ===
+    if ($user->specification->name === 'VERIFICATOR') {
+        $dataheaderQuery->where('is_approve', 1);
+    } elseif ($user->specification->name === 'DIRECTOR') {
+        $dataheaderQuery->where('status', 9);
+    } elseif ($user->is_gm) {
+        $dataheaderQuery
+            ->whereNotNull('autograph_2')
+            ->whereHas('Relationdepartement', function ($query) {
+                $query->where('is_office', false)->where(function ($query) {
+                    $query->where('name', '!=', 'QA')
+                          ->where('name', '!=', 'QC');
                 });
-            }
+            });
+    } elseif ($user->is_head) {
+        $dataheaderQuery->where('dept_id', $user->department->id);
 
-            $dataheaderQuery->where('status', 1);
-        } else {
-            $dataheaderQuery
-                ->where('dept_id', $user->department_id);
+        if ($user->department->name === 'LOGISTIC') {
+            $dataheaderQuery->orWhere(function ($query) {
+                $query->whereHas('Relationdepartement', function ($query) {
+                    $query->where('name', 'STORE');
+                });
+            });
         }
 
-        $dataheader = $dataheaderQuery
-            ->orderBy('id', 'desc')
-            ->orWhere('user_id', auth()->user()->id)
-            ->get();
-
-        return view("formovertime.index", compact("dataheader"));
+        $dataheaderQuery->where('status', 1);
+    } else {
+        $dataheaderQuery->where('dept_id', $user->department_id);
     }
+
+    // === FILTER TAMBAHAN ===
+    if ($request->filled('date')) {
+        $dataheaderQuery->whereDate('create_date', $request->input('date'));
+    }
+
+    if ($request->filled('dept')) {
+        $dataheaderQuery->where('dept_id', $request->input('dept'));
+    }
+
+    if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
+        $dataheaderQuery->where('is_push', $request->input('status'));
+    }
+
+    $dataheader = $dataheaderQuery
+        ->orderBy('id', 'desc')
+        ->orWhere('user_id', $user->id)
+        ->get();
+
+    $departments = Department::all();
+
+    return view("formovertime.index", compact("dataheader", "departments"));
+}
+
 
     public function create()
     {
@@ -76,6 +87,11 @@ class FormOvertimeController extends Controller
         $departements = Department::get();
 
         return view("formovertime.create", compact("employees", "departements"));
+    }
+
+    public function downloadTemplate()
+    {
+        return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');
     }
 
 
@@ -122,6 +138,7 @@ class FormOvertimeController extends Controller
 
         $userIdCreate = Auth::id();
         $deptId = $request->input('from_department');
+        $branch = $request->input('branch');
 
         $department = Department::find($deptId);
 
@@ -135,6 +152,7 @@ class FormOvertimeController extends Controller
             'user_id' => $userIdCreate,
             'dept_id' => $request->input('from_department'),
             'create_date' => $request->input('date_form_overtime'),
+            'branch' => $branch,
             'autograph_1' => strtoupper(Auth::user()->name) . '.png',
             'status' => $status,
             'is_design' => $request->input('design'),
@@ -143,7 +161,7 @@ class FormOvertimeController extends Controller
 
         // dd($headerData);
         $headerovertime = HeaderFormOvertime::create($headerData);
-        $this->sendNotification($headerovertime);
+       
 
         if ($uploadedFiles) {
 
@@ -151,6 +169,8 @@ class FormOvertimeController extends Controller
         } else {
             $this->detailOvertimeInsert($request, $headerovertime->id);
         }
+
+         $this->sendNotification($headerovertime);
 
         return redirect()->route('formovertime.index');
     }
@@ -238,7 +258,7 @@ class FormOvertimeController extends Controller
             'is_approve' => false,
         ]);
 
-        return redirect()->route('director.qaqc.index')->with('success', 'Report rejected!');
+        return redirect()->route('formovertime.index')->with('success', 'Report rejected!');
     }
 
 
@@ -298,7 +318,9 @@ class FormOvertimeController extends Controller
         }
 
         $headerForm->save();
-        $this->sendNotification($headerForm);
+        
+        //  $this->sendNotification($headerForm);
+
         return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
     }
 
@@ -459,5 +481,311 @@ class FormOvertimeController extends Controller
     {
         DetailFormOvertime::find($id)->delete();
         return redirect()->back()->with('success', 'Form Overtime Detail deleted successfully!');
+    }
+
+
+    // public function pushSingleHeaderToJPayroll($headerId)
+    // {
+    //     $header = HeaderFormOvertime::with(['details.employee'])->find($headerId);
+
+    //     if (!$header || $header->is_push == 1) {
+    //         return; // Jangan push ulang
+    //     }
+      
+    //     $result = collect();
+    //     foreach ($header->details as $detail) {
+             
+    //         $result->push([
+    //              'OTType'      => '1',
+                          
+    //             'OTDate'       => Carbon::parse($header->create_date)->format('d/m/Y'),
+    //             'JobDesc'      => $detail->job_desc,
+    //             'Department'   => $detail->employee->organization_structure ?? 0,
+    //             'StartDate'    => Carbon::parse($detail->start_date)->format('d/m/Y'),
+    //             'StartTime'    => Carbon::parse($detail->start_time)->format('H:i'),
+    //             'EndDate'      => Carbon::parse($detail->end_date)->format('d/m/Y'),
+    //             'EndTime'      => Carbon::parse($detail->end_time)->format('H:i'),
+    //             'BreakTime'    => $detail->break,
+    //             'Remark'       => $detail->remarks,
+    //             'Choice'       => '1',
+    //             'CompanyArea'  => '10000',
+    //                'EmpList'      => [
+    //                                 'NIK1' => $detail->NIK
+    //                                 ]
+    //         ]);
+    //     }
+    //     $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
+    //     $allSuccess = true;
+
+    //     foreach ($result as $payload) {
+    //         try {
+    //            $response = Http::withHeaders([
+    //                 'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
+    //                 'Content-Type' => 'application/json'
+    //             ])->post($url, $payload);
+
+    //             $responseData = [
+    //                 'NIK' => $payload['EmpList']['NIK1'],
+    //                 'status' => $response->status(),
+    //                 'body' => $response->body()
+    //             ];
+    //             $responses[] = $responseData;
+
+    //             if ($response->successful()) {
+    //                 Log::info("✅ Success push for NIK: " . $payload['EmpList']['NIK1'], $responseData);
+    //             } else {
+    //                 Log::error("❌ Failed push for NIK: " . $payload['EmpList']['NIK1'], $responseData);
+    //                 $allSuccess = false;
+    //             }
+    //         } catch (\Exception $e) {
+    //             $responses[] = [
+    //                 'NIK' => $payload['EmpList']['NIK1'],
+    //                 'status' => 'exception',
+    //                 'error' => $e->getMessage()
+    //             ];
+    //             Log::error("❌ Exception push for NIK: " . $payload['EmpList']['NIK1'], [
+    //                 'error' => $e->getMessage()
+    //             ]);
+    //             $allSuccess = false;
+    //         }
+    //     }
+
+    //     if ($allSuccess) {
+    //         $header->is_push = 1;
+    //         $header->save();
+    //         Log::info("✅ All data pushed successfully. Header ID: $headerId marked as pushed.");
+    //     } else {
+    //         Log::warning("⚠️ Not all data pushed successfully. Header ID: $headerId NOT marked as pushed.");
+    //     }
+
+    //     return response()->json([
+    //         'success' => $allSuccess,
+    //         'responses' => $responses
+    //     ]);
+    // }
+
+
+    public function pushSingleDetailToJPayroll($detailId, Request $request)
+    {
+        $action = $request->query('action'); // 'approve' atau 'reject'
+
+        $detail = DetailFormOvertime::with('employee', 'header')->find($detailId);
+
+        if (!$detail) {
+            return response()->json(['error' => 'Detail tidak ditemukan'], 404);
+        }
+
+        if ($detail->header->is_push == 1) {
+            return response()->json(['error' => 'Header sudah dipush'], 400);
+        }
+
+        // Kalau aksi adalah reject, langsung update status-nya
+        if ($action === 'reject') {
+            $detail->status = 'Rejected';
+            $detail->save();
+
+             $this->checkAndUpdateHeaderPushStatus($detail->header_id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil direject',
+            ]);
+        }
+
+       
+
+        // Jika bukan approve, maka tidak valid
+        if ($action !== 'approve') {
+            return response()->json(['error' => 'Aksi tidak valid'], 400);
+        }
+
+        $header = $detail->header;
+        $employee = $detail->employee;
+
+        $payload = [
+            'OTType'      => '1',
+            'OTDate'      => Carbon::parse($header->create_date)->format('d/m/Y'),
+            'JobDesc'     => $detail->job_desc,
+            'Department'  => $employee->organization_structure ?? 0,
+            'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
+            'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
+            'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
+            'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
+            'BreakTime'   => $detail->break,
+            'Remark'      => $detail->remarks,
+            'Choice'      => '1',
+            'CompanyArea' => '10000',
+            'EmpList'     => [
+                'NIK1' => $detail->NIK
+            ]
+        ];
+
+        $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
+
+        try {
+            $response = Http::withHeaders([
+                'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
+                'Content-Type' => 'application/json'
+            ])->post($url, $payload);
+
+            $responseData = [
+                'NIK' => $detail->NIK,
+                'status' => $response->status(),
+                'body' => $response->body()
+            ];
+
+            if ($response->successful()) {
+                $detail->is_processed = 1;
+                $detail->status = 'Approved';
+                $detail->save();
+
+                $this->checkAndUpdateHeaderPushStatus($detail->header_id);
+
+                Log::info("✅ Success push for detail ID: $detailId", $responseData);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data berhasil dipush & diapprove',
+                    'response' => $responseData
+                ]);
+            } else {
+                Log::error("❌ Failed push for detail ID: $detailId", $responseData);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal push data',
+                    'response' => $responseData
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error("❌ Exception push for detail ID: $detailId", [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi exception saat push',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function pushAllDetailsToJPayroll($headerId)
+    {
+        $header = HeaderFormOvertime::with('details.employee')->find($headerId);
+
+        if (!$header) {
+            return response()->json(['error' => 'Header tidak ditemukan'], 404);
+        }
+
+        if ($header->is_push == 1) {
+            return response()->json(['error' => 'Header sudah dipush sebelumnya'], 400);
+        }
+
+        $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
+
+        $successCount = 0;
+        $failed = [];
+
+        foreach ($header->details as $detail) {
+            // Skip jika statusnya Rejected
+            if ($detail->status === 'Rejected') {
+                continue;
+            }
+
+            $employee = $detail->employee;
+
+            $payload = [
+                'OTType'      => '1',
+                'OTDate'      => Carbon::parse($header->create_date)->format('d/m/Y'),
+                'JobDesc'     => $detail->job_desc,
+                'Department'  => $employee->organization_structure ?? 0,
+                'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
+                'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
+                'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
+                'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
+                'BreakTime'   => $detail->break,
+                'Remark'      => $detail->remarks,
+                'Choice'      => '1',
+                'CompanyArea' => '10000',
+                'EmpList'     => [
+                    'NIK1' => $detail->NIK
+                ]
+            ];
+
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==',
+                    'Content-Type' => 'application/json'
+                ])->post($url, $payload);
+
+                $responseData = [
+                    'NIK' => $detail->NIK,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ];
+
+                if ($response->successful()) {
+                    $detail->is_processed = 1;
+                    $detail->status = 'Approved';
+                    $detail->save();
+
+                    Log::info("✅ Success push for detail ID: $detail->id", $responseData);
+                    $successCount++;
+                } else {
+                    Log::error("❌ Failed push for detail ID: $detail->id", $responseData);
+                    $failed[] = [
+                        'detail_id' => $detail->id,
+                        'NIK' => $detail->NIK,
+                        'reason' => 'Push gagal',
+                        'response' => $responseData
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::error("❌ Exception push for detail ID: $detail->id", [
+                    'error' => $e->getMessage()
+                ]);
+                $failed[] = [
+                    'detail_id' => $detail->id,
+                    'NIK' => $detail->NIK,
+                    'reason' => 'Exception: ' . $e->getMessage()
+                ];
+            }
+        }
+
+        // Setelah semua proses, cek apakah semua detail sudah diapprove atau direject
+        $this->checkAndUpdateHeaderPushStatus($headerId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Proses push selesai',
+            'total_success' => $successCount,
+            'total_failed' => count($failed),
+            'failed_details' => $failed
+        ]);
+    }
+
+
+
+    private function checkAndUpdateHeaderPushStatus($headerId)
+    {
+        $header = HeaderFormOvertime::with('details')->find($headerId);
+
+        if (!$header) {
+            return false;
+        }
+
+        // Cek kalau semua detail punya status (tidak null)
+        $hasPending = $header->details->contains(function ($detail) {
+            return is_null($detail->status);
+        });
+
+        if (!$hasPending) {
+            $header->is_push = 1;
+            $header->save();
+        }
+
+        return !$hasPending;
     }
 }

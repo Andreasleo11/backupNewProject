@@ -54,6 +54,18 @@
             @endif
         </div>
     </div>
+     @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+                        <button 
+                            id="btnPushAll" 
+                            data-header-id="{{ $header->id }}" 
+                            class="bg-red-600 hover:bg-red-700 text-black font-semibold px-4 py-2 rounded">
+                            Push All to JPayroll
+                        </button>
+
+                        <!-- Tempat notifikasi -->
+                        <div id="pushAllResult" class="mt-2 text-sm"></div>
+                    @endif
+
 
     @include('partials.formovertime-autographs')
 
@@ -81,6 +93,7 @@
                         </div>
                     </div>
                     <hr>
+
                     <div class="table-responsive mt-4">
                         <table class="table table-bordered table-hover text-center table-striped mb-0">
                             <thead>
@@ -148,10 +161,24 @@
                                                 'title' => 'Delete item detail',
                                                 'body' => 'Are you sure want to delete this?',
                                             ])
-                                                <button class="btn btn-danger btn-sm"
+                                                <!-- <button class="btn btn-danger btn-sm"
                                                     data-bs-target="#delete-confirmation-modal-{{ $data->id }}"
-                                                    data-bs-toggle="modal">Delete</button>
+                                                    data-bs-toggle="modal">Delete</button> -->
+                                                @if ($data->is_processed == 1 && $data->status === 'Approved')
+                                                    <span class="text-success fw-bold">APPROVED</span>
+                                                @elseif ($data->status === 'Rejected')
+                                                    <span class="text-danger fw-bold">REJECTED</span>
+                                                @else
+                                                    <button class="btn btn-success btn-sm" onclick="handleOvertimeAction({{ $data->id }}, 'approve')">
+                                                        Approve
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="handleOvertimeAction({{ $data->id }}, 'reject')">
+                                                        Reject
+                                                    </button>
+                                                @endif
                                             </td>
+                                           
+
                                         @endif
                                 </tr>
                             @empty
@@ -265,6 +292,76 @@
                 }
             }
         }
+
+        function handleOvertimeAction(detailId, actionType) {
+            if (!['approve', 'reject'].includes(actionType)) {
+                alert('Aksi tidak valid.');
+                return;
+            }
+
+            if (!confirm(`Yakin ingin ${actionType === 'approve' ? 'menyetujui' : 'menolak'} lembur ini?`)) {
+                return;
+            }
+
+            fetch(`/push-overtime-detail/${detailId}?action=${actionType}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Berhasil diproses.');
+                    location.reload(); // Refresh agar data update
+                } else {
+                    alert(data.message || 'Gagal memproses.');
+                    console.error(data);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Terjadi kesalahan saat proses.');
+            });
+        }
+
+        document.getElementById('btnPushAll').addEventListener('click', function() {
+        const headerId = this.dataset.headerId;
+
+        if (!confirm("Apakah Anda yakin ingin mem-push semua data detail yang belum ditolak (Rejected)?")) {
+            return;
+        }
+
+        // Tampilkan loader
+        document.getElementById('pushAllLoader').classList.remove('hidden');
+        document.getElementById('pushAllResult').innerText = '';
+
+        fetch(`/overtime/push-all/${headerId}`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('pushAllLoader').classList.add('hidden');
+            
+            if (data.success) {
+                document.getElementById('pushAllResult').innerHTML = 
+                    `<span class="text-green-600 font-semibold">✅ ${data.message}</span>`;
+            } else {
+                document.getElementById('pushAllResult').innerHTML = 
+                    `<span class="text-red-600 font-semibold">❌ ${data.message}</span>`;
+            }
+        })
+        .catch(error => {
+            document.getElementById('pushAllLoader').classList.add('hidden');
+            document.getElementById('pushAllResult').innerHTML = 
+                `<span class="text-red-600 font-semibold">❌ Terjadi kesalahan saat memproses.</span>`;
+            console.error('Error:', error);
+        });
+    });
 
         // Call the function to check autograph status on page load
         window.onload = function() {

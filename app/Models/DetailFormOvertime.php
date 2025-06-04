@@ -27,4 +27,9 @@ class DetailFormOvertime extends Model
     {
         return $this->belongsTo(HeaderFormOvertime::class, 'header_id', 'id');
     }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'NIK', 'NIK');
+    }
 }

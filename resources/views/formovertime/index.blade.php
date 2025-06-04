@@ -2,6 +2,42 @@
 
 @section('content')
     @include('partials.alert-success-error')
+
+    <form method="GET" action="{{ route('formovertime.index') }}" class="row g-3 align-items-end mb-4">
+        <div class="col-md-3">
+            <label for="date" class="form-label">Overtime Date</label>
+            <input type="date" class="form-control" name="date" id="date" value="{{ request('date') }}">
+        </div>
+
+        <div class="col-md-3">
+            <label for="dept" class="form-label">Department</label>
+            <select class="form-select" name="dept" id="dept">
+                <option value="">-- All --</option>
+                @foreach ($departments as $dept)
+                    <option value="{{ $dept->id }}" {{ request('dept') == $dept->id ? 'selected' : '' }}>
+                        {{ $dept->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        @if (Auth::user()->specification->name == 'VERIFICATOR')
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" name="status" id="status">
+                    <option value="">-- Semua --</option>
+                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>SELESAI</option>
+                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>BELUM SELESAI</option>
+                </select>
+            </div>
+        @endif
+
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a>
@@ -43,6 +79,12 @@
                                     <td> @formatDate($fot->create_date) </td>
                                     <td>
                                         @include('partials.formovertime-status', ['fot' => $fot])
+                                         @if($fot->is_push == 1)
+                                            <span class="text-success">
+                                                <i class="bx bx-check-circle me-1" title="Pushed to JPayroll"></i>
+                                                Finish by Bu Bernadett
+                                            </span>
+                                        @endif
                                     </td>
                                     <td>
                                         <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"
