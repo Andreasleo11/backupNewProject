@@ -24,6 +24,7 @@ class HeaderFormOvertime extends Model
         'is_design',
         'is_export',
         'description',
+        'is_planned'
     ];
 
     public function Relationuser()

@@ -67,6 +67,7 @@
                                 <th class="fw-semibold fs-5">Dept</th>
                                 <th class="fw-semibold fs-5">Create Overtime Date</th>
                                 <th class="fw-semibold fs-5">Status</th>
+                                <th class="fw-semibold fs-5">Is Planned?</th>
                                 <th class="fw-semibold fs-5">Action</th>
                             </tr>
                         </thead>
@@ -79,12 +80,19 @@
                                     <td> @formatDate($fot->create_date) </td>
                                     <td>
                                         @include('partials.formovertime-status', ['fot' => $fot])
-                                         @if($fot->is_push == 1)
+                                        @if ($fot->is_push == 1)
                                             <span class="text-success">
                                                 <i class="bx bx-check-circle me-1" title="Pushed to JPayroll"></i>
                                                 Finish by Bu Bernadett
                                             </span>
                                         @endif
+                                    </td>
+                                    <td>
+                                        {{-- planned / urgent badge --}}
+                                        <span
+                                            class="px-3 py-2 fs-6 badge {{ $fot->is_planned ? 'text-secondary border border-secondary' : 'text-danger border border-danger' }}">
+                                            {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
+                                        </span>
                                     </td>
                                     <td>
                                         <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"
