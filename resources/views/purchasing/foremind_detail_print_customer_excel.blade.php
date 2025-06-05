@@ -118,10 +118,10 @@
                                             <strong>Total</strong></td>
                                         @foreach ($monthlyTotals as $monthlyTotal)
                                             <td align="center" style="vertical-align: middle;">
-                                                <strong>{{ $monthlyTotal }}</strong></td>
+                                                <strong>{{ number_format($monthlyTotal, 2) }}</strong></td>
                                         @endforeach
                                         <td align="center" style="vertical-align: middle;">
-                                            <strong>{{ array_sum($monthlyTotals) }}</strong></td>
+                                            <strong>{{ number_format(array_sum($monthlyTotals), 2) }}</strong></td>
                                         <td></td> <!-- Empty cell for customer -->
                                     </tr>
                                     <tr>

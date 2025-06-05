@@ -116,6 +116,15 @@
                                 </select>
                             </div>
 
+                            <div class="form-group mt-3">
+                                <label class="form-label fs-5 fw-bold" for="branch">Branch</label>
+                                <select class="form-select" name="branch" id="branch" required>
+                                    <option value="" selected disabled>Select branch..</option>
+                                    <option value="Jakarta">Jakarta</option>
+                                    <option value="Karawang">Karawang</option>
+                                </select>
+                            </div>
+
                             <div id="designFieldContainer"></div>
 
                             <div class="form-group mt-3">
@@ -135,6 +144,12 @@
                             </div>
 
                             <div class="form-group mt-3" id="fileUploadSection">
+                                 <div class="d-flex justify-content-end mb-3">
+                                    <a href="{{ route('formovertime.template.download') }}" 
+                                    class="btn btn-primary">
+                                        Download Template Overtime
+                                    </a>
+                                </div>
                                 <label class="form-label fs-5 fw-bold" for="excel_file">Import Employees from
                                     Excel</label>
                                 <input class="form-control" type="file" id="excel_file" name="excel_file"

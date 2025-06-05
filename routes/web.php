@@ -90,7 +90,7 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
-use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\EmployeeDailyReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,6 +106,55 @@ use Illuminate\Support\Facades\URL;
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
 // Route::get('/', fn() => view('welcome'))->name('/');
+Route::get('/test-overtime', function () {
+    $params = [
+        'CompanyArea' => "10000",            // Mandatory
+        'NIK'         => "05551",         // Mandatory              // Optional
+        'Date1'       => "01/05/2022",       // Optional
+        'Date2'       => "30/04/2025"       // Optional
+    ];
+
+    // Filter null values (biar gak dikirim kalau kosong)
+    $filteredParams = array_filter($params);
+
+      $response = Http::asJson()
+    ->withHeaders([
+        'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
+    ])
+    ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
+
+
+    // Dump response untuk debugging
+    if ($response->successful()) {
+        return response()->json([
+            'success' => true,
+            'data' => $response->json(),
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+    }
+});
+
+
+Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
+Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
+Route::get('/user-list', [UserRoleController::class, 'User']);
+
+Route::get('/test/depthead', [EmployeeDailyReportController::class, 'indexDepthead'])->name('reports.depthead.index');
+Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
+
+Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
+Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
+Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+
+Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
+Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
+Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
+Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -661,7 +710,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
-
+    Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
@@ -960,10 +1010,10 @@ Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     return redirect('/'); // or wherever you want to redirect after login
 })->name('autologin');
 
-Route::get('/director-login', function () {
-    $user = \App\Models\User::where('name', 'djoni')->first();
+Route::get('/dashboard-employee-login', function () {
+    $user = \App\Models\User::where('name', 'dashboardemployee')->first();
 
-    $link = URL::temporarySignedRoute(
+    $link = \Illuminate\Support\Facades\URL::temporarySignedRoute(
         'autologin',
         now()->addMinutes(30),
         ['name' => $user->name]

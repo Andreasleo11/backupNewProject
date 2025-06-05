@@ -14,6 +14,7 @@ class HeaderFormOvertime extends Model
         'user_id',
         'dept_id',
         'create_date',
+        'branch',
         'autograph_1',
         'autograph_2',
         'autograph_3',
