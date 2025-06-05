@@ -3,7 +3,6 @@
 @section('content')
     @php
         $h = $inspectionReport; // shorthand
-        dd($h);
     @endphp
 
     <div class="container py-4">
@@ -33,7 +32,7 @@
             <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 my-4">
                 @php
                     $cards = [
-                        ['Inspection&nbsp;Date', $r->inspection_date, 'calendar-event'],
+                        ['Inspection Date', $r->inspection_date, 'calendar-event'],
                         ['Shift', $r->shift, 'sun'],
                         ['Customer', $r->customer, 'person-badge'],
                         ['Machine', $r->machine_number, 'cpu'],
@@ -53,64 +52,133 @@
                 @endforeach
             </div>
 
-            {{-- part details accordion --------------------------------------- --}}
-            <div class="accordion" id="partAccordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingPart">
-                        <button class="accordion-button collapsed fw-bold" data-bs-toggle="collapse"
-                            data-bs-target="#collapsePart" aria-expanded="false">
-                            Part Details
-                        </button>
-                    </h2>
-                    <div id="collapsePart" class="accordion-collapse collapse" data-bs-parent="#partAccordion">
-                        <div class="accordion-body">
-                            <dl class="row mb-0">
-                                <dt class="col-sm-3">Number</dt>
-                                <dd class="col-sm-9">{{ $r->part_number }}</dd>
-                                <dt class="col-sm-3">Name</dt>
-                                <dd class="col-sm-9">{{ $r->part_name }}</dd>
-                                <dt class="col-sm-3">Material</dt>
-                                <dd class="col-sm-9">{{ $r->material }}</dd>
-                                <dt class="col-sm-3">Color</dt>
-                                <dd class="col-sm-9">{{ $r->color }}</dd>
-                                <dt class="col-sm-3">Weight</dt>
-                                <dd class="col-sm-9">{{ $r->weight }} {{ $r->weight_uom }}</dd>
-                                <dt class="col-sm-3">Tool / Cavity</dt>
-                                <dd class="col-sm-9">{{ $r->tool_number_or_cav_number }}</dd>
-                            </dl>
-                        </div>
-                    </div>
+            {{-- part details card -------------------------------------------------- --}}
+            <div class="card shadow-sm my-4">
+                <div class="card-header bg-primary-subtle text-dark fw-bold py-3 fs-5">
+                    <i class="bi bi-box me-1"></i> Part Details
+                </div>
+
+                <div class="card-body">
+                    <dl class="row mb-0 small">
+                        <dt class="col-sm-3 text-muted">Number</dt>
+                        <dd class="col-sm-9">{{ $r->part_number }}</dd>
+
+                        <dt class="col-sm-3 text-muted">Name</dt>
+                        <dd class="col-sm-9">{{ $r->part_name }}</dd>
+
+                        <dt class="col-sm-3 text-muted">Material</dt>
+                        <dd class="col-sm-9">{{ $r->material }}</dd>
+
+                        <dt class="col-sm-3 text-muted">Color</dt>
+                        <dd class="col-sm-9">{{ $r->color }}</dd>
+
+                        <dt class="col-sm-3 text-muted">Weight</dt>
+                        <dd class="col-sm-9">
+                            {{ $r->weight }}&nbsp;<span class="text-muted">{{ $r->weight_uom }}</span>
+                        </dd>
+
+                        <dt class="col-sm-3 text-muted">Tool&nbsp;/ Cavity</dt>
+                        <dd class="col-sm-9">{{ $r->tool_number_or_cav_number }}</dd>
+                    </dl>
                 </div>
             </div>
 
-            {{-- quarter pills -------------------------------------------------- --}}
+
+            {{-- quarter pills ---------------------------------------------------- --}}
+            @php
+                /** quarters that actually have detail rows */
+                $filledQuarters = $r->detailInspectionReports->pluck('quarter')->all(); // e.g. [1,3]
+            @endphp
+
             <ul class="nav nav-pills my-4" id="qTab" role="tablist">
-                @foreach ($quarters as $i => $q)
+                @foreach (range(1, 4) as $q)
+                    @php $hasData = in_array($q, $filledQuarters); @endphp
+
                     <li class="nav-item">
-                        <button class="nav-link border border-primary me-2 {{ $i === 0 ? 'active' : '' }}"
+                        <button
+                            class="nav-link me-2
+                           border {{ $hasData ? 'border-primary' : 'border-secondary text-muted opacity-50' }}
+                           {{ $loop->first ? 'active' : '' }}"
                             id="q{{ $q }}-tab" data-bs-toggle="tab" data-bs-target="#q{{ $q }}-pane"
-                            role="tab">
+                            type="button" role="tab" @if (!$hasData) aria-disabled="true" @endif>
                             Quarter {{ $q }}
                         </button>
                     </li>
                 @endforeach
             </ul>
 
-            {{-- quarter panes -------------------------------------------------- --}}
+
+            {{-- quarter panes ---------------------------------------------------- --}}
             <div class="tab-content" id="qTabContent">
-                @foreach ($quarters as $i => $q)
-                    @php $d = $r->detailInspectionReports->firstWhere('quarter',$q); @endphp
-                    <div class="tab-pane fade {{ $i === 0 ? 'show active' : '' }}" id="q{{ $q }}-pane"
+                @foreach (range(1, 4) as $q)
+                    @php
+                        $d = $r->detailInspectionReports->firstWhere('quarter', $q); // may be null
+                        $hasData = !is_null($d);
+                    @endphp
+
+                    <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="q{{ $q }}-pane"
                         role="tabpanel">
-                        {{-- timeline badge --}}
-                        <p class="text-muted mb-4">
-                            <i class="bi bi-clock me-1"></i>
-                            {{ $d->start_datetime }} – {{ $d->end_datetime }}
+
+                        @if (!$hasData)
+                            <div class="alert alert-secondary my-4" role="alert">
+                                <i class="bi bi-info-circle me-1"></i>
+                                No data entered for Quarter {{ $q }} yet.
+                            </div>
+                            @continue
+                        @endif
+
+                        {{-- timeline badge ------------------------------------------------ --}}
+                        @php
+                            $start = Carbon\Carbon::parse($d->start_datetime);
+                            $end = Carbon\Carbon::parse($d->end_datetime);
+
+                            // duration
+                            $hours = $start->diffInHours($end);
+                            $mins = $start->diffInMinutes($end) % 60;
+                            $dur = ($hours ? $hours . ' h ' : '') . $mins . ' m';
+
+                            // same day?
+                            $sameDay = $start->isSameDay($end);
+                        @endphp
+
+                        <p class="mb-4">
+
+                            {{-- ▼ Date(s) ---------------------------------------------------- --}}
+                            @if ($sameDay)
+                                <span class="text-muted">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ $start->format('d M Y') }}
+                                </span>
+                            @else
+                                <span class="text-muted">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ $start->format('d M Y') }}
+                                </span>
+                                <span class="text-muted ms-2">
+                                    <i class="bi bi-arrow-right"></i>
+                                </span>
+                                <span class="text-muted ms-2">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ $end->format('d M Y') }}
+                                </span>
+                            @endif
+
+                            {{-- ▼ Time range ------------------------------------------------ --}}
+                            <span class="badge bg-light text-dark ms-3">
+                                <i class="bi bi-clock me-1"></i>
+                                {{ $start->format('H:i') }} &rarr; {{ $end->format('H:i') }}
+                            </span>
+
+                            {{-- ▼ Duration --------------------------------------------------- --}}
+                            <span class="badge bg-secondary ms-1">
+                                <i class="bi bi-hourglass-split me-1"></i>{{ $dur }}
+                            </span>
                         </p>
 
-                        {{-- accordion per dataset -------------------------------- --}}
-                        <div class="accordion" id="accordionQ{{ $q }}">
 
+
+                        {{-- accordion per dataset (unchanged) ----------------------------- --}}
+                        <div class="accordion" id="accordionQ{{ $q }}">
                             {{-- First Inspection --}}
                             <x-inspection-section parent="accordionQ{{ $q }}" id="first{{ $q }}"
                                 title="First Inspection">
@@ -119,7 +187,7 @@
                                 ])
                             </x-inspection-section>
 
-                            {{-- Measurement Data --}}
+                            {{-- Measurement Data (optional) --}}
                             <x-inspection-section parent="accordionQ{{ $q }}" id="measure{{ $q }}"
                                 title="Measurement Data">
                                 @include('inspection.partials.measurement-table', [
@@ -127,7 +195,7 @@
                                 ])
                             </x-inspection-section>
 
-                            {{-- Second Inspection (and its children) --}}
+                            {{-- Second Inspection & children --}}
                             <x-inspection-section parent="accordionQ{{ $q }}" id="second{{ $q }}"
                                 title="Second Inspection">
                                 @include('inspection.partials.second-inspection', [
@@ -144,7 +212,7 @@
                                 ])
                             </x-inspection-section>
 
-                            {{-- Problems --}}
+                            {{-- Problems / Downtime --}}
                             <x-inspection-section parent="accordionQ{{ $q }}" id="problem{{ $q }}"
                                 title="Problems / Downtime">
                                 @include('inspection.partials.problems', ['rows' => $h->problemData])
@@ -153,5 +221,6 @@
                     </div>
                 @endforeach
             </div>
+
         </div>
     @endsection

@@ -92,17 +92,80 @@ class FinalSubmit extends Component
         return QuarterValidator::missing($payload);
     }
 
+    /** ------------------------------------------------------------------
+     *  Return two arrays:
+     *    [$complete, $incomplete]
+     *  where each item is the quarter number (int).
+     */
+    protected function splitCompleteQuarters(): array
+    {
+        // gather all quarters seen anywhere (q1-q4)
+        $allQ = collect($this->detailData)->keys()
+            ->map(fn($k) => (int) substr($k, 1))
+            ->unique()
+            ->sort()
+            ->values();
+
+        $required = [
+            'detailData',
+            'firstData',
+            'secondData',
+            'samplingData',
+            'packagingData',
+            'judgementData',
+            'problemData',
+            'quantityData',
+        ];
+
+        $complete   = [];
+        $incomplete = [];
+
+        foreach ($allQ as $q) {
+            $hasAll = collect($required)->every(function ($prop) use ($q) {
+                return isset($this->{$prop}["q{$q}"]) && !empty($this->{$prop}["q{$q}"]);
+            });
+
+            if ($hasAll) {
+                $complete[] = $q;        // push into the “complete” bucket
+            } else {
+                $incomplete[] = $q;      // push into the “incomplete” bucket
+            }
+        }
+
+        return [$complete, $incomplete];
+    }
+
     public function submit()
     {
-        $this->holeReport = $this->computeHoleReport();   // refresh!
+        [$completeQ, $incompleteQ] = $this->splitCompleteQuarters();
 
-        if (!empty($this->holeReport)) {
+        // no quarter fully filled?  -> hard-stop
+        if (empty($completeQ)) {
             $this->dispatch(
                 'toast',
-                message: 'Fill all missing quarters before submitting.',
+                message: 'No quarter is complete – nothing was saved.',
                 type: 'error'
             );
             return;
+        }
+
+        // 1) trim every section array so it only keeps complete quarters
+        foreach (
+            [
+                'detailData',
+                'firstData',
+                'measurementData',
+                'secondData',
+                'samplingData',
+                'packagingData',
+                'judgementData',
+                'problemData',
+                'quantityData'
+            ] as $prop
+        ) {
+            $this->{$prop} = collect($this->{$prop})
+                ->only(array_map(fn($q) => "q{$q}", $completeQ))
+                ->all();
         }
 
         DB::transaction(function () {
@@ -144,13 +207,21 @@ class FinalSubmit extends Component
             }
         });
 
+        $ok  = implode(', ', array_map(fn($q) => "Q{$q}", $completeQ));
+        $bad = implode(', ', array_map(fn($q) => "Q{$q}", $incompleteQ));
+
+        $this->dispatch(
+            'toast',
+            message: "Saved quarters: {$ok}" . ($bad ? ". Skipped: {$bad}" : ''),
+            type: $bad ? 'warning' : 'success'
+        );
         $this->dispatch('toast', message: 'Inspection report submitted successfully!');
         session()->forget([
             'stepHeaderSaved',
             'stepDetailSaved',
             'lastStepVisited'
         ]);
-        redirect()->route('inspection-report');
+        redirect()->route('inspection-report.index');
     }
 
     public function render()

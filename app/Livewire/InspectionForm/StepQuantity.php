@@ -57,11 +57,14 @@ class StepQuantity extends Component
                 // Clamp pass_quantity to output_quantity
                 if ($this->pass_quantity > $this->output_quantity) {
                     $this->pass_quantity = $this->output_quantity;
+                } else {
                 }
 
                 // If everything passed, zero out rejects automatically
                 if ($this->pass_quantity == $this->output_quantity) {
                     $this->reject_quantity = 0;
+                } else {
+                    $this->reject_quantity = $this->output_quantity - $this->pass_quantity;
                 }
             }
         }
