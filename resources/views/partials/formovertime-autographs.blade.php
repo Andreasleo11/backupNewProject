@@ -208,6 +208,10 @@
                             <h2>Director</h2>
                             <div class="autograph-box container" id="autographBox4"></div>
                             <div class="container mt-2" id="autographuser4"></div>
+                        <div class="col my-2">
+                            <h2>Director</h2>
+                            <div class="autograph-box container" id="autographBox4"></div>
+                            <div class="container mt-2" id="autographuser4"></div>
 
                             @if (Auth::check() &&
                                     $currentUser->specification->name === "DIRECTOR" &&

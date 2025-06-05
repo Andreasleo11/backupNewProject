@@ -149,12 +149,10 @@ class FormOvertimeController extends Controller
         }
 
         $date     = $request->input('date_form_overtime');   // e.g. "2025-06-04"
-        $isPlanned = $date                                   // make sure the field is present
-            && Carbon::parse($date)                 // turn the string into a Carbon object
-            ->lt(now());                    // true if the date is *before* now()
-
         $isPlanned = $request->filled('date_form_overtime')
-            && Carbon::parse($request->date_form_overtime)->isPast();
+            && Carbon::parse($date)->greaterThan(  // later than…
+                now()->startOfDay()               // …the very end of today
+            );
 
         $headerData = [
             'user_id' => $userIdCreate,
