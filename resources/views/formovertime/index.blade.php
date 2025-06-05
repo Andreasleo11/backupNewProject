@@ -65,7 +65,7 @@
                                 <th class="fw-semibold fs-5">ID</th>
                                 <th class="fw-semibold fs-5">Admin</th>
                                 <th class="fw-semibold fs-5">Dept</th>
-                                <th class="fw-semibold fs-5">Create Overtime Date</th>
+                                <th class="fw-semibold fs-5">Overtime Date</th>
                                 <th class="fw-semibold fs-5">Status</th>
                                 <th class="fw-semibold fs-5">Is Planned?</th>
                                 <th class="fw-semibold fs-5">Action</th>
