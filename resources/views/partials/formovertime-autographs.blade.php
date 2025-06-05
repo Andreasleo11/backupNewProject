@@ -203,29 +203,52 @@
                                 @endif
                             @endif
                         </div>
-                    @endif
 
-                    <div class="col my-2">
-                        <h2>Director</h2>
-                        <div class="autograph-box container" id="autographBox4"></div>
-                        <div class="container mt-2" id="autographuser4"></div>
+                        <div class="col my-2">
+                            <h2>Director</h2>
+                            <div class="autograph-box container" id="autographBox4"></div>
+                            <div class="container mt-2" id="autographuser4"></div>
 
-                        @if (Auth::check() &&
-                                $currentUser->specification->name == 'DIRECTOR' &&
-                                $header->autograph_3 &&
-                                $header->is_approve === null)
-                            <button id="btn4" class="btn btn-primary"
-                                onclick="addAutograph(4 , {{ $header->id }})">Accept</button>
-                            @if ($header->autograph_4 === null)
-                                @include('partials.reject-modal', [
-                                    'id' => $header->id,
-                                    'route' => 'overtime.reject',
-                                ])
-                                <button class="btn btn-danger ms-5" data-bs-toggle="modal"
-                                    data-bs-target="#rejectModal">Reject</button>
+                            @if (Auth::check() &&
+                                    $currentUser->specification->name === "DIRECTOR" &&
+                                    $header->autograph_3 &&
+                                    $header->is_approve === null)
+                                <button id="btn4" class="btn btn-primary"
+                                    onclick="addAutograph(4 , {{ $header->id }})">Accept</button>
+                                @if ($header->autograph_4 === null)
+                                    @include('partials.reject-modal', [
+                                        'id' => $header->id,
+                                        'route' => 'overtime.reject',
+                                    ])
+                                    <button class="btn btn-danger ms-5" data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal">Reject</button>
+                                @endif
                             @endif
-                        @endif
-                    </div>
+                        </div>
+                    @else
+                        <div class="col my-2">
+                            <h2>Director</h2>
+                            <div class="autograph-box container" id="autographBox3"></div>
+                            <div class="container mt-2" id="autographuser3"></div>
+
+                            @if (Auth::check() &&
+                                    $currentUser->specification->name == 'DIRECTOR' &&
+                                    $header->autograph_2 &&
+                                    $header->is_approve === null)
+                                <button id="btn3" class="btn btn-primary"
+                                    onclick="addAutograph(3 , {{ $header->id }})">Accept</button>
+                                @if ($header->autograph_3 === null)
+                                    @include('partials.reject-modal', [
+                                        'id' => $header->id,
+                                        'route' => 'overtime.reject',
+                                    ])
+                                    <button class="btn btn-danger ms-5" data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal">Reject</button>
+                                @endif
+                            @endif
+                        </div>
+                    @endif
+                    
                 @else
                     <div class="col my-2">
                         <h2>Director</h2>

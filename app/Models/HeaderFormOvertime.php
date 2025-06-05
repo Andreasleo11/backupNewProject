@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class HeaderFormOvertime extends Model
 {
     protected $table = 'header_form_overtime';
-    public $timestamps = false;
 
     protected $fillable = [
         'user_id',
