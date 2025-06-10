@@ -231,6 +231,7 @@ class FormOvertimeController extends Controller
         $datas = DetailFormOvertime::Where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
+
         // dd($header);
         return view("formovertime.detail", compact("header", "datas", "employees", "departements"));
     }
