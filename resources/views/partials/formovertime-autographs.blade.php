@@ -101,7 +101,7 @@
         @endif
 
 
-        @if ($header->branch === 'Karawang')
+        @if ($header->branch === 'Karawang' && $header->Relationdepartement->name !== 'QA' && $header->Relationdepartement->name !== 'QC')
             <div class="col my-2">
                 <h2>GM</h2>
                 <div class="autograph-box container" id="autographBox3"></div>
@@ -208,13 +208,9 @@
                             <h2>Director</h2>
                             <div class="autograph-box container" id="autographBox4"></div>
                             <div class="container mt-2" id="autographuser4"></div>
-                        <div class="col my-2">
-                            <h2>Director</h2>
-                            <div class="autograph-box container" id="autographBox4"></div>
-                            <div class="container mt-2" id="autographuser4"></div>
 
                             @if (Auth::check() &&
-                                    $currentUser->specification->name === "DIRECTOR" &&
+                                    $currentUser->specification->name === 'DIRECTOR' &&
                                     $header->autograph_3 &&
                                     $header->is_approve === null)
                                 <button id="btn4" class="btn btn-primary"
@@ -252,7 +248,6 @@
                             @endif
                         </div>
                     @endif
-                    
                 @else
                     <div class="col my-2">
                         <h2>Director</h2>

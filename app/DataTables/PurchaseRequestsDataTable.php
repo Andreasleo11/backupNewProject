@@ -183,7 +183,13 @@ class PurchaseRequestsDataTable extends DataTable
         } elseif ($user->role->name === 'SUPERADMIN') {
             $query->whereNot('from_department', 'ADMIN');
         } else {
-            $query->where('from_department', $userDepartmentName);
+            $query->where(function ($subQuery) use($userDepartmentName){
+                $subQuery->where('from_department', $userDepartmentName);
+                
+                if(auth()->user()->department->name === 'QA'){
+                    $subQuery->orWhere('from_department', 'QC');
+                }
+            });
         }
 
         // $query->orWhere('user_id_create', auth()->user()->id);
