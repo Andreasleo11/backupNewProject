@@ -54,7 +54,11 @@ class FormOvertimeController extends Controller
 
             $dataheaderQuery->where('status', 1);
         } else {
-            $dataheaderQuery->where('dept_id', $user->department_id);
+              if ($user->name === 'Umi') {
+                    $dataheaderQuery->whereIn('dept_id', [1, 2]);
+                } else {
+                    $dataheaderQuery->where('dept_id', $user->department_id);
+                }
         }
 
         // === FILTER TAMBAHAN ===
@@ -537,7 +541,7 @@ class FormOvertimeController extends Controller
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
-                'NIK1' => $detail->NIK
+            'NIK1' => $detail->NIK
             ]
         ];
 
@@ -555,7 +559,9 @@ class FormOvertimeController extends Controller
                 'body' => $response->body()
             ];
 
-            if ($response->successful()) {
+            $responseJson = json_decode($response->body(), true);
+        
+            if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
                 $detail->is_processed = 1;
                 $detail->status = 'Approved';
                 $detail->save();
@@ -570,14 +576,15 @@ class FormOvertimeController extends Controller
                     'response' => $responseData
                 ]);
             } else {
-                Log::error("❌ Failed push for detail ID: $detailId", $responseData);
+                Log::warning("⚠️ Push rejected for detail ID: $detailId - JPayroll response not success", $responseData);
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal push data',
+                    'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: ' . ($responseJson['msg'] ?? 'Unknown error'),
                     'response' => $responseData
-                ], 500);
+                ], 400);
             }
+
         } catch (\Exception $e) {
             Log::error("❌ Exception push for detail ID: $detailId", [
                 'error' => $e->getMessage()
@@ -647,21 +654,28 @@ class FormOvertimeController extends Controller
                     'body' => $response->body()
                 ];
 
-                if ($response->successful()) {
+                if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
                     $detail->is_processed = 1;
                     $detail->status = 'Approved';
                     $detail->save();
 
-                    Log::info("✅ Success push for detail ID: $detail->id", $responseData);
-                    $successCount++;
-                } else {
-                    Log::error("❌ Failed push for detail ID: $detail->id", $responseData);
-                    $failed[] = [
-                        'detail_id' => $detail->id,
-                        'NIK' => $detail->NIK,
-                        'reason' => 'Push gagal',
+                    $this->checkAndUpdateHeaderPushStatus($detail->header_id);
+
+                    Log::info("✅ Success push for detail ID: $detailId", $responseData);
+
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Data berhasil dipush & diapprove',
                         'response' => $responseData
-                    ];
+                    ]);
+                } else {
+                    Log::warning("⚠️ Push rejected for detail ID: $detailId - JPayroll response not success", $responseData);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: ' . ($responseJson['msg'] ?? 'Unknown error'),
+                        'response' => $responseData
+                    ], 400);
                 }
             } catch (\Exception $e) {
                 Log::error("❌ Exception push for detail ID: $detail->id", [
