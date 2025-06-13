@@ -23,7 +23,7 @@
             <div class="row">
                 <div class="col">
                     <label for="appearance" class="form-label">Appearance <span class="text-danger">*</span></label>
-                    <select id="appearance" wire:model.blur="appearance"
+                    <select id="appearance" wire:model.live="appearance"
                         class="form-select @error('appearance') is-invalid @enderror">
                         <option value="">-- Select Appearance --</option>
                         <option value="OK">OK</option>
@@ -33,6 +33,16 @@
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
+                @if ($appearance === 'NG')
+                    <div class="col">
+                        <label for="remarks" class="form-label">Remarks <span class="text-danger">*</span></label>
+                        <input type="text" id="remarks" wire:model.blur="remarks"
+                            class="form-control @error('remarks') is-invalid @enderror">
+                        @error('remarks')
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+                @endif
                 <div class="col">
                     <div class="row">
                         <div class="col">
@@ -57,6 +67,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col">
                     <label for="fitting_test" class="form-label">Fitting Test</label>
                     <input type="text" id="fitting_test" wire:model.blur="fitting_test"

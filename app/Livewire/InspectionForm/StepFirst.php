@@ -15,6 +15,7 @@ class StepFirst extends Component
     public $weight;
     public $weight_uom;
     public $fitting_test;
+    public $remarks;
 
     public $periodKey;
 
@@ -24,6 +25,7 @@ class StepFirst extends Component
         'weight' => 'required|numeric|min:0',
         'weight_uom' => 'required|string',
         'fitting_test' => 'nullable|string',
+        'remarks' => 'required_if:appearance,NG|nullable|string',
     ];
 
     public function updated($property)
@@ -45,6 +47,13 @@ class StepFirst extends Component
         }
     }
 
+    public function updatedAppearance($value): void
+    {
+        if ($value !== 'NG') {
+            $this->remarks = null;   // wipe any previous text
+        }
+    }
+
     public function saveStep()
     {
         $this->validate();
@@ -55,6 +64,7 @@ class StepFirst extends Component
             'weight' => $this->weight,
             'weight_uom' => $this->weight_uom,
             'fitting_test' => $this->fitting_test,
+            'remarks' => $this->remarks,
         ];
 
         session()->put("stepDetailSaved.first_inspections.{$this->periodKey}", $data);
@@ -69,6 +79,7 @@ class StepFirst extends Component
             'weight',
             'weight_uom',
             'fitting_test',
+            'remarks',
         ]);
 
         $this->forgetNestedKey('stepDetailSaved.first_inspections', $this->periodKey);
