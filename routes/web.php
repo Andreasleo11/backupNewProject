@@ -705,12 +705,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
     Route::delete("formovertime/{id}", [FormOvertimeController::class, 'destroy'])->name("formovertime.delete");
     Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
     Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
@@ -886,16 +887,16 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
             'greeting' => 'Form Overtime Notification',
             'body' => "Notification for SPK : <br>
                     - Report ID : $report->id <br>
-                    - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
+                    - Department From : {$report->department->name} ({$report->department->dept_no}) <br>
                     - Create Date : {$formattedCreateDate} <br>
-                    - Created By : {$report->Relationuser->name} <br>
+                    - Created By : {$report->user->name} <br>
                         ",
             'actionText' => 'Click to see the detail',
             'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
         ];
 
 
-        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->Relationuser);
+        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->user);
 
         // $user = App\Models\User::find(30);
         // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));

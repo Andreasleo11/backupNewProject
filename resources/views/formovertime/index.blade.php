@@ -75,8 +75,8 @@
                             @forelse ($dataheader as $fot)
                                 <tr class="align-middle">
                                     <td>{{ $fot->id }}</td>
-                                    <td>{{ $fot->Relationuser->name }}</td>
-                                    <td>{{ $fot->Relationdepartement->name }}</td>
+                                    <td>{{ $fot->user->name }}</td>
+                                    <td>{{ $fot->department->name }}</td>
                                     <td> @formatDate($fot->create_date) </td>
                                     <td>
                                         @include('partials.formovertime-status', ['fot' => $fot])

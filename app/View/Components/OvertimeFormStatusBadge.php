@@ -12,11 +12,14 @@ class OvertimeFormStatusBadge extends Component
 
     // Centralised definition
     public const MAP = [
-        'waiting-dept-head'  => ['Waiting Dept Head',  'warning',  'dark'],
-        'waiting-verificator' => ['Waiting Verificator', 'warning',  'dark'],
-        'waiting-gm'         => ['Waiting GM',        'warning',  'dark'],
-        'waiting-director'   => ['Waiting Director',  'warning',  'dark'],
-        'waiting-supervisor' => ['Waiting Supervisor', 'info',     'dark'],
+        'waiting-creator'  => ['Waiting Creator', 'primary-subtle', 'primary'],
+        'waiting-dept-head'  => ['Waiting Dept Head', 'warning', 'dark'],
+        'waiting-verificator' => ['Waiting Verificator', 'warning', 'dark'],
+        'waiting-gm'         => ['Waiting GM',        'warning', 'dark'],
+        'waiting-director'   => ['Waiting Director',  'warning', 'dark'],
+        'waiting-supervisor' => ['Waiting Supervisor', 'info', 'dark'],
+        'approved' => ['Approved', 'success', 'white'],
+        'rejected' => ['Rejected', 'danger', 'white'],
     ];
 
     public function __construct(string $status)
