@@ -16,7 +16,7 @@ class StepFirst extends Component
     public $weight_uom;
     public $fitting_test;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'detail_inspection_report_document_number' => 'required|string',
@@ -33,8 +33,8 @@ class StepFirst extends Component
 
     public function mount()
     {
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $saved = session("stepDetailSaved.first_inspections.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $saved = session("stepDetailSaved.first_inspections.{$this->periodKey}", []);
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -57,7 +57,7 @@ class StepFirst extends Component
             'fitting_test' => $this->fitting_test,
         ];
 
-        session()->put("stepDetailSaved.first_inspections.{$this->quarterKey}", $data);
+        session()->put("stepDetailSaved.first_inspections.{$this->periodKey}", $data);
         $this->dispatch('toast', message: 'First saved successfully!');
     }
 
@@ -71,7 +71,7 @@ class StepFirst extends Component
             'fitting_test',
         ]);
 
-        $this->forgetNestedKey('stepDetailSaved.first_inspections', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.first_inspections', $this->periodKey);
         $this->dispatch('toast', message: 'First step reset successfully!');
     }
 

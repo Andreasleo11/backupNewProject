@@ -12,7 +12,7 @@ use App\Models\InspectionForm\InspectionSampling;
 use App\Models\InspectionForm\SecondInspection;
 use App\Models\InspectionJudgement;
 use App\Models\InspectionQuantity;
-use App\Services\QuarterValidator;
+use App\Services\PeriodValidator;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 
@@ -50,12 +50,12 @@ class FinalSubmit extends Component
         $processedDetailData = [];
 
         if (!empty(session('stepDetailSaved.details'))) {
-            foreach (session('stepDetailSaved.details') as $quarterKey => $rawData) {
-                $quarterNumber = (int) substr($quarterKey, 1);
-                $processedDetailData[$quarterKey] = [
+            foreach (session('stepDetailSaved.details') as $periodKey => $rawData) {
+                $periodNumber = (int) substr($periodKey, 1);
+                $processedDetailData[$periodKey] = [
                     'inspection_report_document_number' => $rawData['inspection_report_document_number'],
                     'document_number' => $rawData['document_number'],
-                    'quarter' => $quarterNumber,
+                    'period' => $periodNumber,
                     'start_datetime' => $rawData['start_datetime'],
                     'end_datetime' => $rawData['end_datetime']
                 ];
@@ -89,18 +89,18 @@ class FinalSubmit extends Component
             'quantities'         => session('stepDetailSaved.quantities'),
         ];
 
-        return QuarterValidator::missing($payload);
+        return PeriodValidator::missing($payload);
     }
 
     /** ------------------------------------------------------------------
      *  Return two arrays:
      *    [$complete, $incomplete]
-     *  where each item is the quarter number (int).
+     *  where each item is the period number (int).
      */
-    protected function splitCompleteQuarters(): array
+    protected function splitCompletePeriods(): array
     {
-        // gather all quarters seen anywhere (q1-q4)
-        $allQ = collect($this->detailData)->keys()
+        // gather all periods seen anywhere (p1-p4)
+        $allP = collect($this->detailData)->keys()
             ->map(fn($k) => (int) substr($k, 1))
             ->unique()
             ->sort()
@@ -120,15 +120,15 @@ class FinalSubmit extends Component
         $complete   = [];
         $incomplete = [];
 
-        foreach ($allQ as $q) {
-            $hasAll = collect($required)->every(function ($prop) use ($q) {
-                return isset($this->{$prop}["q{$q}"]) && !empty($this->{$prop}["q{$q}"]);
+        foreach ($allP as $p) {
+            $hasAll = collect($required)->every(function ($prop) use ($p) {
+                return isset($this->{$prop}["p{$p}"]) && !empty($this->{$prop}["p{$p}"]);
             });
 
             if ($hasAll) {
-                $complete[] = $q;        // push into the “complete” bucket
+                $complete[] = $p;        // push into the “complete” bucket
             } else {
-                $incomplete[] = $q;      // push into the “incomplete” bucket
+                $incomplete[] = $p;      // push into the “incomplete” bucket
             }
         }
 
@@ -137,19 +137,19 @@ class FinalSubmit extends Component
 
     public function submit()
     {
-        [$completeQ, $incompleteQ] = $this->splitCompleteQuarters();
+        [$completeP, $incompleteP] = $this->splitCompletePeriods();
 
-        // no quarter fully filled?  -> hard-stop
-        if (empty($completeQ)) {
+        // no period fully filled?  -> hard-stop
+        if (empty($completeP)) {
             $this->dispatch(
                 'toast',
-                message: 'No quarter is complete – nothing was saved.',
+                message: 'No period is complete – nothing was saved.',
                 type: 'error'
             );
             return;
         }
 
-        // 1) trim every section array so it only keeps complete quarters
+        // 1) trim every section array so it only keeps complete periods
         foreach (
             [
                 'detailData',
@@ -164,7 +164,7 @@ class FinalSubmit extends Component
             ] as $prop
         ) {
             $this->{$prop} = collect($this->{$prop})
-                ->only(array_map(fn($q) => "q{$q}", $completeQ))
+                ->only(array_map(fn($p) => "p{$p}", $completeP))
                 ->all();
         }
 
@@ -207,12 +207,12 @@ class FinalSubmit extends Component
             }
         });
 
-        $ok  = implode(', ', array_map(fn($q) => "Q{$q}", $completeQ));
-        $bad = implode(', ', array_map(fn($q) => "Q{$q}", $incompleteQ));
+        $ok  = implode(', ', array_map(fn($p) => "P{$p}", $completeP));
+        $bad = implode(', ', array_map(fn($p) => "P{$p}", $incompleteP));
 
         $this->dispatch(
             'toast',
-            message: "Saved quarters: {$ok}" . ($bad ? ". Skipped: {$bad}" : ''),
+            message: "Saved periods: {$ok}" . ($bad ? ". Skipped: {$bad}" : ''),
             type: $bad ? 'warning' : 'success'
         );
         $this->dispatch('toast', message: 'Inspection report submitted successfully!');

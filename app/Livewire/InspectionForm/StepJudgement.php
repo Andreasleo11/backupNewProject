@@ -10,7 +10,7 @@ class StepJudgement extends Component
     public $pass_quantity;
     public $reject_quantity;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'detail_inspection_report_document_number' => 'required|string',
@@ -38,8 +38,8 @@ class StepJudgement extends Component
 
     public function mount()
     {
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $saved = session("stepDetailSaved.judgements.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $saved = session("stepDetailSaved.judgements.{$this->periodKey}", []);
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -60,7 +60,7 @@ class StepJudgement extends Component
             'reject_quantity' => $this->reject_quantity,
         ];
 
-        session()->put("stepDetailSaved.judgements.{$this->quarterKey}", $data);
+        session()->put("stepDetailSaved.judgements.{$this->periodKey}", $data);
         $this->dispatch('toast', message: 'Step Judgement saved sucessfully!');
     }
 
@@ -71,7 +71,7 @@ class StepJudgement extends Component
         $this->reject_quantity = null;
 
         $this->resetValidation();
-        session()->forget('stepDetailSaved.judgements', $this->quarterKey);
+        session()->forget('stepDetailSaved.judgements', $this->periodKey);
         $this->dispatch('toast', message: 'Step Judgement reset successfully!');
     }
 

@@ -12,7 +12,7 @@ class StepProblem extends Component
     public $inspection_report_document_number;
     public $problems = [];
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'problems.*.inspection_report_document_number' => 'required|string',
@@ -39,8 +39,8 @@ class StepProblem extends Component
     public function mount($inspection_report_document_number = null)
     {
         $this->inspection_report_document_number = $inspection_report_document_number;
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $this->problems = session("stepDetailSaved.problems.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $this->problems = session("stepDetailSaved.problems.{$this->periodKey}", []);
 
         if (empty($this->problems)) {
             $this->addProblem();
@@ -75,14 +75,14 @@ class StepProblem extends Component
     {
         $this->validate();
 
-        session()->put("stepDetailSaved.problems.{$this->quarterKey}", $this->problems);
+        session()->put("stepDetailSaved.problems.{$this->periodKey}", $this->problems);
         $this->dispatch('toast', message: "Problems entries saved succesfully!");
     }
 
     public function resetStep()
     {
         $this->problems = [];
-        $this->forgetNestedKey('stepDetailSaved.problems', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.problems', $this->periodKey);
         $this->addProblem();
         $this->resetValidation();
         $this->dispatch('toast', message: "Problems entries reset succesfully!");

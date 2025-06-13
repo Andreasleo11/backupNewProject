@@ -12,7 +12,7 @@ class StepSampling extends Component
     public $samples = [];
     public $second_inspection_document_number;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'samples.*.second_inspection_document_number' => 'required|string',
@@ -38,8 +38,8 @@ class StepSampling extends Component
     public function mount($second_inspection_document_number = null)
     {
         $this->second_inspection_document_number = $second_inspection_document_number;
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $this->samples = session("stepDetailSaved.samples.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $this->samples = session("stepDetailSaved.samples.{$this->periodKey}", []);
 
         if (empty($this->samples)) {
             $this->addSample();
@@ -72,7 +72,7 @@ class StepSampling extends Component
     {
         $this->validate();
 
-        session()->put("stepDetailSaved.samples.{$this->quarterKey}", $this->samples);
+        session()->put("stepDetailSaved.samples.{$this->periodKey}", $this->samples);
         $this->dispatch('toast', message: "Sampling data successfully!");
     }
 
@@ -81,7 +81,7 @@ class StepSampling extends Component
         $this->samples = [];
         $this->resetValidation();
         $this->addSample();
-        $this->forgetNestedKey('stepDetailSaved.samples', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.samples', $this->periodKey);
         $this->dispatch('toast', message: "Sampling data reset successfully!");
     }
 

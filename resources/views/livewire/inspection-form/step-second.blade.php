@@ -40,7 +40,7 @@
             </div>
 
             <div class="mt-3">
-                @if (session("stepDetailSaved.second_inspections.$quarterKey"))
+                @if (session("stepDetailSaved.second_inspections.$periodKey"))
                     <div class="fw-bold text-primary mb-2">Sampling</div>
                     @livewire('inspection-form.step-sampling', ['second_inspection_document_number' => $document_number], key('step-sampling'))
 

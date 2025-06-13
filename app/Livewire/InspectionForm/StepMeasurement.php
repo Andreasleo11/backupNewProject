@@ -15,7 +15,7 @@ class StepMeasurement extends Component
     public $end_time;
     public $inspection_report_document_number;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected function rules()
     {
@@ -43,8 +43,8 @@ class StepMeasurement extends Component
     public function mount($inspection_report_document_number = null)
     {
         $this->inspection_report_document_number = $inspection_report_document_number;
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $this->measurements = session("stepDetailSaved.measurements.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $this->measurements = session("stepDetailSaved.measurements.{$this->periodKey}", []);
 
         if ($this->measurements) {
             foreach ($this->measurements as $key => $measurements) {
@@ -60,9 +60,10 @@ class StepMeasurement extends Component
 
     public function addMeasurement()
     {
-        $quarter = session('stepDetailSaved.quarter');
-        $this->start_time = \Carbon\Carbon::parse(session('stepDetailSaved.details.' . 'q' . $quarter . '.start_datetime'))->format('H:i');
-        $this->end_time = \Carbon\Carbon::parse(session('stepDetailSaved.details.' . 'q' . $quarter . '.end_datetime'))->format('H:i');
+        $period = session('stepDetailSaved.period');
+        // dd(session('stepDetailSaved'));
+        $this->start_time = \Carbon\Carbon::parse(session('stepDetailSaved.details.' . 'p' . $period . '.start_datetime'))->format('H:i');
+        $this->end_time = \Carbon\Carbon::parse(session('stepDetailSaved.details.' . 'p' . $period . '.end_datetime'))->format('H:i');
 
         $this->measurements[] = [
             'inspection_report_document_number' => $this->inspection_report_document_number,
@@ -94,7 +95,7 @@ class StepMeasurement extends Component
             $this->measurements[$index]['end_datetime'] = Carbon::parse($this->end_time)->format('Y-m-d H:i:s');
         }
 
-        session()->put("stepDetailSaved.measurements.{$this->quarterKey}", $this->measurements);
+        session()->put("stepDetailSaved.measurements.{$this->periodKey}", $this->measurements);
         $this->dispatch('toast', message: 'Measurements saved successfully!');
     }
 
@@ -104,7 +105,7 @@ class StepMeasurement extends Component
         $this->start_time = '';
         $this->end_time = '';
         $this->resetValidation();
-        $this->forgetNestedKey('stepDetailSaved.measurements', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.measurements', $this->periodKey);
         $this->dispatch('toast', message: 'Measurements reset successfully!');
     }
 

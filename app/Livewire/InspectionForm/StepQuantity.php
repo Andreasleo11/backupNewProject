@@ -16,7 +16,7 @@ class StepQuantity extends Component
     public $sampling_quantity;
     public $reject_rate = 0;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'inspection_report_document_number' => 'required|string',
@@ -29,8 +29,8 @@ class StepQuantity extends Component
 
     public function mount()
     {
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $saved = session("stepDetailSaved.quantities.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $saved = session("stepDetailSaved.quantities.{$this->periodKey}", []);
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -105,7 +105,7 @@ class StepQuantity extends Component
             'reject_rate' => $this->reject_rate,
         ];
 
-        session(["stepDetailSaved.quantities.{$this->quarterKey}" => $data]);
+        session(["stepDetailSaved.quantities.{$this->periodKey}" => $data]);
         $this->dispatch('toast', message: "Quantity data saved successfully!");
     }
 
@@ -119,7 +119,7 @@ class StepQuantity extends Component
             'sampling_quantity',
             'reject_rate',
         ]);
-        $this->forgetNestedKey('stepDetailSaved.quantities', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.quantities', $this->periodKey);
         $this->resetValidation();
         $this->dispatch('toast', message: "Quantity data reset sucessfully!");
     }

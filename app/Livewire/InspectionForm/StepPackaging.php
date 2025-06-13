@@ -12,7 +12,7 @@ class StepPackaging extends Component
     public $second_inspection_document_number;
     public $packagings = [];
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'packagings.*.second_inspection_document_number' => 'required|string',
@@ -36,8 +36,8 @@ class StepPackaging extends Component
     public function mount($second_inspection_document_number = null)
     {
         $this->second_inspection_document_number = $second_inspection_document_number;
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $this->packagings = session("stepDetailSaved.packagings.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $this->packagings = session("stepDetailSaved.packagings.{$this->periodKey}", []);
 
         if (empty($this->packagings)) {
             $this->addPackaging();
@@ -72,14 +72,14 @@ class StepPackaging extends Component
     {
         $this->validate();
 
-        session()->put("stepDetailSaved.packagings.{$this->quarterKey}", $this->packagings);
+        session()->put("stepDetailSaved.packagings.{$this->periodKey}", $this->packagings);
         $this->dispatch('toast', message: "Packaging saved successfully!");
     }
 
     public function resetStep()
     {
         $this->packagings = [];
-        $this->forgetNestedKey('stepDetailSaved.packagings', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.packagings', $this->periodKey);
         $this->resetValidation();
         $this->addPackaging();
         $this->dispatch('toast', message: "Packaging reset successfully!");

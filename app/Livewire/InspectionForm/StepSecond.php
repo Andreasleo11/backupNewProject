@@ -14,7 +14,7 @@ class StepSecond extends Component
     public $document_number;
     public $lot_size_quantity;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'detail_inspection_report_document_number' => 'required|string',
@@ -29,8 +29,8 @@ class StepSecond extends Component
 
     public function mount()
     {
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $saved = session("stepDetailSaved.second_inspections.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $saved = session("stepDetailSaved.second_inspections.{$this->periodKey}", []);
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -55,14 +55,14 @@ class StepSecond extends Component
             'lot_size_quantity' => $this->lot_size_quantity,
         ];
 
-        session()->put("stepDetailSaved.second_inspections.{$this->quarterKey}", $data);
+        session()->put("stepDetailSaved.second_inspections.{$this->periodKey}", $data);
 
         $this->dispatch('toast', message: 'Second inspection saved succesfully!');
     }
 
     public function resetStep()
     {
-        $this->forgetNestedKey('stepDetailSaved.second_inspections', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.second_inspections', $this->periodKey);
         $this->reset(['detail_inspection_report_document_number', 'document_number', 'lot_size_quantity']);
         $this->dispatch('toast', message: 'Second inspection reset successfully!');
     }

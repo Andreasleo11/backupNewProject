@@ -12,7 +12,7 @@
         {{-- =============================================================== --}}
         @php
             $r = $inspectionReport; // shorthand
-            $quarters = $r->detailInspectionReports->pluck('quarter')->sort(); // [1,2,3,4]
+            $periods = $r->detailInspectionReports->pluck('period')->sort(); // [1,2,3,4]
         @endphp
 
         <div class="container-xl py-4">
@@ -83,46 +83,44 @@
                 </div>
             </div>
 
-
-            {{-- quarter pills ---------------------------------------------------- --}}
+            {{-- period pills ---------------------------------------------------- --}}
             @php
-                /** quarters that actually have detail rows */
-                $filledQuarters = $r->detailInspectionReports->pluck('quarter')->all(); // e.g. [1,3]
+                /** periods that actually have detail rows */
+                $filledPeriods = $r->detailInspectionReports->pluck('period')->all(); // e.g. [1,3]
             @endphp
 
             <ul class="nav nav-pills my-4" id="qTab" role="tablist">
-                @foreach (range(1, 4) as $q)
-                    @php $hasData = in_array($q, $filledQuarters); @endphp
+                @foreach (range(1, 4) as $p)
+                    @php $hasData = in_array($p, $filledPeriods); @endphp
 
                     <li class="nav-item">
                         <button
                             class="nav-link me-2
                            border {{ $hasData ? 'border-primary' : 'border-secondary text-muted opacity-50' }}
                            {{ $loop->first ? 'active' : '' }}"
-                            id="q{{ $q }}-tab" data-bs-toggle="tab" data-bs-target="#q{{ $q }}-pane"
+                            id="q{{ $p }}-tab" data-bs-toggle="tab" data-bs-target="#q{{ $p }}-pane"
                             type="button" role="tab" @if (!$hasData) aria-disabled="true" @endif>
-                            Quarter {{ $q }}
+                            Period {{ $p }}
                         </button>
                     </li>
                 @endforeach
             </ul>
 
-
-            {{-- quarter panes ---------------------------------------------------- --}}
-            <div class="tab-content" id="qTabContent">
-                @foreach (range(1, 4) as $q)
+            {{-- period panes ---------------------------------------------------- --}}
+            <div class="tab-content" id="pTabContent">
+                @foreach (range(1, 4) as $p)
                     @php
-                        $d = $r->detailInspectionReports->firstWhere('quarter', $q); // may be null
+                        $d = $r->detailInspectionReports->firstWhere('period', $p); // may be null
                         $hasData = !is_null($d);
                     @endphp
 
-                    <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="q{{ $q }}-pane"
+                    <div class="tab-pane fade {{ $loop->first ? 'show active' : '' }}" id="q{{ $p }}-pane"
                         role="tabpanel">
 
                         @if (!$hasData)
                             <div class="alert alert-secondary my-4" role="alert">
                                 <i class="bi bi-info-circle me-1"></i>
-                                No data entered for Quarter {{ $q }} yet.
+                                No data entered for Period {{ $p }} yet.
                             </div>
                             @continue
                         @endif
@@ -175,12 +173,10 @@
                             </span>
                         </p>
 
-
-
                         {{-- accordion per dataset (unchanged) ----------------------------- --}}
-                        <div class="accordion" id="accordionQ{{ $q }}">
+                        <div class="accordion" id="accordionQ{{ $p }}">
                             {{-- First Inspection --}}
-                            <x-inspection-section parent="accordionQ{{ $q }}" id="first{{ $q }}"
+                            <x-inspection-section parent="accordionQ{{ $p }}" id="first{{ $p }}"
                                 title="First Inspection">
                                 @include('inspection.partials.first-inspection-table', [
                                     'rows' => $d->firstInspections,
@@ -188,7 +184,7 @@
                             </x-inspection-section>
 
                             {{-- Measurement Data (optional) --}}
-                            <x-inspection-section parent="accordionQ{{ $q }}" id="measure{{ $q }}"
+                            <x-inspection-section parent="accordionQ{{ $p }}" id="measure{{ $p }}"
                                 title="Measurement Data">
                                 @include('inspection.partials.measurement-table', [
                                     'rows' => $h->measurementData,
@@ -196,7 +192,7 @@
                             </x-inspection-section>
 
                             {{-- Second Inspection & children --}}
-                            <x-inspection-section parent="accordionQ{{ $q }}" id="second{{ $q }}"
+                            <x-inspection-section parent="accordionQ{{ $p }}" id="second{{ $p }}"
                                 title="Second Inspection">
                                 @include('inspection.partials.second-inspection', [
                                     'second' => $d->secondInspections,
@@ -204,7 +200,7 @@
                             </x-inspection-section>
 
                             {{-- Judgement & Quantity --}}
-                            <x-inspection-section parent="accordionQ{{ $q }}" id="result{{ $q }}"
+                            <x-inspection-section parent="accordionQ{{ $p }}" id="result{{ $p }}"
                                 title="Results & Quantity">
                                 @include('inspection.partials.results', [
                                     'judgement' => $d->judgementData,
@@ -213,8 +209,8 @@
                             </x-inspection-section>
 
                             {{-- Problems / Downtime --}}
-                            <x-inspection-section parent="accordionQ{{ $q }}" id="problem{{ $q }}"
-                                title="Problems / Downtime">
+                            <x-inspection-section parent="accordionQ{{ $p }}" id="problem{{ $p }}"
+                                title="Problems">
                                 @include('inspection.partials.problems', ['rows' => $h->problemData])
                             </x-inspection-section>
                         </div>

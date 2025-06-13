@@ -70,7 +70,7 @@
                     <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-2"></i>
                     <div>
                         <h6 class="mb-0 fw-bold">Data incomplete</h6>
-                        <small class="text-body-secondary">Fill the missing quarters before submitting</small>
+                        <small class="text-body-secondary">Fill the missing periods before submitting</small>
                     </div>
                 </div>
             </div>
@@ -80,18 +80,18 @@
                         <tr>
                             <th style="width:30%">Section</th>
                             @foreach (range(1, 4) as $n)
-                                <th class="text-center">Q{{ $n }}</th>
+                                <th class="text-center">P{{ $n }}</th>
                             @endforeach
                         </tr>
                     </thead>
 
                     <tbody>
-                        @foreach ($holeReport as $backendKey => $quarters)
+                        @foreach ($holeReport as $backendKey => $periods)
                             <tr>
                                 <td class="fw-semibold">{{ $pretty($backendKey) }}</td>
 
                                 @foreach (range(1, 4) as $n)
-                                    @php $isMissing = in_array($n, $quarters); @endphp
+                                    @php $isMissing = in_array($n, $periods); @endphp
                                     <td class="text-center">
                                         <span
                                             class="badge rounded-pill
@@ -139,45 +139,45 @@
         @endforeach
 
         @php
-            /* ① find quarters that DO have data (same as before) */
-            $quarterSet = [];
+            /* ① find periods that DO have data (same as before) */
+            $periodSet = [];
             foreach ($sections as $sectionData) {
                 foreach ($sectionData as $key => $val) {
-                    if (preg_match('/^q([1-4])$/', $key, $m)) {
-                        $quarterSet[(int) $m[1]] = true; // q1…q4 → 1…4
+                    if (preg_match('/^p([1-4])$/', $key, $m)) {
+                        $periodSet[(int) $m[1]] = true; // p1…p4 → 1…4
                     }
                 }
             }
-            $haveData = array_keys($quarterSet); // e.g. [1,3]
+            $haveData = array_keys($periodSet); // e.g. [1,3]
         @endphp
 
-        <!-- ►► Quarter Pils ◄◄ ------------------------------------------------ -->
-        <ul class="nav nav-pills my-4" id="quarterTab" role="tablist">
-            @foreach (range(1, 4) as $q)
-                @php  $hasData = in_array($q, $haveData);  @endphp
+        <!-- ►► Period Pils ◄◄ ------------------------------------------------ -->
+        <ul class="nav nav-pills my-4" id="periodTab" role="tablist">
+            @foreach (range(1, 4) as $p)
+                @php  $hasData = in_array($p, $haveData);  @endphp
                 <li class="nav-item" role="presentation">
                     <button
                         class="nav-link me-2
                        border {{ $hasData ? 'border-primary' : 'border-secondary text-muted opacity-50' }}
                        @if ($loop->first) active @endif"
-                        id="q{{ $q }}-tab" data-bs-toggle="tab" data-bs-target="#q{{ $q }}-pane"
+                        id="p{{ $p }}-tab" data-bs-toggle="tab" data-bs-target="#p{{ $p }}-pane"
                         type="button" role="tab" @if (!$hasData) aria-disabled="true" @endif>
-                        Quarter {{ $q }}
+                        Period {{ $p }}
                     </button>
                 </li>
             @endforeach
         </ul>
-        <div class="tab-content" id="quarterTabContent">
-            @foreach (range(1, 4) as $q)
-                @php  $hasData = in_array($q, $haveData);  @endphp
+        <div class="tab-content" id="periodTabContent">
+            @foreach (range(1, 4) as $p)
+                @php  $hasData = in_array($p, $haveData);  @endphp
                 <div class="tab-pane fade @if ($loop->first) show active @endif"
-                    id="q{{ $q }}-pane" role="tabpanel" tabindex="0">
+                    id="p{{ $p }}-pane" role="tabpanel" tabindex="0">
 
                     @if ($hasData)
                         @foreach ($groups as $groupTitle => $groupSections)
                             @php
                                 $hasAnyData = collect($groupSections)
-                                    ->filter(fn($s) => isset($sections[$s]["q$q"]))
+                                    ->filter(fn($s) => isset($sections[$s]["p$p"]))
                                     ->isNotEmpty();
                             @endphp
 
@@ -189,20 +189,20 @@
 
                             @foreach ($groupSections as $title)
                                 @php $sectionData = $sections[$title] ?? []; @endphp
-                                @continue(!isset($sectionData["q$q"]))
+                                @continue(!isset($sectionData["p$p"]))
 
                                 <div class="card shadow-sm mb-4">
                                     <div class="card-header bg-light d-flex align-items-center">
                                         <h6 class="mb-0 flex-grow-1">{{ $title }}</h6>
                                         <span
-                                            class="badge bg-primary-subtle text-primary-emphasis">Q{{ $q }}</span>
+                                            class="badge bg-primary-subtle text-primary-emphasis">P{{ $p }}</span>
                                     </div>
 
                                     <div class="card-body px-2 py-3">
                                         {{-- LIST style --}}
-                                        @if (is_array($sectionData["q$q"]) && !array_is_list($sectionData["q$q"]))
+                                        @if (is_array($sectionData["p$p"]) && !array_is_list($sectionData["p$p"]))
                                             <dl class="row mb-0">
-                                                @foreach ($sectionData["q$q"] as $k => $v)
+                                                @foreach ($sectionData["p$p"] as $k => $v)
                                                     <dt class="col-sm-4 col-lg-3 text-capitalize">
                                                         {{ str_replace('_', ' ', $k) }}</dt>
                                                     <dd class="col-sm-8 col-lg-9">
@@ -216,13 +216,13 @@
                                                 @endforeach
                                             </dl>
                                             {{-- TABLE style --}}
-                                        @elseif(array_is_list($sectionData["q$q"]))
+                                        @elseif(array_is_list($sectionData["p$p"]))
                                             <div class="table-responsive-md">
                                                 <table
                                                     class="table table-striped table-bordered small align-middle mb-0">
                                                     <thead class="table-light">
                                                         <tr>
-                                                            @foreach (array_keys($sectionData["q$q"][0]) as $col)
+                                                            @foreach (array_keys($sectionData["p$p"][0]) as $col)
                                                                 <th class="text-capitalize">
                                                                     {{ str_replace('_', ' ', $col) }}
                                                                 </th>
@@ -230,7 +230,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($sectionData["q$q"] as $row)
+                                                        @foreach ($sectionData["p$p"] as $row)
                                                             <tr>
                                                                 @foreach ($row as $k => $v)
                                                                     <td>
@@ -256,11 +256,11 @@
                         {{-- ▒▒ Placeholder when no data ▒▒ --}}
                         <div class="alert alert-secondary my-4" role="alert">
                             <i class="bi bi-info-circle me-1"></i>
-                            No data entered for Quarter {{ $q }} yet.
+                            No data entered for Period {{ $p }} yet.
                         </div>
                     @endif
                 </div>
-            @endforeach {{-- /quarters --}}
+            @endforeach {{-- /periods --}}
         </div>
     @else
         <div>No data yet</div>
