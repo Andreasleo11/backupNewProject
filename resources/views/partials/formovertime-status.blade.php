@@ -8,6 +8,6 @@
             <i class='bx bxs-cloud-download text-success bx-md'></i>
         @endif
     </div>
-@else
+@elseif($fot->status)
     <x-overtime-form-status-badge :status="$fot->status" />
 @endif

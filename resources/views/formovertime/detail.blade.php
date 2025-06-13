@@ -31,6 +31,11 @@
     {{-- END GLOBAL VARIABLE --}}
 
     @include('partials.alert-success-error')
+    @include('partials.edit-form-overtime-modal', [
+        'prheader' => $header,
+        'datas' => $datas,
+    ])
+
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a>
@@ -39,13 +44,9 @@
         </ol>
     </nav>
 
-    @include('partials.edit-form-overtime-modal', [
-        'prheader' => $header,
-        'datas' => $datas,
-    ])
     <div class="row">
         <div class="col text-end">
-            @if ($header->status === 1 && $authUser->id === $header->Relationuser->id)
+            @if ($header->status === 1 && $authUser->id === $header->user->id)
                 <button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal"
                     class="btn btn-primary"><i class='bx bx-edit'></i> Edit</button>
             @endif
@@ -54,6 +55,7 @@
             @endif
         </div>
     </div>
+
     @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
         <button id="btnPushAll" data-header-id="{{ $header->id }}"
             class="bg-red-600 hover:bg-red-700 text-black font-semibold px-4 py-2 rounded">
@@ -64,8 +66,120 @@
         <div id="pushAllResult" class="mt-2 text-sm"></div>
     @endif
 
+    {{-- @include('partials.formovertime-autographs') --}}
+    <div class="mt-2 container">
+        <div class="d-flex justify-content-around">
+            @foreach ($header->approvals as $approval)
+                {{-- @dd($header->approvals) --}}
+                <div>
+                    <div class="text-center">
+                        <div class="col">
+                            <div class="d-flex justify-content-center"></div>
+                            <div class="fs-3">{{ ucwords(str_replace('_', ' ', $approval->step->role_slug)) }}
+                            </div>
+                            @if ($approval->status === 'approved')
+                                <span class="badge bg-success">✓ Signed
+                                    {{ optional($approval->signed_at)->diffForHumans() }}</span>
+                            @elseif ($approval->status === 'rejected')
+                                <span class="badge bg-danger">✗ Rejected</span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="border mt-2" style="width:200px; height:100px;">
+                        <img src="{{ asset('autographs/' . $approval->signature_path) }}" alt=""
+                            class="object-fit-cover">
+                    </div>
+                    <div class="mt-2">
+                        @if ($approval->approver)
+                            <div class="text-center">
+                                {{-- Signed-at + calendar icon --}}
+                                <div class="gap-1">
+                                    <i class="bi bi-calendar-event text-muted"></i>
+                                    <span class="small text-muted">
+                                        {{ optional($approval->signed_at)->timezone('Asia/Jakarta')->format('d-m-Y · H:i') ?? '—' }}
 
-    @include('partials.formovertime-autographs')
+                                    </span>
+                                </div>
+
+                                {{-- Approver name + person icon --}}
+                                <div class="gap-1">
+                                    <i class="bi bi-person-check-fill text-primary"></i>
+                                    <span class="fw-semibold">
+                                        {{ Str::title($approval->approver->name ?? 'Pending') }}
+                                    </span>
+                                </div>
+                            </div>
+                        @else
+                            @php
+                                $isCurrentStep = optional($header->currentStep())->id === $approval->flow_step_id;
+                                $isPending = $approval->status === 'pending';
+                                $allowedByRole = false;
+                                $user = auth()->user();
+
+                                switch ($approval->step->role_slug) {
+                                    case 'dept_head':
+                                        $allowedByRole =
+                                            $user->is_head &&
+                                            $user->department->name === $approval->form->department->name;
+                                        break;
+                                    case 'director':
+                                        $allowedByRole = $user->specification->name === 'DIRECTOR';
+                                        break;
+                                    case 'supervisor':
+                                        $allowedByRole = $user->specification->name === 'SUPERVISOR';
+                                        break;
+                                    case 'gm':
+                                        $allowedByRole = $user->is_gm;
+                                        break;
+                                    case 'creator':
+                                        $allowedByRole = $approval->form->user_id === $user->id;
+                                        break;
+                                }
+
+                                $showApprovalButtons = $isCurrentStep && $isPending && $allowedByRole;
+                            @endphp
+
+                            <div class="d-flex justify-content-between {{ $showApprovalButtons ? '' : 'd-none' }}">
+
+                                <div class="modal fade" id="rejectModal">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <form action="{{ route('overtime.reject', $header->id) }}" method="post">
+                                                @method('PUT')
+                                                @csrf
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5">Reason</h1>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="approval_id" value="{{ $approval->id }}">
+                                                    <label for="description" class="form-label">Description</label>
+                                                    <textarea name="description" class="form-control" placeholder="Tell us why you rejecting this report..." required></textarea>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Confirm</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-danger" data-bs-toggle="modal"
+                                    data-bs-target="#rejectModal">Reject</button>
+                                <form
+                                    action="{{ route('overtime.sign', ['id' => $approval->form->id, 'step_id' => $approval->flow_step_id]) }}"
+                                    method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success">Approve</button>
+                                </form>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
 
     <div class="mt-5 container">
         <div class="col">
@@ -76,18 +190,19 @@
                         <br>
                         <div class="fs-6 mt-2">
                             <span class="fs-6 text-secondary">Create Date : </span>
-                            {{ \Carbon\Carbon::parse($header->create_date)->format('d/m/Y') }}
+                            {{ \Carbon\Carbon::parse($header->create_date)->format('d-m-Y') }}
                         </div>
                         <div class="fs-6">
                             <span class="fs-6 text-secondary">Created By : </span>
-                            {{ $header->Relationuser->name }}
+                            {{ $header->user->name }}
                         </div>
                         <div class="fs-6">
                             <span class="fs-6 text-secondary">Department : </span>
-                            {{ $header->Relationdepartement->name }} ({{ $header->Relationdepartement->dept_no }})
+                            {{ $header->department->name }} ({{ $header->department->dept_no }})
                         </div>
                         <div class="mt-2">
                             @include('partials.formovertime-status', ['fot' => $header])
+
                         </div>
                     </div>
                     <hr>
@@ -114,15 +229,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    @forelse($datas as $data)
+                                @forelse($datas as $data)
+                                    <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $data->NIK }}</td>
                                         <td>{{ $data->nama }}</td>
                                         <td>{{ $data->job_desc }}</td>
-                                        <td>{{ $data->start_date }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($data->start_date)->format('d-m-Y') }}</td>
                                         <td>{{ $data->start_time }}</td>
-                                        <td>{{ $data->end_date }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($data->end_date)->format('d-m-Y') }}</td>
                                         <td>{{ $data->end_time }}</td>
                                         <td>{{ $data->break }}</td>
                                         <td>
@@ -160,8 +275,8 @@
                                                 'body' => 'Are you sure want to delete this?',
                                             ])
                                                 <!-- <button class="btn btn-danger btn-sm"
-                                                            data-bs-target="#delete-confirmation-modal-{{ $data->id }}"
-                                                            data-bs-toggle="modal">Delete</button> -->
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            data-bs-target="#delete-confirmation-modal-{{ $data->id }}"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            data-bs-toggle="modal">Delete</button> -->
                                                 @if ($data->is_processed == 1 && $data->status === 'Approved')
                                                     <span class="text-success fw-bold">APPROVED</span>
                                                 @elseif ($data->status === 'Rejected')
@@ -178,11 +293,11 @@
                                                 @endif
                                             </td>
                                         @endif
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="12">No Data</td>
-                                </tr>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12">No Data</td>
+                                    </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -200,97 +315,7 @@
         </div>
     @endif
 
-
     <script>
-        // Function to add autograph to the specified box
-        function addAutograph(section, reportId) {
-            // Get the div element
-            var autographBox = document.getElementById('autographBox' + section);
-
-            console.log('Section:', section);
-            console.log('Report ID:', reportId);
-            var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
-            console.log('username :', username);
-            var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
-            console.log('image path :', imageUrl);
-
-            autographBox.style.backgroundImage = "url('" + imageUrl + "')";
-
-            // Make an AJAX request to save the image path
-            fetch('/save-autographot-path/' + reportId + '/' + section, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    },
-                    body: JSON.stringify({
-                        imagePath: imageUrl,
-                    }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data.message);
-                    location.reload();
-                })
-                .catch(error => {
-                    location.reload();
-                    console.error('Error:', error);
-                });
-
-            checkAutographStatus(reportId);
-        }
-
-        function checkAutographStatus(reportId) {
-            // Assume you have a variable from the server side indicating the autograph status
-            var autographs = {
-                autograph_1: '{{ $header->autograph_1 }}',
-                autograph_2: '{{ $header->autograph_2 }}',
-                autograph_3: '{{ $header->autograph_3 }}',
-                autograph_4: '{{ $header->autograph_4 }}',
-            };
-
-            var autographNames = {};
-
-            for (var key in autographs) {
-                if (autographs.hasOwnProperty(key)) {
-                    var autographNumber = key.split('_')[1]; // Extract the autograph number
-                    var autographName = autographs[key]; // Get the autograph name
-                    autographName = autographName.replace(/\.png$/, ''); // Remove the .png extension
-                    autographNames['autograph_name_' + autographNumber] = autographName; // Append .png to autograph name
-                }
-            }
-
-            console.log('name:', autographNames);
-
-            // Loop through each autograph status and update the UI accordingly
-            for (var i = 1; i <= 7; i++) {
-                var autographBox = document.getElementById('autographBox' + i);
-                var autographInput = document.getElementById('autographInput' + i);
-                var autographNameBox = document.getElementById('autographuser' + i);
-                var btnId = document.getElementById('btn' + i);
-
-                // Check if autograph status is present in the database
-                if (autographs['autograph_' + i]) {
-
-                    if (btnId) {
-                        // console.log(btnId);
-                        btnId.style.display = 'none';
-                    }
-
-                    // Construct URL based on the current location
-                    var url = '/autographs/' + autographs['autograph_' + i];
-
-                    // Update the background image using the URL
-                    autographBox.style.backgroundImage = "url('" + url + "')";
-                    //error di code ini -- next fix tampilan tanda tangan
-
-                    var autographName = autographNames['autograph_name_' + i];
-                    autographNameBox.textContent = autographName;
-                    autographNameBox.style.display = 'block';
-                }
-            }
-        }
-
         function handleOvertimeAction(detailId, actionType) {
             if (!['approve', 'reject'].includes(actionType)) {
                 alert('Aksi tidak valid.');
@@ -332,7 +357,7 @@
 
                 if (!confirm(
                         "Apakah Anda yakin ingin mem-push semua data detail yang belum ditolak (Rejected)?"
-                        )) {
+                    )) {
                     return;
                 }
 
@@ -370,10 +395,5 @@
                     });
             });
         });
-
-        // Call the function to check autograph status on page load
-        window.onload = function() {
-            checkAutographStatus({{ $header->id }});
-        };
     </script>
 @endsection
