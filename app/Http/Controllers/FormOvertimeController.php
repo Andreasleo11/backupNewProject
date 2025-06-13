@@ -137,54 +137,31 @@ class FormOvertimeController extends Controller
     {
         $uploadedFiles = $request->file('excel_file');
 
-        $userIdCreate = Auth::id();
         $deptId = $request->input('from_department');
         $branch = $request->input('branch');
-
-        $department = Department::find($deptId);
-
         $date = $request->input('date_form_overtime');   // e.g. "2025-06-04"
         $isPlanned = $request->filled('date_form_overtime')
             && Carbon::parse($date)->greaterThan(  // later than…
                 now()->startOfDay()               // …the very end of today
             );
 
-        if ($department->name === "MOULDING" && !$request->design && $branch === "Karawang") {
-            $flowId = ApprovalFlow::where('slug', 'gm-director')->first()->id;
-        } elseif ($department->name === "MOULDING" && !$request->design) {
-            $flowId = ApprovalFlow::where('slug', 'supervisor-dept-head-director')->first()->id;
-        } elseif ($department->name === "PPIC") {
-            $flowId = ApprovalFlow::where('slug', 'dept-head-gm-director')->first()->id;
-        } elseif ($department->name === "PLASTIC INJECTION" && $branch === "Karawang") {
-            $flowId = ApprovalFlow::where('slug', 'gm-director')->first()->id;
-        } elseif ($department->name === "PLASTIC INJECTION") {
-            $flowId = ApprovalFlow::where('slug', 'dept-head-gm-director')->first()->id;
-        } else {
-            $flowId = ApprovalFlow::where('slug', 'dept-head-director')->first()->id;
-        }
-
         $headerData = [
-            'user_id' => $userIdCreate,
+            'user_id' => Auth::id(),
             'dept_id' => $deptId,
             'create_date' => $request->input('date_form_overtime'),
             'branch' => $branch,
             'is_design' => $request->input('design'),
             'is_export' =>  0,
             'is_planned' => $isPlanned,
-            'approval_flow_id' => $flowId,
             'status' => 'waiting-creator',
         ];
 
-        $headerovertime = HeaderFormOvertime::create($headerData);
-
-        if ($uploadedFiles) {
-            $this->importFromExcel($request, $headerovertime->id);
-        } else {
-            $this->detailOvertimeInsert($request, $headerovertime->id);
-        }
-
-        $flowSlug = ApprovalFlowResolver::for($headerovertime);
+        $flowSlug = ApprovalFlowResolver::for($headerData);
         $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
+
+        $headerData['approval_flow_id'] = $flow->id;
+
+        $headerovertime = HeaderFormOvertime::create($headerData);
 
         // Pre-seed pending rows
         foreach ($flow->steps as $step) {
@@ -192,6 +169,12 @@ class FormOvertimeController extends Controller
                 'flow_step_id' => $step->id,
                 'status'       => 'pending',
             ]);
+        }
+
+        if ($uploadedFiles) {
+            $this->importFromExcel($request, $headerovertime->id);
+        } else {
+            $this->detailOvertimeInsert($request, $headerovertime->id);
         }
 
         $this->sendNotification($headerovertime);

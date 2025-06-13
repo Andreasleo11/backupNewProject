@@ -70,7 +70,6 @@
     <div class="mt-2 container">
         <div class="d-flex justify-content-around">
             @foreach ($header->approvals as $approval)
-                {{-- @dd($header->approvals) --}}
                 <div>
                     <div class="text-center">
                         <div class="col">
@@ -112,6 +111,8 @@
                         @else
                             @php
                                 $isCurrentStep = optional($header->currentStep())->id === $approval->flow_step_id;
+                                // dd($header->currentStep()->id);
+                                // dd($approval->flow_step_id);
                                 $isPending = $approval->status === 'pending';
                                 $allowedByRole = false;
                                 $user = auth()->user();
@@ -140,7 +141,6 @@
                             @endphp
 
                             <div class="d-flex justify-content-between {{ $showApprovalButtons ? '' : 'd-none' }}">
-
                                 <div class="modal fade" id="rejectModal">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
@@ -164,7 +164,6 @@
                                         </div>
                                     </div>
                                 </div>
-
                                 <button class="btn btn-danger" data-bs-toggle="modal"
                                     data-bs-target="#rejectModal">Reject</button>
                                 <form
@@ -274,9 +273,6 @@
                                                 'title' => 'Delete item detail',
                                                 'body' => 'Are you sure want to delete this?',
                                             ])
-                                                <!-- <button class="btn btn-danger btn-sm"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            data-bs-target="#delete-confirmation-modal-{{ $data->id }}"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            data-bs-toggle="modal">Delete</button> -->
                                                 @if ($data->is_processed == 1 && $data->status === 'Approved')
                                                     <span class="text-success fw-bold">APPROVED</span>
                                                 @elseif ($data->status === 'Rejected')

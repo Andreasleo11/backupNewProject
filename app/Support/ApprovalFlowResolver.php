@@ -10,9 +10,9 @@ use Illuminate\Support\Str;
 class ApprovalFlowResolver
 {
     /**
-     * Return the Flow slug for a given HeaderFormOvertime instance.
+     * Return the Flow slug for a given HeaderData array.
      */
-    public static function for(HeaderFormOvertime $header): string
+    public static function for(array $header): string
     {
         // cache rules for 1 hour
         $rules = Cache::remember('approval_flow_rules', 3600, function () {
@@ -21,9 +21,9 @@ class ApprovalFlowResolver
                 ->get();
         });
 
-        $deptId = $header->department->id ?? null;
-        $branch = Str::upper($header->branch ?? '');
-        $isDesign = $header->is_design;
+        $deptId = $header['dept_id'] ?? null;
+        $branch = Str::upper($header['branch'] ?? '');
+        $isDesign = $header['is_design'];
 
         // first rule that matches wins
         foreach ($rules as $rule) {
