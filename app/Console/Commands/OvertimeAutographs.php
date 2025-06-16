@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\ApprovalFlow;
 use App\Models\HeaderFormOvertime;
+use App\Support\ApprovalFlowResolver;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 class OvertimeAutographs extends Command
 {
@@ -31,8 +31,7 @@ class OvertimeAutographs extends Command
         HeaderFormOvertime::chunk(200, function ($rows) {
             foreach ($rows as $row) {
                 // 1. Pick a flow based on which autograph_x columns are filled
-                $flowSlug = $this->pickApprovalFlowSlug($row);
-
+                $flowSlug = ApprovalFlowResolver::for($row->toArray());
 
                 $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
                 $row->update(['approval_flow_id' => $flow->id]);
@@ -63,61 +62,5 @@ class OvertimeAutographs extends Command
                 }
             }
         });
-    }
-
-    /**
-     * Decide which approval-flow slug a header form should use.
-     *
-     * @param  \App\Models\HeaderFormOvertime  $header
-     * @return string
-     *
-     * ────────────────────────────────────────────────────────────────
-     *  Rules
-     *  ── Department + Branch + is_design
-     *   1. ASSEMBLY, SECOND PROCESS, STORE, LOGISTIC
-     *          →  dept-head-director
-     *   2. MOULDING + is_design = false + branch = Karawang
-     *          →  gm-director
-     *   3. MOULDING + is_design = false
-     *          →  supervisor-dept-head-director
-     *   4. MOULDING + is_design = true
-     *          →  dept-head-director
-     *   5. PLASTIC INJECTION + branch = Karawang
-     *          →  gm-director
-     *   6. PLASTIC INJECTION (other branches)
-     *          →  dept-head-gm-director
-     *   7. Fallback
-     *          →  dept-head-director
-     */
-    protected function pickApprovalFlowSlug($header): string
-    {
-        $dept   = Str::upper($header->dept->name ?? '');      // assumes dept relation
-        $branch = Str::upper($header->branch ?? '');
-        $isDesign = (bool) $header->is_design;
-
-        return match (true) {
-            in_array($dept, ['ASSEMBLY', 'SECOND PROCESS', 'STORE', 'LOGISTIC']) =>
-            'dept-head-director',
-
-            // ————————— MOULDING rules —————————
-            $dept === 'MOULDING' && ! $isDesign && $branch === 'KARAWANG' =>
-            'gm-director',
-
-            $dept === 'MOULDING' && ! $isDesign =>
-            'supervisor-dept-head-director',
-
-            $dept === 'MOULDING' && $isDesign =>
-            'dept-head-director',
-
-            // ————————— PLASTIC INJECTION rules —————————
-            $dept === 'PLASTIC INJECTION' && $branch === 'KARAWANG' =>
-            'gm-director',
-
-            $dept === 'PLASTIC INJECTION' =>
-            'dept-head-gm-director',
-
-            // ————————— Fallback —————————
-            default => 'dept-head-director',
-        };
     }
 }
