@@ -1,6 +1,6 @@
 <div>
     @php
-        $showDocumentInfo = true;
+        $showDocumentInfo = false;
     @endphp
     <div>
         @if ($measurements)
@@ -9,7 +9,8 @@
                     <div class="row g-3">
                         <div class="col">
                             <label class="form-label">Start Time</label>
-                            <input type="time" class="form-control @error('start_time') is-invalid @enderror"
+                            <input type="time" step="900"
+                                class="form-control @error('start_time') is-invalid @enderror"
                                 wire:model.blur="start_time">
                             @error('start_time')
                                 <span class="text-danger">{{ $message }}</span>
@@ -17,8 +18,8 @@
                         </div>`
                         <div class="col">
                             <label class="form-label">End Time</label>
-                            <input type="time" class="form-control @error('end_time') is-invalid @enderror"
-                                wire:model.blur="end_time">
+                            <input type="time" step="900"
+                                class="form-control @error('end_time') is-invalid @enderror" wire:model.blur="end_time">
                             @error('end_time')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -42,24 +43,12 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">UoM</label>
+                        <label class="form-label">Unit</label>
                         <select class="form-select" wire:model.live="measurements.{{ $index }}.limit_uom">
                             <option value="" selected></option>
                             <option value="cm">cm</option>
                             <option value="mm">mm</option>
                         </select>
-                    </div>
-
-                    <div class="col">
-                        <label class="form-label">Upper Limit</label>
-                        <div class="input-group">
-                            <input type="number" step="any" class="form-control"
-                                wire:model.blur="measurements.{{ $index }}.upper_limit">
-                            <span class="input-group-text">{{ data_get($measurements, "$index.limit_uom", '') }}</span>
-                        </div>
-                        @error("measurements.$index.upper_limit")
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
                     </div>
 
                     <div class="col">
@@ -75,17 +64,41 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Part</label>
+                        <label class="form-label">Upper Limit</label>
+                        <div class="input-group">
+                            <input type="number" step="any" class="form-control"
+                                wire:model.blur="measurements.{{ $index }}.upper_limit">
+                            <span class="input-group-text">{{ data_get($measurements, "$index.limit_uom", '') }}</span>
+                        </div>
+                        @error("measurements.$index.upper_limit")
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Actual Value</label>
+                        <div class="input-group">
+                            <input type="number" step="any" class="form-control"
+                                wire:model.blur="measurements.{{ $index }}.actual_value">
+                            <span class="input-group-text">{{ data_get($measurements, "$index.limit_uom", '') }}</span>
+                        </div>
+                        @error("measurements.$index.actual_value")
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Area/Section</label>
                         <input type="text" class="form-control"
-                            wire:model.blur="measurements.{{ $index }}.part">
-                        @error("measurements.$index.part")
+                            wire:model.blur="measurements.{{ $index }}.area">
+                        @error("measurements.$index.area")
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="col">
                         <label class="form-label">Judgement</label>
-                        <select class="form-select" wire:model.blur="measurements.{{ $index }}.judgement">
+                        <select class="form-select" wire:model.live="measurements.{{ $index }}.judgement">
                             <option value="" disabled>--Select Judgement--</option>
                             <option value="OK">OK</option>
                             <option value="NG">NG</option>
@@ -94,6 +107,17 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    @if (($row['judgement'] ?? '') === 'NG')
+                        <div class="col">
+                            <label class="form-label">Remarks</label>
+                            <input type="text" class="form-control"
+                                wire:model.blur="measurements.{{ $index }}.remarks">
+                            @error("measurements.$index.remarks")
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    @endif
 
                     <div class="col-auto align-self-end mb-3">
                         <button type="button" class="btn btn-link text-danger btn-sm"
@@ -115,7 +139,7 @@
                         $measurements[0]['limit_uom'] !== '' &&
                         $measurements[0]['upper_limit'] !== '' &&
                         $measurements[0]['lower_limit'] !== '' &&
-                        $measurements[0]['part'] !== ''
+                        $measurements[0]['area'] !== ''
                     ) {
                         $buttonDisabled = false;
                     }

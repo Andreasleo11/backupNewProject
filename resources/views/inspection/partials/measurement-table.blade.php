@@ -12,7 +12,7 @@
         <table class="table table-borderless table-sm table-striped table-hover align-middle mb-0 text-center">
             <thead class="table-light">
                 <tr>
-                    <th style="width:15%">Part</th>
+                    <th style="width:15%">Area/Section</th>
                     <th style="width:20%">Lower&nbsp;Limit</th>
                     <th style="width:20%">Upper&nbsp;Limit</th>
                     <th style="width:15%">Judgement</th>
@@ -24,7 +24,7 @@
                     @php $isOk = strtolower($row->judgement) === 'ok'; @endphp
                     <tr class="{{ $isOk ? '' : 'table-danger' }}">
 
-                        <td class="fw-semibold">{{ $row->part }}</td>
+                        <td class="fw-semibold">{{ $row->area }}</td>
 
                         {{-- right-align numbers, unit on its own col --}}
                         <td class="text-center pe-3">{{ rtrim(rtrim(number_format($row->lower_limit, 2), '0'), '.') }}

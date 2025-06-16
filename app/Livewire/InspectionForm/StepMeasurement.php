@@ -17,27 +17,57 @@ class StepMeasurement extends Component
 
     public $periodKey;
 
-    protected function rules()
+    protected function rules(): array
     {
-        return  [
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i',
-            'measurements.*.inspection_report_document_number' => 'required|string',
-            'measurements.*.lower_limit' => 'required|numeric|min:0',
-            'measurements.*.upper_limit' => 'required|numeric|min:0',
-            'measurements.*.limit_uom' => 'required|string',
-            'measurements.*.judgement' => 'required|in:OK,NG',
-            'measurements.*.part' => 'required|string',
+        $fifteen = function ($attribute, $value, $fail) {
+            $minutes = \Carbon\Carbon::createFromFormat('H:i', $value)->minute;
+            if ($minutes % 15 !== 0) {
+                $fail('The ' . $attribute . ' must be in 15-minute increments (00, 15, 30, 45).');
+            }
+        };
+
+        $rules = [
+            'start_time' => ['required', 'date_format:H:i', $fifteen],
+            'end_time'   => ['required', 'date_format:H:i', $fifteen],
         ];
+
+        foreach ($this->measurements as $i => $row) {
+            $rules["measurements.$i.inspection_report_document_number"] = 'required|string';
+            $rules["measurements.$i.lower_limit"] = 'required|numeric';
+            $rules["measurements.$i.upper_limit"] = [
+                'required',
+                'numeric',
+                "gt:measurements.$i.lower_limit",
+            ];
+            $rules["measurements.$i.limit_uom"]   = 'required|string';
+            $rules["measurements.$i.judgement"]   = 'required|in:OK,NG';
+            $rules["measurements.$i.area"]        = 'required|string';
+            $rules["measurements.$i.remarks"]     = 'nullable|string';
+
+            // dynamic rule for actual_value
+            $lower = $row['lower_limit'] ?? null;
+            $upper = $row['upper_limit'] ?? null;
+
+            $rules["measurements.$i.actual_value"] = is_numeric($lower) && is_numeric($upper)
+                ? "required|numeric|between:$lower,$upper"
+                : 'required|numeric';
+        }
+
+        return $rules;
     }
+
 
     protected $messages = [
         'measurements.*.inspection_report_document_number.required' => 'The inspection report document number is required.',
         'measurements.*.lower_limit.numeric' => 'The lower limit must be a number.',
         'measurements.*.upper_limit.numeric' => 'The upper limit must be a number.',
+        'measurements.*.upper_limit.gt' => 'The upper limit must be greater than lower limit.',
+        'measurements.*.actual_value.between' => 'The actual value must be between the lower and upper limits.',
         'measurements.*.limit_uom.string' => 'The limit unit of measure must be a string.',
+        'measurements.*.actual_value.numeric' => 'The actual value must be a number.',
         'measurements.*.judgement.enum' => 'The judgement must be either OK or NG.',
-        'measurements.*.part.string' => 'The part must be a string.',
+        'measurements.*.area.string' => 'The area must be a string.',
+        'measurements.*.remarks.string' => 'The area must be a string.',
     ];
 
     public function mount($inspection_report_document_number = null)
@@ -70,8 +100,10 @@ class StepMeasurement extends Component
             'lower_limit' => '',
             'upper_limit' => '',
             'limit_uom' => '',
+            'actual_value' => '',
             'judgement' => '',
-            'part' => '',
+            'area' => '',
+            'remarks' => '',
         ];
     }
 
