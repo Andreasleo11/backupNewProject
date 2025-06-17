@@ -713,6 +713,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
 
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');

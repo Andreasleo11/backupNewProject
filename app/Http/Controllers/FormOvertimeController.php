@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
@@ -340,7 +341,7 @@ class FormOvertimeController extends Controller
         // Update form status if final step
 
         if ($form->currentStep() === null) {
-            $form->update(['status' => 'approved']);
+            $form->update(['status' => 'approved', 'is_approve' => 1]);
         } elseif ($form->nextStep()) {
             $status = 'waiting-' . str_replace('_', '-', $form->nextStep()->role_slug);
             $form->update(['status' => $status]);
@@ -655,7 +656,6 @@ class FormOvertimeController extends Controller
         $failed = [];
 
         foreach ($header->details as $detail) {
-            // Skip jika statusnya Rejected
             if ($detail->status === 'Rejected') {
                 continue;
             }
@@ -686,6 +686,7 @@ class FormOvertimeController extends Controller
                     'Content-Type' => 'application/json'
                 ])->post($url, $payload);
 
+                $responseJson = $response->json();
                 $responseData = [
                     'NIK' => $detail->NIK,
                     'status' => $response->status(),
@@ -697,28 +698,25 @@ class FormOvertimeController extends Controller
                     $detail->status = 'Approved';
                     $detail->save();
 
-                    $this->checkAndUpdateHeaderPushStatus($detail->header_id);
-
-                    Log::info("✅ Success push for detail ID: $detailId", $responseData);
-
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Data berhasil dipush & diapprove',
-                        'response' => $responseData
-                    ]);
+                    $successCount++;
+                    Log::info("✅ Success push for detail ID: {$detail->id}", $responseData);
                 } else {
-                    Log::warning("⚠️ Push rejected for detail ID: $detailId - JPayroll response not success", $responseData);
+                    $detail->status = 'Rejected';
+                    $detail->save();
 
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: ' . ($responseJson['msg'] ?? 'Unknown error'),
-                        'response' => $responseData
-                    ], 400);
+                    Log::warning("⚠️ Push rejected & status updated for detail ID: {$detail->id}", $responseData);
+
+                    $failed[] = [
+                        'detail_id' => $detail->id,
+                        'NIK' => $detail->NIK,
+                        'reason' => 'Rejected by JPayroll'
+                    ];
                 }
             } catch (\Exception $e) {
-                Log::error("❌ Exception push for detail ID: $detail->id", [
+                Log::error("❌ Exception push for detail ID: {$detail->id}", [
                     'error' => $e->getMessage()
                 ]);
+
                 $failed[] = [
                     'detail_id' => $detail->id,
                     'NIK' => $detail->NIK,
@@ -727,7 +725,7 @@ class FormOvertimeController extends Controller
             }
         }
 
-        // Setelah semua proses, cek apakah semua detail sudah diapprove atau direject
+        // Setelah semua proses
         $this->checkAndUpdateHeaderPushStatus($headerId);
 
         return response()->json([
@@ -758,5 +756,35 @@ class FormOvertimeController extends Controller
         }
 
         return !$hasPending;
+    }
+
+
+    public function summaryView(Request $request)
+    {
+        $summary = collect();
+
+        if ($request->filled(['start_date', 'end_date'])) {
+            $request->validate([
+                'start_date' => 'required|date',
+                'end_date'   => 'required|date|after_or_equal:start_date',
+            ]);
+
+            $summary = DetailFormOvertime::query()
+                ->select(
+                    'NIK',
+                    'nama',
+                    DB::raw('MIN(start_date) as start_date'),
+                    DB::raw('MAX(end_date) as end_date'),
+                    DB::raw('SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time) - `break`) / 60 as total_ot')
+                )
+                ->whereBetween('start_date', [$request->start_date, $request->end_date])
+                ->whereNull('deleted_at')
+                ->where('status',  'Approved')
+                ->groupBy('NIK', 'nama')
+                ->get();
+        }
+
+        // dd($summary);
+        return view('formovertime.summary', compact('summary'));
     }
 }
