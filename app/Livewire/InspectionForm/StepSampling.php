@@ -19,6 +19,8 @@ class StepSampling extends Component
         'samples.*.quantity' => 'required|integer|min:1',
         'samples.*.box_label' => 'required|string',
         'samples.*.appearance' => 'required|string|in:OK,NG',
+        'samples.*.ng_quantity' => 'required_if:samples.*.appearance,NG|nullable|integer|min:1',
+        'samples.*.remarks' => 'required_if:samples.*.appearance,NG|nullable|string',
     ];
 
     protected $messages = [
@@ -33,6 +35,11 @@ class StepSampling extends Component
         'samples.*.appearance.required' => 'The appearance is required.',
         'samples.*.appearance.string' => 'The appearance must be a string.',
         'samples.*.appearance.in' => 'The appearance must be either OK or NG.',
+        'samples.*.ng_quantity.required_if' => 'The NG quantity is require when appearance is NG.',
+        'samples.*.ng_quantity.integer' => 'The NG quantity must be an integer.',
+        'samples.*.ng_quantity.min' => 'The NG quantity must be at least 1.',
+        'samples.*.remarks.required_if' => 'The remarks are required when appearance is NG.',
+        'samples.*.remarks.string' => 'The remarks must be a string.',
     ];
 
     public function mount($second_inspection_document_number = null)
