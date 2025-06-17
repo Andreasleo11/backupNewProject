@@ -76,6 +76,10 @@ class FormOvertimeController extends Controller
             ->orWhere('user_id', $user->id)
             ->get();
 
+        if (auth()->user()->role->name === 'SUPERADMIN') {
+            $dataheader = HeaderFormOvertime::all();
+        }
+
         $departments = Department::all();
 
         return view("formovertime.index", compact("dataheader", "departments"));
