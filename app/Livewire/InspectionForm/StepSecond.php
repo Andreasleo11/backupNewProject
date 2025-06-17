@@ -51,6 +51,7 @@ class StepSecond extends Component
                     $this->$key = $value;
                 }
             }
+            $this->secondInspectionSaved = true;
         }
 
         if (!$this->document_number) {

@@ -53,14 +53,13 @@
                 </div>
             </div>
 
-            <div class="text-end">
+            <div class="text-end mb-2">
                 <button class="btn btn-outline-primary" wire:click="saveStep">Save Second Inspection</button>
                 <button class="btn btn-outline-danger" wire:click="resetStep">Reset</button>
             </div>
 
-            <div x-data="{ unlocked: @entangle('secondInspectionSaved') }" class="mt-3">
-                <div x-show="unlocked" x-transition.opacity x-cloak>
-
+            @if ($secondInspectionSaved)
+                <div>
                     <div class="fw-bold text-primary mb-2">Sampling</div>
                     @livewire('inspection-form.step-sampling', ['second_inspection_document_number' => $document_number], key('step-sampling'))
 
@@ -69,7 +68,8 @@
                         @livewire('inspection-form.step-packaging', ['second_inspection_document_number' => $document_number], key('step-packaging'))
                     </div>
                 </div>
-                <div x-show="!unlocked" x-transition.opacity x-cloak>
+            @else
+                <div>
                     <div class="alert alert-warning d-flex align-items-center gap-2">
                         <i class="bi bi-exclamation-triangle-fill fs-4"></i>
                         <div>
@@ -105,7 +105,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 </div>
