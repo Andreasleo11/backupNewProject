@@ -23,6 +23,13 @@
                 </div>
             </form>
 
+            <div class="mb-3 text-end">
+                <a href="{{ route('overtime.summary.export', ['start_date' => request('start_date'), 'end_date' => request('end_date')]) }}"
+                class="btn btn-success">
+                    📥 Export ke Excel
+                </a>
+            </div>
+
             @if(isset($summary) && $summary->count())
                 <div class="table-responsive">
                     <table class="table table-bordered table-striped align-middle">
