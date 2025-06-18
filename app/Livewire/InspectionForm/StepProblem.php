@@ -3,6 +3,7 @@
 namespace App\Livewire\InspectionForm;
 
 use App\Traits\ClearsNestedSession;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class StepProblem extends Component
@@ -11,16 +12,27 @@ class StepProblem extends Component
 
     public $inspection_report_document_number;
     public $problems = [];
+    public $types = [];
 
-    public $periodKey;
+    public $shift;
+    public $operator;
+    public $part_name;
+    public $part_number;
 
-    protected $rules = [
-        'problems.*.inspection_report_document_number' => 'required|string',
-        'problems.*.type' => 'required|string|in:NO PROBLEM,QUALITY PROBLEM,MOLD PROBLEM,MACHINE PROBLEM,4M PROBLEM',
-        'problems.*.time' => 'required|date_format:H:i',
-        'problems.*.cycle_time' => 'required|integer|min:1',
-        'problems.*.remark' => 'nullable|string',
-    ];
+    protected function rules(): array
+    {
+        return [
+            'problems.*.inspection_report_document_number' => 'required|string',
+            'problems.*.type'        => [
+                'required',
+                'string',
+                Rule::in($this->types),        // ← dynamic
+            ],
+            'problems.*.time'        => 'required|date_format:H:i',
+            'problems.*.cycle_time'  => 'required|integer|min:1',
+            'problems.*.remark'      => 'nullable|string',
+        ];
+    }
 
     protected $messages = [
         'problems.*.inspection_report_document_number.required' => 'Inspection report document number is required.',
@@ -38,9 +50,24 @@ class StepProblem extends Component
 
     public function mount($inspection_report_document_number = null)
     {
+        $this->types = [
+            'NO PROBLEM',
+            'PART PROBLEM',
+            'MOLD PROBLEM',
+            'MACHINE PROBLEM',
+            'TOOLS PROBLEM',
+            'MATERIAL PROBLEM',
+            'METHOD PROBLEM',
+            'MAN PROBLEM',
+        ];
+
         $this->inspection_report_document_number = $inspection_report_document_number;
-        $this->periodKey = 'p' . session('stepDetailSaved.period');
-        $this->problems = session("stepDetailSaved.problems.{$this->periodKey}", []);
+        // dd(session('stepHeaderSaved'));
+        $this->shift = session('stepHeaderSaved.shift', null);
+        $this->operator = session('stepHeaderSaved.operator', null);
+        $this->part_name = session('stepHeaderSaved.part_name', null);
+        $this->part_number = session('stepHeaderSaved.part_number', null);
+        $this->problems = session("stepProblemSaved", []);
 
         if (empty($this->problems)) {
             $this->addProblem();
@@ -75,14 +102,14 @@ class StepProblem extends Component
     {
         $this->validate();
 
-        session()->put("stepDetailSaved.problems.{$this->periodKey}", $this->problems);
+        session()->put("stepProblemSaved", $this->problems);
         $this->dispatch('toast', message: "Problems entries saved succesfully!");
     }
 
     public function resetStep()
     {
         $this->problems = [];
-        $this->forgetNestedKey('stepDetailSaved.problems', $this->periodKey);
+        session()->forget('stepProblemSaved');
         $this->addProblem();
         $this->resetValidation();
         $this->dispatch('toast', message: "Problems entries reset succesfully!");

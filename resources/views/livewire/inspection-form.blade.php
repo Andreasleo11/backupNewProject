@@ -5,7 +5,8 @@
         $stepLabels = [
             1 => 'Header',
             2 => 'Detail',
-            3 => 'Final Submit',
+            3 => 'Problems',
+            4 => 'Final Submit',
         ];
     @endphp
 
@@ -34,6 +35,8 @@
                 @elseif ($currentStep === 2)
                     @livewire('inspection-form.step-detail', ['inspection_report_document_number' => $inspection_report_document_number], key('step-detail'))
                 @elseif ($currentStep === 3)
+                    @livewire('inspection-form.step-problem', ['inspection_report_document_number' => $inspection_report_document_number], key('step-problem'))
+                @elseif ($currentStep === 4)
                     @livewire('inspection-form.final-submit', key('final-submit'))
                 @endif
             </div>

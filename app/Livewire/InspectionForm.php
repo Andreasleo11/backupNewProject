@@ -14,6 +14,7 @@ class InspectionForm extends Component
     protected $listeners = [
         'stepHeaderSaved' => 'handlerHeaderSaved',
         'stepDetailSaved' => 'markStepFilled',
+        'stepProblemSaved' => 'markStepFilled',
         'stepFinalSubmit' => 'markStepFilled',
         'nextStep' => 'nextStep',
     ];
@@ -24,7 +25,8 @@ class InspectionForm extends Component
         $this->stepSessionKeys = [
             1 => 'stepHeaderSaved',
             2 => 'stepDetailSaved',
-            3 => 'stepFinalSubmit',
+            3 => 'stepProblemSaved',
+            4 => 'stepFinalSubmit',
         ];
 
         foreach ($this->stepSessionKeys as $step => $key) {
