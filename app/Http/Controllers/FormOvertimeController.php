@@ -22,6 +22,7 @@ use App\Notifications\FormOvertimeNotification;
 use App\Support\ApprovalFlowResolver;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\OvertimeSummaryExport;
 
 class FormOvertimeController extends Controller
 {
@@ -787,4 +788,17 @@ class FormOvertimeController extends Controller
         // dd($summary);
         return view('formovertime.summary', compact('summary'));
     }
+
+    public function exportSummaryExcel(Request $request)
+{
+    $request->validate([
+        'start_date' => 'required|date',
+        'end_date'   => 'required|date|after_or_equal:start_date',
+    ]);
+
+    return Excel::download(
+        new OvertimeSummaryExport($request->start_date, $request->end_date),
+        'Ringkasan_Overtime_' . now()->format('Ymd_His') . '.xlsx'
+    );
+}
 }
