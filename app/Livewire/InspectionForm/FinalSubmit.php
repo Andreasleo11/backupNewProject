@@ -39,7 +39,6 @@ class FinalSubmit extends Component
         'samples'            => 'Sampling Data',
         'packagings'         => 'Packaging Data',
         'judgements'         => 'Judgement Data',
-        'problems'           => 'Problem Data',
         'quantities'         => 'Quantity Data',
     ];
 
@@ -70,7 +69,7 @@ class FinalSubmit extends Component
         $this->samplingData = session('stepDetailSaved.samples', []);
         $this->packagingData = session('stepDetailSaved.packagings', []);
         $this->judgementData = session('stepDetailSaved.judgements', []);
-        $this->problemData = session('stepDetailSaved.problems', []);
+        $this->problemData = session('stepProblemSaved', []);
         $this->quantityData = session('stepDetailSaved.quantities', []);
 
         $this->holeReport = $this->computeHoleReport();
@@ -85,7 +84,6 @@ class FinalSubmit extends Component
             'samples'            => session('stepDetailSaved.samples'),
             'packagings'         => session('stepDetailSaved.packagings'),
             'judgements'         => session('stepDetailSaved.judgements'),
-            'problems'           => session('stepDetailSaved.problems'),
             'quantities'         => session('stepDetailSaved.quantities'),
         ];
 
@@ -113,8 +111,6 @@ class FinalSubmit extends Component
             'samplingData',
             'packagingData',
             'judgementData',
-            'problemData',
-            'quantityData',
         ];
 
         $complete   = [];
@@ -159,14 +155,14 @@ class FinalSubmit extends Component
                 'samplingData',
                 'packagingData',
                 'judgementData',
-                'problemData',
-                'quantityData'
             ] as $prop
         ) {
             $this->{$prop} = collect($this->{$prop})
                 ->only(array_map(fn($p) => "p{$p}", $completeP))
                 ->all();
         }
+
+        // dd($this->problemData);
 
         DB::transaction(function () {
             InspectionReport::create($this->headerData);
@@ -197,10 +193,8 @@ class FinalSubmit extends Component
             foreach ($this->judgementData as $data) {
                 InspectionJudgement::create($data);
             }
-            foreach ($this->problemData as $value) {
-                foreach ($value as $data) {
-                    InspectionProblem::create($data);
-                }
+            foreach ($this->problemData as $data) {
+                InspectionProblem::create($data);
             }
             foreach ($this->quantityData as $data) {
                 InspectionQuantity::create($data);
@@ -219,6 +213,7 @@ class FinalSubmit extends Component
         session()->forget([
             'stepHeaderSaved',
             'stepDetailSaved',
+            'stepProblemSaved',
             'lastStepVisited'
         ]);
         redirect()->route('inspection-report.index');

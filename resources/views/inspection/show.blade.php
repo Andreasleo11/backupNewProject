@@ -122,101 +122,111 @@
                                 <i class="bi bi-info-circle me-1"></i>
                                 No data entered for Period {{ $p }} yet.
                             </div>
-                            @continue
+                        @else
+                            {{-- timeline badge ------------------------------------------------ --}}
+                            @php
+                                $start = Carbon\Carbon::parse($d->start_datetime);
+                                $end = Carbon\Carbon::parse($d->end_datetime);
+
+                                // duration
+                                $hours = $start->diffInHours($end);
+                                $mins = $start->diffInMinutes($end) % 60;
+                                $dur = ($hours ? $hours . ' h ' : '') . $mins . ' m';
+
+                                // same day?
+                                $sameDay = $start->isSameDay($end);
+                            @endphp
+
+                            <p class="mb-4">
+
+                                {{-- ▼ Date(s) ---------------------------------------------------- --}}
+                                @if ($sameDay)
+                                    <span class="text-muted">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        {{ $start->format('d M Y') }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        {{ $start->format('d M Y') }}
+                                    </span>
+                                    <span class="text-muted ms-2">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </span>
+                                    <span class="text-muted ms-2">
+                                        <i class="bi bi-calendar-event me-1"></i>
+                                        {{ $end->format('d M Y') }}
+                                    </span>
+                                @endif
+
+                                {{-- ▼ Time range ------------------------------------------------ --}}
+                                <span class="badge bg-light text-dark ms-3">
+                                    <i class="bi bi-clock me-1"></i>
+                                    {{ $start->format('H:i') }} &rarr; {{ $end->format('H:i') }}
+                                </span>
+
+                                {{-- ▼ Duration --------------------------------------------------- --}}
+                                <span class="badge bg-secondary ms-1">
+                                    <i class="bi bi-hourglass-split me-1"></i>{{ $dur }}
+                                </span>
+                            </p>
+
+                            {{-- accordion per dataset (unchanged) ----------------------------- --}}
+                            <div class="accordion" id="accordionQ{{ $p }}">
+                                {{-- First Inspection --}}
+                                <x-inspection-section parent="accordionQ{{ $p }}" id="first{{ $p }}"
+                                    title="First Inspection">
+                                    @include('inspection.partials.first-inspection-table', [
+                                        'rows' => $d->firstInspections,
+                                    ])
+                                </x-inspection-section>
+
+                                {{-- Measurement Data (optional) --}}
+                                <x-inspection-section parent="accordionQ{{ $p }}"
+                                    id="measure{{ $p }}" title="Measurement Data">
+                                    @include('inspection.partials.measurement-table', [
+                                        'rows' => $h->measurementData,
+                                    ])
+                                </x-inspection-section>
+
+                                {{-- Second Inspection & children --}}
+                                <x-inspection-section parent="accordionQ{{ $p }}"
+                                    id="second{{ $p }}" title="Second Inspection">
+                                    @include('inspection.partials.second-inspection', [
+                                        'second' => $d->secondInspections,
+                                    ])
+                                </x-inspection-section>
+
+                                {{-- Judgement & Quantity --}}
+                                <x-inspection-section parent="accordionQ{{ $p }}"
+                                    id="result{{ $p }}" title="Results & Quantity">
+                                    @include('inspection.partials.results', [
+                                        'judgement' => $d->judgementData,
+                                        'quantity' => $h->quantityData,
+                                    ])
+                                </x-inspection-section>
+                            </div>
                         @endif
-
-                        {{-- timeline badge ------------------------------------------------ --}}
-                        @php
-                            $start = Carbon\Carbon::parse($d->start_datetime);
-                            $end = Carbon\Carbon::parse($d->end_datetime);
-
-                            // duration
-                            $hours = $start->diffInHours($end);
-                            $mins = $start->diffInMinutes($end) % 60;
-                            $dur = ($hours ? $hours . ' h ' : '') . $mins . ' m';
-
-                            // same day?
-                            $sameDay = $start->isSameDay($end);
-                        @endphp
-
-                        <p class="mb-4">
-
-                            {{-- ▼ Date(s) ---------------------------------------------------- --}}
-                            @if ($sameDay)
-                                <span class="text-muted">
-                                    <i class="bi bi-calendar-event me-1"></i>
-                                    {{ $start->format('d M Y') }}
-                                </span>
-                            @else
-                                <span class="text-muted">
-                                    <i class="bi bi-calendar-event me-1"></i>
-                                    {{ $start->format('d M Y') }}
-                                </span>
-                                <span class="text-muted ms-2">
-                                    <i class="bi bi-arrow-right"></i>
-                                </span>
-                                <span class="text-muted ms-2">
-                                    <i class="bi bi-calendar-event me-1"></i>
-                                    {{ $end->format('d M Y') }}
-                                </span>
-                            @endif
-
-                            {{-- ▼ Time range ------------------------------------------------ --}}
-                            <span class="badge bg-light text-dark ms-3">
-                                <i class="bi bi-clock me-1"></i>
-                                {{ $start->format('H:i') }} &rarr; {{ $end->format('H:i') }}
-                            </span>
-
-                            {{-- ▼ Duration --------------------------------------------------- --}}
-                            <span class="badge bg-secondary ms-1">
-                                <i class="bi bi-hourglass-split me-1"></i>{{ $dur }}
-                            </span>
-                        </p>
-
-                        {{-- accordion per dataset (unchanged) ----------------------------- --}}
-                        <div class="accordion" id="accordionQ{{ $p }}">
-                            {{-- First Inspection --}}
-                            <x-inspection-section parent="accordionQ{{ $p }}" id="first{{ $p }}"
-                                title="First Inspection">
-                                @include('inspection.partials.first-inspection-table', [
-                                    'rows' => $d->firstInspections,
-                                ])
-                            </x-inspection-section>
-
-                            {{-- Measurement Data (optional) --}}
-                            <x-inspection-section parent="accordionQ{{ $p }}" id="measure{{ $p }}"
-                                title="Measurement Data">
-                                @include('inspection.partials.measurement-table', [
-                                    'rows' => $h->measurementData,
-                                ])
-                            </x-inspection-section>
-
-                            {{-- Second Inspection & children --}}
-                            <x-inspection-section parent="accordionQ{{ $p }}" id="second{{ $p }}"
-                                title="Second Inspection">
-                                @include('inspection.partials.second-inspection', [
-                                    'second' => $d->secondInspections,
-                                ])
-                            </x-inspection-section>
-
-                            {{-- Judgement & Quantity --}}
-                            <x-inspection-section parent="accordionQ{{ $p }}" id="result{{ $p }}"
-                                title="Results & Quantity">
-                                @include('inspection.partials.results', [
-                                    'judgement' => $d->judgementData,
-                                    'quantity' => $h->quantityData,
-                                ])
-                            </x-inspection-section>
-
-                            {{-- Problems / Downtime --}}
-                            <x-inspection-section parent="accordionQ{{ $p }}" id="problem{{ $p }}"
-                                title="Problems">
-                                @include('inspection.partials.problems', ['rows' => $h->problemData])
-                            </x-inspection-section>
-                        </div>
                     </div>
                 @endforeach
             </div>
 
+            {{-- =============================================================== --}}
+            {{--  Problems  (per shift, not per period)               --}}
+            {{-- =============================================================== --}}
+            @php
+                // Grab all problems tied to this inspection report / shift.
+                // Adjust the property or relation name if it’s different in your model.
+                $problemRows = $r->problemData ?? collect(); // collection or array
+            @endphp
+
+            <h4 class="fw-bold text-primary-emphasis mt-5 mb-3">
+                <i class="bi bi-bug-fill me-1"></i> Problems
+                <span class="badge bg-primary-subtle text-primary-emphasis ms-2">
+                    Shift {{ $r->shift }}
+                </span>
+            </h4>
+
+            @include('inspection.partials.problems', ['rows' => $problemRows])
         </div>
     @endsection
