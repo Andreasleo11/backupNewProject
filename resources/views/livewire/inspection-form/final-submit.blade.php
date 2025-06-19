@@ -14,7 +14,7 @@
     $groups = [
         'Initial Inspection' => ['Detail Inspection', 'First Data', 'Measurement Data'],
         'Second Inspection' => ['Second Data', 'Sampling Data', 'Packaging Data'],
-        'Results & Counts' => ['Judgement Data', 'Quantity Data'],
+        'Results' => ['Judgement Data'],
     ];
 
     // rainbow-ish colour helpers  — tweak to taste
@@ -311,6 +311,128 @@
                     </table>
                 </div>
             </div>
+            @php
+                $qty = $quantityData; // shorthand
+                $f = fn($v) => number_format($v, 1); // 1-decimal helper
+                $totals = [
+                    ['label' => 'Output', 'key' => 'total_output', 'color' => 'primary', 'icon' => 'stack'],
+                    ['label' => 'Pass', 'key' => 'total_pass', 'color' => 'success', 'icon' => 'check-circle'],
+                    ['label' => 'Reject', 'key' => 'total_reject', 'color' => 'danger', 'icon' => 'x-circle'],
+                    ['label' => 'Sample', 'key' => 'total_sample', 'color' => 'info', 'icon' => 'clipboard-data'],
+                    [
+                        'label' => 'NG Samp',
+                        'key' => 'total_ng_sample',
+                        'color' => 'warning',
+                        'icon' => 'exclamation-circle',
+                    ],
+                ];
+            @endphp
+
+            <h5 class="fw-bold text-primary-emphasis mt-4">
+                Quantities – Shift {{ session('stepDetailSaved.shift') }}
+            </h5>
+            <p class="small text-muted ms-1 mb-3">
+                Totals are calculated automatically from the data you entered.
+            </p>
+
+            <div class="card shadow-sm mb-5 border-0">
+                <div class="card-body">
+
+                    {{-- █████  TOP ROW – Five metric tiles  █████ --}}
+                    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 text-center">
+                        @foreach ($totals as $t)
+                            <div class="col">
+                                <div class="card h-100 border-0 bg-{{ $t['color'] }} bg-opacity-10">
+                                    <div class="card-body p-3">
+                                        <small class="text-uppercase small text-{{ $t['color'] }}">
+                                            <i class="bi bi-{{ $t['icon'] }} me-1"></i>{{ $t['label'] }}
+                                        </small>
+                                        <div class="fs-4 fw-bold text-{{ $t['color'] }}">
+                                            {{ $qty[$t['key']] ?? 0 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- █████  MID ROW – Three rate bars with spacing █████ --}}
+                    @php
+                        $rateTiles = [
+                            null, // ↖︎ left spacer
+                            ['Pass Rate', 'pass_rate', 'success'],
+                            ['Reject Rate', 'reject_rate', 'danger'],
+                            null, // ↖︎ centre spacer
+                            ['NG Sample Rate', 'ng_sample_rate', 'warning'],
+                        ];
+                    @endphp
+
+                    <div class="row row-cols-1 row-cols-md-5 g-4 text-center">
+                        @foreach ($rateTiles as $tile)
+                            @if (is_null($tile))
+                                {{-- empty spacer column --}}
+                                <div class="col d-none d-md-block"></div>
+                            @else
+                                @php [$lbl, $key, $clr] = $tile; @endphp
+                                @php
+                                    $val = $qty[$key] ?? 0;
+                                    $width = max($val, 5); // min visual width
+                                @endphp
+                                <div class="col">
+                                    <div class="card h-100 border-0">
+                                        <div class="card-body p-3">
+                                            <small class="text-muted d-block mb-1">{{ $lbl }}</small>
+                                            <div class="progress position-relative" style="height:22px;">
+                                                <div class="progress-bar bg-{{ $clr }}-subtle"
+                                                    style="width: {{ $width }}%; min-width:5px;"></div>
+                                                <span
+                                                    class="position-absolute top-50 start-50 translate-middle fw-semibold small text-dark">
+                                                    {{ $f($val) }} %
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+
+
+                    {{-- █████  Sample Quality bar – always readable █████ --}}
+                    @php
+                        $ngCnt = $qty['total_ng_sample'] ?? 0;
+                        $okCnt = ($qty['total_sample'] ?? 0) - $ngCnt;
+
+                        $ngRate = $qty['ng_sample_rate'] ?? 0; // e.g. 2.3
+                        $okRate = 100 - $ngRate;
+                        $ngWidth = max($ngRate, 2); // min 2 % so it’s visible
+                    @endphp
+
+                    <h6 class="text-primary-emphasis fw-bold mt-1 mb-2">Sample Quality</h6>
+
+                    <div class="progress position-relative" style="height:26px;">
+                        {{-- full-length OK background --}}
+                        <div class="progress-bar bg-success" style="width:100%;"></div>
+
+                        {{-- NG overlay slice (true width, but never <2 %) --}}
+                        <div class="progress-bar bg-danger" style="width:{{ $ngWidth }}%;"></div>
+
+                        {{-- fixed labels: left = OK, right = NG --}}
+                        <span
+                            class="position-absolute start-0 ps-2 top-50 translate-middle-y small fw-semibold text-white">
+                            OK {{ $okCnt }}&nbsp;({{ number_format($okRate, 1) }}%)
+                        </span>
+
+                        <span
+                            class="position-absolute end-0 pe-2 top-50 translate-middle-y small fw-semibold text-white">
+                            NG {{ $ngCnt }}&nbsp;({{ number_format($ngRate, 1) }}%)
+                        </span>
+                    </div>
+
+
+                </div>
+            </div>
+
         </div>
     @else
         <div>No data yet</div>

@@ -197,12 +197,11 @@
                                     ])
                                 </x-inspection-section>
 
-                                {{-- Judgement & Quantity --}}
+                                {{-- Judgement --}}
                                 <x-inspection-section parent="accordionQ{{ $p }}"
-                                    id="result{{ $p }}" title="Results & Quantity">
-                                    @include('inspection.partials.results', [
+                                    id="result{{ $p }}" title="Judgement">
+                                    @include('inspection.partials.judgement', [
                                         'judgement' => $d->judgementData,
-                                        'quantity' => $h->quantityData,
                                     ])
                                 </x-inspection-section>
                             </div>
@@ -228,5 +227,162 @@
             </h4>
 
             @include('inspection.partials.problems', ['rows' => $problemRows])
+
+            {{-- =============================================================== --}}
+            {{--  Quantities  (per shift, not per period)                        --}}
+            {{-- =============================================================== --}}
+            @php
+                /** 1️⃣  Get the summary array you saved for this shift.
+                 *  If you loaded it in the controller as  $inspectionReport->quantityData
+                 *  leave the line below; otherwise change to your relation or accessor.
+                 */
+                $qty = $r->quantityData ?? [];
+                // dd($qty);
+
+                /** 2️⃣  Nice labels for each metric */
+                $labels = [
+                    'output_quantity' => 'Total Output',
+                    'pass_quantity' => 'Total Pass',
+                    'reject_quantity' => 'Total Reject',
+                    'sampling_quantity' => 'Total Sample',
+                    'ng_sample_quantity' => 'Total NG Sample',
+
+                    'pass_rate' => 'Pass Rate (%)',
+                    'reject_rate' => 'Reject Rate (%)',
+                    'ng_sample_rate' => 'NG Sample Rate (%)',
+                ];
+            @endphp
+
+            <h4 class="fw-bold text-primary-emphasis mt-5 mb-3">
+                <i class="bi bi-bar-chart-fill me-1"></i> Quantities
+                <span class="badge bg-primary-subtle text-primary-emphasis ms-2">
+                    Shift {{ $r->shift }}
+                </span>
+            </h4>
+
+            @if ($qty)
+                @php
+                    /* colour helpers -------------------------------------------------*/
+                    $metricColor = [
+                        'output_quantity' => 'primary',
+                        'pass_quantity' => 'success',
+                        'reject_quantity' => 'danger',
+                        'sampling_quantity' => 'info',
+                        'ng_sample_quantity' => 'warning',
+                    ];
+                    $icon = [
+                        'output_quantity' => 'stack',
+                        'pass_quantity' => 'check-circle',
+                        'reject_quantity' => 'x-circle',
+                        'sampling_quantity' => 'clipboard-data',
+                        'ng_sample_quantity' => 'exclamation-circle',
+                    ];
+
+                    /* rates to one decimal so they fit nicely in badges */
+                    $rate = fn($k) => number_format($qty->$k, 1);
+                @endphp
+
+                <div class="card shadow-sm border-0 mb-5">
+                    <div class="card-body">
+
+                        {{-- ▶ Metric tiles ------------------------------------------------ --}}
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-4 text-center">
+                            @foreach (['output_quantity', 'pass_quantity', 'reject_quantity', 'sampling_quantity', 'ng_sample_quantity'] as $k)
+                                <div class="col">
+                                    <div class="card h-100 border-0 bg-{{ $metricColor[$k] }} bg-opacity-10">
+                                        <div class="card-body p-3">
+                                            <small class="text-muted text-uppercase d-block mb-1">
+                                                <i class="bi bi-{{ $icon[$k] }} me-1"></i>{{ $labels[$k] }}
+                                            </small>
+                                            <span class="display-6 fw-semibold text-{{ $metricColor[$k] }}">
+                                                {{ $qty->$k }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        {{-- ▶ Rate gauges ------------------------------------------------- --}}
+                        {{-- <h6 class="text-primary-emphasis fw-bold mt-4 mb-3">
+                            Rates
+                        </h6> --}}
+
+                        @php
+                            /* helper to format % to 1-decimal */
+                            $f = fn($v) => number_format($v, 1);
+                        @endphp
+
+                        <div class="row row-cols-1 row-cols-md-5 g-3 text-center">
+
+                            {{-- Spacer --}}
+                            <div class="col"></div>
+
+                            {{-- ───────── Pass Rate ───────── --}}
+                            <div class="col">
+                                <div class="card h-100 border-0">
+                                    <div class="card-body p-3">
+                                        <small class="text-muted d-block mb-1">Pass&nbsp;Rate</small>
+                                        @php $p = $qty->pass_rate; @endphp
+                                        <div class="progress position-relative " style="height:20px;">
+                                            <div class="progress-bar bg-success-subtle  "
+                                                style="width: {{ $p }}%; min-width: 5px;"></div>
+                                            <span
+                                                class="position-absolute top-50 start-50 translate-middle small fw-semibold text-dark">
+                                                {{ $f($p) }} %
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- ───────── Reject Rate ───────── --}}
+                            <div class="col">
+                                <div class="card h-100 border-0">
+                                    <div class="card-body p-3">
+                                        <small class="text-muted d-block mb-1">Reject&nbsp;Rate</small>
+                                        @php $rj = $qty->reject_rate; @endphp
+                                        <div class="progress position-relative" style="height:20px;">
+                                            <div class="progress-bar bg-danger-subtle"
+                                                style="width: {{ $rj }}%; min-width: 5px;"></div>
+                                            <span
+                                                class="position-absolute top-50 start-50 translate-middle small fw-semibold text-dark">
+                                                {{ $f($rj) }} %
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Spacer --}}
+                            <div class="col"></div>
+
+                            {{-- ───────── NG-Sample Rate ─────── --}}
+                            <div class="col">
+                                <div class="card h-100 border-0">
+                                    <div class="card-body p-3">
+                                        <small class="text-muted d-block mb-1">NG&nbsp;Sample&nbsp;Rate</small>
+                                        @php $ng = $qty->ng_sample_rate; @endphp
+                                        <div class="progress position-relative" style="height:20px;">
+                                            <div class="progress-bar bg-warning-subtle"
+                                                style="width: {{ $ng }}%; min-width: 5px;"></div>
+                                            <span
+                                                class="position-absolute top-50 start-50 translate-middle small fw-semibold text-dark">
+                                                {{ $f($ng) }} %
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div> {{-- /row rates --}}
+                    </div>
+                </div>
+            @else
+                <div class="alert alert-secondary" role="alert">
+                    <i class="bi bi-info-circle me-1"></i>
+                    No quantity summary saved for this shift.
+                </div>
+            @endif
         </div>
     @endsection

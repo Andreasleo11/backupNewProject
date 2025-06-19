@@ -39,7 +39,6 @@ class FinalSubmit extends Component
         'samples'            => 'Sampling Data',
         'packagings'         => 'Packaging Data',
         'judgements'         => 'Judgement Data',
-        'quantities'         => 'Quantity Data',
     ];
 
     public function mount()
@@ -70,7 +69,44 @@ class FinalSubmit extends Component
         $this->packagingData = session('stepDetailSaved.packagings', []);
         $this->judgementData = session('stepDetailSaved.judgements', []);
         $this->problemData = session('stepProblemSaved', []);
-        $this->quantityData = session('stepDetailSaved.quantities', []);
+
+        $totalOutput = collect($this->secondData)
+            ->pluck('lot_size_quantity')
+            ->filter()                         // drop null / ''
+            ->sum(fn($v) => (int) $v);
+
+        $totalPass = collect($this->judgementData)
+            ->pluck('pass_quantity')
+            ->sum(fn($v) => (int) $v);
+
+        $totalReject = collect($this->judgementData)
+            ->pluck('reject_quantity')
+            ->sum(fn($v) => (int) $v);
+
+        $totalSample = collect($this->samplingData)
+            ->flatMap(fn($rows) => $rows)     // collapse p1, p2 … into one list
+            ->pluck('quantity')
+            ->sum(fn($v) => (int) $v);
+
+        $totalNgSample = collect($this->samplingData)
+            ->flatMap(fn($rows) => $rows)
+            ->pluck('ng_quantity')
+            ->sum(fn($v) => (int) $v);
+
+        $passRate       = $totalOutput  ? round($totalPass     / $totalOutput  * 100, 2) : 0;
+        $rejectRate     = $totalOutput  ? round($totalReject   / $totalOutput  * 100, 2) : 0;
+        $ngSampleRate   = $totalSample  ? round($totalNgSample / $totalSample  * 100, 2) : 0;
+
+        $this->quantityData = [
+            'total_output'      => $totalOutput,
+            'total_pass'        => $totalPass,
+            'total_reject'      => $totalReject,
+            'total_sample'      => $totalSample,
+            'total_ng_sample'   => $totalNgSample,
+            'pass_rate'         => $passRate,
+            'reject_rate'       => $rejectRate,
+            'ng_sample_rate'    => $ngSampleRate,
+        ];
 
         $this->holeReport = $this->computeHoleReport();
     }
@@ -84,7 +120,6 @@ class FinalSubmit extends Component
             'samples'            => session('stepDetailSaved.samples'),
             'packagings'         => session('stepDetailSaved.packagings'),
             'judgements'         => session('stepDetailSaved.judgements'),
-            'quantities'         => session('stepDetailSaved.quantities'),
         ];
 
         return PeriodValidator::missing($payload);
@@ -196,9 +231,19 @@ class FinalSubmit extends Component
             foreach ($this->problemData as $data) {
                 InspectionProblem::create($data);
             }
-            foreach ($this->quantityData as $data) {
-                InspectionQuantity::create($data);
-            }
+
+            $quantityData = $this->quantityData;
+            InspectionQuantity::create([
+                'inspection_report_document_number' => $this->headerData['document_number'],
+                'output_quantity'   => $quantityData['total_output'],
+                'pass_quantity'     => $quantityData['total_pass'],
+                'reject_quantity'   => $quantityData['total_reject'],
+                'sampling_quantity' => $quantityData['total_sample'],
+                'ng_sample_quantity' => $quantityData['total_ng_sample'],
+                'pass_rate'         => $quantityData['pass_rate'],
+                'reject_rate'       => $quantityData['reject_rate'],
+                'ng_sample_rate'    => $quantityData['ng_sample_rate'],
+            ]);
         });
 
         $ok  = implode(', ', array_map(fn($p) => "P{$p}", $completeP));

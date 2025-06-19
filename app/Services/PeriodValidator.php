@@ -15,7 +15,7 @@ class PeriodValidator
             'packagings' => $sectionData['packagings'] ?? [],
             'judgements' => $sectionData['judgements'] ?? [],
             // 'problems' => $sectionData['problems'] ?? [],
-            'quantities' => $sectionData['quantities'] ?? [],
+            // 'quantities' => $sectionData['quantities'] ?? [],
         ];
 
         $missing = [];

@@ -166,9 +166,9 @@
         </x-lockable-card>
     </section> --}}
 
-    <section class="mt-4">
+    {{-- <section class="mt-4">
         <x-lockable-card :locked="$locked" :overlay="$overlay" title="Quantities">
             @livewire('inspection-form.step-quantity', ['inspection_report_document_number' => $inspection_report_document_number], key('step-quantity-' . $reloadToken))
         </x-lockable-card>
-    </section>
+    </section> --}}
 </div>
