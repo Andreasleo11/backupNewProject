@@ -17,7 +17,7 @@ class StepPackaging extends Component
 
     protected $rules = [
         'packagings.*.second_inspection_document_number' => 'required|string',
-        'packagings.*.quantity' => 'required|integer|min:1',
+        'packagings.*.snp' => 'required|integer|min:1',
         'packagings.*.box_label' => 'required|string',
         'packagings.*.judgement' => 'required|in:OK,NG',
         'packagings.*.remarks' => 'nullable|string|required_if:packagings.*.judgement,NG',
@@ -26,9 +26,9 @@ class StepPackaging extends Component
     protected $messages = [
         'packagings.*.second_inspection_document_number.required' => 'The second inspection document number is required.',
         'packagings.*.second_inspection_document_number.string' =>  'The second inspection document number must be a string.',
-        'packagings.*.quantity.required' => 'The quantity is required.',
-        'packagings..*.quantity.integer' => 'The quantity must be an integer.',
-        'packagings.*.quantity.min' => 'The quantity must be at least 1.',
+        'packagings.*.snp.required' => 'The snp is required.',
+        'packagings..*.snp.integer' => 'The snp must be an integer.',
+        'packagings.*.snp.min' => 'The snp must be at least 1.',
         'packagings.*.box_label.required' => 'The box label is required.',
         'packagings.*.box_label.string' => 'The box label must be a string.',
         'packagings.*.judgement.required' => 'The judgement is required.',

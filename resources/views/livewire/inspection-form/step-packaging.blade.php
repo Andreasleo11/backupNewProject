@@ -16,10 +16,10 @@
                     @enderror
                 </div>
                 <div class="col">
-                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control @error("packagings.$index.quantity") is-invalid @enderror"
-                        wire:model.blur="packagings.{{ $index }}.quantity">
-                    @error("packagings.$index.quantity")
+                    <label class="form-label">SNP <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control @error("packagings.$index.snp") is-invalid @enderror"
+                        wire:model.blur="packagings.{{ $index }}.snp">
+                    @error("packagings.$index.snp")
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>

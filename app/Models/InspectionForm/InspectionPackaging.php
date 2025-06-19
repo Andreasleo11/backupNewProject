@@ -11,7 +11,7 @@ class InspectionPackaging extends Model
 
     protected $fillable = [
         'second_inspection_document_number',
-        'quantity',
+        'snp',
         'box_label',
         'judgement',
         'remarks',

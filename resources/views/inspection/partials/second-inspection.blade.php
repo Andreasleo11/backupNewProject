@@ -76,7 +76,7 @@
         <table class="table table-sm table-bordered align-middle mb-0 text-center">
             <thead class="table-light">
                 <tr>
-                    <th>Quantity</th>
+                    <th>SNP</th>
                     <th>Box Label</th>
                     <th>Judgement</th>
                 </tr>
@@ -85,7 +85,7 @@
                 @forelse ($pack as $p)
                     @php $isOk = strtolower($p->judgement) === 'ok'; @endphp
                     <tr class="{{ $isOk ? '' : 'table-danger' }}">
-                        <td>{{ $p->quantity }}</td>
+                        <td>{{ $p->snp }}</td>
                         <td>{{ $p->box_label }}</td>
                         <td>{!! $badge($p->judgement) !!}</td>
                     </tr>
