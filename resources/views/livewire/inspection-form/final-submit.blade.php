@@ -56,13 +56,12 @@
     </h3>
 
     @if ($headerData)
-        {{-- ░░ Missing-data alert ░░ ------------------------------------------- --}}
-        @if (!empty($holeReport))
-            @php
-                /* readable label helper */
-                $pretty = fn($k) => $sectionLabels[$k] ?? ucwords(str_replace('_', ' ', $k));
-            @endphp
+        @php
+            /* readable label helper */
+            $pretty = fn($k) => $sectionLabels[$k] ?? ucwords(str_replace('_', ' ', $k));
+        @endphp
 
+        @if ($hasHoles)
             <div class="alert alert-warning border-warning px-4 py-3" role="alert">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-2"></i>
@@ -72,38 +71,38 @@
                     </div>
                 </div>
             </div>
-            <div class="table-responsive">
-                <table class="table table-sm align-middle mb-0">
-                    <thead class="table-light">
+        @endif
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:30%">Section</th>
+                        @foreach (range(1, 4) as $n)
+                            <th class="text-center">P{{ $n }}</th>
+                        @endforeach
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach ($holeReport as $backendKey => $periods)
                         <tr>
-                            <th style="width:30%">Section</th>
+                            <td class="fw-semibold">{{ $pretty($backendKey) }}</td>
+
                             @foreach (range(1, 4) as $n)
-                                <th class="text-center">P{{ $n }}</th>
+                                @php $isMissing = in_array($n, $periods); @endphp
+                                <td class="text-center">
+                                    <span
+                                        class="badge rounded-pill
+                               {{ $isMissing ? 'text-danger-emphasis bg-danger-subtle' : 'text-success-emphasis bg-success-subtle' }}">
+                                        <i class="bi {{ $isMissing ? 'bi-x-lg' : 'bi-check-lg' }}"></i>
+                                    </span>
+                                </td>
                             @endforeach
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach ($holeReport as $backendKey => $periods)
-                            <tr>
-                                <td class="fw-semibold">{{ $pretty($backendKey) }}</td>
-
-                                @foreach (range(1, 4) as $n)
-                                    @php $isMissing = in_array($n, $periods); @endphp
-                                    <td class="text-center">
-                                        <span
-                                            class="badge rounded-pill
-                               {{ $isMissing ? 'text-danger-emphasis bg-danger-subtle' : 'text-success-emphasis bg-success-subtle' }}">
-                                            <i class="bi {{ $isMissing ? 'bi-x-lg' : 'bi-check-lg' }}"></i>
-                                        </span>
-                                    </td>
-                                @endforeach
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @endif
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
         {{-- ===== Grouped Header ===== --}}
         @foreach ($headerGroups as $groupTitle => $fields)
             {{-- Skip a group if *all* its fields are missing --}}

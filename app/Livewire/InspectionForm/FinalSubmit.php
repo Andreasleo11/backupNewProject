@@ -28,6 +28,7 @@ class FinalSubmit extends Component
     public $judgementData;
     public $problemData;
     public $quantityData;
+    public bool $hasHoles = false;
 
     public array $holeReport = [];      // exposed to view
 
@@ -109,6 +110,17 @@ class FinalSubmit extends Component
         ];
 
         $this->holeReport = $this->computeHoleReport();
+        /* ▸ periods that actually exist (have Detail rows) */
+        $present = collect($this->detailData)
+            ->keys()                         // 'p1','p3', …
+            ->map(fn($k) => (int) substr($k, 1));   // → 1,3,…
+
+        /* ▸ does any *present* period appear in a “missing” list? */
+        $this->hasHoles = collect($this->holeReport)
+            ->some(
+                fn($missingList) =>
+                collect($missingList)->intersect($present)->isNotEmpty()
+            );
     }
 
     protected function computeHoleReport(): array
