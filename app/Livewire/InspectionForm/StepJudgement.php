@@ -2,10 +2,13 @@
 
 namespace App\Livewire\InspectionForm;
 
+use App\Traits\ClearsNestedSession;
 use Livewire\Component;
 
 class StepJudgement extends Component
 {
+    use ClearsNestedSession;
+
     public $detail_inspection_report_document_number;
     public $pass_quantity;
     public $reject_quantity;
@@ -40,6 +43,7 @@ class StepJudgement extends Component
     {
         $this->periodKey = 'p' . session('stepDetailSaved.period');
         $saved = session("stepDetailSaved.judgements.{$this->periodKey}", []);
+        // dd(session("stepDetailSaved.judgements"));
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -71,7 +75,7 @@ class StepJudgement extends Component
         $this->reject_quantity = null;
 
         $this->resetValidation();
-        session()->forget('stepDetailSaved.judgements', $this->periodKey);
+        $this->forgetNestedKey('stepDetailSaved.judgements', $this->periodKey);
         $this->dispatch('toast', message: 'Step Judgement reset successfully!');
     }
 
