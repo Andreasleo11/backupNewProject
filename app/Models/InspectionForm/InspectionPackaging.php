@@ -13,6 +13,7 @@ class InspectionPackaging extends Model
         'second_inspection_document_number',
         'quantity',
         'box_label',
-        'judgement'
+        'judgement',
+        'remarks',
     ];
 }
