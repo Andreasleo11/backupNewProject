@@ -5,6 +5,8 @@ namespace App\Livewire\InspectionForm;
 use App\Traits\ClearsNestedSession;
 use Carbon\Carbon;
 use Livewire\Component;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class StepMeasurement extends Component
 {
@@ -34,40 +36,59 @@ class StepMeasurement extends Component
         foreach ($this->measurements as $i => $row) {
             $rules["measurements.$i.inspection_report_document_number"] = 'required|string';
             $rules["measurements.$i.lower_limit"] = 'required|numeric';
-            $rules["measurements.$i.upper_limit"] = [
-                'required',
-                'numeric',
-                "gt:measurements.$i.lower_limit",
-            ];
+            $rules["measurements.$i.upper_limit"] = ['required', 'numeric', "gt:measurements.$i.lower_limit"];
             $rules["measurements.$i.limit_uom"]   = 'required|string';
             $rules["measurements.$i.judgement"]   = 'required|in:OK,NG';
             $rules["measurements.$i.area"]        = 'required|string';
-            $rules["measurements.$i.remarks"]     = 'nullable|string';
+
+            /* ❶ remarks is required only when judgement = NG */
+            $rules["measurements.$i.remarks"] = [
+                'nullable',
+                'string',
+                Rule::requiredIf(($row['judgement'] ?? '') === 'NG'),
+            ];
 
             // dynamic rule for actual_value
             $lower = $row['lower_limit'] ?? null;
             $upper = $row['upper_limit'] ?? null;
 
-            $rules["measurements.$i.actual_value"] = is_numeric($lower) && is_numeric($upper)
-                ? "required|numeric|between:$lower,$upper"
-                : 'required|numeric';
+            $actualRules = ['required', 'numeric'];
+
+            if (($row['judgement'] ?? '') === 'OK' && is_numeric($lower) && is_numeric($upper)) {
+                // only when OK: must lie between lower & upper
+                $actualRules[] = "between:$lower,$upper";
+            }
+
+            $rules["measurements.$i.actual_value"] = $actualRules;
         }
 
         return $rules;
     }
 
-
     protected $messages = [
         'measurements.*.inspection_report_document_number.required' => 'The inspection report document number is required.',
+        'measurements.*.limit_uom.required' => 'The limit unit of measure is required.',
+        'measurements.*.lower_limit.required' => 'The lower limit is required.',
         'measurements.*.lower_limit.numeric' => 'The lower limit must be a number.',
+        'measurements.*.upper_limit.required' => 'The upper limit is required.',
         'measurements.*.upper_limit.numeric' => 'The upper limit must be a number.',
         'measurements.*.upper_limit.gt' => 'The upper limit must be greater than lower limit.',
         'measurements.*.actual_value.between' => 'The actual value must be between the lower and upper limits.',
         'measurements.*.limit_uom.string' => 'The limit unit of measure must be a string.',
         'measurements.*.actual_value.numeric' => 'The actual value must be a number.',
         'measurements.*.judgement.enum' => 'The judgement must be either OK or NG.',
+        'measurements.*.area.required' => 'The area is required.',
         'measurements.*.area.string' => 'The area must be a string.',
         'measurements.*.remarks.string' => 'The area must be a string.',
+        'measurements.*.remarks.required' => 'Remarks are required when judgement is NG.',
+        'start_time.required' => 'The start time is required.',
+        'start_time.date_format' => 'The start time must be in the format HH:mm.',
+        'start_time.fifteen' => 'The start time must be in 15-minute',
+        'end_time.required' => 'The end time is required.',
+        'end_time.date_format' => 'The end time must be in the format HH:mm.',
+        'end_time.fifteen' => 'The end time must be in 15-minute',
+        'measurements.*.actual_value.required' => 'The actual value is required.',
+        'measurements.*.actual_value.numeric' => 'The actual value must be a number.',
     ];
 
     public function mount($inspection_report_document_number = null)
@@ -113,9 +134,22 @@ class StepMeasurement extends Component
         $this->measurements = array_values($this->measurements);
     }
 
-    public function updated($property)
+    public function updated($property, $value)
     {
         $this->validateOnly($property);
+
+        /* if the property that changed ends with ".judgement" … */
+        if (Str::endsWith($property, '.judgement')) {
+
+            // extract the row index: "measurements.3.judgement" → 3
+            $index = (int) Str::between($property, 'measurements.', '.judgement');
+
+            // when the new value is NOT "NG", blank out the remarks
+            if ($value !== 'NG') {
+                $this->measurements[$index]['remarks'] = '';
+            }
+            $this->validate();
+        }
     }
 
     public function saveStep()

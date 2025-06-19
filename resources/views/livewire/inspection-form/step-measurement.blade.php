@@ -8,7 +8,7 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col">
-                            <label class="form-label">Start Time</label>
+                            <label class="form-label">Start Time <span class="text-danger">*</span></label>
                             <input type="time" step="900"
                                 class="form-control @error('start_time') is-invalid @enderror"
                                 wire:model.blur="start_time">
@@ -17,7 +17,7 @@
                             @enderror
                         </div>`
                         <div class="col">
-                            <label class="form-label">End Time</label>
+                            <label class="form-label">End Time <span class="text-danger">*</span></label>
                             <input type="time" step="900"
                                 class="form-control @error('end_time') is-invalid @enderror" wire:model.blur="end_time">
                             @error('end_time')
@@ -43,16 +43,16 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Unit</label>
+                        <label class="form-label">Unit <span class="text-danger">*</span></label>
                         <select class="form-select" wire:model.live="measurements.{{ $index }}.limit_uom">
-                            <option value="" selected></option>
+                            <option value="" selected>-- Select Unit --</option>
                             <option value="cm">cm</option>
                             <option value="mm">mm</option>
                         </select>
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Lower Limit</label>
+                        <label class="form-label">Lower Limit <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" step="any" class="form-control"
                                 wire:model.blur="measurements.{{ $index }}.lower_limit">
@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Upper Limit</label>
+                        <label class="form-label">Upper Limit <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" step="any" class="form-control"
                                 wire:model.blur="measurements.{{ $index }}.upper_limit">
@@ -76,7 +76,7 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Actual Value</label>
+                        <label class="form-label">Actual Value <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" step="any" class="form-control"
                                 wire:model.blur="measurements.{{ $index }}.actual_value">
@@ -88,7 +88,7 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Area/Section</label>
+                        <label class="form-label">Area/Section <span class="text-danger">*</span></label>
                         <input type="text" class="form-control"
                             wire:model.blur="measurements.{{ $index }}.area">
                         @error("measurements.$index.area")
@@ -97,7 +97,7 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Judgement</label>
+                        <label class="form-label">Judgement <span class="text-danger">*</span></label>
                         <select class="form-select" wire:model.live="measurements.{{ $index }}.judgement">
                             <option value="" disabled>--Select Judgement--</option>
                             <option value="OK">OK</option>
@@ -110,7 +110,7 @@
 
                     @if (($row['judgement'] ?? '') === 'NG')
                         <div class="col">
-                            <label class="form-label">Remarks</label>
+                            <label class="form-label">Remarks <span class="text-danger">*</span></label>
                             <input type="text" class="form-control"
                                 wire:model.blur="measurements.{{ $index }}.remarks">
                             @error("measurements.$index.remarks")
