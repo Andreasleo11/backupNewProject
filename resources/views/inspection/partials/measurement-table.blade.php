@@ -1,35 +1,47 @@
 {{-- resources/views/inspection/partials/measurement-table.blade.php --}}
 @props(['rows'])
 
-<div class="table-responsive">
-    <table class="table table-bordered table-sm align-middle mb-0">
-        <thead class="table-light">
-            <tr>
-                <th>Part</th>
-                <th>Lower</th>
-                <th>Upper</th>
-                <th>UOM</th>
-                <th>Judgement</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($rows as $row)
+@php
+    $badge = fn($j) => strtolower($j) === 'ok'
+        ? '<span class="badge text-bg-success"><i class="bi bi-check-lg me-1"></i>OK</span>'
+        : '<span class="badge text-bg-danger"><i class="bi bi-x-lg me-1"></i>NG</span>';
+@endphp
+
+<div class="p-2">
+    <div class="table-responsive">
+        <table class="table table-borderless table-sm table-striped table-hover align-middle mb-0 text-center">
+            <thead class="table-light">
                 <tr>
-                    <td>{{ $row->part }}</td>
-                    <td>{{ $row->lower_limit }}</td>
-                    <td>{{ $row->upper_limit }}</td>
-                    <td>{{ $row->limit_uom }}</td>
-                    <td>
-                        <span class="badge text-bg-{{ strtolower($row->judgement) === 'ok' ? 'success' : 'danger' }}">
-                            {{ $row->judgement }}
-                        </span>
-                    </td>
+                    <th style="width:15%">Area/Section</th>
+                    <th style="width:20%">Lower&nbsp;Limit</th>
+                    <th style="width:20%">Upper&nbsp;Limit</th>
+                    <th style="width:15%">Judgement</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="text-center text-muted">—</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+
+            <tbody class="small">
+                @forelse ($rows as $row)
+                    @php $isOk = strtolower($row->judgement) === 'ok'; @endphp
+                    <tr class="{{ $isOk ? '' : 'table-danger' }}">
+
+                        <td class="fw-semibold">{{ $row->area }}</td>
+
+                        {{-- right-align numbers, unit on its own col --}}
+                        <td class="text-center pe-3">{{ rtrim(rtrim(number_format($row->lower_limit, 2), '0'), '.') }}
+                            {{ $row->limit_uom }}</td>
+                        <td class="text-center pe-3">{{ rtrim(rtrim(number_format($row->upper_limit, 2), '0'), '.') }}
+                            {{ $row->limit_uom }}</td>
+
+                        <td>{!! $badge($row->judgement) !!}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">
+                            <i class="bi bi-info-circle me-1"></i> No measurement data
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>

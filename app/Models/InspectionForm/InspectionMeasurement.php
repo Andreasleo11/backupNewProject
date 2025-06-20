@@ -14,9 +14,10 @@ class InspectionMeasurement extends Model
         'lower_limit',
         'upper_limit',
         'limit_uom',
+        'actual_value',
         'start_datetime',
         'end_datetime',
         'judgement',
-        'part',
+        'area',
     ];
 }

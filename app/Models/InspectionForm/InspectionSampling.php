@@ -13,6 +13,8 @@ class InspectionSampling extends Model
         'second_inspection_document_number',
         'quantity',
         'box_label',
-        'appearance'
+        'appearance',
+        'ng_quantity',
+        'remarks',
     ];
 }

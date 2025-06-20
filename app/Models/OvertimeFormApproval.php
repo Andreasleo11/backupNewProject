@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class OvertimeFormApproval extends Model
 {
     use HasFactory;
-    protected $fillable = ['flow_step_id', 'status', 'approver_id', 'signed_at', 'signature_path'];
+    protected $fillable = ['overtime_form_id', 'flow_step_id', 'status', 'approver_id', 'signed_at', 'signature_path'];
     protected $casts = [
         'signed_at' => 'datetime',   // ← add this
     ];

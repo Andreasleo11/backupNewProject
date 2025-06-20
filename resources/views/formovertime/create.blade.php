@@ -130,7 +130,7 @@
                             <div class="form-group mt-3">
                                 <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Overtime</label>
                                 <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime"
-                                    required>
+                                    value="{{ date('Y-m-d') }}" readonly required>
                             </div>
 
                             <div class="form-group mt-3">

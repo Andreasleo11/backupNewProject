@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +31,7 @@ class FormOvertimeController extends Controller
     {
         $user = Auth::user();
 
-        $dataheaderQuery = HeaderFormOvertime::with('user', 'department');
+        $dataheaderQuery = HeaderFormOvertime::with('user', 'department','details');
 
         // === FILTER BERDASARKAN ROLE USER ===
         if ($user->specification->name === 'VERIFICATOR') {
@@ -78,8 +79,34 @@ class FormOvertimeController extends Controller
             ->orWhere('user_id', $user->id)
             ->get();
 
-        if (auth()->user()->role->name === 'SUPERADMIN') {
+         if (auth()->user()->role->name === 'SUPERADMIN') {
             $dataheader = HeaderFormOvertime::all();
+            $andriani = User::where('name', 'andriani')->first();
+
+            $dataheader = $dataheader->load(['department', 'approvals.step']);
+
+            foreach ($dataheader as $header) {
+                if ($header->department?->name !== 'BUSINESS') {
+                    continue;
+                }
+
+                $needsSave = false;
+
+                foreach ($header->approvals as $approval) {
+                    if ($approval->step?->role_slug === 'creator') {
+                        $approval->signature_path = 'andriani.png';
+                        $approval->approver_id = $andriani->id;
+                        $approval->save();
+                    }
+                }
+
+                // Only update header if needed
+                if ($header->user_id !== $andriani->id) {
+                    $header->user_id = $andriani->id;
+                    $header->save();
+                }
+            }
+
         }
 
         $departments = Department::all();
@@ -141,6 +168,7 @@ class FormOvertimeController extends Controller
 
     public function insert(Request $request)
     {
+        // dd($request->all());
         $uploadedFiles = $request->file('excel_file');
 
         $deptId = $request->input('from_department');
@@ -163,7 +191,9 @@ class FormOvertimeController extends Controller
         ];
 
         $flowSlug = ApprovalFlowResolver::for($headerData);
+        // dd($flowSlug);
         $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
+        // dd($flow);
 
         $headerData['approval_flow_id'] = $flow->id;
 
@@ -183,7 +213,7 @@ class FormOvertimeController extends Controller
             $this->detailOvertimeInsert($request, $headerovertime->id);
         }
 
-        $this->sendNotification($headerovertime);
+        // $this->sendNotification($headerovertime);
 
         return redirect()->route('formovertime.detail', $headerovertime->id)->with('success', 'Overtime created successfully!');
     }
@@ -569,21 +599,22 @@ class FormOvertimeController extends Controller
 
         $payload = [
             'OTType'      => '1',
-            'OTDate'      => Carbon::parse($header->create_date)->format('d/m/Y'),
-            'JobDesc'     => $detail->job_desc,
+            'OTDate'      => Carbon::parse($detail->start_date)->format('d/m/Y'),
+            'JobDesc'     => Str::limit($detail->job_desc, 250),
             'Department'  => $employee->organization_structure ?? 0,
             'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
             'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
             'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
             'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
             'BreakTime'   => $detail->break,
-            'Remark'      => $detail->remarks,
+            'Remark'      => Str::limit($detail->remarks, 250),
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
             'NIK1' => $detail->NIK
             ]
         ];
+        
 
         $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
 
@@ -661,23 +692,27 @@ class FormOvertimeController extends Controller
                 continue;
             }
 
+            if ($detail->status === 'Approved' && $detail->is_processed == 1) {
+                continue;
+            }
+
             $employee = $detail->employee;
 
             $payload = [
                 'OTType'      => '1',
-                'OTDate'      => Carbon::parse($header->create_date)->format('d/m/Y'),
-                'JobDesc'     => $detail->job_desc,
+                'OTDate'      => Carbon::parse($detail->start_date)->format('d/m/Y'),
+                'JobDesc'     => Str::limit($detail->job_desc, 250),
                 'Department'  => $employee->organization_structure ?? 0,
                 'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
                 'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
                 'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
                 'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
                 'BreakTime'   => $detail->break,
-                'Remark'      => $detail->remarks,
+                'Remark'      => Str::limit($detail->remarks, 250),
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [
-                    'NIK1' => $detail->NIK
+                'NIK1' => $detail->NIK
                 ]
             ];
 
@@ -770,21 +805,47 @@ class FormOvertimeController extends Controller
                 'end_date'   => 'required|date|after_or_equal:start_date',
             ]);
 
-            $summary = DetailFormOvertime::query()
-                ->select(
-                    'NIK',
-                    'nama',
-                    DB::raw('MIN(start_date) as start_date'),
-                    DB::raw('MAX(end_date) as end_date'),
-                    DB::raw('SUM(TIMESTAMPDIFF(MINUTE, start_time, end_time) - `break`) / 60 as total_ot')
-                )
+            $data = DetailFormOvertime::query()
                 ->whereBetween('start_date', [$request->start_date, $request->end_date])
                 ->whereNull('deleted_at')
-                ->where('status',  'Approved')
-                ->groupBy('NIK', 'nama')
+                ->where('status', 'Approved')
                 ->get();
-        }
 
+            $grouped = [];
+            foreach ($data as $item) {
+                $start = Carbon::parse("{$item->start_date} {$item->start_time}");
+                $end = Carbon::parse("{$item->end_date} {$item->end_time}");
+
+                if ($end->lessThan($start)) {
+                    $end->addDay(); // fallback (shouldn't happen with correct end_date)
+                }
+
+                $totalMinutes = $start->diffInMinutes($end) - $item->break;
+                $totalHours = $totalMinutes / 60;
+
+                $key = $item->NIK . '|' . $item->nama;
+
+                if (!isset($grouped[$key])) {
+                    $grouped[$key] = [
+                        'NIK' => $item->NIK,
+                        'nama' => $item->nama,
+                        'start_date' => $item->start_date,
+                        'end_date' => $item->end_date,
+                        'total_ot' => $totalHours,
+                    ];
+                } else {
+                    $grouped[$key]['total_ot'] += $totalHours;
+                    if ($item->start_date < $grouped[$key]['start_date']) {
+                        $grouped[$key]['start_date'] = $item->start_date;
+                    }
+                    if ($item->end_date > $grouped[$key]['end_date']) {
+                        $grouped[$key]['end_date'] = $item->end_date;
+                    }
+                }
+            }
+
+            $summary = collect(array_values($grouped));
+        }
         // dd($summary);
         return view('formovertime.export_summary', compact('summary'));
     }

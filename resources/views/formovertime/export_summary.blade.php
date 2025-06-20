@@ -30,34 +30,34 @@
                 </a>
             </div>
 
-            @if(isset($summary) && $summary->count())
+             @if($summary->count())
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped align-middle">
+                    <table class="table table-bordered table-hover table-striped text-center align-middle">
                         <thead class="table-primary">
                             <tr>
-                                <th>NIK</th>
-                                <th>Nama</th>
-                                <th>Tanggal Awal</th>
-                                <th>Tanggal Akhir</th>
-                                <th>Total Jam Lembur</th>
+                                <th scope="col">NIK</th>
+                                <th scope="col">Nama</th>
+                                <th scope="col">Tanggal Awal</th>
+                                <th scope="col">Tanggal Akhir</th>
+                                <th scope="col">Total Jam Lembur</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($summary as $row)
                             <tr>
-                                <td>{{ $row->NIK }}</td>
-                                <td>{{ $row->nama }}</td>
-                                <td>{{ \Carbon\Carbon::parse($row->start_date)->format('d M Y') }}</td>
-                                <td>{{ \Carbon\Carbon::parse($row->end_date)->format('d M Y') }}</td>
-                                <td><strong>{{ number_format($row->total_ot, 2) }} jam</strong></td>
+                                <td>{{ $row['NIK'] }}</td>
+                                <td>{{ $row['nama'] }}</td>
+                                <td>{{ \Carbon\Carbon::parse($row['start_date'])->translatedFormat('d M Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($row['end_date'])->translatedFormat('d M Y') }}</td>
+                                <td><span class="fw-bold text-success">{{ number_format($row['total_ot'], 2) }} jam</span></td>
                             </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             @else
-                <div class="alert alert-warning mt-3">
-                    Tidak ada data lembur untuk rentang tanggal tersebut.
+                <div class="alert alert-warning text-center mt-4" role="alert">
+                    ⚠️ Tidak ada data lembur ditemukan untuk rentang tanggal yang dipilih.
                 </div>
             @endif
         </div>

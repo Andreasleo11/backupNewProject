@@ -13,7 +13,7 @@ class DetailInspectionReport extends Model
     protected $fillable = [
         'inspection_report_document_number',
         'document_number',
-        'quarter',
+        'period',
         'start_datetime',
         'end_datetime',
     ];

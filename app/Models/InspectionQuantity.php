@@ -15,7 +15,10 @@ class InspectionQuantity extends Model
         'pass_quantity',
         'reject_quantity',
         'sampling_quantity',
+        'ng_sample_quantity',
+        'pass_rate',
         'reject_rate',
+        'ng_sample_rate',
     ];
     
 }
