@@ -436,7 +436,32 @@
 
         </div>
     @else
-        <div>No data yet</div>
+        {{-- ░░ Empty State – nothing yet filled ░░ --}}
+        <div class="card shadow-sm border-0 my-5">
+            <div class="card-body py-5 text-center">
+
+                {{-- playful icon --}}
+                <i class="bi bi-journal-plus fs-1 text-primary mb-3"></i>
+
+                {{-- headline --}}
+                <h4 class="fw-bold text-primary-emphasis mb-2">
+                    Ready to start your inspection report?
+                </h4>
+
+                {{-- supporting text --}}
+                <p class="text-muted mb-4">
+                    You haven’t added any data yet.
+                    Begin with <strong>Period 1 – Detail Inspection</strong> to unlock
+                    the rest of the steps.
+                </p>
+
+                {{-- call-to-action --}}
+                <button wire:click="$parent.setStep(1)" class="btn btn-outline-primary btn-lg shadow-sm">
+                    <i class="bi bi-pencil-square me-1"></i> Start Filling
+                    </butt>
+            </div>
+        </div>
+
     @endif
 
     <!-- ►► Sticky Footer Bar ◄◄ ------------------------------------------- -->

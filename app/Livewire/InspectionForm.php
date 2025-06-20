@@ -17,6 +17,7 @@ class InspectionForm extends Component
         'stepProblemSaved' => 'markStepFilled',
         'stepFinalSubmit' => 'markStepFilled',
         'nextStep' => 'nextStep',
+        'setStep' => 'setStep',
     ];
 
     public function mount()
@@ -61,6 +62,12 @@ class InspectionForm extends Component
             $this->currentStep++;
             session(['lastStepVisited' => $this->currentStep]);
         }
+    }
+
+    public function setStep($step)
+    {
+        $this->currentStep = $step;
+        session(['lastStepVisited' => $this->currentStep]);
     }
 
     public function render()

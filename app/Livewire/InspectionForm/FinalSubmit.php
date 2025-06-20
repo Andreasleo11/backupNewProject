@@ -209,8 +209,6 @@ class FinalSubmit extends Component
                 ->all();
         }
 
-        // dd($this->problemData);
-
         DB::transaction(function () {
             InspectionReport::create($this->headerData);
             foreach ($this->detailData as $data) {
