@@ -15,7 +15,7 @@
             <td>{{ $row->nama }}</td>
             <td>{{ \Carbon\Carbon::parse($row->start_date)->format('d M Y') }}</td>
             <td>{{ \Carbon\Carbon::parse($row->end_date)->format('d M Y') }}</td>
-            <td>{{ number_format($row->total_ot, 2) }} jam</td>
+            <td>{{ number_format($row->total_ot, 2) }} </td>
         </tr>
         @endforeach
     </tbody>
