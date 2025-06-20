@@ -67,7 +67,9 @@
                     <i class="bi bi-exclamation-triangle-fill fs-3 text-warning me-2"></i>
                     <div>
                         <h6 class="mb-0 fw-bold">Data incomplete</h6>
-                        <small class="text-body-secondary">Fill the missing periods before submitting</small>
+                        <small class="text-body-secondary">
+                            Fill the missing data for the periods you have entered before submitting.
+                        </small>
                     </div>
                 </div>
             </div>
