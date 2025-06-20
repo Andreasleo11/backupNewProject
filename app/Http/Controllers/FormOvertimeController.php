@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
@@ -53,7 +55,11 @@ class FormOvertimeController extends Controller
 
             $dataheaderQuery->where('status', 'waiting-dept-head');
         } else {
-            $dataheaderQuery->where('dept_id', $user->department_id);
+              if ($user->name === 'Umi') {
+                    $dataheaderQuery->whereIn('dept_id', [1, 2]);
+                } else {
+                    $dataheaderQuery->where('dept_id', $user->department_id);
+                }
         }
 
         // === FILTER TAMBAHAN ===
@@ -74,7 +80,7 @@ class FormOvertimeController extends Controller
             ->orWhere('user_id', $user->id)
             ->get();
 
-        if (auth()->user()->role->name === 'SUPERADMIN') {
+         if (auth()->user()->role->name === 'SUPERADMIN') {
             $dataheader = HeaderFormOvertime::all();
             $andriani = User::where('name', 'andriani')->first();
 
@@ -162,6 +168,7 @@ class FormOvertimeController extends Controller
 
     public function insert(Request $request)
     {
+        // dd($request->all());
         $uploadedFiles = $request->file('excel_file');
 
         $deptId = $request->input('from_department');
@@ -184,7 +191,9 @@ class FormOvertimeController extends Controller
         ];
 
         $flowSlug = ApprovalFlowResolver::for($headerData);
+        // dd($flowSlug);
         $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
+        // dd($flow);
 
         $headerData['approval_flow_id'] = $flow->id;
 
@@ -283,7 +292,7 @@ class FormOvertimeController extends Controller
         // Update form status if final step
 
         if ($form->currentStep() === null) {
-            $form->update(['status' => 'approved']);
+            $form->update(['status' => 'approved', 'is_approve' => 1]);
         } elseif ($form->nextStep()) {
             $status = 'waiting-' . str_replace('_', '-', $form->nextStep()->role_slug);
             $form->update(['status' => $status]);
@@ -428,21 +437,22 @@ class FormOvertimeController extends Controller
 
         $payload = [
             'OTType'      => '1',
-            'OTDate'      => Carbon::parse($header->create_date)->format('d/m/Y'),
-            'JobDesc'     => $detail->job_desc,
+            'OTDate'      => Carbon::parse($detail->start_date)->format('d/m/Y'),
+            'JobDesc'     => Str::limit($detail->job_desc, 250),
             'Department'  => $employee->organization_structure ?? 0,
             'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
             'StartTime'   => Carbon::parse($detail->start_time)->format('H:i'),
             'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
             'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
             'BreakTime'   => $detail->break,
-            'Remark'      => $detail->remarks,
+            'Remark'      => Str::limit($detail->remarks, 250),
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
-                'NIK1' => $detail->NIK
+            'NIK1' => $detail->NIK
             ]
         ];
+        
 
         $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
 
@@ -458,7 +468,9 @@ class FormOvertimeController extends Controller
                 'body' => $response->body()
             ];
 
-            if ($response->successful()) {
+            $responseJson = json_decode($response->body(), true);
+        
+            if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
                 $detail->is_processed = 1;
                 $detail->status = 'Approved';
                 $detail->save();
@@ -473,14 +485,15 @@ class FormOvertimeController extends Controller
                     'response' => $responseData
                 ]);
             } else {
-                Log::error("❌ Failed push for detail ID: $detailId", $responseData);
+                Log::warning("⚠️ Push rejected for detail ID: $detailId - JPayroll response not success", $responseData);
 
                 return response()->json([
                     'success' => false,
-                    'message' => 'Gagal push data',
+                    'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: ' . ($responseJson['msg'] ?? 'Unknown error'),
                     'response' => $responseData
-                ], 500);
+                ], 400);
             }
+
         } catch (\Exception $e) {
             Log::error("❌ Exception push for detail ID: $detailId", [
                 'error' => $e->getMessage()
@@ -513,7 +526,6 @@ class FormOvertimeController extends Controller
         $failed = [];
 
         foreach ($header->details as $detail) {
-            // Skip jika statusnya Rejected
             if ($detail->status === 'Rejected') {
                 continue;
             }
@@ -526,7 +538,7 @@ class FormOvertimeController extends Controller
 
             $payload = [
                 'OTType'      => '1',
-                'OTDate'      => Carbon::parse($detail->create_date)->format('d/m/Y'),
+                'OTDate'      => Carbon::parse($detail->start_date)->format('d/m/Y'),
                 'JobDesc'     => Str::limit($detail->job_desc, 250),
                 'Department'  => $employee->organization_structure ?? 0,
                 'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
@@ -538,7 +550,7 @@ class FormOvertimeController extends Controller
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [
-                    'NIK1' => $detail->NIK
+                'NIK1' => $detail->NIK
                 ]
             ];
 
@@ -548,32 +560,37 @@ class FormOvertimeController extends Controller
                     'Content-Type' => 'application/json'
                 ])->post($url, $payload);
 
+                $responseJson = $response->json();
                 $responseData = [
                     'NIK' => $detail->NIK,
                     'status' => $response->status(),
                     'body' => $response->body()
                 ];
 
-                if ($response->successful()) {
+                if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
                     $detail->is_processed = 1;
                     $detail->status = 'Approved';
                     $detail->save();
 
-                    Log::info("✅ Success push for detail ID: $detail->id", $responseData);
                     $successCount++;
+                    Log::info("✅ Success push for detail ID: {$detail->id}", $responseData);
                 } else {
-                    Log::error("❌ Failed push for detail ID: $detail->id", $responseData);
+                    $detail->status = 'Rejected';
+                    $detail->save();
+
+                    Log::warning("⚠️ Push rejected & status updated for detail ID: {$detail->id}", $responseData);
+
                     $failed[] = [
                         'detail_id' => $detail->id,
                         'NIK' => $detail->NIK,
-                        'reason' => 'Push gagal',
-                        'response' => $responseData
+                        'reason' => 'Rejected by JPayroll'
                     ];
                 }
             } catch (\Exception $e) {
-                Log::error("❌ Exception push for detail ID: $detail->id", [
+                Log::error("❌ Exception push for detail ID: {$detail->id}", [
                     'error' => $e->getMessage()
                 ]);
+
                 $failed[] = [
                     'detail_id' => $detail->id,
                     'NIK' => $detail->NIK,
@@ -582,7 +599,7 @@ class FormOvertimeController extends Controller
             }
         }
 
-        // Setelah semua proses, cek apakah semua detail sudah diapprove atau direject
+        // Setelah semua proses
         $this->checkAndUpdateHeaderPushStatus($headerId);
 
         return response()->json([
@@ -615,9 +632,11 @@ class FormOvertimeController extends Controller
         return !$hasPending;
     }
 
+
     public function summaryView(Request $request)
     {
         $summary = collect();
+     
         if ($request->filled(['start_date', 'end_date'])) {
             $request->validate([
                 'start_date' => 'required|date',
@@ -669,12 +688,13 @@ class FormOvertimeController extends Controller
         return view('formovertime.export_summary', compact('summary'));
     }
 
-    public function exportSummaryExcel(Request $request)
+        public function exportSummaryExcel(Request $request)
     {
         $request->validate([
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
         ]);
-        return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
+
+       return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
     }
 }

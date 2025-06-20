@@ -68,6 +68,7 @@
                                 <th class="fw-semibold fs-5">Overtime Date</th>
                                 <th class="fw-semibold fs-5">Status</th>
                                 <th class="fw-semibold fs-5">Is Planned?</th>
+                                <th class="fw-semibold fs-5">INFO</th>
                                 <th class="fw-semibold fs-5">Action</th>
                             </tr>
                         </thead>
@@ -93,6 +94,25 @@
                                             class="px-3 py-2 fs-6 badge {{ $fot->is_planned ? 'text-secondary border border-secondary' : 'text-danger border border-danger' }}">
                                             {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
                                         </span>
+                                    </td>
+                                     <td>
+                                        @php
+                                            $approvedCount = $fot->details->where('status', 'Approved')->count();
+                                            $rejectedCount = $fot->details->where('status', 'Rejected')->count();
+                                            $nullCount = $fot->details->whereNull('status')->count();
+                                        @endphp
+
+                                        <div class="d-flex flex-column align-items-start gap-1">
+                                            @if($approvedCount > 0)
+                                                <span class="badge bg-success">Approved: {{ $approvedCount }}</span>
+                                            @endif
+                                            @if($rejectedCount > 0)
+                                                <span class="badge bg-danger">Rejected: {{ $rejectedCount }}</span>
+                                            @endif
+                                            @if($nullCount > 0)
+                                                <span class="badge bg-secondary">Pending: {{ $nullCount }}</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"

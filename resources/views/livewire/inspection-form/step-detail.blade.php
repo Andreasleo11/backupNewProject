@@ -57,23 +57,23 @@
                 <div class="card-body {{ $locked ? 'pe-none' : '' }}"> {{-- pe-none = no pointer events --}}
                     <div class="row">
 
-                        {{-- ───── Quarter selector ───── --}}
+                        {{-- ───── Period selector ───── --}}
                         <div class="col-12 col-lg-6 mb-3">
                             <label class="form-label d-block mb-1">
-                                Quarter <span class="text-danger">*</span>
+                                Period <span class="text-danger">*</span>
                             </label>
 
-                            <div class="btn-group w-100" role="group" aria-label="Quarter selector">
-                                @foreach ([1, 2, 3, 4] as $q)
+                            <div class="btn-group w-100" role="group" aria-label="Period selector">
+                                @foreach ([1, 2, 3, 4] as $p)
                                     <button type="button"
-                                        class="btn {{ $quarter == $q ? 'btn-primary' : 'btn-outline-primary' }}"
-                                        wire:click="selectQuarter({{ $q }})" @disabled($locked)>
-                                        Q{{ $q }}
+                                        class="btn {{ $period == $p ? 'btn-primary' : 'btn-outline-primary' }}"
+                                        wire:click="selectPeriod({{ $p }})" @disabled($locked)>
+                                        P{{ $p }}
                                     </button>
                                 @endforeach
                             </div>
 
-                            @error('quarter')
+                            @error('period')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
@@ -115,7 +115,7 @@
                     bg-light bg-opacity-75 text-center rounded">
                         <i class="bi bi-lock-fill fs-1 mb-2"></i>
                         <span class="fw-semibold">
-                            Assign <em>Operator</em>, <em>Shift</em> and <em>Quarter</em> first to edit this section.
+                            Assign <em>Operator</em>, <em>Shift</em> and <em>Period</em> first to edit this section.
                         </span>
                     </div>
                 @endif
@@ -125,14 +125,14 @@
 
     @php
         $locked = empty($shift) || empty($operator) || empty(session('stepDetailSaved'));
-        $currentQuarter = session('stepDetailSaved.quarter');
+        $currentPeriod = session('stepDetailSaved.period');
         $overlay = $locked
             ? new Illuminate\Support\HtmlString(
                 'Assign <em>Operator</em>, <em>Shift</em>' .
-                    ($quarter ? '' : ' and choose a <em>Quarter</em>') .
+                    ($period ? '' : ' and choose a <em>Period</em>') .
                     ' first to edit this section.',
             )
-            : "Q$currentQuarter";
+            : "P$currentPeriod";
     @endphp
 
     <section>
@@ -160,15 +160,15 @@
         </x-lockable-card>
     </section>
 
-    <section class="mt-4">
+    {{-- <section class="mt-4">
         <x-lockable-card :locked="$locked" :overlay="$overlay" title="Problems">
             @livewire('inspection-form.step-problem', ['inspection_report_document_number' => $inspection_report_document_number], key('step-problem-' . $reloadToken))
         </x-lockable-card>
-    </section>
+    </section> --}}
 
-    <section class="mt-4">
+    {{-- <section class="mt-4">
         <x-lockable-card :locked="$locked" :overlay="$overlay" title="Quantities">
             @livewire('inspection-form.step-quantity', ['inspection_report_document_number' => $inspection_report_document_number], key('step-quantity-' . $reloadToken))
         </x-lockable-card>
-    </section>
+    </section> --}}
 </div>

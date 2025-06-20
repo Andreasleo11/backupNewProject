@@ -99,7 +99,7 @@
         @endif
 
 
-        @if ($header->branch === 'Karawang')
+        @if ($header->branch === 'Karawang' && $header->Relationdepartement->name !== 'QA' && $header->Relationdepartement->name !== 'QC')
             <div class="col my-2">
                 <h2>GM</h2>
                 <div class="autograph-box container" id="autographBox3"></div>

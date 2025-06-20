@@ -514,6 +514,13 @@
                         </a>
                     </li>
 
+                     <li class="sidebar-item">
+                        <a href="{{ route('overtime.summary') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Summary Form Overtime
+                        </a>
+                    </li>
+
                     <li class="sidebar-item">
                         <a href="{{ route('formcuti.home') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>

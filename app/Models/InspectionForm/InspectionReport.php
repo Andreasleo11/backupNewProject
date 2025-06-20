@@ -46,6 +46,6 @@ class InspectionReport extends Model
 
     public function quantityData()
     {
-        return $this->hasMany(InspectionQuantity::class, 'inspection_report_document_number', 'document_number');
+        return $this->hasOne(InspectionQuantity::class, 'inspection_report_document_number', 'document_number');
     }
 }

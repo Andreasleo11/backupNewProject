@@ -15,5 +15,6 @@ class FirstInspection extends Model
         'weight',
         'weight_uom',
         'fitting_test',
+        'remark',
     ];
 }

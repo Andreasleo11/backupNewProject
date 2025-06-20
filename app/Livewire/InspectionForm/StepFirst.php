@@ -15,8 +15,9 @@ class StepFirst extends Component
     public $weight;
     public $weight_uom;
     public $fitting_test;
+    public $remarks;
 
-    public $quarterKey;
+    public $periodKey;
 
     protected $rules = [
         'detail_inspection_report_document_number' => 'required|string',
@@ -24,6 +25,7 @@ class StepFirst extends Component
         'weight' => 'required|numeric|min:0',
         'weight_uom' => 'required|string',
         'fitting_test' => 'nullable|string',
+        'remarks' => 'required_if:appearance,NG|nullable|string',
     ];
 
     public function updated($property)
@@ -33,8 +35,8 @@ class StepFirst extends Component
 
     public function mount()
     {
-        $this->quarterKey = 'q' . session('stepDetailSaved.quarter');
-        $saved = session("stepDetailSaved.first_inspections.{$this->quarterKey}", []);
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $saved = session("stepDetailSaved.first_inspections.{$this->periodKey}", []);
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -42,6 +44,13 @@ class StepFirst extends Component
                     $this->$key = $value;
                 }
             }
+        }
+    }
+
+    public function updatedAppearance($value): void
+    {
+        if ($value !== 'NG') {
+            $this->remarks = null;   // wipe any previous text
         }
     }
 
@@ -55,9 +64,10 @@ class StepFirst extends Component
             'weight' => $this->weight,
             'weight_uom' => $this->weight_uom,
             'fitting_test' => $this->fitting_test,
+            'remarks' => $this->remarks,
         ];
 
-        session()->put("stepDetailSaved.first_inspections.{$this->quarterKey}", $data);
+        session()->put("stepDetailSaved.first_inspections.{$this->periodKey}", $data);
         $this->dispatch('toast', message: 'First saved successfully!');
     }
 
@@ -69,9 +79,10 @@ class StepFirst extends Component
             'weight',
             'weight_uom',
             'fitting_test',
+            'remarks',
         ]);
 
-        $this->forgetNestedKey('stepDetailSaved.first_inspections', $this->quarterKey);
+        $this->forgetNestedKey('stepDetailSaved.first_inspections', $this->periodKey);
         $this->dispatch('toast', message: 'First step reset successfully!');
     }
 

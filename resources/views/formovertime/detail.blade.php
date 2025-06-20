@@ -122,6 +122,10 @@
                                         $allowedByRole =
                                             $user->is_head &&
                                             $user->department->name === $approval->form->department->name;
+                                            
+                                            if($user->is_head && $user->department->name === 'LOGISTIC' && $approval->form->department->name){
+                                                $allowedByRole = true;
+                                            }
                                         break;
                                     case 'director':
                                         $allowedByRole = $user->specification->name === 'DIRECTOR';
@@ -187,7 +191,8 @@
                     <div class="text-center">
                         <span class="h1 fw-semibold">Form Overtime</span>
                         <br>
-                        <div class="fs-6 mt-2">
+                        <div><span class="text-secondary">ID: </span> {{ $header->id }}</div>
+                        <div class="fs-6 mt-1">
                             <span class="fs-6 text-secondary">Create Date : </span>
                             {{ \Carbon\Carbon::parse($header->create_date)->format('d-m-Y') }}
                         </div>
@@ -224,7 +229,10 @@
                                     <th class="align-middle">Remark</th>
                                     @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
                                         <th class="align-middle">Action</th>
+                                    @else
+                                        <th class="align-middle">Status</th>
                                     @endif
+                                
                                 </tr>
                             </thead>
                             <tbody>
@@ -286,6 +294,16 @@
                                                         onclick="handleOvertimeAction({{ $data->id }}, 'reject')">
                                                         Reject
                                                     </button>
+                                                @endif
+                                            </td>
+                                        @else
+                                            <td>
+                                                @if ($data->status === 'Approved')
+                                                    <span class="text-success fw-bold">APPROVED</span>
+                                                @elseif ($data->status === 'Rejected')
+                                                    <span class="text-danger fw-bold">REJECTED</span>
+                                                @else
+                                                    <span class="text-warning fw-bold">PENDING</span>
                                                 @endif
                                             </td>
                                         @endif
