@@ -1,3 +1,8 @@
+@php
+    use Carbon\Carbon;
+
+    $totalJam = 0;
+@endphp
 <table>
     <thead>
         <tr>
@@ -10,10 +15,18 @@
             <th>End Time</th>
             <th>Break Time</th>
             <th>Remark</th>
+            <th>Total Jam</th>
         </tr>
     </thead>
     <tbody>
         @foreach($details as $row)
+            @php
+                $start = Carbon::parse($row->start_date . ' ' . $row->start_time);
+                $end   = Carbon::parse($row->end_date . ' ' . $row->end_time);
+
+                $durationMinutes = $end->diffInMinutes($start) - (int) $row->break;
+                $jamLembur = round($durationMinutes / 60, 2);
+            @endphp
         <tr>
             <td>{{ $row->NIK }}</td>
             <td>{{ \Carbon\Carbon::parse($row->start_date)->format('d/m/Y') }}</td>
@@ -24,6 +37,7 @@
             <td>{{ $row->end_time }}</td>
             <td>{{ $row->break }}</td>
             <td>{{ $row->remarks }}</td>
+            <td><strong>{{ number_format($jamLembur, 2) }} </strong></td>
         </tr>
         @endforeach
     </tbody>
