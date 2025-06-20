@@ -14,6 +14,6 @@ class InspectionProblem extends Model
         'type',
         'time',
         'cycle_time',
-        'remark'
+        'remarks'
     ];
 }

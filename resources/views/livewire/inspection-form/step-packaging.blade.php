@@ -16,10 +16,10 @@
                     @enderror
                 </div>
                 <div class="col">
-                    <label class="form-label">Quantity <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control @error("packagings.$index.quantity") is-invalid @enderror"
-                        wire:model.blur="packagings.{{ $index }}.quantity">
-                    @error("packagings.$index.quantity")
+                    <label class="form-label">SNP <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control @error("packagings.$index.snp") is-invalid @enderror"
+                        wire:model.blur="packagings.{{ $index }}.snp">
+                    @error("packagings.$index.snp")
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
@@ -35,8 +35,8 @@
                 <div class="col">
                     <label class="form-label">Judgement <span class="text-danger">*</span></label>
                     <select class="form-select @error("packagings.$index.judgement") is-invalid @enderror"
-                        wire:model.blur="packagings.{{ $index }}.judgement">
-                        <option value="">-- Select --</option>
+                        wire:model.live="packagings.{{ $index }}.judgement">
+                        <option value="">-- Select Judgement --</option>
                         <option value="OK">OK</option>
                         <option value="NG">NG</option>
                     </select>
@@ -44,6 +44,16 @@
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
+                @if (($item['judgement'] ?? '') === 'NG')
+                    <div class="col">
+                        <label class="form-label">Remarks <span class="text-danger">*</span></label>
+                        <input class="form-control @error('packagings.' . $index . '.remarks') is-invalid @enderror"
+                            wire:model.blur="packagings.{{ $index }}.remarks"></input>
+                        @error("packagings.$index.remarks")
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+                @endif
                 <div class="col-auto align-self-end mb-1">
                     <button class="btn btn-link text-danger btn-sm" type="button"
                         wire:click="removePackaging({{ $index }})">Remove</button>

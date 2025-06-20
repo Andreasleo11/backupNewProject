@@ -25,31 +25,51 @@
                 </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Lot Size Quantity <span class="text-danger">*</span></label>
-                <input type="number" class="form-control @error('lot_size_quantity') is-invalid @enderror"
-                    wire:model.blur="lot_size_quantity">
-                @error('lot_size_quantity')
-                    <span class="text-danger">{{ $message }}</span>
-                @enderror
+            {{-- Alpine + Livewire entanglement --}}
+            <div x-data="{ skipLot: @entangle('skipLotSize') }" class="mb-3">
+                <label class="form-label d-block">Skip Lot Size?</label>
+
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="skip-no" value="false" {{-- string "false" --}} x-model.boolean="skipLot">
+                    {{-- .boolean converts to true/false --}}
+                    <label class="form-check-label" for="skip-no">No</label>
+                </div>
+
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="skip-yes" value="true" x-model.boolean="skipLot">
+                    <label class="form-check-label" for="skip-yes">Yes</label>
+                </div>
+
+                {{-- Lot-size input — visible only when skipLot === false --}}
+                <div x-show="!skipLot" x-transition.opacity class="mt-3">
+                    <label class="form-label">
+                        Lot Size Quantity <span class="text-danger">*</span>
+                    </label>
+                    <input type="number" class="form-control @error('lot_size_quantity') is-invalid @enderror"
+                        wire:model.defer="lot_size_quantity">
+                    @error('lot_size_quantity')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
             </div>
 
-            <div class="text-end">
+            <div class="text-end mb-2">
                 <button class="btn btn-outline-primary" wire:click="saveStep">Save Second Inspection</button>
                 <button class="btn btn-outline-danger" wire:click="resetStep">Reset</button>
             </div>
 
-            <div class="mt-3">
-                @if (session("stepDetailSaved.second_inspections.$quarterKey"))
+            @if ($secondInspectionSaved)
+                <div>
                     <div class="fw-bold text-primary mb-2">Sampling</div>
                     @livewire('inspection-form.step-sampling', ['second_inspection_document_number' => $document_number], key('step-sampling'))
-
 
                     <div class="mt-4">
                         <div class="fw-bold text-primary mb-2">Packaging</div>
                         @livewire('inspection-form.step-packaging', ['second_inspection_document_number' => $document_number], key('step-packaging'))
                     </div>
-                @else
+                </div>
+            @else
+                <div>
                     <div class="alert alert-warning d-flex align-items-center gap-2">
                         <i class="bi bi-exclamation-triangle-fill fs-4"></i>
                         <div>
@@ -84,9 +104,8 @@
                             <i class="bi bi-lock-fill fs-1 text-secondary"></i>
                         </div>
                     </div>
-                @endif
-
-            </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>

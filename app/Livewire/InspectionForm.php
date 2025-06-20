@@ -14,8 +14,10 @@ class InspectionForm extends Component
     protected $listeners = [
         'stepHeaderSaved' => 'handlerHeaderSaved',
         'stepDetailSaved' => 'markStepFilled',
+        'stepProblemSaved' => 'markStepFilled',
         'stepFinalSubmit' => 'markStepFilled',
         'nextStep' => 'nextStep',
+        'setStep' => 'setStep',
     ];
 
     public function mount()
@@ -24,7 +26,8 @@ class InspectionForm extends Component
         $this->stepSessionKeys = [
             1 => 'stepHeaderSaved',
             2 => 'stepDetailSaved',
-            3 => 'stepFinalSubmit',
+            3 => 'stepProblemSaved',
+            4 => 'stepFinalSubmit',
         ];
 
         foreach ($this->stepSessionKeys as $step => $key) {
@@ -59,6 +62,12 @@ class InspectionForm extends Component
             $this->currentStep++;
             session(['lastStepVisited' => $this->currentStep]);
         }
+    }
+
+    public function setStep($step)
+    {
+        $this->currentStep = $step;
+        session(['lastStepVisited' => $this->currentStep]);
     }
 
     public function render()

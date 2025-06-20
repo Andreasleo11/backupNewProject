@@ -1,6 +1,6 @@
 <div>
     @php
-        $showDocumentInfo = true;
+        $showDocumentInfo = false;
     @endphp
     <div>
         @if ($measurements)
@@ -8,17 +8,49 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col">
-                            <label class="form-label">Start Time</label>
-                            <input type="time" class="form-control @error('start_time') is-invalid @enderror"
-                                wire:model.blur="start_time">
+                            <label class="form-label">Start Time <span class="text-danger">*</span></label>
+                            <div x-data="{ value: @entangle('start_time').live, fp: null }" x-init="fp = flatpickr($refs.tf, {
+                                enableTime: true,
+                                noCalendar: true,
+                                time_24hr: true,
+                                minuteIncrement: 15,
+                                defaultDate: value, // ← real string like '11:30'
+                                allowInput: true,
+                            
+                                onChange(selectedDates, dateStr) {
+                                    value = dateStr; // pushes to Livewire
+                                }
+                            });
+                            
+                            /* if Livewire changes the value later, update Flatpickr */
+                            $watch('value', v => fp.setDate(v, false));">
+                                <input type="text" x-ref="tf"
+                                    class="form-control @error('start_time') is-invalid @enderror" readonly>
+                            </div>
                             @error('start_time')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>`
                         <div class="col">
-                            <label class="form-label">End Time</label>
-                            <input type="time" class="form-control @error('end_time') is-invalid @enderror"
-                                wire:model.blur="end_time">
+                            <label class="form-label">End Time <span class="text-danger">*</span></label>
+                            <div x-data="{ value: @entangle('end_time').live, fp: null }" x-init="fp = flatpickr($refs.tf, {
+                                enableTime: true,
+                                noCalendar: true,
+                                time_24hr: true,
+                                minuteIncrement: 15,
+                                defaultDate: value, // ← real string like '11:30'
+                                allowInput: true,
+                            
+                                onChange(selectedDates, dateStr) {
+                                    value = dateStr; // pushes to Livewire
+                                }
+                            });
+                            
+                            /* if Livewire changes the value later, update Flatpickr */
+                            $watch('value', v => fp.setDate(v, false));">
+                                <input type="text" x-ref="tf"
+                                    class="form-control @error('end_time') is-invalid @enderror" readonly>
+                            </div>
                             @error('end_time')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
@@ -42,28 +74,16 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">UoM</label>
+                        <label class="form-label">Unit <span class="text-danger">*</span></label>
                         <select class="form-select" wire:model.live="measurements.{{ $index }}.limit_uom">
-                            <option value="" selected></option>
+                            <option value="" selected>-- Select Unit --</option>
                             <option value="cm">cm</option>
                             <option value="mm">mm</option>
                         </select>
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Upper Limit</label>
-                        <div class="input-group">
-                            <input type="number" step="any" class="form-control"
-                                wire:model.blur="measurements.{{ $index }}.upper_limit">
-                            <span class="input-group-text">{{ data_get($measurements, "$index.limit_uom", '') }}</span>
-                        </div>
-                        @error("measurements.$index.upper_limit")
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    <div class="col">
-                        <label class="form-label">Lower Limit</label>
+                        <label class="form-label">Lower Limit <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <input type="number" step="any" class="form-control"
                                 wire:model.blur="measurements.{{ $index }}.lower_limit">
@@ -75,17 +95,41 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Part</label>
-                        <input type="text" class="form-control"
-                            wire:model.blur="measurements.{{ $index }}.part">
-                        @error("measurements.$index.part")
+                        <label class="form-label">Upper Limit <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" step="any" class="form-control"
+                                wire:model.blur="measurements.{{ $index }}.upper_limit">
+                            <span class="input-group-text">{{ data_get($measurements, "$index.limit_uom", '') }}</span>
+                        </div>
+                        @error("measurements.$index.upper_limit")
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Judgement</label>
-                        <select class="form-select" wire:model.blur="measurements.{{ $index }}.judgement">
+                        <label class="form-label">Actual Value <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="number" step="any" class="form-control"
+                                wire:model.blur="measurements.{{ $index }}.actual_value">
+                            <span class="input-group-text">{{ data_get($measurements, "$index.limit_uom", '') }}</span>
+                        </div>
+                        @error("measurements.$index.actual_value")
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Area/Section <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control"
+                            wire:model.blur="measurements.{{ $index }}.area">
+                        @error("measurements.$index.area")
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Judgement <span class="text-danger">*</span></label>
+                        <select class="form-select" wire:model.live="measurements.{{ $index }}.judgement">
                             <option value="" disabled>--Select Judgement--</option>
                             <option value="OK">OK</option>
                             <option value="NG">NG</option>
@@ -94,6 +138,17 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
+
+                    @if (($row['judgement'] ?? '') === 'NG')
+                        <div class="col">
+                            <label class="form-label">Remarks <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control"
+                                wire:model.blur="measurements.{{ $index }}.remarks">
+                            @error("measurements.$index.remarks")
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    @endif
 
                     <div class="col-auto align-self-end mb-3">
                         <button type="button" class="btn btn-link text-danger btn-sm"
@@ -115,7 +170,7 @@
                         $measurements[0]['limit_uom'] !== '' &&
                         $measurements[0]['upper_limit'] !== '' &&
                         $measurements[0]['lower_limit'] !== '' &&
-                        $measurements[0]['part'] !== ''
+                        $measurements[0]['area'] !== ''
                     ) {
                         $buttonDisabled = false;
                     }

@@ -18,6 +18,7 @@
         "bootstrap": "^5.3.2",
         "bootstrap-datepicker": "^1.10.0",
         "chart.js": "^4.4.7",
+        "flatpickr": "^4.6.13",
         "intro.js": "^7.2.0",
         "jquery": "^3.7.1",
         "select2": "^4.1.0-rc.0",

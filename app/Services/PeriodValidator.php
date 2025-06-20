@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-class QuarterValidator
+class PeriodValidator
 {
     /** @return array<string, array<int>> [section => [1,3]] */
     public static function missing(array $sectionData): array
@@ -14,16 +14,16 @@ class QuarterValidator
             'samples' => $sectionData['samples'] ?? [],
             'packagings' => $sectionData['packagings'] ?? [],
             'judgements' => $sectionData['judgements'] ?? [],
-            'problems' => $sectionData['problems'] ?? [],
-            'quantities' => $sectionData['quantities'] ?? [],
+            // 'problems' => $sectionData['problems'] ?? [],
+            // 'quantities' => $sectionData['quantities'] ?? [],
         ];
 
         $missing = [];
         foreach ($sections as $label => $data) {
-            foreach (range(1, 4) as $q) {
-                $key = "q$q";
+            foreach (range(1, 4) as $p) {
+                $key = "p$p";
                 if (!array_key_exists($key, $data) || empty($data[$key])) {
-                    $missing[$label][] = $q;
+                    $missing[$label][] = $p;
                 }
             }
         }

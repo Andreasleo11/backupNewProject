@@ -36,7 +36,7 @@
                 <div class="col">
                     <label class="form-label">Appearance <span class="text-danger">*</span></label>
                     <select class="form-select @error("samples.$index.appearance") is-invalid @enderror"
-                        wire:model.blur="samples.{{ $index }}.appearance">
+                        wire:model.live="samples.{{ $index }}.appearance">
                         <option value="">-- Select Appearance --</option>
                         <option value="OK">OK</option>
                         <option value="NG">NG</option>
@@ -45,6 +45,27 @@
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
+
+                @if (($sample['appearance'] ?? '') === 'NG')
+                    <div class="col">
+                        <label class="form-label">NG Quantity <span class="text-danger">*</span></label>
+                        <input type="number"
+                            class="form-control @error("samples.$index.ng_quantity") is-invalid @enderror"
+                            wire:model.blur="samples.{{ $index }}.ng_quantity">
+                        @error("samples.$index.ng_quantity")
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="col">
+                        <label class="form-label">Remarks <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error("samples.$index.remarks") is-invalid @enderror"
+                            wire:model.blur="samples.{{ $index }}.remarks">
+                        @error("samples.$index.remarks")
+                            <span class="invalid-feedback">{{ $message }}</span>
+                        @enderror
+                    </div>
+                @endif
 
                 <div class="col-auto align-self-end mb-1">
                     <div class="btn btn-link text-danger btn-sm" type="button"
