@@ -30,7 +30,7 @@ class StepProblem extends Component
             ],
             'problems.*.time'        => 'required|date_format:H:i',
             'problems.*.cycle_time'  => 'required|integer|min:1',
-            'problems.*.remark'      => 'nullable|string',
+            'problems.*.remarks'      => 'nullable|string',
         ];
     }
 
@@ -45,7 +45,7 @@ class StepProblem extends Component
         'problems.*.cycle_time.required' => 'Cycle time is required.',
         'problems.*.cycle_time.integer' => 'Cycle time must be an integer.',
         'problems.*.cycle_time.min' => 'Cycle time must be as least 1 minute.',
-        'problems.*.remark.string' => 'Remark must be a string.',
+        'problems.*.remarks.string' => 'Remarks must be a string.',
     ];
 
     public function mount($inspection_report_document_number = null)

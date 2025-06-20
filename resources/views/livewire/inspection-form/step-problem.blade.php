@@ -97,11 +97,11 @@
                     </div>
 
                     <div class="col">
-                        <label class="form-label">Remark</label>
-                        <input type="text" wire:model.blur="problems.{{ $index }}.remark"
-                            class="form-control @error("problems.$index.remark") is-invalid @enderror" rows="2"
+                        <label class="form-label">Remarks</label>
+                        <input type="text" wire:model.blur="problems.{{ $index }}.remarks"
+                            class="form-control @error("problems.$index.remarks") is-invalid @enderror" rows="2"
                             placeholder="Optional" />
-                        @error("problems.$index.remark")
+                        @error("problems.$index.remarks")
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
                     </div>

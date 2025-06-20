@@ -21,7 +21,7 @@
                     <th style="width:15%">Time</th>
                     <th style="width:25%">Type</th>
                     <th style="width:20%">Cycle&nbsp;Time&nbsp;(s)</th>
-                    <th>Remark</th>
+                    <th>Remarks</th>
                 </tr>
             </thead>
 
@@ -35,7 +35,7 @@
                         <td>{{ $pb->time }}</td>
                         <td>{!! $chip($pb->type) !!}</td>
                         <td>{{ number_format($pb->cycle_time) }}</td>
-                        <td>{{ $pb->remark ?: '—' }}</td>
+                        <td>{{ $pb->remarks ?: '—' }}</td>
                     </tr>
                 @empty
                     <tr>

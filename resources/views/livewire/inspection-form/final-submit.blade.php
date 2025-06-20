@@ -299,7 +299,7 @@
                                     <td>{{ $pb['time'] }}</td>
                                     <td>{!! $chip($pb['type']) !!}</td>
                                     <td>{{ number_format($pb['cycle_time']) }}</td>
-                                    <td>{{ $pb['remark'] ?: '—' }}</td>
+                                    <td>{{ $pb['remarks'] ?: '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
