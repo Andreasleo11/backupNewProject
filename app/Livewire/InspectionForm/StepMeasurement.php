@@ -104,6 +104,7 @@ class StepMeasurement extends Component
                     $this->end_time = Carbon::parse($measurements['end_datetime'])->format('H:i');
                 }
             }
+            // dd($this->start_time, $this->end_time);
         }
 
         // if (empty($this->measurements)) $this->addMeasurement();

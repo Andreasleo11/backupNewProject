@@ -84,6 +84,10 @@ class StepProblem extends Component
     {
         $this->problems[] = [
             'inspection_report_document_number' => $this->inspection_report_document_number,
+            'time' => '',
+            'cycle_time' => '',
+            'type' => '',
+            'remarks' => '',
         ];
     }
 

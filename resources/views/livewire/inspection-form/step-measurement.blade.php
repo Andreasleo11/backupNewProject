@@ -9,17 +9,48 @@
                     <div class="row g-3">
                         <div class="col">
                             <label class="form-label">Start Time <span class="text-danger">*</span></label>
-                            <input type="time" step="900"
-                                class="form-control @error('start_time') is-invalid @enderror"
-                                wire:model.blur="start_time">
+                            <div x-data="{ value: @entangle('start_time').live, fp: null }" x-init="fp = flatpickr($refs.tf, {
+                                enableTime: true,
+                                noCalendar: true,
+                                time_24hr: true,
+                                minuteIncrement: 15,
+                                defaultDate: value, // ← real string like '11:30'
+                                allowInput: true,
+                            
+                                onChange(selectedDates, dateStr) {
+                                    value = dateStr; // pushes to Livewire
+                                }
+                            });
+                            
+                            /* if Livewire changes the value later, update Flatpickr */
+                            $watch('value', v => fp.setDate(v, false));">
+                                <input type="text" x-ref="tf"
+                                    class="form-control @error('start_time') is-invalid @enderror" readonly>
+                            </div>
                             @error('start_time')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>`
                         <div class="col">
                             <label class="form-label">End Time <span class="text-danger">*</span></label>
-                            <input type="time" step="900"
-                                class="form-control @error('end_time') is-invalid @enderror" wire:model.blur="end_time">
+                            <div x-data="{ value: @entangle('end_time').live, fp: null }" x-init="fp = flatpickr($refs.tf, {
+                                enableTime: true,
+                                noCalendar: true,
+                                time_24hr: true,
+                                minuteIncrement: 15,
+                                defaultDate: value, // ← real string like '11:30'
+                                allowInput: true,
+                            
+                                onChange(selectedDates, dateStr) {
+                                    value = dateStr; // pushes to Livewire
+                                }
+                            });
+                            
+                            /* if Livewire changes the value later, update Flatpickr */
+                            $watch('value', v => fp.setDate(v, false));">
+                                <input type="text" x-ref="tf"
+                                    class="form-control @error('end_time') is-invalid @enderror" readonly>
+                            </div>
                             @error('end_time')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror

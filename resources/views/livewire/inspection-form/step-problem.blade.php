@@ -79,8 +79,21 @@
 
                     <div class="col">
                         <label class="form-label">Time <span class="text-danger">*</span></label>
-                        <input type="time" wire:model.blur="problems.{{ $index }}.time"
-                            class="form-control @error("problems.$index.time") is-invalid @enderror" step="1800">
+                        <div x-data="{ v: @entangle('problems.' . $index . '.time').live, fp: null }" x-init="fp = flatpickr($refs.t, {
+                            enableTime: true,
+                            noCalendar: true,
+                            time_24hr: true,
+                            minuteIncrement: 30, // ← 30-minute grid
+                            defaultDate: v,
+                            allowInput: true,
+                            onChange: (sel) => v = sel[0].toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+                        });
+                        $watch('v', val => fp.setDate(val, false));">
+                            <input type="text" x-ref="t"
+                                class="form-control @error('problems.' . $index . '.time') is-invalid @enderror"
+                                readonly>
+                        </div>
+
                         @error("problems.$index.time")
                             <span class="invalid-feedback">{{ $message }}</span>
                         @enderror
