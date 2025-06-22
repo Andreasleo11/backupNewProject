@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
@@ -19,10 +17,10 @@ use App\Exports\OvertimeExportExample;
 use App\Models\ApprovalFlow;
 use App\Models\OvertimeFormApproval;
 use App\Models\User;
-use App\Notifications\FormOvertimeNotification;
 use App\Support\ApprovalFlowResolver;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use App\Exports\OvertimeSummaryExport;
 
 class FormOvertimeController extends Controller
@@ -31,7 +29,7 @@ class FormOvertimeController extends Controller
     {
         $user = Auth::user();
 
-        $dataheaderQuery = HeaderFormOvertime::with('user', 'department','details');
+        $dataheaderQuery = HeaderFormOvertime::with('user', 'department', 'details');
 
         // === FILTER BERDASARKAN ROLE USER ===
         if ($user->specification->name === 'VERIFICATOR') {
@@ -54,11 +52,11 @@ class FormOvertimeController extends Controller
 
             $dataheaderQuery->where('status', 'waiting-dept-head');
         } else {
-              if ($user->name === 'Umi') {
-                    $dataheaderQuery->whereIn('dept_id', [1, 2]);
-                } else {
-                    $dataheaderQuery->where('dept_id', $user->department_id);
-                }
+            if ($user->name === 'Umi') {
+                $dataheaderQuery->whereIn('dept_id', [1, 2]);
+            } else {
+                $dataheaderQuery->where('dept_id', $user->department_id);
+            }
         }
 
         // === FILTER TAMBAHAN ===
@@ -79,7 +77,7 @@ class FormOvertimeController extends Controller
             ->orWhere('user_id', $user->id)
             ->get();
 
-         if (auth()->user()->role->name === 'SUPERADMIN') {
+        if (auth()->user()->role->name === 'SUPERADMIN') {
             $dataheader = HeaderFormOvertime::all();
             $andriani = User::where('name', 'andriani')->first();
 
@@ -106,7 +104,6 @@ class FormOvertimeController extends Controller
                     $header->save();
                 }
             }
-
         }
 
         $departments = Department::all();
@@ -269,86 +266,6 @@ class FormOvertimeController extends Controller
         return view("formovertime.detail", compact("header", "datas", "employees", "departements"));
     }
 
-    // public function saveAutographOtPath(Request $request, $id, $section)
-    // {
-    //     $username = Auth::user()->name;
-    //     // Log::info('Username:', ['username' => $username]);
-    //     $imagePath = $username . '.png';
-    //     // Log::info('imagepath : ', $imagePath);
-
-    //     // Save $imagePath to the database for the specified $reportId and $section
-    //     $report = HeaderFormOvertime::find($id);
-    //     $report->update([
-    //         "autograph_{$section}" => $imagePath
-    //     ]);
-
-    //     $this->updateStatus($id);
-
-    //     return response()->json(['success' => 'Autograph saved successfully!']);
-    // }
-
-    public function updateStatus($id)
-    {
-        $headerForm = HeaderFormOvertime::find($id);
-
-        if (!$headerForm) {
-            return response()->json(['error' => 'HeaderFormOvertime not found'], 404);
-        }
-
-        $department = $headerForm->department;
-
-        if (!$department) {
-            return response()->json(['error' => 'Related department not found'], 404);
-        }
-
-        if ($department->name === 'MOULDING') {
-            // Case 2: department name is MOULDING
-            $headerForm->status = 6;
-            if (!empty($headerForm->autograph_2)) {
-                $headerForm->status = 1;
-            }
-            if (!empty($headerForm->autograph_3)) {
-                $headerForm->status = 9;
-            }
-            if (!empty($headerForm->autograph_4)) {
-                $headerForm->status = 5;
-                $headerForm->is_approve = 1;
-            }
-        } else if ($department->is_office === 1) {
-            // Case 1: is_office is true
-            $headerForm->status = 1;
-            if (!empty($headerForm->autograph_2)) {
-                $headerForm->status = 9;
-            }
-            if (!empty($headerForm->autograph_3)) {
-                $headerForm->status = 5;
-                $headerForm->is_approve = 1;
-            }
-        } else {
-            // Case 3: is_office is false
-            $headerForm->status = 1;
-            if (!empty($headerForm->autograph_2)) {
-                $headerForm->status = 3;
-                if ($department->name === 'QA' || $department->name === 'QC') {
-                    $headerForm->status = 9;
-                }
-            }
-            if (!empty($headerForm->autograph_3)) {
-                $headerForm->status = 9;
-            }
-            if (!empty($headerForm->autograph_4)) {
-                $headerForm->status = 5;
-                $headerForm->is_approve = 1;
-            }
-        }
-
-        $headerForm->save();
-
-        //  $this->sendNotification($headerForm);
-
-        return response()->json(['message' => 'Status updated successfully', 'data' => $headerForm], 200);
-    }
-
     public function sign(Request $request, $id)
     {
         // dd($id);
@@ -399,88 +316,6 @@ class FormOvertimeController extends Controller
             ->update(['status' => 'rejected']);
 
         return redirect()->back()->with('success', 'Report rejected!');
-    }
-
-    private function sendNotification($report)
-    {
-        $director = User::whereHas('specification', function ($query) {
-            $query->where('name', 'DIRECTOR');
-        })->first();
-
-        $verificator = User::whereHas('specification', function ($query) {
-            $query->where('name', 'VERIFICATOR');
-        })->first();
-
-        $gm = User::where('is_gm', 1)->first();
-
-        $supervisor = User::whereHas('specification', function ($query) {
-            $query->where('name', 'SUPERVISOR');
-        })->first();
-
-        $deptHead = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
-
-        switch ($report->status) {
-            // Send to Dept Head
-            case 'waiting-dept-head':
-                if ($report->department->name === 'STORE') {
-                    $user = User::where('is_head', 1)->whereHas('department', function ($query) {
-                        $query->where('name', 'LOGISTIC');
-                    })->first();
-                } elseif ($report->department->name === 'SECOND PROCESS') {
-                    $user = User::where('email', 'imano@daijo.co.id')->first();
-                } else {
-                    $user = $deptHead;
-                }
-                $status = 'Waiting for Dept Head';
-                break;
-            // Send to Verificator
-            case 'waiting-verificator':
-                $user = $verificator;
-                $status = 'Waiting to Verificator';
-                break;
-            // Send to GM
-            case 'waiting-gm':
-                $user = $gm;
-                $status = 'Waiting for GM';
-                break;
-            // Send to Director
-            case 'waiting-director':
-                $user = $director;
-                $status = 'Waiting for Director';
-                break;
-            // Send to Supervisor
-            case 'waiting-supervisor':
-                $user = $supervisor;
-                $status = 'Waiting for Supervisor';
-                break;
-            default:
-                return redirect()->back()->with('error', 'Failed send notification!');
-                break;
-        }
-
-        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d-m-Y');
-        $cc = [$report->user->email];
-
-        if ($report->is_approve === 1 || $report->is_approve === 0) {
-            $user = $report->user;
-            array_push($cc, $verificator);
-        }
-
-        $details = [
-            'greeting' => 'Form Overtime Notification',
-            'body' => "We waiting for your sign for this report : <br>
-                    - Report ID : $report->id <br>
-                    - Department From : {$report->department->name} ({$report->department->dept_no}) <br>
-                    - Create Date : {$formattedCreateDate} <br>
-                    - Created By : {$report->user->name} <br>
-                    - Status : {$status} <br> 
-                        ",
-            'cc' => $cc,
-            'actionText' => 'Click to see the detail',
-            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
-        ];
-
-        $user->notify(new FormOvertimeNotification($report, $details));
     }
 
     public function exportOvertime($headerId)
@@ -611,10 +446,10 @@ class FormOvertimeController extends Controller
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
-            'NIK1' => $detail->NIK
+                'NIK1' => $detail->NIK
             ]
         ];
-        
+
 
         $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
 
@@ -631,7 +466,7 @@ class FormOvertimeController extends Controller
             ];
 
             $responseJson = json_decode($response->body(), true);
-        
+
             if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
                 $detail->is_processed = 1;
                 $detail->status = 'Approved';
@@ -655,7 +490,6 @@ class FormOvertimeController extends Controller
                     'response' => $responseData
                 ], 400);
             }
-
         } catch (\Exception $e) {
             Log::error("❌ Exception push for detail ID: $detailId", [
                 'error' => $e->getMessage()
@@ -712,7 +546,7 @@ class FormOvertimeController extends Controller
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [
-                'NIK1' => $detail->NIK
+                    'NIK1' => $detail->NIK
                 ]
             ];
 
@@ -850,13 +684,13 @@ class FormOvertimeController extends Controller
         return view('formovertime.export_summary', compact('summary'));
     }
 
-        public function exportSummaryExcel(Request $request)
+    public function exportSummaryExcel(Request $request)
     {
         $request->validate([
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
         ]);
 
-       return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
+        return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
     }
 }
