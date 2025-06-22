@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Employee;
 use App\Models\Department;
@@ -19,7 +17,6 @@ use App\Exports\OvertimeExportExample;
 use App\Models\ApprovalFlow;
 use App\Models\OvertimeFormApproval;
 use App\Models\User;
-use App\Notifications\FormOvertimeNotification;
 use App\Support\ApprovalFlowResolver;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
@@ -55,11 +52,11 @@ class FormOvertimeController extends Controller
 
             $dataheaderQuery->where('status', 'waiting-dept-head');
         } else {
-              if ($user->name === 'Umi') {
-                    $dataheaderQuery->whereIn('dept_id', [1, 2]);
-                } else {
-                    $dataheaderQuery->where('dept_id', $user->department_id);
-                }
+            if ($user->name === 'Umi') {
+                $dataheaderQuery->whereIn('dept_id', [1, 2]);
+            } else {
+                $dataheaderQuery->where('dept_id', $user->department_id);
+            }
         }
 
         // === FILTER TAMBAHAN ===
@@ -80,7 +77,7 @@ class FormOvertimeController extends Controller
             ->orWhere('user_id', $user->id)
             ->get();
 
-         if (auth()->user()->role->name === 'SUPERADMIN') {
+        if (auth()->user()->role->name === 'SUPERADMIN') {
             $dataheader = HeaderFormOvertime::all();
             $andriani = User::where('name', 'andriani')->first();
 
@@ -449,10 +446,10 @@ class FormOvertimeController extends Controller
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
-            'NIK1' => $detail->NIK
+                'NIK1' => $detail->NIK
             ]
         ];
-        
+
 
         $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
 
@@ -469,7 +466,7 @@ class FormOvertimeController extends Controller
             ];
 
             $responseJson = json_decode($response->body(), true);
-        
+
             if ($response->successful() && isset($responseJson['status']) && $responseJson['status'] == '200') {
                 $detail->is_processed = 1;
                 $detail->status = 'Approved';
@@ -493,7 +490,6 @@ class FormOvertimeController extends Controller
                     'response' => $responseData
                 ], 400);
             }
-
         } catch (\Exception $e) {
             Log::error("❌ Exception push for detail ID: $detailId", [
                 'error' => $e->getMessage()
@@ -550,7 +546,7 @@ class FormOvertimeController extends Controller
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [
-                'NIK1' => $detail->NIK
+                    'NIK1' => $detail->NIK
                 ]
             ];
 
@@ -636,7 +632,7 @@ class FormOvertimeController extends Controller
     public function summaryView(Request $request)
     {
         $summary = collect();
-     
+
         if ($request->filled(['start_date', 'end_date'])) {
             $request->validate([
                 'start_date' => 'required|date',
@@ -688,13 +684,13 @@ class FormOvertimeController extends Controller
         return view('formovertime.export_summary', compact('summary'));
     }
 
-        public function exportSummaryExcel(Request $request)
+    public function exportSummaryExcel(Request $request)
     {
         $request->validate([
             'start_date' => 'required|date',
             'end_date'   => 'required|date|after_or_equal:start_date',
         ]);
 
-       return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
+        return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
     }
 }
