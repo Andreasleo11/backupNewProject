@@ -33,7 +33,12 @@ class FormOvertimeController extends Controller
 
         // === FILTER BERDASARKAN ROLE USER ===
         if ($user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where('is_approve', 1);
+            $dataheaderQuery->where('is_approve', 1)->orWhere(function ($query) {
+                $query->where('status', 'waiting-dept-head')
+                    ->whereHas('department', function ($subQuery) {
+                        $subQuery->where('name', 'PERSONALIA');
+                    });
+            });
         } elseif ($user->specification->name === 'DIRECTOR') {
             $dataheaderQuery->where('status', 'waiting-director');
         } elseif ($user->is_gm) {
@@ -72,11 +77,6 @@ class FormOvertimeController extends Controller
             $dataheaderQuery->where('is_push', $request->input('status'));
         }
 
-        $dataheader = $dataheaderQuery
-            ->orderBy('id', 'desc')
-            ->orWhere('user_id', $user->id)
-            ->get();
-
         if (auth()->user()->role->name === 'SUPERADMIN') {
             $dataheader = HeaderFormOvertime::all();
             $andriani = User::where('name', 'andriani')->first();
@@ -105,6 +105,11 @@ class FormOvertimeController extends Controller
                 }
             }
         }
+
+        $dataheader = $dataheaderQuery
+            ->orderBy('id', 'desc')
+            ->orWhere('user_id', $user->id)
+            ->get();
 
         $departments = Department::all();
 
