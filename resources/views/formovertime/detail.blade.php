@@ -1,28 +1,5 @@
 @extends('layouts.app')
-
-@push('extraCss')
-    <style>
-        .autograph-box {
-            width: 200px;
-            /* Adjust the width as needed */
-            height: 100px;
-            /* Adjust the height as needed */
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: 1px solid #ccc;
-            /* Add border for better visibility */
-        }
-
-        .rejection-textarea {
-            background-color: #ffe6e6;
-            border: 1px solid #ff0000;
-            font-size: 1rem;
-            padding: 10px;
-            resize: none;
-        }
-    </style>
-@endpush
-
+@section('title', 'Detail Form Overtime - ' . env('APP_NAME'))
 @section('content')
     {{-- GLOBAL VARIABLE --}}
     @php
@@ -66,123 +43,26 @@
         <div id="pushAllResult" class="mt-2 text-sm"></div>
     @endif
 
-    {{-- @include('partials.formovertime-autographs') --}}
-    <div class="mt-2 container">
-        <div class="d-flex justify-content-around">
-            @foreach ($header->approvals as $approval)
-                <div>
-                    <div class="text-center">
-                        <div class="col">
-                            <div class="d-flex justify-content-center"></div>
-                            <div class="fs-3">{{ ucwords(str_replace('_', ' ', $approval->step->role_slug)) }}
-                            </div>
-                            @if ($approval->status === 'approved')
-                                <span class="badge bg-success">✓ Signed
-                                    {{ optional($approval->signed_at)->diffForHumans() }}</span>
-                            @elseif ($approval->status === 'rejected')
-                                <span class="badge bg-danger">✗ Rejected</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="border mt-2" style="width:200px; height:100px;">
-                        <img src="{{ asset('autographs/' . $approval->signature_path) }}" alt=""
-                            class="object-fit-cover">
-                    </div>
-                    <div class="mt-2">
-                        @if ($approval->approver)
-                            <div class="text-center">
-                                {{-- Signed-at + calendar icon --}}
-                                <div class="gap-1">
-                                    <i class="bi bi-calendar-event text-muted"></i>
-                                    <span class="small text-muted">
-                                        {{ optional($approval->signed_at)->timezone('Asia/Jakarta')->format('d-m-Y · H:i') ?? '—' }}
+    @include('partials.formovertime-autographs')
 
-                                    </span>
-                                </div>
+    @if ($header->is_approve === 0)
+        <div class="container my-4">
+            <div class="alert alert-danger shadow border-0 position-relative">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-x-circle-fill fs-3 me-2 text-danger"></i>
+                    <h5 class="mb-0 fw-bold text-danger">Form Rejected</h5>
+                </div>
+                <hr class="my-2">
 
-                                {{-- Approver name + person icon --}}
-                                <div class="gap-1">
-                                    <i class="bi bi-person-check-fill text-primary"></i>
-                                    <span class="fw-semibold">
-                                        {{ Str::title($approval->approver->name ?? 'Pending') }}
-                                    </span>
-                                </div>
-                            </div>
-                        @else
-                            @php
-                                $isCurrentStep = optional($header->currentStep())->id === $approval->flow_step_id;
-                                // dd($header->currentStep()->id);
-                                // dd($approval->flow_step_id);
-                                $isPending = $approval->status === 'pending';
-                                $allowedByRole = false;
-                                $user = auth()->user();
-
-                                switch ($approval->step->role_slug) {
-                                    case 'dept_head':
-                                        $allowedByRole =
-                                            $user->is_head &&
-                                            $user->department->name === $approval->form->department->name;
-                                            
-                                            if($user->is_head && $user->department->name === 'LOGISTIC' && $approval->form->department->name){
-                                                $allowedByRole = true;
-                                            }
-                                        break;
-                                    case 'director':
-                                        $allowedByRole = $user->specification->name === 'DIRECTOR';
-                                        break;
-                                    case 'supervisor':
-                                        $allowedByRole = $user->specification->name === 'SUPERVISOR';
-                                        break;
-                                    case 'gm':
-                                        $allowedByRole = $user->is_gm;
-                                        break;
-                                    case 'creator':
-                                        $allowedByRole = $approval->form->user_id === $user->id;
-                                        break;
-                                }
-
-                                $showApprovalButtons = $isCurrentStep && $isPending && $allowedByRole;
-                            @endphp
-
-                            <div class="d-flex justify-content-between {{ $showApprovalButtons ? '' : 'd-none' }}">
-                                <div class="modal fade" id="rejectModal">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <form action="{{ route('overtime.reject', $header->id) }}" method="post">
-                                                @method('PUT')
-                                                @csrf
-                                                <div class="modal-header">
-                                                    <h1 class="modal-title fs-5">Reason</h1>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <input type="hidden" name="approval_id" value="{{ $approval->id }}">
-                                                    <label for="description" class="form-label">Description</label>
-                                                    <textarea name="description" class="form-control" placeholder="Tell us why you rejecting this report..." required></textarea>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Close</button>
-                                                    <button type="submit" class="btn btn-primary">Confirm</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-danger" data-bs-toggle="modal"
-                                    data-bs-target="#rejectModal">Reject</button>
-                                <form
-                                    action="{{ route('overtime.sign', ['id' => $approval->form->id, 'step_id' => $approval->flow_step_id]) }}"
-                                    method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn btn-success">Approve</button>
-                                </form>
-                            </div>
-                        @endif
+                <div class="bg-white border-start border-4 border-danger rounded-3 p-3 mt-3">
+                    <p class="mb-0 text-secondary fw-semibold">Reason:</p>
+                    <div class="text-dark lh-base" style="white-space: pre-wrap;">
+                        {{ $header->description ?? 'No reason provided.' }}
                     </div>
                 </div>
-            @endforeach
+            </div>
         </div>
-    </div>
+    @endif
 
     <div class="mt-5 container">
         <div class="col">
@@ -232,7 +112,7 @@
                                     @else
                                         <th class="align-middle">Status</th>
                                     @endif
-                                
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -320,14 +200,6 @@
             </div>
         </div>
     </div>
-
-    @if ($header->is_approve === 0)
-        <div class="alert alert-danger mt-3" role="alert">
-            <h4 class="alert-heading">Alasan Ditolak</h4>
-            <textarea class="form-control-plaintext rounded-2 border border-danger p-2" rows="5" readonly>
-                {{ $header->description }}</textarea>
-        </div>
-    @endif
 
     <script>
         function handleOvertimeAction(detailId, actionType) {

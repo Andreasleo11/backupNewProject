@@ -78,7 +78,7 @@
                                     <td>{{ $fot->id }}</td>
                                     <td>{{ $fot->user->name }}</td>
                                     <td>{{ $fot->department->name }}</td>
-                                    <td> @formatDate($fot->create_date) </td>
+                                    <td> @formatDate($fot->details[0]->start_date) </td>
                                     <td>
                                         @include('partials.formovertime-status', ['fot' => $fot])
                                         @if ($fot->is_push == 1)
@@ -95,7 +95,7 @@
                                             {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
                                         </span>
                                     </td>
-                                     <td>
+                                    <td>
                                         @php
                                             $approvedCount = $fot->details->where('status', 'Approved')->count();
                                             $rejectedCount = $fot->details->where('status', 'Rejected')->count();
@@ -103,13 +103,13 @@
                                         @endphp
 
                                         <div class="d-flex flex-column align-items-start gap-1">
-                                            @if($approvedCount > 0)
+                                            @if ($approvedCount > 0)
                                                 <span class="badge bg-success">Approved: {{ $approvedCount }}</span>
                                             @endif
-                                            @if($rejectedCount > 0)
+                                            @if ($rejectedCount > 0)
                                                 <span class="badge bg-danger">Rejected: {{ $rejectedCount }}</span>
                                             @endif
-                                            @if($nullCount > 0)
+                                            @if ($nullCount > 0)
                                                 <span class="badge bg-secondary">Pending: {{ $nullCount }}</span>
                                             @endif
                                         </div>
