@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 class OvertimeImport implements ToCollection
 {
     protected $headerOvertimeId;
+    public $createdCount = 0;
 
     public function __construct($headerOvertimeId)
     {
@@ -20,29 +21,47 @@ class OvertimeImport implements ToCollection
 
     public function collection(Collection $rows)
     {
-        // Skip the first three rows (headers)
-        $dataRows = $rows->slice(3);
+        $dataRows = $rows->slice(3); // Skip header rows
 
-        foreach ($dataRows as $row)
-        {
+        foreach ($dataRows as $row) {
             $employeeId = $row[0];
             $employee = Employee::where('NIK', $employeeId)->first();
 
-            if ($employee) {
-                DetailFormOvertime::create([
-                    'header_id' => $this->headerOvertimeId,
-                    'NIK' => $employee->NIK,
-                    'nama' =>$employee->Nama,
-                    'overtime_date' => $this->parseDate($row[1]),
-                    'job_desc' => $row[2],
-                    'start_date' => $this->parseDate($row[3]),
-                    'start_time' => $this->parseTime($row[4]),
-                    'end_date' => $this->parseDate($row[5]),
-                    'end_time' => $this->parseTime($row[6]),
-                    'break' => $row[7],
-                    'remarks' => $row[8],
-                ]);
-            }
+            if (!$employee) continue;
+
+            $overtimeDate = $this->parseDate($row[1]);
+            $jobDesc      = $row[2];
+            $startDate    = $this->parseDate($row[3]);
+            $startTime    = $this->parseTime($row[4]);
+            $endDate      = $this->parseDate($row[5]);
+            $endTime      = $this->parseTime($row[6]);
+            $break        = $row[7];
+            $remarks      = $row[8];
+
+            // ✅ Skip jika end_date < start_date
+            if (strtotime($endDate) < strtotime($startDate)) continue;
+
+            // ✅ Skip jika kombinasi NIK + overtime_date sudah ada
+            $exists = DetailFormOvertime::where('NIK', $employee->NIK)
+                ->where('overtime_date', $overtimeDate)
+                ->exists();
+
+            if ($exists) continue;
+
+            DetailFormOvertime::create([
+                'header_id'     => $this->headerOvertimeId,
+                'NIK'           => $employee->NIK,
+                'nama'          => $employee->Nama,
+                'overtime_date' => $overtimeDate,
+                'job_desc'      => $jobDesc,
+                'start_date'    => $startDate,
+                'start_time'    => $startTime,
+                'end_date'      => $endDate,
+                'end_time'      => $endTime,
+                'break'         => $break,
+                'remarks'       => $remarks,
+            ]);
+            $this->createdCount++;
         }
     }
 
