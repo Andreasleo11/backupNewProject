@@ -107,14 +107,15 @@ class FormOvertimeController extends Controller
                     $header->save();
                 }
             }
-        }
 
-        foreach ($dataheader as $header) {
-            if ($header->details[0]->start_date > $header->details[0]->created_at) {
-                $header->is_planned = 1;
-                $header->save();
+            foreach ($dataheader as $header) {
+                if ($header->details[0]->start_date > $header->details[0]->created_at) {
+                    $header->is_planned = 1;
+                    $header->save();
+                }
             }
         }
+
 
         $dataheader = $dataheaderQuery
             ->orderBy('id', 'desc')
