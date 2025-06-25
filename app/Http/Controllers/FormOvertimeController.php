@@ -249,6 +249,7 @@ class FormOvertimeController extends Controller
             foreach ($request->input('items') as $employeedata) {
                 $nik = $employeedata['NIK'];
                 $nama = $employeedata['nama'];
+                $overtimedate = $employeedata['overtimedate'];
                 $jobdesc = $employeedata['jobdesc'];
                 $startdate = $employeedata['startdate'];
                 $starttime = $employeedata['starttime'];
@@ -261,6 +262,7 @@ class FormOvertimeController extends Controller
                     'header_id' => $id,
                     'NIK' => $nik,
                     'nama' => $nama,
+                    'overtime_date' => $overtimedate,
                     'job_desc' => $jobdesc,
                     'start_date' => $startdate,
                     'start_time' => $starttime,
