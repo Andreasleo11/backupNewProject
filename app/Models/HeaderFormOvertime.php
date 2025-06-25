@@ -122,7 +122,7 @@ class HeaderFormOvertime extends Model
                 break;
             // Send to GM
             case 'waiting-gm':
-                if ($this->branch === 'KARAWANG') {
+                if ($report->branch === 'Karawang') {
                     $user = User::where('email', 'pawarid_pannin@daijo.co.id')->first();
                 } else {
                     $user = User::where('email', 'albert@daijo.co.id')->first();
