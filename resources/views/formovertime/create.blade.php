@@ -128,7 +128,7 @@
                             <div id="designFieldContainer"></div>
 
                             <div class="form-group mt-3">
-                                <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Overtime</label>
+                                <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Created</label>
                                 <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime"
                                     value="{{ date('Y-m-d') }}" readonly required>
                             </div>
@@ -289,11 +289,11 @@
 
             if (isFirstCall) {
                 // Define header labels and their corresponding column sizes
-                const headerLabels = ['#', 'NIK ', 'Name ', 'Job desc', 'Start Date', 'Start Time', 'End Date',
+                const headerLabels = ['#', 'NIK ', 'Name ','overtime date', 'Job desc', 'Start Date', 'Start Time', 'End Date',
                     'End Time', 'Break (Minute)', 'Remarks',
                     'Action'
                 ];
-                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-1', 'col-md-1',
+                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1',
                     'col-md-1',
                     'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1'
                 ];
@@ -391,6 +391,7 @@
 
             formGroupNamaInput.appendChild(namaInput);
 
+
             // Add event listener for keyup event
             namaInput.addEventListener('keyup', function() {
                 const departmentDropdown = document.getElementById('fromDepartmentDropdown');
@@ -442,8 +443,21 @@
                 }
             });
 
+
+            const formGroupOvertimeDateInput = document.createElement('div')
+            formGroupOvertimeDateInput.classList.add('col-md-1');
+
+            const OvertimedateInput = document.createElement('input');
+            OvertimedateInput.classList.add('form-control');
+            OvertimedateInput.setAttribute('required', 'required');
+            OvertimedateInput.type = 'date';
+            OvertimedateInput.name = `items[${itemIdCounter}][overtimedate]`;
+
+            formGroupOvertimeDateInput.appendChild(OvertimedateInput);
+            
+
             const formGroupJobdescInput = document.createElement('div')
-            formGroupJobdescInput.classList.add('col-md-2');
+            formGroupJobdescInput.classList.add('col-md-1');
 
             const jobdescInput = document.createElement('input');
             jobdescInput.classList.add('form-control');
@@ -541,6 +555,7 @@
             newItemContainer.appendChild(countGroup);
             newItemContainer.appendChild(formGroupName);
             newItemContainer.appendChild(formGroupNamaInput);
+            newItemContainer.appendChild(formGroupOvertimeDateInput);
             newItemContainer.appendChild(formGroupJobdescInput);
             newItemContainer.appendChild(formGroupStartDateInput);
             newItemContainer.appendChild(formGroupStartTimeInput);
