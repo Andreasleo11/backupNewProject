@@ -33,14 +33,14 @@ class FormOvertimeController extends Controller
 
         // === FILTER BERDASARKAN ROLE USER ===
         if ($user->specification->name === 'VERIFICATOR') {
-           $dataheaderQuery->where(function($query){
+            $dataheaderQuery->where(function ($query) {
                 $query->where('is_approve', 1)
                     ->orWhere(function ($subQuery) {
-                    $subQuery->where('status', 'waiting-dept-head')
-                        ->whereHas('department', function($subsubQuery) {
-                            $subsubQuery->where('name', 'PERSONALIA');
+                        $subQuery->where('status', 'waiting-dept-head')
+                            ->whereHas('department', function ($subsubQuery) {
+                                $subsubQuery->where('name', 'PERSONALIA');
+                            });
                     });
-                });
             });
         } elseif ($user->specification->name === 'DIRECTOR') {
             $dataheaderQuery->where('status', 'waiting-director');
@@ -67,7 +67,7 @@ class FormOvertimeController extends Controller
             }
         }
 
-         // === FILTER TAMBAHAN ===
+        // === FILTER TAMBAHAN ===
         if ($request->filled('date')) {
             $dataheaderQuery->whereDate('create_date', $request->date);
         }
@@ -529,7 +529,7 @@ class FormOvertimeController extends Controller
 
         if ($header->is_push == 1) {
             return response()->json(['error' => 'Header sudah dipush sebelumnya'], 400);
-        }]
+        }
 
         $url = 'http://192.168.6.75/JPayroll/thirdparty/ext/API_Store_Overtime.php';
 
