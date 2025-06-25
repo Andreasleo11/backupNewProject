@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\HeaderFormOvertime;
+use Illuminate\Support\Facades\Cache;
 
 class HeaderFormOvertimeObserver
 {
@@ -17,16 +18,13 @@ class HeaderFormOvertimeObserver
      */
     public function created(HeaderFormOvertime $headerFormOvertime): void
     {
-        //
+        Cache::forget('approval_flow_rules');
     }
 
     /**
      * Handle the HeaderFormOvertime "updated" event.
      */
-    public function updated(HeaderFormOvertime $headerFormOvertime): void
-    {
-        //
-    }
+    public function updated(HeaderFormOvertime $headerFormOvertime): void {}
 
     /**
      * Handle the HeaderFormOvertime "deleted" event.
