@@ -33,10 +33,13 @@ class FormOvertimeController extends Controller
 
         // === FILTER BERDASARKAN ROLE USER ===
         if ($user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where('is_approve', 1)->orWhere(function ($query) {
-                $query->where('status', 'waiting-dept-head')
-                    ->whereHas('department', function ($subQuery) {
-                        $subQuery->where('name', 'PERSONALIA');
+            $dataheaderQuery->where(function ($query) {
+                $query->where('is_approve', 1)
+                    ->orWhere(function ($subQuery) {
+                        $subQuery->where('status', 'waiting-dept-head')
+                            ->whereHas('department', function ($subsubQuery) {
+                                $subsubQuery->where('name', 'PERSONALIA');
+                            });
                     });
             });
         } elseif ($user->specification->name === 'DIRECTOR') {
@@ -70,15 +73,15 @@ class FormOvertimeController extends Controller
 
         // === FILTER TAMBAHAN ===
         if ($request->filled('date')) {
-            $dataheaderQuery->whereDate('create_date', $request->input('date'));
+            $dataheaderQuery->whereDate('create_date', $request->date);
         }
 
         if ($request->filled('dept')) {
-            $dataheaderQuery->where('dept_id', $request->input('dept'));
+            $dataheaderQuery->where('dept_id', $request->dept);
         }
 
         if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where('is_push', $request->input('status'));
+            $dataheaderQuery->where('is_push', $request->status);
         }
 
         if (auth()->user()->role->name === 'SUPERADMIN') {
@@ -107,6 +110,13 @@ class FormOvertimeController extends Controller
                     $header->user_id = $andriani->id;
                     $header->save();
                 }
+            }
+        }
+
+        foreach ($dataheader as $header) {
+            if ($header->details[0]->start_date > $header->details[0]->created_at) {
+                $header->is_planned = 1;
+                $header->save();
             }
         }
 
@@ -451,7 +461,7 @@ class FormOvertimeController extends Controller
             'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
             'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
             'BreakTime'   => $detail->break,
-            'Remark'      => Str::limit($detail->remarks, 250),
+            'Remark'      => Str::limit('Reference from ID ' . $header->id, 250),
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
@@ -551,7 +561,7 @@ class FormOvertimeController extends Controller
                 'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
                 'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
                 'BreakTime'   => $detail->break,
-                'Remark'      => Str::limit($detail->remarks, 250),
+                'Remark'      => Str::limit('Reference from ID ' . $header->id, 250),
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [

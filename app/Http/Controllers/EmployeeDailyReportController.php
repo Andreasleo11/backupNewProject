@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+ini_set('max_execution_time', 100000);
+
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use Illuminate\Http\Request;
@@ -82,14 +84,24 @@ class EmployeeDailyReportController extends Controller
             $department = substr($normalizedId, 0, 3); // 3 karakter awal
             $employeeId = substr($normalizedId, 3);    // 5 karakter akhir
 
+            $employee = Employee::where('employee_id', $employeeId)->first();
+            if ($employee) {
+                $employeeName = $employee->name;
+                $employeeDept = $employee->department;
+            } else {
+                $employeeName = 'Unknown';
+                $employeeDept = 'Unknown';
+            }
+
+
             $workDate = Carbon::createFromFormat('d/m/Y', trim($data['Tanggal melakukan pekerjaan']))->toDateString();
 
             $reportData = [
                 'submitted_at'        => Carbon::createFromFormat('d/m/Y H:i:s', $data['Timestamp']),
                 'report_type'         => $data['Jenis Laporan'],
                 'employee_id'         => $employeeId,
-                'employee_name'       => $data['Nama'],
-                'departement_id'      => $department,
+                'employee_name'       => $employeeName,
+                'departement_id'      => $employeeDept,
                 'work_date'           => $workDate,
                 'work_time'           => $data['Jam bekerja'],
                 'work_description'    => $data['Deskripsi pekerjaan yang dilakukan'],
@@ -188,66 +200,66 @@ class EmployeeDailyReportController extends Controller
         $user = auth()->user();
 
         // 1. Authorization check
-        if (!$user->is_head) {
+        if ($user->is_head || $user->specification->name === 'DIRECTOR') {
+            // 2. Get department-specific employees from master
+            $employeeQuery = Employee::query();
+            if ($user->name === 'Bernadett' || $user->specification->name === 'DIRECTOR') {
+            } else {
+                $employeeQuery->where('Dept', $user->department->dept_no);
+            }
+            $validEmployees = $employeeQuery->get();
+            $validNiks = $validEmployees->pluck('NIK')->toArray();
+
+            // 3. Filtered reports only where NIK and Nama match
+            $reportQuery = DB::table('employee_daily_reports as dr')
+                ->join('employees as e', function ($join) use ($validNiks) {
+                    $join->on('dr.employee_id', '=', 'e.NIK')
+                        ->whereColumn('dr.employee_name', 'e.Nama')
+                        ->whereColumn('dr.departement_id', 'e.Dept')
+                        ->whereIn('e.NIK', $validNiks);
+                })
+                ->select('dr.*');
+
+            // 4. Prepare dropdown of employees from filtered reports
+            $employeesDropdown = (clone $reportQuery)
+                ->select('employee_id', DB::raw('MIN(employee_name) as employee_name'))
+                ->groupBy('employee_id')
+                ->get();
+
+            // 5. Apply filter from request
+            $filterEmployeeId = $request->input('filter_employee_id');
+            if ($filterEmployeeId && in_array($filterEmployeeId, $validNiks)) {
+                $reportQuery->where('dr.employee_id', $filterEmployeeId);
+            }
+
+            $filterDepartmentNo = $request->input('filter_department_no');
+            if ($filterDepartmentNo) {
+                $reportQuery->where('dr.departement_id', $filterDepartmentNo);
+            }
+
+            // 6. Fetch and enrich employee records with latest work date & time
+            $filteredReports = $reportQuery
+                ->select('employee_id', 'departement_id', DB::raw('MIN(employee_name) as employee_name'))
+                ->groupBy('employee_id', 'departement_id')
+                ->get();
+
+            $employees = $filteredReports->map(function ($employee) {
+                $latest = EmployeeDailyReport::where('employee_id', $employee->employee_id)
+                    ->orderByDesc('work_date')
+                    ->orderByDesc('work_time')
+                    ->first();
+
+                $employee->latest_work_date = $latest->work_date ?? '-';
+                $employee->latest_work_time = $latest->work_time ?? '-';
+
+                return $employee;
+            });
+
+            $departmentNos = Department::pluck('dept_no');
+            return view('dailyreport.depthead_index', compact('employees', 'employeesDropdown', 'departmentNos', 'filterEmployeeId', 'filterDepartmentNo'));
+        } else {
             abort(403, 'Anda tidak memiliki akses');
         }
-
-        // 2. Get department-specific employees from master
-        $employeeQuery = Employee::query();
-        if ($user->name !== 'Bernadett') {
-            $employeeQuery->where('Dept', $user->department->dept_no);
-        }
-        $validEmployees = $employeeQuery->get();
-        $validNiks = $validEmployees->pluck('NIK')->toArray();
-
-        // 3. Filtered reports only where NIK and Nama match
-        $reportQuery = DB::table('employee_daily_reports as dr')
-            ->join('employees as e', function ($join) use ($validNiks) {
-                $join->on('dr.employee_id', '=', 'e.NIK')
-                    ->whereColumn('dr.employee_name', 'e.Nama')
-                    ->whereColumn('dr.departement_id', 'e.Dept')
-                    ->whereIn('e.NIK', $validNiks);
-            })
-            ->select('dr.*');
-
-        // 4. Prepare dropdown of employees from filtered reports
-        $employeesDropdown = (clone $reportQuery)
-            ->select('employee_id', DB::raw('MIN(employee_name) as employee_name'))
-            ->groupBy('employee_id')
-            ->get();
-
-        // 5. Apply filter from request
-        $filterEmployeeId = $request->input('filter_employee_id');
-        if ($filterEmployeeId && in_array($filterEmployeeId, $validNiks)) {
-            $reportQuery->where('dr.employee_id', $filterEmployeeId);
-        }
-
-        $filterDepartmentNo = $request->input('filter_department_no');
-        if ($filterDepartmentNo) {
-            $reportQuery->where('dr.departement_id', $filterDepartmentNo);
-        }
-
-        // 6. Fetch and enrich employee records with latest work date & time
-        $filteredReports = $reportQuery
-            ->select('employee_id', 'departement_id', DB::raw('MIN(employee_name) as employee_name'))
-            ->groupBy('employee_id', 'departement_id')
-            ->get();
-
-        $employees = $filteredReports->map(function ($employee) {
-            $latest = EmployeeDailyReport::where('employee_id', $employee->employee_id)
-                ->orderByDesc('work_date')
-                ->orderByDesc('work_time')
-                ->first();
-
-            $employee->latest_work_date = $latest->work_date ?? '-';
-            $employee->latest_work_time = $latest->work_time ?? '-';
-
-            return $employee;
-        });
-
-        $departmentNos = Department::pluck('dept_no');
-
-        return view('dailyreport.depthead_index', compact('employees', 'employeesDropdown', 'departmentNos', 'filterEmployeeId', 'filterDepartmentNo'));
     }
 
 
@@ -255,71 +267,72 @@ class EmployeeDailyReportController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->is_head) {
+        if ($user->is_head || $user->specification->name === 'DIRECTOR') {
+            $query = EmployeeDailyReport::where('employee_id', $employee_id);
+
+            if ($user->name === 'Bernadett' || $user->specification->name === 'DIRECTOR') {
+            } else {
+                $query->where('departement_id', $user->department->dept_no);
+            }
+
+            $filter_start_date = $request->input('filter_start_date');
+            $filter_end_date = $request->input('filter_end_date');
+
+            if ($filter_start_date && $filter_end_date) {
+                $query->whereBetween('work_date', [$filter_start_date, $filter_end_date]);
+            } elseif ($filter_start_date) {
+                $query->whereDate('work_date', '>=', $filter_start_date);
+            } elseif ($filter_end_date) {
+                $query->whereDate('work_date', '<=', $filter_end_date);
+            }
+
+            $reports = $query->orderByDesc('work_date')
+                ->orderByDesc('work_time')
+                ->get();
+
+            $startDate = Carbon::parse($reports->min('work_date') ?? now()->subDays(30));
+            $endDate = Carbon::parse($reports->max('work_date') ?? now());
+            $allDates = collect(CarbonPeriod::create($startDate, $endDate))->map(fn($date) => $date->toDateString());
+
+            $submittedDates = $reports->pluck('work_date')->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())->unique();
+            $missingDates = $allDates->diff($submittedDates);
+
+            // dd($submittedDates, $missingDates, $filter_start_date, $filter_end_date);
+            $calendarEvents = [];
+
+            // Submitted reports: green
+            foreach ($submittedDates as $date) {
+                $calendarEvents[] = [
+                    'title' => '✔ Laporan Masuk',
+                    'start' => $date,
+                    'color' => '#28a745' // green
+                ];
+            }
+
+            // Missing reports: red
+            foreach ($missingDates as $date) {
+                $calendarEvents[] = [
+                    'title' => '❌ Tidak Ada Laporan',
+                    'start' => $date,
+                    'color' => '#dc3545' // red
+                ];
+            }
+
+            // dd($missingDates);
+
+            return view('dailyreport.depthead_show', compact(
+                'reports',
+                'employee_id',
+                'filter_start_date',
+                'filter_end_date',
+                'missingDates',
+                'submittedDates',
+                'startDate',
+                'endDate',
+                'calendarEvents'
+            ));
+        } else {
             abort(403, 'Akses ditolak');
         }
-
-        $query = EmployeeDailyReport::where('employee_id', $employee_id);
-
-        if ($user->name !== 'Bernadett') {
-            $query->where('departement_id', $user->department->dept_no);
-        }
-
-        $filter_start_date = $request->input('filter_start_date');
-        $filter_end_date = $request->input('filter_end_date');
-
-        if ($filter_start_date && $filter_end_date) {
-            $query->whereBetween('work_date', [$filter_start_date, $filter_end_date]);
-        } elseif ($filter_start_date) {
-            $query->whereDate('work_date', '>=', $filter_start_date);
-        } elseif ($filter_end_date) {
-            $query->whereDate('work_date', '<=', $filter_end_date);
-        }
-
-        $reports = $query->orderByDesc('work_date')
-            ->orderByDesc('work_time')
-            ->get();
-
-        $startDate = Carbon::parse($reports->min('work_date') ?? now()->subDays(30));
-        $endDate = Carbon::parse($reports->max('work_date') ?? now());
-        $allDates = collect(CarbonPeriod::create($startDate, $endDate))->map(fn($date) => $date->toDateString());
-
-        $submittedDates = $reports->pluck('work_date')->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())->unique();
-        $missingDates = $allDates->diff($submittedDates);
-
-        // dd($submittedDates, $missingDates, $filter_start_date, $filter_end_date);
-        $calendarEvents = [];
-
-        // Submitted reports: green
-        foreach ($submittedDates as $date) {
-            $calendarEvents[] = [
-                'title' => '✔ Laporan Masuk',
-                'start' => $date,
-                'color' => '#28a745' // green
-            ];
-        }
-
-        // Missing reports: red
-        foreach ($missingDates as $date) {
-            $calendarEvents[] = [
-                'title' => '❌ Tidak Ada Laporan',
-                'start' => $date,
-                'color' => '#dc3545' // red
-            ];
-        }
-
-        // dd($missingDates);
-
-        return view('dailyreport.depthead_show', compact(
-            'reports',
-            'employee_id',
-            'filter_start_date',
-            'filter_end_date',
-            'missingDates',
-            'submittedDates',
-            'startDate',
-            'endDate',
-            'calendarEvents'
-        ));
     }
 }
