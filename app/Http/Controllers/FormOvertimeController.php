@@ -106,6 +106,13 @@ class FormOvertimeController extends Controller
             }
         }
 
+        foreach ($dataheader as $header) {
+            if ($header->details[0]->start_date > $header->details[0]->created_at) {
+                $header->is_planned = 1;
+                $header->save();
+            }
+        }
+
         $dataheader = $dataheaderQuery
             ->orderBy('id', 'desc')
             ->orWhere('user_id', $user->id)
@@ -447,7 +454,7 @@ class FormOvertimeController extends Controller
             'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
             'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
             'BreakTime'   => $detail->break,
-            'Remark'      => Str::limit($detail->remarks, 250),
+            'Remark'      => Str::limit('Reference from ID ' . $header->id, 250),
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
@@ -547,7 +554,7 @@ class FormOvertimeController extends Controller
                 'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
                 'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
                 'BreakTime'   => $detail->break,
-                'Remark'      => Str::limit($detail->remarks, 250),
+                'Remark'      => Str::limit('Reference from ID ' . $header->id, 250),
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [
