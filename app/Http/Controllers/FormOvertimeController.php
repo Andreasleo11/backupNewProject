@@ -42,8 +42,12 @@ class FormOvertimeController extends Controller
         } elseif ($user->specification->name === 'DIRECTOR') {
             $dataheaderQuery->where('status', 'waiting-director');
         } elseif ($user->is_gm) {
-            $dataheaderQuery
-                ->where('status', 'waiting-gm');
+            $dataheaderQuery->where('status', 'waiting-gm');
+            if ($user->name === 'pawarid') {
+                $dataheaderQuery->where('branch', 'Karawang');
+            } else {
+                $dataheaderQuery->where('branch', 'Jakarta');
+            }
         } elseif ($user->is_head) {
             $dataheaderQuery->where('dept_id', $user->department->id);
 
