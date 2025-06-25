@@ -13,6 +13,7 @@ class DetailFormOvertime extends Model
         'header_id',
         'NIK',
         'nama',
+        'overtime_date',
         'job_desc',
         'start_date',
         'start_time',

@@ -111,14 +111,15 @@ class FormOvertimeController extends Controller
                     $header->save();
                 }
             }
-        }
 
-        foreach ($dataheader as $header) {
-            if ($header->details[0]->start_date > $header->details[0]->created_at) {
-                $header->is_planned = 1;
-                $header->save();
+            foreach ($dataheader as $header) {
+                if ($header->details[0]->start_date > $header->details[0]->created_at) {
+                    $header->is_planned = 1;
+                    $header->save();
+                }
             }
         }
+
 
         $dataheader = $dataheaderQuery
             ->orderBy('id', 'desc')
@@ -224,9 +225,18 @@ class FormOvertimeController extends Controller
         }
 
         if ($uploadedFiles) {
-            $this->importFromExcel($request, $headerovertime->id);
+            $createdCount = $this->importFromExcel($request, $headerovertime->id);
+
+            if ($createdCount === 0) {
+                $headerovertime->delete();
+                return redirect()->route('formovertime.index')
+                    ->with('message', 'Tidak ada data valid dari Excel, header dihapus otomatis.');
+            }
         } else {
-            $this->detailOvertimeInsert($request, $headerovertime->id);
+                $result = $this->detailOvertimeInsert($request, $headerovertime->id);
+                if ($result instanceof \Illuminate\Http\RedirectResponse) {
+                return $result;
+            }
         }
 
         // $this->sendNotification($headerovertime);
@@ -240,14 +250,19 @@ class FormOvertimeController extends Controller
         $path = $request->file('excel_file')->store('temp');
         $import = new OvertimeImport($headerOvertimeId);
         Excel::import($import, $path);
+
+        return $import->createdCount;
     }
 
     public function detailOvertimeInsert($request, $id)
     {
+        $createdCount = 0; 
+
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $employeedata) {
                 $nik = $employeedata['NIK'];
                 $nama = $employeedata['nama'];
+                $overtimedate = $employeedata['overtimedate'];
                 $jobdesc = $employeedata['jobdesc'];
                 $startdate = $employeedata['startdate'];
                 $starttime = $employeedata['starttime'];
@@ -256,10 +271,28 @@ class FormOvertimeController extends Controller
                 $break = $employeedata['break'];
                 $remark = $employeedata['remark'];
 
+                // ✅ Skip jika end_date < start_date
+                if (strtotime($enddate) < strtotime($startdate)) {
+                    // dd("kena ini kah ?");
+                    continue;
+                }
+
+                // ✅ Skip jika kombinasi NIK, start_date dan end_date sudah ada
+                $exists = DetailFormOvertime::where('NIK', $nik)
+                    ->where('overtime_date', $overtimedate)
+                    ->exists();
+                
+
+                if ($exists) {
+                    // dd("kena ini toh ?");
+                    continue;
+                }
+
                 $detailData = [
                     'header_id' => $id,
                     'NIK' => $nik,
                     'nama' => $nama,
+                    'overtime_date' => $overtimedate,
                     'job_desc' => $jobdesc,
                     'start_date' => $startdate,
                     'start_time' => $starttime,
@@ -270,7 +303,13 @@ class FormOvertimeController extends Controller
                 ];
 
                 DetailFormOvertime::create($detailData);
+                $createdCount++;
             }
+        }
+            if ($createdCount === 0) {
+            HeaderFormOvertime::find($id)?->delete();
+            return redirect()->route('formovertime.index')
+        ->with('message', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
         }
     }
 
