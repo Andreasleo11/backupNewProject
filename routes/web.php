@@ -91,6 +91,7 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------

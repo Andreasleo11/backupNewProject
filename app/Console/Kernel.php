@@ -36,6 +36,10 @@ class Kernel extends ConsoleKernel
         $schedule->command('employee-dashboard:update-from-api')->dailyAt('09:30')->timezone('Asia/Jakarta');
 
         $schedule->command('email:daily-stock-report')->dailyAt('01:30');
+
+        $schedule->command('notify:overtime')
+            ->dailyAt('09:00')
+            ->timezone('Asia/Jakarta');
     }
 
     /**
