@@ -71,15 +71,15 @@ class NotifyOvertimeApprovers extends Command
                     break;
 
                 case 'waiting-gm':
-                    // $grouped = $reports->groupBy('branch');
-                    // foreach ($grouped as $branch => $reportsGroup) {
-                    //     $email = $branch === 'Karawang'
-                    //         ? 'pawarid_pannin@daijo.co.id'
-                    //         : 'albert@daijo.co.id';
+                    $grouped = $reports->groupBy('branch');
+                    foreach ($grouped as $branch => $reportsGroup) {
+                        $email = $branch === 'Karawang'
+                            ? 'pawarid_pannin@daijo.co.id'
+                            : 'albert@daijo.co.id';
 
-                    //     $user = User::where('email', $email)->first();
-                    //     if ($user) $user->notify(new DailyOvertimeSummaryNotification($reportsGroup, $status));
-                    // }
+                        $user = User::where('email', $email)->first();
+                        if ($user) $user->notify(new DailyOvertimeSummaryNotification($reportsGroup, $status));
+                    }
                     break;
             }
         }
