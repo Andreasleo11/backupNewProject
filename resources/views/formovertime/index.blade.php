@@ -1,24 +1,26 @@
 @extends('layouts.app')
 @section('title', 'Form Overtime List - ' . env('APP_NAME'))
 @section('content')
-    <style>
-        .table thead th {
-            vertical-align: middle;
-        }
 
-        .badge {
-            font-size: 0.85rem;
-        }
-
-        .card {
-            border-radius: 0.75rem;
-        }
-
-        .btn {
-            border-radius: 0.5rem;
-        }
-    </style>
     @include('partials.alert-success-error')
+
+    {{-- Header --}}
+    <div class="d-flex justify-content-between align-items-center">
+        <h2 class="fw-bold mb-0">Form Overtime List</h2>
+        @if (Auth::user()->department->name !== 'MANAGEMENT')
+            <a href="{{ route('formovertime.create') }}" class="btn btn-success shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Create Form Overtime
+            </a>
+        @endif
+    </div>
+
+    {{-- Breadcrumb --}}
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-light rounded py-2">
+            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a></li>
+            <li class="breadcrumb-item active">List</li>
+        </ol>
+    </nav>
 
     {{-- Filter Form --}}
     <div class="card shadow-sm border-0 mb-4">
@@ -60,24 +62,6 @@
                 </div>
             </form>
         </div>
-    </div>
-
-    {{-- Breadcrumb --}}
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb bg-light rounded px-3 py-2">
-            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a></li>
-            <li class="breadcrumb-item active">List</li>
-        </ol>
-    </nav>
-
-    {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-primary mb-0">Form Overtime List</h2>
-        @if (Auth::user()->department->name !== 'MANAGEMENT')
-            <a href="{{ route('formovertime.create') }}" class="btn btn-success shadow-sm">
-                <i class="bi bi-plus-circle me-1"></i> Create Form Overtime
-            </a>
-        @endif
     </div>
 
     {{-- Table --}}
@@ -172,8 +156,15 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="mt-4 text-end">
-        {{ $dataheader->withQueryString()->links() }}
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted small">
+            Showing {{ $dataheader->firstItem() }} to {{ $dataheader->lastItem() }}
+            of {{ $dataheader->total() }} entries
+        </div>
+
+        <div>
+            {{ $dataheader->withQueryString()->links() }}
+        </div>
     </div>
 
 @endsection
