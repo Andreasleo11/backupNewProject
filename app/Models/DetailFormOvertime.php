@@ -21,6 +21,8 @@ class DetailFormOvertime extends Model
         'end_time',
         'break',
         'remarks',
+        'status',
+        'reason', // Added reason field
     ];
 
     public function header()

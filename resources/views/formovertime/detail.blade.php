@@ -112,6 +112,7 @@
                                         <th class="align-middle">Action</th>
                                     @else
                                         <th class="align-middle">Status</th>
+                                        <th class="align-middle">Reason</th>
                                     @endif
 
                                 </tr>
@@ -187,6 +188,9 @@
                                                 @else
                                                     <span class="text-warning fw-bold">PENDING</span>
                                                 @endif
+                                            </td>
+                                            <td>
+                                                {{ $data->reason ?? '-' }}
                                             </td>
                                         @endif
                                     </tr>
