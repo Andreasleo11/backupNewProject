@@ -85,10 +85,8 @@ class FormOvertimeController extends Controller
         }
 
         if (auth()->user()->role->name === 'SUPERADMIN') {
-            $dataheader = HeaderFormOvertime::all();
+            $dataheader = HeaderFormOvertime::with(['department', 'approvals.step'])->orderBy('id', 'desc')->paginate(10);
             $andriani = User::where('name', 'andriani')->first();
-
-            $dataheader = $dataheader->load(['department', 'approvals.step']);
 
             foreach ($dataheader as $header) {
                 if ($header->department?->name !== 'BUSINESS') {
@@ -124,6 +122,7 @@ class FormOvertimeController extends Controller
                 ->orWhere('user_id', $user->id)
                 ->paginate(10);
         }
+
 
         $departments = Department::all();
 
