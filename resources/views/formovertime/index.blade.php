@@ -170,4 +170,10 @@
             </div>
         </div>
     </div>
+
+    {{-- Pagination --}}
+    <div class="mt-4 text-end">
+        {{ $dataheader->withQueryString()->links() }}
+    </div>
+
 @endsection

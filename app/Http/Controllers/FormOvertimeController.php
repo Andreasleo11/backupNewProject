@@ -118,13 +118,12 @@ class FormOvertimeController extends Controller
                     $header->save();
                 }
             }
+        } else {
+            $dataheader = $dataheaderQuery
+                ->orderBy('id', 'desc')
+                ->orWhere('user_id', $user->id)
+                ->paginate(10);
         }
-
-
-        $dataheader = $dataheaderQuery
-            ->orderBy('id', 'desc')
-            ->orWhere('user_id', $user->id)
-            ->get();
 
         $departments = Department::all();
 
@@ -233,8 +232,8 @@ class FormOvertimeController extends Controller
                     ->with('message', 'Tidak ada data valid dari Excel, header dihapus otomatis.');
             }
         } else {
-                $result = $this->detailOvertimeInsert($request, $headerovertime->id);
-                if ($result instanceof \Illuminate\Http\RedirectResponse) {
+            $result = $this->detailOvertimeInsert($request, $headerovertime->id);
+            if ($result instanceof \Illuminate\Http\RedirectResponse) {
                 return $result;
             }
         }
@@ -256,7 +255,7 @@ class FormOvertimeController extends Controller
 
     public function detailOvertimeInsert($request, $id)
     {
-        $createdCount = 0; 
+        $createdCount = 0;
 
         if ($request->has('items') && is_array($request->input('items'))) {
             foreach ($request->input('items') as $employeedata) {
@@ -281,7 +280,7 @@ class FormOvertimeController extends Controller
                 $exists = DetailFormOvertime::where('NIK', $nik)
                     ->where('overtime_date', $overtimedate)
                     ->exists();
-                
+
 
                 if ($exists) {
                     // dd("kena ini toh ?");
@@ -306,10 +305,10 @@ class FormOvertimeController extends Controller
                 $createdCount++;
             }
         }
-            if ($createdCount === 0) {
+        if ($createdCount === 0) {
             HeaderFormOvertime::find($id)?->delete();
             return redirect()->route('formovertime.index')
-        ->with('message', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
+                ->with('message', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
         }
     }
 
