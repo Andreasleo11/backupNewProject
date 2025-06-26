@@ -629,7 +629,10 @@ class FormOvertimeController extends Controller
                     $successCount++;
                     Log::info("✅ Success push for detail ID: {$detail->id}", $responseData);
                 } else {
+                    $msg = $responseJson['msg'] ?? 'Unknown error';
+
                     $detail->status = 'Rejected';
+                    $detail->reason = "Reject JPAYROLL karena {$msg}";
                     $detail->save();
 
                     Log::warning("⚠️ Push rejected & status updated for detail ID: {$detail->id}", $responseData);
