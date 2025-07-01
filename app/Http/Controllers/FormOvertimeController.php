@@ -27,53 +27,78 @@ class FormOvertimeController extends Controller
 {
     public function index(Request $request)
     {
+        HeaderFormOvertime::doesntHave('details')->delete();
         $user = Auth::user();
-
         $dataheaderQuery = HeaderFormOvertime::with('user', 'department', 'details');
 
-        // === FILTER BERDASARKAN ROLE USER ===
-        if ($user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where(function ($query) {
-                $query->where('is_approve', 1)
-                    ->orWhere(function ($subQuery) {
-                        $subQuery->where('status', 'waiting-dept-head')
-                            ->whereHas('department', function ($subsubQuery) {
-                                $subsubQuery->where('name', 'PERSONALIA');
-                            });
-                    });
-            });
-        } elseif ($user->specification->name === 'DIRECTOR') {
-            $dataheaderQuery->where('status', 'waiting-director');
-        } elseif ($user->is_gm) {
-            $dataheaderQuery->where('status', 'waiting-gm');
-            if ($user->name === 'pawarid') {
-                $dataheaderQuery->where('branch', 'Karawang');
-            } else {
-                $dataheaderQuery->where('branch', 'Jakarta');
-            }
-        } elseif ($user->is_head) {
-            $dataheaderQuery->where('dept_id', $user->department->id);
+        $dataheaderQuery->where(function ($query) use ($user, $request) {
+            // Now everything is scoped properly here
 
-            if ($user->department->name === 'LOGISTIC') {
-                $dataheaderQuery->orWhere(function ($query) {
-                    $query->whereHas('department', function ($query) {
-                        $query->where('name', 'STORE');
-                    });
+            if ($user->role->name === 'SUPERADMIN') {
+                $query->with('approvals.step');
+            } elseif ($user->specification->name === 'VERIFICATOR') {
+                $query->where(function ($subQuery) {
+                    $subQuery->where('is_approve', 1)
+                        ->orWhere(function ($q) {
+                            $q->where('status', 'waiting-dept-head')
+                                ->whereHas('department', function ($qq) {
+                                    $qq->where('name', 'PERSONALIA');
+                                });
+                        });
+                });
+            } elseif ($user->specification->name === 'DIRECTOR') {
+                $query->where('status', 'waiting-director');
+            } elseif ($user->is_gm) {
+                $query->where('status', 'waiting-gm');
+                $query->where('branch', $user->name === 'pawarid' ? 'Karawang' : 'Jakarta');
+            } elseif ($user->is_head) {
+                $query->where(function ($q) use ($user) {
+                    $q->where('dept_id', $user->department->id)
+                        ->orWhereHas('department', function ($qq) use ($user) {
+                            if ($user->department->name === 'LOGISTIC') {
+                                $qq->where('name', 'STORE');
+                            }
+                        });
+                });
+                $query->where('status', 'waiting-dept-head');
+            } else {
+                if ($user->name === 'Umi') {
+                    $query->whereIn('dept_id', [1, 2]);
+                } else {
+                    $query->where('dept_id', $user->department_id);
+                }
+            }
+
+            // Additional filters
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $startDate = $request->input('start_date');
+                $endDate = $request->input('end_date');
+                $query->whereHas('details', function ($q) use ($startDate, $endDate) {
+                    $q->whereDate('start_date', '>=', $startDate)
+                        ->whereDate('start_date', '<=', $endDate);
                 });
             }
 
-            $dataheaderQuery->where('status', 'waiting-dept-head');
-        } else {
-            if ($user->name === 'Umi') {
-                $dataheaderQuery->whereIn('dept_id', [1, 2]);
-            } else {
-                $dataheaderQuery->where('dept_id', $user->department_id);
+            if ($request->filled('dept')) {
+                $query->where('dept_id', $request->dept);
             }
-        }
 
-        // === FILTER TAMBAHAN ===
-        if ($request->filled('date')) {
-            $dataheaderQuery->whereDate('create_date', $request->date);
+            if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
+                $query->where('is_push', $request->status);
+            }
+
+            // Include personal entries too
+            $query->orWhere('user_id', $user->id);
+        });
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = $request->input('start_date');
+            $endDate = $request->input('end_date');
+
+            $dataheaderQuery->whereHas('details', function ($query) use ($startDate, $endDate) {
+                $query->whereDate('start_date', '>=', $startDate)
+                    ->whereDate('start_date', '<=', $endDate);
+            });
         }
 
         if ($request->filled('dept')) {
@@ -84,45 +109,9 @@ class FormOvertimeController extends Controller
             $dataheaderQuery->where('is_push', $request->status);
         }
 
-        if (auth()->user()->role->name === 'SUPERADMIN') {
-            $dataheader = HeaderFormOvertime::with(['department', 'approvals.step'])->orderBy('id', 'desc')->paginate(10);
-            $andriani = User::where('name', 'andriani')->first();
-
-            foreach ($dataheader as $header) {
-                if ($header->department?->name !== 'BUSINESS') {
-                    continue;
-                }
-
-                $needsSave = false;
-
-                foreach ($header->approvals as $approval) {
-                    if ($approval->step?->role_slug === 'creator') {
-                        $approval->signature_path = 'andriani.png';
-                        $approval->approver_id = $andriani->id;
-                        $approval->save();
-                    }
-                }
-
-                // Only update header if needed
-                if ($header->user_id !== $andriani->id) {
-                    $header->user_id = $andriani->id;
-                    $header->save();
-                }
-            }
-
-            foreach ($dataheader as $header) {
-                if ($header->details[0]->start_date > $header->details[0]->created_at) {
-                    $header->is_planned = 1;
-                    $header->save();
-                }
-            }
-        } else {
-            $dataheader = $dataheaderQuery
-                ->orderBy('id', 'desc')
-                ->orWhere('user_id', $user->id)
-                ->paginate(10);
-        }
-
+        $dataheader = $dataheaderQuery
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         $departments = Department::all();
 

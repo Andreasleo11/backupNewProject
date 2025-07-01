@@ -27,9 +27,15 @@
         <div class="card-body">
             <form method="GET" action="{{ route('formovertime.index') }}" class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label for="date" class="form-label">Overtime Date</label>
-                    <input type="date" class="form-control shadow-sm" name="date" id="date"
-                        value="{{ request('date') }}">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control shadow-sm" name="start_date" id="start_date"
+                        value="{{ request('start_date') }}">
+                </div>
+
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control shadow-sm" name="end_date" id="end_date"
+                        value="{{ request('end_date') }}">
                 </div>
 
                 <div class="col-md-3">
@@ -55,10 +61,13 @@
                     </div>
                 @endif
 
-                <div class="col-md-3">
+                <div class="col-md-3 d-flex gap-2">
                     <button type="submit" class="btn btn-primary w-100 shadow-sm">
                         <i class="bi bi-filter-circle me-1"></i> Filter
                     </button>
+                    <a href="{{ route('formovertime.index') }}" class="btn btn-outline-secondary w-100 shadow-sm">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </a>
                 </div>
             </form>
         </div>
