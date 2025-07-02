@@ -24,11 +24,19 @@
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('formovertime.index') }}" class="row g-3 align-items-end">
+
                 <div class="col-md-3">
-                    <label for="date" class="form-label">Overtime Date</label>
-                    <input type="date" class="form-control shadow-sm" name="date" id="date"
-                        value="{{ request('date') }}">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    <input type="date" class="form-control shadow-sm" name="start_date" id="start_date"
+                        value="{{ request('start_date') }}">
                 </div>
+
+                <div class="col-md-3">
+                    <label for="end_date" class="form-label">End Date</label>
+                    <input type="date" class="form-control shadow-sm" name="end_date" id="end_date"
+                        value="{{ request('end_date') }}">
+                </div>
+
 
                 <div class="col-md-3">
                     <label for="dept" class="form-label">Department</label>
@@ -49,6 +57,25 @@
                             <option value="">-- Semua --</option>
                             <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>SELESAI</option>
                             <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>BELUM SELESAI</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="info_status" class="form-label">Info</label>
+                        <select class="form-select shadow-sm" name="info_status" id="info_status">
+                            <option value="">-- Semua --</option>
+                            <option value="pending" {{ request('info_status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ request('info_status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="rejected" {{ request('info_status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="is_push" class="form-label">Push by Verificator</label>
+                        <select class="form-select shadow-sm" name="is_push" id="is_push">
+                            <option value="">-- All --</option>
+                            <option value="1" {{ request('is_push') === 'enabled' ? 'selected' : '' }}>Already Pushed</option>
+                            <option value="0" {{ request('is_push') === 'disabled' ? 'selected' : '' }}>Not Yet Pushed</option>
                         </select>
                     </div>
                 @endif

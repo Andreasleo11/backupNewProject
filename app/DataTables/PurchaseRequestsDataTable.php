@@ -187,12 +187,12 @@ class PurchaseRequestsDataTable extends DataTable
                 $subQuery->where('from_department', $userDepartmentName);
                 
                 if(auth()->user()->department->name === 'QA'){
-                    $subQuery->orWhere('from_department', 'QC');
+                    $subQuery->orWhere('from_department', 'QC')
+                        ->orWhere('user_id_create', auth()->user()->id);;
                 }
             });
         }
 
-        // $query->orWhere('user_id_create', auth()->user()->id);
 
         return $query;
     }

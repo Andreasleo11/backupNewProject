@@ -111,9 +111,16 @@
                                     @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
                                         <th class="align-middle">Action</th>
                                     @else
-                                        <th class="align-middle">Status</th>
-                                        <th class="align-middle">Reason</th>
+                                        <th class="align-middle">Status Jpayroll</th>
+                                     
                                     @endif
+                                       <th class="align-middle">Reason</th>
+                                       <th class="align-middle">Voucher</th>
+                                        <th class="align-middle">In Date</th>
+                                        <th class="align-middle">In Time</th>
+                                        <th class="align-middle">Out Date</th>
+                                        <th class="align-middle">Out Time</th>
+                                        <th class="align-middle">Nett Hour</th>
 
                                 </tr>
                             </thead>
@@ -123,7 +130,7 @@
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $data->NIK }}</td>
                                         <td>{{ $data->nama }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($data->overtime_date)->format('d-m-Y') }}</td>
+                                        <td>{{ $data->overtime_date ? \Carbon\Carbon::parse($data->overtime_date)->format('d-m-Y') : '-' }} </td>
                                         <td>{{ $data->job_desc }}</td>
                                         <td>{{ \Carbon\Carbon::parse($data->start_date)->format('d-m-Y') }}</td>
                                         <td>{{ $data->start_time }}</td>
@@ -189,10 +196,24 @@
                                                     <span class="text-warning fw-bold">PENDING</span>
                                                 @endif
                                             </td>
-                                            <td>
-                                                {{ $data->reason ?? '-' }}
-                                            </td>
                                         @endif
+                                        <td>
+                                            {{ $data->reason ?? '-' }}
+                                        </td>
+                                       <td>{{ optional($data->actualOvertimeDetail)->voucher ?? '-' }}</td>
+                                        <td>
+                                            {{ optional($data->actualOvertimeDetail)->in_date 
+                                                ? \Carbon\Carbon::parse($data->actualOvertimeDetail->in_date)->format('d-m-Y') 
+                                                : '-' }}
+                                        </td>
+                                        <td>{{ optional($data->actualOvertimeDetail)->in_time ?? '-' }}</td>
+                                        <td>
+                                            {{ optional($data->actualOvertimeDetail)->out_date 
+                                                ? \Carbon\Carbon::parse($data->actualOvertimeDetail->out_date)->format('d-m-Y') 
+                                                : '-' }}
+                                        </td>
+                                        <td>{{ optional($data->actualOvertimeDetail)->out_time ?? '-' }}</td>
+                                        <td>{{ optional($data->actualOvertimeDetail)->nett_overtime ?? '-' }}</td>
                                     </tr>
                                 @empty
                                     <tr>

@@ -84,10 +84,10 @@ class EmployeeDailyReportController extends Controller
             $department = substr($normalizedId, 0, 3); // 3 karakter awal
             $employeeId = substr($normalizedId, 3);    // 5 karakter akhir
 
-            $employee = Employee::where('employee_id', $employeeId)->first();
+            $employee = Employee::where('NIK', $employeeId)->first();
             if ($employee) {
-                $employeeName = $employee->name;
-                $employeeDept = $employee->department;
+                $employeeName = $employee->Nama;
+                $employeeDept = $employee->Dept;
             } else {
                 $employeeName = 'Unknown';
                 $employeeDept = 'Unknown';
@@ -125,6 +125,7 @@ class EmployeeDailyReportController extends Controller
 
             if ($existingSameTime && $reportData['report_type'] === 'Revisi') {
                 // Update data yang lama
+                // dd($reportData);
                 $existingSameTime->update($reportData);
                 continue;
             }
