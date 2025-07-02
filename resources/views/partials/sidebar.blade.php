@@ -514,6 +514,15 @@
                         </a>
                     </li>
 
+                    @if ($user->role->name === 'SUPERADMIN')
+                        <li class="sidebar-item">
+                            <a href="{{ route('actual.import.form') }}" class="sidebar-link">
+                                <i class='bx bx-file'></i>
+                                    Import Actual Overtime 
+                            </a>
+                        </li>
+                    @endif
+
                      <li class="sidebar-item">
                         <a href="{{ route('overtime.summary') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>

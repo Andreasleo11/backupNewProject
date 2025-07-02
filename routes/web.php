@@ -717,6 +717,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
     Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
 
+    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
+
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
