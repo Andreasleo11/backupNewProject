@@ -20,6 +20,7 @@ class OvertimeSummaryExport implements WithMultipleSheets
         return [
             new OvertimeSummarySheet($this->start_date, $this->end_date), // Sheet 1: Ringkasan
             new OvertimeDetailSheet($this->start_date, $this->end_date),  // Sheet 2: Detail semua data
+            new OvertimeRejectedSheet($this->start_date, $this->end_date),
         ];
     }
 }

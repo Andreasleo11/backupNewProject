@@ -8,6 +8,7 @@
         <tr>
             <th>NIK</th>
             <th>ID Header Overtime</th>
+            <th>ID ROW</th>
             <th>Overtime Date</th>
             <th>Job Desc</th>
             <th>Start Date</th>
@@ -31,6 +32,7 @@
             <tr>
                 <td>{{ $row->NIK }}</td>
                 <td>{{ $row->header_id }}</td>
+                <td>{{ $row->id }}</td>
                 <td>{{ \Carbon\Carbon::parse($row->start_date)->format('d/m/Y') }}</td>
                 <td>{{ $row->job_desc }}</td>
                 <td>{{ $row->start_date }}</td>
