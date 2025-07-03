@@ -12,7 +12,7 @@ class DetailFormOvertime extends Model
     protected $fillable = [
         'header_id',
         'NIK',
-        'nama',
+        'name',
         'overtime_date',
         'job_desc',
         'start_date',

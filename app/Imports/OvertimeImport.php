@@ -51,7 +51,7 @@ class OvertimeImport implements ToCollection
             DetailFormOvertime::create([
                 'header_id'     => $this->headerOvertimeId,
                 'NIK'           => $employee->NIK,
-                'nama'          => $employee->Nama,
+                'name'          => $employee->Nama,
                 'overtime_date' => $overtimeDate,
                 'job_desc'      => $jobDesc,
                 'start_date'    => $startDate,
