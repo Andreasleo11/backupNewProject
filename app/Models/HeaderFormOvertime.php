@@ -14,7 +14,6 @@ class HeaderFormOvertime extends Model
     protected $fillable = [
         'user_id',
         'dept_id',
-        'create_date',
         'branch',
         'is_approve',
         'status',

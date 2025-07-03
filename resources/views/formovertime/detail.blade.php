@@ -73,8 +73,8 @@
                         <br>
                         <div><span class="text-secondary">ID: </span> {{ $header->id }}</div>
                         <div class="fs-6 mt-1">
-                            <span class="fs-6 text-secondary">Create Date : </span>
-                            {{ \Carbon\Carbon::parse($header->create_date)->format('d-m-Y') }}
+                            <span class="fs-6 text-secondary">Created At : </span>
+                            {{ \Carbon\Carbon::parse($header->created_at)->format('d-m-Y') }}
                         </div>
                         <div class="fs-6">
                             <span class="fs-6 text-secondary">Created By : </span>
@@ -97,7 +97,7 @@
                                 <tr>
                                     <th class="align-middle">No</th>
                                     <th class="align-middle">NIK</th>
-                                    <th class="align-middle">Nama</th>
+                                    <th class="align-middle">Name</th>
                                     <th class="align-middle">Overtime Date</th>
                                     <th class="align-middle">Job Description</th>
                                     <th class="align-middle">Start Date</th>
@@ -122,7 +122,7 @@
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $data->NIK }}</td>
-                                        <td>{{ $data->nama }}</td>
+                                        <td>{{ $data->name }}</td>
                                         <td>{{ \Carbon\Carbon::parse($data->overtime_date)->format('d-m-Y') }}</td>
                                         <td>{{ $data->job_desc }}</td>
                                         <td>{{ \Carbon\Carbon::parse($data->start_date)->format('d-m-Y') }}</td>

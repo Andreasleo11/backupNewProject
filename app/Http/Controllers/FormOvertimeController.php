@@ -11,13 +11,9 @@ use App\Models\Employee;
 use App\Models\Department;
 use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
-use App\Imports\OvertimeImport;
 use App\Exports\OvertimeExport;
 use App\Exports\OvertimeExportExample;
-use App\Models\ApprovalFlow;
 use App\Models\OvertimeFormApproval;
-use App\Models\User;
-use App\Support\ApprovalFlowResolver;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -118,7 +114,6 @@ class FormOvertimeController extends Controller
         return view("formovertime.index", compact("dataheader", "departments"));
     }
 
-
     public function create()
     {
         $employees = Employee::get();
@@ -130,174 +125,6 @@ class FormOvertimeController extends Controller
     public function downloadTemplate()
     {
         return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');
-    }
-
-
-    public function getEmployees(Request $request)
-    {
-        $nama = $request->query('name');
-        $nik = $request->query('nik');
-        $deptid = $request->query('deptid');
-
-        info('AJAX request received for item name: ' . $nama);
-        info('AJAX request received for nik: ' . $nik);
-        info('AJAX request received for dept id: ' . $deptid);
-
-        $department = Department::where('id', $deptid)->first();
-        $dept_no = $department ? $department->dept_no : null;
-
-        // Fetch item names and prices from the database based on user input
-        if ($dept_no) {
-            if ($nik) {
-                // Fetch employees based on NIK and department number
-                $pegawais = Employee::where('NIK', 'like', '%' . $nik . '%')
-                    ->where('Dept', $dept_no)
-                    ->whereNull('end_date')
-                    ->select('NIK', 'nama')
-                    ->get();
-            } elseif ($nama) {
-                // Fetch employees based on Nama and department number
-                $pegawais = Employee::where('Nama', 'like', '%' . $nama . '%')
-                    ->where('Dept', $dept_no)
-                    ->whereNull('end_date')
-                    ->select('NIK', 'nama')
-                    ->get();
-            }
-            return response()->json($pegawais);
-        } else {
-            // If department number does not exist, return an empty response or handle error
-            return response()->json([], 404);
-        }
-    }
-
-    public function insert(Request $request)
-    {
-        // dd($request->all());
-        $uploadedFiles = $request->file('excel_file');
-
-        $deptId = $request->input('from_department');
-        $branch = $request->input('branch');
-        $date = $request->input('date_form_overtime');   // e.g. "2025-06-04"
-        $isPlanned = $request->filled('date_form_overtime')
-            && Carbon::parse($date)->greaterThan(  // later than…
-                now()->startOfDay()               // …the very end of today
-            );
-
-        $headerData = [
-            'user_id' => Auth::id(),
-            'dept_id' => $deptId,
-            'create_date' => $request->input('date_form_overtime'),
-            'branch' => $branch,
-            'is_design' => $request->input('design'),
-            'is_export' =>  0,
-            'is_planned' => $isPlanned,
-            'status' => 'waiting-creator',
-        ];
-
-        $flowSlug = ApprovalFlowResolver::for($headerData);
-        // dd($flowSlug);
-        $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
-        // dd($flow);
-
-        $headerData['approval_flow_id'] = $flow->id;
-
-        $headerovertime = HeaderFormOvertime::create($headerData);
-
-        // Pre-seed pending rows
-        foreach ($flow->steps as $step) {
-            $headerovertime->approvals()->create([
-                'flow_step_id' => $step->id,
-                'status'       => 'pending',
-            ]);
-        }
-
-        if ($uploadedFiles) {
-            $createdCount = $this->importFromExcel($request, $headerovertime->id);
-
-            if ($createdCount === 0) {
-                $headerovertime->delete();
-                return redirect()->route('formovertime.index')
-                    ->with('message', 'Tidak ada data valid dari Excel, header dihapus otomatis.');
-            }
-        } else {
-            $result = $this->detailOvertimeInsert($request, $headerovertime->id);
-            if ($result instanceof \Illuminate\Http\RedirectResponse) {
-                return $result;
-            }
-        }
-
-        // $this->sendNotification($headerovertime);
-
-        return redirect()->route('formovertime.detail', $headerovertime->id)->with('success', 'Overtime created successfully!');
-    }
-
-
-    public function importFromExcel($request, $headerOvertimeId)
-    {
-        $path = $request->file('excel_file')->store('temp');
-        $import = new OvertimeImport($headerOvertimeId);
-        Excel::import($import, $path);
-
-        return $import->createdCount;
-    }
-
-    public function detailOvertimeInsert($request, $id)
-    {
-        $createdCount = 0;
-
-        if ($request->has('items') && is_array($request->input('items'))) {
-            foreach ($request->input('items') as $employeedata) {
-                $nik = $employeedata['NIK'];
-                $nama = $employeedata['nama'];
-                $overtimedate = $employeedata['overtimedate'];
-                $jobdesc = $employeedata['jobdesc'];
-                $startdate = $employeedata['startdate'];
-                $starttime = $employeedata['starttime'];
-                $enddate = $employeedata['enddate'];
-                $endtime = $employeedata['endtime'];
-                $break = $employeedata['break'];
-                $remark = $employeedata['remark'];
-
-                // ✅ Skip jika end_date < start_date
-                if (strtotime($enddate) < strtotime($startdate)) {
-                    // dd("kena ini kah ?");
-                    continue;
-                }
-
-                // ✅ Skip jika kombinasi NIK, start_date dan end_date sudah ada
-                $exists = DetailFormOvertime::where('NIK', $nik)
-                    ->where('overtime_date', $overtimedate)
-                    ->exists();
-
-
-                if ($exists) {
-                    // dd("kena ini toh ?");
-                    continue;
-                }
-
-                $detailData = [
-                    'header_id' => $id,
-                    'NIK' => $nik,
-                    'nama' => $nama,
-                    'overtime_date' => $overtimedate,
-                    'job_desc' => $jobdesc,
-                    'start_date' => $startdate,
-                    'start_time' => $starttime,
-                    'end_date' => $enddate,
-                    'end_time' => $endtime,
-                    'break' => $break,
-                    'remarks' => $remark
-                ];
-
-                DetailFormOvertime::create($detailData);
-                $createdCount++;
-            }
-        }
-        if ($createdCount === 0) {
-            HeaderFormOvertime::find($id)?->delete();
-            return redirect()->route('formovertime.index')
-                ->with('message', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
-        }
     }
 
     public function detail($id)
@@ -313,10 +140,7 @@ class FormOvertimeController extends Controller
 
     public function sign(Request $request, $id)
     {
-        // dd($id);
-        // dd($request->step_id);
         $username = Auth::user()->name;
-        // Log::info('Username:', ['username' => $username]);
         $imagePath = $username . '.png';
 
         $form = HeaderFormOvertime::find($id);
@@ -548,7 +372,6 @@ class FormOvertimeController extends Controller
         }
     }
 
-
     public function pushAllDetailsToJPayroll($headerId)
     {
         $header = HeaderFormOvertime::with('details.employee')->find($headerId);
@@ -675,7 +498,6 @@ class FormOvertimeController extends Controller
 
         return !$hasPending;
     }
-
 
     public function summaryView(Request $request)
     {
