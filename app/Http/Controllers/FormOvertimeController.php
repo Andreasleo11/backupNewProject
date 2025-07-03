@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+ini_set('max_execution_time', 100000);
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -11,12 +13,14 @@ use App\Models\Employee;
 use App\Models\Department;
 use App\Models\DetailFormOvertime;
 use App\Models\HeaderFormOvertime;
+use App\Models\ActualOvertimeDetail;
 use App\Exports\OvertimeExport;
 use App\Exports\OvertimeExportExample;
 use App\Models\OvertimeFormApproval;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use App\Exports\OvertimeSummaryExport;
 
 class FormOvertimeController extends Controller
@@ -78,7 +82,7 @@ class FormOvertimeController extends Controller
             if ($request->filled('dept')) {
                 $query->where('dept_id', $request->dept);
             }
-
+          
             if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
                 $query->where('is_push', $request->status);
             }
@@ -87,6 +91,8 @@ class FormOvertimeController extends Controller
             $query->orWhere('user_id', $user->id);
         });
 
+        // === FILTER TAMBAHAN ===
+        // Check if both start_date and end_date are provided by the user
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $startDate = $request->input('start_date');
             $endDate = $request->input('end_date');
@@ -103,6 +109,24 @@ class FormOvertimeController extends Controller
 
         if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
             $dataheaderQuery->where('is_push', $request->status);
+        }
+      
+        if ($request->filled('info_status')) {
+            $status = $request->input('info_status');
+
+            $dataheaderQuery->whereHas('details', function ($q) use ($status) {
+                if ($status === 'pending') {
+                    $q->whereNull('status');
+                } elseif ($status === 'approved') {
+                    $q->where('status', 'Approved');
+                } elseif ($status === 'rejected') {
+                    $q->where('status', 'Rejected');
+                }
+            });
+        }
+
+        if($request->filled('is_push')){
+            $dataheaderQuery->where('is_push', $request->is_push);
         }
 
         $dataheader = $dataheaderQuery
@@ -126,11 +150,11 @@ class FormOvertimeController extends Controller
     {
         return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');
     }
-
+  
     public function detail($id)
     {
         $header = HeaderFormOvertime::with('user', 'department', 'approvals', 'approvals.step')->find($id);
-        $datas = DetailFormOvertime::Where('header_id', $id)->get();
+        $datas = DetailFormOvertime::with('actualOvertimeDetail')->Where('header_id', $id)->get();
         $employees = Employee::get();
         $departements = Department::get();
 
@@ -179,6 +203,7 @@ class FormOvertimeController extends Controller
             ->update([
                 'description' => $request->description,
                 'is_approve' => false,
+                'status' => 'rejected',
             ]);
 
         OvertimeFormApproval::find($request->approval_id)
@@ -303,7 +328,7 @@ class FormOvertimeController extends Controller
 
         $payload = [
             'OTType'      => '1',
-            'OTDate'      => Carbon::parse($detail->start_date)->format('d/m/Y'),
+            'OTDate'      => Carbon::parse($detail->overtime_date)->format('d/m/Y'),
             'JobDesc'     => Str::limit($detail->job_desc, 250),
             'Department'  => $employee->organization_structure ?? 0,
             'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
@@ -311,7 +336,7 @@ class FormOvertimeController extends Controller
             'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
             'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
             'BreakTime'   => $detail->break,
-            'Remark'      => Str::limit('Reference from ID ' . $header->id, 250),
+            'Remark'      => Str::limit("({$detail->NIK}) Reference from LINE {$detail->id} ID {$header->id}", 250),
             'Choice'      => '1',
             'CompanyArea' => '10000',
             'EmpList'     => [
@@ -402,7 +427,7 @@ class FormOvertimeController extends Controller
 
             $payload = [
                 'OTType'      => '1',
-                'OTDate'      => Carbon::parse($detail->start_date)->format('d/m/Y'),
+                'OTDate'      => Carbon::parse($detail->overtime_date)->format('d/m/Y'),
                 'JobDesc'     => Str::limit($detail->job_desc, 250),
                 'Department'  => $employee->organization_structure ?? 0,
                 'StartDate'   => Carbon::parse($detail->start_date)->format('d/m/Y'),
@@ -410,7 +435,7 @@ class FormOvertimeController extends Controller
                 'EndDate'     => Carbon::parse($detail->end_date)->format('d/m/Y'),
                 'EndTime'     => Carbon::parse($detail->end_time)->format('H:i'),
                 'BreakTime'   => $detail->break,
-                'Remark'      => Str::limit('Reference from ID ' . $header->id, 250),
+                'Remark'      => Str::limit("({$detail->NIK}) Reference from LINE {$detail->id} ID {$header->id}", 250),
                 'Choice'      => '1',
                 'CompanyArea' => '10000',
                 'EmpList'     => [
@@ -562,5 +587,107 @@ class FormOvertimeController extends Controller
         ]);
 
         return Excel::download(new OvertimeSummaryExport($request->start_date, $request->end_date), 'Overtime-Summary.xlsx');
+    }
+
+    public function showForm()
+    {
+        return view('formovertime.import');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls'
+        ]);
+
+        $file = $request->file('file');
+        $data = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
+        $sheet = $data->getActiveSheet();
+        $rows = $sheet->toArray();
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $index => $row) {
+                // Skip header rows (row index 0 - 3) dan baris tanpa kolom 1
+                if ($index < 4 || empty($row[0])) continue;
+
+                // Ambil key dari kolom pertama
+                if (preg_match('/LINE\s*(\d+)\s*ID/', $row[0], $matches)) {
+                    $key = intval($matches[1]);
+                } else {
+                    continue;
+                }
+
+                $voucher = $row[1];
+                $in_date = $row[2] ?? null;
+                $in_time = $row[3] ?? null;
+                $out_date = $row[4] ?? null;
+                $out_time = $row[5] ?? null;
+                $nett = $row[6] ?? null;
+                
+                $in_date_formatted = null;
+                $out_date_formatted = null;
+                $in_time_formatted = null;
+                $out_time_formatted = null;
+
+                // In Date
+                if (!empty($in_date)) {
+                    if (is_numeric($in_date)) {
+                        $in_date_formatted = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($in_date)->format('Y-m-d');
+                    } elseif (preg_match('/\d{2}\/\d{2}\/\d{4}/', $in_date)) {
+                        try {
+                            $in_date_formatted = Carbon::createFromFormat('d/m/Y', $in_date)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            $in_date_formatted = null;
+                        }
+                    }
+                }
+
+                // Out Date
+                if (!empty($out_date)) {
+                    if (is_numeric($out_date)) {
+                        $out_date_formatted = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($out_date)->format('Y-m-d');
+                    } elseif (preg_match('/\d{2}\/\d{2}\/\d{4}/', $out_date)) {
+                        try {
+                            $out_date_formatted = Carbon::createFromFormat('d/m/Y', $out_date)->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            $out_date_formatted = null;
+                        }
+                    }
+                }
+
+                // In Time
+                $in_time_formatted = is_numeric($in_time)
+                    ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($in_time)->format('H:i:s')
+                    : (!empty($in_time) ? $in_time : null);
+
+                // Out Time
+                $out_time_formatted = is_numeric($out_time)
+                    ? \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($out_time)->format('H:i:s')
+                    : (!empty($out_time) ? $out_time : null);
+
+                // Netto
+                $nett_overtime = is_numeric($nett) ? floatval($nett) : null;
+
+                // Simpan ke DB
+                ActualOvertimeDetail::updateOrCreate(
+                    ['key' => $key],
+                    [
+                        'voucher' => strval($voucher),
+                        'in_date' => $in_date_formatted,
+                        'in_time' => $in_time_formatted,
+                        'out_date' => $out_date_formatted,
+                        'out_time' => $out_time_formatted,
+                        'nett_overtime' => $nett_overtime
+                    ]
+                );
+            }
+
+            DB::commit();
+            return back()->with('success', 'File berhasil diimpor.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return back()->withErrors('Gagal impor: ' . $e->getMessage());
+        }
     }
 }
