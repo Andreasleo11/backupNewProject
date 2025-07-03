@@ -889,13 +889,13 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     // FOR DEBUG ONLY: VIEWING OT NOTIFICATION
     Route::get('/ot/notification', function () {
         $report = App\Models\HeaderFormOvertime::find(2);
-        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $formattedCreatedAt = \Carbon\Carbon::parse($report->created_at)->format('d/m/Y');
         $details = [
             'greeting' => 'Form Overtime Notification',
             'body' => "Notification for SPK : <br>
                     - Report ID : $report->id <br>
                     - Department From : {$report->department->name} ({$report->department->dept_no}) <br>
-                    - Create Date : {$formattedCreateDate} <br>
+                    - Create Date : {$formattedCreatedAt} <br>
                     - Created By : {$report->user->name} <br>
                         ",
             'actionText' => 'Click to see the detail',
