@@ -173,9 +173,10 @@ class JPayrollService
                 },
                 'Branch' => str_contains($item['EmployeeStatus'], 'KARAWANG') ? 'KARAWANG' : 'JAKARTA',
                 'status' => $item['EmployeeStatus'],
+                'organization_structure' => $item['OrganizationStructure'],
             ];
 
-            $requiredFields = ['Nama', 'Gender', 'Dept', 'start_date', 'Grade', 'employee_status', 'Branch'];
+            $requiredFields = ['Nama', 'Gender', 'Dept', 'start_date', 'Grade', 'employee_status', 'Branch', 'status', 'organization_structure'];
             $hasNull = collect($data)->only($requiredFields)->contains(fn($v) => is_null($v));
 
             if ($hasNull) {

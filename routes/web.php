@@ -975,7 +975,7 @@ Route::middleware(['auth', 'is.head.or.management'])->group(function () {
     Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
     Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
     Route::get('/sync-progress/{companyArea}', function ($companyArea) {
-        $cacheKey = "sync_progress  _{$companyArea}";
+        $cacheKey = "sync_progress_{$companyArea}";
         $progress = Illuminate\Support\Facades\Cache::get($cacheKey, 0);
 
         if ($progress > 100) {
