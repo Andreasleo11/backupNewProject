@@ -22,6 +22,7 @@ class HeaderFormOvertime extends Model
         'description',
         'is_planned',
         'approval_flow_id',
+        'is_after_hour'
     ];
 
     public function user()

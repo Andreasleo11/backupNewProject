@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Imports;
 
 use App\Models\Employee;
@@ -12,11 +11,13 @@ use Illuminate\Support\Collection;
 class OvertimeImport implements ToCollection
 {
     protected $headerOvertimeId;
+    protected $isAfterHour;
     public $createdCount = 0;
 
-    public function __construct($headerOvertimeId)
+    public function __construct($headerOvertimeId, $isAfterHour)
     {
         $this->headerOvertimeId = $headerOvertimeId;
+        $this->isAfterHour = $isAfterHour;
     }
 
     public function collection(Collection $rows)
@@ -44,6 +45,9 @@ class OvertimeImport implements ToCollection
             // ✅ Skip jika kombinasi NIK + overtime_date sudah ada
             $exists = DetailFormOvertime::where('NIK', $employee->NIK)
                 ->where('overtime_date', $overtimeDate)
+                ->whereHas('header', function ($query) {
+                    $query->where('is_after_hour', $this->isAfterHour);
+                })
                 ->exists();
 
             if ($exists) continue;
