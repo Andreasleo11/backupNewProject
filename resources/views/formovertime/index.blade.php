@@ -88,9 +88,12 @@
                         <label for="info_status" class="form-label">Info</label>
                         <select class="form-select shadow-sm" name="info_status" id="info_status">
                             <option value="">-- Semua --</option>
-                            <option value="pending" {{ request('info_status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="approved" {{ request('info_status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                            <option value="rejected" {{ request('info_status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                            <option value="pending" {{ request('info_status') === 'pending' ? 'selected' : '' }}>Pending
+                            </option>
+                            <option value="approved" {{ request('info_status') === 'approved' ? 'selected' : '' }}>Approved
+                            </option>
+                            <option value="rejected" {{ request('info_status') === 'rejected' ? 'selected' : '' }}>Rejected
+                            </option>
                         </select>
                     </div>
 
@@ -98,8 +101,10 @@
                         <label for="is_push" class="form-label">Push by Verificator</label>
                         <select class="form-select shadow-sm" name="is_push" id="is_push">
                             <option value="">-- All --</option>
-                            <option value="1" {{ request('is_push') === 'enabled' ? 'selected' : '' }}>Already Pushed</option>
-                            <option value="0" {{ request('is_push') === 'disabled' ? 'selected' : '' }}>Not Yet Pushed</option>
+                            <option value="1" {{ request('is_push') === 'enabled' ? 'selected' : '' }}>Already Pushed
+                            </option>
+                            <option value="0" {{ request('is_push') === 'disabled' ? 'selected' : '' }}>Not Yet Pushed
+                            </option>
                         </select>
                     </div>
                 @endif
@@ -130,8 +135,10 @@
                             <th>Overtime Date</th>
                             <th>Status</th>
                             <th>Type</th>
+                            <th>Is After Hour?</th>
                             <th>Info</th>
                             <th>Action</th>
+                            <th>Created At</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -156,6 +163,9 @@
                                     {{ $fot->is_planned ? 'bg-light text-secondary border border-secondary' : 'bg-danger text-white' }}">
                                         {{ $fot->is_planned ? 'Planned' : 'Urgent' }}
                                     </span>
+                                </td>
+                                <td>
+                                    {{ $fot->is_after_hour ? 'Yes' : 'No' }}
                                 </td>
                                 <td class="text-start">
                                     @php
@@ -194,6 +204,8 @@
                                             <i class="bi bi-trash"></i> Delete
                                         </button>
                                     </div>
+                                </td>
+                                <td>{{ \Carbon\Carbon::parse($fot->created_at)->format('d-m-Y') }}</td>
                                 </td>
                             </tr>
                         @empty
