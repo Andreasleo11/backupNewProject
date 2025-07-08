@@ -21,6 +21,7 @@ class Create extends Component
     public $excel_file;
     public $items = [];
     public $isExcelMode = false;
+    public $is_after_hour = 1;
 
     protected $casts = [
         'isExcelMode' => 'boolean',
@@ -38,6 +39,7 @@ class Create extends Component
             'dept_id' => 'required|exists:departments,id',
             'branch' => 'required|in:Jakarta,Karawang',
             'design' => 'nullable|in:0,1',
+            'is_after_hour' => 'required|in:0,1',
             'excel_file' => 'nullable|file|mimes:xlsx,xls',
         ];
 
@@ -71,6 +73,8 @@ class Create extends Component
             'branch.required' => 'Branch is required.',
             'branch.in' => 'Branch must be either Jakarta or Karawang.',
             'design.in' => 'Design must be Yes (1) or No (0).',
+            'is_after_hour.required' => 'After hour is required.',
+            'is_after_hour.required' => 'After hour must be Yes (1) or No (0)',
             'excel_file.file' => 'The uploaded file must be a valid file.',
             'excel_file.mimes' => 'The Excel file must be in .xls or .xlsx format.',
         ];

@@ -30,6 +30,18 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
+                <div class="col">
+                    <label for="is_after_hour" class="form-label">After Hour OT? <span
+                            class="text-danger">*</span></label>
+                    <select wire:model="is_after_hour" id="is_after_hour"
+                        class="form-select shadow-sm @error('is_after_hour') is-invalid @enderror">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                    @error('is_after_hour')
+                        <small class="text-danger">{{ $message }}</small>
+                    @enderror
+                </div>
                 @if ($dept_id && optional($departements->firstWhere('id', $dept_id))->name === 'MOULDING')
                     <div class="col">
                         <label for="design" class="form-label">Design <span class="text-danger">*</span></label>
