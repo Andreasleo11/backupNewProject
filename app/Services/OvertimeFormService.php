@@ -70,7 +70,7 @@ class OvertimeFormService
     private static function isPlanned(Collection $data): bool
     {
         $items = $data->get('items', []);
-        return isset($items[0]['start_date']) && $items[0]['start_date'] > now();
+        return isset($items[0]['start_date']) && $items[0]['start_date'] < now();
     }
 
     private static function importFromExcel($file, int $headerId, bool $isAfterHour): int

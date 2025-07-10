@@ -187,7 +187,7 @@
                                 </td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-2 justify-content-center">
-                                        <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}"
+                                        <a href="{{ route('formovertime.detail', ['id' => $fot->id]) }}" target="_blank"
                                             class="btn btn-outline-secondary btn-sm">
                                             <i class="bi bi-info-circle"></i> Detail
                                         </a>
