@@ -78,7 +78,7 @@ class NofifyMissingReports extends Command
                 }
             }
 
-            if (count($missingReports) > 0 && $head->name === 'raymond') {
+            if (count($missingReports) > 0) {
                 Notification::send($head, new MissingDailyReportsNotification(($missingReports)));
 
                 $this->info("Notification sent to {$head->email} for " . count($missingReports) . " missing reports.");

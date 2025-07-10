@@ -59,12 +59,20 @@ class FormOvertimeController extends Controller
                 });
 
                 // $query->where('status', '!=', 'waiting-creator');
-                $query->where('status', 'waiting-creator');
+                $query->where('status', 'waiting-dept-head');
             } else {
                 if ($user->name === 'Umi') {
-                    $query->whereIn('dept_id', [1, 2]);
+                    $query->whereHas('department', function ($subQuery) {
+                        $subQuery->whereIn('name', ['QA', 'QC']);
+                    });
+                } elseif ($user->name === 'nurul') {
+                    $query->whereHas('department', function ($subQuery) {
+                        $subQuery->whereIn('name', ['PLASTIC INJECTION', 'MAINTENANCE MACHINE']);
+                    });
                 } else {
-                    $query->where('dept_id', $user->department_id);
+                    $query->whereHas('department', function ($subQuery) use ($user) {
+                        $subQuery->where('name', $user->department->name);
+                    });
                 }
             }
 
@@ -128,9 +136,20 @@ class FormOvertimeController extends Controller
             $dataheaderQuery->where('is_push', $request->is_push);
         }
 
-        $dataheader = $dataheaderQuery
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        if ($user->specification->name === 'VERIFICATOR') {
+            $dataheader = $dataheaderQuery
+                ->orderByRaw('(
+                    SELECT detail_form_overtime.overtime_date
+                    FROM detail_form_overtime
+                    WHERE detail_form_overtime.header_id = header_form_overtime.id
+                    LIMIT 1
+                ) ASC');
+        } else {
+            $dataheader = $dataheaderQuery
+                ->orderBy('id', 'desc');
+        }
+
+        $dataheader = $dataheader->paginate(10);
 
         $departments = Department::all();
 
