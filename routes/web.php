@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
@@ -92,6 +93,8 @@ use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use Illuminate\Support\Facades\Http;
+use App\Livewire\DeliveryNoteIndex;
+use App\Livewire\DeliveryNoteForm;
 
 /*
 |--------------------------------------------------------------------------
@@ -1033,3 +1036,12 @@ Route::get('/dashboard-employee-login', function () {
 Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
 Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
 Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
+
+
+Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
+    Route::get('/', [DeliveryNoteController::class, 'index'])->name('index');
+    Route::get('/create', [DeliveryNoteController::class, 'create'])->name('create');
+    Route::get('/edit/{deliveryNote}', [DeliveryNoteController::class, 'edit'])->name('edit');
+    Route::get('/{deliveryNote}', [DeliveryNoteController::class, 'show'])->name('show');
+    Route::delete('/{deliveryNote}', [DeliveryNoteController::class, 'destroy'])->name('destroy');
+});

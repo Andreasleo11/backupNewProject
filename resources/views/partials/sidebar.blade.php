@@ -457,12 +457,17 @@
                         </a>
                     </li>
 
-
-
                     <li class="sidebar-list">
                         <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             List All Item Barcode
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('delivery-notes.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Delivery Notes
                         </a>
                     </li>
                 </ul>
@@ -518,12 +523,12 @@
                         <li class="sidebar-item">
                             <a href="{{ route('actual.import.form') }}" class="sidebar-link">
                                 <i class='bx bx-file'></i>
-                                    Import Actual Overtime 
+                                Import Actual Overtime
                             </a>
                         </li>
                     @endif
 
-                     <li class="sidebar-item">
+                    <li class="sidebar-item">
                         <a href="{{ route('overtime.summary') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Summary Form Overtime
