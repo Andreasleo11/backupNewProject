@@ -14,7 +14,23 @@ class OvertimeFormService
 {
     public static function create(Collection $data): HeaderFormOvertime|string
     {
-        $isPlanned = self::isPlanned($data);
+        $excelFile = $data->get('excel_file');
+        $isPlanned = false;
+
+        // Determine isPlanned based on Excel or manual input
+        if ($excelFile instanceof \Illuminate\Http\UploadedFile && $excelFile->isValid()) {
+            $rows = Excel::toArray([], $excelFile);
+            $dataRows = array_slice($rows[0], 3);
+
+            $firstRow = $dataRows[0] ?? null;
+
+            if ($firstRow && isset($firstRow[3])) {
+                $startDate = self::excelDateToCarbon($firstRow[3]);
+                $isPlanned = $startDate->greaterThan(now());
+            }
+        } else {
+            $isPlanned = self::isPlanned($data);
+        }
         $headerData = self::buildHeaderData($data, $isPlanned);
 
         // Determine approval flow
@@ -71,6 +87,11 @@ class OvertimeFormService
     {
         $items = $data->get('items', []);
         return isset($items[0]['start_date']) && $items[0]['start_date'] < now();
+    }
+
+    private static function excelDateToCarbon($serial)
+    {
+        return \Carbon\Carbon::createFromDate(1899, 12, 30)->addDays($serial);
     }
 
     private static function importFromExcel($file, int $headerId, bool $isAfterHour): int
