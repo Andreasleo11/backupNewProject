@@ -3,6 +3,7 @@
 namespace App\Livewire\DeliveryNote;
 
 use App\Models\DeliveryNote;
+use App\Models\MasterDataRogCustomerName;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -18,12 +19,15 @@ class Form extends Component
     public $vehicle_number;
     public $driver_name;
     public $approval_flow_id;
+    public $customerNames = [];
 
     public $destinations = [
         [
             'destination' => '',
             'delivery_order_number' => '',
-            'remarks' => ''
+            'remarks' => '',
+            'cost' => null,
+            'cost_currency' => null,
         ]
     ];
 
@@ -39,6 +43,8 @@ class Form extends Component
         'destinations.*.destination' => 'required|string',
         'destinations.*.delivery_order_number' => 'required|string',
         'destinations.*.remarks' => 'nullable|string',
+        'destinations.*.cost' => 'nullable|numeric|min:0',
+        'destinations.*.cost_currency' => 'nullable|string'
     ];
 
     public function mount(?DeliveryNote $deliveryNote)
@@ -47,7 +53,7 @@ class Form extends Component
             $this->deliveryNote = $deliveryNote;
             $this->branch = $deliveryNote->branch;
             $this->ritasi = $deliveryNote->ritasi;
-            $this->delivery_note_date = $deliveryNote->delivery_note_date;
+            $this->delivery_note_date = \Carbon\Carbon::parse($deliveryNote->delivery_note_date)->format('Y-m-d');
             $this->departure_time = \Carbon\Carbon::parse($deliveryNote->departure_time)->format('H:i');
             $this->return_time = \Carbon\Carbon::parse($deliveryNote->return_time)->format('H:i');
             $this->vehicle_number = $deliveryNote->vehicle_number;
@@ -58,10 +64,13 @@ class Form extends Component
                     'destination' => $d->destination,
                     'delivery_order_number' => $d->delivery_order_number,
                     'remarks' => $d->remarks,
+                    'cost' => $d->cost,
+                    'cost_currency' => $d->cost_currency,
                 ];
             })->toArray();
         }
         $this->is_draft = $deliveryNote?->status === 'draft';
+        $this->customerNames = MasterDataRogCustomerName::pluck('name')->toArray();
     }
 
 
