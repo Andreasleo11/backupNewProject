@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DetailFormOvertime extends Model
 {
+    use SoftDeletes;
     protected $table = 'detail_form_overtime';
 
     protected $fillable = [
@@ -39,5 +41,4 @@ class DetailFormOvertime extends Model
     {
         return $this->hasOne(ActualOvertimeDetail::class, 'key', 'id');
     }
-
 }

@@ -144,7 +144,9 @@
                                 <th class="align-middle">Out Date</th>
                                 <th class="align-middle">Out Time</th>
                                 <th class="align-middle">Nett Hour</th>
-
+                                @if (auth()->user()->id === $header->user_id)
+                                    <th class="align-middle">Action</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -241,6 +243,20 @@
                                     </td>
                                     <td>{{ optional($data->actualOvertimeDetail)->out_time ?? '-' }}</td>
                                     <td>{{ optional($data->actualOvertimeDetail)->nett_overtime ?? '-' }}</td>
+                                    @if (auth()->user()->id === $header->user_id)
+                                        <td>
+                                            <form method="POST"
+                                                action="{{ route('formovertime.destroyDetail', $data->id) }}"
+                                                class="d-inline"
+                                                onsubmit="return confirm('Are you sure you want to delete this overtime detail?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>
