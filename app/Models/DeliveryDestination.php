@@ -15,6 +15,8 @@ class DeliveryDestination extends Model
         'destination',
         'delivery_order_number',
         'remarks',
+        'cost',
+        'cost_currency',
     ];
 
     public function deliveryNote()

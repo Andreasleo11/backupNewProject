@@ -19,7 +19,8 @@ class DeliveryNote extends Model
         'vehicle_number',
         'driver_name',
         'approval_flow_id',
-        'status'
+        'status',
+        
     ];
 
     protected $casts = [
