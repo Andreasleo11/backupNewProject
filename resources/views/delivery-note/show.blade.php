@@ -72,6 +72,7 @@
                     <th>Destination</th>
                     <th>Delivery Order Number</th>
                     <th>Remarks</th>
+                    <th>Cost</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,10 +82,11 @@
                         <td>{{ $d->destination }}</td>
                         <td>{{ $d->delivery_order_number }}</td>
                         <td>{{ $d->remarks }}</td>
+                        <td>{{ $d->cost_currency }} {{ number_format($d->cost, 2, '.', ',') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="text-center text-muted">No destinations found.</td>
+                        <td colspan="5" class="text-center text-muted">No destinations found.</td>
                     </tr>
                 @endforelse
             </tbody>
