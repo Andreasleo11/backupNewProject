@@ -93,8 +93,8 @@ use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use Illuminate\Support\Facades\Http;
-use App\Livewire\DeliveryNoteIndex;
-use App\Livewire\DeliveryNoteForm;
+use App\Livewire\DestinationForm;
+use App\Livewire\DestinationIndex;
 
 /*
 |--------------------------------------------------------------------------
@@ -1045,3 +1045,7 @@ Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
     Route::get('/{deliveryNote}', [DeliveryNoteController::class, 'show'])->name('show');
     Route::delete('/{deliveryNote}', [DeliveryNoteController::class, 'destroy'])->name('destroy');
 });
+
+Route::get('/destinations', DestinationIndex::class)->name('destination.index');
+Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
+Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
