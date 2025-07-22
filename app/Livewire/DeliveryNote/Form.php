@@ -3,7 +3,7 @@
 namespace App\Livewire\DeliveryNote;
 
 use App\Models\DeliveryNote;
-use App\Models\MasterDataRogCustomerName;
+use App\Models\Destination;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -70,7 +70,7 @@ class Form extends Component
             })->toArray();
         }
         $this->is_draft = $deliveryNote?->status === 'draft';
-        $this->customerNames = MasterDataRogCustomerName::pluck('name')->toArray();
+        $this->customerNames = Destination::pluck('name')->toArray();
     }
 
 

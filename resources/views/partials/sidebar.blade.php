@@ -470,6 +470,13 @@
                             Delivery Notes
                         </a>
                     </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('destination.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Destination
+                        </a>
+                    </li>
                 </ul>
             </li>
 
