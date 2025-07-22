@@ -92,6 +92,9 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Livewire\DeliveryNote\DeliveryNoteIndex;
+use App\Livewire\DeliveryNote\DeliveryNoteForm;
+use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
@@ -1039,11 +1042,10 @@ Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController
 
 
 Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
-    Route::get('/', [DeliveryNoteController::class, 'index'])->name('index');
-    Route::get('/create', [DeliveryNoteController::class, 'create'])->name('create');
-    Route::get('/edit/{deliveryNote}', [DeliveryNoteController::class, 'edit'])->name('edit');
-    Route::get('/{deliveryNote}', [DeliveryNoteController::class, 'show'])->name('show');
-    Route::delete('/{deliveryNote}', [DeliveryNoteController::class, 'destroy'])->name('destroy');
+    Route::get('/', DeliveryNoteIndex::class)->name('index');
+    Route::get('/create', DeliveryNoteForm::class)->name('create');
+    Route::get('/edit/{deliveryNote}', DeliveryNoteForm::class)->name('edit');
+    Route::get('/{id}', DeliveryNoteShow::class)->name('show');
 });
 
 Route::get('/destinations', DestinationIndex::class)->name('destination.index');

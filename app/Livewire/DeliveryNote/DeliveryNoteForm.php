@@ -7,7 +7,7 @@ use App\Models\Destination;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
-class Form extends Component
+class DeliveryNoteForm extends Component
 {
     public ?DeliveryNote $deliveryNote = null;
     public bool $is_draft = false;

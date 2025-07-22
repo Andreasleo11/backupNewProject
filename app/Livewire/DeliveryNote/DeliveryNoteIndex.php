@@ -5,13 +5,21 @@ namespace App\Livewire\DeliveryNote;
 use App\Models\DeliveryNote;
 use Livewire\Component;
 
-class Index extends Component
+class DeliveryNoteIndex extends Component
 {
     public $filterStatus = 'all';
 
     public function setFilter($status)
     {
         $this->filterStatus = $status;
+    }
+
+    public function delete($id)
+    {
+        $note = DeliveryNote::findOrFail($id);
+        $note->delete();
+
+        session()->flash('success', 'Delivery Note deleted successfully.');
     }
 
     public function render()
@@ -24,7 +32,7 @@ class Index extends Component
             $query->where('status', 'submitted');
         }
 
-        return view('livewire.delivery-note.index', [
+        return view('livewire.delivery-note-index', [
             'deliveryNotes' => $query->latest()->paginate(10),
         ]);
     }
