@@ -98,6 +98,8 @@ use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
+use App\Livewire\VehicleForm;
+use App\Livewire\VehicleIndex;
 
 /*
 |--------------------------------------------------------------------------
@@ -1051,3 +1053,8 @@ Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
 Route::get('/destinations', DestinationIndex::class)->name('destination.index');
 Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
 Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
+
+Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
+Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
+Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
+
