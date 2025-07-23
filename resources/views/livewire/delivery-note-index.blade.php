@@ -70,14 +70,11 @@
                                     class="btn btn-sm btn-outline-warning" title="Edit">
                                     ✏️
                                 </a>
-                                <form action="{{ route('delivery-notes.destroy', $note->id) }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to delete this delivery note?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                        🗑
-                                    </button>
-                                </form>
+                                <button x-data
+                                    @click.prevent="if (confirm('Are you sure you want to delete this delivery note?')) { $wire.delete({{ $note->id }}) }"
+                                    class="btn btn-sm btn-outline-danger" title="Delete">
+                                    🗑
+                                </button>
                             </div>
                         </td>
                     </tr>

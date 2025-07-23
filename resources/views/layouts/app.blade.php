@@ -34,6 +34,7 @@
             @include('partials.navbar')
 
             <main class="content px-5 py-5 height-vh-100">
+                {{ $slot ?? '' }}
                 @yield('content')
             </main>
 
