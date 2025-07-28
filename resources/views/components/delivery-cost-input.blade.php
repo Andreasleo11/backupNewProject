@@ -3,7 +3,8 @@
 <label class="form-label">{{ $label }}</label>
 <div class="input-group">
     <select wire:model="{{ $currencyKey }}" class="form-select">
-        <option value="IDR">IDR</option>
+        <option value="" disabled>--Select Currency--</option>
+        <option value="IDR" selected>IDR</option>
         <option value="USD">USD</option>
         <option value="CNY">CNY</option>
     </select>

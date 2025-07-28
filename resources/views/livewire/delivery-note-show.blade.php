@@ -2,7 +2,12 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-bold mb-0">📄 Delivery Note #{{ $deliveryNote->id }}</h3>
-        <a href="{{ route('delivery-notes.index') }}" class="btn btn-outline-secondary">← Back to List</a>
+        <div>
+            <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary me-2">
+                ✏️ Edit
+            </a>
+            <a href="{{ route('delivery-notes.index') }}" class="btn btn-outline-secondary">← Back to List</a>
+        </div>
     </div>
 
     {{-- Basic Info --}}
