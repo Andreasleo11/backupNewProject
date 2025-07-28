@@ -30,7 +30,9 @@ class DeliveryNoteForm extends Component
             'driver_cost' => null,
             'kenek_cost' => null,
             'balikan_cost' => null,
-            'cost_currency' => 'IDR',
+            'driver_cost_currency' => 'IDR',
+            'kenek_cost_currency' => 'IDR',
+            'balikan_cost_currency' => 'IDR',
         ]
     ];
 
@@ -49,7 +51,9 @@ class DeliveryNoteForm extends Component
         'destinations.*.driver_cost' => 'nullable|numeric|min:0',
         'destinations.*.kenek_cost' => 'nullable|numeric|min:0',
         'destinations.*.balikan_cost' => 'nullable|numeric|min:0',
-        'destinations.*.cost_currency' => 'nullable|string'
+        'destinations.*.driver_cost_currency' => 'nullable|string',
+        'destinations.*.kenek_cost_currency' => 'nullable|string',
+        'destinations.*.balikan_cost_currency' => 'nullable|string'
     ];
 
     public function mount(?DeliveryNote $deliveryNote)
@@ -136,6 +140,7 @@ class DeliveryNoteForm extends Component
             });
 
             foreach ($this->destinations as $dest) {
+                // dd($dest);
                 $destination = $note->destinations()->create([
                     'destination' => $dest['destination'],
                     'remarks' => $dest['remarks'],
