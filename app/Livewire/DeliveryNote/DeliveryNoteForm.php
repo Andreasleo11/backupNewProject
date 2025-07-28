@@ -27,9 +27,9 @@ class DeliveryNoteForm extends Component
             'destination' => '',
             'delivery_order_numbers' => [],
             'remarks' => '',
-            'driver_cost' => null,
-            'kenek_cost' => null,
-            'balikan_cost' => null,
+            'driver_cost' => 0,
+            'kenek_cost' => 0,
+            'balikan_cost' => 0,
             'driver_cost_currency' => 'IDR',
             'kenek_cost_currency' => 'IDR',
             'balikan_cost_currency' => 'IDR',
@@ -54,6 +54,17 @@ class DeliveryNoteForm extends Component
         'destinations.*.driver_cost_currency' => 'nullable|string',
         'destinations.*.kenek_cost_currency' => 'nullable|string',
         'destinations.*.balikan_cost_currency' => 'nullable|string'
+    ];
+
+    protected $messages = [
+        'destinations.*.delivery_order_numbers.required' => 'At least one Delivery Order number is required for each destination.',
+        'destinations.*.delivery_order_numbers.array' => 'Delivery Order numbers must be one or more items.',
+        'destinations.*.delivery_order_numbers.min' => 'At least one Delivery Order number',
+        'destinations.*.destination.required' => 'Destination is required.',
+        'destinations.*.remarks.string' => 'Remarks must be a string.',
+        'destinations.*.driver_cost.numeric' => 'Driver cost must be a number.',
+        'destinations.*.kenek_cost.numeric' => 'Kenek cost must be a number.',
+        'destinations.*.balikan_cost.numeric' => 'Balikan cost must be a number.',
     ];
 
     public function mount(?DeliveryNote $deliveryNote)
@@ -94,7 +105,18 @@ class DeliveryNoteForm extends Component
             session()->flash('error', 'Maximum 10 destinations allowed.');
             return;
         }
-        $this->destinations[] = ['destination' => '', 'delivery_number' => '', 'remarks' => ''];
+
+        $this->destinations[] = [
+            'destination' => '',
+            'delivery_order_numbers' => [],
+            'remarks' => '',
+            'driver_cost' => 0,
+            'driver_cost_currency' => 'IDR',
+            'kenek_cost' => 0,
+            'kenek_cost_currency' => 'IDR',
+            'balikan_cost' => 0,
+            'balikan_cost_currency' => 'IDR',
+        ];
     }
 
     public function removeDestination($index)
@@ -118,7 +140,7 @@ class DeliveryNoteForm extends Component
     {
         $this->validate();
 
-        DB::transaction(function () {
+        $note = DB::transaction(function () {
             $note = $this->deliveryNote ?? new DeliveryNote();
 
             $note->fill([
@@ -160,6 +182,8 @@ class DeliveryNoteForm extends Component
             }
 
             $this->deliveryNote = null;
+
+            return $note;
         });
 
         session()->flash(
@@ -167,7 +191,7 @@ class DeliveryNoteForm extends Component
             $this->is_draft ? 'Draft saved successfully!' : 'Delivery Note saved successfully!'
         );
 
-        return redirect()->route('delivery-notes.index');
+        return redirect()->route('delivery-notes.show', $note->id);
     }
 
     public function render()
