@@ -20,16 +20,46 @@ class DeliveryNote extends Model
         'driver_name',
         'approval_flow_id',
         'status',
-        
+
     ];
 
     protected $casts = [
         'branch' => 'string',
         'status' => 'string',
-        'delivery_note_date' => 'date',
-        'departure_time' => 'datetime:H:i',
-        'return_time' => 'datetime:H:i'
     ];
+
+    public function getRitasiLabelAttribute()
+    {
+        $labels = [
+            1 => 'Pagi',
+            2 => 'Siang',
+            3 => 'Sore',
+            4 => 'Malam',
+        ];
+
+        return $this->ritasi
+            ? $this->ritasi . ' (' . ($labels[$this->ritasi] ?? '-') . ')'
+            : '-';
+    }
+
+    public function getFormattedDeliveryNoteDateAttribute()
+    {
+        return \Carbon\Carbon::parse($this->delivery_note_date)->format('d-m-Y');
+    }
+
+    public function getFormattedDepartureTimeAttribute()
+    {
+        return $this->departure_time
+            ? \Carbon\Carbon::createFromFormat('H:i:s', $this->departure_time)->format('H:i')
+            : '-';
+    }
+
+    public function getFormattedReturnTimeAttribute()
+    {
+        return $this->return_time
+            ? \Carbon\Carbon::createFromFormat('H:i:s', $this->return_time)->format('H:i')
+            : '-';
+    }
 
     public function destinations()
     {

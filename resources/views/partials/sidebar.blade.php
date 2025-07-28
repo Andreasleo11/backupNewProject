@@ -477,6 +477,13 @@
                             Destination
                         </a>
                     </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('vehicles.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Vehicles
+                        </a>
+                    </li>
                 </ul>
             </li>
 
