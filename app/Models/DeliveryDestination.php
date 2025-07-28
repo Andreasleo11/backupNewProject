@@ -13,14 +13,22 @@ class DeliveryDestination extends Model
     protected $fillable = [
         'delivery_note_id',
         'destination',
-        'delivery_order_number',
         'remarks',
-        'cost',
-        'cost_currency',
+        'driver_cost',
+        'kenek_cost',
+        'balikan_cost',
+        'driver_cost_currency',
+        'kenek_cost_currency',
+        'balikan_cost_currency'
     ];
 
     public function deliveryNote()
     {
         return $this->belongsTo(DeliveryNote::class);
+    }
+
+    public function deliveryOrders()
+    {
+        return $this->hasMany(DeliveryDestinationOrder::class);
     }
 }
