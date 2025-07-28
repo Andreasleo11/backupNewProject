@@ -16,7 +16,7 @@
 
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">Branch</label>
+                    <label class="form-label">Branch <span class="text-danger">*</span></label>
                     <select class="form-select @error('branch') is-invalid @enderror" wire:model="branch">
                         <option value="JAKARTA">JAKARTA (DJ KBN)</option>
                         <option value="KARAWANG">KARAWANG (DJ KIIC)</option>
@@ -27,7 +27,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Ritasi</label>
+                    <label class="form-label">Ritasi <span class="text-danger">*</span></label>
                     <select class="form-select @error('ritasi') is-invalid @enderror" wire:model="ritasi">
                         <option value="">-- Select Ritasi --</option>
                         <option value="1">1 (Pagi)</option>
@@ -41,7 +41,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">Delivery Note Date</label>
+                    <label class="form-label">Delivery Note Date <span class="text-danger">*</span></label>
                     <input type="date" class="form-control @error('delivery_note_date') is-invalid @enderror"
                         wire:model="delivery_note_date">
                     @error('delivery_note_date')
@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Vehicle Number</label>
+                    <label class="form-label">Vehicle Number <span class="text-danger">*</span></label>
                     <div class="position-relative" x-data="{
                         input: @entangle('vehicle_number'),
                         suggestions: @js($vehicleSuggestions),
@@ -107,7 +107,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Driver Name</label>
+                    <label class="form-label">Driver Name <span class="text-danger">*</span></label>
                     <div class="position-relative" x-data="{
                         input: @entangle('driver_name'),
                         suggestions: @js($vehicleSuggestions),
@@ -165,7 +165,7 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Destination</label>
+                                <label class="form-label">Destination <span class="text-danger">*</span></label>
                                 <div x-data="{
                                     open: false,
                                     search: @entangle('destinations.' . $index . '.destination'),
@@ -204,12 +204,12 @@
                                 </div>
                             </div>
 
-
                             <div class="col">
-                                <label class="form-label small">Delivery Order(s)</label>
+                                <label class="form-label small">Delivery Order(s) <span
+                                        class="text-danger">*</span></label>
 
                                 <div x-data="{
-                                    orders: $wire.entangle('destinations.{{ $index }}.delivery_order_numbers'),
+                                    orders: $wire.entangle('destinations.{{ $index }}.delivery_order_numbers') ?? [],
                                     chunkSize: 3, // change this to control items per row
                                     chunkedOrders() {
                                         const size = this.chunkSize;
@@ -253,6 +253,9 @@
                                         + Add DO
                                     </button>
                                 </div>
+                                @error("destinations.$index.delivery_order_numbers")
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div class="col-md-12">
