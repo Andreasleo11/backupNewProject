@@ -19,15 +19,18 @@ class DeliveryNoteForm extends Component
     public $vehicle_number;
     public $driver_name;
     public $approval_flow_id;
-    public $customerNames = [];
+    public $destinationSuggestions = [];
+    public $vehicleSuggestions = [];
 
     public $destinations = [
         [
             'destination' => '',
-            'delivery_order_number' => '',
+            'delivery_order_numbers' => [],
             'remarks' => '',
-            'cost' => null,
-            'cost_currency' => null,
+            'driver_cost' => null,
+            'kenek_cost' => null,
+            'balikan_cost' => null,
+            'cost_currency' => 'IDR',
         ]
     ];
 
@@ -35,15 +38,17 @@ class DeliveryNoteForm extends Component
         'branch' => 'required|in:JAKARTA,KARAWANG',
         'ritasi' => 'required|integer|min:1|max:4',
         'delivery_note_date' => 'required|date',
-        'departure_time' => 'required|date_format:H:i',
-        'return_time' => 'required|date_format:H:i',
+        'departure_time' => 'nullable|date_format:H:i',
+        'return_time' => 'nullable|date_format:H:i',
         'vehicle_number' => 'required|string',
         'driver_name' => 'required|string',
         'destinations' => 'required|array|min:1',
         'destinations.*.destination' => 'required|string',
-        'destinations.*.delivery_order_number' => 'required|string',
+        'destinations.*.delivery_order_numbers' => 'required|array|min:1',
         'destinations.*.remarks' => 'nullable|string',
-        'destinations.*.cost' => 'nullable|numeric|min:0',
+        'destinations.*.driver_cost' => 'nullable|numeric|min:0',
+        'destinations.*.kenek_cost' => 'nullable|numeric|min:0',
+        'destinations.*.balikan_cost' => 'nullable|numeric|min:0',
         'destinations.*.cost_currency' => 'nullable|string'
     ];
 
@@ -53,24 +58,29 @@ class DeliveryNoteForm extends Component
             $this->deliveryNote = $deliveryNote;
             $this->branch = $deliveryNote->branch;
             $this->ritasi = $deliveryNote->ritasi;
-            $this->delivery_note_date = \Carbon\Carbon::parse($deliveryNote->delivery_note_date)->format('Y-m-d');
-            $this->departure_time = \Carbon\Carbon::parse($deliveryNote->departure_time)->format('H:i');
-            $this->return_time = \Carbon\Carbon::parse($deliveryNote->return_time)->format('H:i');
+            $this->delivery_note_date = $deliveryNote->delivery_note_date;
+            $this->departure_time = $deliveryNote->formatted_departure_time;
+            $this->return_time = $deliveryNote->formatted_return_time;
             $this->vehicle_number = $deliveryNote->vehicle_number;
             $this->driver_name = $deliveryNote->driver_name;
             $this->approval_flow_id = $deliveryNote->approval_flow_id;
             $this->destinations = $deliveryNote->destinations->map(function ($d) {
                 return [
                     'destination' => $d->destination,
-                    'delivery_order_number' => $d->delivery_order_number,
+                    'delivery_order_numbers' => $d->deliveryOrders->pluck('delivery_order_number')->toArray(),
                     'remarks' => $d->remarks,
-                    'cost' => $d->cost,
-                    'cost_currency' => $d->cost_currency,
+                    'driver_cost' => $d->driver_cost,
+                    'kenek_cost' => $d->kenek_cost,
+                    'balikan_cost' => $d->balikan_cost,
+                    'driver_cost_currency' => $d->driver_cost_currency,
+                    'kenek_cost_currency' => $d->kenek_cost_currency,
+                    'balikan_cost_currency' => $d->balikan_cost_currency,
                 ];
             })->toArray();
         }
         $this->is_draft = $deliveryNote?->status === 'draft';
-        $this->customerNames = Destination::pluck('name')->toArray();
+        $this->destinationSuggestions = Destination::select('name', 'city')->get()->toArray();
+        $this->vehicleSuggestions = \App\Models\Vehicle::select('plate_number', 'driver_name')->get()->toArray();
     }
 
 
@@ -87,6 +97,17 @@ class DeliveryNoteForm extends Component
     {
         unset($this->destinations[$index]);
         $this->destinations = array_values($this->destinations);
+    }
+
+    public function updated($propertyName)
+    {
+        if (str($propertyName)->contains('delivery_order_numbers')) {
+            $index = (int)explode('.', $propertyName)[1];
+            $raw = $this->destinations[$index]['delivery_order_numbers'];
+            if (is_string($raw)) {
+                $this->destinations[$index]['delivery_order_numbers'] = array_map('trim', explode(',', $raw));
+            }
+        }
     }
 
     public function submit()
@@ -108,10 +129,29 @@ class DeliveryNoteForm extends Component
                 'status' => $this->is_draft ? 'draft' : 'submitted',
             ])->save();
 
-            $note->destinations()->delete();
+            // Clear old destinations
+            $note->destinations()->each(function ($dest) {
+                $dest->deliveryOrders()->delete(); // clear old DOs
+                $dest->delete();
+            });
 
             foreach ($this->destinations as $dest) {
-                $note->destinations()->create($dest);
+                $destination = $note->destinations()->create([
+                    'destination' => $dest['destination'],
+                    'remarks' => $dest['remarks'],
+                    'driver_cost' => $dest['driver_cost'],
+                    'kenek_cost' => $dest['kenek_cost'],
+                    'balikan_cost' => $dest['balikan_cost'],
+                    'driver_cost_currency' => $dest['driver_cost_currency'],
+                    'kenek_cost_currency' => $dest['kenek_cost_currency'],
+                    'balikan_cost_currency' => $dest['balikan_cost_currency'],
+                ]);
+
+                foreach ($dest['delivery_order_numbers'] as $doNumber) {
+                    $destination->deliveryOrders()->create([
+                        'delivery_order_number' => $doNumber,
+                    ]);
+                }
             }
 
             $this->deliveryNote = null;
