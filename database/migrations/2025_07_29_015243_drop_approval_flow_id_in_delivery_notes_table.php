@@ -12,6 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('delivery_notes', function (Blueprint $table) {
+            // Drop the foreign key constraint first
+            $table->dropForeign('delivery_notes_approval_flow_id_foreign');
+
+            // Then drop the column
             $table->dropColumn('approval_flow_id');
         });
     }
