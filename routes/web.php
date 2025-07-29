@@ -159,6 +159,7 @@ Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::cla
 Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
 Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
 Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
 
 Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
 Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
