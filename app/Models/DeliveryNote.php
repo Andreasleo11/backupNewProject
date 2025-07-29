@@ -18,7 +18,6 @@ class DeliveryNote extends Model
         'return_time',
         'vehicle_number',
         'driver_name',
-        'approval_flow_id',
         'status',
 
     ];
