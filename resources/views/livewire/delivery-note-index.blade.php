@@ -37,7 +37,6 @@
                     <th>Date</th>
                     <th>Vehicle</th>
                     <th>Driver</th>
-                    <th>Approval Flow</th>
                     <th>Status</th>
                     <th class="text-center" style="width: 160px;">Actions</th>
                 </tr>
@@ -47,11 +46,10 @@
                     <tr>
                         <td>{{ $note->id }}</td>
                         <td>{{ $note->branch }}</td>
-                        <td>{{ $note->ritasi }}</td>
-                        <td>{{ \Carbon\Carbon::parse($note->delivery_note_date)->format('d M Y') }}</td>
+                        <td>{{ $note->ritasi_label }}</td>
+                        <td>{{ $note->formatted_delivery_note_date }}</td>
                         <td>{{ $note->vehicle_number }}</td>
                         <td>{{ $note->driver_name }}</td>
-                        <td>{{ $note->approvalFlow->name ?? '-' }}</td>
                         <td>
                             <span
                                 class="badge 
