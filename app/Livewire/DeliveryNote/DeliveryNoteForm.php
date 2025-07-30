@@ -196,6 +196,6 @@ class DeliveryNoteForm extends Component
 
     public function render()
     {
-        return view('livewire.delivery-note-form');
+        return view('livewire.delivery-note.form');
     }
 }

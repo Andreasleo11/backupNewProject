@@ -11,6 +11,10 @@
             @endif
         </h3>
         <div>
+            <a href="{{ route('delivery-notes.print', $deliveryNote->id) }}" target="_blank"
+                class="btn btn-outline-success me-2">
+                🖨️ Print
+            </a>
             <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary me-2">
                 ✏️ Edit
             </a>

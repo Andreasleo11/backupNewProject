@@ -32,7 +32,7 @@ class DeliveryNoteIndex extends Component
             $query->where('status', 'submitted');
         }
 
-        return view('livewire.delivery-note-index', [
+        return view('livewire.delivery-note.index', [
             'deliveryNotes' => $query->latest()->paginate(10),
         ]);
     }

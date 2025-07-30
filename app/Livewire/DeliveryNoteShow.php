@@ -16,6 +16,6 @@ class DeliveryNoteShow extends Component
 
     public function render()
     {
-        return view('livewire.delivery-note-show');
+        return view('livewire.delivery-note.show');
     }
 }
