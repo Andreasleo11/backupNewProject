@@ -45,8 +45,8 @@ class DeliveryNoteForm extends Component
         'vehicle_number' => 'required|string',
         'driver_name' => 'required|string',
         'destinations' => 'required|array|min:1',
-        'destinations.*.destination' => 'required|string',
-        'destinations.*.delivery_order_numbers' => 'required|array|min:1',
+        'destinations.*.destination' => 'nullable|string',
+        'destinations.*.delivery_order_numbers' => 'nullable|array',
         'destinations.*.remarks' => 'nullable|string',
         'destinations.*.driver_cost' => 'nullable|numeric|min:0',
         'destinations.*.kenek_cost' => 'nullable|numeric|min:0',
@@ -57,10 +57,7 @@ class DeliveryNoteForm extends Component
     ];
 
     protected $messages = [
-        'destinations.*.delivery_order_numbers.required' => 'At least one Delivery Order number is required for each destination.',
         'destinations.*.delivery_order_numbers.array' => 'Delivery Order numbers must be one or more items.',
-        'destinations.*.delivery_order_numbers.min' => 'At least one Delivery Order number',
-        'destinations.*.destination.required' => 'Destination is required.',
         'destinations.*.remarks.string' => 'Remarks must be a string.',
         'destinations.*.driver_cost.numeric' => 'Driver cost must be a number.',
         'destinations.*.kenek_cost.numeric' => 'Kenek cost must be a number.',
@@ -162,7 +159,6 @@ class DeliveryNoteForm extends Component
             });
 
             foreach ($this->destinations as $dest) {
-                // dd($dest);
                 $destination = $note->destinations()->create([
                     'destination' => $dest['destination'],
                     'remarks' => $dest['remarks'],
@@ -174,10 +170,12 @@ class DeliveryNoteForm extends Component
                     'balikan_cost_currency' => $dest['balikan_cost_currency'],
                 ]);
 
-                foreach ($dest['delivery_order_numbers'] as $doNumber) {
-                    $destination->deliveryOrders()->create([
-                        'delivery_order_number' => $doNumber,
-                    ]);
+                if (!empty($dest['delivery_order_numbers']) && is_array($dest['delivery_order_numbers'])) {
+                    foreach ($dest['delivery_order_numbers'] as $doNumber) {
+                        $destination->deliveryOrders()->create([
+                            'delivery_order_number' => $doNumber,
+                        ]);
+                    }
                 }
             }
 

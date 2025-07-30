@@ -205,8 +205,7 @@
                             </div>
 
                             <div class="col">
-                                <label class="form-label small">Delivery Order(s) <span
-                                        class="text-danger">*</span></label>
+                                <label class="form-label small">Delivery Order(s)</label>
 
                                 <div x-data="{
                                     orders: $wire.entangle('destinations.{{ $index }}.delivery_order_numbers') ?? [],
