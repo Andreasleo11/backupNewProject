@@ -17,14 +17,95 @@
     </div>
 
     {{-- Filters --}}
-    <div class="btn-group mb-3" role="group" aria-label="Filter by Status">
-        <button class="btn btn-outline-secondary @if ($filterStatus === 'all') active @endif"
-            wire:click="setFilter('all')">All</button>
-        <button class="btn btn-outline-warning @if ($filterStatus === 'draft') active @endif"
-            wire:click="setFilter('draft')">Draft</button>
-        <button class="btn btn-outline-success @if ($filterStatus === 'submitted') active @endif"
-            wire:click="setFilter('submitted')">Submitted</button>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-2">
+                    <label>Status</label>
+                    <select class="form-select" wire:model.defer="inputStatus">
+                        <option value="all">All</option>
+                        <option value="draft">Draft</option>
+                        <option value="submitted">Submitted</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>Branch</label>
+                    <select class="form-select" wire:model.defer="inputBranch">
+                        <option value="all">All</option>
+                        <option value="JAKARTA">JAKARTA</option>
+                        <option value="KARAWANG">KARAWANG</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>Ritasi</label>
+                    <select class="form-select" wire:model.defer="inputRitasi">
+                        <option value="all">All</option>
+                        <option value="1">1 (Pagi)</option>
+                        <option value="2">2 (Siang)</option>
+                        <option value="3">3 (Sore)</option>
+                        <option value="4">4 (Malam)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>From Date</label>
+                    <input type="date" class="form-control" wire:model.defer="inputFromDate">
+                </div>
+                <div class="col-md-2">
+                    <label>To Date</label>
+                    <input type="date" class="form-control" wire:model.defer="inputToDate">
+                </div>
+                <div class="col-md-2">
+                    <label>Driver</label>
+                    <input type="text" class="form-control" wire:model.defer="inputDriver" placeholder="John...">
+                </div>
+                <div class="col-md-2">
+                    <label>Vehicle</label>
+                    <input type="text" class="form-control" wire:model.defer="inputVehicle" placeholder="B 1234...">
+                </div>
+                <div class="col-md-2 mt-2">
+                    <button wire:click="applyFilters" class="btn btn-primary w-100">
+                        🔍 Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
+
+    @if (
+        $filterStatus !== 'all' ||
+            $filterBranch !== 'all' ||
+            $filterRitasi !== 'all' ||
+            $fromDate ||
+            $toDate ||
+            $searchDriver ||
+            $searchVehicle)
+        <div class="alert alert-info mb-3">
+            <strong>Active Filters:</strong>
+            <ul class="mb-0 small">
+                @if ($filterStatus !== 'all')
+                    <li>Status: <strong>{{ ucfirst($filterStatus) }}</strong></li>
+                @endif
+                @if ($filterBranch !== 'all')
+                    <li>Branch: <strong>{{ $filterBranch }}</strong></li>
+                @endif
+                @if ($filterRitasi !== 'all')
+                    <li>Ritasi: <strong>{{ $filterRitasi }}</strong></li>
+                @endif
+                @if ($fromDate)
+                    <li>From: <strong>{{ $fromDate }}</strong></li>
+                @endif
+                @if ($toDate)
+                    <li>To: <strong>{{ $toDate }}</strong></li>
+                @endif
+                @if ($searchDriver)
+                    <li>Driver: <strong>{{ $searchDriver }}</strong></li>
+                @endif
+                @if ($searchVehicle)
+                    <li>Vehicle: <strong>{{ $searchVehicle }}</strong></li>
+                @endif
+            </ul>
+        </div>
+    @endif
 
     {{-- Table --}}
     <div class="table-responsive">
@@ -48,8 +129,8 @@
                         <td>{{ $note->branch }}</td>
                         <td>{{ $note->ritasi_label }}</td>
                         <td>{{ $note->formatted_delivery_note_date }}</td>
-                        <td>{{ $note->vehicle_number }}</td>
-                        <td>{{ $note->driver_name }}</td>
+                        <td>{{ $note->vehicle->plate_number ?? '-' }}</td>
+                        <td>{{ $note->vehicle->driver_name ?? '-' }}</td>
                         <td>
                             <span
                                 class="badge 
@@ -88,8 +169,6 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="d-flex justify-content-center mt-4">
-        {{ $deliveryNotes->links() }}
-    </div>
+    {{ $deliveryNotes->links() }}
 
 </div>

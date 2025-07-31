@@ -16,10 +16,8 @@ class DeliveryNote extends Model
         'delivery_note_date',
         'departure_time',
         'return_time',
-        'vehicle_number',
-        'driver_name',
+        'vehicle_id',
         'status',
-
     ];
 
     protected $casts = [
@@ -63,5 +61,10 @@ class DeliveryNote extends Model
     public function destinations()
     {
         return $this->hasMany(DeliveryDestination::class);
+    }
+
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 }

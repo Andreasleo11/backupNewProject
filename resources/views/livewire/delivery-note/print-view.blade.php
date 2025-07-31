@@ -104,11 +104,11 @@
                     </tr>
                     <tr>
                         <th>Vehicle:</th>
-                        <td>{{ $deliveryNote->vehicle_number }}</td>
+                        <td>{{ $deliveryNote->vehicle->plate_number ?? '-' }}</td>
                     </tr>
                     <tr>
                         <th>Driver:</th>
-                        <td>{{ $deliveryNote->driver_name }}</td>
+                        <td>{{ $deliveryNote->vehicle->driver_name ?? '-' }}</td>
                     </tr>
                     <tr>
                         <th>Status:</th>

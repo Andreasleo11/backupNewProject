@@ -16,8 +16,7 @@ class DeliveryNoteForm extends Component
     public $delivery_note_date;
     public $departure_time;
     public $return_time;
-    public $vehicle_number;
-    public $driver_name;
+    public $vehicle_id;
     public $approval_flow_id;
     public $destinationSuggestions = [];
     public $vehicleSuggestions = [];
@@ -42,8 +41,7 @@ class DeliveryNoteForm extends Component
         'delivery_note_date' => 'required|date',
         'departure_time' => 'nullable|date_format:H:i',
         'return_time' => 'nullable|date_format:H:i',
-        'vehicle_number' => 'required|string',
-        'driver_name' => 'required|string',
+        'vehicle_id' => 'required|exists:vehicles,id',
         'destinations' => 'required|array|min:1',
         'destinations.*.destination' => 'nullable|string',
         'destinations.*.delivery_order_numbers' => 'nullable|array',
@@ -73,8 +71,7 @@ class DeliveryNoteForm extends Component
             $this->delivery_note_date = $deliveryNote->delivery_note_date;
             $this->departure_time = $deliveryNote->formatted_departure_time;
             $this->return_time = $deliveryNote->formatted_return_time;
-            $this->vehicle_number = $deliveryNote->vehicle_number;
-            $this->driver_name = $deliveryNote->driver_name;
+            $this->vehicle_id = $deliveryNote->vehicle_id;
             $this->approval_flow_id = $deliveryNote->approval_flow_id;
             $this->destinations = $deliveryNote->destinations->map(function ($d) {
                 return [
@@ -92,7 +89,7 @@ class DeliveryNoteForm extends Component
         }
         $this->is_draft = $deliveryNote?->status === 'draft';
         $this->destinationSuggestions = Destination::select('name', 'city')->get()->toArray();
-        $this->vehicleSuggestions = \App\Models\Vehicle::select('plate_number', 'driver_name')->get()->toArray();
+        $this->vehicleSuggestions = \App\Models\Vehicle::select('id', 'plate_number', 'driver_name')->get()->toArray();
     }
 
 
@@ -146,8 +143,7 @@ class DeliveryNoteForm extends Component
                 'delivery_note_date' => $this->delivery_note_date,
                 'departure_time' => $this->departure_time,
                 'return_time' => $this->return_time,
-                'vehicle_number' => $this->vehicle_number,
-                'driver_name' => $this->driver_name,
+                'vehicle_id' => $this->vehicle_id,
                 'approval_flow_id' => \App\Models\ApprovalFlow::where('slug', 'creator-hrd')->first()->id ?? 1,
                 'status' => $this->is_draft ? 'draft' : 'submitted',
             ])->save();

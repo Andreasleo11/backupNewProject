@@ -68,82 +68,52 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">Vehicle Number <span class="text-danger">*</span></label>
-                    <div class="position-relative" x-data="{
-                        input: @entangle('vehicle_number'),
-                        suggestions: @js($vehicleSuggestions),
+                    <label class="form-label">Vehicle <span class="text-danger">*</span></label>
+                    <div x-data="{
+                        search: '',
                         show: false,
+                        selectedId: @entangle('vehicle_id'),
+                        vehicles: @js($vehicleSuggestions),
                         filtered() {
-                            if (!this.input) return [];
-                            return this.suggestions.filter(v =>
-                                v.plate_number?.toLowerCase().includes(this.input.toLowerCase())
+                            if (!this.search) return [];
+                            return this.vehicles.filter(v =>
+                                v.plate_number.toLowerCase().includes(this.search.toLowerCase()) ||
+                                v.driver_name.toLowerCase().includes(this.search.toLowerCase())
                             ).slice(0, 10);
                         },
-                        selectVehicle(vehicle) {
-                            this.input = vehicle.plate_number;
-                            $wire.vehicle_number = vehicle.plate_number;
-                            $wire.driver_name = vehicle.driver_name;
+                        select(vehicle) {
+                            this.search = `${vehicle.plate_number} — ${vehicle.driver_name}`;
+                            this.selectedId = vehicle.id;
                             this.show = false;
+                        },
+                        init() {
+                            const selected = this.vehicles.find(v => v.id === this.selectedId);
+                            if (selected) {
+                                this.search = `${selected.plate_number} — ${selected.driver_name}`;
+                            }
                         }
-                    }">
-                        <input class="form-control @error('vehicle_number') is-invalid @enderror" x-model="input"
-                            @focus="show = true" @blur="setTimeout(() => show = false, 150)" @input="show = true"
-                            placeholder="B 1234 XYZ" />
+                    }" x-init="init" class="position-relative">
+                        <input type="text" x-model="search"
+                            class="form-control @error('vehicle_id') is-invalid @enderror" @focus="show = true"
+                            @input="show = true" @blur="setTimeout(() => show = false, 150)"
+                            placeholder="Search by plate or driver" />
 
                         <ul class="list-group position-absolute w-100 z-10" x-show="show && filtered().length"
                             style="max-height: 150px; overflow-y: auto;" x-transition>
-                            <template x-for="item in filtered()" :key="item.plate_number">
-                                <li class="list-group-item list-group-item-action" @click="selectVehicle(item)">
-                                    <span x-text="item.plate_number"></span> — <small class="text-muted"
-                                        x-text="item.driver_name"></small>
+                            <template x-for="item in filtered()" :key="item.id">
+                                <li class="list-group-item list-group-item-action" @click="select(item)">
+                                    <span x-text="item.plate_number"></span> —
+                                    <small class="text-muted" x-text="item.driver_name"></small>
                                 </li>
                             </template>
                         </ul>
 
-                        @error('vehicle_number')
+                        @error('vehicle_id')
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">Driver Name <span class="text-danger">*</span></label>
-                    <div class="position-relative" x-data="{
-                        input: @entangle('driver_name'),
-                        suggestions: @js($vehicleSuggestions),
-                        show: false,
-                        filtered() {
-                            if (!this.input) return [];
-                            return this.suggestions.filter(v =>
-                                v.driver_name?.toLowerCase().includes(this.input.toLowerCase())
-                            ).slice(0, 10);
-                        },
-                        selectDriver(vehicle) {
-                            this.input = vehicle.driver_name;
-                            $wire.driver_name = vehicle.driver_name;
-                            $wire.vehicle_number = vehicle.plate_number;
-                            this.show = false;
-                        }
-                    }">
-                        <input class="form-control @error('driver_name') is-invalid @enderror" x-model="input"
-                            @focus="show = true" @blur="setTimeout(() => show = false, 150)" @input="show = true"
-                            placeholder="John Doe" />
-
-                        <ul class="list-group position-absolute w-100 z-10" x-show="show && filtered().length"
-                            style="max-height: 150px; overflow-y: auto;" x-transition>
-                            <template x-for="item in filtered()" :key="item.driver_name">
-                                <li class="list-group-item list-group-item-action" @click="selectDriver(item)">
-                                    <span x-text="item.driver_name"></span> —
-                                    <small class="text-muted" x-text="item.plate_number"></small>
-                                </li>
-                            </template>
-                        </ul>
-
-                        @error('driver_name')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
 
             </div>
         </fieldset>

@@ -10,12 +10,12 @@
                 <span class="badge bg-success ms-2">Submitted</span>
             @endif
         </h3>
-        <div>
+        <div class="d-flex gap-2">
             <a href="{{ route('delivery-notes.print', $deliveryNote->id) }}" target="_blank"
-                class="btn btn-outline-success me-2">
+                class="btn btn-outline-success">
                 🖨️ Print
             </a>
-            <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary me-2">
+            <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary">
                 ✏️ Edit
             </a>
             <a href="{{ route('delivery-notes.index') }}" class="btn btn-outline-secondary">← Back to List</a>
@@ -44,10 +44,10 @@
                 <p class="mb-3">{{ $deliveryNote->branch }}</p>
 
                 <h6 class="text-muted">🚚 Vehicle Number</h6>
-                <p class="mb-3">{{ $deliveryNote->vehicle_number }}</p>
+                <p class="mb-3">{{ $deliveryNote->vehicle->plate_number ?? '-' }}</p>
 
                 <h6 class="text-muted">👨‍✈️ Driver Name</h6>
-                <p class="mb-0">{{ $deliveryNote->driver_name }}</p>
+                <p class="mb-0">{{ $deliveryNote->vehicle->driver_name ?? '-' }}</p>
             </div>
         </div>
     </div>
