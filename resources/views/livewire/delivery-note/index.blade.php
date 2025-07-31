@@ -1,5 +1,4 @@
 <div class="container py-4">
-
     {{-- Success Message --}}
     @if (session()->has('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -54,14 +53,7 @@
                     <label>To Date</label>
                     <input type="date" class="form-control" wire:model.defer="inputToDate">
                 </div>
-                <div class="col-md-2">
-                    <label>Driver</label>
-                    <input type="text" class="form-control" wire:model.defer="inputDriver" placeholder="John...">
-                </div>
-                <div class="col-md-2">
-                    <label>Vehicle</label>
-                    <input type="text" class="form-control" wire:model.defer="inputVehicle" placeholder="B 1234...">
-                </div>
+
                 <div class="col-md-2 mt-2">
                     <button wire:click="applyFilters" class="btn btn-primary w-100">
                         🔍 Apply Filters
@@ -71,14 +63,13 @@
         </div>
     </div>
 
-    @if (
-        $filterStatus !== 'all' ||
-            $filterBranch !== 'all' ||
-            $filterRitasi !== 'all' ||
-            $fromDate ||
-            $toDate ||
-            $searchDriver ||
-            $searchVehicle)
+    <div class="row justify-content-end mb-3">
+        <div class="col-md-2">
+            <input type="text" class="form-control" wire:model.live="searchAll" placeholder="Search...">
+        </div>
+    </div>
+
+    @if ($filterStatus !== 'all' || $filterBranch !== 'all' || $filterRitasi !== 'all' || $fromDate || $toDate || $searchAll)
         <div class="alert alert-info mb-3">
             <strong>Active Filters:</strong>
             <ul class="mb-0 small">
@@ -97,12 +88,10 @@
                 @if ($toDate)
                     <li>To: <strong>{{ $toDate }}</strong></li>
                 @endif
-                @if ($searchDriver)
-                    <li>Driver: <strong>{{ $searchDriver }}</strong></li>
+                @if ($searchAll)
+                    <li>Search: <strong>{{ $searchAll }}</strong></li>
                 @endif
-                @if ($searchVehicle)
-                    <li>Vehicle: <strong>{{ $searchVehicle }}</strong></li>
-                @endif
+
             </ul>
         </div>
     @endif
@@ -112,12 +101,64 @@
         <table class="table table-bordered align-middle table-hover">
             <thead class="table-light">
                 <tr>
-                    <th>#</th>
-                    <th>Branch</th>
-                    <th>Ritasi</th>
-                    <th>Date</th>
-                    <th>Vehicle</th>
-                    <th>Driver</th>
+                    <th wire:click="sortBy('id')" style="cursor:pointer;">#
+                        @if ($sortField === 'id')
+                            @if ($sortDirection === 'asc')
+                                ↑
+                            @else
+                                ↓
+                            @endif
+                        @endif
+                    </th>
+                    <th wire:click="sortBy('branch')" style="cursor: pointer;">Branch
+                        @if ($sortField === 'branch')
+                            @if ($sortDirection === 'asc')
+                                ↑
+                            @else
+                                ↓
+                            @endif
+                        @endif
+                    </th>
+                    <th wire:click="sortBy('ritasi')" style="cursor: pointer;">
+                        Ritasi
+                        @if ($sortField === 'ritasi')
+                            @if ($sortDirection === 'asc')
+                                ↑
+                            @else
+                                ↓
+                            @endif
+                        @endif
+                    </th>
+                    <th wire:click="sortBy('delivery_note_date')" style="cursor: pointer;">
+                        Date
+                        @if ($sortField === 'delivery_note_date')
+                            @if ($sortDirection === 'asc')
+                                ↑
+                            @else
+                                ↓
+                            @endif
+                        @endif
+                    </th>
+                    <th wire:click="sortBy('plate_number')" style="cursor: pointer;">
+                        Vehicle
+                        @if ($sortField === 'plate_number')
+                            @if ($sortDirection === 'asc')
+                                ↑
+                            @else
+                                ↓
+                            @endif
+                        @endif
+                    </th>
+                    <th wire:click="sortBy('driver_name')" style="cursor: pointer;">
+                        Driver
+                        @if ($sortField === 'driver_name')
+                            @if ($sortDirection === 'asc')
+                                ↑
+                            @else
+                                ↓
+                            @endif
+                        @endif
+                    </th>
                     <th>Status</th>
                     <th class="text-center" style="width: 160px;">Actions</th>
                 </tr>

@@ -16,28 +16,27 @@ class DeliveryNoteIndex extends Component
     public $inputRitasi = 'all';
     public $inputFromDate;
     public $inputToDate;
-    public $inputDriver = '';
-    public $inputVehicle = '';
 
     public $filterStatus = 'all';
     public $filterBranch = 'all';
     public $filterRitasi = 'all';
     public $fromDate;
     public $toDate;
-    public $searchDriver = '';
-    public $searchVehicle = '';
+    public $searchAll = '';
 
-    public function updating($name)
+    public $sortField = 'id';
+    public $sortDirection = 'desc';
+
+    public function sortBy($field)
     {
-        if (in_array($name, ['filterStatus', 'filterBranch', 'filterRitasi', 'fromDate', 'toDate', 'searchDriver', 'searchVehicle'])) {
-            dd("Updaing: $name");
-            $this->resetPage();
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'asc';
         }
-    }
 
-    public function setFilter($status)
-    {
-        $this->filterStatus = $status;
+        $this->resetPage();
     }
 
     public function applyFilters()
@@ -47,8 +46,6 @@ class DeliveryNoteIndex extends Component
         $this->filterRitasi = $this->inputRitasi;
         $this->fromDate = $this->inputFromDate;
         $this->toDate = $this->inputToDate;
-        $this->searchDriver = $this->inputDriver;
-        $this->searchVehicle = $this->inputVehicle;
 
         $this->resetPage();
     }
@@ -59,6 +56,11 @@ class DeliveryNoteIndex extends Component
         $note->delete();
 
         session()->flash('success', 'Delivery Note deleted successfully.');
+    }
+
+    public function updatingSearchAll()
+    {
+        $this->resetPage();
     }
 
     public function render()
@@ -85,16 +87,36 @@ class DeliveryNoteIndex extends Component
             $query->whereDate('delivery_note_date', '<=', $this->toDate);
         }
 
-        if ($this->searchDriver) {
-            $query->where('driver_name', 'like', '%' . $this->searchDriver . '%');
+        if ($this->searchAll) {
+            $search = '%' . $this->searchAll . '%';
+
+            $query->where(function ($q) use ($search) {
+                $q->where('branch', 'like', $search)
+                    ->orWhere('ritasi', 'like', $search)
+                    ->orWhere('status', 'like', $search)
+                    ->orWhere('delivery_note_date', 'like', $search)
+                    ->orWhereHas('vehicle', function ($v) use ($search) {
+                        $v->where('plate_number', 'like', $search)
+                            ->orWhere('driver_name', 'like', $search);
+                    });
+            });
         }
 
-        if ($this->searchVehicle) {
-            $query->where('vehicle_number', 'like', '%' . $this->searchVehicle . '%');
+        $deliveryNotes = $query
+            ->select('delivery_notes.*')
+            ->leftJoin('vehicles', 'vehicles.id', '=', 'delivery_notes.vehicle_id')
+            ->with('vehicle');
+
+        if (in_array($this->sortField, ['vehicle_number', 'driver_name'])) {
+            $query->orderBy("vehicles.{$this->sortField}", $this->sortDirection);
+        } else {
+            $query->orderBy($this->sortField, $this->sortDirection);
         }
+
+        $deliveryNotes = $query->paginate(10);
 
         return view('livewire.delivery-note.index', [
-            'deliveryNotes' => $query->latest()->paginate(10),
+            'deliveryNotes' => $deliveryNotes,
         ]);
     }
 }
