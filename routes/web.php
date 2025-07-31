@@ -94,6 +94,7 @@ use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
+use App\Livewire\DeliveryNote\DeliveryNotePrint;
 use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
@@ -1039,21 +1040,24 @@ Route::get('/dashboard-employee-login', function () {
     return redirect($link);
 });
 
-Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
-Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
-Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
+Route::middleware('auth')->group(function () {
+    Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
+    Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
+    Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
 
-Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
-    Route::get('/', DeliveryNoteIndex::class)->name('index');
-    Route::get('/create', DeliveryNoteForm::class)->name('create');
-    Route::get('/edit/{deliveryNote}', DeliveryNoteForm::class)->name('edit');
-    Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+    Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
+        Route::get('/', DeliveryNoteIndex::class)->name('index');
+        Route::get('/create', DeliveryNoteForm::class)->name('create');
+        Route::get('/edit/{deliveryNote}', DeliveryNoteForm::class)->name('edit');
+        Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+        Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+    });
+
+    Route::get('/destinations', DestinationIndex::class)->name('destination.index');
+    Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
+    Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
+
+    Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
+    Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
+    Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
 });
-
-Route::get('/destinations', DestinationIndex::class)->name('destination.index');
-Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
-Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
-
-Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
-Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
-Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');

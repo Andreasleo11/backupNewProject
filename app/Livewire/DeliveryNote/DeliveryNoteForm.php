@@ -16,8 +16,7 @@ class DeliveryNoteForm extends Component
     public $delivery_note_date;
     public $departure_time;
     public $return_time;
-    public $vehicle_number;
-    public $driver_name;
+    public $vehicle_id;
     public $approval_flow_id;
     public $destinationSuggestions = [];
     public $vehicleSuggestions = [];
@@ -42,11 +41,10 @@ class DeliveryNoteForm extends Component
         'delivery_note_date' => 'required|date',
         'departure_time' => 'nullable|date_format:H:i',
         'return_time' => 'nullable|date_format:H:i',
-        'vehicle_number' => 'required|string',
-        'driver_name' => 'required|string',
+        'vehicle_id' => 'required|exists:vehicles,id',
         'destinations' => 'required|array|min:1',
-        'destinations.*.destination' => 'required|string',
-        'destinations.*.delivery_order_numbers' => 'required|array|min:1',
+        'destinations.*.destination' => 'nullable|string',
+        'destinations.*.delivery_order_numbers' => 'nullable|array',
         'destinations.*.remarks' => 'nullable|string',
         'destinations.*.driver_cost' => 'nullable|numeric|min:0',
         'destinations.*.kenek_cost' => 'nullable|numeric|min:0',
@@ -57,10 +55,7 @@ class DeliveryNoteForm extends Component
     ];
 
     protected $messages = [
-        'destinations.*.delivery_order_numbers.required' => 'At least one Delivery Order number is required for each destination.',
         'destinations.*.delivery_order_numbers.array' => 'Delivery Order numbers must be one or more items.',
-        'destinations.*.delivery_order_numbers.min' => 'At least one Delivery Order number',
-        'destinations.*.destination.required' => 'Destination is required.',
         'destinations.*.remarks.string' => 'Remarks must be a string.',
         'destinations.*.driver_cost.numeric' => 'Driver cost must be a number.',
         'destinations.*.kenek_cost.numeric' => 'Kenek cost must be a number.',
@@ -76,8 +71,7 @@ class DeliveryNoteForm extends Component
             $this->delivery_note_date = $deliveryNote->delivery_note_date;
             $this->departure_time = $deliveryNote->formatted_departure_time;
             $this->return_time = $deliveryNote->formatted_return_time;
-            $this->vehicle_number = $deliveryNote->vehicle_number;
-            $this->driver_name = $deliveryNote->driver_name;
+            $this->vehicle_id = $deliveryNote->vehicle_id;
             $this->approval_flow_id = $deliveryNote->approval_flow_id;
             $this->destinations = $deliveryNote->destinations->map(function ($d) {
                 return [
@@ -95,7 +89,7 @@ class DeliveryNoteForm extends Component
         }
         $this->is_draft = $deliveryNote?->status === 'draft';
         $this->destinationSuggestions = Destination::select('name', 'city')->get()->toArray();
-        $this->vehicleSuggestions = \App\Models\Vehicle::select('plate_number', 'driver_name')->get()->toArray();
+        $this->vehicleSuggestions = \App\Models\Vehicle::select('id', 'plate_number', 'driver_name')->get()->toArray();
     }
 
 
@@ -149,8 +143,7 @@ class DeliveryNoteForm extends Component
                 'delivery_note_date' => $this->delivery_note_date,
                 'departure_time' => $this->departure_time,
                 'return_time' => $this->return_time,
-                'vehicle_number' => $this->vehicle_number,
-                'driver_name' => $this->driver_name,
+                'vehicle_id' => $this->vehicle_id,
                 'approval_flow_id' => \App\Models\ApprovalFlow::where('slug', 'creator-hrd')->first()->id ?? 1,
                 'status' => $this->is_draft ? 'draft' : 'submitted',
             ])->save();
@@ -162,7 +155,6 @@ class DeliveryNoteForm extends Component
             });
 
             foreach ($this->destinations as $dest) {
-                // dd($dest);
                 $destination = $note->destinations()->create([
                     'destination' => $dest['destination'],
                     'remarks' => $dest['remarks'],
@@ -174,10 +166,12 @@ class DeliveryNoteForm extends Component
                     'balikan_cost_currency' => $dest['balikan_cost_currency'],
                 ]);
 
-                foreach ($dest['delivery_order_numbers'] as $doNumber) {
-                    $destination->deliveryOrders()->create([
-                        'delivery_order_number' => $doNumber,
-                    ]);
+                if (!empty($dest['delivery_order_numbers']) && is_array($dest['delivery_order_numbers'])) {
+                    foreach ($dest['delivery_order_numbers'] as $doNumber) {
+                        $destination->deliveryOrders()->create([
+                            'delivery_order_number' => $doNumber,
+                        ]);
+                    }
                 }
             }
 
@@ -196,6 +190,6 @@ class DeliveryNoteForm extends Component
 
     public function render()
     {
-        return view('livewire.delivery-note-form');
+        return view('livewire.delivery-note.form');
     }
 }
