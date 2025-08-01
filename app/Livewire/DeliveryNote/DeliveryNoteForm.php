@@ -69,8 +69,8 @@ class DeliveryNoteForm extends Component
             $this->branch = $deliveryNote->branch;
             $this->ritasi = $deliveryNote->ritasi;
             $this->delivery_note_date = $deliveryNote->delivery_note_date;
-            $this->departure_time = $deliveryNote->formatted_departure_time;
-            $this->return_time = $deliveryNote->formatted_return_time;
+            $this->departure_time = $deliveryNote->departure_time;
+            $this->return_time = $deliveryNote->return_time;
             $this->vehicle_id = $deliveryNote->vehicle_id;
             $this->approval_flow_id = $deliveryNote->approval_flow_id;
             $this->destinations = $deliveryNote->destinations->map(function ($d) {
