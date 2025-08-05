@@ -88,6 +88,13 @@
                     font-size: 8px;
                 }
             }
+
+            .wrap-remark {
+                white-space: normal;
+                word-wrap: break-word;
+                max-width: 20%;
+                /* optional: adjust if you want limit */
+            }
         </style>
     @endpush
 
@@ -152,7 +159,7 @@
                                 <span class="badge bg-secondary">{{ $order->delivery_order_number }}</span>
                             @endforeach
                         </td>
-                        <td>{{ $d->remarks ?: '—' }}</td>
+                        <td class="wrap-remark">{{ $d->remarks ?: '—' }}</td>
                     </tr>
                 @endforeach
             </tbody>
