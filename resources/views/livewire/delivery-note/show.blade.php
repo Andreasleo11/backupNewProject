@@ -29,7 +29,7 @@
         <div class="card-body row">
             <div class="col-md-6 mb-3">
                 <h6 class="text-muted">🔁 Ritasi</h6>
-                <p class="mb-3">{{ $deliveryNote->ritasi_label }}</p>
+                <p class="mb-3">{{ $deliveryNote->ritasi }}</p>
 
                 <h6 class="text-muted">📅 Delivery Note Date</h6>
                 <p class="mb-3">{{ $deliveryNote->formatted_delivery_note_date }}</p>
