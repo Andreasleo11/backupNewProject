@@ -92,7 +92,7 @@
             .wrap-remark {
                 white-space: normal;
                 word-wrap: break-word;
-                max-width: 20%;
+                max-width: 25rem;
                 /* optional: adjust if you want limit */
             }
         </style>
