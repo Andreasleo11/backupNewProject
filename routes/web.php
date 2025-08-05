@@ -1045,14 +1045,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
     Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
 
-    Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
-        Route::get('/', DeliveryNoteIndex::class)->name('index');
-        Route::get('/create', DeliveryNoteForm::class)->name('create');
-        Route::get('/edit/{deliveryNote}', DeliveryNoteForm::class)->name('edit');
-        Route::get('/{id}', DeliveryNoteShow::class)->name('show');
-        Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
-    });
-
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
@@ -1060,4 +1052,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
     Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
     Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
+});
+
+Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
+    Route::get('/', DeliveryNoteIndex::class)->name('index');
+    Route::get('/create', DeliveryNoteForm::class)->name('create');
+    Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
+    Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+    Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
 });
