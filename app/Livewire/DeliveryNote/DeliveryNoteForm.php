@@ -65,12 +65,20 @@ class DeliveryNoteForm extends Component
     public function mount(?DeliveryNote $deliveryNote)
     {
         if ($deliveryNote && $deliveryNote->exists) {
+            // If not logged in and this is not the latest note, restrict
+            if (!auth()->check()) {
+                $latestId = DeliveryNote::max('id');
+                if ($deliveryNote->id !== $latestId) {
+                    abort(403, 'Guests can only edit the latest delivery note.');
+                }
+            }
+
             $this->deliveryNote = $deliveryNote;
             $this->branch = $deliveryNote->branch;
             $this->ritasi = $deliveryNote->ritasi;
             $this->delivery_note_date = $deliveryNote->delivery_note_date;
-            $this->departure_time = $deliveryNote->formatted_departure_time;
-            $this->return_time = $deliveryNote->formatted_return_time;
+            $this->departure_time = $deliveryNote->departure_time;
+            $this->return_time = $deliveryNote->return_time;
             $this->vehicle_id = $deliveryNote->vehicle_id;
             $this->approval_flow_id = $deliveryNote->approval_flow_id;
             $this->destinations = $deliveryNote->destinations->map(function ($d) {
@@ -190,6 +198,10 @@ class DeliveryNoteForm extends Component
 
     public function render()
     {
+        if (!auth()->check()) {
+            return view('livewire.delivery-note.form')
+                ->layout('layouts.guest');
+        }
         return view('livewire.delivery-note.form');
     }
 }

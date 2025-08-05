@@ -9,51 +9,22 @@
             h3,
             h5 {
                 font-size: 14px;
-                margin-bottom: 10px;
-            }
-
-            table {
-                margin-bottom: 12px;
-            }
-
-            th {
-                width: 110px;
+                margin-bottom: 8px;
             }
 
             .badge {
-                font-size: 10px;
+                font-size: 9px;
                 padding: 2px 4px;
             }
 
-            @media print {
-                .no-print {
-                    display: none !important;
-                }
-
-                @page {
-                    size: A4 portrait;
-                    margin: 10mm;
-                }
-
-                body {
-                    margin: 0;
-                    padding: 0;
-                    font-size: 10px;
-                }
-
-                .print-section {
-                    page-break-inside: avoid;
-                    margin-bottom: 12mm;
-                }
-
-                .print-section+.print-section {
-                    border-top: 1px dashed #ccc;
-                    padding-top: 10px;
-                }
+            .table th,
+            .table td {
+                padding: 0.25rem 0.4rem;
+                font-size: 10px;
             }
 
             .signature-box {
-                height: 70px;
+                height: 50px;
                 border-bottom: 1px solid #000;
                 margin: 0 auto;
                 width: 80%;
@@ -64,19 +35,71 @@
                 width: 60%;
                 max-width: 250px;
                 border-bottom: 1px dotted #000;
-                height: 2em;
+                height: 1.5em;
+            }
+
+            .table-sm th,
+            .table-sm td {
+                padding: 0.25rem;
+            }
+
+            @media print {
+                .no-print {
+                    display: none !important;
+                }
+
+                @page {
+                    size: A5 landscape;
+                    margin: 8mm;
+                }
+
+                html,
+                body {
+                    width: 100%;
+                    height: 100%;
+                    margin: 0;
+                    padding: 0;
+                    font-size: 10px;
+                    overflow: hidden;
+                }
+
+                .print-section {
+                    transform: scale(1);
+                    transform-origin: top left;
+                    max-height: 100%;
+                    page-break-inside: avoid;
+                }
+
+                /* Auto-scale if content is too long (approximate) */
+                .print-section.long-content {
+                    transform: scale(0.9);
+                }
+
+                .print-section.very-long-content {
+                    transform: scale(0.8);
+                }
+
+                /* Optional: Force font reduction based on body height (approx) */
+                body.long-content {
+                    font-size: 9px;
+                }
+
+                body.very-long-content {
+                    font-size: 8px;
+                }
             }
         </style>
     @endpush
-    <div class="container py-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="fw-bold">📄 Delivery Note #{{ $deliveryNote->id }}</h3>
+
+    <div>
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="fw-bold">📄 Delivery Note #{{ $deliveryNote->id }} (Surat Jalan Ritasi)</h3>
             <button onclick="window.print()" class="btn btn-primary no-print">🖨️ Print</button>
         </div>
 
         <div class="row">
             <div class="col-6">
-                <table class="table table-sm table-borderless mb-4">
+                <table class="table table-sm table-borderless mb-2">
                     <tr>
                         <th>Branch:</th>
                         <td>{{ $deliveryNote->branch }}</td>
@@ -89,18 +112,13 @@
                         <th>Date:</th>
                         <td>{{ $deliveryNote->formatted_delivery_note_date }}</td>
                     </tr>
+                </table>
+            </div>
+            <div class="col-6">
+                <table class="table table-sm table-borderless mb-2">
                     <tr>
                         <th>Departure:</th>
                         <td>{{ $deliveryNote->formatted_departure_time }}</td>
-                    </tr>
-                </table>
-            </div>
-
-            <div class="col-6">
-                <table class="table table-sm table-borderless mb-4">
-                    <tr>
-                        <th>Return:</th>
-                        <td>{{ $deliveryNote->formatted_return_time }}</td>
                     </tr>
                     <tr>
                         <th>Vehicle:</th>
@@ -109,10 +127,6 @@
                     <tr>
                         <th>Driver:</th>
                         <td>{{ $deliveryNote->vehicle->driver_name ?? '-' }}</td>
-                    </tr>
-                    <tr>
-                        <th>Status:</th>
-                        <td>{{ ucfirst($deliveryNote->status) }}</td>
                     </tr>
                 </table>
             </div>
@@ -126,9 +140,6 @@
                     <th>Destination</th>
                     <th>Delivery Orders</th>
                     <th>Remarks</th>
-                    <th>Driver Cost</th>
-                    <th>Kenek Cost</th>
-                    <th>Balikan Cost</th>
                 </tr>
             </thead>
             <tbody>
@@ -142,46 +153,12 @@
                             @endforeach
                         </td>
                         <td>{{ $d->remarks ?: '—' }}</td>
-                        <td>{{ $d->driver_cost_currency }} {{ number_format($d->driver_cost, 2) }}</td>
-                        <td>{{ $d->kenek_cost_currency }} {{ number_format($d->kenek_cost, 2) }}</td>
-                        <td>{{ $d->balikan_cost_currency }} {{ number_format($d->balikan_cost, 2) }}</td>
                     </tr>
                 @endforeach
-                @php
-                    $groupedTotals = $deliveryNote->destinations->reduce(
-                        function ($carry, $d) {
-                            $carry['driver'][$d->driver_cost_currency] =
-                                ($carry['driver'][$d->driver_cost_currency] ?? 0) + ($d->driver_cost ?? 0);
-                            $carry['kenek'][$d->kenek_cost_currency] =
-                                ($carry['kenek'][$d->kenek_cost_currency] ?? 0) + ($d->kenek_cost ?? 0);
-                            $carry['balikan'][$d->balikan_cost_currency] =
-                                ($carry['balikan'][$d->balikan_cost_currency] ?? 0) + ($d->balikan_cost ?? 0);
-                            return $carry;
-                        },
-                        ['driver' => [], 'kenek' => [], 'balikan' => []],
-                    );
-                @endphp
-                <tr class="table-light fw-bold">
-                    <td colspan="4" class="text-end">Total</td>
-                    <td>
-                        @foreach ($groupedTotals['driver'] as $currency => $amount)
-                            <div>{{ $currency }} {{ number_format($amount, 2) }}</div>
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach ($groupedTotals['kenek'] as $currency => $amount)
-                            <div>{{ $currency }} {{ number_format($amount, 2) }}</div>
-                        @endforeach
-                    </td>
-                    <td>
-                        @foreach ($groupedTotals['balikan'] as $currency => $amount)
-                            <div>{{ $currency }} {{ number_format($amount, 2) }}</div>
-                        @endforeach
-                    </td>
-                </tr>
             </tbody>
         </table>
-        <div class="row mt-5 text-center justify-content-around">
+
+        <div class="row mt-3 text-center justify-content-around">
             <div class="col-4">
                 <p><strong>PIC</strong></p>
                 <div class="signature-box"></div>
@@ -195,3 +172,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const section = document.querySelector('.print-section');
+        const body = document.body;
+        const height = section.scrollHeight;
+
+        // Thresholds based on trial-and-error for A5 landscape
+        if (height > 600) {
+            section.classList.add('long-content');
+            body.classList.add('long-content');
+        }
+
+        if (height > 700) {
+            section.classList.remove('long-content');
+            section.classList.add('very-long-content');
+            body.classList.remove('long-content');
+            body.classList.add('very-long-content');
+        }
+    });
+</script>

@@ -82,19 +82,34 @@
                 </td>
                 <td class="text-center">
                     <div class="btn-group" role="group">
+                        @php
+                            $isGuest = !auth()->check(); // true if no user is logged in
+                            $isLatest = $note->latest ?? false; // assumes `latest` is set in Livewire
+                        @endphp
+
                         <a href="{{ route('delivery-notes.show', $note->id) }}" class="btn btn-sm btn-outline-info"
                             title="View">
                             🔍
                         </a>
-                        <a href="{{ route('delivery-notes.edit', $note->id) }}" class="btn btn-sm btn-outline-warning"
-                            title="Edit">
-                            ✏️
-                        </a>
-                        <button x-data
-                            @click.prevent="if (confirm('Are you sure you want to delete this delivery note?')) { $wire.delete({{ $note->id }}) }"
-                            class="btn btn-sm btn-outline-danger" title="Delete">
-                            🗑
-                        </button>
+
+                        @if (!$isGuest && auth()->check())
+                            {{-- Authenticated user: can edit and delete --}}
+                            <a href="{{ route('delivery-notes.edit', $note->id) }}"
+                                class="btn btn-sm btn-outline-warning" title="Edit">
+                                ✏️
+                            </a>
+                            <button x-data
+                                @click.prevent="if (confirm('Are you sure you want to delete this delivery note?')) { $wire.delete({{ $note->id }}) }"
+                                class="btn btn-sm btn-outline-danger" title="Delete">
+                                🗑
+                            </button>
+                        @elseif ($isGuest && $isLatest)
+                            {{-- Guest and latest note: only allow edit --}}
+                            <a href="{{ route('delivery-notes.edit', $note->id) }}"
+                                class="btn btn-sm btn-outline-warning" title="Edit">
+                                ✏️
+                            </a>
+                        @endif
                     </div>
                 </td>
             </tr>
