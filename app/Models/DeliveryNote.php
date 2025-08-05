@@ -25,20 +25,6 @@ class DeliveryNote extends Model
         'status' => 'string',
     ];
 
-    public function getRitasiLabelAttribute()
-    {
-        $labels = [
-            1 => 'Pagi',
-            2 => 'Siang',
-            3 => 'Sore',
-            4 => 'Malam',
-        ];
-
-        return $this->ritasi
-            ? $this->ritasi . ' (' . ($labels[$this->ritasi] ?? '-') . ')'
-            : '-';
-    }
-
     public function getFormattedDeliveryNoteDateAttribute()
     {
         return \Carbon\Carbon::parse($this->delivery_note_date)->format('d-m-Y');
