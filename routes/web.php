@@ -76,6 +76,7 @@ use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\DeliveryNoteController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
@@ -1061,3 +1062,6 @@ Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
     Route::get('/{id}', DeliveryNoteShow::class)->name('show');
     Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
 });
+
+Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
+Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
