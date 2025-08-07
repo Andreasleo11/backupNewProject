@@ -5,13 +5,13 @@
     <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal"> Info </a>
 
 
-    <!-- @if (!$user->is_head && !$user->is_gm)
-    @include('partials.upload-excel-file-discipline-yayasan-modal')
-                <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
-                    data-bs-target="#upload-excel-file-discipline-yayasan-modal">Upload
-                    File
-                    Excel</button>
-    @endif -->
+    @if (!$user->is_head && !$user->is_gm)
+        @include('partials.upload-excel-file-discipline-yayasan-modal')
+        <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
+            data-bs-target="#upload-excel-file-discipline-yayasan-modal">Upload
+            File
+            Excel</button>
+    @endif
 
 
     @php
@@ -26,24 +26,24 @@
 
     @if (($user->is_head && !$user->is_gm) || $user->email === 'fery@daijo.co.id')
         <!-- <form method="POST" action="{{ route('approve.data.depthead') }}" id="lock-form">
-                    @csrf
-                    <input type="hidden" name="filter_month" id="filter-month-input">
-                    <input type="hidden" name="filter_year" id="filter-year-input"> Add this hidden input -->
+                            @csrf
+                            <input type="hidden" name="filter_month" id="filter-month-input">
+                            <input type="hidden" name="filter_year" id="filter-year-input"> Add this hidden input -->
         <!-- If there are employees that are not locked, show the button -->
         <!-- <button type="submit" class="btn btn-danger" id="approve-data-btn"><i class='bx bxs-lock'></i> Approve DeptHead
-                    </button>
-                </form> -->
+                            </button>
+                        </form> -->
     @endif
 
     @if ($user->is_gm)
         <!-- <form method="POST" action="{{ route('approve.data.gm') }}" id="lock-form">
-                    @csrf
-                    <input type="hidden" name="filter_month" id="filter-month-input">
-                    <input type="hidden" name="filter_dept" id="filter-dept-input"> -->
+                            @csrf
+                            <input type="hidden" name="filter_month" id="filter-month-input">
+                            <input type="hidden" name="filter_dept" id="filter-dept-input"> -->
         <!-- If there are employees that are not locked, show the button -->
         <!-- <button type="submit" class="btn btn-danger" id="approve-gm-data-btn"><i class='bx bxs-lock'></i> Approve GM
-                    </button>
-                </form> -->
+                            </button>
+                        </form> -->
     @endif
 
     <input type="hidden" name="filter_month" id="filter-month-input">
@@ -373,6 +373,10 @@
                 let realYear = selectedYear;
 
                 let dataTable = window.LaravelDataTables["disciplineyayasantable-table"];
+
+                if (localStorage.getItem('selectedMonth')) {
+                    realMonth = localStorage.getItem('selectedMonth'); // pakai yang disimpan
+                }
 
                 // Initialize the filters to current values
                 $('#status-filter').val(realMonth);

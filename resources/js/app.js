@@ -9,7 +9,8 @@ import { Fancybox } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 import SignaturePad from "signature_pad";
 import { Chart, registerables } from "chart.js";
-
+import "/node_modules/flatpickr/dist/flatpickr.css";
+import flatpickr from "flatpickr";
 // Register all necessary components
 Chart.register(...registerables);
 
@@ -17,3 +18,4 @@ window.Chart = Chart;
 window.TomSelect = TomSelect;
 window.Fancybox = Fancybox;
 window.SignaturePad = SignaturePad;
+window.flatpickr = flatpickr;

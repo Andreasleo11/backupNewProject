@@ -31,4 +31,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'jpayroll' => [
+        'base_url' => env('JPAYROLL_API_BASE'),
+        'auth' => env('JPAYROLL_AUTH_HEADER'),
+    ],
+
 ];

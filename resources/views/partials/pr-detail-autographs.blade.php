@@ -95,7 +95,8 @@
     @endif
 
     {{-- DEPT HEAD AUTOGRAPH --}}
-    <div class="col my-2 {{ $purchaseRequest->from_department === 'PERSONALIA' ? 'd-none' : '' }}">
+    <div
+        class="col my-2 {{ $purchaseRequest->from_department === 'PERSONALIA' || ($purchaseRequest->from_department === 'PLASTIC INJECTION' && $purchaseRequest->branch === 'KARAWANG') ? 'd-none' : '' }}">
         <h2> {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department === 'Maintenance' ? 'Head Design' : 'Dept Head' }}
         </h2>
         <div class="autograph-box container" id="autographBox2"></div>

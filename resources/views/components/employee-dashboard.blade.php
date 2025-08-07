@@ -2,8 +2,28 @@
     <div class="row">
         <div class="container-fluid">
             <div class="row">
-                <h1 class="fs-1">Employee Dashboard</h1>
-
+                <div class="d-flex align-items-center">
+                    <h1 class="fs-1">Employee Dashboard
+                        {{ $authUser && $authUser->department->name !== 'MANAGEMENT' ? ucwords(strtolower($authUser->department->name)) : '' }}
+                    </h1>
+                    <div class="ms-3">
+                        <button id="updateButton" type="submit" class="btn btn-primary" onclick="startSyncProgress()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                style="fill: rgba(255, 255, 255, 1);">
+                                <path
+                                    d="M10 11H7.101l.001-.009a4.956 4.956 0 0 1 .752-1.787 5.054 5.054 0 0 1 2.2-1.811c.302-.128.617-.226.938-.291a5.078 5.078 0 0 1 2.018 0 4.978 4.978 0 0 1 2.525 1.361l1.416-1.412a7.036 7.036 0 0 0-2.224-1.501 6.921 6.921 0 0 0-1.315-.408 7.079 7.079 0 0 0-2.819 0 6.94 6.94 0 0 0-1.316.409 7.04 7.04 0 0 0-3.08 2.534 6.978 6.978 0 0 0-1.054 2.505c-.028.135-.043.273-.063.41H2l4 4 4-4zm4 2h2.899l-.001.008a4.976 4.976 0 0 1-2.103 3.138 4.943 4.943 0 0 1-1.787.752 5.073 5.073 0 0 1-2.017 0 4.956 4.956 0 0 1-1.787-.752 5.072 5.072 0 0 1-.74-.61L7.05 16.95a7.032 7.032 0 0 0 2.225 1.5c.424.18.867.317 1.315.408a7.07 7.07 0 0 0 2.818 0 7.031 7.031 0 0 0 4.395-2.945 6.974 6.974 0 0 0 1.053-2.503c.027-.135.043-.273.063-.41H22l-4-4-4 4z">
+                                </path>
+                            </svg>
+                            <span id="buttonText">Update</span>
+                        </button>
+                    </div>
+                    <div class="ms-auto">
+                        <h5 class="text-secondary fw-bold">
+                            <span id="currentDateTime"></span>
+                        </h5>
+                    </div>
+                </div>
+                <text class="text-secondary">Last updated at <strong>{{ $latestUpdatedAt ?? 'No Data' }}</strong></text>
                 <div class="col">
                     <div class="alert alert-warning d-flex align-items-center" id="riskAlert" role="alert">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none"
@@ -137,7 +157,7 @@
                             </div>
                         </div>
                         <div class="col">
-                            <div class="card mt-4">
+                            <div class="card mt-4 p-2">
                                 <div class="card-body">
                                     <p class="card-text text-secondary fs-5">Dominant</p>
                                     <span class="fw-bold badge text-bg-secondary fs-4" id="dominantCategory"></span>
@@ -172,7 +192,6 @@
                                     <div class="mb-4">
                                         <label for="deptFilter" class="form-label">Filter by Department</label>
                                         <select id="deptFilter" class="form-select">
-                                            <option value="" selected>All</option>
                                         </select>
                                     </div>
 
@@ -222,9 +241,9 @@
                         <div class="col">
                             <label for="monthYearFilter" class="form-label">Select Month</label>
                             <select id="monthYearFilter" name="monthYear" class="form-select">
-                                {{-- <option value="">All</option> --}}
+                                <option value="" selected>All</option>
                                 @foreach ($monthYearOptions as $option)
-                                    <option value="{{ $option['value'] }}" {{ $loop->last ? 'selected' : '' }}>
+                                    <option value="{{ $option['value'] }}">
                                         {{ $option['name'] }}</option>
                                 @endforeach
                             </select>
@@ -312,31 +331,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row mt-5">
-
-                        {{-- <h3 class="text-secondary">Employee Count per Month</h3> --}}
-
-                        <!-- Year Selection -->
-                        {{-- <div class="col-md-3 mb-3">
-                            <label for="yearFilter" class="form-label">Select Year</label>
-                            <select id="yearFilter" class="form-select">
-                                @for ($i = $latestYear; $i >= $latestYear - 5; $i--)
-                                    <option value="{{ $i }}" {{ $i == $latestYear ? 'selected' : '' }}>
-                                        {{ $i }}
-                                    </option>
-                                @endfor
-                            </select>
-                        </div>
-
-                        <!-- Employee Count Chart -->
-                        <div class="col-12">
-                            <canvas id="employeeCountChart"></canvas>
-                        </div> --}}
-                    </div>
                 </div>
             </div>
         </div>
-        <div class="card">
+        <div class="card mt-3">
             <div class="card-body">
                 <div class="row justify-content-center">
                     <div class="col-md-4">
@@ -420,11 +418,6 @@
             </div>
         </div>
     </div>
-
-    {{-- <div class="row mt-5">
-
-    </div> --}}
-
 </div>
 
 {{-- Week range script --}}
@@ -435,39 +428,38 @@
 
         function getWeekRange(weekInputValue) {
             const monthFilter = document.getElementById('monthYearFilter');
-            const monthFilterValue = monthFilter.value;
+            const monthFilterValue = monthFilter ? monthFilter.value : null;
 
             if (!weekInputValue) {
                 if (!monthFilterValue) {
                     return "No month year and week selected";
                 } else {
-                    return monthFilter.innerText
+                    return monthFilter.innerText;
                 }
             }
 
             const [year, week] = weekInputValue.split("-W").map(Number);
-            const firstDayOfYear = new Date(year, 0, 1);
-            const daysOffset = (week - 1) * 7;
 
-            // Calculate the first day of the week (Monday)
-            const firstWeekDay = new Date(firstDayOfYear.setDate(firstDayOfYear.getDate() + daysOffset));
-            const dayOfWeek = firstWeekDay.getDay();
-            const weekStart = new Date(firstWeekDay);
-            const weekEnd = new Date(firstWeekDay);
+            // Create a date set to the beginning of the ISO week
+            const simple = new Date(year, 0, 1 + (week - 1) * 7);
 
-            if (dayOfWeek !== 1) { // Adjust to Monday if not already Monday
-                const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-                weekStart.setDate(weekStart.getDate() + diff);
-            }
-            weekEnd.setDate(weekStart.getDate() + 6);
+            // Get the ISO week day (0 is Sunday, 1 is Monday, ..., 6 is Saturday)
+            const dayOfWeek = simple.getDay();
+            const ISOWeekStart = new Date(simple);
 
-            // Format dates (YYYY-MM-DD)
+            // Adjust to the previous Monday if not already Monday
+            const diff = (dayOfWeek <= 0 ? -6 : 1) - dayOfWeek;
+            ISOWeekStart.setDate(simple.getDate() + diff);
+
+            const ISOWeekEnd = new Date(ISOWeekStart);
+            ISOWeekEnd.setDate(ISOWeekStart.getDate() + 6);
+
             const options = {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             };
-            return `${weekStart.toLocaleDateString(undefined, options)} - ${weekEnd.toLocaleDateString(undefined, options)}`;
+            return `${ISOWeekStart.toLocaleDateString(undefined, options)} - ${ISOWeekEnd.toLocaleDateString(undefined, options)}`;
         }
 
         function updateWeekRange() {
@@ -480,6 +472,68 @@
         // Set initial value
         updateWeekRange();
     });
+
+    // sync employee dashboard from api
+    let syncInterval = null;
+
+    function startSyncProgress() {
+        // Update button text
+        document.getElementById('buttonText').innerText = 'Updating... 0%';
+
+        // Dispatch the job via POST (like submitting the form)
+        fetch('{{ route('employee.dashboard.updateEmployeeData') }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to start sync');
+                pollSyncProgress(); // Start polling only if dispatch succeeded
+            })
+            .catch(err => {
+                document.getElementById('buttonText').innerText = 'Update Failed';
+                console.error(err);
+            });
+    }
+
+    function pollSyncProgress() {
+        syncInterval = setInterval(() => {
+            fetch('/sync-progress/10000')
+                .then(res => res.json())
+                .then(data => {
+                    const progress = data.progress;
+                    document.getElementById('buttonText').innerText = `Updating... ${progress}%`;
+
+                    if (progress >= 100) {
+                        clearInterval(syncInterval);
+                        location.reload();
+                    }
+                });
+        }, 500);
+    }
+
+    function updateCurrentDateTime() {
+        const now = new Date();
+
+        const formatted = now.toLocaleString('en', {
+            year: 'numeric',
+            month: 'long', // e.g. April
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+
+        document.getElementById('currentDateTime').textContent = formatted;
+    }
+
+    // Show immediately
+    updateCurrentDateTime();
+
+    // Update every second
+    setInterval(updateCurrentDateTime, 1000);
 </script>
 
 {{-- Weekly bar chart script  --}}
@@ -679,72 +733,6 @@
     });
 </script>
 
-{{-- Employee Count chart script --}}
-{{-- <script type="module">
-    document.addEventListener('DOMContentLoaded', function() {
-        const yearFilter = document.getElementById('yearFilter');
-        const chartElement = document.getElementById('employeeCountChart');
-
-        if (!chartElement) {
-            console.error("Canvas element not found!");
-            return;
-        }
-
-        const ctx = chartElement.getContext('2d');
-
-        let employeeChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: [
-                    "January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December"
-                ],
-                datasets: [{
-                    label: 'Employee Count',
-                    data: Array(12).fill(0), // Initialize with zeros
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        function fetchEmployeeCount(year) {
-            fetch(`{{ route('getEmployeeCountByMonth', '') }}/${year}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // console.log("Received Data:", data);
-                    employeeChart.data.datasets[0].data = Object.values(data);
-                    employeeChart.update();
-                })
-                .catch(error => console.error("Error fetching employee counts:", error));
-        }
-
-        // Load current year's data initially
-        if (yearFilter) {
-            fetchEmployeeCount(yearFilter.value);
-
-            // Update chart when year changes
-            yearFilter.addEventListener('change', function() {
-                fetchEmployeeCount(this.value);
-            });
-        }
-    });
-</script> --}}
-
 {{-- Employee List Modal Script --}}
 <script type="module">
     document.addEventListener('DOMContentLoaded', function() {
@@ -799,6 +787,7 @@
                         // console.log(data);
                         if (data.length > 0) {
                             data.forEach((emp, index) => {
+                                console.log(emp);
                                 totalCount += parseInt(emp.category_count) ||
                                     0; // Sum up category count
 
@@ -1013,7 +1002,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 document.getElementById("alpha").innerText = data.alpha;
                 document.getElementById("telat").innerText = data.telat;
                 document.getElementById("izin").innerText = data.izin;
@@ -1280,7 +1268,7 @@
                 .filter(item => (!selectedBranch || item.Branch === selectedBranch) &&
                     (!selectedStatus || item.Status === selectedStatus))
                 .map(item => JSON.stringify(item.Dept)))];
-            deptFilter.innerHTML = '<option value="" selected>All</option>';
+            deptFilter.innerHTML = '<option value="">All</option>';
             deptOptions.forEach(dept => {
                 const deptObj = JSON.parse(dept);
                 const option = document.createElement('option');
@@ -1288,6 +1276,7 @@
                 option.textContent = deptObj.name;
                 deptFilter.appendChild(option);
             });
+
             deptFilter.value = selectedDept && deptOptions.some(dept => JSON.parse(dept).dept_no === selectedDept) ?
                 selectedDept :
                 "";
@@ -1352,4 +1341,12 @@
 
     updateDropdowns();
     updateChart();
+
+    const authDepartmentDeptNo =
+        {{ $authUser->department->name !== 'MANAGEMENT' ? $authUser->department->dept_no ?? 'null' : 'null' }};
+    if (authDepartmentDeptNo) {
+        deptFilter.value = authDepartmentDeptNo;
+        updateChart();
+        updateDropdowns();
+    }
 </script>

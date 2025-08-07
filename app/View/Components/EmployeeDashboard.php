@@ -21,6 +21,8 @@ class EmployeeDashboard extends Component
     public $dataTableEmployee;
     public $latestWeek;
     public $weeklyEvaluationData;
+    public $latestUpdatedAt;
+    public $authUser;
 
     /**
      * Create a new component instance.
@@ -30,8 +32,18 @@ class EmployeeDashboard extends Component
     {
         $this->dataTableEmployee = $employeeDataTable->html();
 
+        $this->authUser = auth()->user();
+
         // Fetch all employees
         $employeesQuery = Employee::whereNull('end_date');
+        $user = $this->authUser;
+
+        if($user && $user->department && $user->department->name !== 'MANAGEMENT'){
+            $employeesQuery->whereHas('department', function($query) use ($user){
+                $query->where('id', $user->department->id);
+            });
+        }
+
         $employees = $employeesQuery->get();
         $this->employees = $employees;
 
@@ -98,14 +110,7 @@ class EmployeeDashboard extends Component
 
         if ($latestRecord) {
             $date = Carbon::parse($latestRecord->Month);
-
             $this->latestWeek = $date->format('o-\WW');
-            // $weekStart = $date->copy()->startOfWeek(Carbon::MONDAY);
-            // $weekEnd = $date->copy()->endOfWeek(Carbon::SUNDAY);
-        } else {
-            $this->latestWeek = now()->format('o-\WW');
-            // $weekStart = now()->copy()->startOfWeek(Carbon::MONDAY);
-            // $weekEnd = now()->copy()->endOfWeek(Carbon::SUNDAY);
         }
 
         // Fetch aggregated employee evaluation data with department names
@@ -135,9 +140,14 @@ class EmployeeDashboard extends Component
                     ];
                 })
                 ->toArray();
-        // dd($this->weeklyEvaluationData);
-    }
 
+        $latest = EvaluationDataWeekly::orderBy('updated_at', 'desc')->first();
+
+        $this->latestUpdatedAt = $latest
+            ? $latest->updated_at->timezone('Asia/Jakarta')->translatedFormat('l, d F Y H:i:s')
+            : null;
+
+    }
     /**
      * Get the view / contents that represent the component.
      */

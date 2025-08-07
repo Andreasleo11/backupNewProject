@@ -14,7 +14,7 @@
                 <table class="table table-bordered">
                     <tbody>
                         <tr>
-                            <th>IP Address</th>
+                            <th>No Asset</th>
                             <td>{{ $data->ip_address }}</td>
                         </tr>
                         <tr>
@@ -44,11 +44,11 @@
                             <td>{{ $data->type }}</td>
                         </tr>
                         <tr>
-                            <th>Purpose</th>
+                            <th>Tanggal Pembelian</th>
                             <td>{{ $data->purpose }}</td>
                         </tr>
                         <tr>
-                            <th>Brand</th>
+                            <th>Status</th>
                             <td>{{ $data->brand }}</td>
                         </tr>
                         <tr>
@@ -79,8 +79,8 @@
                     aria-controls="repair-history" aria-selected="false">Repair History</a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="maint-tab" data-toggle="tab" href="#maint" role="tab"
-                    aria-controls="maint" aria-selected="false">Maintenance History</a>
+                <a class="nav-link" id="maint-tab" data-toggle="tab" href="#maint" role="tab" aria-controls="maint"
+                    aria-selected="false">Maintenance History</a>
             </li>
         </ul>
 
@@ -113,7 +113,8 @@
                                     <td>{{ $hardware->updated_at->format('Y-m-d') }}</td>
                                     <td>
                                         <!-- Button to generate QR Code -->
-                                        <form action="{{ route('generate.hardware.qrcode', $hardware->id) }}" method="POST">
+                                        <form action="{{ route('generate.hardware.qrcode', $hardware->id) }}"
+                                            method="POST">
                                             @csrf
                                             <button type="submit" class="btn btn-primary">
                                                 Generate QR Code
@@ -182,7 +183,7 @@
                             <th>Action Date</th>
                             <th>Tanggal Pembelian</th>
                             <!-- <th>Created At</th>
-                                                        <th>Updated At</th> -->
+                                                                <th>Updated At</th> -->
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -208,7 +209,7 @@
                                 <td>{{ $history->action_date }}</td>
                                 <td>{{ $history->remark }}</td>
                                 <!-- <td>{{ $history->created_at ? $history->created_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                                            <td>{{ $history->updated_at ? $history->updated_at->format('Y-m-d H:i:s') : 'N/A' }}</td> -->
+                                                                    <td>{{ $history->updated_at ? $history->updated_at->format('Y-m-d H:i:s') : 'N/A' }}</td> -->
                                 <td>
                                     @if ($history->action_date)
                                         <!-- Show text with styling if action_date is filled -->
@@ -250,7 +251,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                      
+
                         @forelse ($inventoryHistories as $data)
                             <tr>
                                 <td>{{ $data->id }}</td>
@@ -260,7 +261,8 @@
                                 <td>{{ $data->created_at }}</td>
                                 <td>{{ $data->revision_date }}</td>
                                 <td>
-                                <a href="{{ route('maintenance.inventory.show', $data->id) }}" class="btn btn-secondary">Detail</a>
+                                    <a href="{{ route('maintenance.inventory.show', $data->id) }}"
+                                        class="btn btn-secondary">Detail</a>
                                 </td>
                             </tr>
                         @empty
@@ -378,11 +380,11 @@
         </div>
     </div>
 
-<!-- Include jQuery (Bootstrap requires it) -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Include jQuery (Bootstrap requires it) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 
-<!-- Include Bootstrap JavaScript -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Include Bootstrap JavaScript -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
     <script type="module">
         document.addEventListener('DOMContentLoaded', function() {

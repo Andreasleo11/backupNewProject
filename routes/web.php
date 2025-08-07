@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
@@ -89,6 +90,17 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
+use App\Http\Controllers\InspectionReportController;
+use App\Http\Controllers\EmployeeDailyReportController;
+use App\Livewire\DeliveryNote\DeliveryNoteIndex;
+use App\Livewire\DeliveryNote\DeliveryNoteForm;
+use App\Livewire\DeliveryNote\DeliveryNotePrint;
+use App\Livewire\DeliveryNoteShow;
+use Illuminate\Support\Facades\Http;
+use App\Livewire\DestinationForm;
+use App\Livewire\DestinationIndex;
+use App\Livewire\VehicleForm;
+use App\Livewire\VehicleIndex;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,20 +112,73 @@ use App\Http\Controllers\EmployeeTrainingController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 Route::get('/user-list', [UserRoleController::class, 'User']);
+
+// Route::get('/', fn() => view('welcome'))->name('/');
+Route::get('/test-overtime', function () {
+    $params = [
+        'CompanyArea' => "10000",            // Mandatory
+        'NIK'         => "05551",         // Mandatory              // Optional
+        'Date1'       => "01/05/2022",       // Optional
+        'Date2'       => "30/04/2025"       // Optional
+    ];
+
+    // Filter null values (biar gak dikirim kalau kosong)
+    $filteredParams = array_filter($params);
+
+    $response = Http::asJson()
+        ->withHeaders([
+            'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==' // kalau pakai auth
+        ])
+        ->post('http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php', $filteredParams);
+
+
+    // Dump response untuk debugging
+    if ($response->successful()) {
+        return response()->json([
+            'success' => true,
+            'data' => $response->json(),
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'status' => $response->status(),
+            'body' => $response->body(),
+        ]);
+    }
+});
+
+
+Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
+Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
+Route::get('/user-list', [UserRoleController::class, 'User']);
+
+Route::get('/test/depthead', [EmployeeDailyReportController::class, 'indexDepthead'])->name('reports.depthead.index');
+Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
+
+Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
+Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
+Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
+
+Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
+Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
+Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
+Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
     }
-    return view('auth.login');
+    return redirect('login');
 })->name('/');
 
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
+// Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
 
 Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
@@ -229,7 +294,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
     });
 
-    Route::middleware(['checkDepartment:HRD'])->group(function () {
+    Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
         Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
 
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index')->middleware('permission:get-important-docs');
@@ -583,9 +648,9 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
     Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
     Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
-    Route::post('/getformatyayasan',[EvaluationDataController::class, 'getFormatYearyayasan'] )->name('get.format');
-    Route::post('/getformatallin',[EvaluationDataController::class, 'getFormatYearallin'] )->name('get.format.allin');
-    Route::post('/getformatmagang',[EvaluationDataController::class, 'getFormatYearmagang'] )->name('get.format.magang');
+    Route::post('/getformatyayasan', [EvaluationDataController::class, 'getFormatYearyayasan'])->name('get.format');
+    Route::post('/getformatallin', [EvaluationDataController::class, 'getFormatYearallin'])->name('get.format.allin');
+    Route::post('/getformatmagang', [EvaluationDataController::class, 'getFormatYearmagang'])->name('get.format.magang');
     Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name('single.employee');
 
     Route::get("/discipline/indexall", [DisciplinePageController::class, 'allindex'])->name("alldiscipline.index");
@@ -651,11 +716,19 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
     Route::delete("formovertime/{id}", [FormOvertimeController::class, 'destroy'])->name("formovertime.delete");
     Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
     Route::get("/formovertime/edit", [FormOvertimeController::class, 'edit'])->name("formovertime.edit");
     Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
+    Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
+
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
+
+    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
@@ -826,21 +899,21 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     // FOR DEBUG ONLY: VIEWING OT NOTIFICATION
     Route::get('/ot/notification', function () {
         $report = App\Models\HeaderFormOvertime::find(2);
-        $formattedCreateDate = \Carbon\Carbon::parse($report->create_date)->format('d/m/Y');
+        $formattedCreatedAt = \Carbon\Carbon::parse($report->created_at)->format('d/m/Y');
         $details = [
             'greeting' => 'Form Overtime Notification',
             'body' => "Notification for SPK : <br>
                     - Report ID : $report->id <br>
-                    - Department From : {$report->Relationdepartement->name} ({$report->Relationdepartement->dept_no}) <br>
-                    - Create Date : {$formattedCreateDate} <br>
-                    - Created By : {$report->Relationuser->name} <br>
+                    - Department From : {$report->department->name} ({$report->department->dept_no}) <br>
+                    - Create Date : {$formattedCreatedAt} <br>
+                    - Created By : {$report->user->name} <br>
                         ",
             'actionText' => 'Click to see the detail',
             'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') . 'formovertime/detail/' . $report->id,
         ];
 
 
-        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->Relationuser);
+        return (new App\Notifications\FormOvertimeNotification($report, $details))->toMail($report->user);
 
         // $user = App\Models\User::find(30);
         // $user->notify(new App\Notifications\FormOvertimeNotification($report, $details));
@@ -896,12 +969,12 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
         return (new App\Notifications\SPKUpdated($spk, $details))->toMail(auth()->user());
     });
 
-    Route::get('/po-notification', function() {
+    Route::get('/po-notification', function () {
         $poCount = \App\Models\PurchaseOrder::approvedForCurrentMonth()->count();
         return (new \App\Notifications\MonthlyPOStatus($poCount))->toMail(auth()->user());
     });
 
-    Route::get('/training-notification', function(){
+    Route::get('/training-notification', function () {
         $training = \App\Models\EmployeeTraining::find(1);
         return (new \App\Notifications\TrainingReminderNotification($training))->toMail(auth()->user());
     });
@@ -911,19 +984,80 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });
 
-Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
+Route::middleware(['auth', 'is.head.or.management'])->group(function () {
+    Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
+    Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
+    Route::get('/sync-progress/{companyArea}', function ($companyArea) {
+        $cacheKey = "sync_progress_{$companyArea}";
+        $progress = Illuminate\Support\Facades\Cache::get($cacheKey, 0);
 
-Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
-Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
-Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
-Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
-Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
-Route::get('/employees/{id}/warnings', function ($id) {
-    $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
-    return response()->json($warnings);
+        if ($progress > 100) {
+            Illuminate\Support\Facades\Cache::forget($cacheKey);
+            $progress = 0; // Reset to 0 or whatever makes sense for your UI
+        }
+
+        return response()->json(['progress' => $progress]);
+    });
+    Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
+    Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
+    Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+    Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+    Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
+    Route::get('/employees/{id}/warnings', function ($id) {
+        $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
+        return response()->json($warnings);
+    });
+    Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
+    Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
+    Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
+    Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
+    Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
 });
-Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
-Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
-Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
-Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
-Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
+
+
+Route::get('/autologin', function (\Illuminate\Http\Request $request) {
+    // dd($request->all());
+    if (! $request->hasValidSignature()) {
+        abort(403, 'Invalid or expired link.');
+    }
+
+    $user = \App\Models\User::where('name', $request->name)->firstOrFail();
+
+    Auth::login($user);
+
+    return redirect()->route('employee.dashboard'); // or wherever you want to redirect after login
+})->name('autologin');
+
+Route::get('/dashboard-employee-login', function () {
+    $user = \App\Models\User::where('name', 'dashboardemployee')->first();
+
+    $link = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        'autologin',
+        now()->addMinutes(30),
+        ['name' => $user->name]
+    );
+
+    return redirect($link);
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
+    Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
+    Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
+
+    Route::get('/destinations', DestinationIndex::class)->name('destination.index');
+    Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
+    Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
+
+    Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
+    Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
+    Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
+});
+
+Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
+    Route::get('/', DeliveryNoteIndex::class)->name('index');
+    Route::get('/create', DeliveryNoteForm::class)->name('create');
+    Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
+    Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+    Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+});
