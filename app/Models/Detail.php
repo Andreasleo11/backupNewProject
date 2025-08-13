@@ -21,6 +21,7 @@ class Detail extends Model
         'price',
         'do_num',
         'fg_measure',
+        'currency',
     ];
 
     // Define relationships if needed
@@ -36,12 +37,11 @@ class Detail extends Model
 
     public function adjustdetail()
     {
-        return $this->hasMany(FormAdjustMaster::class, 'detail_id','id');
+        return $this->hasMany(FormAdjustMaster::class, 'detail_id', 'id');
     }
 
     public function adjustheader()
     {
         return $this->hasMany(HeaderFormAdjust::class);
     }
-
 }
