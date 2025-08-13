@@ -689,6 +689,13 @@
                             Employee Training
                         </a>
                     </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('daily-report.form') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Upload Daily Report
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif

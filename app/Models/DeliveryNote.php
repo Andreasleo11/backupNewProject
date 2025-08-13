@@ -16,30 +16,14 @@ class DeliveryNote extends Model
         'delivery_note_date',
         'departure_time',
         'return_time',
-        'vehicle_number',
-        'driver_name',
+        'vehicle_id',
         'status',
-
     ];
 
     protected $casts = [
         'branch' => 'string',
         'status' => 'string',
     ];
-
-    public function getRitasiLabelAttribute()
-    {
-        $labels = [
-            1 => 'Pagi',
-            2 => 'Siang',
-            3 => 'Sore',
-            4 => 'Malam',
-        ];
-
-        return $this->ritasi
-            ? $this->ritasi . ' (' . ($labels[$this->ritasi] ?? '-') . ')'
-            : '-';
-    }
 
     public function getFormattedDeliveryNoteDateAttribute()
     {
@@ -63,5 +47,10 @@ class DeliveryNote extends Model
     public function destinations()
     {
         return $this->hasMany(DeliveryDestination::class);
+    }
+
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 }

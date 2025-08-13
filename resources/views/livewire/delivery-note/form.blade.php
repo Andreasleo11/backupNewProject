@@ -14,137 +14,109 @@
         <fieldset class="border rounded p-3 mb-4">
             <legend class="float-none w-auto px-2 text-primary fs-5">Delivery Note Info</legend>
 
-            <div class="row g-3">
+            <div class="row g-3 ">
                 <div class="col-md-6">
-                    <label class="form-label">Branch <span class="text-danger">*</span></label>
-                    <select class="form-select @error('branch') is-invalid @enderror" wire:model="branch">
-                        <option value="JAKARTA">JAKARTA (DJ KBN)</option>
-                        <option value="KARAWANG">KARAWANG (DJ KIIC)</option>
-                    </select>
-                    @error('branch')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Ritasi <span class="text-danger">*</span></label>
-                    <select class="form-select @error('ritasi') is-invalid @enderror" wire:model="ritasi">
-                        <option value="">-- Select Ritasi --</option>
-                        <option value="1">1 (Pagi)</option>
-                        <option value="2">2 (Siang)</option>
-                        <option value="3">3 (Sore)</option>
-                        <option value="4">4 (Malam)</option>
-                    </select>
-                    @error('ritasi')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Delivery Note Date <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control @error('delivery_note_date') is-invalid @enderror"
-                        wire:model="delivery_note_date">
-                    @error('delivery_note_date')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Departure Time</label>
-                    <input type="time" class="form-control @error('departure_time') is-invalid @enderror"
-                        wire:model="departure_time">
-                    @error('departure_time')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Return Time</label>
-                    <input type="time" class="form-control @error('return_time') is-invalid @enderror"
-                        wire:model="return_time">
-                    @error('return_time')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="col-md-6">
-                    <label class="form-label">Vehicle Number <span class="text-danger">*</span></label>
-                    <div class="position-relative" x-data="{
-                        input: @entangle('vehicle_number'),
-                        suggestions: @js($vehicleSuggestions),
-                        show: false,
-                        filtered() {
-                            if (!this.input) return [];
-                            return this.suggestions.filter(v =>
-                                v.plate_number?.toLowerCase().includes(this.input.toLowerCase())
-                            ).slice(0, 10);
-                        },
-                        selectVehicle(vehicle) {
-                            this.input = vehicle.plate_number;
-                            $wire.vehicle_number = vehicle.plate_number;
-                            $wire.driver_name = vehicle.driver_name;
-                            this.show = false;
-                        }
-                    }">
-                        <input class="form-control @error('vehicle_number') is-invalid @enderror" x-model="input"
-                            @focus="show = true" @blur="setTimeout(() => show = false, 150)" @input="show = true"
-                            placeholder="B 1234 XYZ" />
-
-                        <ul class="list-group position-absolute w-100 z-10" x-show="show && filtered().length"
-                            style="max-height: 150px; overflow-y: auto;" x-transition>
-                            <template x-for="item in filtered()" :key="item.plate_number">
-                                <li class="list-group-item list-group-item-action" @click="selectVehicle(item)">
-                                    <span x-text="item.plate_number"></span> — <small class="text-muted"
-                                        x-text="item.driver_name"></small>
-                                </li>
-                            </template>
-                        </ul>
-
-                        @error('vehicle_number')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <div class="mb-3">
+                        <label class="form-label">Branch <span class="text-danger">*</span></label>
+                        <select class="form-select @error('branch') is-invalid @enderror" wire:model.live="branch">
+                            <option value="JAKARTA">JAKARTA (DJ KBN)</option>
+                            <option value="KARAWANG">KARAWANG (DJ KIIC)</option>
+                        </select>
+                        @error('branch')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ritasi <span class="text-danger">*</span></label>
+                        <select class="form-select @error('ritasi') is-invalid @enderror" wire:model="ritasi">
+                            <option value="">-- Select Ritasi --</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            @if ($branch === 'KARAWANG')
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            @endif
+                        </select>
+                        @error('ritasi')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Delivery Note Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control @error('delivery_note_date') is-invalid @enderror"
+                            wire:model="delivery_note_date">
+                        @error('delivery_note_date')
+                            <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
-
                 <div class="col-md-6">
-                    <label class="form-label">Driver Name <span class="text-danger">*</span></label>
-                    <div class="position-relative" x-data="{
-                        input: @entangle('driver_name'),
-                        suggestions: @js($vehicleSuggestions),
-                        show: false,
-                        filtered() {
-                            if (!this.input) return [];
-                            return this.suggestions.filter(v =>
-                                v.driver_name?.toLowerCase().includes(this.input.toLowerCase())
-                            ).slice(0, 10);
-                        },
-                        selectDriver(vehicle) {
-                            this.input = vehicle.driver_name;
-                            $wire.driver_name = vehicle.driver_name;
-                            $wire.vehicle_number = vehicle.plate_number;
-                            this.show = false;
-                        }
-                    }">
-                        <input class="form-control @error('driver_name') is-invalid @enderror" x-model="input"
-                            @focus="show = true" @blur="setTimeout(() => show = false, 150)" @input="show = true"
-                            placeholder="John Doe" />
+                    <div class="mb-3">
+                        <label class="form-label">Vehicle - Driver <span class="text-danger">*</span></label>
+                        <div x-data="{
+                            search: '',
+                            show: false,
+                            selectedId: @entangle('vehicle_id'),
+                            vehicles: @js($vehicleSuggestions),
+                            filtered() {
+                                if (!this.search) return [];
+                                return this.vehicles.filter(v =>
+                                    v.plate_number.toLowerCase().includes(this.search.toLowerCase()) ||
+                                    v.driver_name.toLowerCase().includes(this.search.toLowerCase())
+                                ).slice(0, 10);
+                            },
+                            select(vehicle) {
+                                this.search = `${vehicle.plate_number} — ${vehicle.driver_name}`;
+                                this.selectedId = vehicle.id;
+                                this.show = false;
+                            },
+                            init() {
+                                const selected = this.vehicles.find(v => v.id === this.selectedId);
+                                if (selected) {
+                                    this.search = `${selected.plate_number} — ${selected.driver_name}`;
+                                }
+                            }
+                        }" x-init="init" class="position-relative">
+                            <input type="text" x-model="search"
+                                class="form-control @error('vehicle_id') is-invalid @enderror" @focus="show = true"
+                                @input="show = true" @blur="setTimeout(() => show = false, 150)"
+                                placeholder="Search by plate or driver" />
 
-                        <ul class="list-group position-absolute w-100 z-10" x-show="show && filtered().length"
-                            style="max-height: 150px; overflow-y: auto;" x-transition>
-                            <template x-for="item in filtered()" :key="item.driver_name">
-                                <li class="list-group-item list-group-item-action" @click="selectDriver(item)">
-                                    <span x-text="item.driver_name"></span> —
-                                    <small class="text-muted" x-text="item.plate_number"></small>
-                                </li>
-                            </template>
-                        </ul>
+                            <ul class="list-group position-absolute w-100 z-10" x-show="show && filtered().length"
+                                style="max-height: 150px; overflow-y: auto;" x-transition>
+                                <template x-for="item in filtered()" :key="item.id">
+                                    <li class="list-group-item list-group-item-action" @click="select(item)">
+                                        <span x-text="item.plate_number"></span> —
+                                        <small class="text-muted" x-text="item.driver_name"></small>
+                                    </li>
+                                </template>
+                            </ul>
 
-                        @error('driver_name')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @error('vehicle_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Departure Time</label>
+                        <input type="time" class="form-control @error('departure_time') is-invalid @enderror"
+                            wire:model="departure_time">
+                        @error('departure_time')
+                            <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Return Time</label>
+                        <input type="time" class="form-control @error('return_time') is-invalid @enderror"
+                            wire:model="return_time">
+                        @error('return_time')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
+                </div>
             </div>
         </fieldset>
 
@@ -205,8 +177,7 @@
                             </div>
 
                             <div class="col">
-                                <label class="form-label small">Delivery Order(s) <span
-                                        class="text-danger">*</span></label>
+                                <label class="form-label small">Delivery Order(s)</label>
 
                                 <div x-data="{
                                     orders: $wire.entangle('destinations.{{ $index }}.delivery_order_numbers') ?? [],

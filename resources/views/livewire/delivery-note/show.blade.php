@@ -10,10 +10,16 @@
                 <span class="badge bg-success ms-2">Submitted</span>
             @endif
         </h3>
-        <div>
-            <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary me-2">
-                ✏️ Edit
+        <div class="d-flex gap-2">
+            <a href="{{ route('delivery-notes.print', $deliveryNote->id) }}" target="_blank"
+                class="btn btn-outline-success">
+                🖨️ Print
             </a>
+            @if (auth()->check() || $deliveryNote->is_latest)
+                <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary">
+                    ✏️ Edit
+                </a>
+            @endif
             <a href="{{ route('delivery-notes.index') }}" class="btn btn-outline-secondary">← Back to List</a>
         </div>
     </div>
@@ -23,7 +29,7 @@
         <div class="card-body row">
             <div class="col-md-6 mb-3">
                 <h6 class="text-muted">🔁 Ritasi</h6>
-                <p class="mb-3">{{ $deliveryNote->ritasi_label }}</p>
+                <p class="mb-3">{{ $deliveryNote->ritasi }}</p>
 
                 <h6 class="text-muted">📅 Delivery Note Date</h6>
                 <p class="mb-3">{{ $deliveryNote->formatted_delivery_note_date }}</p>
@@ -40,10 +46,10 @@
                 <p class="mb-3">{{ $deliveryNote->branch }}</p>
 
                 <h6 class="text-muted">🚚 Vehicle Number</h6>
-                <p class="mb-3">{{ $deliveryNote->vehicle_number }}</p>
+                <p class="mb-3">{{ $deliveryNote->vehicle->plate_number ?? '-' }}</p>
 
                 <h6 class="text-muted">👨‍✈️ Driver Name</h6>
-                <p class="mb-0">{{ $deliveryNote->driver_name }}</p>
+                <p class="mb-0">{{ $deliveryNote->vehicle->driver_name ?? '-' }}</p>
             </div>
         </div>
     </div>
