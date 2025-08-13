@@ -93,6 +93,7 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNotePrint;
@@ -155,7 +156,6 @@ Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, '
 Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
-Route::get('/test/depthead', [EmployeeDailyReportController::class, 'indexDepthead'])->name('reports.depthead.index');
 Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 
 Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
@@ -167,6 +167,11 @@ Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'show
 Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
 Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
 Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/daily-reports', DailyReportIndex::class)
+        ->name('daily-reports.index');
+});
 
 Route::get('/', function () {
     if (Auth::check()) {
