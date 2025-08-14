@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Detail;
+use App\Models\HeaderFormOvertime;
+use App\Observers\DetailObserver;
+use App\Observers\HeaderFormOvertimeObserver;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Model::unguard();  -> kalau pake ini , semua model tidak perlu dibuat fillable / di definisikan
+        HeaderFormOvertime::observe(HeaderFormOvertimeObserver::class);
+        Detail::observe(DetailObserver::class);
 
         Blade::directive('currency', function ($expression) {
             return "<?php echo $expression !== null ? 'Rp ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";

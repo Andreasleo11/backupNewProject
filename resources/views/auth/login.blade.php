@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,19 +10,13 @@
     <script src="https://kit.fontawesome.com/ae360af17e.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/login-style.css">
 </head>
+
 <body>
 
-     <div class="container mt-3">
-        <a href="{{ route('employee-login') }}" class="btn btn-danger">
-            <i class="fas fa-user-clock me-1"></i> Daily Employee Job
-        </a>
-    </div>
-
-
-    @if($message = Session::get('error'))
+    @if ($message = Session::get('error'))
         <div class="container mt-3">
             <div class="alert alert-danger alert-dismissible fade show">
-                <p>{{$message}}</p>
+                <p>{{ $message }}</p>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>
@@ -36,7 +31,7 @@
                         <img src="image/1.png" alt="image" class="img-fluid">
                     </div>
                     <p class="text-white fs-2">Be Verified</p>
-                    <small class="text-white text-wrap text-center" >Join experienced designers on this platform.</small>
+                    <small class="text-white text-wrap text-center">Join experienced designers on this platform.</small>
                 </div>
                 <!-- Right box -->
                 <div class="col-md-6 right-box">
@@ -52,7 +47,9 @@
                                 <label for="email" class="col-form-label">{{ __('Email Address') }}</label>
 
                                 <div class="col">
-                                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+                                    <input id="email" type="email"
+                                        class="form-control @error('email') is-invalid @enderror" name="email"
+                                        value="{{ old('email') }}" required autocomplete="email" autofocus>
 
                                     @error('email')
                                         <span class="invalid-feedback" role="alert">
@@ -66,7 +63,9 @@
                                 <label for="password" class="col-form-label">{{ __('Password') }}</label>
 
                                 <div class="col">
-                                    <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
+                                    <input id="password" type="password"
+                                        class="form-control @error('password') is-invalid @enderror" name="password"
+                                        required autocomplete="current-password">
 
                                     @error('password')
                                         <span class="invalid-feedback" role="alert">
@@ -102,12 +101,17 @@
                                 </div> --}}
                             </div>
                         </form>
+                        <div class="col mt-4 text-end">
+                            Daily Employee Job?
+                            <a href="{{ route('employee-login') }}" class="btn btn-outline-primary btn-sm">Click
+                                Here</a>
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

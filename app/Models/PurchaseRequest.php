@@ -208,7 +208,7 @@ class PurchaseRequest extends Model
 
         if ($event == 'created') {
             if ($this->to_department === 'Maintenance') {
-                if ($this->from_department=== 'PLASTIC INJECTION' && $this->branch === 'KARAWANG') {
+                if ($this->from_department === 'PLASTIC INJECTION' && $this->branch === 'KARAWANG') {
                     $user = null;
                 } else {
                     $user = User::where('email', 'nur@daijo.co.id')->first();
@@ -221,7 +221,7 @@ class PurchaseRequest extends Model
             $status = $this->status;
             switch ($status) {
                 case 1:
-                    if($this->from_department === 'PLASTIC INJECTION' && $this->branch === 'KARAWANG'){
+                    if ($this->from_department === 'PLASTIC INJECTION' && $this->branch === 'KARAWANG') {
                         $deptHead = null;
                     } elseif ($this->from_department === 'MOULDING') {
                         if ($this->is_import === 1) {
@@ -248,10 +248,8 @@ class PurchaseRequest extends Model
                     $user = $deptHead ?: $this->createdBy;
                     break;
                 case 7:
-                    if($this->from_department === 'PLASTIC INJECTION' && $this->branch === 'KARAWANG'){
-                        $gm = User::whereHas('department', function ($query){
-                            $query->where('name', 'PLASTIC INJECTION')->where('is_gm', 1);
-                        })->first();
+                    if ($this->from_department === 'PLASTIC INJECTION' && $this->branch === 'KARAWANG') {
+                        $gm = User::where('email', 'pawarid_pannin@daijo.co.id')->first();
                     } else {
                         $gm = User::whereHas('department', function ($query) {
                             $query->where('name', '!=', 'MOULDING')->where('is_gm', 1);
