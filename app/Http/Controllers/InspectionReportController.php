@@ -36,7 +36,7 @@ class InspectionReportController extends Controller
         $inspectionReport->load([
             'detailInspectionReports',
             'detailInspectionReports.firstInspections',
-            'measurementData',
+            'dimensionData',
             'detailInspectionReports.secondInspections',
             'detailInspectionReports.secondInspections.samplingData',
             'detailInspectionReports.secondInspections.packagingData',

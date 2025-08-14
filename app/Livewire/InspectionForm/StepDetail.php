@@ -196,7 +196,7 @@ class StepDetail extends Component
             $sections = [
                 'details',
                 'first_inspections',
-                'measurements',
+                'dimensions',
                 'second_inspections',
                 'samples',
                 'packagings',

@@ -174,8 +174,8 @@
 
     <section class="mt-4">
         <x-lockable-card :locked="$locked" :overlay="$overlay"
-            title='Measurements <span class="fw-normal text-secondary fs-6">(optional)</span>'>
-            @livewire('inspection-form.step-measurement', ['inspection_report_document_number' => $inspection_report_document_number], key('step-measurement-' . $reloadToken))
+            title='Dimensions <span class="fw-normal text-secondary fs-6">(optional)</span>'>
+            @livewire('inspection-form.step-dimension', ['inspection_report_document_number' => $inspection_report_document_number], key('step-dimension-' . $reloadToken))
         </x-lockable-card>
     </section>
 
