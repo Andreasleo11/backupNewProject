@@ -130,14 +130,8 @@
             </table>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-            <div class="text-muted small">
-                Menampilkan {{ $employees->firstItem() }}–{{ $employees->lastItem() }} dari {{ $employees->total() }}
-                karyawan
-            </div>
-            <div>
-            </div>
+        <div class="mt-3">
+            {{ $employees->links() }}
         </div>
-        {{ $employees->links() }}
     @endif
 </div>

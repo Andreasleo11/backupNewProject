@@ -247,7 +247,7 @@ class EmployeeDailyReportController extends Controller
                 ->get();
 
             $startDate = Carbon::parse($reports->min('work_date') ?? now()->subDays(30));
-            $endDate = Carbon::parse($reports->max('work_date') ?? now());
+            $endDate = now()->subDay();
             $allDates = collect(CarbonPeriod::create($startDate, $endDate))->map(fn($date) => $date->toDateString());
 
             $submittedDates = $reports->pluck('work_date')->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())->unique();
