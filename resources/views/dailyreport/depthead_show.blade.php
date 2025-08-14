@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container py-5">
-        <a href="{{ route('reports.depthead.index') }}" class="btn btn-outline-secondary mb-3">
+        <a href="{{ route('daily-reports.index') }}" class="btn btn-outline-secondary mb-3">
             <i class="bi bi-arrow-left-circle me-1"></i> Kembali ke Daftar Karyawan
         </a>
 

@@ -219,75 +219,6 @@ class EmployeeDailyReportController extends Controller
         return redirect()->route('employee-login')->with('success', 'Logout berhasil.');
     }
 
-
-    public function indexDepthead(Request $request)
-    {
-        $user = auth()->user();
-
-        // 1. Authorization check
-        if ($user->is_head || $user->specification->name === 'DIRECTOR') {
-            // 2. Get department-specific employees from master
-            $employeeQuery = Employee::query();
-            if ($user->name === 'Bernadett' || $user->specification->name === 'DIRECTOR') {
-            } else {
-                $employeeQuery->where('Dept', $user->department->dept_no);
-            }
-            $validEmployees = $employeeQuery->get();
-            $validNiks = $validEmployees->pluck('NIK')->toArray();
-
-            // 3. Filtered reports only where NIK and Nama match
-            $reportQuery = DB::table('employee_daily_reports as dr')
-                ->join('employees as e', function ($join) use ($validNiks) {
-                    $join->on('dr.employee_id', '=', 'e.NIK')
-                        ->whereColumn('dr.employee_name', 'e.Nama')
-                        ->whereColumn('dr.departement_id', 'e.Dept')
-                        ->whereIn('e.NIK', $validNiks);
-                })
-                ->select('dr.*');
-
-            // 4. Prepare dropdown of employees from filtered reports
-            $employeesDropdown = (clone $reportQuery)
-                ->select('employee_id', DB::raw('MIN(employee_name) as employee_name'))
-                ->groupBy('employee_id')
-                ->get();
-
-            // 5. Apply filter from request
-            $filterEmployeeId = $request->input('filter_employee_id');
-            if ($filterEmployeeId && in_array($filterEmployeeId, $validNiks)) {
-                $reportQuery->where('dr.employee_id', $filterEmployeeId);
-            }
-
-            $filterDepartmentNo = $request->input('filter_department_no');
-            if ($filterDepartmentNo) {
-                $reportQuery->where('dr.departement_id', $filterDepartmentNo);
-            }
-
-            // 6. Fetch and enrich employee records with latest work date & time
-            $filteredReports = $reportQuery
-                ->select('employee_id', 'departement_id', DB::raw('MIN(employee_name) as employee_name'))
-                ->groupBy('employee_id', 'departement_id')
-                ->get();
-
-            $employees = $filteredReports->map(function ($employee) {
-                $latest = EmployeeDailyReport::where('employee_id', $employee->employee_id)
-                    ->orderByDesc('work_date')
-                    ->orderByDesc('work_time')
-                    ->first();
-
-                $employee->latest_work_date = $latest->work_date ?? '-';
-                $employee->latest_work_time = $latest->work_time ?? '-';
-
-                return $employee;
-            });
-
-            $departmentNos = Department::pluck('dept_no');
-            return view('dailyreport.depthead_index', compact('employees', 'employeesDropdown', 'departmentNos', 'filterEmployeeId', 'filterDepartmentNo'));
-        } else {
-            abort(403, 'Anda tidak memiliki akses');
-        }
-    }
-
-
     public function showDepthead(Request $request, $employee_id)
     {
         $user = auth()->user();
@@ -316,7 +247,7 @@ class EmployeeDailyReportController extends Controller
                 ->get();
 
             $startDate = Carbon::parse($reports->min('work_date') ?? now()->subDays(30));
-            $endDate = Carbon::parse($reports->max('work_date') ?? now());
+            $endDate = now()->subDay();
             $allDates = collect(CarbonPeriod::create($startDate, $endDate))->map(fn($date) => $date->toDateString());
 
             $submittedDates = $reports->pluck('work_date')->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())->unique();
