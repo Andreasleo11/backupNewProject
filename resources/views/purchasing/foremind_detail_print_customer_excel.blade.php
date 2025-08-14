@@ -62,7 +62,7 @@
                                 Report</td>
                         </tr>
                         <tr>
-                            <td colspan="13"></td>
+                            <td></td>
                         </tr>
                         <tr>
                             <th align="center" style="vertical-align: middle; height:60px; font-size: 18px;">No</th>
@@ -115,13 +115,16 @@
                                     </tr>
                                     <tr>
                                         <td colspan="4" align=right style="vertical-align: middle;">
-                                            <strong>Total</strong></td>
+                                            <strong>Total</strong>
+                                        </td>
                                         @foreach ($monthlyTotals as $monthlyTotal)
                                             <td align="center" style="vertical-align: middle;">
-                                                <strong>{{ number_format($monthlyTotal, 2) }}</strong></td>
+                                                <strong>{{ $monthlyTotal }}</strong>
+                                            </td>
                                         @endforeach
                                         <td align="center" style="vertical-align: middle;">
-                                            <strong>{{ number_format(array_sum($monthlyTotals), 2) }}</strong></td>
+                                            <strong>{{ array_sum($monthlyTotals) }}</strong>
+                                        </td>
                                         <td></td> <!-- Empty cell for customer -->
                                     </tr>
                                     <tr>
@@ -178,10 +181,12 @@
                             <td colspan="4" align=right style="vertical-align: middle;"><strong>Total</strong></td>
                             @foreach ($monthlyTotals as $monthlyTotal)
                                 <td align="center" style="vertical-align: middle;">
-                                    <strong>{{ $monthlyTotal }}</strong></td>
+                                    <strong>{{ $monthlyTotal }}</strong>
+                                </td>
                             @endforeach
                             <td align="center" style="vertical-align: middle;">
-                                <strong>{{ array_sum($monthlyTotals) }}</strong></td>
+                                <strong>{{ array_sum($monthlyTotals) }}</strong>
+                            </td>
                             <td></td> <!-- Empty cell for customer -->
                         </tr>
                     </tbody>

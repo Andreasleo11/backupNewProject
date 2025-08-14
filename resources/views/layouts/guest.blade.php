@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    {{ $slot ?? '' }}
     @yield('content')
 </body>
 

@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name') }}</title>
+    <title>@yield('title')</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -34,6 +34,7 @@
             @include('partials.navbar')
 
             <main class="content px-5 py-5 height-vh-100">
+                {{ $slot ?? '' }}
                 @yield('content')
             </main>
 
