@@ -19,6 +19,9 @@ class StepDetail extends Component
     public $operator;
     public $shift;
 
+    public $part_name;
+    public $part_number;
+
     public $periodKey;
 
     // Parent Livewire
@@ -40,7 +43,8 @@ class StepDetail extends Component
     public function mount()
     {
         $saved = session('stepDetailSaved');
-        $this->period = session('stepDetailSaved.period') ?? 1;
+        // dd($saved);
+        $this->period = data_get($saved, 'period', 1);
 
         $this->generateDocumentNumber();
 
@@ -62,6 +66,8 @@ class StepDetail extends Component
 
         $this->shift = session('stepHeaderSaved.shift') ?? null;
         $this->operator = session('stepHeaderSaved.operator') ?? 'N/A';
+        $this->part_name = session('stepHeaderSaved.part_name') ?? 'N/A';
+        $this->part_number = session('stepHeaderSaved.part_number') ?? 'N/A';
         // dd($this->period);
 
         if ($this->shift) $this->updatedPeriod();
@@ -128,12 +134,18 @@ class StepDetail extends Component
 
     private function generateDocumentNumber()
     {
-        $this->periodKey = "q{$this->period}";
+        $this->periodKey = $this->periodKey();
         if (session("stepDetailSaved.details.$this->periodKey.document_number")) {
             $this->document_number = session("stepDetailSaved.details.$this->periodKey.document_number");
         } else {
             $this->document_number = 'DETAIL-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4));
         }
+    }
+
+    private function periodKey(?int $period = null): string
+    {
+        $p = $period ?? $this->period ?? 1;
+        return 'p' . $p;
     }
 
     public function saveStep(): void
@@ -161,8 +173,14 @@ class StepDetail extends Component
         $this->dispatch('toast', message: 'Detail saved successfully!');
     }
 
-    public function resetStep(): void
+    public function resetStep(bool $clearOnlyCurrentPeriod = true): void
     {
+        // 1) Determine which period to reset 
+        $saved = session('stepDetailSaved', []);
+        // $targetPeriod = data_get($saved, 'period', $this->period ?? 1);
+        // $this->period = (int) $targetPeriod;
+
+        // 2) Clear current form fields (for the selected period)
         $this->reset([
             'start_datetime',
             'end_datetime',
@@ -170,9 +188,41 @@ class StepDetail extends Component
             'end_time',
         ]);
 
-        $this->period = 1;
+        // 3) Optionally clear only this period’s data in the session
+        if ($clearOnlyCurrentPeriod) {
+            $pk = $this->periodKey($this->period);
+
+            // Remove this period from each section if it exists
+            $sections = [
+                'details',
+                'first_inspections',
+                'measurements',
+                'second_inspections',
+                'samples',
+                'packagings',
+                'judgements',
+            ];
+
+            foreach ($sections as $section) {
+                if (isset($saved[$section][$pk])) {
+                    unset($saved[$section][$pk]);
+                }
+            }
+
+            // Keep shift & period in the session
+            $saved['period'] = $this->period;
+            session(['stepDetailSaved' => $saved]);
+        } else {
+            // Or wipe all detail state (full reset)
+            session()->forget('stepDetailSaved');
+        }
+
+        // 4) Recompute default time window for the (saved) period & regenerate doc number
         $this->updatedPeriod();
-        session()->forget('stepDetailSaved');
+        $this->generateDocumentNumber();
+
+        // 5) UI refresh token + toast
+        $this->reloadToken++;
         $this->dispatch('toast', message: 'Step reset successfully!');
     }
 
