@@ -75,7 +75,6 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
-use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -91,7 +90,6 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
-use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
@@ -104,6 +102,9 @@ use App\Livewire\DestinationIndex;
 use App\Livewire\ReportWizard;
 use App\Livewire\VehicleForm;
 use App\Livewire\VehicleIndex;
+use App\Livewire\InspectionForm;
+use App\Livewire\InspectionIndex;
+use App\Livewire\InspectionShow;
 
 /*
 |--------------------------------------------------------------------------
@@ -710,14 +711,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
     Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
-    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
-
-    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
-    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
-
-    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
-    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
@@ -1029,11 +1022,11 @@ Route::get('/dashboard-employee-login', function () {
     return redirect($link);
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
-    Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
-    Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
+Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
+Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
+Route::get('/inspection-reports/{inspectionReport}', InspectionShow::class)->name('inspection-reports.show');
 
+Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
