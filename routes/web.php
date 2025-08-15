@@ -76,6 +76,8 @@ use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\DeliveryNoteController;
+use App\Http\Controllers\EmployeeController;
+
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
@@ -92,6 +94,17 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Livewire\DailyReportIndex;
+
+//TESTING SAP SERVICE 
+use App\Services\BaseSapService;
+use App\Services\FctBomWipService;
+use App\Services\FctInventoryMtrService;
+use App\Services\FctInventoryFgService;
+use App\Services\FctLineProductionService;
+use App\Services\FctForecastService;
+//TESTING SAP SERVICE
+
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNotePrint;
@@ -99,9 +112,12 @@ use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
+use App\Livewire\ReportWizard;
 use App\Livewire\VehicleForm;
 use App\Livewire\VehicleIndex;
-
+use App\Livewire\InspectionForm;
+use App\Livewire\InspectionIndex;
+use App\Livewire\InspectionShow;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -112,6 +128,132 @@ use App\Livewire\VehicleIndex;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+///TESTING API SAP FORECAST
+
+
+Route::get('/test-sap-login', function (BaseSapService $sap) {
+    return response()->json([
+        'token' => $sap->getToken(), // nanti kita bikin fungsi getToken() di service
+    ]);
+});
+
+Route::get('/test-sap-data', function (BaseSapService $sap) {
+    $data = $sap->testGet('/api/sap_bom_wip/list', [
+        'startDate' => '2025-03-01',
+        'itemGroupCode' => '104'
+    ]);
+    return response()->json($data);
+});
+
+Route::get('/sap/bom/raw1', function (FctBomWipService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    $itemGroupCode = request('itemGroupCodes', '103,168');
+    
+    return response()->json([
+        'status' => 'success',
+        'source' => 'bom_wip',
+        'data' => $svc->getBomWip($startDate, $itemGroupCode),
+    ]);
+});
+
+// GET /sap/bom/raw2 → Get data BOM WIP SEMI
+Route::get('/sap/bom/raw2', function (FctBomWipService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    $itemGroupCode = request('itemGroupCodes', '103,168');
+    
+    return response()->json([
+        'status' => 'success',
+        'source' => 'bom_wip_semi',
+        'data' => $svc->getSemi($startDate, $itemGroupCode),
+    ]);
+});
+
+// GET /sap/bom/raw3 → Get data BOM WIP SEMI-SEMI
+Route::get('/sap/bom/raw3', function (FctBomWipService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    $itemGroupCode = request('itemGroupCodes', '103,168');
+    
+    return response()->json([
+        'status' => 'success',
+        'source' => 'bom_wip_semi_semi',
+        'data' => $svc->getSemiSemi($startDate, $itemGroupCode),
+    ]);
+});
+// GET /sap/bom/combined → Get gabungan semua data
+Route::get('/sap/bom/combined', function (FctBomWipService $svc) {
+    $startDate = request('startDate', '2025-06-01');
+    $itemGroupCode = request('itemGroupCodes', '103,168');
+
+    return response()->json([
+        'status' => 'success',
+        'source' => 'combined',
+        'data' => $svc->getAllCombined($startDate, $itemGroupCode),
+    ]);
+});
+
+
+// GET /sap/bom/distinct → Get item_code unik dari gabungan semua data
+Route::get('/sap/bom/distinct', function (FctBomWipService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    $itemGroupCode = request('itemGroupCodes', '103,168');
+
+    return response()->json([
+        'status' => 'success',
+        'distinct_item_codes' => $svc->getDistinctItemCodes($startDate, $itemGroupCode),
+    ]);
+});
+
+
+Route::get('/sap/fct/inventory/mtr', function (FctInventoryMtrService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    return response()->json([
+        'status' => 'success',
+        'source' => 'fct_inventory_mtr_combined',
+        'data' => $svc->getAll($startDate)
+    ]);
+});
+
+Route::get('/sap/fct/inventory/fg', function (FctInventoryFgService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    return response()->json([
+        'status' => 'success',
+        'source' => 'fct_inventory_fg',
+        'data' => $svc->getAll($startDate)
+    ]);
+});
+
+Route::get('/sap/fct/line/production', function (FctLineProductionService $svc) {
+        $startDate = '2024-11-01';
+    return response()->json([
+        'status' => 'success',
+        'source' => 'fct_line_production',
+        'data' => $svc->getAll($startDate)
+    ]);
+});
+
+Route::get('/sap/fct/forecast', function (FctForecastService $svc) {
+    $startDate = request('startDate', now()->toDateString());
+    return response()->json([
+        'status' => 'success',
+        'source' => 'sap_forecast',
+        'data' => $svc->getAll($startDate)
+    ]);
+});
+
+//TESTING SYNC DATA 
+Route::get('/fctbomwip-sync', [FctBomWipService::class, 'SyncData']);
+Route::get('/fctinventorymtr-sync', [FctInventoryMtrService::class, 'SyncData']);
+Route::get('/fctinventoryfg-sync', [FctInventoryFgService::class, 'SyncData']);
+Route::get('/fctlineproduction-sync', [FctLineProductionService::class, 'SyncData']);
+Route::get('/forecast-sync', [FctForecastService::class, 'SyncData']);
+
+// TESTING SYNC DATA END
+
+
+
+
+
+///// TESTING API SAP FORECAST
 
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
@@ -154,7 +296,7 @@ Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, '
 Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
-Route::get('/test/depthead', [EmployeeDailyReportController::class, 'indexDepthead'])->name('reports.depthead.index');
+
 Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 
 Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
@@ -167,6 +309,10 @@ Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name(
 Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
 Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/daily-reports', DailyReportIndex::class)
+        ->name('daily-reports.index');
+});
 Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/home'); // Redirect to the home route for authenticated users
@@ -233,25 +379,13 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index')->middleware('permission:get-vqc-reports');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail')->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{id}/edit', [QaQcReportController::class, 'edit'])->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
-        Route::post('/qaqc/report/{id}/updateheader', [QaQcReportController::class, 'updateHeader'])->name('qaqc.report.updateHeader');
-        Route::get('/qaqc/report/{id}/editdetail', [QaQcReportController::class, 'editDetail'])->name('qaqc.report.editDetail');
-        Route::delete('/qaqc/report/{id}/deletedetail', [QaQcReportController::class, 'destroyDetail'])->name('qaqc.report.deleteDetail');
-        Route::post('/qaqc/report/{id}/updatedetail', [QaQcReportController::class, 'updateDetail'])->name('qaqc.report.updateDetail');
-        Route::get('/qaqc/report/{id}/editDefect', [QaQcReportController::class, 'editDefect'])->name('qaqc.report.editDefect');
-        Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update'])->name('qaqc.report.update')->middleware('permission:update-vqc-report');
-        Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create')->middleware('permission:create-vqc-report');
-        Route::post('/qaqc/reports/createHeader', [QaqcReportController::class, 'postCreateHeader'])->name('qaqc.report.createheader');
-        Route::get('/qaqc/reports/createdetail', [QaqcReportController::class, 'createDetail'])->name('qaqc.report.createdetail');
-        Route::post('/qaqc/reports/postdetail', [QaqcReportController::class, 'postDetail'])->name('qaqc.report.postdetail');
-        Route::get('/qaqc/reports/createdefect', [QaqcReportController::class, 'createDefect'])->name('qaqc.report.createdefect');
-        Route::post('/qaqc/reports/postdefect', [QaqcReportController::class, 'postDefect'])->name('qaqc.report.postdefect');
-        Route::delete('/qaqc/report/{id}/deletedefect', [QaqcReportController::class, 'deleteDefect'])->name('qaqc.report.deletedefect');
-        Route::post('/update-active-tab', [QaqcReportController::class, 'updateActiveTab'])->name('update-active-tab');
+        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
+        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create')->middleware('permission:create-vqc-report');
+      
         Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
         Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
         Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
-        Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
+       
         Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete')->middleware('permission:delete-vqc-report');
 
         // adding new defect category
@@ -260,6 +394,9 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update')->middleware('permission:update-defect-category');
         Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete')->middleware('permission:delete-defect-category');
         // adding new defect category
+        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
+            ->name('price-log.import')
+            ->middleware(['auth']);
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
@@ -1040,6 +1177,10 @@ Route::get('/dashboard-employee-login', function () {
     return redirect($link);
 });
 
+Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
+Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
+Route::get('/inspection-reports/{inspectionReport}', InspectionShow::class)->name('inspection-reports.show');
+
 Route::middleware('auth')->group(function () {
     Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
     Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
@@ -1061,3 +1202,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
     Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
 });
+
+Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
+    Route::get('/', DeliveryNoteIndex::class)->name('index');
+    Route::get('/create', DeliveryNoteForm::class)->name('create');
+    Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
+    Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+    Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+});
+
+Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
+Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
