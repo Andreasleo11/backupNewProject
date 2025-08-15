@@ -92,7 +92,6 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
-use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use App\Livewire\DailyReportIndex;
 
@@ -291,7 +290,6 @@ Route::get('/test-overtime', function () {
     }
 });
 
-
 Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
 Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
@@ -324,11 +322,8 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
-
 Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
-
 
 Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
@@ -416,7 +411,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
         Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
     });
-
 
     Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
 
@@ -554,20 +548,17 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("pps/karawang/process5", [PPSKarawangController::class, 'process5'])->name("karawangprocess5");
         Route::get("pps/karawang/process6", [PPSKarawangController::class, 'process6'])->name("karawangprocess6");
 
-
         Route::get("/pps/karawang/items", [PPSKarawangController::class, "itemkarawang"])->name("itemkarawang");
 
         Route::get("/pps/karawang/line", [PPSKarawangController::class, "linekarawang"])->name("linekarawang");
 
         Route::get("pps/karawanginjectionfinal",  [PPSKarawangController::class, "finalresultkarawanginjection"])->name("finalkarawanginjectionpps");
 
-
         Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
         Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
         Route::get("pps/injection/process1", [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
         Route::get("pps/injection/process2", [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
         Route::get("pps/injection/process3", [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
-
 
         Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
         Route::get("pps/injection/process4", [PPSInjectionController::class, 'process4'])->name("injectionprocess4");
@@ -582,7 +573,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         //jika ada post untuk line
 
         Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
-
 
         Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
         Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
@@ -858,14 +848,6 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
     Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
-    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
-
-    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
-    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
-
-    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
-    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
