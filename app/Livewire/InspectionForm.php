@@ -72,6 +72,6 @@ class InspectionForm extends Component
 
     public function render()
     {
-        return view('livewire.inspection-form');
+        return view('livewire.inspection-form')->layout('layouts.guest');
     }
 }

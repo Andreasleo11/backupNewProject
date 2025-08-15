@@ -113,7 +113,19 @@ class DeliveryNoteIndex extends Component
             $query->orderBy($this->sortField, $this->sortDirection);
         }
 
-        $deliveryNotes = $query->paginate(10);
+        $latestNoteId = DeliveryNote::max('id');
+
+        $deliveryNotes = $query
+            ->paginate(10)
+            ->through(function ($note) use ($latestNoteId) {
+                $note->latest = $note->id === $latestNoteId;
+                return $note;
+            });
+
+        if (!auth()->check()) {
+            return view('livewire.delivery-note.index', ['deliveryNotes' => $deliveryNotes])
+                ->layout('layouts.guest');
+        }
 
         return view('livewire.delivery-note.index', [
             'deliveryNotes' => $deliveryNotes,
