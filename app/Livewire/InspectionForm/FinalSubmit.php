@@ -4,7 +4,7 @@ namespace App\Livewire\InspectionForm;
 
 use App\Models\InspectionForm\DetailInspectionReport;
 use App\Models\InspectionForm\FirstInspection;
-use App\Models\InspectionForm\InspectionMeasurement;
+use App\Models\InspectionForm\InspectionDimension;
 use App\Models\InspectionForm\InspectionPackaging;
 use App\Models\InspectionForm\InspectionProblem;
 use App\Models\InspectionForm\InspectionReport;
@@ -21,7 +21,7 @@ class FinalSubmit extends Component
     public $headerData;
     public $detailData;
     public $firstData;
-    public $measurementData;
+    public $dimensionData;
     public $secondData;
     public $samplingData;
     public $packagingData;
@@ -64,7 +64,7 @@ class FinalSubmit extends Component
         $this->detailData = $processedDetailData;
 
         $this->firstData = session('stepDetailSaved.first_inspections', []);
-        $this->measurementData = session('stepDetailSaved.measurements', []);
+        $this->dimensionData = session('stepDetailSaved.dimensions', []);
         $this->secondData = session('stepDetailSaved.second_inspections', []);
         $this->samplingData = session('stepDetailSaved.samples', []);
         $this->packagingData = session('stepDetailSaved.packagings', []);
@@ -197,7 +197,7 @@ class FinalSubmit extends Component
             [
                 'detailData',
                 'firstData',
-                'measurementData',
+                'dimensionData',
                 'secondData',
                 'samplingData',
                 'packagingData',
@@ -217,9 +217,9 @@ class FinalSubmit extends Component
             foreach ($this->firstData as $data) {
                 FirstInspection::create($data);
             }
-            foreach ($this->measurementData as $value) {
+            foreach ($this->dimensionData as $value) {
                 foreach ($value as $data) {
-                    InspectionMeasurement::create($data);
+                    InspectionDimension::create($data);
                 }
             }
             foreach ($this->secondData as $data) {

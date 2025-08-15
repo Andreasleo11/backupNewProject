@@ -1,4 +1,4 @@
-{{-- resources/views/inspection/partials/measurement-table.blade.php --}}
+{{-- resources/views/inspection/partials/dimension-table.blade.php --}}
 @props(['rows'])
 
 @php

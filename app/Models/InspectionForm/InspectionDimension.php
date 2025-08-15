@@ -5,7 +5,7 @@ namespace App\Models\InspectionForm;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class InspectionMeasurement extends Model
+class InspectionDimension extends Model
 {
     use HasFactory;
 

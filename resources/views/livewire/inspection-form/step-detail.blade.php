@@ -44,10 +44,31 @@
                                 @if ($shift) wire:model="shift" @else value="Not Assigned" @endif
                                 disabled>
                         </div>
+                        <div class="col-12 col-lg-6">
+                            <label class="col-form-label">Part Name</label>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control-plaintext text-secondary text-truncate"
+                                style="max-width: 100%;" data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="{{ $part_name ?: 'Not Assigned' }}"
+                                @if ($part_name) wire:model="part_name" @else value="Not Assigned" @endif
+                                readonly>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <label class="col-form-label">Part Code</label>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control-plaintext text-secondary text-truncate"
+                                style="max-width:100%;" data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="{{ $part_number ?: 'Not Assigned' }}"
+                                @if ($part_number) wire:model="part_number" @else value="Not Assigned" @endif
+                                readonly>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="col-md-8">
             @php
                 $locked = empty($shift) || empty($operator);
@@ -101,10 +122,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-end mt-3">
-                        <button type="button" class="btn btn-outline-primary" wire:click='saveStep'>Change</button>
-                        <button type="button" class="btn btn-outline-danger" wire:click='resetStep'>Reset All</button>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-primary" wire:click="saveStep">Change</button>
+
+                        <button type="button" class="btn btn-outline-danger"
+                            onclick="if (confirm('Reset ONLY the current period (P{{ $period }})? This cannot be undone.')) { @this.resetStep(true) }">
+                            Reset Current Period
+                        </button>
+
+                        <button type="button" class="btn btn-outline-danger"
+                            onclick="if (confirm('Reset ALL periods and clear saved data? This cannot be undone.')) { @this.resetStep(false) }">
+                            Reset All
+                        </button>
                     </div>
+
                 </div>
 
                 {{-- ───── Overlay when locked ───── --}}
@@ -143,8 +174,8 @@
 
     <section class="mt-4">
         <x-lockable-card :locked="$locked" :overlay="$overlay"
-            title='Measurements <span class="fw-normal text-secondary fs-6">(optional)</span>'>
-            @livewire('inspection-form.step-measurement', ['inspection_report_document_number' => $inspection_report_document_number], key('step-measurement-' . $reloadToken))
+            title='Dimensions <span class="fw-normal text-secondary fs-6">(optional)</span>'>
+            @livewire('inspection-form.step-dimension', ['inspection_report_document_number' => $inspection_report_document_number], key('step-dimension-' . $reloadToken))
         </x-lockable-card>
     </section>
 
@@ -160,15 +191,15 @@
         </x-lockable-card>
     </section>
 
-    {{-- <section class="mt-4">
-        <x-lockable-card :locked="$locked" :overlay="$overlay" title="Problems">
-            @livewire('inspection-form.step-problem', ['inspection_report_document_number' => $inspection_report_document_number], key('step-problem-' . $reloadToken))
-        </x-lockable-card>
-    </section> --}}
+    <script>
+        function initTooltips() {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                bootstrap.Tooltip.getOrCreateInstance(el);
+            });
+        }
 
-    {{-- <section class="mt-4">
-        <x-lockable-card :locked="$locked" :overlay="$overlay" title="Quantities">
-            @livewire('inspection-form.step-quantity', ['inspection_report_document_number' => $inspection_report_document_number], key('step-quantity-' . $reloadToken))
-        </x-lockable-card>
-    </section> --}}
+        document.addEventListener('DOMContentLoaded', initTooltips);
+        document.addEventListener('livewire:update', initTooltips);
+        document.addEventListener('livewire:navigated', initTooltips);
+    </script>
 </div>
