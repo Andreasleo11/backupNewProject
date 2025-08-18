@@ -92,6 +92,7 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Http\Controllers\ImportJobController;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNotePrint;
@@ -99,6 +100,7 @@ use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
+use App\Livewire\MasterDataPart\ImportParts;
 use App\Livewire\ReportWizard;
 use App\Livewire\VehicleForm;
 use App\Livewire\VehicleIndex;
@@ -1043,4 +1045,10 @@ Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
     Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
     Route::get('/{id}', DeliveryNoteShow::class)->name('show');
     Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/parts/import', ImportParts::class)->name('parts.import');
+    Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });
