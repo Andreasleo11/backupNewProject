@@ -75,7 +75,6 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
-use App\Http\Controllers\DeliveryNoteController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -91,8 +90,8 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
-use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Http\Controllers\ImportJobController;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
@@ -101,9 +100,13 @@ use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
+use App\Livewire\MasterDataPart\ImportParts;
 use App\Livewire\ReportWizard;
 use App\Livewire\VehicleForm;
 use App\Livewire\VehicleIndex;
+use App\Livewire\InspectionForm;
+use App\Livewire\InspectionIndex;
+use App\Livewire\InspectionShow;
 
 /*
 |--------------------------------------------------------------------------
@@ -1029,11 +1032,12 @@ Route::get('/dashboard-employee-login', function () {
     return redirect($link);
 });
 
-Route::middleware('auth')->group(function () {
-    Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
-    Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
-    Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
 
+Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
+Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-report.create');
+Route::get('/inspection-reports/{inspectionReport}', InspectionShow::class)->name('inspection-reports.show');
+
+Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
@@ -1049,6 +1053,12 @@ Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
     Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
     Route::get('/{id}', DeliveryNoteShow::class)->name('show');
     Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/parts/import', ImportParts::class)->name('parts.import');
+    Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });
 
 Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);

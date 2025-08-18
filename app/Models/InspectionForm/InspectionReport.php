@@ -34,9 +34,9 @@ class InspectionReport extends Model
         return $this->hasMany(DetailInspectionReport::class, 'inspection_report_document_number', 'document_number');
     }
 
-    public function measurementData()
+    public function dimensionData()
     {
-        return $this->hasMany(InspectionMeasurement::class, 'inspection_report_document_number', 'document_number');
+        return $this->hasMany(InspectionDimension::class, 'inspection_report_document_number', 'document_number');
     }
 
     public function problemData()
