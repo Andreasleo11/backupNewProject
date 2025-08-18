@@ -526,7 +526,7 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="{{ route('reports.depthead.index') }}" class="sidebar-link">
+                        <a href="{{ route('daily-reports.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Job Report
                         </a>
@@ -693,6 +693,13 @@
                         <a href="{{ route('employee_trainings.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Employee Training
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('daily-report.form') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Upload Daily Report
                         </a>
                     </li>
                 </ul>

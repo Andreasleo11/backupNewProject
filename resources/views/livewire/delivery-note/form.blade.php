@@ -18,7 +18,7 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label">Branch <span class="text-danger">*</span></label>
-                        <select class="form-select @error('branch') is-invalid @enderror" wire:model="branch">
+                        <select class="form-select @error('branch') is-invalid @enderror" wire:model.live="branch">
                             <option value="JAKARTA">JAKARTA (DJ KBN)</option>
                             <option value="KARAWANG">KARAWANG (DJ KIIC)</option>
                         </select>
@@ -30,10 +30,14 @@
                         <label class="form-label">Ritasi <span class="text-danger">*</span></label>
                         <select class="form-select @error('ritasi') is-invalid @enderror" wire:model="ritasi">
                             <option value="">-- Select Ritasi --</option>
-                            <option value="1">1 (Pagi)</option>
-                            <option value="2">2 (Siang)</option>
-                            <option value="3">3 (Sore)</option>
-                            <option value="4">4 (Malam)</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            @if ($branch === 'KARAWANG')
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            @endif
                         </select>
                         @error('ritasi')
                             <div class="invalid-feedback">{{ $message }}</div>

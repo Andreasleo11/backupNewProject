@@ -113,7 +113,7 @@
                     </tr>
                     <tr>
                         <th>Ritasi:</th>
-                        <td>{{ $deliveryNote->ritasi_label }}</td>
+                        <td>{{ $deliveryNote->ritasi }}</td>
                     </tr>
                     <tr>
                         <th>Date:</th>
@@ -124,7 +124,7 @@
             <div class="col-6">
                 <table class="table table-sm table-borderless mb-2">
                     <tr>
-                        <th>Departure:</th>
+                        <th>Departure time:</th>
                         <td>{{ $deliveryNote->formatted_departure_time }}</td>
                     </tr>
                     <tr>
@@ -155,9 +155,7 @@
                         <td>{{ $i + 1 }}</td>
                         <td>{{ $d->destination }}</td>
                         <td>
-                            @foreach ($d->deliveryOrders as $order)
-                                <span class="badge bg-secondary">{{ $order->delivery_order_number }}</span>
-                            @endforeach
+                            {{ $d->deliveryOrders->pluck('delivery_order_number')->implode(', ') }}
                         </td>
                         <td class="wrap-remark">{{ $d->remarks ?: '—' }}</td>
                     </tr>

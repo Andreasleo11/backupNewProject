@@ -2,7 +2,7 @@
     $sections = [
         'Detail Inspection' => $detailData,
         'First Data' => $firstData,
-        'Measurement Data' => $measurementData,
+        'Dimension Data' => $dimensionData,
         'Second Data' => $secondData,
         'Sampling Data' => $samplingData,
         'Packaging Data' => $packagingData,
@@ -12,7 +12,7 @@
 
     /** The “theme” you want each section to live under */
     $groups = [
-        'Initial Inspection' => ['Detail Inspection', 'First Data', 'Measurement Data'],
+        'Initial Inspection' => ['Detail Inspection', 'First Data', 'Dimension Data'],
         'Second Inspection' => ['Second Data', 'Sampling Data', 'Packaging Data'],
         'Results' => ['Judgement Data'],
     ];
