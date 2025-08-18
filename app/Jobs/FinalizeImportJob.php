@@ -15,7 +15,7 @@ class FinalizeImportJob implements ShouldQueue
 
     public function __construct(public int $jobId)
     {
-        $this->onQueue('imports');
+        // $this->onQueue('imports');
         $this->timeout = 120;
         $this->tries   = 1;
     }
