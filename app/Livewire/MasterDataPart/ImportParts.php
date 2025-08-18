@@ -75,7 +75,7 @@ class ImportParts extends Component
 
         // 4) Queue import by path+disk, then chain a finalizer job
         Excel::queueImport(new MasterDataPartsImportQueued($job->id), $path, 'local')
-            ->allOnQueue('imports')     // <— choose a queue name
+            // ->allOnQueue('imports')     // <— choose a queue name
             ->chain([
                 new FinalizeImportJob($job->id),
             ]);

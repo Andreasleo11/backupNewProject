@@ -27,7 +27,7 @@ class MasterDataPartsImportQueued implements
     public function __construct(protected int $jobId)
     {
         // Set queue & runtime options WITHOUT redeclaring properties.
-        $this->onQueue('imports');  // uses trait's $queue
+        // $this->onQueue('imports');  // uses trait's $queue
         $this->timeout = 1200;      // uses trait's $timeout
         $this->tries   = 1;         // uses trait's $tries
     }
