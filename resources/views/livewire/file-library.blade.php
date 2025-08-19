@@ -17,13 +17,6 @@
         </div>
     </div>
 
-    @if (session('ok'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('ok') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     {{-- Upload area --}}
     <div class="card mb-4 shadow-sm">
         <div class="card-body">
@@ -94,7 +87,8 @@
                         @endif
                     </div>
                     <div class="col-md-4 text-md-end">
-                        <button class="btn btn-primary px-4" type="submit" wire:loading.attr="disabled">
+                        <button class="btn btn-primary px-4" type="submit" @disabled(!$newFiles)
+                            wire:loading.attr="disabled">
                             Upload
                         </button>
                     </div>
@@ -259,8 +253,12 @@
                                                     wire:click="deleteOne({{ $it->id }})"
                                                     onclick="return confirm('Delete this file?')">Delete</button></li>
                                             <li>
-                                                <button type="button" class="dropdown-item" x-data
-                                                    x-on:click="navigator.clipboard.writeText('{{ Storage::disk($it->disk)->url($it->path) }}'); $dispatch('toast','Link copied')">
+                                                <button type="button" x-data
+                                                    x-on:click="
+                                                        navigator.clipboard.writeText('{{ Storage::disk($it->disk)->url($it->path) }}');
+                                                        $dispatch('toast', { message: 'Link copied' });
+                                                    "
+                                                    class="dropdown-item">
                                                     Copy link
                                                 </button>
                                             </li>
@@ -282,9 +280,9 @@
                     </div>
                 @else
                     {{-- debug only --}}
-                    @if (app()->environment('local'))
+                    {{-- @if (app()->environment('local'))
                         <pre class="small text-muted">checked: {{ json_encode($checked) }} | allResults: {{ $selectAllResults ? 'yes' : 'no' }}</pre>
-                    @endif
+                    @endif --}}
                     {{-- LIST VIEW (table) --}}
                     @if ($selectPage && !$selectAllResults)
                         <div class="alert alert-light border d-flex justify-content-between align-items-center py-2">
@@ -394,6 +392,14 @@
                                             <button type="button" class="btn btn-sm btn-outline-danger"
                                                 wire:click="deleteOne({{ $it->id }})"
                                                 onclick="return confirm('Delete this file?')">Delete</button>
+                                            <button type="button" x-data
+                                                x-on:click="
+                                                        navigator.clipboard.writeText('{{ Storage::disk($it->disk)->url($it->path) }}');
+                                                        $dispatch('toast', { message: 'Link copied' });
+                                                    "
+                                                class="btn btn-sm btn-outline-secondary">
+                                                Copy link
+                                            </button>
                                         </td>
                                     </tr>
                                     @empty

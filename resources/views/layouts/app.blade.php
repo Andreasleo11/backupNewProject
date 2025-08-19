@@ -35,6 +35,25 @@
 
             <main class="content px-5 py-5 height-vh-100">
                 {{ $slot ?? '' }}
+                @if ($slot)
+                    {{-- Toast Notification --}}
+                    <div x-data class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1080;"
+                        @toast.window="
+                            const el = $refs.toastOk;
+                            el.querySelector('.toast-body').textContent = ($event.detail?.message ?? '');
+                            bootstrap.Toast.getOrCreateInstance(el).show();
+                        ">
+                        <div x-ref="toastOk" class="toast" role="alert" aria-live="assertive" aria-atomic="true"
+                            data-bs-autohide="true">
+                            <div class="toast-header">
+                                <strong class="me-auto">Info</strong>
+                                <small>Now</small>
+                                <button class="btn-close" data-bs-dismiss="toast" type="button"></button>
+                            </div>
+                            <div class="toast-body"></div>
+                        </div>
+                    </div>
+                @endif
                 @yield('content')
             </main>
 

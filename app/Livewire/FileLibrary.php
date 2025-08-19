@@ -250,7 +250,7 @@ class FileLibrary extends Component
         }
 
         $this->reset('newFiles');
-        session()->flash('ok', 'Upload selesai.');
+        $this->dispatch('toast', message: 'Upload selesai.');
         $this->resetPage();
     }
 
@@ -290,7 +290,7 @@ class FileLibrary extends Component
 
         $this->showRename = false;
         $this->selected = null;
-        session()->flash('ok', 'Nama file diperbarui.');
+        $this->dispatch('toast', message: 'Nama file diperbarui.');
     }
 
     public function confirmReplace(int $id): void
@@ -325,7 +325,7 @@ class FileLibrary extends Component
 
         $this->showReplace = false;
         $this->selected = null;
-        session()->flash('ok', 'File berhasil diganti.');
+        $this->dispatch('toast', message: 'File berhasil diganti.');
     }
 
     public function deleteOne(int $id): void
@@ -335,7 +335,7 @@ class FileLibrary extends Component
             Storage::disk($u->disk)->delete($u->path);
         }
         $u->delete();
-        session()->flash('ok', 'File dihapus.');
+        $this->dispatch('toast', message: 'File berhasil dihapus.');
         $this->resetPage();
     }
 
@@ -360,8 +360,7 @@ class FileLibrary extends Component
             }
         });
 
-        // $this->dispatch('toast', 'File terpilih dihapus.');
-        session()->flash('ok', 'File terpilih dihapus.');
+        $this->dispatch('toast', message: 'File terpilih dihapus.');
         $this->resetPage();
     }
 
