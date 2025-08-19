@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\DownloadUploadController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -92,6 +93,7 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use App\Http\Controllers\ImportJobController;
+use App\Http\Controllers\PreviewUploadController;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
@@ -100,6 +102,7 @@ use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
+use App\Livewire\FileLibrary;
 use App\Livewire\MasterDataPart\ImportParts;
 use App\Livewire\ReportWizard;
 use App\Livewire\VehicleForm;
@@ -1063,3 +1066,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
 Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
+
+Route::get('/files', FileLibrary::class)->name('files.index');
+Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
+Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
