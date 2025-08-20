@@ -35,7 +35,7 @@
 
             <main class="content px-5 py-5 height-vh-100">
                 {{ $slot ?? '' }}
-                @if ($slot)
+                @if (!empty($slot))
                     {{-- Toast Notification --}}
                     <div x-data class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1080;"
                         @toast.window="
