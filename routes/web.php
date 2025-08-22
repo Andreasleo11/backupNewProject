@@ -1067,6 +1067,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
 Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
 
-Route::get('/files', FileLibrary::class)->name('files.index');
-Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
-Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
+Route::middleware('auth')->group(function () {
+    Route::get('/files', FileLibrary::class)->name('files.index');
+    Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
+    Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
+});
