@@ -2,6 +2,7 @@
 
 namespace App\Livewire\InspectionForm;
 
+use App\Models\Upload;
 use App\Traits\ClearsNestedSession;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -16,6 +17,7 @@ class StepDimension extends Component
     public $start_time;
     public $end_time;
     public $inspection_report_document_number;
+    public $uploads;
 
     public $periodKey;
 
@@ -106,7 +108,10 @@ class StepDimension extends Component
             }
             // dd($this->start_time, $this->end_time);
         }
-
+        $part_code = session('stepHeaderSaved.part_number');
+        $this->uploads = Upload::whereHas('tags', function ($q) use ($part_code) {
+            $q->where('name', $part_code);
+        })->get();
         // if (empty($this->dimensions)) $this->addDimension();
     }
 
