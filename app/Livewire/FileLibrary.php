@@ -2,14 +2,15 @@
 
 namespace App\Livewire;
 
+use App\Models\Tag;
 use App\Models\Upload;
-use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class FileLibrary extends Component
 {
@@ -47,10 +48,22 @@ class FileLibrary extends Component
     public bool $showReplace = false;
     public $replacement; // TemporaryUploadedFile
 
-    public string $viewMode = 'table';   // or 'table'
+    public string $viewMode = 'grid';   // or 'table'
     public bool $selectPage = false;    // header checkbox (you already wired this)
 
     public bool $selectAllResults = false;
+
+    public array $tagsFilter = [];
+    public string $tagSearch = '';
+    public int $tagLimit = 5;
+
+    public string $newTags = '';
+    public bool $showTagModal = false;
+
+    public bool $showRemoveTagModal = false;
+    public array $removeTagIds = [];
+
+    public bool $tagDropdownOpen = false;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -67,7 +80,7 @@ class FileLibrary extends Component
 
     protected function filteredQuery()
     {
-        $q = \App\Models\Upload::query();
+        $q = Upload::query();
 
         if ($this->search !== '') {
             $q->where('original_name', 'like', '%' . $this->search . '%');
@@ -108,6 +121,11 @@ class FileLibrary extends Component
             });
         }
 
+        if (!empty($this->tagsFilter)) {
+            // match ANY of the selected tags; switch to ->whereHas(...) multiple times if you want ALL
+            $q->whereHas('tags', fn($r) => $r->whereIn('slug', $this->tagsFilter));
+        }
+
         return $q->orderBy($this->sortField, $this->sortDirection);
     }
 
@@ -120,6 +138,50 @@ class FileLibrary extends Component
             ->map(fn($id) => (string) $id)
             ->values()
             ->all();
+    }
+
+    protected function slugify(string $name): string
+    {
+        $slug = Str::slug(mb_strtolower(trim($name)));
+        return Str::limit($slug, 60, '');
+    }
+
+    public function toggleTagFilter(string $slug): void
+    {
+        $selected = collect($this->tagsFilter);
+
+        $this->tagsFilter = $selected->contains($slug)
+            ? $selected->reject(fn($s) => $s === $slug)->values()->all()
+            : $selected->push($slug)->values()->all();
+
+        // keep UI consistent
+        $this->resetPage();
+        $this->selectAllResults = false;
+        $this->checked = [];
+    }
+
+    public function getTopTagsProperty()
+    {
+        return Tag::withCount(['uploads as uses'])
+            ->orderByDesc('uses')->take($this->tagLimit)->get();
+    }
+
+    public function getAllTagsProperty()
+    {
+        return Tag::query()->when($this->tagSearch !== '', fn($q) => $q->where('name', 'like', "%{$this->tagSearch}%"))
+            ->orderBy('name')->limit(300)->get();
+    }
+
+    public function getAllTagsCountProperty()
+    {
+        return Tag::count();
+    }
+
+    public function updatedTagsFilter(): void
+    {
+        $this->resetPage();
+        $this->selectAllResults = false;
+        $this->checked = [];
     }
 
     public function updatedSelectPage($value): void
@@ -364,10 +426,108 @@ class FileLibrary extends Component
         $this->resetPage();
     }
 
-    // Keep your filteredQuery() as is, then:
+    public function removeTagFromItem(int $uploadId, int $tagId): void
+    {
+        if ($u = Upload::with('tags')->find($uploadId)) {
+            $u->tags()->detach($tagId);
+            // Optional: delete orphan tags
+            Tag::whereDoesntHave('uploads')->whereKey($tagId)->delete();
+
+            $this->dispatch('toast', message: 'Tag berhasil dihapus dari file.');
+        }
+    }
+
+    public function addTagsToSelection(): void
+    {
+        $names = collect(preg_split('/[,\n]/', $this->newTags ?? ''))
+            ->map(fn($name) => trim($name))
+            ->filter()
+            ->unique()
+            ->take(25); // guardtail
+
+        if ($names->isEmpty()) {
+            $this->dispatch('toast', message: 'Tidak ada tag yang ditambahkan.');
+            return;
+        }
+
+        // upsert/find tags
+        $tags = $names->map(function ($name) {
+            $slug = $this->slugify($name);
+            return Tag::firstOrCreate(['slug' => $slug], ['name' => $name, 'created_by' => Auth::id()]);
+        });
+
+        $query = $this->selectAllResults
+            ? $this->filteredQuery()->select('id')
+            : Upload::query()->whereKey(array_map('intval', $this->checked))->select('id');
+
+        // attach in chunks
+        $tagIds = $tags->pluck('id')->all();
+        $query->chunkById(500, function ($chunk) use ($tagIds) {
+            $ids = $chunk->pluck('id')->all();
+            Upload::whereKey($ids)->get()->each(function (Upload $u) use ($tagIds) {
+                $u->tags()->syncWithoutDetaching($tagIds);
+            });
+        });
+
+        // clean ui
+        $this->showTagModal = false;
+        $this->newTags = '';
+        $this->dispatch('toast', message: 'Tag berhasil ditambahkan.');
+    }
+
+    public function removeCheckedTagsFromSelection(): void
+    {
+        $tagIds = collect($this->removeTagIds)->map(fn($id) => (int) $id)->filter()->values()->all();
+        if (empty($tagIds)) {
+            $this->dispatch('toast', message: 'Choose at least one tag.');
+            return;
+        }
+
+        $this->bulkDetachTags($tagIds);
+
+        $this->removeTagIds = [];
+        $this->showRemoveTagModal = false;
+        $this->dispatch('toast', message: 'Tags removed.');
+    }
+
+    protected function bulkDetachTags(array $tagIds): void
+    {
+        if (empty($tagIds)) return;
+
+        $idsQuery = $this->selectAllResults
+            ? $this->filteredQuery()->select('id')
+            : Upload::query()->whereIn('id', $this->checked)->select('id');
+
+        $idsQuery->chunkById(500, function ($chunk) use ($tagIds) {
+            $uploads = Upload::whereIn('id', $chunk->pluck('id'))->get();
+            foreach ($uploads as $u) {
+                $u->tags()->detach($tagIds);
+            }
+        });
+
+        // Optional cleanup of orphan tags (only those we touched)
+        Tag::whereIn('id', $tagIds)->whereDoesntHave('uploads')->delete();
+    }
+
+    public function getAvailableTagsProperty()
+    {
+        // Find upload ids in scope
+        $ids = $this->selectAllResults
+            ? $this->filteredQuery()->pluck('id')
+            : collect($this->checked);
+
+        if ($ids->isEmpty()) return collect();
+
+        return Tag::whereHas('uploads', function ($q) use ($ids) {
+            $q->whereIn('uploads.id', $ids);
+        })->orderBy('name')->get();
+    }
+
     public function render()
     {
-        $items = $this->filteredQuery()->paginate($this->perPage);
+        $items = $this->filteredQuery()
+            ->with('tags:id,name,slug') // avoid N+1
+            ->paginate($this->perPage);
         return view('livewire.file-library', compact('items'))->title('File Library');
     }
 }

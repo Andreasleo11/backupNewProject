@@ -47,4 +47,9 @@ class Upload extends Model
     {
         return $this->created_at->timezone('Asia/Jakarta');
     }
+
+    public function tags()
+    {
+        return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
+    }
 }

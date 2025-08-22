@@ -128,6 +128,71 @@
                                 wire:click="$set('type','all')">Reset</button>
                         @endif
                     </div>
+                    {{-- Tag Filter --}}
+                    @php
+                        $visible = $this->topTags;
+                        $allCount = $this->allTagsCount;
+                        $rest = max(0, $allCount - $visible->count());
+                    @endphp
+
+                    <div class="d-flex flex-wrap gap-1 align-items-center mt-2">
+                        <span class="fw-semibold">Tags :</span>
+                        {{-- visible/top tags as pills --}}
+                        @foreach ($visible as $tag)
+                            <button type="button"
+                                class="btn btn-sm {{ in_array($tag->slug, $tagsFilter, true) ? 'btn-dark' : 'btn-outline-secondary' }}"
+                                wire:click="toggleTagFilter('{{ $tag->slug }}')">
+                                {{ $tag->name }}
+                            </button>
+                        @endforeach
+
+                        <div x-data="{ open: @entangle('tagDropdownOpen').live }" class="dropdown" wire:key="tag-filter-dropdown"
+                            @keydown.escape.window="open=false">
+
+                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                x-on:click="open = !open" :aria-expanded="open.toString()">
+                                More tags{{ $rest > 0 ? " (+{$rest})" : '' }}
+                            </button>
+
+                            <div class="dropdown-menu p-2 mt-2" x-show="open" x-transition :class="open ? 'show' : ''"
+                                @click.outside="open = false" style="width:280px; display:block;">
+                                <input type="search" class="form-control form-control-sm mb-2"
+                                    placeholder="Search tags…" wire:model.live.debounce.300ms="tagSearch"
+                                    x-on:click.stop>
+
+                                <div class="border rounded p-1" style="max-height:220px; overflow:auto;"
+                                    x-on:click.stop>
+                                    @forelse ($this->allTags as $tag)
+                                        <label class="d-flex align-items-center gap-2 py-1 px-1 rounded"
+                                            wire:key="tag-{{ $tag->id }}">
+                                            <input type="checkbox" class="form-check-input"
+                                                value="{{ $tag->slug }}" wire:model.live="tagsFilter">
+                                            <span class="flex-grow-1">{{ $tag->name }}</span>
+                                            @if (isset($tag->uses))
+                                                <span class="badge text-bg-light">{{ $tag->uses }}</span>
+                                            @endif
+                                        </label>
+                                    @empty
+                                        <div class="text-muted small px-1 py-2">No matching tags.</div>
+                                    @endforelse
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <button type="button" class="btn btn-sm btn-light"
+                                        wire:click="$set('tagsFilter', [])">Clear</button>
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                        x-on:click="open=false">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!empty($tagsFilter))
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                wire:click="$set('tagsFilter', [])">
+                                Reset tag filter
+                            </button>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="col-lg-3 d-flex justify-content-lg-end gap-2">
@@ -161,10 +226,16 @@
             </div>
 
             {{-- Bulk actions (top-right in desktop) --}}
-            <div class="d-flex justify-content-end mb-2">
+            <div class="d-flex justify-content-end mb-2 gap-2">
                 <button class="btn btn-outline-danger" wire:click="deleteSelected" @disabled(count($checked) === 0)>
                     Delete selected ({{ count($checked) }})
                 </button>
+                <button class="btn btn-outline-primary" @disabled(!$selectAllResults && count($checked) === 0)
+                    wire:click="$set('showTagModal', true)">
+                    Tag selected
+                </button>
+                <button class="btn btn-outline-warning" wire:click="$set('showRemoveTagModal', true)"
+                    @disabled(!$selectAllResults && count($checked) === 0)>Remove Tags</button>
             </div>
 
             {{-- CONTENT --}}
@@ -172,7 +243,7 @@
                 {{-- GRID VIEW --}}
                 <div class="row g-3">
                     @forelse ($items as $it)
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-2" wire:key="card-{{ $it->id }}">
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3" wire:key="card-{{ $it->id }}">
                             <div class="card h-100 shadow-sm">
                                 <div class="position-relative">
                                     @if ($it->category === 'image')
@@ -227,6 +298,13 @@
                                         {{ $it->size_for_humans }}</div>
                                     <div class="text-muted small">Uploaded {{ $it->created_at_wib->diffForHumans() }}
                                     </div>
+                                    @if ($it->tags->isNotEmpty())
+                                        <div class="mt-1 d-flex flex-wrap gap-1">
+                                            @foreach ($it->tags as $tag)
+                                                <span class="badge text-bg-light border">{{ $tag->name }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="card-footer bg-transparent d-flex gap-2">
@@ -263,6 +341,7 @@
                                                 </button>
                                             </li>
                                         </ul>
+
                                     </div>
                                 </div>
                             </div>
@@ -327,6 +406,7 @@
                                             <x-sort :dir="$sortDirection" />
                                         @endif
                                     </th>
+                                    <th>Tags</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
@@ -379,6 +459,67 @@
                                         <td>
                                             <div class="small">{{ $it->created_at_wib->format('Y-m-d H:i') }}</div>
                                             <div class="text-muted small">{{ $it->created_at_wib->diffForHumans() }}</div>
+                                        </td>
+                                        <td>
+                                            @foreach ($it->tags as $tag)
+                                                <span x-data="{
+                                                    holding: false,
+                                                    timer: null,
+                                                    startAt: 0,
+                                                    duration: 2000,
+                                                    progress: 0,
+                                                    start() {
+                                                        if (this.holding) return;
+                                                        this.holding = true;
+                                                        this.startAt = performance.now();
+                                                        this.loop();
+                                                        this.timer = setTimeout(() => {
+                                                            $wire.removeTagFromItem({{ $it->id }}, {{ $tag->id }});
+                                                            this.reset();
+                                                        }, this.duration);
+                                                    },
+                                                    cancel() {
+                                                        if (!this.holding) return;
+                                                        clearTimeout(this.timer);
+                                                        this.reset();
+                                                    },
+                                                    loop() {
+                                                        if (!this.holding) return;
+                                                        const elapsed = performance.now() - this.startAt;
+                                                        this.progress = Math.min(100, Math.round(elapsed / this.duration * 100));
+                                                        requestAnimationFrame(() => this.loop());
+                                                    },
+                                                    reset() {
+                                                        this.holding = false;
+                                                        this.progress = 0;
+                                                    }
+                                                }"
+                                                    class="position-relative d-inline-flex align-items-center me-2 mb-2">
+                                                    <span
+                                                        class="badge text-bg-light border d-inline-flex align-items-center gap-1"
+                                                        :class="holding ? 'opacity-75' : ''"
+                                                        :style="holding
+                                                            ?
+                                                            `transition: transform .2s; transform: scale(.98);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            background: linear-gradient(to right, rgba(220,53,69,.15) 0%, rgba(220,53,69,.15) ${progress}%,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            transparent ${progress}%, transparent 100%);` :
+                                                            ''">
+                                                        {{ $tag->name }}
+
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-link p-0 ms-1 text-danger text-decoration-none"
+                                                            title="Hold to remove" x-on:pointerdown="start"
+                                                            x-on:pointerup="cancel" x-on:pointerleave="cancel"
+                                                            x-on:touchstart.prevent="start"
+                                                            x-on:touchend="cancel">&times;</button>
+                                                    </span>
+
+                                                    <!-- progress bar line -->
+                                                    <span x-show="holding" x-transition class="position-absolute start-0"
+                                                        style="bottom:-2px; height:2px; background:rgba(220,53,69,.65);"
+                                                        :style="`width:${progress}%;`"></span>
+                                                </span>
+                                            @endforeach
                                         </td>
                                         <td class="text-end">
                                             <a class="btn btn-sm btn-outline-secondary"
@@ -502,6 +643,72 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Add Tag Modal --}}
+            <div class="modal @if ($showTagModal) show d-block @endif" tabindex="-1"
+                @if ($showTagModal) style="background: rgba(0,0,0,.5);" @endif>
+                <div class="modal-dialog">
+                    <div class="modal-content" wire:ignore.self>
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add tags</h5>
+                            <button type="button" class="btn-close" wire:click="$set('showTagModal', false)"></button>
+                        </div>
+
+                        <form wire:submit.prevent="addTagsToSelection">
+                            <div class="modal-body">
+                                <label class="form-label">Tags (comma or newline)</label>
+                                <textarea rows="2" class="form-control" wire:model.defer="newTags" placeholder="e.g. urgent, invoice, Q3"></textarea>
+                                <div class="form-text">
+                                    {{ $selectAllResults ? 'Will apply to ALL filtered results.' : 'Will apply to selected rows.' }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light"
+                                    wire:click="$set('showTagModal', false)">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Add tags</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Remove Tag Modal --}}
+            <div class="modal @if ($showRemoveTagModal) show d-block @endif" tabindex="-1"
+                @if ($showRemoveTagModal) style="background: rgba(0,0,0,.5);" @endif>
+                <div class="modal-dialog">
+                    <div class="modal-content" wire:ignore.self>
+                        <div class="modal-header">
+                            <h5 class="modal-title">Remove tags</h5>
+                            <button type="button" class="btn-close" wire:click="$set('showRemoveTagModal', false)"></button>
+                        </div>
+
+                        <form wire:submit.prevent="removeCheckedTagsFromSelection">
+                            <div class="modal-body">
+                                @forelse ($this->availableTags as $tag)
+                                    <label class="form-check d-block">
+                                        <input class="form-check-input" type="checkbox" wire:model="removeTagIds"
+                                            value="{{ $tag->id }}">
+                                        <span class="form-check-label">{{ $tag->name }}</span>
+                                    </label>
+                                @empty
+                                    <div class="text-muted">No tags in current selection.</div>
+                                @endforelse
+                                <div class="form-text">
+                                    {{ $selectAllResults ? 'Will remove from ALL filtered results.' : 'Will remove from selected rows.' }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light"
+                                    wire:click="$set('showRemoveTagModal', false)">Cancel</button>
+                                <button type="submit" class="btn btn-warning" @disabled(!$selectAllResults && count($checked) === 0)>
+                                    Remove tags
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         {{-- tiny blade component for sort chevron (unchanged) --}}
