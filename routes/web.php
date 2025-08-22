@@ -75,6 +75,7 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\DownloadUploadController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
@@ -91,6 +92,8 @@ use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Http\Controllers\ImportJobController;
+use App\Http\Controllers\PreviewUploadController;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
@@ -99,6 +102,8 @@ use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
+use App\Livewire\FileLibrary;
+use App\Livewire\MasterDataPart\ImportParts;
 use App\Livewire\ReportWizard;
 use App\Livewire\VehicleForm;
 use App\Livewire\VehicleIndex;
@@ -711,6 +716,14 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
     Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
     Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
+
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
+
+    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
     //
@@ -1022,8 +1035,9 @@ Route::get('/dashboard-employee-login', function () {
     return redirect($link);
 });
 
+
 Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
-Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
+Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-report.create');
 Route::get('/inspection-reports/{inspectionReport}', InspectionShow::class)->name('inspection-reports.show');
 
 Route::middleware('auth')->group(function () {
@@ -1044,5 +1058,17 @@ Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
     Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
 });
 
+Route::middleware('auth')->group(function () {
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/parts/import', ImportParts::class)->name('parts.import');
+    Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
+});
+
 Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
 Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
+
+Route::middleware('auth')->group(function () {
+    Route::get('/files', FileLibrary::class)->name('files.index');
+    Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
+    Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
+});

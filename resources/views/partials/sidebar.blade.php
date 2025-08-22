@@ -90,6 +90,12 @@
                             Project Tracker
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('md.parts.import') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Master Data Parts
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
@@ -694,6 +700,12 @@
                         <a href="{{ route('daily-report.form') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Upload Daily Report
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('files.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Files
                         </a>
                     </li>
                 </ul>
