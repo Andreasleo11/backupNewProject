@@ -75,6 +75,8 @@ use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\DownloadUploadController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
@@ -89,9 +91,25 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Http\Controllers\EmployeeTrainingController;
-use App\Http\Controllers\InspectionReportController;
 use App\Http\Controllers\EmployeeDailyReportController;
+use App\Http\Controllers\ImportJobController;
+use App\Http\Controllers\PreviewUploadController;
+use App\Livewire\DailyReportIndex;
+use App\Livewire\DeliveryNote\DeliveryNoteIndex;
+use App\Livewire\DeliveryNote\DeliveryNoteForm;
+use App\Livewire\DeliveryNote\DeliveryNotePrint;
+use App\Livewire\DeliveryNoteShow;
 use Illuminate\Support\Facades\Http;
+use App\Livewire\DestinationForm;
+use App\Livewire\DestinationIndex;
+use App\Livewire\FileLibrary;
+use App\Livewire\MasterDataPart\ImportParts;
+use App\Livewire\ReportWizard;
+use App\Livewire\VehicleForm;
+use App\Livewire\VehicleIndex;
+use App\Livewire\InspectionForm;
+use App\Livewire\InspectionIndex;
+use App\Livewire\InspectionShow;
 
 /*
 |--------------------------------------------------------------------------
@@ -140,22 +158,26 @@ Route::get('/test-overtime', function () {
     }
 });
 
-
 Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
 Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 Route::get('/user-list', [UserRoleController::class, 'User']);
 
-Route::get('/test/depthead', [EmployeeDailyReportController::class, 'indexDepthead'])->name('reports.depthead.index');
 Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 
 Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
 Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
 Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
 
 Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
 Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
 Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
 Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/daily-reports', DailyReportIndex::class)
+        ->name('daily-reports.index');
+});
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -168,11 +190,8 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Route::get('/assign-role-manually', [UserRoleController::class, 'assignRoleToME'])->name('assignRoleManually');
-
 Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
-
 
 Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
@@ -223,25 +242,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index')->middleware('permission:get-vqc-reports');
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail')->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{id}/edit', [QaQcReportController::class, 'edit'])->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
-        Route::post('/qaqc/report/{id}/updateheader', [QaQcReportController::class, 'updateHeader'])->name('qaqc.report.updateHeader');
-        Route::get('/qaqc/report/{id}/editdetail', [QaQcReportController::class, 'editDetail'])->name('qaqc.report.editDetail');
-        Route::delete('/qaqc/report/{id}/deletedetail', [QaQcReportController::class, 'destroyDetail'])->name('qaqc.report.deleteDetail');
-        Route::post('/qaqc/report/{id}/updatedetail', [QaQcReportController::class, 'updateDetail'])->name('qaqc.report.updateDetail');
-        Route::get('/qaqc/report/{id}/editDefect', [QaQcReportController::class, 'editDefect'])->name('qaqc.report.editDefect');
-        Route::put('/qaqc/report/{id}', [QaqcReportController::class, 'update'])->name('qaqc.report.update')->middleware('permission:update-vqc-report');
-        Route::get('/qaqc/reports/create', [QaqcReportController::class, 'create'])->name('qaqc.report.create')->middleware('permission:create-vqc-report');
-        Route::post('/qaqc/reports/createHeader', [QaqcReportController::class, 'postCreateHeader'])->name('qaqc.report.createheader');
-        Route::get('/qaqc/reports/createdetail', [QaqcReportController::class, 'createDetail'])->name('qaqc.report.createdetail');
-        Route::post('/qaqc/reports/postdetail', [QaqcReportController::class, 'postDetail'])->name('qaqc.report.postdetail');
-        Route::get('/qaqc/reports/createdefect', [QaqcReportController::class, 'createDefect'])->name('qaqc.report.createdefect');
-        Route::post('/qaqc/reports/postdefect', [QaqcReportController::class, 'postDefect'])->name('qaqc.report.postdefect');
-        Route::delete('/qaqc/report/{id}/deletedefect', [QaqcReportController::class, 'deleteDefect'])->name('qaqc.report.deletedefect');
-        Route::post('/update-active-tab', [QaqcReportController::class, 'updateActiveTab'])->name('update-active-tab');
+        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
+        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create')->middleware('permission:create-vqc-report');
         Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
         Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
         Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
-        Route::post('/qaqc/reports/', [QaqcReportController::class, 'store'])->name('qaqc.report.store');
         Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete')->middleware('permission:delete-vqc-report');
 
         // adding new defect category
@@ -250,6 +255,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update')->middleware('permission:update-defect-category');
         Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete')->middleware('permission:delete-defect-category');
         // adding new defect category
+
+        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
+            ->name('price-log.import')
+            ->middleware(['auth']);
+
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
@@ -269,7 +279,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
         Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
     });
-
 
     Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
 
@@ -407,20 +416,17 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get("pps/karawang/process5", [PPSKarawangController::class, 'process5'])->name("karawangprocess5");
         Route::get("pps/karawang/process6", [PPSKarawangController::class, 'process6'])->name("karawangprocess6");
 
-
         Route::get("/pps/karawang/items", [PPSKarawangController::class, "itemkarawang"])->name("itemkarawang");
 
         Route::get("/pps/karawang/line", [PPSKarawangController::class, "linekarawang"])->name("linekarawang");
 
         Route::get("pps/karawanginjectionfinal",  [PPSKarawangController::class, "finalresultkarawanginjection"])->name("finalkarawanginjectionpps");
 
-
         Route::get("/pps/injection/start", [PPSInjectionController::class, "indexscenario"])->name("indexinjection");
         Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
         Route::get("pps/injection/process1", [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
         Route::get("pps/injection/process2", [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
         Route::get("pps/injection/process3", [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
-
 
         Route::get("/pps/injection/delivery", [PPSInjectionController::class, "deliveryinjection"])->name("deliveryinjection");
         Route::get("pps/injection/process4", [PPSInjectionController::class, 'process4'])->name("injectionprocess4");
@@ -435,7 +441,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         //jika ada post untuk line
 
         Route::get("pps/injectionfinal",  [PPSInjectionController::class, "finalresultinjection"])->name("finalinjectionpps");
-
 
         Route::get("/pps/second/start", [PPSSecondController::class, "indexscenario"])->name("indexsecond");
         Route::post("/pps/second-process-form", [PPSSecondController::class, "processSecondForm"])->name("processSecondForm");
@@ -1030,6 +1035,40 @@ Route::get('/dashboard-employee-login', function () {
     return redirect($link);
 });
 
-Route::get('/inspection-reports', [InspectionReportController::class, 'index'])->name('inspection-report.index');
-Route::get('/inspection-report/create', [InspectionReportController::class, 'create'])->name('inspection-report.create');
-Route::get('/inspection-reports/{inspectionReport}', [InspectionReportController::class, 'show'])->name('inspection-reports.show');
+
+Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
+Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-report.create');
+Route::get('/inspection-reports/{inspectionReport}', InspectionShow::class)->name('inspection-reports.show');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/destinations', DestinationIndex::class)->name('destination.index');
+    Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
+    Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
+
+    Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
+    Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
+    Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
+});
+
+Route::prefix('delivery-notes')->name('delivery-notes.')->group(function () {
+    Route::get('/', DeliveryNoteIndex::class)->name('index');
+    Route::get('/create', DeliveryNoteForm::class)->name('create');
+    Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
+    Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+    Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/parts/import', ImportParts::class)->name('parts.import');
+    Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
+});
+
+Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
+Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
+
+Route::middleware('auth')->group(function () {
+    Route::get('/files', FileLibrary::class)->name('files.index');
+    Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
+    Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
+});

@@ -32,10 +32,8 @@ class FormOvertimeController extends Controller
         $dataheaderQuery = HeaderFormOvertime::with('user', 'department', 'details');
 
         $dataheaderQuery->where(function ($query) use ($user, $request) {
-            // Now everything is scoped properly here
-
             if ($user->role->name === 'SUPERADMIN') {
-                $query->with('approvals.step');
+                $query->whereNotNull('status');
             } elseif ($user->specification->name === 'VERIFICATOR') {
                 $query->where(function ($subQuery) {
                     $subQuery->where('is_approve', 1)
@@ -52,20 +50,29 @@ class FormOvertimeController extends Controller
                 $query->where('status', 'waiting-gm');
                 $query->where('branch', $user->name === 'pawarid' ? 'Karawang' : 'Jakarta');
             } elseif ($user->is_head) {
-                $query->where(function ($q) use ($user) {
-                    $q->where('dept_id', $user->department->id)
-                        ->orWhereHas('department', function ($qq) use ($user) {
-                            if ($user->department->name === 'LOGISTIC') {
-                                $qq->where('name', 'STORE');
-                            }
-                        });
+                $query->whereHas('department', function ($query) use ($user) {
+                    // dd($user->department->id);
+                    $query->where('dept_id', $user->department->id);
+                    if ($user->department->name === 'LOGISTIC') {
+                        $query->orWhere('name', 'STORE');
+                    }
                 });
+
+                // $query->where('status', '!=', 'waiting-creator');
                 $query->where('status', 'waiting-dept-head');
             } else {
                 if ($user->name === 'Umi') {
-                    $query->whereIn('dept_id', [1, 2]);
+                    $query->whereHas('department', function ($subQuery) {
+                        $subQuery->whereIn('name', ['QA', 'QC']);
+                    });
+                } elseif ($user->name === 'nurul') {
+                    $query->whereHas('department', function ($subQuery) {
+                        $subQuery->whereIn('name', ['PLASTIC INJECTION', 'MAINTENANCE MACHINE']);
+                    });
                 } else {
-                    $query->where('dept_id', $user->department_id);
+                    $query->whereHas('department', function ($subQuery) use ($user) {
+                        $subQuery->where('name', $user->department->name);
+                    });
                 }
             }
 
@@ -82,7 +89,7 @@ class FormOvertimeController extends Controller
             if ($request->filled('dept')) {
                 $query->where('dept_id', $request->dept);
             }
-          
+
             if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
                 $query->where('is_push', $request->status);
             }
@@ -110,7 +117,7 @@ class FormOvertimeController extends Controller
         if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
             $dataheaderQuery->where('is_push', $request->status);
         }
-      
+
         if ($request->filled('info_status')) {
             $status = $request->input('info_status');
 
@@ -125,13 +132,24 @@ class FormOvertimeController extends Controller
             });
         }
 
-        if($request->filled('is_push')){
+        if ($request->filled('is_push')) {
             $dataheaderQuery->where('is_push', $request->is_push);
         }
 
-        $dataheader = $dataheaderQuery
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        if ($user->specification->name === 'VERIFICATOR') {
+            $dataheader = $dataheaderQuery
+                ->orderByRaw('(
+                    SELECT detail_form_overtime.overtime_date
+                    FROM detail_form_overtime
+                    WHERE detail_form_overtime.header_id = header_form_overtime.id
+                    LIMIT 1
+                ) ASC');
+        } else {
+            $dataheader = $dataheaderQuery
+                ->orderBy('id', 'desc');
+        }
+
+        $dataheader = $dataheader->paginate(10);
 
         $departments = Department::all();
 
@@ -150,7 +168,7 @@ class FormOvertimeController extends Controller
     {
         return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');
     }
-  
+
     public function detail($id)
     {
         $header = HeaderFormOvertime::with('user', 'department', 'approvals', 'approvals.step')->find($id);
@@ -624,7 +642,7 @@ class FormOvertimeController extends Controller
                 $out_date = $row[4] ?? null;
                 $out_time = $row[5] ?? null;
                 $nett = $row[6] ?? null;
-                
+
                 $in_date_formatted = null;
                 $out_date_formatted = null;
                 $in_time_formatted = null;

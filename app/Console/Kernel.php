@@ -40,6 +40,8 @@ class Kernel extends ConsoleKernel
         $schedule->command('notify:overtime')
             ->dailyAt('09:00')
             ->timezone('Asia/Jakarta');
+
+        $schedule->command('notify:missing-reports')->dailyAt('09:00')->timezone('Asia/Jakarta');
     }
 
     /**

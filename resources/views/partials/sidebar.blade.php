@@ -90,6 +90,12 @@
                             Project Tracker
                         </a>
                     </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('md.parts.import') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Master Data Parts
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
@@ -457,12 +463,31 @@
                         </a>
                     </li>
 
-
-
                     <li class="sidebar-list">
                         <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             List All Item Barcode
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('delivery-notes.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Delivery Notes
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('destination.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Destination
+                        </a>
+                    </li>
+
+                    <li class="sidebar-list">
+                        <a href="{{ route('vehicles.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Vehicles
                         </a>
                     </li>
                 </ul>
@@ -501,7 +526,7 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="{{ route('reports.depthead.index') }}" class="sidebar-link">
+                        <a href="{{ route('daily-reports.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Job Report
                         </a>
@@ -518,12 +543,12 @@
                         <li class="sidebar-item">
                             <a href="{{ route('actual.import.form') }}" class="sidebar-link">
                                 <i class='bx bx-file'></i>
-                                    Import Actual Overtime 
+                                Import Actual Overtime
                             </a>
                         </li>
                     @endif
 
-                     <li class="sidebar-item">
+                    <li class="sidebar-item">
                         <a href="{{ route('overtime.summary') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Summary Form Overtime
@@ -668,6 +693,19 @@
                         <a href="{{ route('employee_trainings.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Employee Training
+                        </a>
+                    </li>
+
+                    <li class="sidebar-item">
+                        <a href="{{ route('daily-report.form') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Upload Daily Report
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ route('files.index') }}" class="sidebar-link">
+                            <i class='bx bx-file'></i>
+                            Files
                         </a>
                     </li>
                 </ul>

@@ -181,11 +181,11 @@
                                     ])
                                 </x-inspection-section>
 
-                                {{-- Measurement Data (optional) --}}
+                                {{-- Dimension Data (optional) --}}
                                 <x-inspection-section parent="accordionQ{{ $p }}"
-                                    id="measure{{ $p }}" title="Measurement Data">
-                                    @include('inspection.partials.measurement-table', [
-                                        'rows' => $h->measurementData,
+                                    id="measure{{ $p }}" title="Dimension Data">
+                                    @include('inspection.partials.dimension-table', [
+                                        'rows' => $h->dimensionData,
                                     ])
                                 </x-inspection-section>
 

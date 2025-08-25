@@ -21,6 +21,8 @@
         "flatpickr": "^4.6.13",
         "intro.js": "^7.2.0",
         "jquery": "^3.7.1",
+        "laravel-echo": "^2.1.6",
+        "pusher-js": "^8.4.0",
         "select2": "^4.1.0-rc.0",
         "signature_pad": "^5.0.2",
         "tom-select": "^2.3.1"
