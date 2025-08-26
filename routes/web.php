@@ -103,7 +103,7 @@ use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
 use App\Livewire\FileLibrary;
-use App\Livewire\FormOvertime\Index as FormOvertimeIndex;
+use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use App\Livewire\Overtime\Create as FormOvertimeCreate;
 use App\Livewire\MasterDataPart\ImportParts;
 use App\Livewire\ReportWizard;
@@ -707,8 +707,8 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::get("/forecastcustomermaster", [ForecastCustomerController::class, 'index'])->name("fc.index")->middleware('permission:get-forecast-customer-index');
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 
-    Route::get("/formovertime/index", FormOvertimeIndex::class)->name("formovertime.index");
-    Route::get("/formovertime/create", FormOvertimeCreate::class)->name("formovertime.create");
+    Route::get("/overtimes", FormOvertimeIndex::class)->name("overtime.index");
+    Route::get("/overtime/create", FormOvertimeCreate::class)->name("formovertime.create");
     Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
     Route::delete("formovertime/{id}", [FormOvertimeController::class, 'destroy'])->name("formovertime.delete");

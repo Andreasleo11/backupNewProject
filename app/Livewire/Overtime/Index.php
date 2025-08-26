@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\FormOvertime;
+namespace App\Livewire\Overtime;
 
 use App\Models\Department;
 use App\Models\HeaderFormOvertime;
@@ -445,7 +445,7 @@ class Index extends Component
         // Build stats for cards
         $stats = $this->buildStats($dataheader);
 
-        return view('livewire.form-overtime.index', [
+        return view('livewire.overtime.index', [
             'dataheader'  => $dataheader,
             'departments' => $this->departments,
             'user'        => Auth::user(),

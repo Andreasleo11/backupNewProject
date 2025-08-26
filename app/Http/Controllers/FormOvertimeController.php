@@ -25,14 +25,6 @@ use App\Exports\OvertimeSummaryExport;
 
 class FormOvertimeController extends Controller
 {
-    public function create()
-    {
-        $employees = Employee::get();
-        $departements = Department::get();
-
-        return view("formovertime.create", compact("employees", "departements"));
-    }
-
     public function downloadTemplate()
     {
         return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');

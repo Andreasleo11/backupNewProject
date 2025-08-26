@@ -183,7 +183,7 @@ class Create extends Component
 
         return $result instanceof HeaderFormOvertime
             ? redirect()->route('formovertime.detail', $result->id)->with('success', 'Overtime created successfully.')
-            : redirect()->route('formovertime.index')->with('error', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
+            : redirect()->route('overtime.index')->with('error', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
     }
 
     public function render()

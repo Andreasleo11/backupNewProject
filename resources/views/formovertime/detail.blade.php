@@ -15,7 +15,7 @@
 
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-light px-3 py-2 rounded shadow-sm">
-            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('overtime.index') }}">Form Overtime</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>

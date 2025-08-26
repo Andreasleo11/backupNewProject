@@ -19,7 +19,7 @@
     {{-- Breadcrumb --}}
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb bg-light rounded py-2">
-            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('overtime.index') }}">Form Overtime</a></li>
             <li class="breadcrumb-item active">List</li>
         </ol>
     </nav>
