@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class HeaderFormOvertime extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'header_form_overtime';
 
     protected $fillable = [

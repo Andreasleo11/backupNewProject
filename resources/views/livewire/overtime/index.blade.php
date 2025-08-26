@@ -513,7 +513,7 @@
                                         </a>
                                         <button class="btn btn-outline-danger btn-sm"
                                             wire:click="$dispatch('confirm-delete', { id: {{ $fot->id }} })"
-                                            wire:loading.attr="disabled">
+                                            wire:loading.attr="disabled" title="Delete this record">
                                             <i class="bi bi-trash"></i> Delete
                                         </button>
                                     </div>
@@ -599,12 +599,46 @@
         </div>
     </div>
 
-    {{-- Delete confirm (optional: you can use your modal partial) --}}
-    <script>
-        window.addEventListener('confirm-delete', e => {
-            if (confirm(`Delete report with ID = ${e.detail.id} ?`)) {
-                Livewire.find(@this.__instance.id).call('delete', e.detail.id)
-            }
-        })
-    </script>
+    {{-- Delete Confirmation Modal (no <script> tag) --}}
+    <div x-data="{
+        m: null,
+        init() {
+            this.m = new bootstrap.Modal(this.$refs.modal, { backdrop: 'static', keyboard: false });
+            // Listen for Livewire browser events
+            window.addEventListener('show-delete-modal', () => this.m.show());
+            window.addEventListener('hide-delete-modal', () => this.m.hide());
+        },
+        close() { this.m?.hide(); }
+    }" x-init="init()">
+        <div class="modal fade" id="deleteModal" x-ref="modal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true" wire:ignore.self>
+            <div class="modal-dialog">
+                <div class="modal-content shadow">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">Delete Form Overtime</h5>
+                        <button type="button" class="btn-close" @click="close()" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        Are you sure you want to delete
+                        <strong>#{{ $pendingDeleteId }}</strong>?
+                        <div class="text-muted small mt-1">This action cannot be undone.</div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @click="close()">Cancel</button>
+                        <button type="button" class="btn btn-danger" wire:click="deleteConfirmed"
+                            wire:target="deleteConfirmed" wire:loading.attr="disabled">
+                            <span class="spinner-border spinner-border-sm me-1" wire:loading
+                                wire:target="deleteConfirmed"></span>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 </div>

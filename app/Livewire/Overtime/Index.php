@@ -8,6 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -55,6 +56,40 @@ class Index extends Component
 
     public array $departments = [];
     public string $statsScope = 'all'; // 'all' or 'page'
+
+    public ?int $pendingDeleteId = null;
+
+    #[On('confirm-delete')] // fired from the Delete button
+    public function confirmDelete(int $id): void
+    {
+        $this->pendingDeleteId = $id;
+
+        // Tell the frontend to open the modal
+        $this->dispatch('show-delete-modal');
+    }
+
+    public function deleteConfirmed(): void
+    {
+        $id = $this->pendingDeleteId;
+        if (!$id) return;
+
+        $fot = HeaderFormOvertime::with('details')->findOrFail($id);
+
+        // (Optional) Gate/Policy check
+        // Gate::authorize('delete', $fot);
+
+        // If FK doesn't cascade, do it here:
+        $fot->details()->delete();
+
+        $fot->delete();
+
+        $this->pendingDeleteId = null;
+
+        // Close modal + toast + refresh page/pagination
+        $this->dispatch('hide-delete-modal');
+        $this->dispatch('toast', message: "Form Overtime #{$id} deleted.");
+        $this->resetPage();
+    }
 
     /**
      * Clicking a card applies the info status filter.
