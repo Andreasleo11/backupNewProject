@@ -10,7 +10,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h2 class="fw-bold mb-0">Form Overtime List</h2>
         @if (Auth::user()->department->name !== 'MANAGEMENT')
-            <a href="{{ route('formovertime.create') }}" class="btn btn-success shadow-sm">
+            <a href="{{ route('overtime.create') }}" class="btn btn-success shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> Create Form Overtime
             </a>
         @endif

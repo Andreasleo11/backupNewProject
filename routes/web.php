@@ -708,7 +708,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
     Route::post("/add/forecastmaster", [ForecastCustomerController::class, "addnewmaster"])->name('addnewforecastmaster');
 
     Route::get("/overtimes", FormOvertimeIndex::class)->name("overtime.index");
-    Route::get("/overtime/create", FormOvertimeCreate::class)->name("formovertime.create");
+    Route::get("/overtime/create", FormOvertimeCreate::class)->name("overtime.create");
     Route::post("/formovertime/insert", [FormOvertimeController::class, 'insert'])->name("formovertime.insert");
     Route::get("/formovertime/detail/{id}", [FormOvertimeController::class, 'detail'])->name("formovertime.detail");
     Route::delete("formovertime/{id}", [FormOvertimeController::class, 'destroy'])->name("formovertime.delete");
