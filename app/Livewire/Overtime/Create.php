@@ -188,7 +188,7 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.overtime-form.create', [
+        return view('livewire.overtime.create', [
             'departements' => Department::orderBy('name')->get(),
             'employees' => $this->dept_id
                 ? Employee::whereHas('department', fn($q) => $q->where('id', $this->dept_id))
