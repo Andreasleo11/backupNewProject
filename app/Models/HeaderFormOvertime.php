@@ -17,7 +17,6 @@ class HeaderFormOvertime extends Model
         'user_id',
         'dept_id',
         'branch',
-        'is_approve',
         'status',
         'is_design',
         'is_export',
@@ -148,7 +147,7 @@ class HeaderFormOvertime extends Model
         $cc = [$report->user->email];
         $status = ucwords(str_replace('-', ' ', $report->status));
 
-        if ($report->is_approve === 1 || $report->is_approve === 0) {
+        if ($report->status === 'approved' || $report->status === 'rejected') {
             $user = $report->user;
             array_push($cc, $verificator);
         }

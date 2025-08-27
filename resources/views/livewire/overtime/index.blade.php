@@ -30,7 +30,7 @@
                 <span class="text-sm fw-bold text-secondary">Info Summary</span>
 
                 {{-- Scope switch (All results vs This page) --}}
-                <div class="btn-group btn-group-sm" role="group" aria-label="Stats scope">
+                <div class="btn-group btn-group-sm p-2" role="group" aria-label="Stats scope">
                     <input type="radio" class="btn-check" id="scopeAll" name="statsScope" value="all"
                         wire:model.live="statsScope">
                     <label class="btn btn-outline-secondary" for="scopeAll">All results</label>
@@ -185,7 +185,7 @@
                 {{-- Right tools --}}
                 <div class="ms-auto d-flex align-items-center gap-2">
                     {{-- Per-page --}}
-                    <select class="form-select form-select-sm" style="max-width: 120px" wire:model.live="perPage">
+                    <select class="form-select form-select" style="max-width: 120px" wire:model.live="perPage">
                         <option value="10">10 / page</option>
                         <option value="25">25 / page</option>
                         <option value="50">50 / page</option>
@@ -195,21 +195,21 @@
                     <div class="btn-group ms-1" role="group" aria-label="Density">
                         <input type="radio" class="btn-check" id="denseOn" name="density" value="1"
                             wire:model.live="dense">
-                        <label class="btn btn-outline-secondary btn-sm" for="denseOn" data-bs-toggle="tooltip"
+                        <label class="btn btn-outline-secondary btn" for="denseOn" data-bs-toggle="tooltip"
                             title="Compact rows">
                             <i class="bi bi-list"></i>
                         </label>
 
                         <input type="radio" class="btn-check" id="denseOff" name="density" value="0"
                             wire:model.live="dense">
-                        <label class="btn btn-outline-secondary btn-sm" for="denseOff" data-bs-toggle="tooltip"
+                        <label class="btn btn-outline-secondary btn" for="denseOff" data-bs-toggle="tooltip"
                             title="Comfortable rows">
                             <i class="bi bi-ui-checks-grid"></i>
                         </label>
                     </div>
 
                     {{-- Mobile: open offcanvas --}}
-                    <button class="btn btn-outline-secondary btn-sm d-md-none" data-bs-toggle="offcanvas"
+                    <button class="btn btn-outline-secondary btn d-md-none" data-bs-toggle="offcanvas"
                         data-bs-target="#filterOffcanvas">
                         <i class="bi bi-sliders"></i> Filters
                     </button>
@@ -475,7 +475,7 @@
                                 <td>{{ $fot->first_overtime_date ? \Carbon\Carbon::parse($fot->first_overtime_date)->format('d-m-Y') : '-' }}
                                 </td>
                                 <td>
-                                    @include('partials.formovertime-status', ['fot' => $fot])
+                                    <x-overtime-form-status-badge :status="$fot->status" />
                                     @if ($fot->is_push == 1)
                                         <div class="text-success small mt-1" data-bs-toggle="tooltip"
                                             title="Pushed by Verificator">
@@ -518,7 +518,8 @@
                                         </button>
                                     </div>
                                 </td>
-                                <td>{{ \Carbon\Carbon::parse($fot->created_at)->format('d-m-Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($fot->created_at)->timezone('Asia/Jakarta')->format('d-m-Y') }}
+                                </td>
                             </tr>
                         @empty
                             <tr>

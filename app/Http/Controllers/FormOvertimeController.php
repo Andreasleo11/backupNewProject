@@ -61,7 +61,7 @@ class FormOvertimeController extends Controller
         // Update form status if final step
 
         if ($form->currentStep() === null) {
-            $form->update(['status' => 'approved', 'is_approve' => 1]);
+            $form->update(['status' => 'approved']);
         } elseif ($form->nextStep()) {
             $status = 'waiting-' . str_replace('_', '-', $form->nextStep()->role_slug);
             $form->update(['status' => $status]);
@@ -81,7 +81,6 @@ class FormOvertimeController extends Controller
         HeaderFormOvertime::find($id)
             ->update([
                 'description' => $request->description,
-                'is_approve' => false,
                 'status' => 'rejected',
             ]);
 

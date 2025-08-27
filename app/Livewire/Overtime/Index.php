@@ -206,6 +206,7 @@ class Index extends Component
         $this->isPush     = null;
         $this->search     = '';
         $this->range      = null;
+        $this->infoStatus = null;
         $this->resetPage();
     }
 
@@ -361,7 +362,7 @@ class Index extends Component
                 $query->whereNotNull('status');
             } elseif ($user->specification->name === 'VERIFICATOR') {
                 $query->where(function ($subQuery) {
-                    $subQuery->where('is_approve', 1)
+                    $subQuery->where('status', 'approved')
                         ->orWhere(function ($q) {
                             $q->where('status', 'waiting-dept-head')
                                 ->whereHas('department', fn($qq) => $qq->where('name', 'PERSONALIA'));
