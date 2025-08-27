@@ -533,7 +533,7 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a href="{{ route('formovertime.index') }}" class="sidebar-link">
+                        <a href="{{ route('overtime.index') }}" class="sidebar-link">
                             <i class='bx bx-file'></i>
                             Form Overtime
                         </a>
