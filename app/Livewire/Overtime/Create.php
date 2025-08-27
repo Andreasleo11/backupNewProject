@@ -6,8 +6,6 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Department;
 use App\Models\Employee;
-use App\Models\HeaderFormOvertime;
-use Illuminate\Support\Facades\Auth;
 use App\Services\OvertimeFormService;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -186,7 +184,7 @@ class Create extends Component
             return redirect()->route('formovertime.detail', $header->id)->with('success', 'Overtime created succesfully');
         } catch (ValidationException $e) {
             return redirect()->back()->withErrors($e->errors())->with('error', 'Tidak ada data valid yang dimasukkan, header dibatalkan.');
-        } catch(Throwable $e){
+        } catch (Throwable $e) {
             report($e);
             return redirect()->back()->with('error', 'Terjadi kesalahan saat membuat lembur.');
         }
