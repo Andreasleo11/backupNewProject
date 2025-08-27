@@ -25,145 +25,6 @@ use App\Exports\OvertimeSummaryExport;
 
 class FormOvertimeController extends Controller
 {
-    public function index(Request $request)
-    {
-        HeaderFormOvertime::doesntHave('details')->delete();
-        $user = Auth::user();
-        $dataheaderQuery = HeaderFormOvertime::with('user', 'department', 'details');
-
-        $dataheaderQuery->where(function ($query) use ($user, $request) {
-            if ($user->role->name === 'SUPERADMIN') {
-                $query->whereNotNull('status');
-            } elseif ($user->specification->name === 'VERIFICATOR') {
-                $query->where(function ($subQuery) {
-                    $subQuery->where('is_approve', 1)
-                        ->orWhere(function ($q) {
-                            $q->where('status', 'waiting-dept-head')
-                                ->whereHas('department', function ($qq) {
-                                    $qq->where('name', 'PERSONALIA');
-                                });
-                        });
-                });
-            } elseif ($user->specification->name === 'DIRECTOR') {
-                $query->where('status', 'waiting-director');
-            } elseif ($user->is_gm) {
-                $query->where('status', 'waiting-gm');
-                $query->where('branch', $user->name === 'pawarid' ? 'Karawang' : 'Jakarta');
-            } elseif ($user->is_head) {
-                $query->whereHas('department', function ($query) use ($user) {
-                    // dd($user->department->id);
-                    $query->where('dept_id', $user->department->id);
-                    if ($user->department->name === 'LOGISTIC') {
-                        $query->orWhere('name', 'STORE');
-                    }
-                });
-
-                // $query->where('status', '!=', 'waiting-creator');
-                $query->where('status', 'waiting-dept-head');
-            } else {
-                if ($user->name === 'Umi') {
-                    $query->whereHas('department', function ($subQuery) {
-                        $subQuery->whereIn('name', ['QA', 'QC']);
-                    });
-                } elseif ($user->name === 'nurul') {
-                    $query->whereHas('department', function ($subQuery) {
-                        $subQuery->whereIn('name', ['PLASTIC INJECTION', 'MAINTENANCE MACHINE']);
-                    });
-                } else {
-                    $query->whereHas('department', function ($subQuery) use ($user) {
-                        $subQuery->where('name', $user->department->name);
-                    });
-                }
-            }
-
-            // Additional filters
-            if ($request->filled('start_date') && $request->filled('end_date')) {
-                $startDate = $request->input('start_date');
-                $endDate = $request->input('end_date');
-                $query->whereHas('details', function ($q) use ($startDate, $endDate) {
-                    $q->whereDate('start_date', '>=', $startDate)
-                        ->whereDate('start_date', '<=', $endDate);
-                });
-            }
-
-            if ($request->filled('dept')) {
-                $query->where('dept_id', $request->dept);
-            }
-
-            if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
-                $query->where('is_push', $request->status);
-            }
-
-            // Include personal entries too
-            $query->orWhere('user_id', $user->id);
-        });
-
-        // === FILTER TAMBAHAN ===
-        // Check if both start_date and end_date are provided by the user
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $startDate = $request->input('start_date');
-            $endDate = $request->input('end_date');
-
-            $dataheaderQuery->whereHas('details', function ($query) use ($startDate, $endDate) {
-                $query->whereDate('start_date', '>=', $startDate)
-                    ->whereDate('start_date', '<=', $endDate);
-            });
-        }
-
-        if ($request->filled('dept')) {
-            $dataheaderQuery->where('dept_id', $request->dept);
-        }
-
-        if ($request->filled('status') && $user->specification->name === 'VERIFICATOR') {
-            $dataheaderQuery->where('is_push', $request->status);
-        }
-
-        if ($request->filled('info_status')) {
-            $status = $request->input('info_status');
-
-            $dataheaderQuery->whereHas('details', function ($q) use ($status) {
-                if ($status === 'pending') {
-                    $q->whereNull('status');
-                } elseif ($status === 'approved') {
-                    $q->where('status', 'Approved');
-                } elseif ($status === 'rejected') {
-                    $q->where('status', 'Rejected');
-                }
-            });
-        }
-
-        if ($request->filled('is_push')) {
-            $dataheaderQuery->where('is_push', $request->is_push);
-        }
-
-        if ($user->specification->name === 'VERIFICATOR') {
-            $dataheader = $dataheaderQuery
-                ->orderByRaw('(
-                    SELECT detail_form_overtime.overtime_date
-                    FROM detail_form_overtime
-                    WHERE detail_form_overtime.header_id = header_form_overtime.id
-                    LIMIT 1
-                ) ASC');
-        } else {
-            $dataheader = $dataheaderQuery
-                ->orderBy('id', 'desc');
-        }
-
-        $dataheader = $dataheader->paginate(10);
-
-        $departments = Department::all();
-
-        return view("formovertime.index", compact("dataheader", "departments"));
-    }
-
-    public function create()
-    {
-        $employees = Employee::get();
-        $departements = Department::get();
-
-        return view("formovertime.create", compact("employees", "departements"));
-    }
-
     public function downloadTemplate()
     {
         return Excel::download(new OvertimeExportExample(), 'overtime_template.xlsx');
@@ -200,7 +61,7 @@ class FormOvertimeController extends Controller
         // Update form status if final step
 
         if ($form->currentStep() === null) {
-            $form->update(['status' => 'approved', 'is_approve' => 1]);
+            $form->update(['status' => 'approved']);
         } elseif ($form->nextStep()) {
             $status = 'waiting-' . str_replace('_', '-', $form->nextStep()->role_slug);
             $form->update(['status' => $status]);
@@ -220,7 +81,6 @@ class FormOvertimeController extends Controller
         HeaderFormOvertime::find($id)
             ->update([
                 'description' => $request->description,
-                'is_approve' => false,
                 'status' => 'rejected',
             ]);
 

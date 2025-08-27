@@ -76,7 +76,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         $mail->line(new HtmlString($table));
         $mail->line(new HtmlString('<br>'));
 
-        $mail->action('Go to Dashboard', route('formovertime.index'));
+        $mail->action('Go to Dashboard', route('overtime.index'));
 
         return $mail->line('Please take necessary action. Thank you.');
     }

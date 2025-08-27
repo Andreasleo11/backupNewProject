@@ -15,26 +15,26 @@
 
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb bg-light px-3 py-2 rounded shadow-sm">
-            <li class="breadcrumb-item"><a href="{{ route('formovertime.index') }}">Form Overtime</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('overtime.index') }}">Form Overtime</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
 
     <div class="d-flex justify-content-end gap-2 mb-3">
-        @if ($header->status === 1 && $authUser->id === $header->user->id)
+        @if ($header->status === 'waiting-creator' && auth()->user()->role->name === 'SUPERADMIN')
             <button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal"
                 class="btn btn-outline-primary">
                 <i class='bx bx-edit'></i> Edit
             </button>
         @endif
-        @if ($header->status === 5 && $authUser->specification->name === 'VERIFICATOR')
+        @if ($header->status === 'waiting-director' && $authUser->specification->name === 'VERIFICATOR')
             <a href="{{ route('export.overtime', $header->id) }}" class="btn btn-outline-success">
                 <i class="bi bi-file-earmark-excel"></i> Export to Excel
             </a>
         @endif
     </div>
 
-    @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+    @if ($header->status === 'approved' && $authUser->specification->name === 'VERIFICATOR')
         <button id="btnPushAll" data-header-id="{{ $header->id }}"
             class="bg-red-600 hover:bg-red-700 text-black font-semibold px-4 py-2 rounded">
             Push All to JPayroll
@@ -46,7 +46,7 @@
 
     @include('partials.formovertime-autographs')
 
-    @if ($header->is_approve === 0)
+    @if ($header->status === 'rejected')
         <div class="container my-4">
             <div class="alert alert-danger shadow border-0 position-relative">
                 <div class="d-flex align-items-center mb-2">
@@ -132,7 +132,7 @@
                                 <th class="align-middle">Lama OT</th>
                                 </th>
                                 <th class="align-middle">Remark</th>
-                                @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+                                @if ($header->status === 'approved' && $authUser->specification->name === 'VERIFICATOR')
                                     <th class="align-middle">Action</th>
                                 @else
                                     <th class="align-middle">Status Jpayroll</th>
@@ -190,7 +190,7 @@
                                         @endphp
                                     </td>
                                     <td>{{ $data->remarks }}</td>
-                                    @if ($header->is_approve === 1 && $authUser->specification->name === 'VERIFICATOR')
+                                    @if ($header->status === 'approved' && $authUser->specification->name === 'VERIFICATOR')
                                         <td> @include('partials.delete-confirmation-modal', [
                                             'id' => $data->id,
                                             'route' => 'formovertime.destroyDetail',
