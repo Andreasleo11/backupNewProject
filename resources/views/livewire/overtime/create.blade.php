@@ -1,6 +1,7 @@
 @section('title', 'Create Overtime Form - ' . env('APP_NAME'))
 
 <div class="container">
+    @include('partials.alert-success-error')
     <h2 class="h4 fw-bold text-primary mb-4">Create Overtime Form</h2>
     <form wire:submit.prevent="submit" enctype="multipart/form-data">
         <div class="bg-white p-4 rounded shadow-sm border">

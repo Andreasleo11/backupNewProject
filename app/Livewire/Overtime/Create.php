@@ -10,6 +10,8 @@ use App\Models\HeaderFormOvertime;
 use Illuminate\Support\Facades\Auth;
 use App\Services\OvertimeFormService;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class Create extends Component
 {
@@ -177,13 +179,17 @@ class Create extends Component
 
     public function submit()
     {
-        $validated = $this->validate();
-        $user = Auth::user();
-        $result = OvertimeFormService::create(collect($validated), $user);
+        try {
+            $validated = $this->validate();
+            $header = OvertimeFormService::create(collect($validated));
 
-        return $result instanceof HeaderFormOvertime
-            ? redirect()->route('formovertime.detail', $result->id)->with('success', 'Overtime created successfully.')
-            : redirect()->route('overtime.index')->with('error', 'Tidak ada data valid yang dimasukkan, header dihapus otomatis.');
+            return redirect()->route('formovertime.detail', $header->id)->with('success', 'Overtime created succesfully');
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors($e->errors())->with('error', 'Tidak ada data valid yang dimasukkan, header dibatalkan.');
+        } catch(Throwable $e){
+            report($e);
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat membuat lembur.');
+        }
     }
 
     public function render()
