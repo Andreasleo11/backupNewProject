@@ -164,6 +164,7 @@ class JPayrollService
                 'Grade' => $item['GradeCode'],
                 'employee_status' => match (true) {
                     $item['EmployeeStatus'] === 'ALL IN MANAJEMEN' || str_contains($item['EmployeeStatus'], 'ALL IN ASING') => 'TETAP',
+                    str_contains($item['EmployeeStatus'], 'KONTRAK GAMA') => 'MAGANG',
                     str_contains($item['EmployeeStatus'], 'TETAP') => 'TETAP',
                     str_contains($item['EmployeeStatus'], 'YAYASAN') => 'YAYASAN',
                     str_contains($item['EmployeeStatus'], 'KONTRAK') => 'KONTRAK',
@@ -172,9 +173,10 @@ class JPayrollService
                 },
                 'Branch' => str_contains($item['EmployeeStatus'], 'KARAWANG') ? 'KARAWANG' : 'JAKARTA',
                 'status' => $item['EmployeeStatus'],
+                'organization_structure' => $item['OrganizationStructure'],
             ];
 
-            $requiredFields = ['Nama', 'Gender', 'Dept', 'start_date', 'Grade', 'employee_status', 'Branch'];
+            $requiredFields = ['Nama', 'Gender', 'Dept', 'start_date', 'Grade', 'employee_status', 'Branch', 'status', 'organization_structure'];
             $hasNull = collect($data)->only($requiredFields)->contains(fn($v) => is_null($v));
 
             if ($hasNull) {
@@ -291,4 +293,23 @@ class JPayrollService
         }
     }
 
+    private function showOvertimePerEmployee(string $companyArea, string $nik, ?string $noVoucher = null, ?string $date1 = null, ?string $date2 = null): array
+    {
+        $params = [
+            'CompanyArea' => $companyArea,
+            'NIK'         => $nik,
+            'NoVoucher'   => $noVoucher, //optional
+            'Date1'       => $date1, // Format: "DD/MM/YYYY"
+            'Date2'       => $date2, // Format: "DD/MM/YYYY"
+        ];
+
+        // Validasi hanya CompanyArea dan NIK yang wajib
+        $validation = ApiHelper::validateParams($params, ['CompanyArea', 'NIK']);
+        if ($validation) return $validation;
+
+        // Kirim request ke API
+        $response = $this->request('API_View_Overtime.php', array_filter($params));
+
+        return ApiHelper::handleApiResponse($response);
+    }
 }

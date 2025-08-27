@@ -38,16 +38,16 @@ class PurchaseRequestsDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', 'purchaserequests.action')
-            ->editColumn('status', function($pr){
+            ->editColumn('status', function ($pr) {
                 return view('partials.pr-status-badge', ['pr' => $pr])->render();
             })
-            ->editColumn('action', function($pr){
+            ->editColumn('action', function ($pr) {
                 return view('partials.pr-action-buttons', ['pr' => $pr, 'user' => auth()->user()])->render();
             })
-            ->editColumn('date_pr', function($pr){
+            ->editColumn('date_pr', function ($pr) {
                 return Carbon::parse($pr->date_pr)->setTimezone('Asia/Jakarta')->format('d-m-Y');
             })
-            ->editColumn('approved_at', function($pr){
+            ->editColumn('approved_at', function ($pr) {
                 return $pr->approved_date ? Carbon::parse($pr->approved_at)->setTimezone('Asia/Jakarta')->format('d-m-Y (H:i)') : '';
             })
             ->searchPane(
@@ -56,7 +56,7 @@ class PurchaseRequestsDataTable extends DataTable
                     ->select('branch as value', 'branch as label')
                     ->distinct()
                     ->get(),
-                function(\Illuminate\Database\Eloquent\Builder $query, array $values) {
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
                     return $query->whereIn('branch', $values);
                 }
             )
@@ -66,7 +66,7 @@ class PurchaseRequestsDataTable extends DataTable
                     ->select('from_department as value', 'from_department as label')
                     ->distinct()
                     ->get(),
-                function(\Illuminate\Database\Eloquent\Builder $query, array $values){
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
                     return $query->whereIn('from_department', $values);
                 }
             )
@@ -76,7 +76,7 @@ class PurchaseRequestsDataTable extends DataTable
                     ->select('to_department as value', 'to_department as label')
                     ->distinct()
                     ->get(),
-                function(\Illuminate\Database\Eloquent\Builder $query, array $values){
+                function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
                     return $query->whereIn('to_department', $values);
                 }
             )
@@ -84,10 +84,10 @@ class PurchaseRequestsDataTable extends DataTable
                 'status',
                 PurchaseRequest::query()
                     ->select('status as value', DB::raw('(CASE ' .
-                        implode(' ', array_map(function($key, $label) {
+                        implode(' ', array_map(function ($key, $label) {
                             return "WHEN status = $key THEN '$label'";
                         }, array_keys($this->statusMap), $this->statusMap)) .
-                    ' ELSE status END) as label'))
+                        ' ELSE status END) as label'))
                     ->distinct()
                     ->get(),
             )
@@ -116,7 +116,13 @@ class PurchaseRequestsDataTable extends DataTable
         if ($isPersonaliaHead) {
             $query->where(function ($query) {
                 $query->whereNotNull('autograph_1')
-                    ->whereNotNull('autograph_2')
+                    ->where(function ($query) {
+                        $query->whereNotNull('autograph_2')
+                            ->where('branch', 'JAKARTA')
+                            ->orWhere(function ($query) {
+                                $query->where('type', 'factory')->where('branch', 'KARAWANG');
+                            });
+                    })
                     ->whereNotNull('autograph_5')
                     ->where(function ($query) {
                         $query->whereNull('autograph_3')
@@ -130,7 +136,6 @@ class PurchaseRequestsDataTable extends DataTable
             });
         } elseif ($isGM) {
             $query->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
                 ->whereNull('autograph_6')
                 ->where(function ($query) use ($userDepartmentName) {
                     $query->where('type', 'factory');
@@ -140,6 +145,10 @@ class PurchaseRequestsDataTable extends DataTable
                         $query->where('from_department', '!=', 'MOULDING');
                     }
                 });
+            // Pawarid case
+            if ($userDepartmentName !== 'PLASTIC INJECTION') {
+                $query->whereNotNull('autograph_2');
+            }
         } elseif ($isHead) {
             $query->where(function ($query) use ($userDepartmentName) {
                 $query->where('from_department', $userDepartmentName);
@@ -174,10 +183,16 @@ class PurchaseRequestsDataTable extends DataTable
         } elseif ($user->role->name === 'SUPERADMIN') {
             $query->whereNot('from_department', 'ADMIN');
         } else {
-            $query->where('from_department', $userDepartmentName);
+            $query->where(function ($subQuery) use($userDepartmentName){
+                $subQuery->where('from_department', $userDepartmentName);
+                
+                if(auth()->user()->department->name === 'QA'){
+                    $subQuery->orWhere('from_department', 'QC')
+                        ->orWhere('user_id_create', auth()->user()->id);;
+                }
+            });
         }
 
-        // $query->orWhere('user_id_create', auth()->user()->id);
 
         return $query;
     }
@@ -191,25 +206,25 @@ class PurchaseRequestsDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('purchaserequests-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    ->dom('PBflrtip')
-                    ->addColumnDef([
-                        'searchPanes' => [
-                            'show' => true,
-                            'viewTotal' => false,
-                            'viewCount' => false,
-                        ],
-                    ])
-                    ->orderBy(3)
-                    // ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                    ]);
+            ->setTableId('purchaserequests-table')
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            ->dom('PBflrtip')
+            ->addColumnDef([
+                'searchPanes' => [
+                    'show' => true,
+                    'viewTotal' => false,
+                    'viewCount' => false,
+                ],
+            ])
+            ->orderBy(3)
+            // ->selectStyleSingle()
+            ->buttons([
+                Button::make('excel'),
+                Button::make('csv'),
+                Button::make('pdf'),
+                Button::make('print'),
+            ]);
     }
 
     /**
@@ -229,9 +244,9 @@ class PurchaseRequestsDataTable extends DataTable
             Column::make('pr_no'),
             Column::make('supplier'),
             Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->addClass('text-center'),
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
             Column::computed('status')
                 ->exportable(false)
                 ->printable(false)

@@ -23,35 +23,6 @@
         background-color: #f0f0f0;
     }
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    th, td {
-        border: 1px solid #dddddd;
-        text-align: left;
-        padding: 8px;
-    }
-
-    th {
-        background-color: #f2f2f2;
-    }
-
-    .add-data-btn {
-        text-align: right;
-        margin-bottom: 10px;
-    }
-
-    .add-data-btn button {
-        padding: 8px 16px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-    }
-
      .itemNameInput {
         width: 100%;
         box-sizing: border-box;
