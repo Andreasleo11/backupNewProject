@@ -590,14 +590,8 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="text-muted small">
-            Showing {{ $dataheader->firstItem() }} to {{ $dataheader->lastItem() }}
-            of {{ $dataheader->total() }} entries
-        </div>
-        <div>
-            {{ $dataheader->links() }}
-        </div>
+    <div class="mt-3">
+        {{ $dataheader->links() }}
     </div>
 
     {{-- Delete Confirmation Modal (no <script> tag) --}}

@@ -21,7 +21,7 @@
     </nav>
 
     <div class="d-flex justify-content-end gap-2 mb-3">
-        @if ($header->status === 'waiting-creator' && $authUser->id === $header->user->id)
+        @if ($header->status === 'waiting-creator' && auth()->user()->role->name === 'SUPERADMIN')
             <button data-bs-target="#edit-form-overtime-modal-{{ $header->id }}" data-bs-toggle="modal"
                 class="btn btn-outline-primary">
                 <i class='bx bx-edit'></i> Edit
