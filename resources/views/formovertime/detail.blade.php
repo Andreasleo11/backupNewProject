@@ -44,8 +44,6 @@
     <div id="pushAllResult" class="mt-2 text-sm"></div>
   @endif
 
-  @include('partials.formovertime-autographs')
-
   @if ($header->status === 'rejected')
     <div class="container my-4">
       <div class="alert alert-danger shadow border-0 position-relative">
