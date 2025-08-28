@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 class PPICHomeController extends Controller
 {
-    public function index(){
-        return view('ppic.home');
+    public function index()
+    {
+        return view("ppic.home");
     }
 }

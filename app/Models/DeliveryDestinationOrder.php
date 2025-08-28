@@ -10,10 +10,7 @@ class DeliveryDestinationOrder extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'delivery_destination_id',
-        'delivery_order_number',
-    ];
+    protected $fillable = ["delivery_destination_id", "delivery_order_number"];
 
     public function destination()
     {

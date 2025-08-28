@@ -11,8 +11,8 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 class DefectsSheet implements FromCollection, WithTitle, WithHeadings
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
         return Defect::all();
@@ -20,14 +20,14 @@ class DefectsSheet implements FromCollection, WithTitle, WithHeadings
 
     public function headings(): array
     {
-         // Get column names from the defects table
-         $columnNames = Schema::getColumnListing('defects');
+        // Get column names from the defects table
+        $columnNames = Schema::getColumnListing("defects");
 
-         // Return the column names as headers
-         return $columnNames;
+        // Return the column names as headers
+        return $columnNames;
     }
     public function title(): string
     {
-        return 'Defects'; // Custom title for the sheet
+        return "Defects"; // Custom title for the sheet
     }
 }

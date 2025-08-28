@@ -18,15 +18,21 @@ class MonthlyBudgetReportTemplateExport implements FromArray, WithHeadings
     {
         // Define header row for the Excel template
 
-        if($this->deptNo == 363){
+        if ($this->deptNo == 363) {
             // If Moulding
             return [
-                ['Name', 'Spec', 'UoM', 'Last Recorded Stock', 'Usage Per Month', 'Quantity Request', 'Remark']
+                [
+                    "Name",
+                    "Spec",
+                    "UoM",
+                    "Last Recorded Stock",
+                    "Usage Per Month",
+                    "Quantity Request",
+                    "Remark",
+                ],
             ];
         } else {
-            return [
-                ['Name', 'UoM', 'Quantity Request', 'Remark']
-            ];
+            return [["Name", "UoM", "Quantity Request", "Remark"]];
         }
     }
 

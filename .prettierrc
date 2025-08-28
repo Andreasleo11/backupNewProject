@@ -1,4 +1,4 @@
 {
-    "plugins": ["@shufo/prettier-plugin-blade"],
+    "plugins": ["@shufo/prettier-plugin-blade", "@prettier/plugin-php"],
     "printWidth": 100
 }

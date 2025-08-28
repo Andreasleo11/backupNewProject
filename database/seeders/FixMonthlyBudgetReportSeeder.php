@@ -33,9 +33,12 @@ class FixMonthlyBudgetReportSeeder extends Seeder
             if ($report->approved_autograph) {
                 $report->status = 6;
             } elseif ($report->is_known_autograph) {
-                if ($report->department->name === 'MOULDING') {
+                if ($report->department->name === "MOULDING") {
                     $report->status = 3;
-                } elseif ($report->department->name === 'QA' || $report->department->name === 'QC') {
+                } elseif (
+                    $report->department->name === "QA" ||
+                    $report->department->name === "QC"
+                ) {
                     $report->status = 5;
                 } else {
                     $report->status = 4;
@@ -50,10 +53,10 @@ class FixMonthlyBudgetReportSeeder extends Seeder
 
     private function updateDocNum($report)
     {
-        $prefix = 'MBR';
+        $prefix = "MBR";
         $id = $report->id;
-        $date = $report->created_at->format('dmY');
+        $date = $report->created_at->format("dmY");
         $docNum = "$prefix/$id/$date";
-        $report->update(['doc_num' => $docNum]);
+        $report->update(["doc_num" => $docNum]);
     }
 }

@@ -23,8 +23,8 @@ class CapItemDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'capitem.action')
-            ->setRowId('id');
+            ->addColumn("action", "capitem.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class CapItemDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('capitem-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("capitem-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,19 +70,19 @@ class CapItemDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('item_code'),
-            Column::make('line_category'),
-            Column::make('departement'),
-            Column::make('quantity'),
-            Column::make('cycle_time_raw'),
-            Column::make('cycle_time'),
-            Column::make('cavity'),
-            Column::make('man_power'),
-            Column::make('pair'),
-            Column::make('total_forecast_time'),
-            Column::make('counter_forecast'),
-			Column::make('total_prior'),
+            Column::make("id"),
+            Column::make("item_code"),
+            Column::make("line_category"),
+            Column::make("departement"),
+            Column::make("quantity"),
+            Column::make("cycle_time_raw"),
+            Column::make("cycle_time"),
+            Column::make("cavity"),
+            Column::make("man_power"),
+            Column::make("pair"),
+            Column::make("total_forecast_time"),
+            Column::make("counter_forecast"),
+            Column::make("total_prior"),
         ];
     }
 
@@ -93,6 +93,6 @@ class CapItemDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'CapItem_' . date('YmdHis');
+        return "CapItem_" . date("YmdHis");
     }
 }

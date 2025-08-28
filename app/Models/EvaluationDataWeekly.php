@@ -9,21 +9,13 @@ class EvaluationDataWeekly extends Model
 {
     use HasFactory;
 
-    protected $table = 'evaluation_data_weekly';
+    protected $table = "evaluation_data_weekly";
     public $incrementing = false;
 
-    protected $fillable = [
-        'NIK',
-        'dept',
-        'Month',
-        'Alpha',
-        'Telat',
-        'Izin',
-        'Sakit',
-    ];
+    protected $fillable = ["NIK", "dept", "Month", "Alpha", "Telat", "Izin", "Sakit"];
 
     public function karyawan()
     {
-        return $this->belongsTo(Employee::class, 'NIK', 'NIK');
+        return $this->belongsTo(Employee::class, "NIK", "NIK");
     }
 }

@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class delsched_delfilter extends Model
 {
-    protected $table = 'delsched_delfilter';
+    protected $table = "delsched_delfilter";
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-//panggil 2 datatable untuk show data 
+//panggil 2 datatable untuk show data
 // use App\DataTables\
 // use App\DataTables\;
 
@@ -16,7 +16,6 @@ class PurchasingRequirementController extends Controller
 {
     public function index(PurPorSummaryDataTable $dataTable)
     {
-
         // return view("purchasing.requirement");
         return $dataTable->render("purchasing.requirement");
     }

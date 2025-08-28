@@ -8,6 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class MasterDataRog extends Model
 {
     use HasFactory;
-    protected $table = 'master_data_rogs';
-
+    protected $table = "master_data_rogs";
 }

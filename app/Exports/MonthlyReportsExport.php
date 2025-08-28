@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping, WithMultipleSheets
 {
-
     protected $month;
     protected $year;
 
@@ -24,14 +23,14 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
     }
 
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public function collection()
     {
-        $reports = Report::with('details', 'details.defects', 'details.defects.category')
-        ->whereMonth('rec_date', $this->month)
-        ->whereYear('rec_date', $this->year)
-        ->get();
+        $reports = Report::with("details", "details.defects", "details.defects.category")
+            ->whereMonth("rec_date", $this->month)
+            ->whereYear("rec_date", $this->year)
+            ->get();
 
         $this->calculateSummary($reports);
         $this->calculateDefect($reports);
@@ -39,14 +38,13 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
         return $reports;
     }
 
-
     protected function calculateSummary($reports)
     {
         foreach ($reports as $report) {
             foreach ($report->details as $detail) {
                 foreach ($detail->defects as $defect) {
                     $customer = $report->customer;
-                    $category = $defect->category->name ?? '-';
+                    $category = $defect->category->name ?? "-";
 
                     if (!isset($this->summaryData[$customer][$category])) {
                         $this->summaryData[$customer][$category] = 0;
@@ -67,50 +65,49 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
                 if (!isset($this->defectData[$partName])) {
                     // Initialize the defectData for this part_name
                     $this->defectData[$partName] = [
-                        'part_name' => $partName,
-                        'rec_quantity' => 0,
-                        'defects' => []
+                        "part_name" => $partName,
+                        "rec_quantity" => 0,
+                        "defects" => [],
                     ];
                 }
 
                 // Sum the rec_quantity
-                $this->defectData[$partName]['rec_quantity'] += $detail->rec_quantity;
+                $this->defectData[$partName]["rec_quantity"] += $detail->rec_quantity;
 
                 foreach ($detail->defects as $defect) {
-                    $categoryName = $defect->category->name ?? '-';
+                    $categoryName = $defect->category->name ?? "-";
                     $quantity = $defect->quantity; // Assuming 'quantity' is a field in the defect model
 
-                    if (!isset($this->defectData[$partName]['defects'][$categoryName])) {
+                    if (!isset($this->defectData[$partName]["defects"][$categoryName])) {
                         // Initialize the defects defectData for this part_name
-                        $this->defectData[$partName]['defects'][$categoryName] = [
-                            'category_name' => $categoryName,
-                            'quantity' => 0
+                        $this->defectData[$partName]["defects"][$categoryName] = [
+                            "category_name" => $categoryName,
+                            "quantity" => 0,
                         ];
                     }
 
                     // Sum the quantity for each defect category
-                    $this->defectData[$partName]['defects'][$categoryName]['quantity'] += $quantity;
+                    $this->defectData[$partName]["defects"][$categoryName]["quantity"] += $quantity;
                 }
             }
         }
     }
 
-
-     public function headings(): array
+    public function headings(): array
     {
         return [
-            'Rec Date',
-            'Customer',
-            'Part Number',
-            'Part Name',
-            'Rec Quantity',
-            'Can Use',
+            "Rec Date",
+            "Customer",
+            "Part Number",
+            "Part Name",
+            "Rec Quantity",
+            "Can Use",
             'Can\'t Use',
-            'Price',
-            'Total Price',
-            'Defect Quantity',
-            'Defect Category',
-            'Defect Info'
+            "Price",
+            "Total Price",
+            "Defect Quantity",
+            "Defect Category",
+            "Defect Info",
         ];
     }
 
@@ -118,9 +115,9 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
     {
         $rows = [];
         foreach ($report->details as $detail) {
-            $partDetails = explode('/', $detail->part_name, 2);
+            $partDetails = explode("/", $detail->part_name, 2);
             $partNumber = $partDetails[0];
-            $partName = isset($partDetails[1]) ? $partDetails[1] : '';
+            $partName = isset($partDetails[1]) ? $partDetails[1] : "";
             $totalPrice = $detail->rec_quantity * $detail->price;
 
             foreach ($detail->defects as $defect) {
@@ -136,7 +133,7 @@ class MonthlyReportsExport implements FromCollection, WithHeadings, WithMapping,
                     $totalPrice,
                     $defect->quantity,
                     $defect->category->name,
-                    $defect->remarks
+                    $defect->remarks,
                 ];
             }
         }

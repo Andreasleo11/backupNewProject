@@ -31,7 +31,7 @@ class SPKCreated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ["mail", "database"];
     }
 
     /**
@@ -39,11 +39,11 @@ class SPKCreated extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->line('There\'s a new Surat Perintah Kerja has just been created!')
-            ->greeting($this->details['greeting'])
-            ->line(new \Illuminate\Support\HtmlString($this->details['body']))
-            ->action($this->details['actionText'], $this->details['actionURL']);
+            ->greeting($this->details["greeting"])
+            ->line(new \Illuminate\Support\HtmlString($this->details["body"]))
+            ->action($this->details["actionText"], $this->details["actionURL"]);
     }
 
     /**
@@ -54,8 +54,8 @@ class SPKCreated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'SPK with id = ' . $this->spk->id . ' has just been created!',
-            'status' => $this->spk->status_laporan
+            "message" => "SPK with id = " . $this->spk->id . " has just been created!",
+            "status" => $this->spk->status_laporan,
         ];
     }
 }

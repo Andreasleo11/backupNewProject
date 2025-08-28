@@ -24,28 +24,28 @@ class EmployeeTrainingDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', function($training) {
-                return view('partials.employee-training-actions', compact('training'));
+            ->addColumn("action", function ($training) {
+                return view("partials.employee-training-actions", compact("training"));
             })
-            ->editColumn('last_training_at', function($training){
-                return Carbon::parse($training->last_training_at)->format('d-m-Y');
+            ->editColumn("last_training_at", function ($training) {
+                return Carbon::parse($training->last_training_at)->format("d-m-Y");
             })
-            ->filterColumn('employee_name', function ($query, $keyword) {
+            ->filterColumn("employee_name", function ($query, $keyword) {
                 $query->whereRaw("LOWER(employees.Nama) LIKE ?", ["%{$keyword}%"]);
             })
-            ->filterColumn('employee_nik', function ($query, $keyword) {
+            ->filterColumn("employee_nik", function ($query, $keyword) {
                 $query->whereRaw("LOWER(employees.NIK) LIKE ?", ["%{$keyword}%"]);
             })
-            ->filterColumn('employee_dept', function ($query, $keyword) {
+            ->filterColumn("employee_dept", function ($query, $keyword) {
                 $query->whereRaw("LOWER(employees.Dept) LIKE ?", ["%{$keyword}%"]);
             })
-            ->editColumn('evaluated', function ($training) {
+            ->editColumn("evaluated", function ($training) {
                 return $training->evaluated
                     ? '<span class="badge bg-success">Yes</span>'
                     : '<span class="badge bg-danger">No</span>';
             })
-            ->rawColumns(['evaluated'])
-            ->setRowId('id');
+            ->rawColumns(["evaluated"])
+            ->setRowId("id");
     }
 
     /**
@@ -56,13 +56,14 @@ class EmployeeTrainingDataTable extends DataTable
      */
     public function query(EmployeeTraining $model): QueryBuilder
     {
-        return $model::select([
-            'employee_trainings.*',
-            'employees.Nama as employee_name',
-            'employees.NIK as employee_nik',
-            'employees.Dept as employee_dept',
-        ])
-        ->join('employees', 'employees.id', '=', 'employee_trainings.employee_id');
+        return $model
+            ::select([
+                "employee_trainings.*",
+                "employees.Nama as employee_name",
+                "employees.NIK as employee_nik",
+                "employees.Dept as employee_dept",
+            ])
+            ->join("employees", "employees.id", "=", "employee_trainings.employee_id");
     }
 
     /**
@@ -73,16 +74,16 @@ class EmployeeTrainingDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('employeetraining-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    // ->dom('Bfrtip')
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                    ]);
+            ->setTableId("employeetraining-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            // ->dom('Bfrtip')
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+            ]);
     }
 
     /**
@@ -93,17 +94,17 @@ class EmployeeTrainingDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('employee_name')->title('Name')->data('employee_name'),
-            Column::make('employee_nik')->title('NIK')->data('employee_nik'),
-            Column::make('employee_dept')->title('Dept')->data('employee_dept'),
-            Column::make('description'),
-            Column::make('last_training_at'),
-            Column::make('evaluated'),
-            Column::computed('action')
+            Column::make("id"),
+            Column::make("employee_name")->title("Name")->data("employee_name"),
+            Column::make("employee_nik")->title("NIK")->data("employee_nik"),
+            Column::make("employee_dept")->title("Dept")->data("employee_dept"),
+            Column::make("description"),
+            Column::make("last_training_at"),
+            Column::make("evaluated"),
+            Column::computed("action")
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
+                ->addClass("text-center"),
         ];
     }
 
@@ -114,6 +115,6 @@ class EmployeeTrainingDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'EmployeeTraining_' . date('YmdHis');
+        return "EmployeeTraining_" . date("YmdHis");
     }
 }

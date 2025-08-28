@@ -1,5 +1,5 @@
-<div class="modal fade" id="info-modal" >
-<div class="modal-dialog">
+<div class="modal fade" id="info-modal">
+  <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="modalTitle">Modal title</h5>

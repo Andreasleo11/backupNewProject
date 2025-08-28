@@ -11,15 +11,15 @@ class ImportJobsList extends Component
 {
     use WithPagination;
 
-    protected string $paginationTheme = 'bootstrap'; // prevents template swaps
+    protected string $paginationTheme = "bootstrap"; // prevents template swaps
 
-    #[Url(as: 's')]
-    public string $search = '';
+    #[Url(as: "s")]
+    public string $search = "";
 
-    #[Url(as: 'st')]
-    public string $status = 'all';
+    #[Url(as: "st")]
+    public string $status = "all";
 
-    #[Url(as: 'pp')]
+    #[Url(as: "pp")]
     public int $perPage = 5;
 
     public ?int $selectedJobId = null;
@@ -40,36 +40,36 @@ class ImportJobsList extends Component
     public function getShouldPollProperty(): bool
     {
         // If you prefer to poll only when user is on "All" or "Running" filter:
-        return in_array($this->status, ['all', 'running'], true)
-            && ImportJob::where('status', 'running')->exists();
+        return in_array($this->status, ["all", "running"], true) &&
+            ImportJob::where("status", "running")->exists();
     }
 
     public function selectJob(int $id): void
     {
         $this->selectedJobId = $id;
         // Tell the parent to track this job
-        $this->dispatch('track-job', id: $id);
+        $this->dispatch("track-job", id: $id);
     }
 
     public function render()
     {
-        $q = ImportJob::query()->orderByDesc('id');
+        $q = ImportJob::query()->orderByDesc("id");
 
-        if ($this->status !== 'all') {
-            $q->where('status', $this->status);
+        if ($this->status !== "all") {
+            $q->where("status", $this->status);
         }
 
-        if (trim($this->search) !== '') {
-            $term = '%' . trim($this->search) . '%';
+        if (trim($this->search) !== "") {
+            $term = "%" . trim($this->search) . "%";
             $q->where(function ($x) use ($term) {
-                $x->where('id', 'like', $term)
-                    ->orWhere('type', 'like', $term)
-                    ->orWhere('error', 'like', $term);
+                $x->where("id", "like", $term)
+                    ->orWhere("type", "like", $term)
+                    ->orWhere("error", "like", $term);
             });
         }
 
         $jobs = $q->paginate($this->perPage)->withQueryString();
 
-        return view('livewire.master-data-part.import-jobs-list', compact('jobs'));
+        return view("livewire.master-data-part.import-jobs-list", compact("jobs"));
     }
 }

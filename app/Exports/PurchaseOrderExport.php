@@ -16,8 +16,8 @@ class PurchaseOrderExport implements FromView
 
     public function view(): View
     {
-        return view('exports.purchase_orders', [
-            'data' => $this->filteredData
+        return view("exports.purchase_orders", [
+            "data" => $this->filteredData,
         ]);
     }
 }

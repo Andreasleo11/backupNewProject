@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 
 use App\Models\SoftwareTypeInventory;
 
-
 class SoftwareTypeInventorySeeder extends Seeder
 {
     /**
@@ -14,14 +13,10 @@ class SoftwareTypeInventorySeeder extends Seeder
      */
     public function run(): void
     {
-        $softwareTypes = [
-           'OS',
-           'Microsoft Office',
-        ];
+        $softwareTypes = ["OS", "Microsoft Office"];
 
         foreach ($softwareTypes as $type) {
-            SoftwareTypeInventory::create(['name' => $type]);
+            SoftwareTypeInventory::create(["name" => $type]);
         }
-        
     }
 }

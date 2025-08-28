@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchasingUpdateLog extends Model
 {
-    protected $table = 'purchasing_update_logs';
+    protected $table = "purchasing_update_logs";
 }

@@ -23,10 +23,16 @@ class SpecificationDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'COMING SOON')
-            ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
-            ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
-            ->setRowId('id');
+            ->addColumn("action", "COMING SOON")
+            ->editColumn(
+                "created_at",
+                '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}',
+            )
+            ->editColumn(
+                "updated_at",
+                '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}',
+            )
+            ->setRowId("id");
     }
 
     /**
@@ -48,19 +54,19 @@ class SpecificationDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('specification-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(0, 'asc')
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("specification-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(0, "asc")
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -71,14 +77,14 @@ class SpecificationDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('name'),
-            Column::make('created_at'),
-            Column::make('updated_at'),
-            Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->addClass('text-center'),
+            Column::make("id"),
+            Column::make("name"),
+            Column::make("created_at"),
+            Column::make("updated_at"),
+            Column::computed("action")
+                ->exportable(false)
+                ->printable(false)
+                ->addClass("text-center"),
         ];
     }
 
@@ -89,6 +95,6 @@ class SpecificationDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Specification_' . date('YmdHis');
+        return "Specification_" . date("YmdHis");
     }
 }
