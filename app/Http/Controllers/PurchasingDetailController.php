@@ -191,8 +191,10 @@ class PurchasingDetailController extends Controller
 
         // Fetch your materials data from the database based on vendor code
         if ($vendorCode) {
-            $materials = DB::table("forecast_material_predictions")
-                ->where("vendor_code", $vendorCode)
+            $materials = DB::table("forecast_material_predictions as fmp")
+                ->leftJoin("sap_fct_inventory_fgs as inv", "fmp.item_no", "=", "inv.item_code")
+                ->where("fmp.vendor_code", $vendorCode)
+                ->select("fmp.*", "inv.item_name as item_desc") // tambahin alias
                 ->get();
         } else {
             $materials = []; // Empty array if no vendor code provided

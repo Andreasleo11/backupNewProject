@@ -28,7 +28,7 @@ class OvertimeRejectedSheet implements FromCollection, WithHeadings
                 "NIK",
                 "ID",
                 "header_id",
-                "nama",
+                "name",
                 "overtime_date",
                 "start_date",
                 "start_time",

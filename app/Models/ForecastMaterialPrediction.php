@@ -34,4 +34,9 @@ class ForecastMaterialPrediction extends Model
         "months" => "json",
         "quantity_forecast" => "json",
     ];
+
+    public function inventoryFgs()
+    {
+        return $this->belongsTo(sapInventoryFg::class, "item_no", "item_code");
+    }
 }

@@ -116,17 +116,6 @@ class OvertimeFormService
         return $base->copy()->addDays($days)->addSeconds($seconds);
     }
 
-    private static function isPlanned(Collection $data): bool
-    {
-        $items = $data->get("items", []);
-        return isset($items[0]["start_date"]) && $items[0]["start_date"] < now();
-    }
-
-    private static function excelDateToCarbon($serial)
-    {
-        return \Carbon\Carbon::createFromDate(1899, 12, 30)->addDays($serial);
-    }
-
     private static function importFromExcel($file, int $headerId, bool $isAfterHour): int
     {
         $path = $file->store("temp");

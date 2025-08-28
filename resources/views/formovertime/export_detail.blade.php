@@ -18,6 +18,12 @@
       <th>Break Time</th>
       <th>Remark</th>
       <th>Total Jam</th>
+      <th>Voucher </th>
+      <th>Jpayroll In Date</th>
+      <th>Jpayroll In Time</th>
+      <th>Jpayroll Out Date</th>
+      <th>Jpayroll Out Time</th>
+      <th>Nett Overtime</th>
     </tr>
   </thead>
   <tbody>
