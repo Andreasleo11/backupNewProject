@@ -23,14 +23,26 @@ class UsersDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
 
-            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-user-modal{{$id}}"><i class="bx bx-edit"></i></button>
+            ->addColumn(
+                "action",
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-user-modal{{$id}}"><i class="bx bx-edit"></i></button>
                                     <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal{{$id}}"><i class="bx bx-trash"></i></button>
                                     <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#resetPasswordConfirmationModal{{$id}}">Reset Password</button>
-                                    ')
-            ->addColumn('select_all', '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}" />')
-            ->editColumn('created_at', '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}')
-            ->editColumn('updated_at', '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}')
-            ->setRowId('id');
+                                    ',
+            )
+            ->addColumn(
+                "select_all",
+                '<input type="checkbox" class="form-check-input" id="checkbox{{$id}}" />',
+            )
+            ->editColumn(
+                "created_at",
+                '{{ \Carbon\Carbon::parse($created_at)->format(\'d-m-Y\') }}',
+            )
+            ->editColumn(
+                "updated_at",
+                '{{ \Carbon\Carbon::parse($updated_at)->format(\'d-m-Y\') }}',
+            )
+            ->setRowId("id");
     }
 
     /**
@@ -38,7 +50,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model::with(['role', 'department', 'specification'])->newQuery();
+        return $model::with(["role", "department", "specification"])->newQuery();
     }
 
     /**
@@ -47,34 +59,34 @@ class UsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->responsive(true)
-                    ->setTableId('users-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    ->dom('Bfrtip')
-                    ->orderBy(1, 'asc')
-                    // ->addCheckbox(['id="check{{$id}}"'])
-                    // ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload'),
-                        // Button::make('custom')
-                        //     ->text('Select All')
-                        //     ->addClass('btn btn-success')
-                        //     ->action('function() {
-                        //         $(".form-check-input").prop("checked", true);
-                        //     }'),
-                        // Button::make('custom')
-                        //     ->text('Delete Selected')
-                        //     ->addClass('btn btn-danger')
-                        //     ->action('function() {
-                        //         // Perform delete action for selected rows
-                        //     }'),
-                    ]);
+            ->responsive(true)
+            ->setTableId("users-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            ->dom("Bfrtip")
+            ->orderBy(1, "asc")
+            // ->addCheckbox(['id="check{{$id}}"'])
+            // ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+                // Button::make('custom')
+                //     ->text('Select All')
+                //     ->addClass('btn btn-success')
+                //     ->action('function() {
+                //         $(".form-check-input").prop("checked", true);
+                //     }'),
+                // Button::make('custom')
+                //     ->text('Delete Selected')
+                //     ->addClass('btn btn-danger')
+                //     ->action('function() {
+                //         // Perform delete action for selected rows
+                //     }'),
+            ]);
     }
 
     /**
@@ -83,36 +95,37 @@ class UsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::computed('select_all')
-                ->addClass('check_all')
-                ->addClass('text-center')
+            Column::computed("select_all")
+                ->addClass("check_all")
+                ->addClass("text-center")
                 ->searchable(false)
                 ->printable(false)
                 ->width(50),
-            Column::make('id')
-                ->addClass('text-center')
-                ->addClass('align-middle'),
-            Column::make('name')->addClass('align-middle'),
-            Column::make('email')->addClass('align-middle'),
-            Column::make('role')
-                ->data('role.name')
+            Column::make("id")->addClass("text-center")->addClass("align-middle"),
+            Column::make("name")->addClass("align-middle"),
+            Column::make("email")->addClass("align-middle"),
+            Column::make("role")
+                ->data("role.name")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('department')
-                ->data('department.name')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("department")
+                ->data("department.name")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('specification')
-                ->data('specification.name')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("specification")
+                ->data("specification.name")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('created_at')->addClass('align-middle'),
-            Column::make('updated_at')->addClass('align-middle'),
-            Column::computed('action')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("created_at")->addClass("align-middle"),
+            Column::make("updated_at")->addClass("align-middle"),
+            Column::computed("action")
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center')
-                ->addClass('align-middle'),
+                ->addClass("text-center")
+                ->addClass("align-middle"),
         ];
     }
 
@@ -121,6 +134,6 @@ class UsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Users_' . date('YmdHis');
+        return "Users_" . date("YmdHis");
     }
 }

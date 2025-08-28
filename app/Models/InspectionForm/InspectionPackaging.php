@@ -10,10 +10,10 @@ class InspectionPackaging extends Model
     use HasFactory;
 
     protected $fillable = [
-        'second_inspection_document_number',
-        'snp',
-        'box_label',
-        'judgement',
-        'remarks',
+        "second_inspection_document_number",
+        "snp",
+        "box_label",
+        "judgement",
+        "remarks",
     ];
 }

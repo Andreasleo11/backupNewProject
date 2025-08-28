@@ -7,7 +7,6 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class PurchaseRequestWithDetailsExport implements WithMultipleSheets
 {
-
     protected $purchaseRequestIds;
 
     public function __construct($purchaseRequestIds)
@@ -21,8 +20,8 @@ class PurchaseRequestWithDetailsExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            new PurchaseRequestsExport($this->purchaseRequestIds),      // First sheet for Purchase Request
-            new DetailPurchaseRequestsExport($this->purchaseRequestIds) // Second sheet for Detail Purchase Request
+            new PurchaseRequestsExport($this->purchaseRequestIds), // First sheet for Purchase Request
+            new DetailPurchaseRequestsExport($this->purchaseRequestIds), // Second sheet for Detail Purchase Request
         ];
     }
 }

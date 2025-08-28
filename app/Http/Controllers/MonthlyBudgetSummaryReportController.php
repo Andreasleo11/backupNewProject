@@ -13,32 +13,30 @@ class MonthlyBudgetSummaryReportController extends Controller
 {
     public function index()
     {
-        $reportsQuery = Report::with('details', 'user');
+        $reportsQuery = Report::with("details", "user");
         $authUser = auth()->user();
 
-        if ($authUser->specification->name === 'DIRECTOR') {
-            $reportsQuery->where('status', 4)->orWhere('status', 5)->orWhere('status', 6);
-        } elseif ($authUser->is_head && $authUser->specification->name === 'DESIGN') {
-            $reportsQuery->where('status', 3);
+        if ($authUser->specification->name === "DIRECTOR") {
+            $reportsQuery->where("status", 4)->orWhere("status", 5)->orWhere("status", 6);
+        } elseif ($authUser->is_head && $authUser->specification->name === "DESIGN") {
+            $reportsQuery->where("status", 3);
         } elseif ($authUser->is_gm) {
-            $reportsQuery->where('status', 2);
+            $reportsQuery->where("status", 2);
         }
 
-        $reports = $reportsQuery
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-        return view('monthly_budget_report.summary.index', compact('reports'));
+        $reports = $reportsQuery->orderBy("created_at", "desc")->paginate(15);
+        return view("monthly_budget_report.summary.index", compact("reports"));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'month' => 'required|date_format:m-Y', // Validate the month format
-            'created_autograph' => 'nullable|string',
+            "month" => "required|date_format:m-Y", // Validate the month format
+            "created_autograph" => "nullable|string",
         ]);
 
-        $monthYear = $request->input('month');
-        $date = Carbon::createFromFormat('m-Y', $monthYear)->startOfMonth()->toDateString();
+        $monthYear = $request->input("month");
+        $date = Carbon::createFromFormat("m-Y", $monthYear)->startOfMonth()->toDateString();
 
         // // Create the main report
         // $report = Report::create([
@@ -46,12 +44,12 @@ class MonthlyBudgetSummaryReportController extends Controller
         //     'creator_id' => auth()->user()->id
         // ]);
 
-        list($month, $year) = explode('-', $monthYear);
+        [$month, $year] = explode("-", $monthYear);
 
-        $monthlyBudgetReports = MonthlyBudgetReport::with('details')
-            ->whereYear('report_date', $year)
-            ->whereMonth('report_date', $month)
-            ->where('status', 6)
+        $monthlyBudgetReports = MonthlyBudgetReport::with("details")
+            ->whereYear("report_date", $year)
+            ->whereMonth("report_date", $month)
+            ->where("status", 6)
             ->get();
 
         // Separate the details based on dept_no
@@ -62,13 +60,13 @@ class MonthlyBudgetSummaryReportController extends Controller
             foreach ($monthlyBudgetReport->details as $detail) {
                 if ($monthlyBudgetReport->dept_no == 363) {
                     $detailsForDept363[] = [
-                        'dept_no' => $monthlyBudgetReport->dept_no,
-                        'detail' => $detail
+                        "dept_no" => $monthlyBudgetReport->dept_no,
+                        "detail" => $detail,
                     ];
                 } else {
                     $detailsForAllDeptExcept363[] = [
-                        'dept_no' => $monthlyBudgetReport->dept_no,
-                        'detail' => $detail
+                        "dept_no" => $monthlyBudgetReport->dept_no,
+                        "detail" => $detail,
                     ];
                 }
             }
@@ -76,56 +74,59 @@ class MonthlyBudgetSummaryReportController extends Controller
 
         // Create the first report for all dept_no except 363
         $report1 = Report::create([
-            'report_date' => $date,
-            'creator_id' => auth()->user()->id,
-            'is_moulding' => false
+            "report_date" => $date,
+            "creator_id" => auth()->user()->id,
+            "is_moulding" => false,
         ]);
 
         foreach ($detailsForAllDeptExcept363 as $detail) {
             Detail::create([
-                'header_id' => $report1->id,
-                'name' => $detail['detail']['name'],
-                'dept_no' => $detail['dept_no'],
-                'quantity' => $detail['detail']['quantity'],
-                'uom' => $detail['detail']['uom'],
-                'remark' => $detail['detail']['remark'],
+                "header_id" => $report1->id,
+                "name" => $detail["detail"]["name"],
+                "dept_no" => $detail["dept_no"],
+                "quantity" => $detail["detail"]["quantity"],
+                "uom" => $detail["detail"]["uom"],
+                "remark" => $detail["detail"]["remark"],
             ]);
         }
 
         // Create the second report for dept_no 363
         $report2 = Report::create([
-            'report_date' => $date,
-            'creator_id' => auth()->user()->id,
-            'is_moulding' => true
+            "report_date" => $date,
+            "creator_id" => auth()->user()->id,
+            "is_moulding" => true,
         ]);
 
         foreach ($detailsForDept363 as $detail) {
             Detail::create([
-                'header_id' => $report2->id,
-                'name' => $detail['detail']['name'],
-                'dept_no' => $detail['dept_no'],
-                'quantity' => $detail['detail']['quantity'],
-                'spec' => $detail['detail']['spec'],
-                'last_recorded_stock' => $detail['detail']['last_recorded_stock'],
-                'usage_per_month' => $detail['detail']['usage_per_month'],
-                'uom' => $detail['detail']['uom'],
-                'remark' => $detail['detail']['remark'],
+                "header_id" => $report2->id,
+                "name" => $detail["detail"]["name"],
+                "dept_no" => $detail["dept_no"],
+                "quantity" => $detail["detail"]["quantity"],
+                "spec" => $detail["detail"]["spec"],
+                "last_recorded_stock" => $detail["detail"]["last_recorded_stock"],
+                "usage_per_month" => $detail["detail"]["usage_per_month"],
+                "uom" => $detail["detail"]["uom"],
+                "remark" => $detail["detail"]["remark"],
             ]);
         }
 
-        return redirect()->back()->with('status', 'Monthly Budget Summary Reports successfully created!');
+        return redirect()
+            ->back()
+            ->with("status", "Monthly Budget Summary Reports successfully created!");
     }
-
 
     public function destroy($id)
     {
         Report::find($id)->delete();
-        return redirect()->back()->with('status', 'Monthly Budget Summary Report successfully deleted!');
+        return redirect()
+            ->back()
+            ->with("status", "Monthly Budget Summary Report successfully deleted!");
     }
 
     public function show($id)
     {
-        $report = Report::with('details')->find($id);
+        $report = Report::with("details")->find($id);
         // dd($report->details->where('name', 'SELANG PU TRANSPARANT'));
         $this->updateStatus($report);
 
@@ -144,25 +145,29 @@ class MonthlyBudgetSummaryReportController extends Controller
             if (!isset($groupedDetails[$name])) {
                 // Initialize if not exists
                 $groupedDetails[$name] = [
-                    'name' => $name,
-                    'items' => []
+                    "name" => $name,
+                    "items" => [],
                 ];
             }
 
             $found = false;
-            foreach ($groupedDetails[$name]['items'] as &$item) {
-                if($item['dept_no'] === 363) {
-                    if ($item['dept_no'] === $deptNo && $item['uom'] === $uom && $item['spec'] === $spec) {
+            foreach ($groupedDetails[$name]["items"] as &$item) {
+                if ($item["dept_no"] === 363) {
+                    if (
+                        $item["dept_no"] === $deptNo &&
+                        $item["uom"] === $uom &&
+                        $item["spec"] === $spec
+                    ) {
                         // If found, accumulate quantity and track ID for deletion
-                        $item['quantity'] += $detail->quantity;
+                        $item["quantity"] += $detail->quantity;
                         $detailsToDelete[] = $detailId;
                         $found = true;
                         break;
                     }
                 } else {
-                    if ($item['dept_no'] === $deptNo && $item['uom'] === $uom) {
+                    if ($item["dept_no"] === $deptNo && $item["uom"] === $uom) {
                         // If found, accumulate quantity and track ID for deletion
-                        $item['quantity'] += $detail->quantity;
+                        $item["quantity"] += $detail->quantity;
                         $detailsToDelete[] = $detailId;
                         $found = true;
                         break;
@@ -172,17 +177,17 @@ class MonthlyBudgetSummaryReportController extends Controller
 
             // If not found, add a new item
             if (!$found) {
-                $groupedDetails[$name]['items'][] = [
-                    'id' => $detailId,
-                    'dept_no' => $deptNo,
-                    'quantity' => $detail->quantity,
-                    'spec' => $detail->spec,
-                    'last_recorded_stock' => $detail->last_recorded_stock,
-                    'usage_per_month' => $detail->usage_per_month,
-                    'uom' => $uom,
-                    'supplier' => $detail->supplier,
-                    'cost_per_unit' => $detail->cost_per_unit,
-                    'remark' => $detail->remark,
+                $groupedDetails[$name]["items"][] = [
+                    "id" => $detailId,
+                    "dept_no" => $deptNo,
+                    "quantity" => $detail->quantity,
+                    "spec" => $detail->spec,
+                    "last_recorded_stock" => $detail->last_recorded_stock,
+                    "usage_per_month" => $detail->usage_per_month,
+                    "uom" => $uom,
+                    "supplier" => $detail->supplier,
+                    "cost_per_unit" => $detail->cost_per_unit,
+                    "remark" => $detail->remark,
                     // Add other fields as needed
                 ];
             }
@@ -198,15 +203,18 @@ class MonthlyBudgetSummaryReportController extends Controller
 
         // Extract the month name
         $reportDate = Carbon::parse($report->report_date);
-        $monthName = $reportDate->format('F'); // Full month name
-        $year = $reportDate->format('Y'); // Year
-        $monthYear = $monthName . ' ' . $year;
+        $monthName = $reportDate->format("F"); // Full month name
+        $year = $reportDate->format("Y"); // Year
+        $monthYear = $monthName . " " . $year;
 
         $dateString = $report->created_at;
         $carbonDate = Carbon::parse($dateString);
-        $formattedCreatedAt = $carbonDate->format('d/m/Y (H:i:s)');
+        $formattedCreatedAt = $carbonDate->format("d/m/Y (H:i:s)");
 
-        return view('monthly_budget_report.summary.detail', compact('groupedDetailsForView', 'report', 'monthYear', 'formattedCreatedAt'));
+        return view(
+            "monthly_budget_report.summary.detail",
+            compact("groupedDetailsForView", "report", "monthYear", "formattedCreatedAt"),
+        );
     }
 
     public function saveAutograph(Request $request, $id)
@@ -215,18 +223,20 @@ class MonthlyBudgetSummaryReportController extends Controller
         $report->update($request->all());
         $this->updateStatus($report);
 
-        return redirect()->back()->with('status', 'Monthly Budget Summary Report successfully approved!');
+        return redirect()
+            ->back()
+            ->with("status", "Monthly Budget Summary Report successfully approved!");
     }
 
     public function reject(Request $request, $id)
     {
         Report::find($id)->update([
-            'reject_reason' => $request->description,
-            'is_reject' => 1,
-            'status' => 6,
+            "reject_reason" => $request->description,
+            "is_reject" => 1,
+            "status" => 6,
         ]);
 
-        return redirect()->back()->with('success', 'Monthly Budget Report successfully rejected!');
+        return redirect()->back()->with("success", "Monthly Budget Report successfully rejected!");
     }
 
     private function updateStatus($report)
@@ -251,10 +261,10 @@ class MonthlyBudgetSummaryReportController extends Controller
     public function cancel(Request $request, $id)
     {
         Report::find($id)->update([
-            'is_cancel' => 1,
-            'cancel_reason' => $request->description,
-            'status' => 7
+            "is_cancel" => 1,
+            "cancel_reason" => $request->description,
+            "status" => 7,
         ]);
-        return redirect()->back()->with('success', 'Monthly Budget Report successfully cancelled!');
+        return redirect()->back()->with("success", "Monthly Budget Report successfully cancelled!");
     }
 }

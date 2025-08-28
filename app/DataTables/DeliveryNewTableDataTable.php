@@ -23,8 +23,8 @@ class DeliveryNewTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'deliverynewtable.action')
-            ->setRowId('id');
+            ->addColumn("action", "deliverynewtable.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,19 +46,19 @@ class DeliveryNewTableDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('deliverynewtable-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1,'asc')
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("deliverynewtable-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1, "asc")
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -69,7 +69,7 @@ class DeliveryNewTableDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('status')->data('status')->renderRaw('function(data, type, row, meta){
+            Column::make("status")->data("status")->renderRaw('function(data, type, row, meta){
                 if (type === \'display\') {
                     if (data === "Finish") {
                         return \'<span class="badge rounded-pill text-bg-success px-3 py-2 fs-6 fw-medium"> Finish </span>\';
@@ -81,25 +81,25 @@ class DeliveryNewTableDataTable extends DataTable
                 }
                 return data; // Return the original data for other types
             }'),
-            Column::make('id'),
-            Column::make('so_number'),
-            Column::make('delivery_date'),
-            Column::make('customer_code'),
-            Column::make('customer_name'),
-            Column::make('item_code'),
-            Column::make('item_name'),
-            Column::make('departement'),
-            Column::make('delivery_qty'),
-            Column::make('delivered'),
-            Column::make('outstanding'),
-            Column::make('customer_code'),
-            Column::make('stock'),
-            Column::make('balance'),
-            Column::make('outstanding_stk'),
-            Column::make('packaging_code'),
-            Column::make('standar_pack'),
-            Column::make('packaging_qty'),
-            Column::make('doc_status'),
+            Column::make("id"),
+            Column::make("so_number"),
+            Column::make("delivery_date"),
+            Column::make("customer_code"),
+            Column::make("customer_name"),
+            Column::make("item_code"),
+            Column::make("item_name"),
+            Column::make("departement"),
+            Column::make("delivery_qty"),
+            Column::make("delivered"),
+            Column::make("outstanding"),
+            Column::make("customer_code"),
+            Column::make("stock"),
+            Column::make("balance"),
+            Column::make("outstanding_stk"),
+            Column::make("packaging_code"),
+            Column::make("standar_pack"),
+            Column::make("packaging_qty"),
+            Column::make("doc_status"),
         ];
     }
 
@@ -110,6 +110,6 @@ class DeliveryNewTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DeliveryNewTable_' . date('YmdHis');
+        return "DeliveryNewTable_" . date("YmdHis");
     }
 }

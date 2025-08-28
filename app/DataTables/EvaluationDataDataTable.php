@@ -23,8 +23,8 @@ class EvaluationDataDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'evaluationdata.action')
-            ->setRowId('id');
+            ->addColumn("action", "evaluationdata.action")
+            ->setRowId("id");
     }
 
     /**
@@ -34,8 +34,8 @@ class EvaluationDataDataTable extends DataTable
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(EvaluationData $model): QueryBuilder
-    { 
-        return $model::with('karyawan')->newQuery();
+    {
+        return $model::with("karyawan")->newQuery();
     }
 
     /**
@@ -46,20 +46,20 @@ class EvaluationDataDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('evaluationdata-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("evaluationdata-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,22 +70,24 @@ class EvaluationDataDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('NIK'),
-            Column::make('Name')
-                ->data('karyawan.Nama')
+            Column::make("id"),
+            Column::make("NIK"),
+            Column::make("Name")
+                ->data("karyawan.Nama")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.Dept')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("Department")
+                ->data("karyawan.Dept")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('Month'),
-            Column::make('Alpha'),
-            Column::make('Telat'),
-            Column::make('Izin'),
-            Column::make('Sakit'),
-        ];  
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("Month"),
+            Column::make("Alpha"),
+            Column::make("Telat"),
+            Column::make("Izin"),
+            Column::make("Sakit"),
+        ];
     }
 
     /**
@@ -95,6 +97,6 @@ class EvaluationDataDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'EvaluationData_' . date('YmdHis');
+        return "EvaluationData_" . date("YmdHis");
     }
 }

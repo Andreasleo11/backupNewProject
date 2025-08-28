@@ -7,13 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class DefectCategory extends Model
 {
-    protected $fillable = [
-        'name'
-    ];
+    protected $fillable = ["name"];
 
     use HasFactory;
 
-    public function defect(){
+    public function defect()
+    {
         return $this->belongsTo(Defect::class);
     }
 }

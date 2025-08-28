@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class delsched_final extends Model
 {
-    protected $table = 'delsched_final';
+    protected $table = "delsched_final";
     public $timestamps = false;
 }

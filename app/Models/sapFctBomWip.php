@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class sapFctBomWip extends Model
 {
-    protected $table = 'sap_fct_bom_wip';
+    protected $table = "sap_fct_bom_wip";
     public $timestamps = false;
     protected $primaryKey = null; // No explicit primary key
 
@@ -15,12 +15,11 @@ class sapFctBomWip extends Model
     // public function fgRawInventoryMtr() {
     //     return $this->hasMany(sapFctInventoryMtr::class, 'fg_code', 'fg_code');
     // }
-    
 
     // public function semiFirstInventoryMtr() {
     //     return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'semi_first');
     // }
-    
+
     // public function semiSecondInventoryMtr() {
     //     return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'semi_second');
     // }
@@ -28,7 +27,6 @@ class sapFctBomWip extends Model
     // public function semiThirdInventoryMtr() {
     //     return $this->hasMany(SapFctInventoryMtr::class, 'fg_code', 'semi_third');
     // }
-
 
     // public function joinInventoryMtr($semiType)
     // {

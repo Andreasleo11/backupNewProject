@@ -31,7 +31,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ["mail"];
     }
 
     /**
@@ -40,8 +40,10 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $name = ucwords($notifiable->name);
-        $mail = (new MailMessage)
-            ->subject("Overtime Approval Summary – " . ucwords(str_replace('-', ' ', $this->status)))
+        $mail = (new MailMessage())
+            ->subject(
+                "Overtime Approval Summary – " . ucwords(str_replace("-", " ", $this->status)),
+            )
             ->greeting("Dear {$name},")
             ->line("Here are the overtime forms waiting for your action:");
 
@@ -60,7 +62,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         <tbody>';
 
         foreach ($this->reports as $report) {
-            $url = route('formovertime.detail', $report->id);
+            $url = route("formovertime.detail", $report->id);
             $table .= "<tr>
             <td>{$report->id}</td>
             <td>{$report->department->name}</td>
@@ -71,14 +73,14 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         </tr>";
         }
 
-        $table .= '</tbody></table>';
+        $table .= "</tbody></table>";
 
         $mail->line(new HtmlString($table));
-        $mail->line(new HtmlString('<br>'));
+        $mail->line(new HtmlString("<br>"));
 
-        $mail->action('Go to Dashboard', route('overtime.index'));
+        $mail->action("Go to Dashboard", route("overtime.index"));
 
-        return $mail->line('Please take necessary action. Thank you.');
+        return $mail->line("Please take necessary action. Thank you.");
     }
 
     /**
@@ -89,7 +91,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
     public function toArray(object $notifiable): array
     {
         return [
-            //
-        ];
+                //
+            ];
     }
 }

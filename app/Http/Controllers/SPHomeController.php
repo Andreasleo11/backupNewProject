@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 class SPHomeController extends Controller
 {
-    public function index(){
-        return view('sp.home');
+    public function index()
+    {
+        return view("sp.home");
     }
 }

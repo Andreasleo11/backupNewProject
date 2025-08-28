@@ -11,13 +11,10 @@ use App\DataTables\WipFinalDsDataTable;
 
 class DSNewController extends Controller
 {
-
-
     public function index(DeliveryNewTableDataTable $dataTable)
     {
-
         // $datas = DelschedFinal::paginate(10);
-       
+
         // foreach($datas as $data)
         // {
         //     dd($data);
@@ -35,9 +32,6 @@ class DSNewController extends Controller
         //     dd($data);
         // }
 
-
-
-       
         return $dataTable->render("business.dsnewindexwip");
     }
 }

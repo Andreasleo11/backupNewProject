@@ -23,8 +23,8 @@ class PurPorSummaryDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'purporsummary.action')
-            ->setRowId('id');
+            ->addColumn("action", "purporsummary.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class PurPorSummaryDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('purporsummary-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("purporsummary-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,15 +70,15 @@ class PurPorSummaryDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('vendor_code'),
-            Column::make('vendor_name'),
-            Column::make('material_code'),
-            Column::make('material_name'),
-            Column::make('material_total'),
-            Column::make('material_stock'),
-            Column::make('material_fine_total'),
-            Column::make('minus_date'),
-            Column::make('material_forecast'),
+            Column::make("vendor_code"),
+            Column::make("vendor_name"),
+            Column::make("material_code"),
+            Column::make("material_name"),
+            Column::make("material_total"),
+            Column::make("material_stock"),
+            Column::make("material_fine_total"),
+            Column::make("minus_date"),
+            Column::make("material_forecast"),
         ];
     }
 
@@ -89,6 +89,6 @@ class PurPorSummaryDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PurPorSummary_' . date('YmdHis');
+        return "PurPorSummary_" . date("YmdHis");
     }
 }

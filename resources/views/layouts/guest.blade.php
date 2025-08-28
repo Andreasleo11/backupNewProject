@@ -2,16 +2,16 @@
 <html lang="en">
 
 <head>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <title>{{ config('app.name') }}</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <!-- Scripts -->
+  @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  <title>{{ config('app.name') }}</title>
 </head>
 
 <body>
-    {{ $slot ?? '' }}
-    @yield('content')
+  {{ $slot ?? '' }}
+  @yield('content')
 </body>
 
 </html>

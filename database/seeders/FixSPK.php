@@ -18,7 +18,7 @@ class FixSPK extends Seeder
 
     private function fixStatus()
     {
-        $spks = SuratPerintahKerja::where('to_department', 'COMPUTER')->get();
+        $spks = SuratPerintahKerja::where("to_department", "COMPUTER")->get();
         foreach ($spks as $spk) {
             if ($spk->tanggal_selesai) {
                 $spk->status_laporan = 4;

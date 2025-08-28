@@ -33,8 +33,7 @@ class FormAdjustExport implements FromQuery, WithMultipleSheets
         // Add sheets for defects and defect categories similarly
 
         $sheets[] = new FormAdjustMasterSheet();
-       
+
         return $sheets;
     }
-
 }

@@ -16,57 +16,55 @@ class PurchaseOrder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'po_number',
-        'approved_date',
-        'status',
-        'filename',
-        'reason',
-        'creator_id',
-        'downloaded_at',
-        'vendor_name',
-        'invoice_date',
-        'currency',
-        'total',
-        'tanggal_pembayaran',
-        'invoice_number',
-        'purchase_order_category_id',
-        'parent_po_number',
-        'revision_count',
+        "po_number",
+        "approved_date",
+        "status",
+        "filename",
+        "reason",
+        "creator_id",
+        "downloaded_at",
+        "vendor_name",
+        "invoice_date",
+        "currency",
+        "total",
+        "tanggal_pembayaran",
+        "invoice_number",
+        "purchase_order_category_id",
+        "parent_po_number",
+        "revision_count",
     ];
 
     // Queries
     public function scopeApproved($query)
     {
-        return $query->where('status', 2);
+        return $query->where("status", 2);
     }
 
     public function scopeWaiting($query)
     {
-        return $query->where('status', 1);
+        return $query->where("status", 1);
     }
 
     public function scopeRejected($query)
     {
-        return $query->where('status', 3);
+        return $query->where("status", 3);
     }
 
     public function scopeCanceled($query)
     {
-        return $query->where('status', 4);
+        return $query->where("status", 4);
     }
 
     public function scopeApprovedForCurrentMonth($query)
     {
-        return $query->where('status', 2)
-                    ->whereBetween('created_at', [
-                        now()->startOfMonth(),
-                        now()->endOfMonth()
-                    ]);
+        return $query
+            ->where("status", 2)
+            ->whereBetween("created_at", [now()->startOfMonth(), now()->endOfMonth()]);
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'creator_id');
+        return $this->belongsTo(User::class, "creator_id");
     }
 
     public function latestDownloadLog()
@@ -76,7 +74,7 @@ class PurchaseOrder extends Model
 
     public function category()
     {
-        return $this->belongsTo(PurchaseOrderCategory::class, 'purchase_order_category_id');
+        return $this->belongsTo(PurchaseOrderCategory::class, "purchase_order_category_id");
     }
 
     protected static function boot()
@@ -84,15 +82,15 @@ class PurchaseOrder extends Model
         parent::boot();
 
         static::created(function ($report) {
-            $report->sendNotification('created');
+            $report->sendNotification("created");
         });
 
         static::updated(function ($report) {
-            if ($report->isDirty('status')) {
+            if ($report->isDirty("status")) {
                 $statusMapping = [
-                    2 => 'approved',
-                    3 => 'rejected',
-                    4 => 'canceled',
+                    2 => "approved",
+                    3 => "rejected",
+                    4 => "canceled",
                 ];
 
                 // Send a notification based on the new status
@@ -105,9 +103,9 @@ class PurchaseOrder extends Model
 
     public function getVendorNames()
     {
-        $vendorNames = Vendor::pluck('name')->get();
+        $vendorNames = Vendor::pluck("name")->get();
         return response()->json([
-            'vendorNames' => $vendorNames
+            "vendorNames" => $vendorNames,
         ]);
     }
 
@@ -119,50 +117,58 @@ class PurchaseOrder extends Model
         if ($users->isNotEmpty()) {
             Notification::send($users, $this->getNotificationInstance($event, $details));
         } else {
-            Log::warning("No valid users found to send the notification for Purchase Order {$event}.");
+            Log::warning(
+                "No valid users found to send the notification for Purchase Order {$event}.",
+            );
         }
     }
 
     private function prepareNotificationDetails()
     {
-        $total = number_format($this->total, 2, '.', ',');
+        $total = number_format($this->total, 2, ".", ",");
         return [
-            'greeting' => 'Purchase Order Notification',
-            'actionText' => 'Check Now',
-            'actionURL' => route('po.view', $this->id),
-            'body' => "Details of the Purchase Order: <br>
+            "greeting" => "Purchase Order Notification",
+            "actionText" => "Check Now",
+            "actionURL" => route("po.view", $this->id),
+            "body" => "Details of the Purchase Order: <br>
                 - PO Number : {$this->po_number} <br>
                 - Vendor Name : {$this->vendor_name} <br>
                 - Invoice Date : {$this->invoice_date} <br>
                 - Invoice Number : {$this->invoice_number} <br>
                 - Total : {$this->currency} {$total} <br>
                 - Tanggal Pembayaran : {$this->tanggal_pembayaran} <br>
-                - Status : {$this->getStatusText($this->status)}"
+                - Status : {$this->getStatusText($this->status)}",
         ];
     }
 
     private function getStatusText($status)
     {
         return match ($status) {
-            1 => 'WAITING',
-            2 => 'APPROVED',
-            3 => 'REJECTED',
-            4 => 'CANCELED',
-            default => 'UNDEFINED',
+            1 => "WAITING",
+            2 => "APPROVED",
+            3 => "REJECTED",
+            4 => "CANCELED",
+            default => "UNDEFINED",
         };
     }
 
     private function getNotificationUsers($event)
     {
-        if ($event == 'created') {
-            return User::whereHas('specification', fn($query) => $query->where('name', 'DIRECTOR'))->get();
-        } elseif($event == 'approved') {
-             $deptHeadAccounting = User::where('name', 'benny')->first();
-             $accountingUser = User::where('name', 'nessa')->first();
+        if ($event == "created") {
+            return User::whereHas(
+                "specification",
+                fn($query) => $query->where("name", "DIRECTOR"),
+            )->get();
+        } elseif ($event == "approved") {
+            $deptHeadAccounting = User::where("name", "benny")->first();
+            $accountingUser = User::where("name", "nessa")->first();
 
-             return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
-        } elseif($event == 'canceled') {
-            $director = User::whereHas('specification', fn($query) => $query->where('name', 'DIRECTOR'))->first();
+            return collect([$deptHeadAccounting, $accountingUser, $this->user])->filter();
+        } elseif ($event == "canceled") {
+            $director = User::whereHas(
+                "specification",
+                fn($query) => $query->where("name", "DIRECTOR"),
+            )->first();
 
             return collect([$this->user, $director])->filter();
         } else {
@@ -173,10 +179,10 @@ class PurchaseOrder extends Model
     private function getNotificationInstance($event, $details)
     {
         return match ($event) {
-            'created' => new PurchaseOrderCreated($this, $details),
-            'approved' => new PurchaseOrderApproved($this, $details),
-            'rejected' => new PurchaseOrderRejected($this, $details),
-            'canceled' => new PurchaseOrderCanceled($this, $details),
+            "created" => new PurchaseOrderCreated($this, $details),
+            "approved" => new PurchaseOrderApproved($this, $details),
+            "rejected" => new PurchaseOrderRejected($this, $details),
+            "canceled" => new PurchaseOrderCanceled($this, $details),
             default => null,
         };
     }

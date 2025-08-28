@@ -23,8 +23,8 @@ class ProdplanInjItemDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'prodplaninjitem.action')
-            ->setRowId('id');
+            ->addColumn("action", "prodplaninjitem.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class ProdplanInjItemDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('prodplaninjitem-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("prodplaninjitem-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,10 +70,10 @@ class ProdplanInjItemDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('item_code'),
-            Column::make('pair_code'),
-            Column::make('bom_level'),
-            Column::make('lead_time'),
+            Column::make("item_code"),
+            Column::make("pair_code"),
+            Column::make("bom_level"),
+            Column::make("lead_time"),
         ];
     }
 
@@ -84,6 +84,6 @@ class ProdplanInjItemDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ProdplanInjItem_' . date('YmdHis');
+        return "ProdplanInjItem_" . date("YmdHis");
     }
 }

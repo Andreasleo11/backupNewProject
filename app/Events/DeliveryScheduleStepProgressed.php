@@ -17,10 +17,9 @@ class DeliveryScheduleStepProgressed implements ShouldBroadcast
     /**
      * Create a new event instance.
      */
-    public function __construct(
-        public string $stepClass,
-        public string $status // 'completed' or 'failed'
-    ) {
+    public function __construct(public string $stepClass, public string $status)
+    {
+        // 'completed' or 'failed'
         //
     }
 
@@ -31,11 +30,11 @@ class DeliveryScheduleStepProgressed implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('delivery-schedule-progress')];
+        return [new PrivateChannel("delivery-schedule-progress")];
     }
 
     public function broadcastAs(): string
     {
-        return 'step.progressed';
+        return "step.progressed";
     }
 }

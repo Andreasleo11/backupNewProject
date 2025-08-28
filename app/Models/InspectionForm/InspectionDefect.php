@@ -9,8 +9,5 @@ class InspectionDefect extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-        'department',
-    ];
+    protected $fillable = ["name", "department"];
 }

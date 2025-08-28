@@ -15,10 +15,10 @@ class SanitizedNumeric implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // Add your sanitization logic here
-        $sanitizedValue = preg_replace('/[^\d.]/', '', $value);
+        $sanitizedValue = preg_replace("/[^\d.]/", "", $value);
         if (!is_numeric($sanitizedValue)) {
             // $fail('The :attribute must be a valid numeric value after sanitization.');
-            $fail('The item must be a valid price.');
+            $fail("The item must be a valid price.");
         }
     }
 }
