@@ -70,31 +70,31 @@ class DirectorQaqcReportsDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                ->setTableId("director-reports-table")
-                ->columns($this->getColumns())
-                ->minifiedAjax()
-                // ->dom('Bfrtip')
-                ->orderBy(7, "desc")
-                ->buttons([
-                    Button::make("excel"),
-                    Button::make("csv"),
-                    // Button::raw('copy')->titleAttr('Copy Data to Clipboard'),
-                    // Button::make('pdf'),
-                    Button::make("print"),
-                    // Button::make('reset'),
-                    Button::make("reload"),
-                    // Button::make('searchPanes'),
-                ]);
-            // ->searchPanes(SearchPane::make())
-            // ->addColumnDef([
-            //     'targets' => '_all',
-            //     'searchPanes' => [
-            //         'show' => true,
-            //         'vieTotal' => false,
-            //         'viewCount' => false,
-            //     ],
-            // ])
-            // ->dom('PBfrtip')
+            ->setTableId("director-reports-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            // ->dom('Bfrtip')
+            ->orderBy(7, "desc")
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                // Button::raw('copy')->titleAttr('Copy Data to Clipboard'),
+                // Button::make('pdf'),
+                Button::make("print"),
+                // Button::make('reset'),
+                Button::make("reload"),
+                // Button::make('searchPanes'),
+            ]);
+        // ->searchPanes(SearchPane::make())
+        // ->addColumnDef([
+        //     'targets' => '_all',
+        //     'searchPanes' => [
+        //         'show' => true,
+        //         'vieTotal' => false,
+        //         'viewCount' => false,
+        //     ],
+        // ])
+        // ->dom('PBfrtip')
     }
 
     /**
