@@ -336,9 +336,12 @@
           .then(data => {
             if (loader) loader.classList.add('hidden');
 
-            if (data.success) {
+           if (data.success) {
               result.innerHTML =
                 `<span class="text-green-600 font-semibold">✅ ${data.message}</span>`;
+                                setTimeout(() => {
+                                    location.reload();
+                                }, 1500);
             } else {
               result.innerHTML =
                 `<span class="text-red-600 font-semibold">❌ ${data.message}</span>`;

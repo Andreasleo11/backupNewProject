@@ -154,7 +154,8 @@
         $department === 'QA' ||
             $department === 'QC' ||
             $department === 'BUSINESS' ||
-            $user->role->name === 'SUPERADMIN')
+            $user->role->name === 'SUPERADMIN' || 
+            $user->name === 'herlina')
       <li class="sidebar-item" id="sidebar-item-qaqc">
         <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
           data-bs-target="#qaqc" aria-expanded="false" aria-controls="qaqc">

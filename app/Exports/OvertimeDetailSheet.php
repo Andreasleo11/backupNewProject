@@ -19,10 +19,8 @@ class OvertimeDetailSheet implements FromView
 
     public function view(): View
     {
-        $details = DetailFormOvertime::whereBetween("start_date", [
-            $this->start_date,
-            $this->end_date,
-        ])
+        $details = DetailFormOvertime::with("actualOvertimeDetail")
+            ->whereBetween("start_date", [$this->start_date, $this->end_date])
             ->where("status", "Approved")
             ->get();
 

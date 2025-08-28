@@ -23,7 +23,7 @@ class OvertimeSummarySheet implements FromView
         $summary = DetailFormOvertime::query()
             ->select(
                 "NIK",
-                "nama",
+                "name",
                 DB::raw("MIN(start_date) as start_date"),
                 DB::raw("MAX(end_date) as end_date"),
                 DB::raw("SUM(TIMESTAMPDIFF(MINUTE, 
@@ -34,7 +34,7 @@ class OvertimeSummarySheet implements FromView
             ->whereBetween("start_date", [$this->start_date, $this->end_date])
             ->whereNull("deleted_at")
             ->where("status", "Approved")
-            ->groupBy("NIK", "nama")
+            ->groupBy("NIK", "name")
             ->get();
 
         return view("formovertime.export_summary_excel", compact("summary"));

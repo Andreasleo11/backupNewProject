@@ -65,7 +65,13 @@ class DailyReportIndex extends Component
             ->values()
             ->all();
 
-        $this->positions = $validEmployees->pluck("jabatan")->filter()->unique()->values()->all();
+        $this->positions = $validEmployees
+            ->pluck("jabatan")
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
 
         $this->departmentNos = Department::orderBy("dept_no")
             ->get(["dept_no", "name"])

@@ -108,6 +108,8 @@
                 <td rowspan=2 align="center" style="vertical-align: middle;">
                   {{ $material->item_no }}
                 </td>
+                 <td rowspan=2 align="center" style="vertical-align: middle;">{{ $material->item_desc }}
+                </td>
                 <td rowspan=2 align="center" style="vertical-align: middle;">
                   {{ $material->vendor_code }}</td>
                 <td rowspan=2 align="center" style="vertical-align: middle;">

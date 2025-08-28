@@ -51,7 +51,14 @@ class MonthlyBudgetReportController extends Controller
         }
 
         // filter by auth user department or if it's user create the report besides DIRECTOR and GM
-        if (!($isDirector || $isGm || $authUser->email === "nur@daijo.co.id")) {
+        if (
+            !(
+                $isDirector ||
+                $isGm ||
+                $authUser->email === "nur@daijo.co.id" ||
+                $authUser->role->name === "SUPERADMIN"
+            )
+        ) {
             $reportsQuery->whereHas("department", function ($query) use ($authUser) {
                 $query->where(function ($subQuery) use ($authUser) {
                     $subQuery->where("id", $authUser->department->id);

@@ -36,7 +36,7 @@ class PurchaseRequestsDataTable extends DataTable
 
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        return (new EloquentDataTable($query))
+        return new EloquentDataTable($query)
             ->addColumn("action", "purchaserequests.action")
             ->editColumn("status", function ($pr) {
                 return view("partials.pr-status-badge", ["pr" => $pr])->render();
@@ -205,7 +205,9 @@ class PurchaseRequestsDataTable extends DataTable
                 $query->where("to_department", "Personnel");
             }
 
-            $query->whereNotNull("autograph_1");
+            $query->where(function ($query) {
+                $query->whereNotNull("autograph_1")->orWhere("user_id_create", auth()->user()->id);
+            });
         } elseif ($user->role->name === "SUPERADMIN") {
             $query->whereNot("from_department", "ADMIN");
         } else {

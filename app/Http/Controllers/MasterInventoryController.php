@@ -629,7 +629,14 @@ class MasterInventoryController extends BaseController
     {
         $data = DetailHardware::with("masterInventory", "hardwareType")->find($id);
 
-        $qrData = $data->brand . "~" . $data->hardwareType->name . "~" . $data->hardware_name;
+        $qrData =
+            $data->brand .
+            "~" .
+            $data->hardwareType->name .
+            "~" .
+            $data->hardware_name .
+            "~" .
+            $data->remark;
 
         $qrCodeWriter = new PngWriter();
         $qrcoded = null;
