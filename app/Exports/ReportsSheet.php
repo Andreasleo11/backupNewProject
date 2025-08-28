@@ -39,7 +39,7 @@ class ReportsSheet implements FromCollection, WithTitle, WithHeadings
     public function headings(): array
     {
         // Get column names from the reports table
-        $columnNames = Schema::getColumnListing('reports');
+        $columnNames = Schema::getColumnListing("reports");
 
         // Return the column names as headers
         return $columnNames;
@@ -47,6 +47,6 @@ class ReportsSheet implements FromCollection, WithTitle, WithHeadings
 
     public function title(): string
     {
-        return 'Reports'; // Custom title for the sheet
+        return "Reports"; // Custom title for the sheet
     }
 }

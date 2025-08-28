@@ -7,19 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchasingHeaderEvaluationSupplier extends Model
 {
-    protected $table = 'purchasing_header_evaluation_supplier';
+    protected $table = "purchasing_header_evaluation_supplier";
 
-    protected $fillable = [
-        'doc_num',
-        'vendor_code',
-        'vendor_name',
-        'year',
-        'grade',
-        'status',
-    ];
+    protected $fillable = ["doc_num", "vendor_code", "vendor_name", "year", "grade", "status"];
 
     public function details()
     {
-        return $this->hasMany(PurchasingDetailEvaluationSupplier::class, 'header_id', 'id');
+        return $this->hasMany(PurchasingDetailEvaluationSupplier::class, "header_id", "id");
     }
 }

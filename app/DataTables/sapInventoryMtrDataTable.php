@@ -23,8 +23,8 @@ class sapInventoryMtrDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'sapinventorymtr.action')
-            ->setRowId('id');
+            ->addColumn("action", "sapinventorymtr.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class sapInventoryMtrDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('sapinventorymtr-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("sapinventorymtr-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,14 +70,14 @@ class sapInventoryMtrDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('fg_code'),
-            Column::make('material_code'),
-            Column::make('material_name'),
-            Column::make('bom_quantity'),
-            Column::make('in_stock'),
-            Column::make('item_group'),
-            Column::make('vendor_code'),
-            Column::make('vendor_name'),
+            Column::make("fg_code"),
+            Column::make("material_code"),
+            Column::make("material_name"),
+            Column::make("bom_quantity"),
+            Column::make("in_stock"),
+            Column::make("item_group"),
+            Column::make("vendor_code"),
+            Column::make("vendor_name"),
         ];
     }
 
@@ -88,6 +88,6 @@ class sapInventoryMtrDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'sapInventoryMtr_' . date('YmdHis');
+        return "sapInventoryMtr_" . date("YmdHis");
     }
 }

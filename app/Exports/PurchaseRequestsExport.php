@@ -11,8 +11,8 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 class PurchaseRequestsExport implements FromCollection, WithTitle, WithHeadings
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
 
     protected $purchaseRequestIds;
 
@@ -24,13 +24,13 @@ class PurchaseRequestsExport implements FromCollection, WithTitle, WithHeadings
     public function collection()
     {
         // Fetch PurchaseRequests by IDs
-        return PurchaseRequest::whereIn('id', $this->purchaseRequestIds)->get();
+        return PurchaseRequest::whereIn("id", $this->purchaseRequestIds)->get();
     }
 
     public function headings(): array
     {
         // Get column names from the reports table
-        $columnNames = Schema::getColumnListing('purchase_requests');
+        $columnNames = Schema::getColumnListing("purchase_requests");
 
         // Return the column names as headers
         return $columnNames;
@@ -38,6 +38,6 @@ class PurchaseRequestsExport implements FromCollection, WithTitle, WithHeadings
 
     public function title(): string
     {
-        return 'Purchase Requests'; // Custom title for the sheet
+        return "Purchase Requests"; // Custom title for the sheet
     }
 }

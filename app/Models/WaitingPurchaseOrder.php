@@ -10,12 +10,12 @@ class WaitingPurchaseOrder extends Model
     use HasFactory;
 
     protected $fillable = [
-        'mold_name',
-        'capture_photo_path',
-        'process',
-        'price',
-        'quotation_number',
-        'remark',
-        'status',
+        "mold_name",
+        "capture_photo_path",
+        "process",
+        "price",
+        "quotation_number",
+        "remark",
+        "status",
     ];
 }

@@ -39,7 +39,7 @@ class HeaderFormAdjustSheet implements FromCollection, WithTitle, WithHeadings
     public function headings(): array
     {
         // Get column names from the reports table
-        $columnNames = Schema::getColumnListing('header_form_adjusts');
+        $columnNames = Schema::getColumnListing("header_form_adjusts");
 
         // Return the column names as headers
         return $columnNames;
@@ -47,6 +47,6 @@ class HeaderFormAdjustSheet implements FromCollection, WithTitle, WithHeadings
 
     public function title(): string
     {
-        return 'Header Form Adjust'; // Custom title for the sheet
+        return "Header Form Adjust"; // Custom title for the sheet
     }
 }

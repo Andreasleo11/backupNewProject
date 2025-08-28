@@ -11,16 +11,16 @@ class EmployeeDailyReportLog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'logged_at',
-        'employee_id',
-        'employee_name',
-        'department_id',
-        'work_date',
-        'work_time',
-        'report_type',
-        'work_description',
-        'proof_url',
-        'status',
-        'message',
+        "logged_at",
+        "employee_id",
+        "employee_name",
+        "department_id",
+        "work_date",
+        "work_time",
+        "report_type",
+        "work_description",
+        "proof_url",
+        "status",
+        "message",
     ];
 }

@@ -9,13 +9,7 @@ class defects extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'detail_id',
-        'category_id',
-        'is_daijo',
-        'quantity',
-        'remarks',
-    ];
+    protected $fillable = ["detail_id", "category_id", "is_daijo", "quantity", "remarks"];
 
     public function detaildefect()
     {
@@ -27,4 +21,3 @@ class defects extends Model
         return $this->hasMany(DefectCategory::class);
     }
 }
-

@@ -10,9 +10,5 @@ class ForecastCustomerMaster extends Model
     use HasFactory;
     public $timestamps = false;
 
-    protected $fillable = [
-        'forecast_code',
-        'forecast_name',
-        'customer',       
-    ];
+    protected $fillable = ["forecast_code", "forecast_name", "customer"];
 }

@@ -10,19 +10,19 @@ class ProjectMaster extends Model
     use HasFactory;
 
     protected $fillable = [
-        'project_name',
-        'dept',
-        'request_date',
-        'start_date',
-        'end_date',
-        'pic',
-        'description',
-        'status',
+        "project_name",
+        "dept",
+        "request_date",
+        "start_date",
+        "end_date",
+        "pic",
+        "description",
+        "status",
         // Add other fields as needed
     ];
 
     public function prohist()
     {
-        return $this->hasMany(ProjectHistory::class, 'project_id', 'id');
+        return $this->hasMany(ProjectHistory::class, "project_id", "id");
     }
 }

@@ -15,8 +15,14 @@ class Filter extends Component
     public $columns;
     public $actions;
 
-    public function __construct($filterColumn = null, $filterAction = null, $filterValue = null, $itemsPerPage = null, $columns = [], $actions = [])
-    {
+    public function __construct(
+        $filterColumn = null,
+        $filterAction = null,
+        $filterValue = null,
+        $itemsPerPage = null,
+        $columns = [],
+        $actions = [],
+    ) {
         $this->filterColumn = $filterColumn;
         $this->filterAction = $filterAction;
         $this->filterValue = $filterValue;
@@ -27,6 +33,6 @@ class Filter extends Component
 
     public function render()
     {
-        return view('components.filter');
+        return view("components.filter");
     }
 }

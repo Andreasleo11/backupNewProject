@@ -24,7 +24,9 @@ class DisciplineTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('totalkehadiran', '
+            ->addColumn(
+                "totalkehadiran",
+                '
         @php
 
         $total = 40;
@@ -40,8 +42,11 @@ class DisciplineTableDataTable extends DataTable
             $all = 0;
         }
         @endphp
-        {{ $all }}')
-            ->addColumn('totaldiscipline', '@php
+        {{ $all }}',
+            )
+            ->addColumn(
+                "totaldiscipline",
+                '@php
 
         $total = 0;
 
@@ -149,9 +154,12 @@ class DisciplineTableDataTable extends DataTable
             $total += 0;
         }
 
-        @endphp {{ $total }}')
+        @endphp {{ $total }}',
+            )
 
-            ->addColumn('grade', '
+            ->addColumn(
+                "grade",
+                '
         @php
 
         if($total >= 91)
@@ -171,11 +179,15 @@ class DisciplineTableDataTable extends DataTable
             $grade = "D";
         }
         @endphp
-        {{ $grade }}')
-            ->addColumn('action', '
+        {{ $grade }}',
+            )
+            ->addColumn(
+                "action",
+                '
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}" {{ ($is_lock === 1) ? "disabled" : ""  }} ><i class="bx bx-edit"></i></button>
-        ')
-            ->setRowId('id');
+        ',
+            )
+            ->setRowId("id");
     }
 
     /**
@@ -189,162 +201,314 @@ class DisciplineTableDataTable extends DataTable
         $isHead = Auth::user()->is_head;
         $userDepartment = Auth::user()->department->name;
 
-        if ($isHead && $userDepartment == 'COMPUTER') {
+        if ($isHead && $userDepartment == "COMPUTER") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '600')
-                        ->where('NIK', '!=', '06060')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'MAINTENANCE MACHINE') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "600")
+                        ->where("NIK", "!=", "06060")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "MAINTENANCE MACHINE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '351')
-                        ->where('NIK', '!=', '07180')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'PPIC') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "351")
+                        ->where("NIK", "!=", "07180")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "PPIC") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '311')
-                        ->where('NIK', '!=', '05932')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'PE') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "311")
+                        ->where("NIK", "!=", "05932")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "PE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '500')
-                        ->where('NIK', '!=', '00015')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'PLASTIC INJECTION') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "500")
+                        ->where("NIK", "!=", "00015")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "PLASTIC INJECTION") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '390')
-                        ->where('NIK', '!=', '06054')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'MOULDING') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "390")
+                        ->where("NIK", "!=", "06054")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "MOULDING") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '363')
-                        ->where('NIK', '!=', '06361')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'ASEEMBLY') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "363")
+                        ->where("NIK", "!=", "06361")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "ASEEMBLY") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '362')
-                        ->where('NIK', '!=', '00238')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'SECOND PROCESS') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "362")
+                        ->where("NIK", "!=", "00238")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "SECOND PROCESS") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '361')
-                        ->where('NIK', '!=', '00021')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'MAINTENANCE') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "361")
+                        ->where("NIK", "!=", "00021")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "MAINTENANCE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '350')
-                        ->where('NIK', '!=', '00299')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'LOGISTIC') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "350")
+                        ->where("NIK", "!=", "00299")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "LOGISTIC") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('Dept', '331')->orWhere('Dept', '330');
-                    })
-                        ->where('NIK', '!=', '00179')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'STORE') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where(function ($query) {
+                            $query->where("Dept", "331")->orWhere("Dept", "330");
+                        })
+                        ->where("NIK", "!=", "00179")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "STORE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '330')
-                        ->where('NIK', '!=', '06974')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'PURCHASING') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "330")
+                        ->where("NIK", "!=", "06974")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "PURCHASING") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '320')
-                        ->where('NIK', '!=', '07119')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'PERSONALIA') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "320")
+                        ->where("NIK", "!=", "07119")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "PERSONALIA") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '310')
-                        ->where('NIK', '!=', '00001')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "310")
+                        ->where("NIK", "!=", "00001")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
         } elseif (Auth::user()->email === "ani_apriani@daijo.co.id") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '310')
-                        ->where('NIK', '!=', '00001')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'BUSINESS') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "310")
+                        ->where("NIK", "!=", "00001")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "BUSINESS") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '200')
-                        ->where('NIK', '!=', '00145')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'ACCOUNTING') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "200")
+                        ->where("NIK", "!=", "00145")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "ACCOUNTING") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '100')
-                        ->where('NIK', '!=', '05994')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "100")
+                        ->where("NIK", "!=", "05994")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
         } elseif (Auth::user()->id = 120) {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('Dept', '340')->orWhere('Dept', '341');
-                    })
-                        ->where('NIK', '!=', '00033')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'QC') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where(function ($query) {
+                            $query->where("Dept", "340")->orWhere("Dept", "341");
+                        })
+                        ->where("NIK", "!=", "00033")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "QC") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '340')
-                        ->where('NIK', '!=', '06960')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
-        } elseif ($isHead && $userDepartment == 'QA') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "340")
+                        ->where("NIK", "!=", "06960")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
+        } elseif ($isHead && $userDepartment == "QA") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '341')
-                        ->where('NIK', '!=', '07000')
-                        ->whereNotIn('status', ['YAYASAN', 'YAYASAN KARAWANG', 'MAGANG', 'MAGANG KARAWANG']);
-                })->newQuery();
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "341")
+                        ->where("NIK", "!=", "07000")
+                        ->whereNotIn("status", [
+                            "YAYASAN",
+                            "YAYASAN KARAWANG",
+                            "MAGANG",
+                            "MAGANG KARAWANG",
+                        ]);
+                })
+                ->newQuery();
         }
     }
 
@@ -356,20 +520,20 @@ class DisciplineTableDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('disciplinetable-table')
+            ->setTableId("disciplinetable-table")
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->dom('Bfrtip')
-            ->orderBy(1, 'asc')
+            ->dom("Bfrtip")
+            ->orderBy(1, "asc")
             // ->selectStyleSingle()
             ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                Button::make('pdf'),
-                Button::make('print'),
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
             ])
             ->parameters([
-                'initComplete' => 'function() {
+                "initComplete" => 'function() {
                             introJs().setOptions({
                                 steps: [{
                                     title: "Welcome",
@@ -392,7 +556,7 @@ class DisciplineTableDataTable extends DataTable
                                 showBullets: false,
                                 dontShowAgainCookieDays: 30,
                             }).start();
-                        }'
+                        }',
             ]);
     }
 
@@ -404,68 +568,69 @@ class DisciplineTableDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')
-                ->visible(false),
-            Column::make('NIK')->title('NIK')->addClass('align-middle text-center'),
-            Column::make('Name')
-                ->data('karyawan.Nama')
+            Column::make("id")->visible(false),
+            Column::make("NIK")->title("NIK")->addClass("align-middle text-center"),
+            Column::make("Name")
+                ->data("karyawan.Nama")
                 ->searchable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.Dept')
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("Department")
+                ->data("karyawan.Dept")
                 ->searchable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('start_date')
-                ->title('Start Date')
-                ->data('karyawan.start_date')
-                ->searchable(false)
-                ->exportable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('status')
-                ->title('Status')
-                ->data('karyawan.status')
-                ->exportable(false)
-                ->searchable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('Month')->addClass('align-middle text-center'),
-            Column::make('Alpha')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Telat')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Izin')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Sakit')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('totalkehadiran')
-                ->title('Total Nilai Kehadiran')
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("start_date")
+                ->title("Start Date")
+                ->data("karyawan.start_date")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
-            Column::make('kerajinan_kerja')->addClass('align-middle text-center')
-            ->title('Kinerja Kerja'),
-            Column::make('kerapian_kerja')->addClass('align-middle text-center')
-            ->title('Kerapian'),
-            Column::make('loyalitas')->addClass('align-middle text-center'),
-            Column::make('perilaku_kerja')->addClass('align-middle text-center')
-            ->title('Etika dan Kesopanan'),
-            Column::make('prestasi')->addClass('align-middle text-center'),
-            Column::make('totaldiscipline')
-                ->title('Total Nilai Kedisiplinan')
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("status")
+                ->title("Status")
+                ->data("karyawan.status")
+                ->exportable(false)
+                ->searchable(false)
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("Month")->addClass("align-middle text-center"),
+            Column::make("Alpha")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("Telat")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("Izin")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("Sakit")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("totalkehadiran")
+                ->title("Total Nilai Kehadiran")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
-            Column::make('total')
-                ->exportable(false)
-                ->addClass('align-middle text-center'),
-            Column::make('grade')
-                ->title('Grade')
+                ->addClass("align-middle text-center text-bg-secondary")
+                ->orderable(false),
+            Column::make("kerajinan_kerja")
+                ->addClass("align-middle text-center")
+                ->title("Kinerja Kerja"),
+            Column::make("kerapian_kerja")->addClass("align-middle text-center")->title("Kerapian"),
+            Column::make("loyalitas")->addClass("align-middle text-center"),
+            Column::make("perilaku_kerja")
+                ->addClass("align-middle text-center")
+                ->title("Etika dan Kesopanan"),
+            Column::make("prestasi")->addClass("align-middle text-center"),
+            Column::make("totaldiscipline")
+                ->title("Total Nilai Kedisiplinan")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::computed('action')
+                ->addClass("align-middle text-center text-bg-secondary")
+                ->orderable(false),
+            Column::make("total")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("grade")
+                ->title("Grade")
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::computed("action")
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('align-middle text-center'),
+                ->addClass("align-middle text-center"),
         ];
     }
 
@@ -476,6 +641,6 @@ class DisciplineTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DisciplineTable_' . date('YmdHis');
+        return "DisciplineTable_" . date("YmdHis");
     }
 }

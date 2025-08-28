@@ -11,15 +11,15 @@ class DeliveryDestination extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'delivery_note_id',
-        'destination',
-        'remarks',
-        'driver_cost',
-        'kenek_cost',
-        'balikan_cost',
-        'driver_cost_currency',
-        'kenek_cost_currency',
-        'balikan_cost_currency'
+        "delivery_note_id",
+        "destination",
+        "remarks",
+        "driver_cost",
+        "kenek_cost",
+        "balikan_cost",
+        "driver_cost_currency",
+        "kenek_cost_currency",
+        "balikan_cost_currency",
     ];
 
     public function deliveryNote()

@@ -13,8 +13,8 @@ class DefectCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        DefectCategory::create(['name' => 'Nubmark']);
-        DefectCategory::create(['name' => 'Burn mark']);
-        DefectCategory::create(['name' => 'Salah warna']);
+        DefectCategory::create(["name" => "Nubmark"]);
+        DefectCategory::create(["name" => "Burn mark"]);
+        DefectCategory::create(["name" => "Salah warna"]);
     }
 }

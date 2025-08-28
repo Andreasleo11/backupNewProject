@@ -11,18 +11,17 @@ class DeliveryNoteShow extends Component
 
     public function mount($id)
     {
-        $this->deliveryNote = DeliveryNote::with('destinations')->findOrFail($id);
+        $this->deliveryNote = DeliveryNote::with("destinations")->findOrFail($id);
 
-        $latestId = DeliveryNote::max('id');
+        $latestId = DeliveryNote::max("id");
         $this->deliveryNote->is_latest = $this->deliveryNote->id === $latestId;
     }
 
     public function render()
     {
         if (!auth()->user()) {
-            return view('livewire.delivery-note.show')
-                ->layout('layouts.guest');
+            return view("livewire.delivery-note.show")->layout("layouts.guest");
         }
-        return view('livewire.delivery-note.show');
+        return view("livewire.delivery-note.show");
     }
 }

@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchasingVendorOntimeDelivery extends Model
 {
-    protected $table = 'purchasing_vendor_ontime_delivery';
+    protected $table = "purchasing_vendor_ontime_delivery";
 }

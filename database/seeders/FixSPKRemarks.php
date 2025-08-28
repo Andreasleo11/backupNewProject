@@ -18,8 +18,8 @@ class FixSPKRemarks extends Seeder
 
     private function fixStatus()
     {
-        SpkRemark::where('status', 2)->update(['status' => 3]);
-        SpkRemark::where('status', 1)->update(['status' => 2]);
-        SpkRemark::where('status', 0)->update(['status' => 1]);
+        SpkRemark::where("status", 2)->update(["status" => 3]);
+        SpkRemark::where("status", 1)->update(["status" => 2]);
+        SpkRemark::where("status", 0)->update(["status" => 1]);
     }
 }

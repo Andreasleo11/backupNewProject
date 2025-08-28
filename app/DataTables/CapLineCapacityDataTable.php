@@ -23,8 +23,8 @@ class CapLineCapacityDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'caplinecapacity.action')
-            ->setRowId('id');
+            ->addColumn("action", "caplinecapacity.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class CapLineCapacityDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('caplinecapacity-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("caplinecapacity-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,10 +70,10 @@ class CapLineCapacityDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('line_code'),
-            Column::make('departement'),
-            Column::make('time_limit'),
-            Column::make('status'),
+            Column::make("line_code"),
+            Column::make("departement"),
+            Column::make("time_limit"),
+            Column::make("status"),
         ];
     }
 
@@ -84,6 +84,6 @@ class CapLineCapacityDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'CapLineCapacity_' . date('YmdHis');
+        return "CapLineCapacity_" . date("YmdHis");
     }
 }
