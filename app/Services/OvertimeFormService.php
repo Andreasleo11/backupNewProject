@@ -153,9 +153,12 @@ class OvertimeFormService
 
                 $i["_start"] = $start;
                 $i["_end"] = $end;
+                $i["break"] = (int) ($i["break"] ?? 0);
+
+                return $i;
             })
             ->filter();
-
+            
         if ($rows->isEmpty()) {
             return 0;
         }
@@ -164,7 +167,9 @@ class OvertimeFormService
         $pairs = $rows->map(fn($i) => [$i["nik"], $i["overtime_date"]])->unique()->values();
 
         $existing = DetailFormOvertime::query()
-            ->whereHas("header", fn($q) => $q->where("is_after_hour", $isAfterHour))
+            ->whereHas("header", function ($q) use ($isAfterHour) {
+                $q->where("is_after_hour", $isAfterHour);
+            })
             ->whereIn("NIK", $pairs->pluck(0))
             ->whereIn("overtime_date", $pairs->pluck(1))
             ->get(["NIK", "overtime_date"])
