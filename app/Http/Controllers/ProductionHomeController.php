@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 class ProductionHomeController extends Controller
 {
-    public function index(){
-        return view('production.home');
+    public function index()
+    {
+        return view("production.home");
     }
 }

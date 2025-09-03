@@ -23,10 +23,13 @@ class InvLineListDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-line-modal{{str_replace(\' \', \'\',$line_code)}}"><i class="bx bx-edit"></i></button>
+            ->addColumn(
+                "action",
+                '<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-line-modal{{str_replace(\' \', \'\',$line_code)}}"><i class="bx bx-edit"></i></button>
             <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{str_replace(\' \', \'\',$line_code)}}"><i class="bx bx-trash"></i></button>
-            ')
-            ->setRowId('id');
+            ',
+            )
+            ->setRowId("id");
     }
 
     /**
@@ -48,19 +51,19 @@ class InvLineListDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('invlinelist-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("invlinelist-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -71,15 +74,15 @@ class InvLineListDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('line_code'),
-            Column::make('line_name'),
-            Column::make('departement'),
-            Column::make('daily_minutes'),
-            Column::computed('action')
-            ->exportable(false)
-            ->printable(false)
-            ->addClass('text-center')
-            ->addClass('align-middle'),
+            Column::make("line_code"),
+            Column::make("line_name"),
+            Column::make("departement"),
+            Column::make("daily_minutes"),
+            Column::computed("action")
+                ->exportable(false)
+                ->printable(false)
+                ->addClass("text-center")
+                ->addClass("align-middle"),
         ];
     }
 
@@ -90,6 +93,6 @@ class InvLineListDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'InvLineList_' . date('YmdHis');
+        return "InvLineList_" . date("YmdHis");
     }
 }

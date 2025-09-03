@@ -9,16 +9,10 @@ class DetailMaintenanceInventoryReport extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'header_id',
-        'category_id',
-        'condition',
-        'remark',
-        'checked_by',
-    ];
+    protected $fillable = ["header_id", "category_id", "condition", "remark", "checked_by"];
 
     public function typecategory()
     {
-        return $this->belongsTo(CategoryMaintenanceInventoryReport::class, 'category_id');
+        return $this->belongsTo(CategoryMaintenanceInventoryReport::class, "category_id");
     }
 }

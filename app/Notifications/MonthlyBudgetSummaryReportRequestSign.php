@@ -31,7 +31,7 @@ class MonthlyBudgetSummaryReportRequestSign extends Notification implements Shou
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ["mail"];
     }
 
     /**
@@ -39,12 +39,12 @@ class MonthlyBudgetSummaryReportRequestSign extends Notification implements Shou
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-                ->cc('nur@daijo.co.id')
-                ->greeting($this->detail['greeting'])
-                ->line($this->detail['body'])
-                // ->line('We waiting for Mr/Mrs.' . ucwords($this->detail['userName']) . ' to sign the report.')
-                ->action($this->detail['actionText'], $this->detail['actionURL']);
+        return (new MailMessage())
+            ->cc("nur@daijo.co.id")
+            ->greeting($this->detail["greeting"])
+            ->line($this->detail["body"])
+            // ->line('We waiting for Mr/Mrs.' . ucwords($this->detail['userName']) . ' to sign the report.')
+            ->action($this->detail["actionText"], $this->detail["actionURL"]);
     }
 
     /**
@@ -55,7 +55,7 @@ class MonthlyBudgetSummaryReportRequestSign extends Notification implements Shou
     public function toArray(object $notifiable): array
     {
         return [
-            'data' =>' Monthly Budget Summary Report of '. $this->report->id.' needs your sign'
+            "data" => " Monthly Budget Summary Report of " . $this->report->id . " needs your sign",
         ];
     }
 }

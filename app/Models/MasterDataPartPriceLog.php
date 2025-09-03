@@ -10,11 +10,11 @@ class MasterDataPartPriceLog extends Model
     use HasFactory;
 
     protected $fillable = [
-        'report_id',
-        'detail_id',
-        'created_by',
-        'part_code',
-        'currency',
-        'price',
+        "report_id",
+        "detail_id",
+        "created_by",
+        "part_code",
+        "currency",
+        "price",
     ];
 }

@@ -28,7 +28,7 @@ class MonthlyPOStatus extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail' , 'database'];
+        return ["mail", "database"];
     }
 
     /**
@@ -36,11 +36,11 @@ class MonthlyPOStatus extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-                ->subject('Monthly PO Status Update')
-                ->line('This is your monthly update for Purchase Orders.')
-                ->line("You have {$this->poCount} POs with status APPROVED this month.")
-                ->action('View POs', route('po.index'));
+        return (new MailMessage())
+            ->subject("Monthly PO Status Update")
+            ->line("This is your monthly update for Purchase Orders.")
+            ->line("You have {$this->poCount} POs with status APPROVED this month.")
+            ->action("View POs", route("po.index"));
     }
 
     /**
@@ -51,7 +51,7 @@ class MonthlyPOStatus extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'MonthlyPOStatus already sent!'
+            "message" => "MonthlyPOStatus already sent!",
         ];
     }
 }

@@ -4,15 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table('barcode_packaging_master', function (Blueprint $table) {
-            $table->datetime('finishDateScan')->after('finishDokumen')->nullable();
+        Schema::table("barcode_packaging_master", function (Blueprint $table) {
+            $table->datetime("finishDateScan")->after("finishDokumen")->nullable();
         });
     }
 
@@ -21,8 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('barcode_packaging_master', function (Blueprint $table) {
-            $table->dropColumn('finishDateScan');
+        Schema::table("barcode_packaging_master", function (Blueprint $table) {
+            $table->dropColumn("finishDateScan");
         });
     }
 };

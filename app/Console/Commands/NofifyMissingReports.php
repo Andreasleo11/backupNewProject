@@ -17,14 +17,14 @@ class NofifyMissingReports extends Command
      *
      * @var string
      */
-    protected $signature = 'notify:missing-reports';
+    protected $signature = "notify:missing-reports";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Notify department heads about missing employee daily reports until today';
+    protected $description = "Notify department heads about missing employee daily reports until today";
 
     /**
      * Execute the console command.
@@ -35,7 +35,7 @@ class NofifyMissingReports extends Command
 
         $this->info("Checking for missing reports as of " . $today->toDateString());
 
-        $deptHeads = User::where('is_head', true)->get();
+        $deptHeads = User::where("is_head", true)->get();
 
         foreach ($deptHeads as $head) {
             $headDept = $head->department->dept_no ?? null;
@@ -45,9 +45,7 @@ class NofifyMissingReports extends Command
                 continue;
             }
 
-            $employees = Employee::where('Dept', $headDept)
-                ->whereNull('end_date')
-                ->get();
+            $employees = Employee::where("Dept", $headDept)->whereNull("end_date")->get();
 
             $missingReports = [];
 
@@ -62,9 +60,9 @@ class NofifyMissingReports extends Command
                     $expectedDates[] = $date->toDateString();
                 }
 
-                $submittedDates = EmployeeDailyReport::where('employee_id', $employee->NIK)
-                    ->whereDate('work_date', '<', $today)
-                    ->pluck('work_date')
+                $submittedDates = EmployeeDailyReport::where("employee_id", $employee->NIK)
+                    ->whereDate("work_date", "<", $today)
+                    ->pluck("work_date")
                     ->map(fn($d) => Carbon::parse($d)->toDateString())
                     ->toArray();
 
@@ -72,16 +70,20 @@ class NofifyMissingReports extends Command
 
                 if (count($missingDates) > 0) {
                     $missingReports[] = [
-                        'employee' => $employee,
-                        'dates' => $missingDates,
+                        "employee" => $employee,
+                        "dates" => $missingDates,
                     ];
                 }
             }
 
             if (count($missingReports) > 0) {
-                Notification::send($head, new MissingDailyReportsNotification(($missingReports)));
+                Notification::send($head, new MissingDailyReportsNotification($missingReports));
 
-                $this->info("Notification sent to {$head->email} for " . count($missingReports) . " missing reports.");
+                $this->info(
+                    "Notification sent to {$head->email} for " .
+                        count($missingReports) .
+                        " missing reports.",
+                );
             } else {
                 $this->line("No missing reports for {$head->name}");
             }

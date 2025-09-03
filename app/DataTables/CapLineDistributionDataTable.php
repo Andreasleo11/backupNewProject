@@ -23,8 +23,8 @@ class CapLineDistributionDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'caplinedistribution.action')
-            ->setRowId('id');
+            ->addColumn("action", "caplinedistribution.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class CapLineDistributionDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('caplinedistribution-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("caplinedistribution-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,11 +70,11 @@ class CapLineDistributionDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('line_code'),
-            Column::make('item_code'),
-            Column::make('bom_level'),
-            Column::make('priority'),
+            Column::make("id"),
+            Column::make("line_code"),
+            Column::make("item_code"),
+            Column::make("bom_level"),
+            Column::make("priority"),
         ];
     }
 
@@ -85,6 +85,6 @@ class CapLineDistributionDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'CapLineDistribution_' . date('YmdHis');
+        return "CapLineDistribution_" . date("YmdHis");
     }
 }

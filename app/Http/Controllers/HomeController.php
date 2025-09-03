@@ -13,7 +13,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware("auth");
     }
 
     /**
@@ -26,35 +26,35 @@ class HomeController extends Controller
         $user = auth()->user();
 
         if ($user->role_id == 1) {
-            return view('superadmin_home');
-        } else if ($user->specification->name === 'DIRECTOR') {
-            return redirect()->route('director.home');
-        } else if ($user->role_id == 2) {
+            return view("superadmin_home");
+        } elseif ($user->specification->name === "DIRECTOR") {
+            return redirect()->route("director.home");
+        } elseif ($user->role_id == 2) {
             $department = $user->department->name;
 
             if ($department === "QC" || $department === "QA") {
-                return redirect()->route('qaqc.home');
+                return redirect()->route("qaqc.home");
             }
 
             $abbrString = $this->abbreviateString($department);
-            return redirect()->route($abbrString . '.home');
+            return redirect()->route($abbrString . ".home");
         } else {
-            return view('welcome');
+            return view("welcome");
         }
     }
 
     private function abbreviateString($string)
     {
         // Check if the string contains multiple words
-        if (strpos($string, ' ') !== false) {
+        if (strpos($string, " ") !== false) {
             // Convert the string to lowercase
             $lowercaseString = strtolower($string);
 
             // Split the string into words
-            $words = explode(' ', $lowercaseString);
+            $words = explode(" ", $lowercaseString);
 
             // Initialize an empty abbreviation string
-            $abbreviation = '';
+            $abbreviation = "";
 
             // Iterate through each word
             foreach ($words as $word) {

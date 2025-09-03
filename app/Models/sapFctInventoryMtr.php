@@ -6,16 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class sapFctInventoryMtr extends Model
 {
-    protected $table = 'sap_fct_inventory_mtr';
+    protected $table = "sap_fct_inventory_mtr";
     public $timestamps = false;
     protected $primaryKey = null;
     // public $incrementing = false;
 
-    
     public function getInStockAttribute()
     {
         // Perform any additional logic here if needed
-        return $this->attributes['in_stock'];
+        return $this->attributes["in_stock"];
     }
-
 }

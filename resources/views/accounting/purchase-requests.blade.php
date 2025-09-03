@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="row d-flex">
-        <div class="col">
-            <h1 class="h1">Purchase Requisition List (Approved)</h1>
-        </div>
+  <div class="row d-flex">
+    <div class="col">
+      <h1 class="h1">Purchase Requisition List (Approved)</h1>
     </div>
-    <section class="content">
-        <div class="card mt-4">
-            <div class="card-body">
-                <div class="table-responsive">
-                    {{-- <div class="mb-3 row d-flex">
+  </div>
+  <section class="content">
+    <div class="card mt-4">
+      <div class="card-body">
+        <div class="table-responsive">
+          {{-- <div class="mb-3 row d-flex">
                         <div class="col-auto">
                             <div class="row align-items-center">
                                 <div class="col-auto">
@@ -27,13 +27,13 @@
                             </div>
                         </div>
                     </div> --}}
-                    {{ $dataTable->table() }}
-                </div>
-            </div>
+          {{ $dataTable->table() }}
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 @endsection
 
 @push('extraJs')
-    {{ $dataTable->scripts() }}
+  {{ $dataTable->scripts() }}
 @endpush

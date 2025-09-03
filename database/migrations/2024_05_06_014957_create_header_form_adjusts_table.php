@@ -4,14 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('header_form_adjusts', function (Blueprint $table) {
+        Schema::create("header_form_adjusts", function (Blueprint $table) {
             $table->id();
             $table->integer("report_id");
             $table->string("autograph_1")->nullable();
@@ -29,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('header_form_adjusts');
+        Schema::dropIfExists("header_form_adjusts");
     }
 };

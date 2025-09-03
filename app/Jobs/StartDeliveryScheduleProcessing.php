@@ -19,6 +19,8 @@ class StartDeliveryScheduleProcessing
             new ProcessDeliveryScheduleStep2(),
             new ProcessDeliveryScheduleStep3(),
             new ProcessDeliveryScheduleStep4(),
-        ])->onQueue('default')->dispatch();
+        ])
+            ->onQueue("default")
+            ->dispatch();
     }
 }

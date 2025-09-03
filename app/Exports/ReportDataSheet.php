@@ -27,18 +27,18 @@ class ReportDataSheet implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'Rec Date',
-            'Customer',
-            'Part Number',
-            'Part Name',
-            'Rec Quantity',
-            'Can Use',
+            "Rec Date",
+            "Customer",
+            "Part Number",
+            "Part Name",
+            "Rec Quantity",
+            "Can Use",
             'Can\'t Use',
-            'Price',
-            'Total Price',
-            'Defect Quantity',
-            'Defect Category',
-            'Defect Info'
+            "Price",
+            "Total Price",
+            "Defect Quantity",
+            "Defect Category",
+            "Defect Info",
         ];
     }
 
@@ -46,9 +46,9 @@ class ReportDataSheet implements FromCollection, WithHeadings, WithMapping
     {
         $rows = [];
         foreach ($report->details as $detail) {
-            $partDetails = explode('/', $detail->part_name, 2);
+            $partDetails = explode("/", $detail->part_name, 2);
             $partNumber = $partDetails[0];
-            $partName = isset($partDetails[1]) ? $partDetails[1] : '';
+            $partName = isset($partDetails[1]) ? $partDetails[1] : "";
             $totalPrice = $detail->rec_quantity * $detail->price;
 
             foreach ($detail->defects as $defect) {
@@ -63,8 +63,8 @@ class ReportDataSheet implements FromCollection, WithHeadings, WithMapping
                     $detail->price,
                     $totalPrice,
                     $defect->quantity,
-                    $defect->category->name ?? '-',
-                    $defect->remarks
+                    $defect->category->name ?? "-",
+                    $defect->remarks,
                 ];
             }
         }

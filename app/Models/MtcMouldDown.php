@@ -10,9 +10,5 @@ class MtcMouldDown extends Model
     use HasFactory;
     public $timestamps = false;
 
-    protected $fillable = [
-        'mould_code',
-        'date_down',
-        'date_prediction',
-    ];
+    protected $fillable = ["mould_code", "date_down", "date_prediction"];
 }

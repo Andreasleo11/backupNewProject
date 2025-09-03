@@ -22,13 +22,13 @@ class EmployeeTrainingForm extends Component
      */
     public function __construct(
         $action,
-        $method = 'POST',
+        $method = "POST",
         $employees = [],
         $employeeId = null,
         $description = null,
         $lastTrainingAt = null,
         $evaluated = null,
-        $submitLabel = 'Save'
+        $submitLabel = "Save",
     ) {
         $this->action = $action;
         $this->method = $method;
@@ -45,6 +45,6 @@ class EmployeeTrainingForm extends Component
      */
     public function render()
     {
-        return view('components.employee-training-form');
+        return view("components.employee-training-form");
     }
 }

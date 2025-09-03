@@ -16,19 +16,19 @@ class FileLibrary extends Component
 {
     use WithPagination, WithFileUploads;
 
-    protected $paginationTheme = 'bootstrap';
+    protected $paginationTheme = "bootstrap";
 
-    #[Url(as: 'q')]
-    public string $search = '';
+    #[Url(as: "q")]
+    public string $search = "";
 
-    #[Url(as: 'type')]
-    public string $type = 'all'; // all,image,pdf,doc,sheet,video,audio,archive,other
+    #[Url(as: "type")]
+    public string $type = "all"; // all,image,pdf,doc,sheet,video,audio,archive,other
 
-    #[Url(as: 'sort')]
-    public string $sortField = 'created_at';
+    #[Url(as: "sort")]
+    public string $sortField = "created_at";
 
-    #[Url(as: 'dir')]
-    public string $sortDirection = 'desc';
+    #[Url(as: "dir")]
+    public string $sortDirection = "desc";
 
     public int $perPage = 10;
 
@@ -41,23 +41,23 @@ class FileLibrary extends Component
 
     // Rename
     public ?Upload $selected = null;
-    public string $newName = '';
+    public string $newName = "";
     public bool $showRename = false;
 
     // Replace file
     public bool $showReplace = false;
     public $replacement; // TemporaryUploadedFile
 
-    public string $viewMode = 'grid';   // or 'table'
-    public bool $selectPage = false;    // header checkbox (you already wired this)
+    public string $viewMode = "grid"; // or 'table'
+    public bool $selectPage = false; // header checkbox (you already wired this)
 
     public bool $selectAllResults = false;
 
     public array $tagsFilter = [];
-    public string $tagSearch = '';
+    public string $tagSearch = "";
     public int $tagLimit = 5;
 
-    public string $newTags = '';
+    public string $newTags = "";
     public bool $showTagModal = false;
 
     public bool $showRemoveTagModal = false;
@@ -66,64 +66,79 @@ class FileLibrary extends Component
     public bool $tagDropdownOpen = false;
 
     protected $queryString = [
-        'search' => ['except' => ''],
-        'type' => ['except' => 'all'],
-        'sortField' => ['except' => 'created_at'],
-        'sortDirection' => ['except' => 'desc'],
+        "search" => ["except" => ""],
+        "type" => ["except" => "all"],
+        "sortField" => ["except" => "created_at"],
+        "sortDirection" => ["except" => "desc"],
     ];
 
     protected $rules = [
-        'newFiles.*' => 'file|max:20480|mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,csv,mp4,mp3,zip,rar',
-        'newName' => 'required|string|min:1|max:200',
-        'replacement' => 'nullable|file|max:20480|mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,csv,mp4,mp3,zip,rar',
+        "newFiles.*" =>
+            "file|max:20480|mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,csv,mp4,mp3,zip,rar",
+        "newName" => "required|string|min:1|max:200",
+        "replacement" =>
+            "nullable|file|max:20480|mimes:jpg,jpeg,png,webp,pdf,doc,docx,xls,xlsx,csv,mp4,mp3,zip,rar",
     ];
 
     protected function filteredQuery()
     {
         $q = Upload::query();
 
-        if ($this->search !== '') {
-            $q->where('original_name', 'like', '%' . $this->search . '%');
+        if ($this->search !== "") {
+            $q->where("original_name", "like", "%" . $this->search . "%");
         }
 
-        if ($this->type !== 'all') {
+        if ($this->type !== "all") {
             $q->where(function ($w) {
                 $t = $this->type;
-                $w->when($t === 'image', fn($x) => $x->where('mime_type', 'like', 'image/%'))
-                    ->when($t === 'pdf', fn($x) => $x->where('mime_type', 'application/pdf'))
-                    ->when($t === 'doc', fn($x) => $x->where(function ($y) {
-                        $y->where('mime_type', 'like', '%word%')
-                            ->orWhere('mime_type', 'like', '%rtf%')
-                            ->orWhere('mime_type', 'like', 'text/%');
-                    }))
-                    ->when($t === 'sheet', fn($x) => $x->where(function ($y) {
-                        $y->where('mime_type', 'like', '%spreadsheet%')
-                            ->orWhere('mime_type', 'like', '%excel%')
-                            ->orWhere('mime_type', 'like', '%csv%');
-                    }))
-                    ->when($t === 'video', fn($x) => $x->where('mime_type', 'like', 'video/%'))
-                    ->when($t === 'audio', fn($x) => $x->where('mime_type', 'like', 'audio/%'))
-                    ->when($t === 'archive', fn($x) => $x->where(function ($y) {
-                        $y->where('mime_type', 'like', '%zip%')
-                            ->orWhere('mime_type', 'like', '%rar%')
-                            ->orWhere('mime_type', 'like', '%7z%');
-                    }))
-                    ->when($t === 'other', fn($x) => $x->whereNot('mime_type', 'like', 'image/%')
-                        ->whereNot('mime_type', 'application/pdf')
-                        ->whereNot('mime_type', 'like', '%word%')
-                        ->whereNot('mime_type', 'like', '%rtf%')
-                        ->whereNot('mime_type', 'like', 'text/%')
-                        ->whereNot('mime_type', 'like', '%spreadsheet%')
-                        ->whereNot('mime_type', 'like', '%excel%')
-                        ->whereNot('mime_type', 'like', '%csv%')
-                        ->whereNot('mime_type', 'like', 'video/%')
-                        ->whereNot('mime_type', 'like', 'audio/%'));
+                $w->when($t === "image", fn($x) => $x->where("mime_type", "like", "image/%"))
+                    ->when($t === "pdf", fn($x) => $x->where("mime_type", "application/pdf"))
+                    ->when(
+                        $t === "doc",
+                        fn($x) => $x->where(function ($y) {
+                            $y->where("mime_type", "like", "%word%")
+                                ->orWhere("mime_type", "like", "%rtf%")
+                                ->orWhere("mime_type", "like", "text/%");
+                        }),
+                    )
+                    ->when(
+                        $t === "sheet",
+                        fn($x) => $x->where(function ($y) {
+                            $y->where("mime_type", "like", "%spreadsheet%")
+                                ->orWhere("mime_type", "like", "%excel%")
+                                ->orWhere("mime_type", "like", "%csv%");
+                        }),
+                    )
+                    ->when($t === "video", fn($x) => $x->where("mime_type", "like", "video/%"))
+                    ->when($t === "audio", fn($x) => $x->where("mime_type", "like", "audio/%"))
+                    ->when(
+                        $t === "archive",
+                        fn($x) => $x->where(function ($y) {
+                            $y->where("mime_type", "like", "%zip%")
+                                ->orWhere("mime_type", "like", "%rar%")
+                                ->orWhere("mime_type", "like", "%7z%");
+                        }),
+                    )
+                    ->when(
+                        $t === "other",
+                        fn($x) => $x
+                            ->whereNot("mime_type", "like", "image/%")
+                            ->whereNot("mime_type", "application/pdf")
+                            ->whereNot("mime_type", "like", "%word%")
+                            ->whereNot("mime_type", "like", "%rtf%")
+                            ->whereNot("mime_type", "like", "text/%")
+                            ->whereNot("mime_type", "like", "%spreadsheet%")
+                            ->whereNot("mime_type", "like", "%excel%")
+                            ->whereNot("mime_type", "like", "%csv%")
+                            ->whereNot("mime_type", "like", "video/%")
+                            ->whereNot("mime_type", "like", "audio/%"),
+                    );
             });
         }
 
         if (!empty($this->tagsFilter)) {
             // match ANY of the selected tags; switch to ->whereHas(...) multiple times if you want ALL
-            $q->whereHas('tags', fn($r) => $r->whereIn('slug', $this->tagsFilter));
+            $q->whereHas("tags", fn($r) => $r->whereIn("slug", $this->tagsFilter));
         }
 
         return $q->orderBy($this->sortField, $this->sortDirection);
@@ -134,7 +149,7 @@ class FileLibrary extends Component
         $page = $this->getPage();
         return $this->filteredQuery()
             ->forPage($page, $this->perPage)
-            ->pluck('id')
+            ->pluck("id")
             ->map(fn($id) => (string) $id)
             ->values()
             ->all();
@@ -143,7 +158,7 @@ class FileLibrary extends Component
     protected function slugify(string $name): string
     {
         $slug = Str::slug(mb_strtolower(trim($name)));
-        return Str::limit($slug, 60, '');
+        return Str::limit($slug, 60, "");
     }
 
     public function toggleTagFilter(string $slug): void
@@ -162,14 +177,22 @@ class FileLibrary extends Component
 
     public function getTopTagsProperty()
     {
-        return Tag::withCount(['uploads as uses'])
-            ->orderByDesc('uses')->take($this->tagLimit)->get();
+        return Tag::withCount(["uploads as uses"])
+            ->orderByDesc("uses")
+            ->take($this->tagLimit)
+            ->get();
     }
 
     public function getAllTagsProperty()
     {
-        return Tag::query()->when($this->tagSearch !== '', fn($q) => $q->where('name', 'like', "%{$this->tagSearch}%"))
-            ->orderBy('name')->limit(300)->get();
+        return Tag::query()
+            ->when(
+                $this->tagSearch !== "",
+                fn($q) => $q->where("name", "like", "%{$this->tagSearch}%"),
+            )
+            ->orderBy("name")
+            ->limit(300)
+            ->get();
     }
 
     public function getAllTagsCountProperty()
@@ -205,7 +228,7 @@ class FileLibrary extends Component
 
     protected function getAllResultsIds(): array
     {
-        return $this->filteredQuery()->pluck('id')->map(fn($id) => (string)$id)->all();
+        return $this->filteredQuery()->pluck("id")->map(fn($id) => (string) $id)->all();
     }
 
     public function updatedChecked(): void
@@ -270,7 +293,7 @@ class FileLibrary extends Component
 
     public function updated($name, $value): void
     {
-        if ($name == 'page' && $this->selectAllResults) {
+        if ($name == "page" && $this->selectAllResults) {
             $this->selectPage = true;
             $this->checked = $this->getAllResultsIds();
         }
@@ -279,10 +302,10 @@ class FileLibrary extends Component
     public function sortBy(string $field): void
     {
         if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+            $this->sortDirection = $this->sortDirection === "asc" ? "desc" : "asc";
         } else {
             $this->sortField = $field;
-            $this->sortDirection = 'asc';
+            $this->sortDirection = "asc";
         }
 
         $this->resetPage();
@@ -296,23 +319,23 @@ class FileLibrary extends Component
 
     public function store(): void
     {
-        $this->validateOnly('newFiles.*');
+        $this->validateOnly("newFiles.*");
 
         foreach ($this->newFiles as $file) {
-            $path = $file->store('uploads', 'public');
+            $path = $file->store("uploads", "public");
 
             Upload::create([
-                'original_name' => $file->getClientOriginalName(),
-                'path'          => $path,
-                'mime_type'     => $file->getMimeType(),
-                'size'          => $file->getSize(),
-                'disk'          => 'public',
-                'uploaded_by'   => Auth::id(),
+                "original_name" => $file->getClientOriginalName(),
+                "path" => $path,
+                "mime_type" => $file->getMimeType(),
+                "size" => $file->getSize(),
+                "disk" => "public",
+                "uploaded_by" => Auth::id(),
             ]);
         }
 
-        $this->reset('newFiles');
-        $this->dispatch('toast', message: 'Upload selesai.');
+        $this->reset("newFiles");
+        $this->dispatch("toast", message: "Upload selesai.");
         $this->resetPage();
     }
 
@@ -325,34 +348,36 @@ class FileLibrary extends Component
 
     public function rename(): void
     {
-        $this->validateOnly('newName');
+        $this->validateOnly("newName");
         $upload = $this->selected;
-        if (!$upload) return;
+        if (!$upload) {
+            return;
+        }
 
         $ext = pathinfo($upload->original_name, PATHINFO_EXTENSION);
         $dir = pathinfo($upload->path, PATHINFO_DIRNAME);
         // Keep spaces, dots and dashes; replace illegal characters with a dash
-        $newBase = preg_replace('/[\/\\\\\?\%\*\:\|"<>]+/', '-', trim($this->newName));
+        $newBase = preg_replace('/[\/\\\\\?\%\*\:\|"<>]+/', "-", trim($this->newName));
         // Optional: collapse multiple spaces
-        $newBase = preg_replace('/\s+/', ' ', $newBase);
-        $newPath = $dir . '/' . $newBase . ($ext ? ".{$ext}" : '');
+        $newBase = preg_replace("/\s+/", " ", $newBase);
+        $newPath = $dir . "/" . $newBase . ($ext ? ".{$ext}" : "");
 
         if ($newPath !== $upload->path) {
             if (Storage::disk($upload->disk)->exists($newPath)) {
-                $this->addError('newName', 'Nama file sudah ada.');
+                $this->addError("newName", "Nama file sudah ada.");
                 return;
             }
             Storage::disk($upload->disk)->move($upload->path, $newPath);
         }
 
         $upload->update([
-            'original_name' => $newBase . ($ext ? ".{$ext}" : ''),
-            'path' => $newPath,
+            "original_name" => $newBase . ($ext ? ".{$ext}" : ""),
+            "path" => $newPath,
         ]);
 
         $this->showRename = false;
         $this->selected = null;
-        $this->dispatch('toast', message: 'Nama file diperbarui.');
+        $this->dispatch("toast", message: "Nama file diperbarui.");
     }
 
     public function confirmReplace(int $id): void
@@ -364,10 +389,12 @@ class FileLibrary extends Component
 
     public function replace(): void
     {
-        $this->validateOnly('replacement');
+        $this->validateOnly("replacement");
 
         $upload = $this->selected;
-        if (!$upload || !$this->replacement) return;
+        if (!$upload || !$this->replacement) {
+            return;
+        }
 
         // Remove old file if exists
         if (Storage::disk($upload->disk)->exists($upload->path)) {
@@ -379,15 +406,15 @@ class FileLibrary extends Component
         $newPath = $this->replacement->store($dir, $upload->disk);
 
         $upload->update([
-            'original_name' => $this->replacement->getClientOriginalName(),
-            'path'          => $newPath,
-            'mime_type'     => $this->replacement->getMimeType(),
-            'size'          => $this->replacement->getSize(),
+            "original_name" => $this->replacement->getClientOriginalName(),
+            "path" => $newPath,
+            "mime_type" => $this->replacement->getMimeType(),
+            "size" => $this->replacement->getSize(),
         ]);
 
         $this->showReplace = false;
         $this->selected = null;
-        $this->dispatch('toast', message: 'File berhasil diganti.');
+        $this->dispatch("toast", message: "File berhasil diganti.");
     }
 
     public function deleteOne(int $id): void
@@ -397,15 +424,17 @@ class FileLibrary extends Component
             Storage::disk($u->disk)->delete($u->path);
         }
         $u->delete();
-        $this->dispatch('toast', message: 'File berhasil dihapus.');
+        $this->dispatch("toast", message: "File berhasil dihapus.");
         $this->resetPage();
     }
 
     public function deleteSelected(): void
     {
         $idsQuery = $this->selectAllResults
-            ? $this->filteredQuery()->select('id')
-            : Upload::query()->whereIn('id', collect($this->checked)->map(fn($id) => (int) $id)->all())->select('id');
+            ? $this->filteredQuery()->select("id")
+            : Upload::query()
+                ->whereIn("id", collect($this->checked)->map(fn($id) => (int) $id)->all())
+                ->select("id");
 
         $this->checked = [];
         $this->selectAllResults = false;
@@ -414,7 +443,9 @@ class FileLibrary extends Component
         $idsQuery->chunkById(500, function ($chunk) {
             foreach ($chunk as $row) {
                 $u = Upload::find($row->id);
-                if (!$u) continue;
+                if (!$u) {
+                    continue;
+                }
                 if (Storage::disk($u->disk)->exists($u->path)) {
                     Storage::disk($u->disk)->delete($u->path);
                 }
@@ -422,64 +453,75 @@ class FileLibrary extends Component
             }
         });
 
-        $this->dispatch('toast', message: 'File terpilih dihapus.');
+        $this->dispatch("toast", message: "File terpilih dihapus.");
         $this->resetPage();
     }
 
     public function removeTagFromItem(int $uploadId, int $tagId): void
     {
-        if ($u = Upload::with('tags')->find($uploadId)) {
+        if ($u = Upload::with("tags")->find($uploadId)) {
             $u->tags()->detach($tagId);
             // Optional: delete orphan tags
-            Tag::whereDoesntHave('uploads')->whereKey($tagId)->delete();
+            Tag::whereDoesntHave("uploads")->whereKey($tagId)->delete();
 
-            $this->dispatch('toast', message: 'Tag berhasil dihapus dari file.');
+            $this->dispatch("toast", message: "Tag berhasil dihapus dari file.");
         }
     }
 
     public function addTagsToSelection(): void
     {
-        $names = collect(preg_split('/[,\n]/', $this->newTags ?? ''))
+        $names = collect(preg_split('/[,\n]/', $this->newTags ?? ""))
             ->map(fn($name) => trim($name))
             ->filter()
             ->unique()
             ->take(25); // guardtail
 
         if ($names->isEmpty()) {
-            $this->dispatch('toast', message: 'Tidak ada tag yang ditambahkan.');
+            $this->dispatch("toast", message: "Tidak ada tag yang ditambahkan.");
             return;
         }
 
         // upsert/find tags
         $tags = $names->map(function ($name) {
             $slug = $this->slugify($name);
-            return Tag::firstOrCreate(['slug' => $slug], ['name' => $name, 'created_by' => Auth::id()]);
+            return Tag::firstOrCreate(
+                ["slug" => $slug],
+                ["name" => $name, "created_by" => Auth::id()],
+            );
         });
 
         $query = $this->selectAllResults
-            ? $this->filteredQuery()->select('id')
-            : Upload::query()->whereKey(array_map('intval', $this->checked))->select('id');
+            ? $this->filteredQuery()->select("id")
+            : Upload::query()
+                ->whereKey(array_map("intval", $this->checked))
+                ->select("id");
 
         // attach in chunks
-        $tagIds = $tags->pluck('id')->all();
+        $tagIds = $tags->pluck("id")->all();
         $query->chunkById(500, function ($chunk) use ($tagIds) {
-            $ids = $chunk->pluck('id')->all();
-            Upload::whereKey($ids)->get()->each(function (Upload $u) use ($tagIds) {
-                $u->tags()->syncWithoutDetaching($tagIds);
-            });
+            $ids = $chunk->pluck("id")->all();
+            Upload::whereKey($ids)
+                ->get()
+                ->each(function (Upload $u) use ($tagIds) {
+                    $u->tags()->syncWithoutDetaching($tagIds);
+                });
         });
 
         // clean ui
         $this->showTagModal = false;
-        $this->newTags = '';
-        $this->dispatch('toast', message: 'Tag berhasil ditambahkan.');
+        $this->newTags = "";
+        $this->dispatch("toast", message: "Tag berhasil ditambahkan.");
     }
 
     public function removeCheckedTagsFromSelection(): void
     {
-        $tagIds = collect($this->removeTagIds)->map(fn($id) => (int) $id)->filter()->values()->all();
+        $tagIds = collect($this->removeTagIds)
+            ->map(fn($id) => (int) $id)
+            ->filter()
+            ->values()
+            ->all();
         if (empty($tagIds)) {
-            $this->dispatch('toast', message: 'Choose at least one tag.');
+            $this->dispatch("toast", message: "Choose at least one tag.");
             return;
         }
 
@@ -487,47 +529,53 @@ class FileLibrary extends Component
 
         $this->removeTagIds = [];
         $this->showRemoveTagModal = false;
-        $this->dispatch('toast', message: 'Tags removed.');
+        $this->dispatch("toast", message: "Tags removed.");
     }
 
     protected function bulkDetachTags(array $tagIds): void
     {
-        if (empty($tagIds)) return;
+        if (empty($tagIds)) {
+            return;
+        }
 
         $idsQuery = $this->selectAllResults
-            ? $this->filteredQuery()->select('id')
-            : Upload::query()->whereIn('id', $this->checked)->select('id');
+            ? $this->filteredQuery()->select("id")
+            : Upload::query()->whereIn("id", $this->checked)->select("id");
 
         $idsQuery->chunkById(500, function ($chunk) use ($tagIds) {
-            $uploads = Upload::whereIn('id', $chunk->pluck('id'))->get();
+            $uploads = Upload::whereIn("id", $chunk->pluck("id"))->get();
             foreach ($uploads as $u) {
                 $u->tags()->detach($tagIds);
             }
         });
 
         // Optional cleanup of orphan tags (only those we touched)
-        Tag::whereIn('id', $tagIds)->whereDoesntHave('uploads')->delete();
+        Tag::whereIn("id", $tagIds)->whereDoesntHave("uploads")->delete();
     }
 
     public function getAvailableTagsProperty()
     {
         // Find upload ids in scope
         $ids = $this->selectAllResults
-            ? $this->filteredQuery()->pluck('id')
+            ? $this->filteredQuery()->pluck("id")
             : collect($this->checked);
 
-        if ($ids->isEmpty()) return collect();
+        if ($ids->isEmpty()) {
+            return collect();
+        }
 
-        return Tag::whereHas('uploads', function ($q) use ($ids) {
-            $q->whereIn('uploads.id', $ids);
-        })->orderBy('name')->get();
+        return Tag::whereHas("uploads", function ($q) use ($ids) {
+            $q->whereIn("uploads.id", $ids);
+        })
+            ->orderBy("name")
+            ->get();
     }
 
     public function render()
     {
         $items = $this->filteredQuery()
-            ->with('tags:id,name,slug') // avoid N+1
+            ->with("tags:id,name,slug") // avoid N+1
             ->paginate($this->perPage);
-        return view('livewire.file-library', compact('items'))->title('File Library');
+        return view("livewire.file-library", compact("items"))->title("File Library");
     }
 }

@@ -37,5 +37,4 @@ class ReportsExport implements FromQuery, WithMultipleSheets
 
         return $sheets;
     }
-
 }

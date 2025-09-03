@@ -9,12 +9,6 @@ class InvLineList extends Model
 {
     use HasFactory;
     public $timestamps = false;
-    
 
-    protected $fillable = [
-        'line_code',
-        'line_name',
-        'departement',
-        'daily_minutes',
-    ];
+    protected $fillable = ["line_code", "line_name", "departement", "daily_minutes"];
 }

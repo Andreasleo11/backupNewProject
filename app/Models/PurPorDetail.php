@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurPorDetail extends Model
 {
-    protected $table = 'pur_por_detail';
+    protected $table = "pur_por_detail";
 }
