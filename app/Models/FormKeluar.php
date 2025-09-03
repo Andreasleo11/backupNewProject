@@ -13,26 +13,25 @@ class FormKeluar extends Model
     use RequiresSignature;
     use HasFactory;
 
-    
     protected $fillable = [
-        'name',
-        'doc_num', 
-        'jabatan',
-        'department',
-        'alasan_izin_keluar',
-        'pengganti',
-        'keperluan',
-        'tanggal_masuk',
-        'no_karyawan',
-        'tanggal_permohonan',
-        'keterangan_user',
-        'waktu_keluar',
-        'jam_keluar',
-        'jam_kembali',
-        'autograph_1',
-        'autograph_user_1',
-        'is_accept',
-        'is_security',
+        "name",
+        "doc_num",
+        "jabatan",
+        "department",
+        "alasan_izin_keluar",
+        "pengganti",
+        "keperluan",
+        "tanggal_masuk",
+        "no_karyawan",
+        "tanggal_permohonan",
+        "keterangan_user",
+        "waktu_keluar",
+        "jam_keluar",
+        "jam_kembali",
+        "autograph_1",
+        "autograph_user_1",
+        "is_accept",
+        "is_security",
     ];
 
     protected static function boot()
@@ -41,12 +40,12 @@ class FormKeluar extends Model
 
         static::creating(function ($model) {
             // Get the current date in the required format
-            $date = now()->format('dmy'); // Day-Month-Year format
+            $date = now()->format("dmy"); // Day-Month-Year format
 
             // Fetch the last record's doc_num for the current date
-            $latest = static::where('doc_num', 'like', "%/{$date}/%")
-                            ->orderBy('id', 'desc')
-                            ->first();
+            $latest = static::where("doc_num", "like", "%/{$date}/%")
+                ->orderBy("id", "desc")
+                ->first();
 
             if ($latest) {
                 // Extract the increment part from the latest doc_num
@@ -56,7 +55,7 @@ class FormKeluar extends Model
             }
 
             // Calculate the next increment number
-            $increment = str_pad($lastIncrement + 1, 3, '0', STR_PAD_LEFT);
+            $increment = str_pad($lastIncrement + 1, 3, "0", STR_PAD_LEFT);
 
             // Build the custom ID
             $customId = "FK/{$date}/{$increment}";

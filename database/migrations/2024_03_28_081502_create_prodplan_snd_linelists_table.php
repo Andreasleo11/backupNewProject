@@ -4,14 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('prodplan_snd_linelists', function (Blueprint $table) {
+        Schema::create("prodplan_snd_linelists", function (Blueprint $table) {
             $table->id();
             $table->string("area")->nullable();
             $table->string("line_code")->nullable();
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('prodplan_snd_linelists');
+        Schema::dropIfExists("prodplan_snd_linelists");
     }
 };

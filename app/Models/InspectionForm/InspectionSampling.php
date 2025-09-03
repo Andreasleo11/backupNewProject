@@ -10,11 +10,11 @@ class InspectionSampling extends Model
     use HasFactory;
 
     protected $fillable = [
-        'second_inspection_document_number',
-        'quantity',
-        'box_label',
-        'appearance',
-        'ng_quantity',
-        'remarks',
+        "second_inspection_document_number",
+        "quantity",
+        "box_label",
+        "appearance",
+        "ng_quantity",
+        "remarks",
     ];
 }

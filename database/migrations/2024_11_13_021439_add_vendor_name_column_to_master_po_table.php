@@ -4,15 +4,14 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table('master_po', function (Blueprint $table) {
-            $table->string('vendor_name')->after('po_number')->nullable();
+        Schema::table("master_po", function (Blueprint $table) {
+            $table->string("vendor_name")->after("po_number")->nullable();
         });
     }
 
@@ -21,8 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('master_po', function (Blueprint $table) {
-            $table->dropColumn('vendor_name');
+        Schema::table("master_po", function (Blueprint $table) {
+            $table->dropColumn("vendor_name");
         });
     }
 };

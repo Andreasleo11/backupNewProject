@@ -7,6 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class MasterDataAdjust extends Model
 {
-    protected $table = 'master_data_adjust';
+    protected $table = "master_data_adjust";
     use HasFactory;
 }

@@ -28,9 +28,7 @@ class StockReportMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        return new Envelope(
-            subject: 'Stock Report Mail',
-        );
+        return new Envelope(subject: "Stock Report Mail");
     }
 
     /**
@@ -38,9 +36,7 @@ class StockReportMail extends Mailable
      */
     public function content(): Content
     {
-        return new Content(
-            view: 'emails.stock_report',
-        );
+        return new Content(view: "emails.stock_report");
     }
 
     /**
@@ -50,8 +46,6 @@ class StockReportMail extends Mailable
      */
     public function attachments(): array
     {
-        return [
-            $this->filePath,
-        ];
+        return [$this->filePath];
     }
 }

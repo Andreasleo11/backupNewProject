@@ -8,15 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class File extends Model
 {
-
     use HasFactory, LogsActivity;
 
-    protected $fillable = [
-        'doc_id',
-        'name',
-        'mime_type',
-        'size'
-    ];
+    protected $fillable = ["doc_id", "name", "mime_type", "size"];
 
     public function qaqcReport()
     {
@@ -25,6 +19,6 @@ class File extends Model
 
     public function purchaseRequest()
     {
-        $this->belongsTo(PurchaseRequest::class, 'doc_id', 'doc_num');
+        $this->belongsTo(PurchaseRequest::class, "doc_id", "doc_num");
     }
 }

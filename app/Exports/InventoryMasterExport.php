@@ -15,7 +15,16 @@ class InventoryMasterExport implements FromCollection, WithHeadings
      */
     public function collection()
     {
-        return MasterInventory::select('ip_address', 'username', 'dept', 'type', 'purpose', 'brand', 'os', 'description')->get();
+        return MasterInventory::select(
+            "ip_address",
+            "username",
+            "dept",
+            "type",
+            "purpose",
+            "brand",
+            "os",
+            "description",
+        )->get();
     }
 
     /**
@@ -26,15 +35,14 @@ class InventoryMasterExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         return [
-            'IP Address',
-            'Username',
-            'Department',
-            'Type',
-            'Purpose',
-            'Brand',
-            'Operating System',
-            'Description',
+            "IP Address",
+            "Username",
+            "Department",
+            "Type",
+            "Purpose",
+            "Brand",
+            "Operating System",
+            "Description",
         ];
     }
 }
-

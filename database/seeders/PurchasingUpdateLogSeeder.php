@@ -13,9 +13,9 @@ class PurchasingUpdateLogSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('purchasing_update_logs')->insert([
-            'created_at' => now(),
-            'updated_at' => now(),
+        DB::table("purchasing_update_logs")->insert([
+            "created_at" => now(),
+            "updated_at" => now(),
         ]);
     }
 }

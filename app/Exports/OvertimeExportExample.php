@@ -10,15 +10,25 @@ class OvertimeExportExample implements FromArray, WithHeadings, WithCustomStartC
 {
     public function startCell(): string
     {
-        return 'A1';
+        return "A1";
     }
 
     public function headings(): array
     {
         return [
-            ['UPLOAD OVERTIME (HOUR)'], // A1
-            ['T/12', 'DATE', 'T/255', 'DATE', 'T/5', 'DATE', 'T/5', 'NUMERIC', 'T/100'], // A2
-            ['EMPLOYEE ID', 'OVERTIME DATE', 'JOB DESCRIPTION', 'START DATE', 'START TIME', 'END DATE', 'END TIME', 'BREAK TIME (MINUTE)', 'REMARK'] // A3
+            ["UPLOAD OVERTIME (HOUR)"], // A1
+            ["T/12", "DATE", "T/255", "DATE", "T/5", "DATE", "T/5", "NUMERIC", "T/100"], // A2
+            [
+                "EMPLOYEE ID",
+                "OVERTIME DATE",
+                "JOB DESCRIPTION",
+                "START DATE",
+                "START TIME",
+                "END DATE",
+                "END TIME",
+                "BREAK TIME (MINUTE)",
+                "REMARK",
+            ], // A3
         ];
     }
 

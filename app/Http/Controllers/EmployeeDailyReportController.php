@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-ini_set('max_execution_time', 100000);
+ini_set("max_execution_time", 100000);
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
@@ -26,25 +26,25 @@ class EmployeeDailyReportController extends Controller
     {
         $reports = EmployeeDailyReport::all();
 
-        return view('dailyreport.index', compact('reports'));
+        return view("dailyreport.index", compact("reports"));
     }
 
     public function showUploadForm()
     {
-        return view('dailyreport.upload-daily-report');
+        return view("dailyreport.upload-daily-report");
     }
 
     public function upload(Request $request)
     {
         $request->validate([
-            'report_file' => 'required|file|mimes:xlsx,csv,txt',
+            "report_file" => "required|file|mimes:xlsx,csv,txt",
         ]);
 
-        $file = $request->file('report_file');
+        $file = $request->file("report_file");
         $data = Excel::toArray([], $file)[0]; // Sheet pertama
 
         if (count($data) < 2) {
-            return back()->with('error', 'File kosong atau tidak valid.');
+            return back()->with("error", "File kosong atau tidak valid.");
         }
 
         $headerRow = $data[0]; // baris header
@@ -59,13 +59,15 @@ class EmployeeDailyReportController extends Controller
 
             foreach ($row as $colIndex => $value) {
                 $originalKey = $headerRow[$colIndex] ?? null;
-                if ($originalKey === null) continue;
+                if ($originalKey === null) {
+                    continue;
+                }
 
                 $key = trim($originalKey);
                 // Tambahkan suffix jika nama kolom sudah dipakai
                 if (isset($usedColumns[$key])) {
                     $suffix = ++$usedColumns[$key];
-                    $key .= '.' . $suffix;
+                    $key .= "." . $suffix;
                 } else {
                     $usedColumns[$key] = 0;
                 }
@@ -73,33 +75,42 @@ class EmployeeDailyReportController extends Controller
                 $record[$key] = $value;
             }
 
-            if (!isset($record['ID Karyawan (8 Digit) (Contoh: 39001234)'])) continue;
+            if (!isset($record["ID Karyawan (8 Digit) (Contoh: 39001234)"])) {
+                continue;
+            }
 
-            $employeeIdRaw = trim($record['ID Karyawan (8 Digit) (Contoh: 39001234)']);
-            $normalizedId = str_replace([' ', '-'], '', $employeeIdRaw);
-            if (!preg_match('/^\d{8}$/', $normalizedId)) continue;
+            $employeeIdRaw = trim($record["ID Karyawan (8 Digit) (Contoh: 39001234)"]);
+            $normalizedId = str_replace([" ", "-"], "", $employeeIdRaw);
+            if (!preg_match('/^\d{8}$/', $normalizedId)) {
+                continue;
+            }
 
             $department = substr($normalizedId, 0, 3);
             $employeeId = substr($normalizedId, 3);
-            $employee = Employee::where('NIK', $employeeId)->first();
-            $employeeName = $employee?->Nama ?? 'Unknown';
-            $employeeDept = $employee?->Dept ?? 'Unknown';
+            $employee = Employee::where("NIK", $employeeId)->first();
+            $employeeName = $employee?->Nama ?? "Unknown";
+            $employeeDept = $employee?->Dept ?? "Unknown";
 
             try {
-                $submittedAt = is_numeric($record['Timestamp'])
-                    ? Carbon::instance(Date::excelToDateTimeObject($record['Timestamp']))
-                    : Carbon::parse($record['Timestamp']);
+                $submittedAt = is_numeric($record["Timestamp"])
+                    ? Carbon::instance(Date::excelToDateTimeObject($record["Timestamp"]))
+                    : Carbon::parse($record["Timestamp"]);
 
-                $workDate = is_numeric($record['Tanggal Bekerja'])
-                    ? Carbon::instance(Date::excelToDateTimeObject($record['Tanggal Bekerja']))->toDateString()
-                    : Carbon::parse($record['Tanggal Bekerja'])->toDateString();
+                $workDate = is_numeric($record["Tanggal Bekerja"])
+                    ? Carbon::instance(
+                        Date::excelToDateTimeObject($record["Tanggal Bekerja"]),
+                    )->toDateString()
+                    : Carbon::parse($record["Tanggal Bekerja"])->toDateString();
             } catch (\Exception $e) {
                 continue;
             }
 
             for ($i = 1; $i <= 12; $i++) {
                 $jamKey = "Jam Sesi $i";
-                $descKey = $i === 1 ? "Deskripsi Pekerjaan yang dilakukan" : "Deskripsi Pekerjaan yang dilakukan." . ($i - 1);
+                $descKey =
+                    $i === 1
+                        ? "Deskripsi Pekerjaan yang dilakukan"
+                        : "Deskripsi Pekerjaan yang dilakukan." . ($i - 1);
                 $proofKey = $i === 1 ? "Bukti Pekerjaan" : "Bukti Pekerjaan." . ($i - 1);
 
                 if (empty($record[$jamKey]) || empty($record[$descKey])) {
@@ -107,38 +118,38 @@ class EmployeeDailyReportController extends Controller
                 }
 
                 $previewData[] = [
-                    'submitted_at'        => $submittedAt->format('Y-m-d H:i:s'),
-                    'report_type'         => 'Baru',
-                    'employee_id'         => $employeeId,
-                    'employee_name'       => $employeeName,
-                    'departement_id'      => $employeeDept,
-                    'work_date'           => $workDate,
-                    'work_time'           => trim($record[$jamKey]),
-                    'work_description'    => trim($record[$descKey]),
-                    'proof_url'           => $record[$proofKey] ?? null,
+                    "submitted_at" => $submittedAt->format("Y-m-d H:i:s"),
+                    "report_type" => "Baru",
+                    "employee_id" => $employeeId,
+                    "employee_name" => $employeeName,
+                    "departement_id" => $employeeDept,
+                    "work_date" => $workDate,
+                    "work_time" => trim($record[$jamKey]),
+                    "work_description" => trim($record[$descKey]),
+                    "proof_url" => $record[$proofKey] ?? null,
                 ];
             }
         }
 
-        return view('dailyreport.preview', compact('previewData'));
+        return view("dailyreport.preview", compact("previewData"));
     }
 
     public function confirmUpload(Request $request)
     {
-        $encoded = $request->input('data');
+        $encoded = $request->input("data");
         $rows = unserialize(base64_decode($encoded));
         $logs = [];
 
         foreach ($rows as $row) {
             $logEntry = $row; // duplicate for log
-            $logEntry['logged_at'] = now();
+            $logEntry["logged_at"] = now();
 
             try {
                 $isDuplicate = EmployeeDailyReport::where($row)->exists();
 
                 if ($isDuplicate) {
-                    $logEntry['status'] = 'Duplikat';
-                    $logEntry['message'] = 'Data sudah ada, dilewati.';
+                    $logEntry["status"] = "Duplikat";
+                    $logEntry["message"] = "Data sudah ada, dilewati.";
                     $logs[] = $logEntry;
                     EmployeeDailyReportLog::create($logEntry);
                     continue;
@@ -146,111 +157,113 @@ class EmployeeDailyReportController extends Controller
 
                 EmployeeDailyReport::create($row);
 
-                $logEntry['status'] = 'Berhasil';
-                $logEntry['message'] = null;
+                $logEntry["status"] = "Berhasil";
+                $logEntry["message"] = null;
                 $logs[] = $logEntry;
                 EmployeeDailyReportLog::create($logEntry);
             } catch (\Exception $e) {
-                $logEntry['status'] = 'Gagal';
-                $logEntry['message'] = $e->getMessage();
+                $logEntry["status"] = "Gagal";
+                $logEntry["message"] = $e->getMessage();
                 $logs[] = $logEntry;
                 EmployeeDailyReportLog::create($logEntry);
             }
         }
 
-        return view('dailyreport.upload-log', compact('logs'));
+        return view("dailyreport.upload-log", compact("logs"));
     }
-
 
     public function showLoginForm()
     {
-        return view('dailyreport.login');
+        return view("dailyreport.login");
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'nik' => 'required',
-            'password' => 'required',
+            "nik" => "required",
+            "password" => "required",
         ]);
 
-        $employee = Employee::where('nik', $request->nik)->first();
+        $employee = Employee::where("nik", $request->nik)->first();
         // dd($employee); // Debugging line, remove in production
 
         if (!$employee) {
-            return back()->withErrors(['nik' => 'NIK tidak ditemukan.']);
+            return back()->withErrors(["nik" => "NIK tidak ditemukan."]);
         }
 
         // Generate expected password: NIK + ddmmyyyy
-        $expectedPassword = $employee->NIK . $employee->date_birth->format('dmY');
+        $expectedPassword = $employee->NIK . $employee->date_birth->format("dmY");
         // dd($expectedPassword); // Debugging line, remove in production
 
         if ($request->password === $expectedPassword) {
             // Simpan info login manual ke session
-            Session::put('employee_id', $employee->id);
-            Session::put('employee_nik', $employee->NIK);
+            Session::put("employee_id", $employee->id);
+            Session::put("employee_nik", $employee->NIK);
 
-            return redirect()->route('daily-report.user')->with('success', 'Login berhasil!');
+            return redirect()->route("daily-report.user")->with("success", "Login berhasil!");
         }
 
-        return back()->withErrors(['password' => 'Password salah.']);
+        return back()->withErrors(["password" => "Password salah."]);
     }
 
     public function dashboardDailyReport(Request $request)
     {
-        $employeeNik = Session::get('employee_nik');
+        $employeeNik = Session::get("employee_nik");
 
-        $query = EmployeeDailyReport::where('employee_id', $employeeNik);
+        $query = EmployeeDailyReport::where("employee_id", $employeeNik);
 
-        if ($request->filled('filter_date')) {
-            $query->whereDate('work_date', $request->filter_date);
+        if ($request->filled("filter_date")) {
+            $query->whereDate("work_date", $request->filter_date);
         }
 
-        $reports = $query->orderBy('work_date', 'desc')->get();
+        $reports = $query->orderBy("work_date", "desc")->get();
 
-        return view('dailyreport.dashboard', compact('reports'));
+        return view("dailyreport.dashboard", compact("reports"));
     }
 
     public function logout(Request $request)
     {
-        $request->session()->forget(['employee_id', 'employee_nik']);
+        $request->session()->forget(["employee_id", "employee_nik"]);
         $request->session()->flush(); // optional kalau mau hapus semua
 
-        return redirect()->route('employee-login')->with('success', 'Logout berhasil.');
+        return redirect()->route("employee-login")->with("success", "Logout berhasil.");
     }
 
     public function showDepthead(Request $request, $employee_id)
     {
         $user = auth()->user();
 
-        if ($user->is_head || $user->specification->name === 'DIRECTOR') {
-            $query = EmployeeDailyReport::where('employee_id', $employee_id);
+        if ($user->is_head || $user->specification->name === "DIRECTOR") {
+            $query = EmployeeDailyReport::where("employee_id", $employee_id);
 
-            if ($user->name === 'Bernadett' || $user->specification->name === 'DIRECTOR') {
+            if ($user->name === "Bernadett" || $user->specification->name === "DIRECTOR") {
             } else {
-                $query->where('departement_id', $user->department->dept_no);
+                $query->where("departement_id", $user->department->dept_no);
             }
 
-            $filter_start_date = $request->input('filter_start_date');
-            $filter_end_date = $request->input('filter_end_date');
+            $filter_start_date = $request->input("filter_start_date");
+            $filter_end_date = $request->input("filter_end_date");
 
             if ($filter_start_date && $filter_end_date) {
-                $query->whereBetween('work_date', [$filter_start_date, $filter_end_date]);
+                $query->whereBetween("work_date", [$filter_start_date, $filter_end_date]);
             } elseif ($filter_start_date) {
-                $query->whereDate('work_date', '>=', $filter_start_date);
+                $query->whereDate("work_date", ">=", $filter_start_date);
             } elseif ($filter_end_date) {
-                $query->whereDate('work_date', '<=', $filter_end_date);
+                $query->whereDate("work_date", "<=", $filter_end_date);
             }
 
-            $reports = $query->orderByDesc('work_date')
-                ->orderByDesc('work_time')
-                ->get();
+            $reports = $query->orderByDesc("work_date")->orderByDesc("work_time")->get();
 
-            $startDate = Carbon::parse($reports->min('work_date') ?? now()->subDays(30));
+            $startDate = Carbon::parse($reports->min("work_date") ?? now()->subDays(30));
             $endDate = now()->subDay();
-            $allDates = collect(CarbonPeriod::create($startDate, $endDate))->map(fn($date) => $date->toDateString());
+            $allDates = collect(CarbonPeriod::create($startDate, $endDate))->map(
+                fn($date) => $date->toDateString(),
+            );
 
-            $submittedDates = $reports->pluck('work_date')->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())->unique();
+            $submittedDates = $reports
+                ->pluck("work_date")
+                ->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())
+                ->unique();
             $missingDates = $allDates->diff($submittedDates);
 
             // dd($submittedDates, $missingDates, $filter_start_date, $filter_end_date);
@@ -259,36 +272,39 @@ class EmployeeDailyReportController extends Controller
             // Submitted reports: green
             foreach ($submittedDates as $date) {
                 $calendarEvents[] = [
-                    'title' => '✔ Laporan Masuk',
-                    'start' => $date,
-                    'color' => '#28a745' // green
+                    "title" => "✔ Laporan Masuk",
+                    "start" => $date,
+                    "color" => "#28a745", // green
                 ];
             }
 
             // Missing reports: red
             foreach ($missingDates as $date) {
                 $calendarEvents[] = [
-                    'title' => '❌ Tidak Ada Laporan',
-                    'start' => $date,
-                    'color' => '#dc3545' // red
+                    "title" => "❌ Tidak Ada Laporan",
+                    "start" => $date,
+                    "color" => "#dc3545", // red
                 ];
             }
 
             // dd($missingDates);
 
-            return view('dailyreport.depthead_show', compact(
-                'reports',
-                'employee_id',
-                'filter_start_date',
-                'filter_end_date',
-                'missingDates',
-                'submittedDates',
-                'startDate',
-                'endDate',
-                'calendarEvents'
-            ));
+            return view(
+                "dailyreport.depthead_show",
+                compact(
+                    "reports",
+                    "employee_id",
+                    "filter_start_date",
+                    "filter_end_date",
+                    "missingDates",
+                    "submittedDates",
+                    "startDate",
+                    "endDate",
+                    "calendarEvents",
+                ),
+            );
         } else {
-            abort(403, 'Akses ditolak');
+            abort(403, "Akses ditolak");
         }
     }
 }

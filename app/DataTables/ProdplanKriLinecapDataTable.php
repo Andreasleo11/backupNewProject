@@ -23,8 +23,8 @@ class ProdplanKriLinecapDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'prodplankrilinecap.action')
-            ->setRowId('id');
+            ->addColumn("action", "prodplankrilinecap.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class ProdplanKriLinecapDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('prodplankrilinecap-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("prodplankrilinecap-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,14 +70,14 @@ class ProdplanKriLinecapDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('running_date'),
-            Column::make('line_code'),
-            Column::make('departement'),
-            Column::make('time_limit_all'),
-            Column::make('time_limit_one'),
-            Column::make('time_limit_two'),
-            Column::make('time_limit_three'),
+            Column::make("id"),
+            Column::make("running_date"),
+            Column::make("line_code"),
+            Column::make("departement"),
+            Column::make("time_limit_all"),
+            Column::make("time_limit_one"),
+            Column::make("time_limit_two"),
+            Column::make("time_limit_three"),
         ];
     }
 
@@ -88,6 +88,6 @@ class ProdplanKriLinecapDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ProdplanKriLinecap_' . date('YmdHis');
+        return "ProdplanKriLinecap_" . date("YmdHis");
     }
 }

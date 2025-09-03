@@ -22,26 +22,29 @@ class UserController extends Controller
         $departments = Department::all();
         $specifications = Specification::all();
         // return view('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
-        return $dataTable->render('admin.users.index', compact('users', 'roles', 'departments', 'specifications'));
+        return $dataTable->render(
+            "admin.users.index",
+            compact("users", "roles", "departments", "specifications"),
+        );
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|unique:users,email',
-            'role' => 'required|int',
-            'department' => 'required|int',
-            'specification' => 'nullable|int',
+            "name" => "required|string|max:255",
+            "email" => "required|unique:users,email",
+            "role" => "required|int",
+            "department" => "required|int",
+            "specification" => "nullable|int",
         ]);
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->name . '1234'),
-            'role_id' => $request->role,
-            'department_id' => $request->department,
-            'specification_id' => $request->specification,
+            "name" => $request->name,
+            "email" => $request->email,
+            "password" => Hash::make($request->name . "1234"),
+            "role_id" => $request->role,
+            "department_id" => $request->department,
+            "specification_id" => $request->specification,
         ]);
 
         $role = Role::findOrFail($request->role);
@@ -52,27 +55,28 @@ class UserController extends Controller
 
         $user->syncPermissions();
 
-        return redirect()->route('superadmin.users')->with(['success' => 'User added successfully!']);
+        return redirect()
+            ->route("superadmin.users")
+            ->with(["success" => "User added successfully!"]);
     }
 
     public function update(Request $request, $id)
     {
-
         $user = User::find($id);
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required',
-            'role' => 'required|int',
-            'department' => 'required|int',
-            'specification' => 'required|int'
+            "name" => "required|string|max:255",
+            "email" => "required",
+            "role" => "required|int",
+            "department" => "required|int",
+            "specification" => "required|int",
         ]);
 
         $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'role_id' => $request->role,
-            'department_id' => $request->department,
-            'specification_id' => $request->specification,
+            "name" => $request->name,
+            "email" => $request->email,
+            "role_id" => $request->role,
+            "department_id" => $request->department,
+            "specification_id" => $request->specification,
         ]);
 
         $role = Role::findOrFail($request->role);
@@ -83,25 +87,27 @@ class UserController extends Controller
 
         $user->syncPermissions();
 
-        return redirect()->route('superadmin.users')->with(['success' => 'User updated successfully!']);
-
+        return redirect()
+            ->route("superadmin.users")
+            ->with(["success" => "User updated successfully!"]);
     }
 
     public function destroy($id)
     {
         User::find($id)->delete();
-        return redirect()->back()->with(['success' => 'User deleted successfully!']);
-
+        return redirect()
+            ->back()
+            ->with(["success" => "User deleted successfully!"]);
     }
 
     public function resetPassword($id)
     {
         $user = User::find($id);
-        $newPassword = Str::lower($user->name) . '1234';
+        $newPassword = Str::lower($user->name) . "1234";
         $user->password = Hash::make($newPassword);
         $user->save();
 
-        return redirect()->back()->with('success', 'Password reset successfully.');
+        return redirect()->back()->with("success", "Password reset successfully.");
     }
 
     /**
@@ -112,20 +118,29 @@ class UserController extends Controller
      */
     public function deleteSelected(Request $request)
     {
-        $ids = $request->input('ids', []);
+        $ids = $request->input("ids", []);
 
         if (empty($ids)) {
-            return response()->json(['message' => 'No records selected for deletion (server).'], 422);
+            return response()->json(
+                ["message" => "No records selected for deletion (server)."],
+                422,
+            );
         }
 
         try {
             foreach ($ids as $id) {
                 User::find($id)->delete();
             }
-            return response()->json(['message' => 'Selected records deleted successfully (server).'], 200);
+            return response()->json(
+                ["message" => "Selected records deleted successfully (server)."],
+                200,
+            );
         } catch (\Exception $e) {
             // Handle deletion error
-            return response()->json(['message' => 'Failed to delete selected records (server).'], 500);
+            return response()->json(
+                ["message" => "Failed to delete selected records (server)."],
+                500,
+            );
         }
     }
 }

@@ -21,9 +21,9 @@ class SummarySheet implements FromCollection, WithHeadings
         foreach ($this->summaryData as $customer => $categories) {
             foreach ($categories as $category => $quantity) {
                 $data[] = [
-                    'Customer' => $customer,
-                    'Defect Category' => $category,
-                    'Total Quantity' => $quantity
+                    "Customer" => $customer,
+                    "Defect Category" => $category,
+                    "Total Quantity" => $quantity,
                 ];
             }
         }
@@ -33,10 +33,6 @@ class SummarySheet implements FromCollection, WithHeadings
 
     public function headings(): array
     {
-        return [
-            'Customer',
-            'Defect Category',
-            'Total Quantity'
-        ];
+        return ["Customer", "Defect Category", "Total Quantity"];
     }
 }

@@ -9,13 +9,7 @@ class ApprovalFlowRule extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'department_id',
-        'branch',
-        'is_design',
-        'approval_flow_id',
-        'priority'
-    ];
+    protected $fillable = ["department_id", "branch", "is_design", "approval_flow_id", "priority"];
 
     public function department()
     {
@@ -24,6 +18,6 @@ class ApprovalFlowRule extends Model
 
     public function flow()
     {
-        return $this->belongsTo(ApprovalFlow::class, 'approval_flow_id');
+        return $this->belongsTo(ApprovalFlow::class, "approval_flow_id");
     }
 }

@@ -23,7 +23,9 @@ class ImportantDocumentDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', '
+            ->addColumn(
+                "action",
+                '
             <a href="{{ route("hrd.importantDocs.detail", $id) }}"
                 class="btn btn-secondary me-1">
                 <div class="col d-flex align-middle">
@@ -48,9 +50,10 @@ class ImportantDocumentDataTable extends DataTable
                     <span class="ms-1">Delete</span>
                 </div>
             </button>
-            ')
+            ',
+            )
             // ->editColumn('expired_date', '{{ \Carbon\Carbon::parse($expired_date)->format(\'d-m-Y\') }}')
-            ->setRowId('id');
+            ->setRowId("id");
     }
 
     /**
@@ -61,7 +64,7 @@ class ImportantDocumentDataTable extends DataTable
      */
     public function query(ImportantDoc $model): QueryBuilder
     {
-        return $model::with('type')->newQuery();
+        return $model::with("type")->newQuery();
     }
 
     /**
@@ -72,19 +75,19 @@ class ImportantDocumentDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('importantdocument-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    ->orderBy(5, 'asc')
-                    //->dom('Bfrtip')
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        // Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("importantdocument-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            ->orderBy(5, "asc")
+            //->dom('Bfrtip')
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                // Button::make('pdf'),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -95,12 +98,19 @@ class ImportantDocumentDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')->addClass('text-center align-middle'),
-            Column::make('document_id')->addClass('text-center align-middle'),
-            Column::make('name')->addClass('text-center align-middle'),
-            Column::make('type')->data('type.name')->searchable(false)->orderable(false)->addClass('text-center align-middle'),
-            Column::make('description')->addClass('text-center align-middle'),
-            Column::make('expired_date')->data('expired_date')->title('Expired Date')->addClass('text-center align-middle')->renderRaw('
+            Column::make("id")->addClass("text-center align-middle"),
+            Column::make("document_id")->addClass("text-center align-middle"),
+            Column::make("name")->addClass("text-center align-middle"),
+            Column::make("type")
+                ->data("type.name")
+                ->searchable(false)
+                ->orderable(false)
+                ->addClass("text-center align-middle"),
+            Column::make("description")->addClass("text-center align-middle"),
+            Column::make("expired_date")
+                ->data("expired_date")
+                ->title("Expired Date")
+                ->addClass("text-center align-middle")->renderRaw('
                 function(data, type, row, meta){
                     if (type === \'display\') {
                         // Example date string from the database
@@ -125,10 +135,10 @@ class ImportantDocumentDataTable extends DataTable
                     return data; // Return the original data for other types
                 }
             '),
-            Column::computed('action')
-                  ->exportable(false)
-                  ->printable(false)
-                  ->addClass('text-center'),
+            Column::computed("action")
+                ->exportable(false)
+                ->printable(false)
+                ->addClass("text-center"),
         ];
     }
 
@@ -139,6 +149,6 @@ class ImportantDocumentDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ImportantDocument_' . date('YmdHis');
+        return "ImportantDocument_" . date("YmdHis");
     }
 }

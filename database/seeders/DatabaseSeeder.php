@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         /**
          * If this class has already been used before, comment it out.
          * These classes are intentionally designed to run only once.
-        */
+         */
         $this->call([
             // FixPurchaseRequestSeeder::class,
             // FixMonthlyBudgetReportSeeder::class,

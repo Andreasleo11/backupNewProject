@@ -23,7 +23,9 @@ class AllDisciplineTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-        ->addColumn('totalkehadiran', '
+            ->addColumn(
+                "totalkehadiran",
+                '
         @php
 
         $total = 40;
@@ -39,8 +41,11 @@ class AllDisciplineTableDataTable extends DataTable
             $all = 0;
         }
         @endphp
-        {{ $all }}')
-            ->addColumn('totaldiscipline', '@php
+        {{ $all }}',
+            )
+            ->addColumn(
+                "totaldiscipline",
+                '@php
 
         $total = 0;
 
@@ -148,9 +153,12 @@ class AllDisciplineTableDataTable extends DataTable
             $total += 0;
         }
 
-        @endphp {{ $total }}')
+        @endphp {{ $total }}',
+            )
 
-            ->addColumn('grade', '
+            ->addColumn(
+                "grade",
+                '
         @php
 
         if($total >= 91)
@@ -170,11 +178,15 @@ class AllDisciplineTableDataTable extends DataTable
             $grade = "D";
         }
         @endphp
-        {{ $grade }}')
-            ->addColumn('action', '
+        {{ $grade }}',
+            )
+            ->addColumn(
+                "action",
+                '
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}" {{ ($is_lock === 1) ? "disabled" : ""  }} ><i class="bx bx-edit"></i></button>
-        ')
-            ->setRowId('id');
+        ',
+            )
+            ->setRowId("id");
     }
 
     /**
@@ -185,7 +197,7 @@ class AllDisciplineTableDataTable extends DataTable
      */
     public function query(EvaluationData $model): QueryBuilder
     {
-        return $model::with('karyawan')->newQuery();
+        return $model::with("karyawan")->newQuery();
     }
 
     /**
@@ -196,19 +208,19 @@ class AllDisciplineTableDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('alldisciplinetable-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    ->dom('Bfrtip')
-                    ->orderBy(1,'asc')
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("alldisciplinetable-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            ->dom("Bfrtip")
+            ->orderBy(1, "asc")
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -219,65 +231,65 @@ class AllDisciplineTableDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')
-                ->visible(false),
-            Column::make('NIK')->title('NIK')->addClass('align-middle text-center'),
-            Column::make('Name')
-                ->data('karyawan.Nama')
+            Column::make("id")->visible(false),
+            Column::make("NIK")->title("NIK")->addClass("align-middle text-center"),
+            Column::make("Name")
+                ->data("karyawan.Nama")
                 ->searchable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.Dept')
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("Department")
+                ->data("karyawan.Dept")
                 ->searchable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('start_date')
-                ->title('Start Date')
-                ->data('karyawan.start_date')
-                ->searchable(false)
-                ->exportable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('status')
-                ->title('Status')
-                ->data('karyawan.status')
-                ->exportable(false)
-                ->searchable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-            Column::make('Month')->addClass('align-middle text-center'),
-            Column::make('Alpha')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Telat')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Izin')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Sakit')
-                ->exportable(false)->addClass('align-middle text-center'),
-            Column::make('totalkehadiran')
-                ->title('Total Nilai Kehadiran')
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("start_date")
+                ->title("Start Date")
+                ->data("karyawan.start_date")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
-                Column::make('kerajinan_kerja')->addClass('align-middle text-center')
-                ->title('Kinerja Kerja'),
-                Column::make('kerapian_kerja')->addClass('align-middle text-center')
-                ->title('Kerapian'),
-                Column::make('loyalitas')->addClass('align-middle text-center'),
-                Column::make('perilaku_kerja')->addClass('align-middle text-center')
-                ->title('Etika dan Kesopanan'),
-            Column::make('prestasi')->addClass('align-middle text-center'),
-            Column::make('totaldiscipline')
-                ->title('Total Nilai Kedisiplinan')
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("status")
+                ->title("Status")
+                ->data("karyawan.status")
+                ->exportable(false)
+                ->searchable(false)
+                ->addClass("align-middle text-center")
+                ->orderable(false),
+            Column::make("Month")->addClass("align-middle text-center"),
+            Column::make("Alpha")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("Telat")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("Izin")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("Sakit")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("totalkehadiran")
+                ->title("Total Nilai Kehadiran")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center text-bg-secondary')->orderable(false),
-            Column::make('total')
-                ->exportable(false)
-                ->addClass('align-middle text-center'),
-            Column::make('grade')
-                ->title('Grade')
+                ->addClass("align-middle text-center text-bg-secondary")
+                ->orderable(false),
+            Column::make("kerajinan_kerja")
+                ->addClass("align-middle text-center")
+                ->title("Kinerja Kerja"),
+            Column::make("kerapian_kerja")->addClass("align-middle text-center")->title("Kerapian"),
+            Column::make("loyalitas")->addClass("align-middle text-center"),
+            Column::make("perilaku_kerja")
+                ->addClass("align-middle text-center")
+                ->title("Etika dan Kesopanan"),
+            Column::make("prestasi")->addClass("align-middle text-center"),
+            Column::make("totaldiscipline")
+                ->title("Total Nilai Kedisiplinan")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle text-center')->orderable(false),
-           
+                ->addClass("align-middle text-center text-bg-secondary")
+                ->orderable(false),
+            Column::make("total")->exportable(false)->addClass("align-middle text-center"),
+            Column::make("grade")
+                ->title("Grade")
+                ->searchable(false)
+                ->exportable(false)
+                ->addClass("align-middle text-center")
+                ->orderable(false),
         ];
     }
 
@@ -288,6 +300,6 @@ class AllDisciplineTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'AllDisciplineTable_' . date('YmdHis');
+        return "AllDisciplineTable_" . date("YmdHis");
     }
 }

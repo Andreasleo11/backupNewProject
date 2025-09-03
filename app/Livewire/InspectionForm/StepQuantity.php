@@ -19,17 +19,17 @@ class StepQuantity extends Component
     public $periodKey;
 
     protected $rules = [
-        'inspection_report_document_number' => 'required|string',
-        'output_quantity'  => 'required|integer|min:0',
-        'pass_quantity'    => 'required|integer|min:0|lte:output_quantity',
-        'reject_quantity'  => 'required|integer|min:0|lte:output_quantity',
-        'sampling_quantity' => 'required|integer|min:1|lte:output_quantity',
-        'reject_rate'      => 'required|numeric|between:0,100',
+        "inspection_report_document_number" => "required|string",
+        "output_quantity" => "required|integer|min:0",
+        "pass_quantity" => "required|integer|min:0|lte:output_quantity",
+        "reject_quantity" => "required|integer|min:0|lte:output_quantity",
+        "sampling_quantity" => "required|integer|min:1|lte:output_quantity",
+        "reject_rate" => "required|numeric|between:0,100",
     ];
 
     public function mount()
     {
-        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $this->periodKey = "p" . session("stepDetailSaved.period");
         $saved = session("stepDetailSaved.quantities.{$this->periodKey}", []);
 
         if ($saved) {
@@ -45,15 +45,11 @@ class StepQuantity extends Component
     {
         $this->validateOnly($property);
 
-        /** 
+        /**
          *  Enforce pass ≤ output and auto-adjust reject qty
          */
-        if (in_array($property, ['output_quantity', 'pass_quantity'])) {
-
-            if (
-                is_numeric($this->output_quantity) &&
-                is_numeric($this->pass_quantity)
-            ) {
+        if (in_array($property, ["output_quantity", "pass_quantity"])) {
+            if (is_numeric($this->output_quantity) && is_numeric($this->pass_quantity)) {
                 // Clamp pass_quantity to output_quantity
                 if ($this->pass_quantity > $this->output_quantity) {
                     $this->pass_quantity = $this->output_quantity;
@@ -70,8 +66,8 @@ class StepQuantity extends Component
         }
 
         // Make sure reject_quantity never exceeds the remainder
-        if ($property === 'reject_quantity' && is_numeric($this->reject_quantity)) {
-            $maxReject = max(0, (int)$this->output_quantity - (int)$this->pass_quantity);
+        if ($property === "reject_quantity" && is_numeric($this->reject_quantity)) {
+            $maxReject = max(0, (int) $this->output_quantity - (int) $this->pass_quantity);
             if ($this->reject_quantity > $maxReject) {
                 $this->reject_quantity = $maxReject;
             }
@@ -87,7 +83,7 @@ class StepQuantity extends Component
         ) {
             $this->reject_rate = round(
                 ($this->reject_quantity / $this->sampling_quantity) * 100,
-                2
+                2,
             );
         }
     }
@@ -97,35 +93,35 @@ class StepQuantity extends Component
         $this->validate();
 
         $data = [
-            'inspection_report_document_number' => $this->inspection_report_document_number,
-            'output_quantity' => $this->output_quantity,
-            'pass_quantity' => $this->pass_quantity,
-            'reject_quantity' => $this->reject_quantity,
-            'sampling_quantity' => $this->sampling_quantity,
-            'reject_rate' => $this->reject_rate,
+            "inspection_report_document_number" => $this->inspection_report_document_number,
+            "output_quantity" => $this->output_quantity,
+            "pass_quantity" => $this->pass_quantity,
+            "reject_quantity" => $this->reject_quantity,
+            "sampling_quantity" => $this->sampling_quantity,
+            "reject_rate" => $this->reject_rate,
         ];
 
         session(["stepDetailSaved.quantities.{$this->periodKey}" => $data]);
-        $this->dispatch('toast', message: "Quantity data saved successfully!");
+        $this->dispatch("toast", message: "Quantity data saved successfully!");
     }
 
     public function resetStep()
     {
         $this->reset([
-            'inspection_report_document_number',
-            'output_quantity',
-            'pass_quantity',
-            'reject_quantity',
-            'sampling_quantity',
-            'reject_rate',
+            "inspection_report_document_number",
+            "output_quantity",
+            "pass_quantity",
+            "reject_quantity",
+            "sampling_quantity",
+            "reject_rate",
         ]);
-        $this->forgetNestedKey('stepDetailSaved.quantities', $this->periodKey);
+        $this->forgetNestedKey("stepDetailSaved.quantities", $this->periodKey);
         $this->resetValidation();
-        $this->dispatch('toast', message: "Quantity data reset sucessfully!");
+        $this->dispatch("toast", message: "Quantity data reset sucessfully!");
     }
 
     public function render()
     {
-        return view('livewire.inspection-form.step-quantity');
+        return view("livewire.inspection-form.step-quantity");
     }
 }

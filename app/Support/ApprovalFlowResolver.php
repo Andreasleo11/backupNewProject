@@ -15,28 +15,28 @@ class ApprovalFlowResolver
     public static function for(array $header): string
     {
         // cache rules for 1 hour
-        $rules = Cache::remember('approval_flow_rules', 3600, function () {
-            return ApprovalFlowRule::with(['department', 'flow'])
-                ->orderBy('priority')
+        $rules = Cache::remember("approval_flow_rules", 3600, function () {
+            return ApprovalFlowRule::with(["department", "flow"])
+                ->orderBy("priority")
                 ->get();
         });
 
-        $deptId = $header['dept_id'] ?? null;
-        $branch = Str::upper($header['branch'] ?? '');
-        $isDesign = $header['is_design'];
+        $deptId = $header["dept_id"] ?? null;
+        $branch = Str::upper($header["branch"] ?? "");
+        $isDesign = $header["is_design"];
 
         // first rule that matches wins
         foreach ($rules as $rule) {
             if (
-                (! $rule->department_id   || $rule->department_id == $deptId) &&
-                (! $rule->branch          || Str::upper($rule->branch) == $branch) &&
+                (!$rule->department_id || $rule->department_id == $deptId) &&
+                (!$rule->branch || Str::upper($rule->branch) == $branch) &&
                 ($rule->is_design === null || $rule->is_design == $isDesign)
             ) {
-                return $rule->flow->slug;   // ensure slug column exists on ApprovalFlow
+                return $rule->flow->slug; // ensure slug column exists on ApprovalFlow
             }
         }
 
         // fallback
-        return 'dept-head-director';
+        return "dept-head-director";
     }
 }

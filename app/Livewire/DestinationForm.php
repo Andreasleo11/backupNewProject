@@ -24,9 +24,9 @@ class DestinationForm extends Component
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
-            'city' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+            "name" => "required|string|max:255",
+            "city" => "nullable|string|max:255",
+            "description" => "nullable|string",
         ];
     }
 
@@ -34,18 +34,15 @@ class DestinationForm extends Component
     {
         $data = $this->validate();
 
-        Destination::updateOrCreate(
-            ['id' => $this->destinationId],
-            $data
-        );
+        Destination::updateOrCreate(["id" => $this->destinationId], $data);
 
-        session()->flash('success', 'Destination saved successfully.');
+        session()->flash("success", "Destination saved successfully.");
 
-        return redirect()->route('destination.index');
+        return redirect()->route("destination.index");
     }
 
     public function render()
     {
-        return view('livewire.destination-form');
+        return view("livewire.destination-form");
     }
 }
