@@ -3,13 +3,16 @@
 @section('content')
   <div class="p-5">
     @include('partials.alert-success-error')
+    @if (auth()->user()->role->name === 'SUPERADMIN')
+      <livewire:sync-progress companyArea="10000" />
+    @endif
     <x-employee-dashboard />
-    {{-- <div class="mt-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filteredEmployeesModal"
-                id="viewFilteredEmployeesBtn">
-                View Filtered Employees
-            </button>
-        </div> --}}
+    <div class="mt-2">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+        data-bs-target="#filteredEmployeesModal" id="viewFilteredEmployeesBtn">
+        View Filtered Employees
+      </button>
+    </div>
   </div>
 
   <!-- Modal -->
@@ -36,3 +39,4 @@
 
   @include('partials.add-warning-logs-modal')
 @endsection
+
