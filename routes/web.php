@@ -94,6 +94,7 @@ use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\EmployeeDailyReportController;
 use App\Http\Controllers\ImportJobController;
 use App\Http\Controllers\PreviewUploadController;
+use App\Http\Controllers\SyncProgressController;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
@@ -984,17 +985,7 @@ Route::middleware((['checkUserRole:1,2', 'checkSessionId']))->group(function () 
 Route::middleware(['auth', 'is.head.or.management'])->group(function () {
     Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
     Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
-    Route::get('/sync-progress/{companyArea}', function ($companyArea) {
-        $cacheKey = "sync_progress_{$companyArea}";
-        $progress = Illuminate\Support\Facades\Cache::get($cacheKey, 0);
-
-        if ($progress > 100) {
-            Illuminate\Support\Facades\Cache::forget($cacheKey);
-            $progress = 0; // Reset to 0 or whatever makes sense for your UI
-        }
-
-        return response()->json(['progress' => $progress]);
-    });
+    Route::get('/sync-progress/{companyArea}', [SyncProgressController::class, 'show']);
     Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
     Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
     Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');

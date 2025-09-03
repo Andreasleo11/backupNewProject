@@ -36,17 +36,18 @@ final class JPayrollService
         }
 
         $progress = new ProgressReporter($companyArea);
+        $progress->start();
 
         try {
             // Phase 1: Employees
             $employees = $this->client->getMasterEmployees($companyArea);
             $affected  = $this->employeeSync->sync($employees);
-            $progress->put('employees', $affected, count($employees));
+            $progress->phase('employees', $affected, count($employees));
 
             // Phase 2: Annual leave
             $leaves = $this->client->getAnnualLeave($companyArea, $year);
             $this->leaveSync->sync($leaves);
-            $progress->put('annual_leave', count($leaves), count($leaves));
+            $progress->phase('annual_leave', count($leaves), count($leaves));
 
             // Phase 3: Attendance weekly (slice by weeks)
             $processed = 0;
@@ -62,18 +63,20 @@ final class JPayrollService
                 $processed += count($batch);
                 $this->attendanceSync->sync($batch);
 
-                $progress->put(
+                $progress->phase(
                     'attendance',
                     $processed,
                     null, // unknown total (unless you estimate)
                     $rangeStart->toDateString().' → '.$rangeEnd->toDateString()
                 );
-
+                
                 $cursor = $cursor->addWeek();
             }
 
+            $progress->done($processed, null, 'Sync completed');
             return ['success'=>true, 'message'=>'Sync completed'];
         } catch (Throwable $e) {
+            $progress->error($e->getMessage());
             Log::error('Sync failed', [
                 'companyArea'=>$companyArea,
                 'year'=>$year,

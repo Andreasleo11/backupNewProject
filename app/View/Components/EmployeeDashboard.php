@@ -9,7 +9,6 @@ use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\Component;
-
 class EmployeeDashboard extends Component
 {
     public $chartData;
