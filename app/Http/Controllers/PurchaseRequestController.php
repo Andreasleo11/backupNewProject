@@ -218,7 +218,6 @@ class PurchaseRequestController extends Controller
         ];
 
         if (
-            $commonData["branch"] == "KARAWANG" &&
             $commonData["from_department"] == "PLASTIC INJECTION"
         ) {
             $commonData["status"] = 7;
@@ -286,8 +285,7 @@ class PurchaseRequestController extends Controller
 
                 if (
                     $purchaseRequest->from_department == "PERSONALIA" ||
-                    ($purchaseRequest->from_department == "PLASTIC INJECTION" &&
-                        $purchaseRequest->branch == "KARAWANG")
+                    ($purchaseRequest->from_department == "PLASTIC INJECTION")
                 ) {
                     $commonData["is_approve_by_head"] = 1;
                 }
