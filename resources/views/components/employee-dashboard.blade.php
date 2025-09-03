@@ -472,7 +472,7 @@
 
   function startSyncProgress() {
     // Update button text
-    document.getElementById('buttonText').innerText = 'Updating... 0%';
+    document.getElementById('buttonText').innerText = 'Updating...';
 
     // Dispatch the job via POST (like submitting the form)
     fetch('{{ route('employee.dashboard.updateEmployeeData') }}', {
@@ -497,15 +497,15 @@
       fetch('/sync-progress/10000')
         .then(res => res.json())
         .then(data => {
-          const progress = data.progress;
-          document.getElementById('buttonText').innerText = `Updating... ${progress}%`;
+          const phase = data.phase;
+          document.getElementById('buttonText').innerText = `Updating ${phase}`;
 
-          if (progress >= 100) {
+          if (phase == 'done') {
             clearInterval(syncInterval);
             location.reload();
           }
         });
-    }, 500);
+    }, 200);
   }
 
   function updateCurrentDateTime() {
@@ -1355,3 +1355,4 @@
     updateDropdowns();
   }
 </script>
+
