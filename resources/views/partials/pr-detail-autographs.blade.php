@@ -100,7 +100,7 @@
 
   {{-- DEPT HEAD AUTOGRAPH --}}
   <div
-    class="col my-2 {{ $purchaseRequest->from_department === 'PERSONALIA' || $purchaseRequest->from_department === 'PLASTIC INJECTION' ? 'd-none' : '' }}">
+    class="col my-2 {{ $purchaseRequest->from_department === 'PERSONALIA' || $purchaseRequest->from_department === 'PLASTIC INJECTION' || ($purchaseRequest->from_department === 'MAINTENANCE MACHINE' && $purchaseRequest->branch === 'KARAWANG') ? 'd-none' : '' }}">
     <h2>
       {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department === 'Maintenance' ? 'Head Design' : 'Dept Head' }}
     </h2>

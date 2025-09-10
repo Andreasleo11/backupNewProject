@@ -153,7 +153,7 @@ class PurchaseRequest extends Model
         $this->notifyUsers($details, $event);
     }
 
-    private function    prepareNotificationDetails($event)
+    private function prepareNotificationDetails($event)
     {
         $status = $this->getStatusText($this->status);
 
@@ -227,7 +227,9 @@ class PurchaseRequest extends Model
             switch ($status) {
                 case 1:
                     if (
-                        $this->from_department === "PLASTIC INJECTION"
+                        $this->from_department === "PLASTIC INJECTION" ||
+                        ($this->from_department === "MAINTENANCE MACHINE" &&
+                            $this->branch === "KARAWANG")
                     ) {
                         $deptHead = null;
                     } elseif ($this->from_department === "MOULDING") {
@@ -259,12 +261,13 @@ class PurchaseRequest extends Model
                     break;
                 case 7:
                     if (
-                        $this->from_department === "PLASTIC INJECTION"
+                        $this->from_department === "PLASTIC INJECTION" ||
+                        $this->from_department === "MAINTENANCE MACHINE"
                     ) {
-                        if($this->branch === 'KARAWANG') {
+                        if ($this->branch === "KARAWANG") {
                             $gm = User::where("email", "pawarid_pannin@daijo.co.id")->first();
                         } else {
-                            $gm = User::where("email", 'albert@daijo.co.id')->first();
+                            $gm = User::where("email", "albert@daijo.co.id")->first();
                         }
                     } else {
                         $gm = User::whereHas("department", function ($query) {

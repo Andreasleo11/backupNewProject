@@ -218,7 +218,9 @@ class PurchaseRequestController extends Controller
         ];
 
         if (
-            $commonData["from_department"] == "PLASTIC INJECTION"
+            $commonData["from_department"] == "PLASTIC INJECTION" ||
+            ($commonData["from_department"] === "MAINTENANCE MACHINE" &&
+                $commonData["branch"] === "KARAWANG")
         ) {
             $commonData["status"] = 7;
         }
@@ -285,7 +287,8 @@ class PurchaseRequestController extends Controller
 
                 if (
                     $purchaseRequest->from_department == "PERSONALIA" ||
-                    ($purchaseRequest->from_department == "PLASTIC INJECTION")
+                    $purchaseRequest->from_department == "PLASTIC INJECTION" ||
+                    $purchaseRequest->from_department == "MAINTENANCE MACHINE"
                 ) {
                     $commonData["is_approve_by_head"] = 1;
                 }
