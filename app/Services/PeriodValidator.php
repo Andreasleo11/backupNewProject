@@ -8,12 +8,12 @@ class PeriodValidator
     public static function missing(array $sectionData): array
     {
         $sections = [
-            'details' => $sectionData['details'] ?? [],
-            'first inspections' => $sectionData['first_inspections'] ?? [],
-            'seconds inspections' => $sectionData['second_inspections'] ?? [],
-            'samples' => $sectionData['samples'] ?? [],
-            'packagings' => $sectionData['packagings'] ?? [],
-            'judgements' => $sectionData['judgements'] ?? [],
+            "details" => $sectionData["details"] ?? [],
+            "first inspections" => $sectionData["first_inspections"] ?? [],
+            "seconds inspections" => $sectionData["second_inspections"] ?? [],
+            "samples" => $sectionData["samples"] ?? [],
+            "packagings" => $sectionData["packagings"] ?? [],
+            "judgements" => $sectionData["judgements"] ?? [],
             // 'problems' => $sectionData['problems'] ?? [],
             // 'quantities' => $sectionData['quantities'] ?? [],
         ];
@@ -27,6 +27,6 @@ class PeriodValidator
                 }
             }
         }
-        return $missing;    //  empty array => everything is complete
+        return $missing; //  empty array => everything is complete
     }
 }

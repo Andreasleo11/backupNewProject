@@ -11,19 +11,19 @@ class MonthlyBudgetReportDetail extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'header_id',
-        'name',
-        'spec',
-        'uom',
-        'last_recorded_stock',
-        'usage_per_month',
-        'quantity',
-        'total',
-        'remark',
+        "header_id",
+        "name",
+        "spec",
+        "uom",
+        "last_recorded_stock",
+        "usage_per_month",
+        "quantity",
+        "total",
+        "remark",
     ];
 
     public function header()
     {
-        return $this->belongsTo(MonthlyBudgetReport::class, 'header_id');
+        return $this->belongsTo(MonthlyBudgetReport::class, "header_id");
     }
 }

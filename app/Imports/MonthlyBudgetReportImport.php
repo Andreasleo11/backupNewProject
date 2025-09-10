@@ -27,7 +27,7 @@ class MonthlyBudgetReportImport implements ToCollection
                 continue;
             }
 
-            if($this->deptNo == 363){
+            if ($this->deptNo == 363) {
                 // Assuming your Excel columns are in order:
                 $name = $row[0];
                 $spec = $row[1];
@@ -39,14 +39,14 @@ class MonthlyBudgetReportImport implements ToCollection
 
                 // Create MonthlyBudgetReportDetail entry
                 MonthlyBudgetReportDetail::create([
-                    'header_id' => $this->headerId, // Assign the header_id here
-                    'name' => $name,
-                    'spec' => $spec,
-                    'uom' => $uom,
-                    'last_recorded_stock' => $lastRecordedStock,
-                    'usage_per_month' => $usagePerMonth,
-                    'quantity' => $quantity,
-                    'remark' => $remark,
+                    "header_id" => $this->headerId, // Assign the header_id here
+                    "name" => $name,
+                    "spec" => $spec,
+                    "uom" => $uom,
+                    "last_recorded_stock" => $lastRecordedStock,
+                    "usage_per_month" => $usagePerMonth,
+                    "quantity" => $quantity,
+                    "remark" => $remark,
                 ]);
             } else {
                 $name = $row[0];
@@ -56,14 +56,14 @@ class MonthlyBudgetReportImport implements ToCollection
 
                 // Create MonthlyBudgetReportDetail entry
                 MonthlyBudgetReportDetail::create([
-                    'header_id' => $this->headerId, // Assign the header_id here
-                    'name' => $name,
-                    'spec' => null,
-                    'uom' => $uom,
-                    'last_recorded_stock' => null,
-                    'usage_per_month' => null,
-                    'quantity' => $quantity,
-                    'remark' => $remark,
+                    "header_id" => $this->headerId, // Assign the header_id here
+                    "name" => $name,
+                    "spec" => null,
+                    "uom" => $uom,
+                    "last_recorded_stock" => null,
+                    "usage_per_month" => null,
+                    "quantity" => $quantity,
+                    "remark" => $remark,
                 ]);
             }
         }

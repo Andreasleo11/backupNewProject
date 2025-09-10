@@ -17,19 +17,21 @@ class FinalizeImportJob implements ShouldQueue
     {
         // $this->onQueue('imports');
         $this->timeout = 120;
-        $this->tries   = 1;
+        $this->tries = 1;
     }
 
     public function handle(): void
     {
         $job = ImportJob::find($this->jobId);
-        if (!$job || $job->status === 'failed') return;
+        if (!$job || $job->status === "failed") {
+            return;
+        }
 
         $total = $job->total_rows ?: $job->processed_rows;
         $job->update([
-            'status'      => 'completed',
-            'total_rows'  => $total,
-            'finished_at' => now(),
+            "status" => "completed",
+            "total_rows" => $total,
+            "finished_at" => now(),
         ]);
     }
 }

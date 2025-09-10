@@ -28,7 +28,7 @@ class TrainingReminderNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ["mail", "database"];
     }
 
     /**
@@ -36,12 +36,12 @@ class TrainingReminderNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-                    ->subject('Training Reminder untuk Evaluasi 3 Bulan')
-                    ->greeting('Training Reminder untuk Evaluasi 3 Bulan')
-                    ->markdown('emails.training_reminder', [
-                        'training' => $this->training,
-                    ]);
+        return (new MailMessage())
+            ->subject("Training Reminder untuk Evaluasi 3 Bulan")
+            ->greeting("Training Reminder untuk Evaluasi 3 Bulan")
+            ->markdown("emails.training_reminder", [
+                "training" => $this->training,
+            ]);
     }
 
     /**
@@ -52,7 +52,7 @@ class TrainingReminderNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Training reminder with has just been created!',
+            "message" => "Training reminder with has just been created!",
         ];
     }
 }

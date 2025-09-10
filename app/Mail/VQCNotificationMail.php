@@ -29,10 +29,10 @@ class VQCNotificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->mailData['subject'],
-            from: $this->mailData['from'],
-            to: $this->mailData['to'],
-            cc: $this->mailData['cc']
+            subject: $this->mailData["subject"],
+            from: $this->mailData["from"],
+            to: $this->mailData["to"],
+            cc: $this->mailData["cc"],
         );
     }
 
@@ -42,10 +42,10 @@ class VQCNotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.vqc-notification-mail',
+            markdown: "emails.vqc-notification-mail",
             with: [
-                'data' => $this->mailData
-            ]
+                "data" => $this->mailData,
+            ],
         );
     }
 

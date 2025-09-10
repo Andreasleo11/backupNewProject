@@ -23,8 +23,8 @@ class PurPorDetailDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'purpordetail.action')
-            ->setRowId('id');
+            ->addColumn("action", "purpordetail.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class PurPorDetailDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('purpordetail-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("purpordetail-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,21 +70,21 @@ class PurPorDetailDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('pps_level'),
-            Column::make('item_code'),
-            Column::make('item_pair'),
-            Column::make('pps_date'),
-            Column::make('pps_qty'),
-            Column::make('vendor_code'),
-            Column::make('vendor_name'),
-            Column::make('material_code'),
-            Column::make('material_name'),
-            Column::make('base_qty'),
-            Column::make('material_need'),
-            Column::make('in_percentage'),
-            Column::make('need_plus_percent'),
-            Column::make('material_stock'),
+            Column::make("id"),
+            Column::make("pps_level"),
+            Column::make("item_code"),
+            Column::make("item_pair"),
+            Column::make("pps_date"),
+            Column::make("pps_qty"),
+            Column::make("vendor_code"),
+            Column::make("vendor_name"),
+            Column::make("material_code"),
+            Column::make("material_name"),
+            Column::make("base_qty"),
+            Column::make("material_need"),
+            Column::make("in_percentage"),
+            Column::make("need_plus_percent"),
+            Column::make("material_stock"),
         ];
     }
 
@@ -95,6 +95,6 @@ class PurPorDetailDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PurPorDetail_' . date('YmdHis');
+        return "PurPorDetail_" . date("YmdHis");
     }
 }

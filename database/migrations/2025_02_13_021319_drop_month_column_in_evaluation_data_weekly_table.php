@@ -5,15 +5,14 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table('evaluation_data_weekly', function (Blueprint $table) {
-            $table->dropColumn('month');
+        Schema::table("evaluation_data_weekly", function (Blueprint $table) {
+            $table->dropColumn("month");
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('evaluation_data_weekly', function (Blueprint $table) {
-            $table->date('month')->after('dept');
+        Schema::table("evaluation_data_weekly", function (Blueprint $table) {
+            $table->date("month")->after("dept");
         });
     }
 };

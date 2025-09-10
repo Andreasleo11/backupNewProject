@@ -10,15 +10,15 @@ class MasterInventory extends Model
     use HasFactory;
 
     protected $fillable = [
-        'ip_address',
-        'username',
-        'position_image',
-        'dept',
-        'type',
-        'purpose',
-        'brand',
-        'os',
-        'description',
+        "ip_address",
+        "username",
+        "position_image",
+        "dept",
+        "type",
+        "purpose",
+        "brand",
+        "os",
+        "description",
     ];
 
     public function hardwares()

@@ -9,7 +9,7 @@ class HeaderFormOvertimeObserver
 {
     public function updating(HeaderFormOvertime $model)
     {
-        if ($model->isDirty('status')) {
+        if ($model->isDirty("status")) {
             $model->sendNotification($model);
         }
     }
@@ -18,7 +18,7 @@ class HeaderFormOvertimeObserver
      */
     public function created(HeaderFormOvertime $headerFormOvertime): void
     {
-        Cache::forget('approval_flow_rules');
+        Cache::forget("approval_flow_rules");
     }
 
     /**

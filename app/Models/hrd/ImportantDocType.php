@@ -7,13 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ImportantDocType extends Model
 {
-    protected $fillable = [
-        'name'
-    ];
+    protected $fillable = ["name"];
 
     public function importantDocs()
     {
-        return $this->hasMany(ImportantDoc::class, 'type_id', 'id');
+        return $this->hasMany(ImportantDoc::class, "type_id", "id");
     }
 
     use HasFactory;

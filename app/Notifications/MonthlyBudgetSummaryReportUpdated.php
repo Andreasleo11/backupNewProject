@@ -31,7 +31,7 @@ class MonthlyBudgetSummaryReportUpdated extends Notification implements ShouldQu
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ["mail", "database"];
     }
 
     /**
@@ -39,11 +39,11 @@ class MonthlyBudgetSummaryReportUpdated extends Notification implements ShouldQu
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->line('There\'s a Monthly Budget Report has just been updated!')
-            ->greeting($this->details['greeting'])
-            ->line(new \Illuminate\Support\HtmlString($this->details['body']))
-            ->action($this->details['actionText'], $this->details['actionURL']);
+            ->greeting($this->details["greeting"])
+            ->line(new \Illuminate\Support\HtmlString($this->details["body"]))
+            ->action($this->details["actionText"], $this->details["actionURL"]);
     }
 
     /**
@@ -54,8 +54,11 @@ class MonthlyBudgetSummaryReportUpdated extends Notification implements ShouldQu
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Monthly Budget Summary Report with document number = ' . $this->report->doc_num . ' has just been updated!',
-            'status' => $this->report->status
+            "message" =>
+                "Monthly Budget Summary Report with document number = " .
+                $this->report->doc_num .
+                " has just been updated!",
+            "status" => $this->report->status,
         ];
     }
 }

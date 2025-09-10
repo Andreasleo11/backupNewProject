@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 class BusinessHomeController extends Controller
 {
-    public function index(){
-        return view('business.home');
+    public function index()
+    {
+        return view("business.home");
     }
 }

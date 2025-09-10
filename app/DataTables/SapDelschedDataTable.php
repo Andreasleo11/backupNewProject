@@ -23,8 +23,8 @@ class SapDelschedDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'sapdelsched.action')
-            ->setRowId('id');
+            ->addColumn("action", "sapdelsched.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class SapDelschedDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('sapdelsched-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("sapdelsched-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,10 +70,10 @@ class SapDelschedDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('item_code'),
-            Column::make('delivery_date'),
-            Column::make('delivery_qty'),
-            Column::make('so_number'),
+            Column::make("item_code"),
+            Column::make("delivery_date"),
+            Column::make("delivery_qty"),
+            Column::make("so_number"),
         ];
     }
 
@@ -84,6 +84,6 @@ class SapDelschedDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'SapDelsched_' . date('YmdHis');
+        return "SapDelsched_" . date("YmdHis");
     }
 }

@@ -9,12 +9,10 @@ class GroupMaintenanceInventoryReport extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'name',
-    ];
+    protected $fillable = ["name"];
 
     public function detail()
     {
-        return $this->hasMany(CategoryMaintenanceInventoryReport::class, 'group_id', 'id');
+        return $this->hasMany(CategoryMaintenanceInventoryReport::class, "group_id", "id");
     }
 }

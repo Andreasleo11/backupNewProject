@@ -2,7 +2,6 @@
 
 namespace App\DataTables;
 
-
 use Illuminate\Support\Facades\Auth;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
@@ -25,7 +24,9 @@ class DisciplineYayasanTableDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('totaldiscipline', '@php
+            ->addColumn(
+                "totaldiscipline",
+                '@php
 
         $total = 0;
 
@@ -222,9 +223,12 @@ class DisciplineYayasanTableDataTable extends DataTable
             $totalakhir = $total;
 
 
-        @endphp {{ $totalakhir }}')
+        @endphp {{ $totalakhir }}',
+            )
 
-            ->addColumn('grade', '
+            ->addColumn(
+                "grade",
+                '
         @php
 
             if($total >= 91)
@@ -244,35 +248,36 @@ class DisciplineYayasanTableDataTable extends DataTable
                 $grade = "D";
             }
         @endphp
-        {{ $grade }}')
-            ->addColumn('action', '<button class="btn btn-primary edit-button"
+        {{ $grade }}',
+            )
+            ->addColumn(
+                "action",
+                '<button class="btn btn-primary edit-button"
                                             data-bs-toggle="modal"
                                             data-bs-target="#edit-discipline-yayasan-modal"
                                             data-id="{{ $id }}"
                                             {{ ($is_lock === 1) ? "disabled" : ""  }}>
                                              <i class="bx bx-edit"></i>
                                     </button>
-        ')
-            ->setRowId('id')
+        ',
+            )
+            ->setRowId("id")
             ->setRowAttr([
-                'class' => function ($row) {
+                "class" => function ($row) {
                     // Directly accessing depthead
                     if (isset($row->depthead) && $row->depthead !== null) {
-                        if($row->depthead === 'rejected')
-                        {
-                            return 'table-danger';
-                        }else{
-                            if(isset($row->generalmanager) && $row->generalmanager !== null){
-                                return 'table-primary';
-                            }else{
-                            return 'table-success';
+                        if ($row->depthead === "rejected") {
+                            return "table-danger";
+                        } else {
+                            if (isset($row->generalmanager) && $row->generalmanager !== null) {
+                                return "table-primary";
+                            } else {
+                                return "table-success";
                             }
                         }
-
-
                     }
 
-                    return '';  // Default to no style if depthead is null
+                    return ""; // Default to no style if depthead is null
                 },
             ]);
     }
@@ -287,112 +292,150 @@ class DisciplineYayasanTableDataTable extends DataTable
     {
         $userDepartment = Auth::user()->department->name;
 
-        if ($userDepartment == 'MAINTENANCE MACHINE') {
+        if ($userDepartment == "MAINTENANCE MACHINE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '351')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "351")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
         } elseif (Auth::user()->is_gm) {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();}
-        elseif (Auth::user()->email === "ani_apriani@daijo.co.id" || Auth::user()->email === "bernadett@daijo.co.id") {
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'PPIC') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif (
+            Auth::user()->email === "ani_apriani@daijo.co.id" ||
+            Auth::user()->email === "bernadett@daijo.co.id"
+        ) {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "PPIC") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '311')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'PLASTIC INJECTION') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "311")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "PLASTIC INJECTION") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('dept', '390')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'MOULDING') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("dept", "390")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "MOULDING") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '363')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'ASSEMBLY') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "363")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "ASSEMBLY") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '362')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'SECOND PROCESS') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "362")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "SECOND PROCESS") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('Dept', '361')->orWhere('Dept', '362');
-                    })
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'MAINTENANCE') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where(function ($query) {
+                            $query->where("Dept", "361")->orWhere("Dept", "362");
+                        })
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "MAINTENANCE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '350')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'LOGISTIC') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "350")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "LOGISTIC") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('Dept', '331')->orWhere('Dept', '330');
-                    })
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'STORE') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where(function ($query) {
+                            $query->where("Dept", "331")->orWhere("Dept", "330");
+                        })
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "STORE") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
 
-                    if (Auth::user()->name === 'catur') {
+                    if (Auth::user()->name === "catur") {
                         $query->where(function ($query) {
-                            $query->where('Dept', '331')->orWhere('Dept', '330');
+                            $query->where("Dept", "331")->orWhere("Dept", "330");
                         });
                     } else {
-                        $query->where('Dept', '330');
+                        $query->where("Dept", "330");
                     }
-                })->newQuery();
+                })
+                ->newQuery();
         } elseif (Auth::user()->email === "raditya_qa@daijo.co.id") {
             // Get data for department 341
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '341')
-                        ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })->newQuery();
-        } elseif ($userDepartment == 'QC' || $userDepartment == 'QA') {
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query
+                        ->where("Dept", "341")
+                        ->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
+                })
+                ->newQuery();
+        } elseif ($userDepartment == "QC" || $userDepartment == "QA") {
             // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            return $model
+                ::with("karyawan")
+                ->whereHas("karyawan", function ($query) {
+                    $query->whereIn("status", ["YAYASAN", "YAYASAN KARAWANG"]);
 
-                    if (auth()->user()->name === 'yuli') {
+                    if (auth()->user()->name === "yuli") {
                         $query->where(function ($query) {
-                            $query->where('Dept', '340')->orWhere('Dept', '341');
+                            $query->where("Dept", "340")->orWhere("Dept", "341");
                         });
                     } else {
-                        $query->where('Dept', '340');
+                        $query->where("Dept", "340");
                     }
-                })->newQuery();
+                })
+                ->newQuery();
         }
     }
 
@@ -404,19 +447,19 @@ class DisciplineYayasanTableDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('disciplineyayasantable-table')
+            ->setTableId("disciplineyayasantable-table")
             ->columns($this->getColumns())
             ->minifiedAjax()
             //->dom('Bfrtip')
             ->orderBy(1)
 
             ->buttons([
-                Button::make('excel'),
-                Button::make('csv'),
-                Button::make('pdf'),
-                Button::make('print'),
-                Button::make('reset'),
-                Button::make('reload')
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
             ]);
     }
 
@@ -428,69 +471,70 @@ class DisciplineYayasanTableDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')
-                ->visible(false)
-                ->exportable(true),
-            Column::make('NIK'),
-            Column::make('Name')
-                ->data('karyawan.Nama')
+            Column::make("id")->visible(false)->exportable(true),
+            Column::make("NIK"),
+            Column::make("Name")
+                ->data("karyawan.Nama")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('dept')
-                ->addClass('align-middle'),
-            Column::make('start_date')
-                ->title('Start Date')
-                ->data('karyawan.start_date')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("dept")->addClass("align-middle"),
+            Column::make("start_date")
+                ->title("Start Date")
+                ->data("karyawan.start_date")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('status')
-                ->title('Status')
-                ->data('karyawan.status')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("status")
+                ->title("Status")
+                ->data("karyawan.status")
                 ->searchable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('Month'),
-            Column::make('Alpha'),
-            Column::make('Telat'),
-            Column::make('Izin'),
-            Column::make('Sakit'),
-            Column::make('kemampuan_kerja'),
-            Column::make('kecerdasan_kerja'),
-            Column::make('qualitas_kerja')
-                    ->title('Kualitas Kerja'),
-            Column::make('disiplin_kerja'),
-            Column::make('kepatuhan_kerja'),
-            Column::make('lembur'),
-            Column::make('efektifitas_kerja'),
-            Column::make('relawan')
-                    ->title('Ringan Tangan'),
-            Column::make('integritas'),
-            Column::make('totaldiscipline')
-                ->title('Total Nilai Kedisiplinan')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("Month"),
+            Column::make("Alpha"),
+            Column::make("Telat"),
+            Column::make("Izin"),
+            Column::make("Sakit"),
+            Column::make("kemampuan_kerja"),
+            Column::make("kecerdasan_kerja"),
+            Column::make("qualitas_kerja")->title("Kualitas Kerja"),
+            Column::make("disiplin_kerja"),
+            Column::make("kepatuhan_kerja"),
+            Column::make("lembur"),
+            Column::make("efektifitas_kerja"),
+            Column::make("relawan")->title("Ringan Tangan"),
+            Column::make("integritas"),
+            Column::make("totaldiscipline")
+                ->title("Total Nilai Kedisiplinan")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('total')
-                ->exportable(false),
-            Column::make('grade')
-                ->title('Grade')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("total")->exportable(false),
+            Column::make("grade")
+                ->title("Grade")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::make('pengawas')
-                ->title('Approved By')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::make("pengawas")
+                ->title("Approved By")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
-            Column::computed('action')
+                ->addClass("align-middle")
+                ->orderable(false),
+            Column::computed("action")
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center')
-                ->addClass('align-middle'),
-            Column::make('remark')
-                ->title('Remark Reject')
+                ->addClass("text-center")
+                ->addClass("align-middle"),
+            Column::make("remark")
+                ->title("Remark Reject")
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')->orderable(false),
+                ->addClass("align-middle")
+                ->orderable(false),
         ];
     }
 
@@ -501,6 +545,6 @@ class DisciplineYayasanTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DisciplineYayasanTable_' . date('YmdHis');
+        return "DisciplineYayasanTable_" . date("YmdHis");
     }
 }

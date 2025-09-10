@@ -4,14 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('sap_delso', function (Blueprint $table) {
+        Schema::create("sap_delso", function (Blueprint $table) {
             $table->integer("doc_num")->nullable();
             $table->string("doc_status")->nullable();
             $table->string("item_no")->nullable();
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sap_delso');
+        Schema::dropIfExists("sap_delso");
     }
 };

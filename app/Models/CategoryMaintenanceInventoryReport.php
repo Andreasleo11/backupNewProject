@@ -9,10 +9,7 @@ class CategoryMaintenanceInventoryReport extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'group_id',
-        'name',
-    ];
+    protected $fillable = ["group_id", "name"];
 
     public function group()
     {

@@ -13,43 +13,49 @@ class DepartmentController extends Controller
     {
         $departments = Department::all();
         // return view('admin.departments.index', compact('departments'));
-        return $dataTable->render('admin.departments.index', compact('departments'));
+        return $dataTable->render("admin.departments.index", compact("departments"));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|max:255|string',
-            'dept_no' => 'nullable|max:255|string',
-            'is_office' => 'boolean'
+            "name" => "required|max:255|string",
+            "dept_no" => "nullable|max:255|string",
+            "is_office" => "boolean",
         ]);
 
         Department::create([
-            'name' => strtoupper($request->name),
-            'dept_no' => $request->dept_no,
-            'is_office' => (bool) $request->is_office,
+            "name" => strtoupper($request->name),
+            "dept_no" => $request->dept_no,
+            "is_office" => (bool) $request->is_office,
         ]);
 
-        return redirect()->route('superadmin.departments')->with(['success' => 'Department added successfully!']);
+        return redirect()
+            ->route("superadmin.departments")
+            ->with(["success" => "Department added successfully!"]);
     }
 
     public function update(Request $request, $id)
     {
         $department = Department::find($id);
         $request->validate([
-            'name' => 'required|max:255|string',
-            'dept_no' => 'nullable|max:255|string',
-            'is_office' => 'boolean',
+            "name" => "required|max:255|string",
+            "dept_no" => "nullable|max:255|string",
+            "is_office" => "boolean",
         ]);
 
         $department->update($request->all());
 
-        return redirect()->route('superadmin.departments')->with(['success' => 'Department updated successfully!']);
+        return redirect()
+            ->route("superadmin.departments")
+            ->with(["success" => "Department updated successfully!"]);
     }
 
     public function destroy($id)
     {
         Department::find($id)->delete();
-        return redirect()->route('superadmin.departments')->with(['success' => 'Departments deleted successfully!']);
+        return redirect()
+            ->route("superadmin.departments")
+            ->with(["success" => "Departments deleted successfully!"]);
     }
 }

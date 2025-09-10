@@ -14,14 +14,14 @@ class OvertimeAutographs extends Command
      *
      * @var string
      */
-    protected $signature = 'app:overtime-autographs';
+    protected $signature = "app:overtime-autographs";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'none';
+    protected $description = "none";
 
     /**
      * Execute the console command.
@@ -33,8 +33,8 @@ class OvertimeAutographs extends Command
                 // 1. Pick a flow based on which autograph_x columns are filled
                 $flowSlug = ApprovalFlowResolver::for($row->toArray());
 
-                $flow = ApprovalFlow::where('slug', $flowSlug)->firstOrFail();
-                $row->update(['approval_flow_id' => $flow->id]);
+                $flow = ApprovalFlow::where("slug", $flowSlug)->firstOrFail();
+                $row->update(["approval_flow_id" => $flow->id]);
 
                 // 2. Create a log row per step
                 foreach ($flow->steps as $step) {
@@ -47,17 +47,17 @@ class OvertimeAutographs extends Command
 
                     $filename = pathinfo($signaturePath, PATHINFO_FILENAME);
                     $name = strtolower($filename);
-                    $approverId = \App\Models\User::where('name', $name)->first()?->id;
+                    $approverId = \App\Models\User::where("name", $name)->first()?->id;
 
                     $row->approvals()->updateOrCreate(
-                        ['flow_step_id' => $step->id],
+                        ["flow_step_id" => $step->id],
                         [
-                            'status'    => $signaturePath ? 'approved' : 'pending',
-                            'signed_at' => $signaturePath ? now() : null,
-                            'comment'   => null,
-                            'signature_path' => $signaturePath,
-                            'approver_id'    => $approverId,   // set if you can back-fill the user
-                        ]
+                            "status" => $signaturePath ? "approved" : "pending",
+                            "signed_at" => $signaturePath ? now() : null,
+                            "comment" => null,
+                            "signature_path" => $signaturePath,
+                            "approver_id" => $approverId, // set if you can back-fill the user
+                        ],
                     );
                 }
             }

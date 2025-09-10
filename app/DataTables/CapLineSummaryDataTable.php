@@ -23,8 +23,8 @@ class CapLineSummaryDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'caplinesummary.action')
-            ->setRowId('id');
+            ->addColumn("action", "caplinesummary.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class CapLineSummaryDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('caplinesummary-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("caplinesummary-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,16 +70,16 @@ class CapLineSummaryDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('department'),
-            Column::make('line_category'),
-            Column::make('line_quantity'),
-            Column::make('work_day'),
-            Column::make('ready_time'),
-            Column::make('efficiency'),
-            Column::make('max_capacity'),
-            Column::make('capacity_req_hour'),
-            Column::make('capacity_req_percent'),
+            Column::make("id"),
+            Column::make("department"),
+            Column::make("line_category"),
+            Column::make("line_quantity"),
+            Column::make("work_day"),
+            Column::make("ready_time"),
+            Column::make("efficiency"),
+            Column::make("max_capacity"),
+            Column::make("capacity_req_hour"),
+            Column::make("capacity_req_percent"),
         ];
     }
 
@@ -90,6 +90,6 @@ class CapLineSummaryDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'CapLineSummary_' . date('YmdHis');
+        return "CapLineSummary_" . date("YmdHis");
     }
 }

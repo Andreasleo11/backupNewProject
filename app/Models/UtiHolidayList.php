@@ -8,12 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UtiHolidayList extends Model
 {
     public $timestamps = false;
-    protected $table = 'uti_holiday_list';
+    protected $table = "uti_holiday_list";
 
-    protected $fillable = [
-        'date',
-        'holiday_name',
-        'description',
-        'half_day',
-    ];
+    protected $fillable = ["date", "holiday_name", "description", "half_day"];
 }

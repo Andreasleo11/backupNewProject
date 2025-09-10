@@ -36,9 +36,9 @@ class POSignPDFJob implements ShouldQueue
     {
         try {
             $pdfPath = public_path("storage/pdfs/{$this->purchaseOrder->filename}");
-            $signedPdfPath = str_replace('.pdf', '_signed.pdf', $pdfPath);
+            $signedPdfPath = str_replace(".pdf", "_signed.pdf", $pdfPath);
 
-            $signaturePath = public_path('autographs/Djoni.png');
+            $signaturePath = public_path("autographs/Djoni.png");
 
             $pdf = new Fpdi();
             $pageCount = $pdf->setSourceFile($pdfPath);
@@ -49,25 +49,27 @@ class POSignPDFJob implements ShouldQueue
                 $pdf->useTemplate($templateId, 0, 0, 210);
 
                 if ($pageIndex === $pageCount) {
-                    $pdf->SetFont('Arial', '', 12);
+                    $pdf->SetFont("Arial", "", 12);
                     $pdf->Image($signaturePath, 40, 250, 40, 20);
                 }
             }
 
-            $pdf->Output($signedPdfPath, 'F');
+            $pdf->Output($signedPdfPath, "F");
 
             // Update the filename and status after signing
             $this->purchaseOrder->update([
-                'filename' => basename($signedPdfPath),
-                'status' => 2, // Approved after signing
-                'approved_date' => now(),
+                "filename" => basename($signedPdfPath),
+                "status" => 2, // Approved after signing
+                "approved_date" => now(),
             ]);
         } catch (\Exception $e) {
             // Log the error
-            Log::error("Error signing PDF for PurchaseOrder ID {$this->purchaseOrder->id}: {$e->getMessage()}");
+            Log::error(
+                "Error signing PDF for PurchaseOrder ID {$this->purchaseOrder->id}: {$e->getMessage()}",
+            );
 
             // Optionally update the status to indicate failure
-            $this->purchaseOrder->update(['status' => 5]); // Example: 3 = Failed
+            $this->purchaseOrder->update(["status" => 5]); // Example: 3 = Failed
         }
     }
 }

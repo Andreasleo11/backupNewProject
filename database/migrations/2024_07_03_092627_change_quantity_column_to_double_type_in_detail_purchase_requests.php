@@ -5,15 +5,14 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
         // First, cast all integer quantity to their corresponding decimal values
-        DB::statement('ALTER TABLE detail_purchase_requests MODIFY quantity DECIMAL(15, 2)');
+        DB::statement("ALTER TABLE detail_purchase_requests MODIFY quantity DECIMAL(15, 2)");
     }
 
     /**
@@ -22,6 +21,6 @@ return new class extends Migration
     public function down(): void
     {
         // Optionally, revert the quantity back to integers
-        DB::statement('ALTER TABLE detail_purchase_requests MODIFY quantity INTEGER');
+        DB::statement("ALTER TABLE detail_purchase_requests MODIFY quantity INTEGER");
     }
 };

@@ -20,12 +20,12 @@ class StepFirst extends Component
     public $periodKey;
 
     protected $rules = [
-        'detail_inspection_report_document_number' => 'required|string',
-        'appearance' => 'required|in:OK,NG',
-        'weight' => 'required|numeric|min:0',
-        'weight_uom' => 'required|string',
-        'fitting_test' => 'nullable|string',
-        'remarks' => 'required_if:appearance,NG|nullable|string',
+        "detail_inspection_report_document_number" => "required|string",
+        "appearance" => "required|in:OK,NG",
+        "weight" => "required|numeric|min:0",
+        "weight_uom" => "required|string",
+        "fitting_test" => "nullable|string",
+        "remarks" => "required_if:appearance,NG|nullable|string",
     ];
 
     public function updated($property)
@@ -35,7 +35,7 @@ class StepFirst extends Component
 
     public function mount()
     {
-        $this->periodKey = 'p' . session('stepDetailSaved.period');
+        $this->periodKey = "p" . session("stepDetailSaved.period");
         $saved = session("stepDetailSaved.first_inspections.{$this->periodKey}", []);
 
         if ($saved) {
@@ -49,8 +49,8 @@ class StepFirst extends Component
 
     public function updatedAppearance($value): void
     {
-        if ($value !== 'NG') {
-            $this->remarks = null;   // wipe any previous text
+        if ($value !== "NG") {
+            $this->remarks = null; // wipe any previous text
         }
     }
 
@@ -59,35 +59,36 @@ class StepFirst extends Component
         $this->validate();
 
         $data = [
-            'detail_inspection_report_document_number' => $this->detail_inspection_report_document_number,
-            'appearance' => $this->appearance,
-            'weight' => $this->weight,
-            'weight_uom' => $this->weight_uom,
-            'fitting_test' => $this->fitting_test,
-            'remarks' => $this->remarks,
+            "detail_inspection_report_document_number" =>
+                $this->detail_inspection_report_document_number,
+            "appearance" => $this->appearance,
+            "weight" => $this->weight,
+            "weight_uom" => $this->weight_uom,
+            "fitting_test" => $this->fitting_test,
+            "remarks" => $this->remarks,
         ];
 
         session()->put("stepDetailSaved.first_inspections.{$this->periodKey}", $data);
-        $this->dispatch('toast', message: 'First saved successfully!');
+        $this->dispatch("toast", message: "First saved successfully!");
     }
 
     public function resetStep()
     {
         $this->reset([
-            'detail_inspection_report_document_number',
-            'appearance',
-            'weight',
-            'weight_uom',
-            'fitting_test',
-            'remarks',
+            "detail_inspection_report_document_number",
+            "appearance",
+            "weight",
+            "weight_uom",
+            "fitting_test",
+            "remarks",
         ]);
 
-        $this->forgetNestedKey('stepDetailSaved.first_inspections', $this->periodKey);
-        $this->dispatch('toast', message: 'First step reset successfully!');
+        $this->forgetNestedKey("stepDetailSaved.first_inspections", $this->periodKey);
+        $this->dispatch("toast", message: "First step reset successfully!");
     }
 
     public function render()
     {
-        return view('livewire.inspection-form.step-first');
+        return view("livewire.inspection-form.step-first");
     }
 }

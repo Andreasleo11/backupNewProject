@@ -23,8 +23,8 @@ class MtcMouldDownDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'mtcmoulddown.action')
-            ->setRowId('id');
+            ->addColumn("action", "mtcmoulddown.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class MtcMouldDownDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('mtcmoulddown-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("mtcmoulddown-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,10 +70,10 @@ class MtcMouldDownDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('mould_code'),
-            Column::make('date_down'),
-            Column::make('date_prediction'),
+            Column::make("id"),
+            Column::make("mould_code"),
+            Column::make("date_down"),
+            Column::make("date_prediction"),
         ];
     }
 
@@ -84,6 +84,6 @@ class MtcMouldDownDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'MtcMouldDown_' . date('YmdHis');
+        return "MtcMouldDown_" . date("YmdHis");
     }
 }

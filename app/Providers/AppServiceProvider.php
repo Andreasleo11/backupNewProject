@@ -18,7 +18,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            \App\Services\Payroll\Contracts\JPayrollClientContract::class,
+            fn() => \App\Services\Payroll\JPayrollClient::fromConfig()
+        );
     }
 
     /**
@@ -30,19 +33,19 @@ class AppServiceProvider extends ServiceProvider
         HeaderFormOvertime::observe(HeaderFormOvertimeObserver::class);
         Detail::observe(DetailObserver::class);
 
-        Blade::directive('currency', function ($expression) {
+        Blade::directive("currency", function ($expression) {
             return "<?php echo $expression !== null ? 'Rp ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
-        Blade::directive('currencyUSD', function ($expression) {
+        Blade::directive("currencyUSD", function ($expression) {
             return "<?php echo $expression !== null ? '$ ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
-        Blade::directive('currencyCNY', function ($expression) {
+        Blade::directive("currencyCNY", function ($expression) {
             return "<?php echo $expression !== null ? '¥ ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
-        Blade::directive('formatDate', function ($expression) {
+        Blade::directive("formatDate", function ($expression) {
             return "<?php echo $expression !== null ? \Carbon\Carbon::parse($expression)->format('d-m-Y') : '-'; ?>";
         });
         Paginator::useBootstrap();

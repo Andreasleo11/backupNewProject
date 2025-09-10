@@ -15,14 +15,14 @@ class SendReportNotification extends Command
      *
      * @var string
      */
-    protected $signature = 'email:send-report-notification';
+    protected $signature = "email:send-report-notification";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Send report status notification';
+    protected $description = "Send report status notification";
 
     /**
      * Execute the console command.
@@ -35,18 +35,18 @@ class SendReportNotification extends Command
         $rejectedDoc = Report::rejected()->count();
 
         $mailData = [
-            'to' => Config::get('email.feature_qc.to'),
-            'cc' => Config::get('email.feature_qc.cc'),
-            'subject' => 'VQC Report Notification',
-            'from' => 'pt.daijoindustrial@daijo.co.id',
-            'approved' => $approvedDoc,
-            'waitingSignature' => $waitingSignatureDoc,
-            'waitingApproval' => $waitingApprovalDoc,
-            'rejected' => $rejectedDoc,
-            'url' => 'http://116.254.114.93:2420'
+            "to" => Config::get("email.feature_qc.to"),
+            "cc" => Config::get("email.feature_qc.cc"),
+            "subject" => "VQC Report Notification",
+            "from" => "pt.daijoindustrial@daijo.co.id",
+            "approved" => $approvedDoc,
+            "waitingSignature" => $waitingSignatureDoc,
+            "waitingApproval" => $waitingApprovalDoc,
+            "rejected" => $rejectedDoc,
+            "url" => "http://116.254.114.93:2420",
         ];
 
         Mail::send(new VQCNotificationMail($mailData));
-        $this->info('Report status notification sent successfully.');
+        $this->info("Report status notification sent successfully.");
     }
 }
