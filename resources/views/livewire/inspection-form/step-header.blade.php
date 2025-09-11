@@ -8,7 +8,7 @@
             <div class="mb-3 d-none">
               <label class="form-label">Document Number <span class="text-danger">*</span></label>
               <input type="text" wire:model.blur="document_number"
-                class="form-control bg-secondary-subtle @error('document_number') is-invalid @enderror"
+                class="form-control bg-secondary-subtle @error('document_number') is-invalid @enderror @if($this->isFieldSaved('document_number')) is-valid @endif"
                 readonly>
               @error('document_number')
                 <span class="invalid-feedback">{{ $message }}</span>
@@ -19,7 +19,7 @@
               <input type="date" wire:model.blur="inspection_date"
                 class="form-control @error('inspection_date')
                             is-invalid
-                        @enderror">
+                        @enderror @if($this->isFieldSaved('inspection_date')) is-valid @endif">
               <div class="form-text">
                 <small>Format: DD/MM/YYYY</small>
               </div>
@@ -37,6 +37,7 @@
                       'column' => 'name',
                       'hasError' => $errors->has('customer'),
                       'value' => old('customer') ?? ($this->customer ?? ''),
+                      'isSaved' => $this->isFieldSaved('customer'),
                       'options' => [
                           'distinct' => true,
                       ],
@@ -70,6 +71,7 @@
                     'column' => 'item_no',
                     'hasError' => $errors->has('part_number'),
                     'value' => $this->part_number ?? (old('part_number') ?? ''),
+                    'isSaved' => $this->isFieldSaved('part_number'),
                     'options' => [
                         'distinct' => true,
                     ],
@@ -91,6 +93,7 @@
                     'column' => 'description',
                     'hasError' => $errors->has('part_name'),
                     'value' => $this->part_name ?? (old('part_name') ?? ''),
+                    'isSaved' => $this->isFieldSaved('part_name'),
                     'options' => [
                         'distinct' => true,
                     ],
@@ -106,9 +109,9 @@
             <label class="form-label">Weight <span class="text-danger">*</span></label>
             <div class="input-group mb-3">
               <input type="number"
-                class="form-control text-end @error('weight') is-invalid @enderror"
+                class="form-control text-end @error('weight') is-invalid @enderror @if($this->isFieldSaved('weight')) is-valid @endif"
                 wire:model.blur="weight">
-              <select class="form-select @error('weight_uom') is-invalid @enderror"
+              <select class="form-select @error('weight_uom') is-invalid @enderror @if($this->isFieldSaved('weight_uom')) is-valid @endif"
                 wire:model.blur="weight_uom">
                 <option value="" selected></option>
                 <option value="kg">KG</option>
@@ -125,7 +128,7 @@
           <div class="mb-3">
             <label class="form-label">Material <span class="text-danger">*</span></label>
             <input type="text" id="material" wire:model.blur="material"
-              class="form-control @error('material') is-invalid @enderror">
+              class="form-control @error('material') is-invalid @enderror @if($this->isFieldSaved('material')) is-valid @endif">
             @error('material')
               <span class="invalid-feedback">{{ $message }}</span>
             @enderror
@@ -133,7 +136,7 @@
           <div>
             <label class="form-label">Color <span class="text-danger">*</span></label>
             <input type="text" wire:model.blur="color"
-              class="form-control @error('color') is-invalid @enderror">
+              class="form-control @error('color') is-invalid @enderror @if($this->isFieldSaved('color')) is-valid @endif">
             <div class="form-text">
               <small>e.g. WHITE, BLACK, BLUE</small>
             </div>
@@ -155,7 +158,7 @@
                   <label class="form-label">Tool/Cavity
                     Number <span class="text-danger">*</span></label>
                   <input type="text" wire:model.blur="tool_number_or_cav_number"
-                    class="form-control @error('tool_number_or_cav_number') is-invalid @enderror">
+                    class="form-control @error('tool_number_or_cav_number') is-invalid @enderror @if($this->isFieldSaved('tool_number_or_cav_number')) is-valid @endif">
                   @error('tool_number_or_cav_number')
                     <span class="invalid-feedback">{{ $message }}</span>
                   @enderror
@@ -168,6 +171,7 @@
                       'column' => 'line_production',
                       'hasError' => $errors->has('machine_number'),
                       'value' => $this->machine_number ?? (old('machine_number') ?? ''),
+                      'isSaved' => $this->isFieldSaved('machine_number'),
                       'options' => [
                           'distinct' => true,
                       ],
@@ -187,7 +191,7 @@
               <div class="row">
                 <div class="mb-3">
                   <label class="form-label">Operator <span class="text-danger">*</span></label>
-                  <input type="text" class="form-control @error('operator') is-invalid @enderror"
+                  <input type="text" class="form-control @error('operator') is-invalid @enderror @if($this->isFieldSaved('operator')) is-valid @endif"
                     wire:model.blur="operator" placeholder="Type Operator Name here..">
                   <div class="form-text">
                     <div class="small">e.g. Raymond</div>
@@ -196,10 +200,21 @@
                     <span class="text-danger small">{{ $message }}</span>
                   @enderror
                 </div>
+                <div class="mb-3">
+                  <label class="form-label">Inspector <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control @error('inspector') is-invalid @enderror @if($this->isFieldSaved('inspector')) is-valid @endif"
+                    wire:model.blur="inspector" placeholder="Type Inspector Name here..">
+                  <div class="form-text">
+                    <div class="small">e.g. Raymond</div>
+                  </div>
+                  @error('inspector')
+                    <span class="text-danger small">{{ $message }}</span>
+                  @enderror
+                </div>
                 <div class="col">
                   <label class="form-label">Shift <span class="text-danger">*</span></label>
                   <select wire:model.live="shift"
-                    class="form-select @error('shift') is-invalid @enderror">
+                    class="form-select @error('shift') is-invalid @enderror @if($this->isFieldSaved('shift')) is-valid @endif">
                     <option value="">-- Select Shift --</option>
                     <option value="1">Shift 1</option>
                     <option value="2">Shift 2</option>
