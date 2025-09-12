@@ -19,7 +19,7 @@
               <div class="col text-center">
                 <button type="button"
                   class="btn mb-2
-                                        {{ $currentStep === $i ? 'btn-primary' : ($filledSteps[$i] ?? false ? 'btn-outline-primary' : 'btn-outline-secondary') }}"
+                                        {{ $currentStep === $i ? 'btn-primary' : ($filledSteps[$i] ?? false ? 'bg-success-subtle btn-outline-success' : 'btn-outline-secondary') }}"
                   wire:click="$set('currentStep', {{ $i }})">
                   {{ "$i" }}
                 </button>
