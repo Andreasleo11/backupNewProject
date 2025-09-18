@@ -18,8 +18,80 @@ class StepDimension extends Component
     public $end_time;
     public $inspection_report_document_number;
     public $uploads;
-
     public $periodKey;
+
+    public array $sessionSaved = [];
+    public array $baselineByKey = [];
+    public ?string $savedAt = null;
+    public bool $isSaved = false;
+
+    protected function norm($v)
+    {
+        return $v === "" ? null : $v;
+    }
+
+    protected function ensureRowKeys(): void
+    {
+        foreach ($this->dimensions as $i => $row) {
+            if (!isset($row["row_key"]) || !$row["row_key"]) {
+                $this->dimensions[$i]["row_key"] = (string) Str::uuid();
+            }
+        }
+    }
+
+    protected function buildBaselineMap(): void
+    {
+        $this->baselineByKey = [];
+        foreach ($this->sessionSaved as $row) {
+            if (isset($row["row_key"])) {
+                $this->baselineByKey[$row["row_key"]] = $row;
+            }
+        }
+    }
+
+    public function isRowFieldSaved(string $rowKey, string $field): bool
+    {
+        $cur = $this->norm(
+            data_get(collect($this->dimensions)->firstWhere("row_key", $rowKey), $field),
+        );
+        $base = $this->norm(data_get($this->baselineByKey[$rowKey] ?? [], $field));
+        // dd($cur, $this->baselineByKey, $rowKey, $field);
+        return $cur !== null && $cur === $base;
+    }
+
+    public function isRowGroupSaved(string $rowKey, array $fields): bool
+    {
+        foreach ($fields as $f) {
+            if (!$this->isRowFieldSaved($rowKey, $f)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function isTimeSaved(string $which): bool
+    {
+        if (empty($this->sessionSaved)) {
+            return false;
+        }
+        $first = $this->sessionSaved[0] ?? null;
+        if (!$first) {
+            return false;
+        }
+
+        $key = $which === "start" ? "start_datetime" : "end_datetime";
+        $baseline = data_get($first, $key);
+        if (!$baseline) {
+            return false;
+        }
+
+        $baselineTime = Carbon::parse($baseline)->format("H:i");
+        $current = $which === "start" ? $this->start_time : $this->end_time;
+
+        $cur = $this->norm($current);
+        $base = $this->norm($baselineTime);
+        return $cur !== null && $cur === $base;
+    }
 
     protected function rules(): array
     {
@@ -46,25 +118,18 @@ class StepDimension extends Component
             $rules["dimensions.$i.limit_uom"] = "required|string";
             $rules["dimensions.$i.judgement"] = "required|in:OK,NG";
             $rules["dimensions.$i.area"] = "required|string";
-
-            /* ❶ remarks is required only when judgement = NG */
             $rules["dimensions.$i.remarks"] = [
                 "nullable",
                 "string",
                 Rule::requiredIf(($row["judgement"] ?? "") === "NG"),
             ];
 
-            // dynamic rule for actual_value
             $lower = $row["lower_limit"] ?? null;
             $upper = $row["upper_limit"] ?? null;
-
             $actualRules = ["required", "numeric"];
-
             if (($row["judgement"] ?? "") === "OK" && is_numeric($lower) && is_numeric($upper)) {
-                // only when OK: must lie between lower & upper
                 $actualRules[] = "between:$lower,$upper";
             }
-
             $rules["dimensions.$i.actual_value"] = $actualRules;
         }
 
@@ -103,36 +168,51 @@ class StepDimension extends Component
     {
         $this->inspection_report_document_number = $inspection_report_document_number;
         $this->periodKey = "p" . session("stepDetailSaved.period");
-        $this->dimensions = session("stepDetailSaved.dimensions.{$this->periodKey}", []);
 
-        if ($this->dimensions) {
-            foreach ($this->dimensions as $key => $dimensions) {
-                if (property_exists($this, "start_time") && property_exists($this, "end_time")) {
-                    $this->start_time = Carbon::parse($dimensions["start_datetime"])->format("H:i");
-                    $this->end_time = Carbon::parse($dimensions["end_datetime"])->format("H:i");
+        $this->dimensions = session("stepDetailSaved.dimensions.{$this->periodKey}", []);
+        $this->sessionSaved = session("stepDetailSaved.dimensions.{$this->periodKey}", []);
+        $this->savedAt = session("stepDetailSaved.dimensions_meta.{$this->periodKey}.savedAt");
+        $this->isSaved = !empty($this->dimensions);
+
+        $this->ensureRowKeys();
+        if (!empty($this->sessionSaved)) {
+            foreach ($this->sessionSaved as $i => $row) {
+                if (!isset($row["row_key"]) || !$row["row_key"]) {
+                    $this->sessionSaved[$i]["row_key"] = (string) Str::uuid();
                 }
             }
-            // dd($this->start_time, $this->end_time);
         }
+        $this->buildBaselineMap();
+
+        if ($this->dimensions) {
+            $first = $this->dimensions[0];
+            if (!empty($first["start_datetime"])) {
+                $this->start_time = Carbon::parse($first["start_datetime"])->format("H:i");
+            }
+            if (!empty($first["end_datetime"])) {
+                $this->end_time = Carbon::parse($first["end_datetime"])->format("H:i");
+            }
+        }
+
         $part_code = session("stepHeaderSaved.part_number");
-        $this->uploads = Upload::whereHas("tags", function ($q) use ($part_code) {
-            $q->where("name", $part_code);
-        })->get();
+        $this->uploads = Upload::whereHas("tags", fn($q) => $q->where("name", $part_code))->get();
         // if (empty($this->dimensions)) $this->addDimension();
     }
 
     public function addDimension()
     {
         $period = session("stepDetailSaved.period");
-        // dd(session('stepDetailSaved'));
-        $this->start_time = \Carbon\Carbon::parse(
+
+        $this->start_time = Carbon::parse(
             session("stepDetailSaved.details." . "p" . $period . ".start_datetime"),
         )->format("H:i");
-        $this->end_time = \Carbon\Carbon::parse(
+
+        $this->end_time = Carbon::parse(
             session("stepDetailSaved.details." . "p" . $period . ".end_datetime"),
         )->format("H:i");
 
         $this->dimensions[] = [
+            "row_key" => (string) Str::uuid(),
             "inspection_report_document_number" => $this->inspection_report_document_number,
             "lower_limit" => "",
             "upper_limit" => "",
@@ -154,12 +234,8 @@ class StepDimension extends Component
     {
         $this->validateOnly($property);
 
-        /* if the property that changed ends with ".judgement" … */
         if (Str::endsWith($property, ".judgement")) {
-            // extract the row index: "dimensions.3.judgement" → 3
             $index = (int) Str::between($property, "dimensions.", ".judgement");
-
-            // when the new value is NOT "NG", blank out the remarks
             if ($value !== "NG") {
                 $this->dimensions[$index]["remarks"] = "";
             }
@@ -171,17 +247,32 @@ class StepDimension extends Component
     {
         $this->validate();
 
-        foreach ($this->dimensions as $index => $dimensions) {
-            $this->dimensions[$index]["start_datetime"] = Carbon::parse($this->start_time)->format(
+        foreach ($this->dimensions as $i => $row) {
+            $this->dimensions[$i]["start_datetime"] = Carbon::parse($this->start_time)->format(
                 "Y-m-d H:i:s",
             );
-            $this->dimensions[$index]["end_datetime"] = Carbon::parse($this->end_time)->format(
+            $this->dimensions[$i]["end_datetime"] = Carbon::parse($this->end_time)->format(
                 "Y-m-d H:i:s",
             );
+            if ($this->dimensions[$i]["judgement"] === "OK") {
+                unset($this->dimensions[$i]["remarks"]);
+            }
         }
 
         session()->put("stepDetailSaved.dimensions.{$this->periodKey}", $this->dimensions);
+        $this->savedAt = now()->toIso8601String();
+        session()->put(
+            "stepDetailSaved.dimensions_meta.{$this->periodKey}.savedAt",
+            $this->savedAt,
+        );
+
+        $this->sessionSaved = $this->dimensions;
+        $this->buildBaselineMap();
+        $this->isSaved = !empty($this->dimensions);
+
         $this->dispatch("toast", message: "dimensions saved successfully!");
+        $this->dispatch("dimensionsSaved", savedAt: $this->savedAt);
+        $this->dispatch("dimensionsSaved")->to(\App\Livewire\InspectionForm\StepDetail::class);
     }
 
     public function resetStep()
@@ -190,8 +281,17 @@ class StepDimension extends Component
         $this->start_time = "";
         $this->end_time = "";
         $this->resetValidation();
+
         $this->forgetNestedKey("stepDetailSaved.dimensions", $this->periodKey);
+        $this->forgetNestedKey("stepDetailSaved.dimensions_meta", $this->periodKey);
+
+        $this->sessionSaved = [];
+        $this->baselineByKey = [];
+        $this->savedAt = null;
+
         $this->dispatch("toast", message: "dimensions reset successfully!");
+        $this->dispatch("dimensionsReset");
+        $this->dispatch("dimensionsReset")->to(\App\Livewire\InspectionForm\StepDetail::class);
     }
 
     public function render()

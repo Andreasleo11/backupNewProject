@@ -27,6 +27,7 @@ class InspectionReport extends Model
         "inspector_autograph",
         "leader_autograph",
         "head_autograph",
+        "inspector",
     ];
 
     public function detailInspectionReports()

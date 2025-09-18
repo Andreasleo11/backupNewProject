@@ -16,19 +16,25 @@
           $thClass = 'p-2';
         @endphp
         <tr>
-          <th class="{{ $thClass }}" width="50%">Document&nbsp;No.</th>
           <th class="{{ $thClass }}">Lot Size Qty</th>
         </tr>
       </thead>
       <tbody>
         @forelse ($second as $row)
           <tr>
-            <td class="text-center">{{ $row->document_number }}</td>
-            <td class="text-center">{{ number_format($row->lot_size_quantity) }}</td>
+            <td class="text-center">
+              @if(is_null($row->lot_size_quantity))
+                <span class="text-muted">
+                  Skipped in this report
+                </span>
+              @else
+                {{ number_format($row->lot_size_quantity) }}
+              @endif
+            </td>
           </tr>
         @empty
           <tr>
-            <td colspan="2" class="text-center text-muted py-3">
+            <td class="text-center text-muted py-3">
               <i class="bi bi-info-circle me-1"></i> No second-inspection data
             </td>
           </tr>
@@ -49,6 +55,8 @@
           <th>Quantity</th>
           <th>Box Label</th>
           <th>Appearance</th>
+          <th>NG Quantity</th>
+          <th>Remarks</th>
         </tr>
       </thead>
       <tbody>
@@ -57,10 +65,12 @@
             <td>{{ $s->quantity }}</td>
             <td>{{ $s->box_label }}</td>
             <td>{!! $badge($s->appearance) !!}</td>
+            <td>{{ $s->ng_quantity ?? 0}}</td>
+            <td>{{ $s->remarks ?? '-'}}</td>
           </tr>
         @empty
           <tr>
-            <td colspan="3" class="text-center text-muted py-2">—</td>
+            <td colspan="4" class="text-center text-muted py-2">—</td>
           </tr>
         @endforelse
       </tbody>
@@ -79,6 +89,7 @@
           <th>SNP</th>
           <th>Box Label</th>
           <th>Judgement</th>
+          <th>Remarks</th>
         </tr>
       </thead>
       <tbody>
@@ -88,10 +99,11 @@
             <td>{{ $p->snp }}</td>
             <td>{{ $p->box_label }}</td>
             <td>{!! $badge($p->judgement) !!}</td>
+            <td>{{ $p->remarks ?? '-' }}</td>
           </tr>
         @empty
           <tr>
-            <td colspan="3" class="text-center text-muted py-2">—</td>
+            <td colspan="4" class="text-center text-muted py-2">—</td>
           </tr>
         @endforelse
       </tbody>

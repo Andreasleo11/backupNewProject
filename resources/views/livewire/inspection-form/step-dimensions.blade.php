@@ -1,4 +1,39 @@
-<div>
+<div data-step-dimensions>
+  <!-- Status chip -->
+  <div wire:ignore
+    x-data="{ dirty: false, saved: @js($this->isSaved), ts: @js($savedAt) }"
+    x-init="
+      const root = $el.closest('[data-step-dimensions]');
+      const markDirty = () => { dirty = true; saved = false };
+
+      if(root) {
+        root.addEventListener('input', markDirty, { capture: true });
+        root.addEventListener('change', markDirty, { capture: true });
+      }
+      
+      Livewire.on('dimensionsSaved', e => {
+        dirty = false; saved = true; ts = e?.savedAt ?? ts ?? new Date().toISOString();
+      });
+      
+      Livewire.on('dimensionsReset', () => { dirty = false; saved = false; ts = null; });
+    "
+    aria-live="polite"
+    class="mb-2"
+  >
+    <template x-if="dirty"> 
+      <span class="badge rounded-pill bg-warning text-dark">
+        <i class="bi bi-exclamation-triangle me-1"></i> Unsaved changes
+      </span>
+    </template>
+
+    <template x-if="!dirty && saved">
+      <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+        <i class="bi bi-check-circle me-1"></i>
+        Saved to session
+        <small class="ms-1" x-text="ts ? new Date(ts).toLocaleString() : ''"></small>
+      </span>
+    </template>
+  </div>
   <div x-data="{ q: '', previewUrl: null, isImg: false }" x-init="$nextTick(() => {
       const uploadPreviewModal = document.getElementById('uploadPreviewModal');
       if (!uploadPreviewModal) return;
@@ -15,7 +50,6 @@
       });
   });">
     @if ($uploads && $uploads->count())
-
       <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>
@@ -172,12 +206,12 @@
               /* if Livewire changes the value later, update Flatpickr */
               $watch('value', v => fp.setDate(v, false));">
                 <input type="text" x-ref="tf"
-                  class="form-control @error('start_time') is-invalid @enderror" readonly>
+                  class="form-control @error('start_time') is-invalid @enderror @if($this->isTimeSaved('start')) is-valid @endif" readonly>
               </div>
               @error('start_time')
                 <span class="text-danger">{{ $message }}</span>
               @enderror
-            </div>`
+            </div>
             <div class="col">
               <label class="form-label">End Time <span class="text-danger">*</span></label>
               <div x-data="{ value: @entangle('end_time').live, fp: null }" x-init="fp = flatpickr($refs.tf, {
@@ -196,7 +230,7 @@
               /* if Livewire changes the value later, update Flatpickr */
               $watch('value', v => fp.setDate(v, false));">
                 <input type="text" x-ref="tf"
-                  class="form-control @error('end_time') is-invalid @enderror" readonly>
+                  class="form-control @error('end_time') is-invalid @enderror @if($this->isTimeSaved('end')) is-valid @endif" readonly>
               </div>
               @error('end_time')
                 <span class="text-danger">{{ $message }}</span>
@@ -207,7 +241,8 @@
       </div>
     @endif
     @foreach ($dimensions as $index => $row)
-      <div class="card mb-3 p-3">
+    @php $rk = $row['row_key'] ?? null; @endphp
+    <div class="card mb-3 p-3">
         <div class="row g-3 align-items-end">
           <div class="col-md-12 @if (!$showDocumentInfo) d-none @endif">
             <label class="form-label">Inspection Report Document Number <span
@@ -222,7 +257,10 @@
 
           <div class="col">
             <label class="form-label">Unit <span class="text-danger">*</span></label>
-            <select class="form-select"
+            <select @class([
+                'form-select',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'limit_uom') && !$errors->has("dimensions.${index}.limit_uom"),
+              ])
               wire:model.live="dimensions.{{ $index }}.limit_uom">
               <option value="" selected>-- Select Unit --</option>
               <option value="cm">cm</option>
@@ -233,7 +271,10 @@
           <div class="col">
             <label class="form-label">Lower Limit <span class="text-danger">*</span></label>
             <div class="input-group">
-              <input type="number" step="any" class="form-control"
+              <input type="number" step="any" @class([
+                'form-control',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'lower_limit') && !$errors->has("dimensions.{$index}.lower_limit"),
+              ])
                 wire:model.blur="dimensions.{{ $index }}.lower_limit">
               <span
                 class="input-group-text">{{ data_get($dimensions, "$index.limit_uom", '') }}</span>
@@ -246,7 +287,10 @@
           <div class="col">
             <label class="form-label">Upper Limit <span class="text-danger">*</span></label>
             <div class="input-group">
-              <input type="number" step="any" class="form-control"
+              <input type="number" step="any" @class([
+                'form-control',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'upper_limit') && !$errors->has("dimensions.${index}.upper_limit"),
+              ])
                 wire:model.blur="dimensions.{{ $index }}.upper_limit">
               <span
                 class="input-group-text">{{ data_get($dimensions, "$index.limit_uom", '') }}</span>
@@ -259,7 +303,10 @@
           <div class="col">
             <label class="form-label">Actual Value <span class="text-danger">*</span></label>
             <div class="input-group">
-              <input type="number" step="any" class="form-control"
+              <input type="number" step="any" @class([
+                'form-control',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'actual_value') && !$errors->has("dimensions.${index}.actual_value"),
+              ])
                 wire:model.blur="dimensions.{{ $index }}.actual_value">
               <span
                 class="input-group-text">{{ data_get($dimensions, "$index.limit_uom", '') }}</span>
@@ -271,7 +318,10 @@
 
           <div class="col">
             <label class="form-label">Area/Section <span class="text-danger">*</span></label>
-            <input type="text" class="form-control"
+            <input type="text" @class([
+                'form-control',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'area') && !$errors->has("dimensions.${index}.area"),
+              ])
               wire:model.blur="dimensions.{{ $index }}.area">
             @error("dimensions.$index.area")
               <span class="text-danger">{{ $message }}</span>
@@ -280,7 +330,10 @@
 
           <div class="col">
             <label class="form-label">Judgement <span class="text-danger">*</span></label>
-            <select class="form-select"
+            <select @class([
+                'form-select',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'judgement') && !$errors->has("dimensions.${index}.judgement"),
+              ])
               wire:model.live="dimensions.{{ $index }}.judgement">
               <option value="" disabled>--Select Judgement--</option>
               <option value="OK">OK</option>
@@ -294,7 +347,10 @@
           @if (($row['judgement'] ?? '') === 'NG')
             <div class="col">
               <label class="form-label">Remarks <span class="text-danger">*</span></label>
-              <input type="text" class="form-control"
+              <input type="text" @class([
+                'form-control',
+                'is-valid' => $rk && $this->isRowFieldSaved($rk, 'remarks') && !$errors->has("dimensions.${index}.remarks"),
+              ])
                 wire:model.blur="dimensions.{{ $index }}.remarks">
               @error("dimensions.$index.remarks")
                 <span class="text-danger">{{ $message }}</span>

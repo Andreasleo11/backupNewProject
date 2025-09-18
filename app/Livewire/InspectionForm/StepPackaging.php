@@ -12,8 +12,12 @@ class StepPackaging extends Component
 
     public $second_inspection_document_number;
     public $packagings = [];
-
     public $periodKey;
+
+    public array $sessionSaved = [];
+    public array $baselineKey = [];
+    public ?string $savedAt = null;
+    public bool $isSaved = false;
 
     protected $rules = [
         "packagings.*.second_inspection_document_number" => "required|string",
@@ -39,11 +43,48 @@ class StepPackaging extends Component
         "packagings.*.remarks.string" => "Remarks must be a string.",
     ];
 
+    protected function norm($v)
+    {
+        return $v === "" ? null : $v;
+    }
+
+    protected function ensureRowKeys(): void
+    {
+        foreach ($this->packagings as $i => $row) {
+            if (empty($row["row_key"])) {
+                $this->packagings[$i]["row_key"] = (string) Str::uuid();
+            }
+        }
+    }
+
+    protected function buildBaselineMap(): void
+    {
+        $this->baselineKey = [];
+        foreach ($this->sessionSaved as $row) {
+            if (!empty($row["row_key"])) {
+                $this->baselineKey[$row["row_key"]] = $row;
+            }
+        }
+    }
+
+    public function isRowFieldSaved(string $rowKey, string $field): bool
+    {
+        $cur = $this->norm(
+            data_get(collect($this->packagings)->firstWhere("row_key", $rowKey), $field),
+        );
+        $base = $this->norm(data_get($this->baselineKey[$rowKey] ?? [], $field));
+        return $cur !== null && $cur === $base;
+    }
+
     public function mount($second_inspection_document_number = null)
     {
         $this->second_inspection_document_number = $second_inspection_document_number;
         $this->periodKey = "p" . session("stepDetailSaved.period");
+
         $this->packagings = session("stepDetailSaved.packagings.{$this->periodKey}", []);
+        $this->sessionSaved = session("stepDetailSaved.packagings.{$this->periodKey}", []);
+        $this->savedAt = session("stepDetailSaved.packagings_meta.{$this->periodKey}.savedAt");
+        $this->isSaved = !empty($this->packagings);
 
         if (empty($this->packagings)) {
             $this->addPackaging();
@@ -55,11 +96,23 @@ class StepPackaging extends Component
                 }
             }
         }
+
+        $this->ensureRowKeys();
+
+        if (!empty($this->sessionSaved)) {
+            foreach ($this->sessionSaved as $i => $row) {
+                if (empty($row["row_key"])) {
+                    $this->sessionSaved[$i]["row_key"] = (string) \Illuminate\Support\Str::uuid();
+                }
+            }
+        }
+        $this->buildBaselineMap();
     }
 
     public function addPackaging()
     {
         $this->packagings[] = [
+            "row_key" => (string) Str::uuid(),
             "second_inspection_document_number" => $this->second_inspection_document_number,
         ];
     }
@@ -74,16 +127,12 @@ class StepPackaging extends Component
     {
         $this->validateOnly($property);
 
-        /* if the property that changed ends with ".judgement" … */
         if (Str::endsWith($property, ".judgement")) {
-            // extract the row index: "packagings.3.judgement" → 3
             $index = (int) Str::between($property, "packagings.", ".judgement");
 
-            // when the new value is NOT "NG", blank out the remarks
-            if ($value !== "NG") {
-                $this->packagings[$index]["remarks"] = "";
+            if ($value === "OK") {
+                unset($this->packagings[$index]["remarks"]);
             }
-            // $this->validate();
         }
     }
 
@@ -92,6 +141,17 @@ class StepPackaging extends Component
         $this->validate();
 
         session()->put("stepDetailSaved.packagings.{$this->periodKey}", $this->packagings);
+        $this->savedAt = now()->toIso8601String();
+        session()->put(
+            "stepDetailSaved.packagings_meta.{$this->periodKey}.savedAt",
+            $this->savedAt,
+        );
+
+        $this->sessionSaved = $this->packagings;
+        $this->buildBaselineMap();
+        $this->isSaved = !empty($this->packagings);
+
+        $this->dispatch("packagingSaved", savedAt: $this->savedAt);
         $this->dispatch("toast", message: "Packaging saved successfully!");
     }
 
@@ -99,8 +159,16 @@ class StepPackaging extends Component
     {
         $this->packagings = [];
         $this->forgetNestedKey("stepDetailSaved.packagings", $this->periodKey);
+        $this->forgetNestedKey("stepDetailSaved.packagings_meta", $this->periodKey);
         $this->resetValidation();
         $this->addPackaging();
+
+        $this->sessionSaved = [];
+        $this->baselineKey = [];
+        $this->savedAt = null;
+        $this->isSaved = false;
+
+        $this->dispatch("packagingReset");
         $this->dispatch("toast", message: "Packaging reset successfully!");
     }
 

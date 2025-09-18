@@ -22,6 +22,8 @@ class SearchableDropdown extends Component
     public $name;
     public $hasError = false;
 
+    public $isSaved = false;
+
     public function mount()
     {
         $this->options = array_merge(

@@ -19,6 +19,21 @@ class StepSecond extends Component
 
     public $periodKey;
 
+    public array $sessionSaved = [];
+    public ?string $savedAt = null;
+    public bool $isSaved = false;
+
+    public bool $savedSamples = false;
+    public bool $savedPackagings = false;
+
+    protected $listeners = [
+        "samplingSaved" => "refreshSavedFlags",
+        "samplingReset" => "refreshSavedFlags",
+
+        "packagingSaved" => "refreshSavedFlags",
+        "packagingReset" => "refreshSavedFlags",
+    ];
+
     protected function rules(): array
     {
         return [
@@ -34,6 +49,36 @@ class StepSecond extends Component
         ];
     }
 
+    public function norm($v)
+    {
+        return $v === "" ? null : $v;
+    }
+
+    public function getHasBaselineProperty(): bool
+    {
+        return !empty($this->sessionSaved);
+    }
+
+    public function isFieldSaved(string $field): bool
+    {
+        $cur = $this->norm(data_get($this, $field));
+        $base = $this->norm(data_get($this->sessionSaved, $field));
+        return $cur !== null && $cur === $base;
+    }
+
+    public function computeSaveFlags(): void
+    {
+        $pk = $this->periodKey;
+        $bag = session("stepDetailSaved", []);
+        $this->savedSamples = !empty(data_get($bag, "samples.$pk"));
+        $this->savedPackagings = !empty(data_get($bag, "packagings.$pk"));
+    }
+
+    public function refreshSavedFlags(): void
+    {
+        $this->computeSaveFlags();
+    }
+
     public function updated($field)
     {
         $this->validateOnly($field);
@@ -42,12 +87,18 @@ class StepSecond extends Component
     public function mount()
     {
         $this->periodKey = "p" . session("stepDetailSaved.period");
+
         $saved = session("stepDetailSaved.second_inspections.{$this->periodKey}", []);
+        $this->sessionSaved = $saved;
+        $this->savedAt = session(
+            "stepDetailSaved.second_inspections_meta.{$this->periodKey}.savedAt",
+        );
+        $this->isSaved = !empty($saved);
 
         if ($saved) {
-            foreach ($saved as $key => $value) {
-                if (property_exists($this, $key)) {
-                    $this->$key = $value;
+            foreach ($saved as $k => $v) {
+                if (property_exists($this, $k)) {
+                    $this->$k = $v;
                 }
             }
             $this->secondInspectionSaved = true;
@@ -57,6 +108,7 @@ class StepSecond extends Component
             $this->document_number =
                 "SECOND-" . now()->format("Ymd-His") . "-" . strtoupper(Str::random(4));
         }
+        $this->refreshSavedFlags();
     }
 
     public function saveStep()
@@ -74,15 +126,43 @@ class StepSecond extends Component
         $this->secondInspectionSaved = true;
 
         session()->put("stepDetailSaved.second_inspections.{$this->periodKey}", $data);
+        $this->savedAt = now()->toIso8601String();
+        session()->put(
+            "stepDetailSaved.second_inspections_meta.{$this->periodKey}.savedAt",
+            $this->savedAt,
+        );
+
+        $this->sessionSaved = $data;
+        $this->isSaved = true;
+        $this->secondInspectionSaved = true;
+
+        $this->refreshSavedFlags();
 
         $this->dispatch("toast", message: "Second inspection saved succesfully!");
+        $this->dispatch("secondInspectionSaved")->to(
+            \App\Livewire\InspectionForm\StepDetail::class,
+        );
+        $this->dispatch("secondInspectionSaved", savedAt: $this->savedAt);
     }
 
     public function resetStep()
     {
         $this->forgetNestedKey("stepDetailSaved.second_inspections", $this->periodKey);
+        $this->forgetNestedKey("stepDetailSaved.second_inspections_meta", $this->periodKey);
+
         $this->reset(["lot_size_quantity", "skipLotSize"]);
         $this->secondInspectionSaved = false;
+
+        $this->sessionSaved = [];
+        $this->savedAt = null;
+        $this->isSaved = false;
+
+        $this->refreshSavedFlags();
+
+        $this->dispatch("secondInspectionReset");
+        $this->dispatch("secondInspectionReset")->to(
+            \App\Livewire\InspectionForm\StepDetail::class,
+        );
         $this->dispatch("toast", message: "Second inspection reset successfully!");
     }
 
