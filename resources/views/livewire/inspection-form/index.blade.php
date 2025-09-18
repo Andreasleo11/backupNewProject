@@ -246,7 +246,7 @@
               @endif
 
               <td class="text-end">
-                <a href="{{ route('inspection-reports.show', $r) }}" class="btn btn-sm btn-primary" aria-label="View report {{ $r->document_number }}">
+                <a href="{{ route('inspection-reports.show', $r) }}" class="btn btn-sm btn-primary" wire:navigate aria-label="View report {{ $r->document_number }}">
                   View
                 </a>
               </td>
