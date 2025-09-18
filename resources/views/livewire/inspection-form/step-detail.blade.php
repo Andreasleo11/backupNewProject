@@ -1,4 +1,4 @@
-<div class="pb-4 ">
+<div class="pb-4">
   @php
     $showDocumentInfo = false;
   @endphp
@@ -23,7 +23,7 @@
           <span class="text-danger">{{ $message }}</span>
         @enderror
       </div>
-    </div>
+    </div>[]
   </div>
   <div class="row mb-4">
     <div class="col">
@@ -36,6 +36,13 @@
             <div class="col">
               <input type="text" class="form-control-plaintext text-secondary"
                 wire:model="operator" disabled>
+            </div>
+            <div class="col-12 col-lg-6">
+              <label class="col-form-label">Inspector</label>
+            </div>
+            <div class="col">
+              <input type="text" class="form-control-plaintext text-secondary"
+                wire:model="inspector" disabled>
             </div>
             <div class="col-12 col-lg-6">
               <label class="col-form-label">Shift</label>
@@ -125,8 +132,8 @@
             </div>
           </div>
           <div class="d-flex justify-content-end gap-2">
-            <button type="button" class="btn btn-outline-primary"
-              wire:click="saveStep">Change</button>
+            <!-- <button type="button" class="btn btn-outline-primary"
+              wire:click="saveStep">Change</button> -->
 
             <button type="button" class="btn btn-outline-danger"
               onclick="if (confirm('Reset ONLY the current period (P{{ $period }})? This cannot be undone.')) { @this.resetStep(true) }">
@@ -171,26 +178,26 @@
   @endphp
 
   <section>
-    <x-lockable-card :locked="$locked" :overlay="$overlay" title="First Inspection">
+    <x-lockable-card :locked="$locked" :overlay="$overlay" title="First Inspection" :isSaved="$savedFirst">
       @livewire('inspection-form.step-first', ['detail_inspection_report_document_number' => $document_number], key('step-first-' . $reloadToken))
     </x-lockable-card>
   </section>
 
   <section class="mt-4">
     <x-lockable-card :locked="$locked" :overlay="$overlay"
-      title='Dimensions <span class="fw-normal text-secondary fs-6">(optional)</span>'>
+      title='Dimensions <span class="fw-normal text-secondary fs-6">(optional)</span>' :isSaved="$savedDimensions">
       @livewire('inspection-form.step-dimension', ['inspection_report_document_number' => $inspection_report_document_number], key('step-dimension-' . $reloadToken))
     </x-lockable-card>
   </section>
 
   <section class="mt-5">
-    <x-lockable-card :locked="$locked" :overlay="$overlay" title="Second Inspection">
+    <x-lockable-card :locked="$locked" :overlay="$overlay" title="Second Inspection" :isSaved="$savedSecond">
       @livewire('inspection-form.step-second', ['detail_inspection_report_document_number' => $document_number], key('step-second-' . $reloadToken))
     </x-lockable-card>
   </section>
 
   <section class="mt-4">
-    <x-lockable-card :locked="$locked" :overlay="$overlay" title="Over All Judgement">
+    <x-lockable-card :locked="$locked" :overlay="$overlay" title="Over All Judgement" :isSaved="$savedJudgement">
       @livewire('inspection-form.step-judgement', ['detail_inspection_report_document_number' => $document_number], key('step-judgement-' . $reloadToken))
     </x-lockable-card>
   </section>

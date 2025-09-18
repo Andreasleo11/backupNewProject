@@ -1,7 +1,37 @@
-<div>
+<div data-step-judgement>
   @php
     $showDocumentInfo = false;
   @endphp
+
+  {{-- Status chip (kept stable with wire:ignore; listens for events) --}}
+  <div wire:ignore
+       x-data="{ dirty:false, saved:@js($isSaved), ts:@js($savedAt) }"
+       x-init="
+         const root = $el.closest('[data-step-judgement]');;
+         const markDirty = () => { dirty = true; saved = false };
+
+         root.addEventListener('input',  markDirty, { capture:true });
+         root.addEventListener('change', markDirty, { capture:true });
+
+         Livewire.on('judgementSaved', e => {
+           dirty = false; saved = true; ts = e?.savedAt ?? new Date().toISOString();
+         });
+         Livewire.on('judgementReset', () => { dirty = false; saved = false; ts = null });
+       "
+       class="mb-2" aria-live="polite">
+    <template x-if="dirty">
+      <span class="badge rounded-pill bg-warning text-dark">
+        <i class="bi bi-exclamation-triangle me-1"></i> Unsaved changes
+      </span>
+    </template>
+    <template x-if="!dirty && saved">
+      <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+        <i class="bi bi-check-circle me-1"></i> Saved to session
+        <small class="ms-1" x-text="ts ? new Date(ts).toLocaleString() : ''"></small>
+      </span>
+    </template>
+  </div>
+
   <div class="card mb-4 @if (!$showDocumentInfo) d-none @endif">
     <div class="card-body">
       <h6 class="text-primary fw-bold mb-3">Document Information</h6>
@@ -24,8 +54,12 @@
         <div class="col-md-6">
           <label class="form-label">Pass Quantity <span class="text-danger">*</span></label>
           <input type="number" min="0"
-            class="form-control @error('pass_quantity') is-invalid @enderror"
-            wire:model.blur="pass_quantity" required>
+            wire:model.blur="pass_quantity" required
+            @class([
+                   'form-control',
+                   'is-invalid' => $errors->has('pass_quantity'),
+                   'is-valid'   => $this->hasBaseline && $this->isFieldSaved('pass_quantity') && !$errors->has('pass_quantity'),
+            ])>
           @error('pass_quantity')
             <span class="invalid-feedback">{{ $message }}</span>
           @enderror
@@ -33,8 +67,12 @@
         <div class="col-md-6">
           <label class="form-label">Reject Quantity <span class="text-danger">*</span></label>
           <input type="number" min="0"
-            class="form-control @error('reject_quantity') is-invalid @enderror"
-            wire:model.blur="reject_quantity" required>
+            wire:model.blur="reject_quantity" required
+            @class([
+                   'form-control',
+                   'is-invalid' => $errors->has('reject_quantity'),
+                   'is-valid'   => $this->hasBaseline && $this->isFieldSaved('reject_quantity') && !$errors->has('reject_quantity'),
+            ])>
           @error('reject_quantity')
             <span class="invalid-feedback">{{ $message }}</span>
           @enderror

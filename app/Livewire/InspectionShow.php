@@ -9,10 +9,10 @@ class InspectionShow extends Component
 {
     public InspectionReport $report;
 
-    public function mount(InspectionReport $inspectionReport): void
+    public function mount(InspectionReport $inspection_report): void
     {
         // Eager-load the same relations you had in the controller
-        $inspectionReport->load([
+        $inspection_report->load([
             "detailInspectionReports",
             "detailInspectionReports.firstInspections",
             "dimensionData",
@@ -24,7 +24,7 @@ class InspectionShow extends Component
             "problemData",
         ]);
 
-        $this->report = $inspectionReport;
+        $this->report = $inspection_report;
     }
 
     public function render()

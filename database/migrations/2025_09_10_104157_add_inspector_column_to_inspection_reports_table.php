@@ -10,8 +10,8 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table("employees", function (Blueprint $table) {
-            $table->unique("NIK");
+        Schema::table("inspection_reports", function (Blueprint $table) {
+            $table->string("inspector")->after("operator")->default("-");
         });
     }
 
@@ -20,8 +20,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table("employees", function (Blueprint $table) {
-            $table->dropUnique("NIK");
+        Schema::table("inspection_reports", function (Blueprint $table) {
+            $table->dropColumn("inspector");
         });
     }
 };

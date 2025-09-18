@@ -158,7 +158,7 @@ class OvertimeFormService
                 return $i;
             })
             ->filter();
-            
+
         if ($rows->isEmpty()) {
             return 0;
         }

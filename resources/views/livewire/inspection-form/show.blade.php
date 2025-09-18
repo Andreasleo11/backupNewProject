@@ -6,9 +6,8 @@
 @endphp
 
 <div class="container py-4">
-
-  {{-- back link --}}
-  <a href="{{ route('inspection-reports.index') }}" class="text-decoration-none small">
+  @php $qs = request()->getQueryString(); @endphp
+  <a href="{{ route('inspection-reports.index') }}@if($qs)?{{ $qs }}@endif" class="text-decoration-none small" onclick="if (history.length > 1) { history.back(); return false; }">
     <i class="bi bi-arrow-left-circle me-1"></i> Back to list
   </a>
 
@@ -19,13 +18,15 @@
   </h3>
 
   {{-- headline cards --}}
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 my-4">
+  <div class="row row-cols-2 row-cols-md-3 g-3 my-4">
     @php
       $cards = [
           ['Inspection Date', $r->inspection_date, 'calendar-event'],
           ['Shift', $r->shift, 'sun'],
           ['Customer', $r->customer, 'person-badge'],
           ['Machine', $r->machine_number, 'cpu'],
+          ['Operator', $r->operator, 'person'],
+          ['Inspector', $r->inspector, 'person'],
       ];
     @endphp
     @foreach ($cards as [$label, $value, $icon])
@@ -174,7 +175,7 @@
             {{-- Second Inspection & children --}}
             <x-inspection-section parent="accordionQ{{ $p }}"
               id="second{{ $p }}" title="Second Inspection">
-              @include('inspection.partials.second-inspection', [
+              @include('inspection.partials.second-inspection-table', [
                   'second' => $d->secondInspections,
               ])
             </x-inspection-section>
@@ -182,7 +183,7 @@
             {{-- Judgement --}}
             <x-inspection-section parent="accordionQ{{ $p }}"
               id="result{{ $p }}" title="Judgement">
-              @include('inspection.partials.judgement', [
+              @include('inspection.partials.judgement-table', [
                   'judgement' => $d->judgementData,
               ])
             </x-inspection-section>

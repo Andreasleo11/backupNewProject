@@ -2048,8 +2048,8 @@ Route::get("/dashboard-employee-login", function () {
 });
 
 Route::get("/inspection-reports", InspectionIndex::class)->name("inspection-reports.index");
-Route::get("/inspection-report/create", InspectionForm::class)->name("inspection-report.create");
-Route::get("/inspection-reports/{inspectionReport}", InspectionShow::class)->name(
+Route::get("/inspection-report/create", InspectionForm::class)->name("inspection-reports.create");
+Route::get("/inspection-reports/{inspection_report}", InspectionShow::class)->name(
     "inspection-reports.show",
 );
 

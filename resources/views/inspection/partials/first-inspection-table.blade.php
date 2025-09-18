@@ -13,9 +13,10 @@
     <table class="table table-borderless table-sm align-middle mb-0 table-striped table-hover">
       <thead class="table-light text-center">
         <tr>
-          <th style="width:35%">Appearance</th>
-          <th style="width:30%">Weight</th>
-          <th style="width:35%">Fitting&nbsp;Test</th>
+          <th style="width:25%">Appearance</th>
+          <th style="width:25%">Weight</th>
+          <th style="width:25%">Fitting Test</th>
+          <th style="width:25%">Remarks</th>
         </tr>
       </thead>
 
@@ -42,6 +43,8 @@
 
             {{-- Fitting Test badge --}}
             <td class="text-center">{{ $row->fitting_test }}</td>
+
+            <td class="text-center">{{ $row->remarks ?? '-' }}</td>
           </tr>
         @empty
           <tr>

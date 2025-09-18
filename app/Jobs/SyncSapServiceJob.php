@@ -31,7 +31,7 @@ class SyncSapServiceJob implements ShouldQueue
 
     public function handle()
     {
-         $service = app($this->serviceClass);
+        $service = app($this->serviceClass);
 
         Log::info("Queue start: {$this->label}");
 
@@ -42,23 +42,23 @@ class SyncSapServiceJob implements ShouldQueue
         // Debug log
         Log::info("Checking serviceClass: " . $this->serviceClass);
         Log::info("Comparing with: " . FctForecastService::class);
-        
+
         if ($this->serviceClass === FctForecastService::class) {
             Log::info("Condition matched! Starting post-processing...");
             $this->handleForecastPostProcessing();
         } else {
             Log::info("Condition not matched, skipping post-processing");
-        }      
+        }
     }
 
-      private function handleForecastPostProcessing()
+    private function handleForecastPostProcessing()
     {
         try {
             Log::info("Starting forecast post-processing...");
-            
+
             // 1. Truncate tables
-            DB::table('foremind_final')->truncate();
-            DB::table('forecast_material_predictions')->truncate();
+            DB::table("foremind_final")->truncate();
+            DB::table("forecast_material_predictions")->truncate();
             Log::info("Tables truncated successfully");
 
             // 2. Execute first controller method
@@ -72,7 +72,6 @@ class SyncSapServiceJob implements ShouldQueue
             Log::info("materialPredictionController::processForemindFinalData executed");
 
             Log::info("Forecast post-processing completed successfully");
-            
         } catch (\Exception $e) {
             Log::error("Error in forecast post-processing: " . $e->getMessage());
             throw $e; // Re-throw untuk trigger job failure

@@ -1,10 +1,10 @@
 <div>
   <div x-data="{ open: false }" class="position-relative" x-cloak>
     <label class="form-label">{!! $labelHtml ?? $label !!}</label>
-    <input type="text" class="form-control {{ $hasError ? 'is-invalid' : '' }}"
+    <input type="text" class="form-control @if($hasError) is-invalid @endif @if($isSaved) is-valid @endif"
       placeholder="{{ $placeholder }}" wire:model.live="search" @keydown="open = true"
-      @click.outside="open = false" value="{{ $value }}" />
-
+      @click.outside="open = false" value="{{ $value }}"/>
+  
     <ul class="list-group position-absolute w-100 shadow"
       style="z-index: 1000; max-height: 200px; overflow-y: auto;"
       x-on:scroll.passive="

@@ -14,9 +14,10 @@
       <thead class="table-light">
         <tr>
           <th style="width:15%">Area/Section</th>
-          <th style="width:20%">Lower&nbsp;Limit</th>
-          <th style="width:20%">Upper&nbsp;Limit</th>
+          <th style="width:25%">Lower&nbsp;Limit</th>
+          <th style="width:25%">Upper&nbsp;Limit</th>
           <th style="width:15%">Judgement</th>
+          <th style="width:20%">Remarks</th>
         </tr>
       </thead>
 
@@ -36,6 +37,7 @@
               {{ $row->limit_uom }}</td>
 
             <td>{!! $badge($row->judgement) !!}</td>
+            <td>{{ $row->remarks ?? '-' }}</td>
           </tr>
         @empty
           <tr>

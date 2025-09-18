@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             \App\Services\Payroll\Contracts\JPayrollClientContract::class,
-            fn() => \App\Services\Payroll\JPayrollClient::fromConfig()
+            fn() => \App\Services\Payroll\JPayrollClient::fromConfig(),
         );
     }
 

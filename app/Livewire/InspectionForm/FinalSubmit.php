@@ -15,6 +15,7 @@ use App\Models\InspectionQuantity;
 use App\Services\PeriodValidator;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class FinalSubmit extends Component
 {
@@ -28,9 +29,48 @@ class FinalSubmit extends Component
     public $judgementData;
     public $problemData;
     public $quantityData;
-    public bool $hasHoles = false;
 
+    public bool $hasHoles = false;
     public array $holeReport = []; // exposed to view
+
+    public array $uiData = [];
+
+    private const HIDE_KEY_SUBSTRINGS = ["row_key", "document_number"];
+
+    private function stripHiddenKeys(array $data): array
+    {
+        $out = [];
+        foreach ($data as $key => $value) {
+            // if key is string and contains any hidden substring, skip it
+            if (is_string($key)) {
+                foreach (self::HIDE_KEY_SUBSTRINGS as $needle) {
+                    if (Str::contains(Str::lower($key), $needle)) {
+                        continue 2; // skip this key/value
+                    }
+                }
+            }
+
+            // recurse for arrays
+            $out[$key] = is_array($value) ? $this->stripHiddenKeys($value) : $value;
+        }
+
+        return $out;
+    }
+
+    protected function buildUiData(): void
+    {
+        $raw = [
+            "Detail Inspection" => $this->detailData,
+            "First Data" => $this->firstData,
+            "Dimension Data" => $this->dimensionData,
+            "Second Data" => $this->secondData,
+            "Sampling Data" => $this->samplingData,
+            "Packaging Data" => $this->packagingData,
+            "Judgement Data" => $this->judgementData,
+        ];
+
+        $this->uiData = $this->stripHiddenKeys($raw);
+    }
 
     /** Map backend keys → nice labels shown to the user */
     protected array $sectionLabels = [
@@ -118,12 +158,14 @@ class FinalSubmit extends Component
         $this->hasHoles = collect($this->holeReport)->some(
             fn($missingList) => collect($missingList)->intersect($present)->isNotEmpty(),
         );
+
+        $this->buildUiData();
     }
 
     protected function computeHoleReport(): array
     {
         $payload = [
-            "details" => session("stepDetailSaved.details"),
+            // "details" => session("stepDetailSaved.details"),
             "first_inspections" => session("stepDetailSaved.first_inspections"),
             "second_inspections" => session("stepDetailSaved.second_inspections"),
             "samples" => session("stepDetailSaved.samples"),
@@ -270,7 +312,7 @@ class FinalSubmit extends Component
             "stepProblemSaved",
             "lastStepVisited",
         ]);
-        redirect()->route("inspection-report.index");
+        redirect()->route("inspection-reports.index");
     }
 
     public function render()
