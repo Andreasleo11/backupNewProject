@@ -16,6 +16,11 @@
       body {
         font-size: 10px;
       }
+      
+      .no-print {
+      display: none !important;
+    }
+
 
       h1,
       h2 {
@@ -239,7 +244,19 @@
     <tbody>
       <tr>
         <th>Tanggal</th>
-        <td>{{ $header->created_at->format('d F Y') }}</td>
+        <td>
+          <input 
+            type="date" 
+            id="tanggalInput" 
+            value="{{ $header->created_at->format('Y-m-d') }}" 
+            onchange="updateTanggalView(this.value)"
+            class="no-print"
+          >
+          
+          <span id="tanggalView">
+            {{ $header->created_at->format('d F Y') }}
+          </span>
+        </td>
       </tr>
       <tr>
         <th>Nama Supplier</th>
@@ -459,8 +476,10 @@
     <thead>
       <tr>
         <th>Category</th>
-        @foreach (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as $month)
-          <th>{{ $month }}</th>
+       @foreach ($result as $month => $values)
+            @if ($month !== 'rata-rata')
+                <th>{{ $month }}</th>
+            @endif
         @endforeach
         <th>Average</th>
       </tr>
@@ -478,8 +497,10 @@
             @endphp
             {{ $nameMap[$category] ?? ucfirst(str_replace('_', ' ', $category)) }}
           </td>
-          @foreach (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as $month)
-            <td>{{ $result[$month][$category] ?? 0 }}</td>
+          @foreach ($result as $month => $values)
+              @if ($month !== 'rata-rata')
+                  <td>{{ $values[$category] ?? 0 }}</td>
+              @endif
           @endforeach
           <td>{{ $result['rata-rata'][$category] ?? 0 }}</td>
         </tr>
@@ -550,5 +571,14 @@
     </div>
   </div>
 </body>
+
+
+<script>
+  function updateTanggalView(value) {
+    let options = { day: '2-digit', month: 'long', year: 'numeric' };
+    let formatted = new Date(value).toLocaleDateString('id-ID', options);
+    document.getElementById('tanggalView').innerText = formatted;
+  }
+</script>
 
 </html>

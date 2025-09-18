@@ -114,6 +114,15 @@ use App\Livewire\InspectionForm;
 use App\Livewire\InspectionIndex;
 use App\Livewire\InspectionShow;
 
+//TESTING SAP SERVICE
+use App\Services\BaseSapService;
+use App\Services\FctBomWipService;
+use App\Services\FctInventoryMtrService;
+use App\Services\FctInventoryFgService;
+use App\Services\FctLineProductionService;
+use App\Services\FctForecastService;
+//TESTING SAP SERVICE
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -124,6 +133,127 @@ use App\Livewire\InspectionShow;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+///TESTING API SAP FORECAST
+
+Route::get("/test-sap-login", function (BaseSapService $sap) {
+    return response()->json([
+        "token" => $sap->getToken(), // nanti kita bikin fungsi getToken() di service
+    ]);
+});
+
+Route::get("/test-sap-data", function (BaseSapService $sap) {
+    $data = $sap->testGet("/api/sap_bom_wip/list", [
+        "startDate" => "2025-03-01",
+        "itemGroupCode" => "104",
+    ]);
+    return response()->json($data);
+});
+
+Route::get("/sap/bom/raw1", function (FctBomWipService $svc) {
+    $startDate = request("startDate", now()->toDateString());
+    $itemGroupCode = request("itemGroupCodes", "103,168");
+
+    return response()->json([
+        "status" => "success",
+        "source" => "bom_wip",
+        "data" => $svc->getBomWip($startDate, $itemGroupCode),
+    ]);
+});
+
+// GET /sap/bom/raw2 → Get data BOM WIP SEMI
+Route::get("/sap/bom/raw2", function (FctBomWipService $svc) {
+    $startDate = request("startDate", now()->toDateString());
+    $itemGroupCode = request("itemGroupCodes", "103,168");
+
+    return response()->json([
+        "status" => "success",
+        "source" => "bom_wip_semi",
+        "data" => $svc->getSemi($startDate, $itemGroupCode),
+    ]);
+});
+
+// GET /sap/bom/raw3 → Get data BOM WIP SEMI-SEMI
+Route::get("/sap/bom/raw3", function (FctBomWipService $svc) {
+    $startDate = request("startDate", now()->toDateString());
+    $itemGroupCode = request("itemGroupCodes", "103,168");
+
+    return response()->json([
+        "status" => "success",
+        "source" => "bom_wip_semi_semi",
+        "data" => $svc->getSemiSemi($startDate, $itemGroupCode),
+    ]);
+});
+// GET /sap/bom/combined → Get gabungan semua data
+Route::get("/sap/bom/combined", function (FctBomWipService $svc) {
+    $startDate = request("startDate", "2025-06-01");
+    $itemGroupCode = request("itemGroupCodes", "103,168");
+
+    return response()->json([
+        "status" => "success",
+        "source" => "combined",
+        "data" => $svc->getAllCombined($startDate, $itemGroupCode),
+    ]);
+});
+
+// GET /sap/bom/distinct → Get item_code unik dari gabungan semua data
+Route::get("/sap/bom/distinct", function (FctBomWipService $svc) {
+    $startDate = request("startDate", now()->toDateString());
+    $itemGroupCode = request("itemGroupCodes", "103,168");
+
+    return response()->json([
+        "status" => "success",
+        "distinct_item_codes" => $svc->getDistinctItemCodes($startDate, $itemGroupCode),
+    ]);
+});
+
+Route::get("/sap/fct/inventory/mtr", function (FctInventoryMtrService $svc) {
+    $startDate = request("startDate", "2025-03-01");
+    // $itemGroupCodes = '104,167';
+    return response()->json([
+        "status" => "success",
+        "source" => "fct_inventory_mtr_combined",
+        "data" => $svc->getAll($startDate),
+    ]);
+});
+
+Route::get("test/bomwip", [FctBomWipService::class, "SyncData"]);
+
+Route::get("/sap/fct/inventory/fg", function (FctInventoryFgService $svc) {
+    $startDate = request("startDate", now()->toDateString());
+    return response()->json([
+        "status" => "success",
+        "source" => "fct_inventory_fg",
+        "data" => $svc->getAll($startDate),
+    ]);
+});
+
+Route::get("/sap/fct/line/production", function (FctLineProductionService $svc) {
+    $startDate = "2024-11-01";
+    return response()->json([
+        "status" => "success",
+        "source" => "fct_line_production",
+        "data" => $svc->getAll($startDate),
+    ]);
+});
+
+Route::get("/sap/fct/forecast", function (FctForecastService $svc) {
+    $startDate = request("startDate", now()->toDateString());
+    return response()->json([
+        "status" => "success",
+        "source" => "sap_forecast",
+        "data" => $svc->getAll($startDate),
+    ]);
+});
+
+//TESTING SYNC DATA
+Route::get("/fctbomwip-sync", [FctBomWipService::class, "SyncData"]);
+Route::get("/fctinventorymtr-sync", [FctInventoryMtrService::class, "SyncData"]);
+Route::get("/fctinventoryfg-sync", [FctInventoryFgService::class, "SyncData"]);
+Route::get("/fctlineproduction-sync", [FctLineProductionService::class, "SyncData"]);
+Route::get("/forecast-sync", [FctForecastService::class, "SyncData"]);
+
+// TESTING SYNC DATA END
 
 Route::get("/user-list", [UserRoleController::class, "User"]);
 
@@ -1840,17 +1970,35 @@ Route::middleware(["checkUserRole:1,2", "checkSessionId"])->group(function () {
     ])->name("employee_trainings.evaluate");
 });
 
-Route::middleware(['auth', 'is.head.or.management'])->group(function () {
-    Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
-    Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
-    Route::get('/sync-progress/{companyArea}', [SyncProgressController::class, 'show']);
-    Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
-    Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
-    Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
-    Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
-    Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
-    Route::get('/employees/{id}/warnings', function ($id) {
-        $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
+Route::middleware(["auth", "is.head.or.management"])->group(function () {
+    Route::get("/employee-dashboard", [EmployeeDashboardController::class, "index"])->name(
+        "employee.dashboard",
+    );
+    Route::post("/employee-dashboard/update-employee-data", [
+        EmployeeDashboardController::class,
+        "updateEmployeeData",
+    ])->name("employee.dashboard.updateEmployeeData");
+    Route::get("/sync-progress/{companyArea}", [SyncProgressController::class, "show"]);
+    Route::post("/director/warning-log", [DirectorHomeController::class, "storeWarningLog"])->name(
+        "director.warning-log.store",
+    );
+    Route::post("/filter-employees", [EmployeeDashboardController::class, "filterEmployees"])->name(
+        "filter.employees",
+    );
+    Route::post("/get-employees-by-category", [
+        EmployeeDashboardController::class,
+        "getEmployeesByCategory",
+    ])->name("getEmployeesByCategory");
+    Route::post("/get-employees-by-department", [
+        EmployeeDashboardController::class,
+        "getEmployeesByDepartment",
+    ])->name("getEmployeesByDepartment");
+    Route::post("/get-employees-by-chart-category", [
+        EmployeeDashboardController::class,
+        "getEmployeesByChartCategory",
+    ])->name("getEmployeesByChartCategory");
+    Route::get("/employees/{id}/warnings", function ($id) {
+        $warnings = \App\Models\EmployeeWarningLog::where("nik", $id)->get();
         return response()->json($warnings);
     });
     Route::get("/get-employee-count-by-month/{year?}", [

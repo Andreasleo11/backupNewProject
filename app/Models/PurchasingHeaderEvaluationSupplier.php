@@ -9,7 +9,17 @@ class PurchasingHeaderEvaluationSupplier extends Model
 {
     protected $table = "purchasing_header_evaluation_supplier";
 
-    protected $fillable = ["doc_num", "vendor_code", "vendor_name", "year", "grade", "status"];
+    protected $fillable = [
+        "doc_num",
+        "vendor_code",
+        "vendor_name",
+        "start_month",
+        "end_month",
+        "year",
+        "year_end",
+        "grade",
+        "status",
+    ];
 
     public function details()
     {

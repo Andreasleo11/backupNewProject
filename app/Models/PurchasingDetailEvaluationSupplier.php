@@ -12,6 +12,7 @@ class PurchasingDetailEvaluationSupplier extends Model
     protected $fillable = [
         "header_id",
         "month",
+        "year",
         "kualitas_barang",
         "ketepatan_kuantitas_barang",
         "ketepatan_waktu_pengiriman",

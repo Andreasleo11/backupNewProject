@@ -4,7 +4,7 @@
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <h1>Select Supplier and Year</h1>
+  <h1>Select Supplier and Period</h1>
 
   <form action="{{ route('purchasing.evaluationsupplier.calculate') }}" method="POST"
     class="form-container">
@@ -19,13 +19,70 @@
       @endforeach
     </select>
 
-    <!-- Year Dropdown (will be dynamically populated) -->
-    <label for="year">Select Year:</label>
-    <select name="year" id="year" class="form-select">
-      <option value="">-- Select Year --</option>
-    </select>
+    <!-- Date Range Section -->
+    <div class="date-range-section">
+      <h3>Evaluation Period</h3>
+      
+      <!-- Start Date Row -->
+      <div class="date-row">
+        <div class="date-group">
+          <label for="start_month">Start Month:</label>
+          <select name="start_month" id="start_month" class="form-select">
+             <option value="">-- Select Month --</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          </select>
+        </div>
+        
+        <div class="date-group">
+          <label for="start_year">Start Year:</label>
+          <select name="start_year" id="start_year" class="form-select">
+            <option value="">-- Select Year --</option>
+          </select>
+        </div>
+      </div>
+      
+      <!-- End Date Row -->
+      <div class="date-row">
+        <div class="date-group">
+          <label for="end_month">End Month:</label>
+          <select name="end_month" id="end_month" class="form-select">
+            <option value="">-- Select Month --</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          </select>
+        </div>
+        
+        <div class="date-group">
+          <label for="end_year">End Year:</label>
+          <select name="end_year" id="end_year" class="form-select">
+            <option value="">-- Select Year --</option>
+          </select>
+        </div>
+      </div>
+    </div>
 
-    <button type="submit" class="btn submit-btn">Submit</button>
+    <button type="submit" class="btn submit-btn">Calculate Evaluation</button>
   </form>
 
   <div class="link-buttons">
@@ -49,7 +106,7 @@
           <th>ID</th>
           <th>Vendor Code</th>
           <th>Vendor Name</th>
-          <th>Year</th>
+          <th>Period</th>
           <th>Grade</th>
           <th>Status</th>
           <th>Details</th>
@@ -61,7 +118,7 @@
             <td>{{ $head->id }}</td>
             <td>{{ $head->vendor_code }}</td>
             <td>{{ $head->vendor_name }}</td>
-            <td>{{ $head->year }}</td>
+            <td>{{ $head->period ?? $head->year }}</td>
             <td>{{ $head->grade }}</td>
             <td>{{ $head->status }}</td>
             <td>
@@ -81,20 +138,54 @@
     // Handle supplier dropdown change
     $('#supplier').on('change', function() {
       var supplier = $(this).val(); // Get selected supplier
-      var yearDropdown = $('#year'); // Year dropdown
+      var startYearDropdown = $('#start_year');
+      var endYearDropdown = $('#end_year');
 
       // Clear previous options
-      yearDropdown.empty();
-      yearDropdown.append('<option value="">-- Select Year --</option>');
+      startYearDropdown.empty();
+      endYearDropdown.empty();
+      startYearDropdown.append('<option value="">-- Select Year --</option>');
+      endYearDropdown.append('<option value="">-- Select Year --</option>');
 
       // If a supplier is selected, populate the years
       if (supplier && supplierYears[supplier]) {
         var years = supplierYears[supplier];
 
-        // Populate year dropdown with available years
+        // Populate both start and end year dropdowns with available years
         years.forEach(function(year) {
-          yearDropdown.append('<option value="' + year + '">' + year + '</option>');
+          startYearDropdown.append('<option value="' + year + '">' + year + '</option>');
+          endYearDropdown.append('<option value="' + year + '">' + year + '</option>');
         });
+      }
+    });
+
+    // Validate date range
+    function validateDateRange() {
+      var startMonth = parseInt($('#start_month').val());
+      var startYear = parseInt($('#start_year').val());
+      var endMonth = parseInt($('#end_month').val());
+      var endYear = parseInt($('#end_year').val());
+
+      if (startMonth && startYear && endMonth && endYear) {
+        var startDate = new Date(startYear, startMonth - 1, 1);
+        var endDate = new Date(endYear, endMonth - 1, 1);
+
+        if (startDate > endDate) {
+          alert('Start date cannot be later than end date!');
+          return false;
+        }
+      }
+      return true;
+    }
+
+    // Add validation on change
+    $('#start_month, #start_year, #end_month, #end_year').on('change', validateDateRange);
+
+    // Form submission validation
+    $('form').on('submit', function(e) {
+      if (!validateDateRange()) {
+        e.preventDefault();
+        return false;
       }
     });
   </script>
@@ -102,7 +193,7 @@
 @endsection
 
 <style>
-  /* Styling for the form and buttons */
+  /* Original styling plus new date range styles */
   .form-container {
     margin: 20px 0;
     padding: 20px;
@@ -124,6 +215,39 @@
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 4px;
+  }
+
+  /* New date range styles */
+  .date-range-section {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 6px;
+    background-color: #fff;
+  }
+
+  .date-range-section h3 {
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    font-size: 18px;
+  }
+
+  .date-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+    align-items: flex-end;
+  }
+
+  .date-group {
+    flex: 1;
+  }
+
+  .date-group label {
+    margin-bottom: 5px;
+    font-size: 14px;
   }
 
   .btn {
@@ -148,6 +272,8 @@
 
   .submit-btn {
     background-color: #28a745;
+    width: 100%;
+    margin-top: 10px;
   }
 
   .submit-btn:hover {
@@ -157,14 +283,11 @@
   .link-buttons {
     margin: 20px 0;
     text-align: center;
-    /* Center align the buttons */
   }
 
   .link-buttons a {
     display: inline-block;
-    /* Ensure buttons are inline */
     padding: 12px 20px;
-    /* Increase padding for better visibility */
     font-size: 16px;
     color: #fff;
     background-color: #007bff;
@@ -178,7 +301,6 @@
   .link-buttons a:hover {
     background-color: #0056b3;
     transform: scale(1.05);
-    /* Slightly enlarge on hover */
   }
 
   .data-table {
@@ -210,5 +332,18 @@
   h1,
   h2 {
     color: #333;
+  }
+
+  /* Responsive design for smaller screens */
+  @media (max-width: 768px) {
+    .date-row {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .link-buttons a {
+      display: block;
+      margin: 5px 0;
+    }
   }
 </style>
