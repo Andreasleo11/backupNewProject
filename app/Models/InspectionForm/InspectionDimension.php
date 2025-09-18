@@ -19,5 +19,6 @@ class InspectionDimension extends Model
         "end_datetime",
         "judgement",
         "area",
+        "remarks",
     ];
 }
