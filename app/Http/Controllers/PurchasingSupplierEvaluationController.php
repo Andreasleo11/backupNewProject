@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+ini_set("max_execution_time", 100000);
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PurchasingListPo;
@@ -55,14 +57,47 @@ class PurchasingSupplierEvaluationController extends Controller
 
     public function calculate(Request $request)
     {
+        $monthMapping = [
+            "January" => 1,
+            "February" => 2,
+            "March" => 3,
+            "April" => 4,
+            "May" => 5,
+            "June" => 6,
+            "July" => 7,
+            "August" => 8,
+            "September" => 9,
+            "October" => 10,
+            "November" => 11,
+            "December" => 12,
+        ];
+
+        // dd("test");
         $request->validate([
             "supplier" => "required|string",
-            "year" => "required|numeric",
+            "start_month" => "required|string",
+            "start_year" => "required|integer",
+            "end_month" => "required|string",
+            "end_year" => "required|integer",
         ]);
 
-        // Extract the supplier and year from the request
+        // Extract the parameters from the request
         $supplierName = $request->input("supplier");
-        $year = $request->input("year");
+        $startMonthName = $request->input("start_month");
+        $startYear = $request->input("start_year");
+        $endMonthName = $request->input("end_month");
+        $endYear = $request->input("end_year");
+
+        $startMonthNum = $monthMapping[$startMonthName];
+        $endMonthNum = $monthMapping[$endMonthName];
+
+        $startDate = Carbon::create($startYear, $startMonthNum, 1)->startOfMonth();
+        $endDate = Carbon::create($endYear, $endMonthNum, 1)->endOfMonth();
+
+        // Validate that start date is not after end date
+        if ($startDate->greaterThan($endDate)) {
+            return response()->json(["message" => "Start date cannot be later than end date"], 400);
+        }
 
         // Step 1: Find the supplier in PurchasingListPo to get the supplier_code (vendor_code)
         $supplier = PurchasingListPo::where("supplier_name", $supplierName)->first();
@@ -71,37 +106,43 @@ class PurchasingSupplierEvaluationController extends Controller
             return response()->json(["message" => "Supplier not found"], 404);
         }
 
-        // dd($supplier);
         // Step 2: Create the header using the supplier's code as vendor_code
         $header = PurchasingHeaderEvaluationSupplier::create([
             "doc_num" => $this->generateDocNum(), // Custom method to generate doc_num
             "vendor_code" => $supplier->supplier_code, // Assign the supplier_code as vendor_code
             "vendor_name" => $supplierName,
-            "year" => $year,
+            "start_month" => $startMonthName,
+            "year" => $startYear,
+            "end_month" => $endMonthName,
+            "end_year" => $endYear,
             "grade" => null, // Grade will be updated later
             "status" => null, // Status will be updated later
         ]);
 
         $suppliercode = $header->vendor_code;
 
-        // Step 3: Find all months from PurchasingListPo where supplier_name matches and posting_date is in the same year
+        // Step 3: Find all records from PurchasingListPo where supplier_name matches
+        // and posting_date is within the specified date range
         $matchingPurchasingList = PurchasingListPo::where("supplier_name", $supplierName)
-            ->whereYear("posting_date", $year)
+            ->whereBetween("posting_date", [$startDate, $endDate])
             ->orderBy("posting_date") // Order by posting_date
             ->get()
             ->groupBy(function ($item) {
                 return Carbon::parse($item->posting_date)->format("Y-m"); // Group by Year-Month
             });
-        // dd($matchingPurchasingList);
+
         // Step 4: Create details for each month found in the matchingPurchasingList
         foreach ($matchingPurchasingList as $monthGroup) {
             // Get the first record of the month
             $firstRecord = $monthGroup->first();
-            $month = Carbon::parse($firstRecord->posting_date)->format("F"); // Get the month name (e.g., "January")
+            $postingDate = Carbon::parse($firstRecord->posting_date);
+            $monthName = $postingDate->format("F"); // Get month name (e.g., "January")
+            $year = $postingDate->format("Y"); // Get year (e.g., "2025")
 
             PurchasingDetailEvaluationSupplier::create([
                 "header_id" => $header->id, // Associate with the created header
-                "month" => $month, // Month name from posting_date
+                "month" => $monthName, // Month name only
+                "year" => $year, // Year as separate field
                 "kualitas_barang" => null, // Placeholder for now, will be updated later
                 "ketepatan_kuantitas_barang" => null, // Placeholder for now, will be updated later
                 "ketepatan_waktu_pengiriman" => null, // Placeholder for now, will be updated later
@@ -120,7 +161,7 @@ class PurchasingSupplierEvaluationController extends Controller
         //kriteria 1
         // Step 5: Check if the vendor is found in the PurchasingVendorClaim table
         $claims = PurchasingVendorClaim::where("vendor_name", $supplierName)
-            ->whereYear("claim_start_date", $year)
+            ->whereBetween("claim_start_date", [$startDate, $endDate])
             ->get();
 
         if ($claims->isEmpty()) {
@@ -131,10 +172,26 @@ class PurchasingSupplierEvaluationController extends Controller
             }
         } else {
             // Vendor found, process claims
+            $monthToNumber = [
+                "January" => "01",
+                "February" => "02",
+                "March" => "03",
+                "April" => "04",
+                "May" => "05",
+                "June" => "06",
+                "July" => "07",
+                "August" => "08",
+                "September" => "09",
+                "October" => "10",
+                "November" => "11",
+                "December" => "12",
+            ];
+
             foreach ($data->details as $detail) {
-                $month = Carbon::parse($detail->month)->format("m"); // Extract month from detail
-                $monthlyClaims = $claims->filter(function ($claim) use ($month) {
-                    return Carbon::parse($claim->claim_start_date)->format("m") == $month;
+                $monthNumber = $monthToNumber[$detail->month]; // Convert "January" to "01"
+
+                $monthlyClaims = $claims->filter(function ($claim) use ($monthNumber) {
+                    return Carbon::parse($claim->claim_start_date)->format("m") == $monthNumber;
                 });
 
                 if ($monthlyClaims->isEmpty()) {
@@ -169,7 +226,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         //kriteria 7
         $claims = PurchasingVendorClaim::where("vendor_name", $supplierName)
-            ->whereYear("claim_start_date", $year)
+            ->whereBetween("claim_start_date", [$startDate, $endDate])
             ->get();
 
         if ($claims->isEmpty()) {
@@ -180,10 +237,26 @@ class PurchasingSupplierEvaluationController extends Controller
             }
         } else {
             // Vendor found, process claims
+            $monthToNumber = [
+                "January" => "01",
+                "February" => "02",
+                "March" => "03",
+                "April" => "04",
+                "May" => "05",
+                "June" => "06",
+                "July" => "07",
+                "August" => "08",
+                "September" => "09",
+                "October" => "10",
+                "November" => "11",
+                "December" => "12",
+            ];
+
             foreach ($data->details as $detail) {
-                $month = Carbon::parse($detail->month)->format("m"); // Extract month from detail
-                $monthlyClaims = $claims->filter(function ($claim) use ($month) {
-                    return Carbon::parse($claim->claim_start_date)->format("m") == $month;
+                $monthNumber = $monthToNumber[$detail->month]; // Convert "January" to "01"
+
+                $monthlyClaims = $claims->filter(function ($claim) use ($monthNumber) {
+                    return Carbon::parse($claim->claim_start_date)->format("m") == $monthNumber;
                 });
 
                 if ($monthlyClaims->isEmpty()) {
@@ -219,7 +292,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         //kriteria 2
         $accuracyGoods = PurchasingVendorAccuracyGood::where("vendor_name", $supplierName)
-            ->whereYear("incoming_date", $year)
+            ->whereBetween("incoming_date", [$startDate, $endDate])
             ->get();
 
         if ($accuracyGoods->isEmpty()) {
@@ -230,10 +303,27 @@ class PurchasingSupplierEvaluationController extends Controller
             }
         } else {
             // Vendor found, process the accuracy data
+            // Vendor found, process claims
+            $monthToNumber = [
+                "January" => "01",
+                "February" => "02",
+                "March" => "03",
+                "April" => "04",
+                "May" => "05",
+                "June" => "06",
+                "July" => "07",
+                "August" => "08",
+                "September" => "09",
+                "October" => "10",
+                "November" => "11",
+                "December" => "12",
+            ];
+
             foreach ($data->details as $detail) {
-                $month = Carbon::parse($detail->month)->format("m"); // Extract month from detail
-                $monthlyAccuracyGoods = $accuracyGoods->filter(function ($good) use ($month) {
-                    return Carbon::parse($good->incoming_date)->format("m") == $month;
+                $monthNumber = $monthToNumber[$detail->month]; // Convert "January" to "01"
+
+                $monthlyAccuracyGoods = $accuracyGoods->filter(function ($good) use ($monthNumber) {
+                    return Carbon::parse($good->incoming_date)->format("m") == $monthNumber;
                 });
 
                 if ($monthlyAccuracyGoods->isEmpty()) {
@@ -255,7 +345,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         //kriteria 3
         $ontimeDeliveries = PurchasingVendorOntimeDelivery::where("vendor_name", $supplierName)
-            ->whereYear("actual_date", $year)
+            ->whereBetween("actual_date", [$startDate, $endDate])
             ->get();
 
         if ($ontimeDeliveries->isEmpty()) {
@@ -265,11 +355,28 @@ class PurchasingSupplierEvaluationController extends Controller
                 $detail->save();
             }
         } else {
-            // Vendor found, process the on-time delivery data
+            $monthToNumber = [
+                "January" => "01",
+                "February" => "02",
+                "March" => "03",
+                "April" => "04",
+                "May" => "05",
+                "June" => "06",
+                "July" => "07",
+                "August" => "08",
+                "September" => "09",
+                "October" => "10",
+                "November" => "11",
+                "December" => "12",
+            ];
+
             foreach ($data->details as $detail) {
-                $month = Carbon::parse($detail->month)->format("m"); // Extract month from detail
-                $monthlyDeliveries = $ontimeDeliveries->filter(function ($delivery) use ($month) {
-                    return Carbon::parse($delivery->actual_date)->format("m") == $month;
+                $monthNumber = $monthToNumber[$detail->month]; // Convert "January" to "01"
+
+                $monthlyDeliveries = $ontimeDeliveries->filter(function ($delivery) use (
+                    $monthNumber,
+                ) {
+                    return Carbon::parse($delivery->actual_date)->format("m") == $monthNumber;
                 });
 
                 if ($monthlyDeliveries->isEmpty()) {
@@ -313,7 +420,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         //kriteria 4
         $urgentRequests = PurchasingVendorUrgentRequest::where("vendor_name", $supplierName)
-            ->whereYear("request_date", $year)
+            ->whereBetween("request_date", [$startDate, $endDate])
             ->get();
 
         if ($urgentRequests->isEmpty()) {
@@ -323,11 +430,26 @@ class PurchasingSupplierEvaluationController extends Controller
                 $detail->save();
             }
         } else {
-            // Vendor found, process the urgent request data
+            $monthToNumber = [
+                "January" => "01",
+                "February" => "02",
+                "March" => "03",
+                "April" => "04",
+                "May" => "05",
+                "June" => "06",
+                "July" => "07",
+                "August" => "08",
+                "September" => "09",
+                "October" => "10",
+                "November" => "11",
+                "December" => "12",
+            ];
+
             foreach ($data->details as $detail) {
-                $month = Carbon::parse($detail->month)->format("m"); // Extract month from detail
-                $monthlyRequests = $urgentRequests->filter(function ($request) use ($month) {
-                    return Carbon::parse($request->request_date)->format("m") == $month;
+                $monthNumber = $monthToNumber[$detail->month]; // Convert "January" to "01"
+
+                $monthlyRequests = $urgentRequests->filter(function ($request) use ($monthNumber) {
+                    return Carbon::parse($request->request_date)->format("m") == $monthNumber;
                 });
 
                 if ($monthlyRequests->isEmpty()) {
@@ -371,16 +493,34 @@ class PurchasingSupplierEvaluationController extends Controller
 
         //kriteria 5
         $claimResponses = PurchasingVendorClaimResponse::where("vendor_name", $supplierName)
-            ->whereYear("cpar_sent_date", $year)
+            ->whereBetween("cpar_sent_date", [$startDate, $endDate])
             ->get();
 
         // Step 2: Collect months available in PurchasingDetailEvaluationSupplier
         $monthsInDetails = PurchasingDetailEvaluationSupplier::where("header_id", $header->id)
-            ->pluck("month") // Collect all months from the details
-            ->map(function ($month) {
-                return Carbon::parse($month)->format("Y-m"); // Normalize to Year-Month
+            ->get(["month", "year"]) // Ambil both columns
+            ->map(function ($detail) {
+                // Define month mapping
+                $monthToNumber = [
+                    "January" => "01",
+                    "February" => "02",
+                    "March" => "03",
+                    "April" => "04",
+                    "May" => "05",
+                    "June" => "06",
+                    "July" => "07",
+                    "August" => "08",
+                    "September" => "09",
+                    "October" => "10",
+                    "November" => "11",
+                    "December" => "12",
+                ];
+
+                $monthNumber = $monthToNumber[$detail->month];
+                return $detail->year . "-" . $monthNumber; // Format: "2025-01"
             })
             ->toArray();
+        // dd($monthsInDetails);
 
         if ($claimResponses->isEmpty()) {
             // If no data found, update all details in data to 10 for respon_klaim
@@ -546,31 +686,58 @@ class PurchasingSupplierEvaluationController extends Controller
 
     public function details($id)
     {
-        // Fetch the header along with the related details
         $header = PurchasingHeaderEvaluationSupplier::with("details")->findOrFail($id);
-
         $detailsCount = $header->details->count();
 
-        // Define all 12 months as an array
-        $allMonths = [
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
+        // Mapping nama bulan ke angka
+        $monthMap = [
+            "January" => 1,
+            "February" => 2,
+            "March" => 3,
+            "April" => 4,
+            "May" => 5,
+            "June" => 6,
+            "July" => 7,
+            "August" => 8,
+            "September" => 9,
+            "October" => 10,
+            "November" => 11,
+            "December" => 12,
         ];
 
-        // Initialize the result array for months and rata-rata
+        // Konversi data ke Carbon
+        $dates = $header->details->map(function ($d) use ($monthMap) {
+            return \Carbon\Carbon::create($d->year, $monthMap[$d->month] ?? 1, 1);
+        });
+
+        $start = $dates->min();
+        $end = $dates->max();
+
+        // Generate bulan dari start sampai end
+        $months = collect();
+        $current = $start->copy();
+        while ($current <= $end) {
+            $months->push([
+                "month" => $current->format("F"),
+                "year" => $current->year,
+                "label" => $current->format("F Y"),
+            ]);
+            $current->addMonth();
+        }
+
+        // Kalau masih kurang 12 bulan → lanjutkan setelah end
+        while ($months->count() < 12) {
+            $months->push([
+                "month" => $current->format("F"),
+                "year" => $current->year,
+                "label" => $current->format("F Y"),
+            ]);
+            $current->addMonth();
+        }
+
+        // --- Hitung nilai per bulan ---
         $result = [];
 
-        // Initialize sums and counts for each category (for rata-rata calculation)
         $categorySums = [
             "kualitas_barang" => 0,
             "ketepatan_kuantitas_barang" => 0,
@@ -580,23 +747,14 @@ class PurchasingSupplierEvaluationController extends Controller
             "sertifikasi" => 0,
             "customer_stopline" => 0,
         ];
+        $categoryCounts = $categorySums;
 
-        $categoryCounts = [
-            "kualitas_barang" => 0,
-            "ketepatan_kuantitas_barang" => 0,
-            "ketepatan_waktu_pengiriman" => 0,
-            "kerjasama_permintaan_mendadak" => 0,
-            "respon_klaim" => 0,
-            "sertifikasi" => 0,
-            "customer_stopline" => 0,
-        ];
+        foreach ($months as $m) {
+            $detailsForMonth = $header->details->firstWhere(function ($d) use ($m) {
+                return $d->month === $m["month"] && $d->year == $m["year"];
+            });
 
-        // Loop through each month and populate the result array
-        foreach ($allMonths as $month) {
-            // Get the detail for the specific month, or default to zero if no data exists
-            $detailsForMonth = $header->details->firstWhere("month", $month);
-
-            $result[$month] = [
+            $result[$m["label"]] = [
                 "kualitas_barang" => $detailsForMonth->kualitas_barang ?? 0,
                 "ketepatan_kuantitas_barang" => $detailsForMonth->ketepatan_kuantitas_barang ?? 0,
                 "ketepatan_waktu_pengiriman" => $detailsForMonth->ketepatan_waktu_pengiriman ?? 0,
@@ -607,8 +765,7 @@ class PurchasingSupplierEvaluationController extends Controller
                 "customer_stopline" => $detailsForMonth->customer_stopline ?? 0,
             ];
 
-            // Add to sums and counts (only if the value is greater than 0)
-            foreach ($result[$month] as $category => $value) {
+            foreach ($result[$m["label"]] as $category => $value) {
                 if ($value > 0) {
                     $categorySums[$category] += $value;
                     $categoryCounts[$category]++;
@@ -616,14 +773,13 @@ class PurchasingSupplierEvaluationController extends Controller
             }
         }
 
-        // Calculate rata-rata for each category
+        // Hitung rata-rata
         $result["rata-rata"] = [];
         foreach ($categorySums as $category => $sum) {
             $result["rata-rata"][$category] =
-                $categoryCounts[$category] > 0 ? $sum / $detailsCount : 0; // If no non-zero values, set rata-rata to 0
+                $categoryCounts[$category] > 0 ? $sum / $detailsCount : 0;
         }
-        // dd($result);
-        // Pass the grouped monthly data to the view
+
         return view("purchasing.evaluationsupplier.supplier_detail", compact("header", "result"));
     }
 

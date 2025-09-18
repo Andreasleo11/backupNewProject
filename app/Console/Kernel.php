@@ -50,6 +50,7 @@ class Kernel extends ConsoleKernel
             ->weekdays()
             ->dailyAt("09:00")
             ->timezone("Asia/Jakarta");
+        // $schedule->command('app:update-forecast')->dailyAt('13:00')->timezone('Asia/Jakarta');
     }
 
     /**
