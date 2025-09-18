@@ -1,9 +1,49 @@
-<div>
+<div data-header>
+  <!-- Status chip -->
+  <div wire:ignore 
+    x-data="{ dirty: false, saved: @js($isSaved), ts: @js($savedAt) }"
+    x-init="
+      const root = $el.closest('[data-header]');
+      const markDirty = () => { dirty = true; saved = false };
+      
+      if (root) {
+        root.addEventListener('input', markDirty, { capture: true });
+        root.addEventListener('change', markDirty, { capture: true });
+      }
+
+      Livewire.on('stepHeaderSaved', (e) => { 
+        dirty = false, saved = true; ts = e?.savedAt ?? new Date().toISOString();
+      });
+
+      Livewire.on('stepHeaderReset', () => { 
+        dirty = false, saved = false; ts = null;
+      });
+    "
+    aria-live="polite"
+    class="mb-2"
+  >
+    <template x-if="dirty">
+      <span class="badge rounded-pill bg-warning text-dark">
+        <i class="bi bi-exclamation-triangle me-1"></i> Unsaved changes
+      </span>
+    </template>
+
+    <template x-if="!dirty && saved">
+      <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">
+        <i class="bi bi-check-circle me-1"></i>
+        Saved to session
+        <small class="ms-1" x-text="ts ? new Date(ts).toLocaleString() : ''"></small>
+      </span>
+    </template>
+  </div>
   <div class="row">
+    @php
+      $generalInformationSaved = $this->isGroupSaved(['inspection_date','customer']);
+    @endphp
     <div class="col-md-12">
-      <div class="card mb-4">
+      <div class="card mb-4 shadow @if($generalInformationSaved) border-success @endif">
         <div class="card-body">
-          <h6 class="mb-4 border-bottom text-primary fw-bold pb-1">General Information</h6>
+          <h6 class="mb-4 border-bottom text-primary fw-bold pb-1 @if($generalInformationSaved) border-success text-success @endif">General Information</h6>
           <div class="row ">
             <div class="mb-3 d-none">
               <label class="form-label">Document Number <span class="text-danger">*</span></label>
@@ -57,10 +97,13 @@
         </div>
       </div>
     </div>
+    @php
+      $partDetailsGroupSaved = $this->isGroupSaved(['part_number', 'part_name', 'weight', 'weight_uom', 'material', 'color']);
+    @endphp
     <div class="col-md-6">
-      <div class="card mb-4">
+      <div class="card mb-4 shadow @if($partDetailsGroupSaved) border-success @endif">
         <div class="card-body">
-          <h6 class="mb-4 border-bottom text-primary fw-bold pb-1">Part Details</h6>
+          <h6 class="mb-4 border-bottom text-primary fw-bold pb-1 @if($partDetailsGroupSaved) border-success text-success @endif">Part Details</h6>
           <div class="mb-3">
             @livewire(
                 'components.searchable-dropdown',
@@ -109,9 +152,9 @@
             <label class="form-label">Weight <span class="text-danger">*</span></label>
             <div class="input-group mb-3">
               <input type="number"
-                class="form-control text-end @error('weight') is-invalid @enderror @if($this->isFieldSaved('weight')) is-valid @endif"
+                class="form-control text-end @error('weight') is-invalid @enderror @if($this->isFieldSaved('weight') && $this->isGroupSaved(['weight','weight_uom'])) is-valid @endif"
                 wire:model.blur="weight">
-              <select class="form-select @error('weight_uom') is-invalid @enderror @if($this->isFieldSaved('weight_uom')) is-valid @endif"
+              <select class="form-select @error('weight_uom') is-invalid @enderror @if($this->isFieldSaved('weight_uom') && $this->isGroupSaved(['weight','weight_uom'])) is-valid @endif"
                 wire:model.blur="weight_uom">
                 <option value="" selected></option>
                 <option value="kg">KG</option>
@@ -147,12 +190,15 @@
         </div>
       </div>
     </div>
+    @php 
+      $machineGroupSaved = $this->isGroupSaved(['tool_number_or_cav_number', 'machine_number']);
+    @endphp
     <div class="col">
       <div class="row">
         <div class="col-md-12">
-          <div class="card mb-4">
+          <div class="card mb-4 shadow @if($machineGroupSaved) border-success @endif">
             <div class="card-body">
-              <h6 class="mb-4 border-bottom text-primary fw-bold pb-1">Machine Information</h6>
+              <h6 class="mb-4 border-bottom text-primary fw-bold pb-1 @if($machineGroupSaved) border-success text-success @endif">Machine Information</h6>
               <div class="row">
                 <div class="mb-3">
                   <label class="form-label">Tool/Cavity
@@ -184,10 +230,13 @@
             </div>
           </div>
         </div>
+        @php 
+          $shiftInspectorOperatorGroupSaved = $this->isGroupSaved(['inspector', 'operator', 'shift']);
+        @endphp
         <div class="col">
-          <div class="card mb-4">
+          <div class="card mb-4 shadow @if($shiftInspectorOperatorGroupSaved) border-success @endif">
             <div class="card-body">
-              <h6 class="text-primary border-bottom pb-1 fw-bold mb-3">Shift & Operator</h6>
+              <h6 class="text-primary border-bottom pb-1 fw-bold mb-3 @if($shiftInspectorOperatorGroupSaved) border-success text-success @endif">Shift & Operator</h6>
               <div class="row">
                 <div class="mb-3">
                   <label class="form-label">Operator <span class="text-danger">*</span></label>

@@ -1,15 +1,4 @@
 @php
-  $sections = [
-      'Detail Inspection' => $detailData,
-      'First Data' => $firstData,
-      'Dimension Data' => $dimensionData,
-      'Second Data' => $secondData,
-      'Sampling Data' => $samplingData,
-      'Packaging Data' => $packagingData,
-      'Judgement Data' => $judgementData,
-      'Quantity Data' => $quantityData,
-  ];
-
   /** The “theme” you want each section to live under */
   $groups = [
       'Initial Inspection' => ['Detail Inspection', 'First Data', 'Dimension Data'],
@@ -27,7 +16,7 @@
   /** -------------------------------------------------
    *  Which header fields live under which heading?   */
   $headerGroups = [
-      'Document Info' => ['document_number', 'inspection_date', 'shift', 'operator'],
+      'Document Info' => ['document_number', 'inspection_date', 'shift', 'operator', 'inspector'],
       'Customer' => ['customer'],
       'Part Details' => [
           'part_number',
@@ -49,7 +38,6 @@
 @endphp
 
 <div class="container-xl">
-
   <!-- ►► Header ◄◄ ------------------------------------------------------ -->
   <h3 class="fw-bold mb-3 d-flex align-items-center">
     <i class="bi bi-eye-fill me-2"></i> Final Preview @if ($headerData)
@@ -86,7 +74,6 @@
             @endforeach
           </tr>
         </thead>
-
         <tbody>
           @foreach ($holeReport as $backendKey => $periods)
             <tr>
@@ -140,16 +127,25 @@
     @endforeach
 
     @php
-      /* ① find periods that DO have data (same as before) */
-      $periodSet = [];
-      foreach ($sections as $sectionData) {
-          foreach ($sectionData as $key => $val) {
-              if (preg_match('/^p([1-4])$/', $key, $m)) {
-                  $periodSet[(int) $m[1]] = true; // p1…p4 → 1…4
-              }
+      // Periods that have *real* data (anything except *Detail Inspection*)
+      $nonDetailSections = collect($uiData)->keys()->reject(fn($k) => $k === "Detail Inspection");
+
+      $periodHasNonDetail = function (int $p) use ($uiData, $nonDetailSections): bool {
+        foreach ($nonDetailSections as $sec) {
+            if(isset($uiData[$sec]["p{$p}"]) && !empty($uiData[$sec]["p{$p}"])) {
+                return true;
+            }
           }
+          return false;
+      };
+
+      $haveData = [];
+      foreach (range(1, 4) as $p) {
+        if($periodHasNonDetail($p)) {
+          $haveData[] = $p;
+        }
       }
-      $haveData = array_keys($periodSet); // e.g. [1,3]
+    
     @endphp
 
     <!-- ►► Period Pils ◄◄ ------------------------------------------------ -->
@@ -179,7 +175,7 @@
             @foreach ($groups as $groupTitle => $groupSections)
               @php
                 $hasAnyData = collect($groupSections)
-                    ->filter(fn($s) => isset($sections[$s]["p$p"]))
+                    ->filter(fn($s) => isset($uiData[$s]["p$p"]))
                     ->isNotEmpty();
               @endphp
 
@@ -190,7 +186,7 @@
               </h5>
 
               @foreach ($groupSections as $title)
-                @php $sectionData = $sections[$title] ?? []; @endphp
+                @php $sectionData = $uiData[$title] ?? []; @endphp
                 @continue(!isset($sectionData["p$p"]))
 
                 <div class="card shadow-sm mb-4">
@@ -219,11 +215,32 @@
                       </dl>
                       {{-- TABLE style --}}
                     @elseif(array_is_list($sectionData["p$p"]))
+                    @php
+                        $rows = $sectionData["p$p"];
+
+                        // 1) Collect the union of all column keys from every row
+                        $allColsAssoc = [];
+                        foreach ($rows as $r) {
+                            foreach (array_keys((array) $r) as $k) {
+                                $allColsAssoc[$k] = true;
+                            }
+                        }
+                        $allCols = array_keys($allColsAssoc);
+
+                        // 3) Helper: format cell + badges + placeholders
+                        $fmt = function ($k, $v) use ($badge) {
+                            if ($v === null || $v === '') return '—';
+                            if (in_array($k, ['judgement', 'appearance'])) {
+                                return '<span class="badge bg-' . e($badge($v)) . '">' . e($v) . '</span>';
+                            }
+                            return e($v);
+                        };
+                      @endphp
                       <div class="table-responsive-md">
                         <table class="table table-striped table-bordered small align-middle mb-0">
                           <thead class="table-light">
                             <tr>
-                              @foreach (array_keys($sectionData["p$p"][0]) as $col)
+                              @foreach ($allCols as $col)
                                 <th class="text-capitalize">
                                   {{ str_replace('_', ' ', $col) }}
                                 </th>
@@ -231,16 +248,12 @@
                             </tr>
                           </thead>
                           <tbody>
-                            @foreach ($sectionData["p$p"] as $row)
+                            @foreach ($rows as $row)
                               <tr>
-                                @foreach ($row as $k => $v)
-                                  <td>
-                                    @if (in_array($k, ['judgement', 'appearance']))
-                                      <span
-                                        class="badge bg-{{ $badge($v) }}">{{ $v }}</span>
-                                    @else
-                                      {{ $v }}
-                                    @endif
+                                @foreach ($allCols as $col)
+                                  @php $val = $row[$col] ?? null; @endphp
+                                  <td class="{{ is_numeric($val) ? 'text-end' : '' }}">
+                                    {!! $fmt($col, $val) !!}
                                   </td>
                                 @endforeach
                               </tr>

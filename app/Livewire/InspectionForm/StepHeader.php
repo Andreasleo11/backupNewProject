@@ -2,7 +2,6 @@
 
 namespace App\Livewire\InspectionForm;
 
-use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Illuminate\Support\Str;
 
@@ -26,6 +25,7 @@ class StepHeader extends Component
 
     public array $sessionSaved = [];
     public ?string $savedAt = null;
+    public bool $isSaved = false;
 
     protected $listeners = ["dropdownSelected"];
 
@@ -127,6 +127,7 @@ class StepHeader extends Component
 
         $this->sessionSaved = $saved;
         $this->savedAt = session("stepHeaderSavedAt");
+        $this->isSaved = !empty($this->sessionSaved);
 
         if ($saved) {
             foreach ($saved as $key => $value) {
@@ -159,6 +160,7 @@ class StepHeader extends Component
 
         $this->sessionSaved = $data;
         $this->savedAt = session("stepHeaderSavedAt");
+        $this->isSaved = !empty($this->sessionSaved);
 
         $this->dispatch("stepHeaderSaved", data: $data, savedAt: $this->savedAt);
         $this->dispatch("nextStep");
@@ -167,7 +169,6 @@ class StepHeader extends Component
 
     public function render()
     {
-        Log::info("customerError" . $this->getErrorBag()->first("customer"));
         return view("livewire.inspection-form.step-header", [
             "customerError" => $this->getErrorBag()->first("customer"),
         ]);

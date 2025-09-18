@@ -17,15 +17,20 @@ class StepDetail extends Component
     public $start_time;
     public $end_time;
     public $operator;
+    public $inspector;
     public $shift;
 
     public $part_name;
     public $part_number;
 
     public $periodKey;
-
-    // Parent Livewire
     public int $reloadToken = 0;
+
+    public bool $savedDetails = false;
+    public bool $savedFirst = false;
+    public bool $savedDimensions = false;
+    public bool $savedSecond = false;
+    public bool $savedJudgement = false;
 
     protected $rules = [
         "inspection_report_document_number" => "required|string",
@@ -33,6 +38,26 @@ class StepDetail extends Component
         "period" => "required|integer|min:1|max:4",
         "start_time" => "required|date_format:H:i",
         "end_time" => "required|date_format:H:i",
+    ];
+
+    protected $listeners = [
+        "firstInspectionSaved" => "refreshSavedFlags",
+        "firstInspectionReset" => "refreshSavedFlags",
+
+        "dimensionsSaved" => "refreshSavedFlags",
+        "dimensionsReset" => "refreshSavedFlags",
+
+        "secondInspectionSaved" => "refreshSavedFlags",
+        "secondInspectionReset" => "refreshSavedFlags",
+
+        "samplingSaved" => "refreshSavedFlags",
+        "samplingReset" => "refreshSavedFlags",
+
+        "packagingSaved" => "refreshSavedFlags",
+        "packagingReset" => "refreshSavedFlags",
+
+        "judgementSaved" => "refreshSavedFlags",
+        "judgementReset" => "refreshSavedFlags",
     ];
 
     public function updated($field)
@@ -43,7 +68,6 @@ class StepDetail extends Component
     public function mount()
     {
         $saved = session("stepDetailSaved");
-        // dd($saved);
         $this->period = data_get($saved, "period", 1);
 
         $this->generateDocumentNumber();
@@ -68,13 +92,15 @@ class StepDetail extends Component
 
         $this->shift = session("stepHeaderSaved.shift") ?? null;
         $this->operator = session("stepHeaderSaved.operator") ?? "N/A";
+        $this->inspector = session("stepHeaderSaved.inspector") ?? "N/A";
         $this->part_name = session("stepHeaderSaved.part_name") ?? "N/A";
         $this->part_number = session("stepHeaderSaved.part_number") ?? "N/A";
-        // dd($this->period);
 
         if ($this->shift) {
             $this->updatedPeriod();
         }
+        $this->saveStep();
+        $this->refreshSavedFlags();
     }
 
     public function updatedPeriod()
@@ -126,8 +152,6 @@ class StepDetail extends Component
         $this->end_datetime = $endPeriod->format("Y-m-d H:i:s");
         $this->start_time = $startPeriod->format("H:i");
         $this->end_time = $endPeriod->format("H:i");
-
-        // $this->persistPeriod();
     }
 
     public function selectPeriod(int $q): void
@@ -135,7 +159,8 @@ class StepDetail extends Component
         $this->period = $q; // triggers updatedPeriod()
         $this->updatedPeriod(); // (ensures time calc runs)
         $this->generateDocumentNumber();
-        // $this->persistPeriod();           // save to session
+        $this->saveStep();
+        $this->computeSaveFlags();
     }
 
     private function generateDocumentNumber()
@@ -155,6 +180,25 @@ class StepDetail extends Component
     {
         $p = $period ?? ($this->period ?? 1);
         return "p" . $p;
+    }
+
+    public function computeSaveFlags(): void
+    {
+        $pk = $this->periodKey();
+        $bag = session("stepDetailSaved", []);
+        $this->savedDetails = !empty(data_get($bag, "details.$pk"));
+        $this->savedFirst = !empty(data_get($bag, "first_inspections.$pk"));
+        $this->savedDimensions = !empty(data_get($bag, "dimensions.$pk"));
+        $this->savedSecond =
+            !empty(data_get($bag, "second_inspections.$pk")) &&
+            !empty(data_get($bag, "samples.$pk")) &&
+            !empty(data_get($bag, "packagings.$pk"));
+        $this->savedJudgement = !empty(data_get($bag, "judgements.$pk"));
+    }
+
+    public function refreshSavedFlags(): void
+    {
+        $this->computeSaveFlags();
     }
 
     public function saveStep(): void
@@ -179,7 +223,8 @@ class StepDetail extends Component
 
         session()->put("stepDetailSaved.details", $data["details"]);
         $this->reloadToken++;
-        $this->dispatch("toast", message: "Detail saved successfully!");
+        $this->dispatch("toast", message: "Detail Saved. Period changed successfully!");
+        $this->refreshSavedFlags();
     }
 
     public function resetStep(bool $clearOnlyCurrentPeriod = true): void
@@ -228,6 +273,7 @@ class StepDetail extends Component
         // 5) UI refresh token + toast
         $this->reloadToken++;
         $this->dispatch("toast", message: "Step reset successfully!");
+        $this->refreshSavedFlags();
     }
 
     public function render()

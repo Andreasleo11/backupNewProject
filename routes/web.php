@@ -1840,17 +1840,35 @@ Route::middleware(["checkUserRole:1,2", "checkSessionId"])->group(function () {
     ])->name("employee_trainings.evaluate");
 });
 
-Route::middleware(['auth', 'is.head.or.management'])->group(function () {
-    Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
-    Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
-    Route::get('/sync-progress/{companyArea}', [SyncProgressController::class, 'show']);
-    Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
-    Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
-    Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
-    Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
-    Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
-    Route::get('/employees/{id}/warnings', function ($id) {
-        $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
+Route::middleware(["auth", "is.head.or.management"])->group(function () {
+    Route::get("/employee-dashboard", [EmployeeDashboardController::class, "index"])->name(
+        "employee.dashboard",
+    );
+    Route::post("/employee-dashboard/update-employee-data", [
+        EmployeeDashboardController::class,
+        "updateEmployeeData",
+    ])->name("employee.dashboard.updateEmployeeData");
+    Route::get("/sync-progress/{companyArea}", [SyncProgressController::class, "show"]);
+    Route::post("/director/warning-log", [DirectorHomeController::class, "storeWarningLog"])->name(
+        "director.warning-log.store",
+    );
+    Route::post("/filter-employees", [EmployeeDashboardController::class, "filterEmployees"])->name(
+        "filter.employees",
+    );
+    Route::post("/get-employees-by-category", [
+        EmployeeDashboardController::class,
+        "getEmployeesByCategory",
+    ])->name("getEmployeesByCategory");
+    Route::post("/get-employees-by-department", [
+        EmployeeDashboardController::class,
+        "getEmployeesByDepartment",
+    ])->name("getEmployeesByDepartment");
+    Route::post("/get-employees-by-chart-category", [
+        EmployeeDashboardController::class,
+        "getEmployeesByChartCategory",
+    ])->name("getEmployeesByChartCategory");
+    Route::get("/employees/{id}/warnings", function ($id) {
+        $warnings = \App\Models\EmployeeWarningLog::where("nik", $id)->get();
         return response()->json($warnings);
     });
     Route::get("/get-employee-count-by-month/{year?}", [
@@ -1900,7 +1918,7 @@ Route::get("/dashboard-employee-login", function () {
 });
 
 Route::get("/inspection-reports", InspectionIndex::class)->name("inspection-reports.index");
-Route::get("/inspection-report/create", InspectionForm::class)->name("inspection-report.create");
+Route::get("/inspection-report/create", InspectionForm::class)->name("inspection-reports.create");
 Route::get("/inspection-reports/{inspectionReport}", InspectionShow::class)->name(
     "inspection-reports.show",
 );
