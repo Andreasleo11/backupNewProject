@@ -15,5 +15,10 @@ interface JPayrollClientContract
     public function getAnnualLeave(string $companyArea, int $year): array;
 
     /** @return AttendanceDto[] */
-    public function getAttendance(string $companyArea, CarbonImmutable $from, CarbonImmutable $to, ?string $nik = null): array;
+    public function getAttendance(
+        string $companyArea,
+        CarbonImmutable $from,
+        CarbonImmutable $to,
+        ?string $nik = null,
+    ): array;
 }

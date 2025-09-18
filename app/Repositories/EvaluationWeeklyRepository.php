@@ -13,13 +13,15 @@ final class EvaluationWeeklyRepository
      */
     public function upsertWeekly(array $rows): int
     {
-        if (!$rows) return 0;
+        if (!$rows) {
+            return 0;
+        }
 
         return DB::transaction(function () use ($rows) {
-            return DB::table('evaluation_data_weekly')->upsert(
-                array_map(fn($r) => $r + ['updated_at'=>now(), 'created_at'=>now()], $rows),
-                ['NIK','Month'],
-                ['dept','Alpha','Telat','Izin','Sakit','updated_at']
+            return DB::table("evaluation_data_weekly")->upsert(
+                array_map(fn($r) => $r + ["updated_at" => now(), "created_at" => now()], $rows),
+                ["NIK", "Month"],
+                ["dept", "Alpha", "Telat", "Izin", "Sakit", "updated_at"],
             );
         });
     }

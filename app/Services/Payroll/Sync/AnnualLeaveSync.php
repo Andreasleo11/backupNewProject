@@ -15,8 +15,12 @@ final class AnnualLeaveSync
     {
         $map = [];
         foreach ($items as $it) {
-            if ($it->remain !== null) $map[$it->nik] = $it->remain;
+            if ($it->remain !== null) {
+                $map[$it->nik] = $it->remain;
+            }
         }
-        if ($map) $this->repo->updateLeaveBalances($map);
+        if ($map) {
+            $this->repo->updateLeaveBalances($map);
+        }
     }
 }

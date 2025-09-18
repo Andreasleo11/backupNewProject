@@ -637,7 +637,7 @@ class MasterInventoryController extends BaseController
             $data->hardware_name .
             "~" .
             $data->remark;
-            
+
         $qrCodeWriter = new PngWriter();
         $qrcoded = null;
 
