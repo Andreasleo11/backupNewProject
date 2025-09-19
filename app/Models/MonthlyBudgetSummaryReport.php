@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Notifications\MonthlyBudgetSummaryReportCreated;
 use App\Notifications\MonthlyBudgetSummaryReportUpdated;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class MonthlyBudgetSummaryReport extends Model
@@ -27,6 +29,70 @@ class MonthlyBudgetSummaryReport extends Model
         "cancel_reason",
         "status",
     ];
+
+    protected $appends = ["total_amount", "mom"];
+
+    public function scopeWithTotals(Builder $q): Builder
+    {
+        return $q->addSelect([
+            "total_amount" => DB::table("monthly_budget_report_summary_details as d")
+                ->selectRaw("COALESCE(SUM(d.quantity * d.cost_per_unit), 0)")
+                ->whereColumn("d.header_id", "monthly_budget_summary_reports.id"),
+        ]);
+    }
+
+    public function scopeWithPrevTotals(Builder $q): Builder
+    {
+        return $q->addSelect([
+            "prev_total" => DB::table("monthly_budget_report_summary_details as d2")
+                ->join("monthly_budget_summary_reports as r2", "r2.id", "=", "d2.header_id")
+                ->selectRaw("COALESCE(SUM(d2.quantity * d2.cost_per_unit), 0)")
+                ->whereColumn("r2.creator_id", "monthly_budget_summary_reports.creator_id")
+                ->whereRaw(
+                    "r2.report_date = DATE_SUB(monthly_budget_summary_reports.report_date, INTERVAL 1 MONTH)",
+                ),
+        ]);
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        // Use preloaded selectSub if present; otherwise fall back to eager-loaded details
+        if (array_key_exists("total_amount", $this->attributes)) {
+            return (float) $this->attributes["total_amount"];
+        }
+        return $this->relationLoaded("details")
+            ? (float) $this->details->sum(
+                fn($d) => (float) ($d->quantity ?? 0) * (float) ($d->cost_per_unit ?? 0),
+            )
+            : 0.0;
+    }
+
+    public function getMomAttribute(): array
+    {
+        $curr = (float) $this->total_amount;
+        $prev = (float) ($this->attributes["prev_total"] ?? 0.0);
+
+        if ($prev <= 0) {
+            return [
+                "has_prev" => false,
+                "diff" => null,
+                "pct" => null,
+                "direction" => "none",
+                "prev" => $prev,
+            ];
+        }
+
+        $diff = $curr - $prev;
+        $pct = ($diff / $prev) * 100;
+
+        return [
+            "has_prev" => true,
+            "diff" => $diff,
+            "pct" => $pct,
+            "direction" => $diff > 0 ? "up" : ($diff < 0 ? "down" : "flat"),
+            "prev" => $prev,
+        ];
+    }
 
     // Relations
     public function details()

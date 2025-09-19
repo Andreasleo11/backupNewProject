@@ -19,8 +19,8 @@ class MonthlyBudgetReportSummaryDetail extends Model
         "supplier",
         "cost_per_unit",
         "remark",
-        "spec",
-        "last_recorded_stock",
-        "usage_per_month",
+        "spec", // for moulding items
+        "last_recorded_stock", // for moulding items
+        "usage_per_month", // for moulding items
     ];
 }
