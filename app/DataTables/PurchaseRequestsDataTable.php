@@ -36,7 +36,7 @@ class PurchaseRequestsDataTable extends DataTable
 
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
-        return new EloquentDataTable($query)
+        return (new EloquentDataTable($query))
             ->addColumn("action", "purchaserequests.action")
             ->editColumn("status", function ($pr) {
                 return view("partials.pr-status-badge", ["pr" => $pr])->render();
