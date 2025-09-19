@@ -264,7 +264,7 @@
       </tr>
       <tr>
         <th>Periode</th>
-        <td>{{ $header->year }}</td>
+      <td>{{ $header->start_month }} {{ $header->year }} - {{ $header->end_month }} {{ $header->year_end }}</td>
       </tr>
       <tr>
         <th>Kriteria yang dinilai</th>

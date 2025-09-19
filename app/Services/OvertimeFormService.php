@@ -90,7 +90,7 @@ class OvertimeFormService
 
             if ($firstRow && isset($firstRow[3])) {
                 $start = self::excelSerialToCarbon($firstRow[3]);
-                return $start->greaterThan(now());
+                return $start->greaterThan(now("Asia/Jakarta"));
             }
             return false;
         }

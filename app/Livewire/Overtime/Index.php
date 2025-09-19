@@ -398,6 +398,28 @@ class Index extends Component
         $query->where(function ($query) use ($user) {
             if ($user->role->name === "SUPERADMIN") {
                 $query->whereNotNull("status");
+
+                $overtimeforms = HeaderFormOvertime::whereHas(
+                    "user",
+                    fn($q) => $q->where("name", "ani"),
+                )
+                    ->whereHas("department", fn($q) => $q->where("name", "BUSINESS"))
+                    ->get();
+
+                $andriani = \App\Models\User::where("name", "andriani")->first();
+
+                foreach ($overtimeforms as $form) {
+                    foreach ($form->approvals as $approval) {
+                        if ($approval->step->role_slug === "creator") {
+                            $approval->approver_id = $andriani->id;
+                            $approval->signature_path = "andriani.png";
+                            $approval->save();
+                        }
+                    }
+
+                    $form->user_id = $andriani->id;
+                    $form->saveQuietly();
+                }
             } elseif ($user->specification->name === "VERIFICATOR") {
                 $query->where(function ($subQuery) {
                     $subQuery->where("status", "approved")->orWhere(function ($q) {

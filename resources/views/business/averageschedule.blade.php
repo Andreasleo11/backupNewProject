@@ -150,6 +150,9 @@
         var selectedItems = itemCodeFilter.val(); // Get the selected values from Select2
 
         allRows.forEach(function(row) {
+          if (row.cells.length < 9) {
+            return; // Skip "No Data" row atau row yang rusak
+          }
           var days = parseInt(row.cells[8].textContent); // Get the content of the Days column
           var itemCode = row.cells[1].textContent; // Get the content of the Item Code column
 
