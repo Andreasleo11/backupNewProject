@@ -10,23 +10,6 @@ use Illuminate\Http\Request;
 
 class MonthlyBudgetSummaryReportController extends Controller
 {
-    public function index()
-    {
-        $reportsQuery = Report::with("details", "user")->withTotals()->withPrevTotals();
-        $authUser = auth()->user();
-
-        if ($authUser->specification->name === "DIRECTOR") {
-            $reportsQuery->where("status", 4)->orWhere("status", 5)->orWhere("status", 6);
-        } elseif ($authUser->is_head && $authUser->specification->name === "DESIGN") {
-            $reportsQuery->where("status", 3);
-        } elseif ($authUser->is_gm) {
-            $reportsQuery->where("status", 2);
-        }
-
-        $reports = $reportsQuery->orderBy("created_at", "desc")->paginate(15);
-        return view("monthly_budget_report.summary.index", compact("reports"));
-    }
-
     public function store(Request $request)
     {
         $request->validate([

@@ -10,7 +10,7 @@
   <div class="container">
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ route('monthly.budget.summary.report.index') }}">Monthly
+        <li class="breadcrumb-item"><a href="{{ route('monthly-budget-summary-report.index') }}">Monthly
             Budget
             Summary Reports</a>
         </li>
