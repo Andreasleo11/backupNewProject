@@ -5,29 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\MonthlyBudgetReport;
 use App\Models\MonthlyBudgetSummaryReport as Report;
 use App\Models\MonthlyBudgetReportSummaryDetail as Detail;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class MonthlyBudgetSummaryReportController extends Controller
 {
-    public function index()
-    {
-        $reportsQuery = Report::with("details", "user");
-        $authUser = auth()->user();
-
-        if ($authUser->specification->name === "DIRECTOR") {
-            $reportsQuery->where("status", 4)->orWhere("status", 5)->orWhere("status", 6);
-        } elseif ($authUser->is_head && $authUser->specification->name === "DESIGN") {
-            $reportsQuery->where("status", 3);
-        } elseif ($authUser->is_gm) {
-            $reportsQuery->where("status", 2);
-        }
-
-        $reports = $reportsQuery->orderBy("created_at", "desc")->paginate(15);
-        return view("monthly_budget_report.summary.index", compact("reports"));
-    }
-
     public function store(Request $request)
     {
         $request->validate([
@@ -38,12 +20,6 @@ class MonthlyBudgetSummaryReportController extends Controller
         $monthYear = $request->input("month");
         $date = Carbon::createFromFormat("m-Y", $monthYear)->startOfMonth()->toDateString();
 
-        // // Create the main report
-        // $report = Report::create([
-        //     'report_date' => $date,
-        //     'creator_id' => auth()->user()->id
-        // ]);
-
         [$month, $year] = explode("-", $monthYear);
 
         $monthlyBudgetReports = MonthlyBudgetReport::with("details")
@@ -52,60 +28,29 @@ class MonthlyBudgetSummaryReportController extends Controller
             ->where("status", 6)
             ->get();
 
-        // Separate the details based on dept_no
-        $detailsForAllDeptExcept363 = [];
-        $detailsForDept363 = [];
+        // Collect all details, no need to filter by dept_no
+        $allDetails = [];
 
         foreach ($monthlyBudgetReports as $monthlyBudgetReport) {
             foreach ($monthlyBudgetReport->details as $detail) {
-                if ($monthlyBudgetReport->dept_no == 363) {
-                    $detailsForDept363[] = [
-                        "dept_no" => $monthlyBudgetReport->dept_no,
-                        "detail" => $detail,
-                    ];
-                } else {
-                    $detailsForAllDeptExcept363[] = [
-                        "dept_no" => $monthlyBudgetReport->dept_no,
-                        "detail" => $detail,
-                    ];
-                }
+                $allDetails[] = [
+                    "dept_no" => $monthlyBudgetReport->dept_no,
+                    "detail" => $detail,
+                ];
             }
         }
 
-        // Create the first report for all dept_no except 363
-        $report1 = Report::create([
+        $report = Report::create([
             "report_date" => $date,
             "creator_id" => auth()->user()->id,
-            "is_moulding" => false,
         ]);
 
-        foreach ($detailsForAllDeptExcept363 as $detail) {
+        foreach ($allDetails as $detail) {
             Detail::create([
-                "header_id" => $report1->id,
+                "header_id" => $report->id,
                 "name" => $detail["detail"]["name"],
                 "dept_no" => $detail["dept_no"],
                 "quantity" => $detail["detail"]["quantity"],
-                "uom" => $detail["detail"]["uom"],
-                "remark" => $detail["detail"]["remark"],
-            ]);
-        }
-
-        // Create the second report for dept_no 363
-        $report2 = Report::create([
-            "report_date" => $date,
-            "creator_id" => auth()->user()->id,
-            "is_moulding" => true,
-        ]);
-
-        foreach ($detailsForDept363 as $detail) {
-            Detail::create([
-                "header_id" => $report2->id,
-                "name" => $detail["detail"]["name"],
-                "dept_no" => $detail["dept_no"],
-                "quantity" => $detail["detail"]["quantity"],
-                "spec" => $detail["detail"]["spec"],
-                "last_recorded_stock" => $detail["detail"]["last_recorded_stock"],
-                "usage_per_month" => $detail["detail"]["usage_per_month"],
                 "uom" => $detail["detail"]["uom"],
                 "remark" => $detail["detail"]["remark"],
             ]);

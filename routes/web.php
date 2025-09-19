@@ -113,7 +113,7 @@ use App\Livewire\VehicleIndex;
 use App\Livewire\InspectionForm;
 use App\Livewire\InspectionIndex;
 use App\Livewire\InspectionShow;
-
+use App\Livewire\MonthlyBudgetSummary\Index as MonthlyBudgetSummaryIndex;
 //TESTING SAP SERVICE
 use App\Services\BaseSapService;
 use App\Services\FctBomWipService;
@@ -1561,17 +1561,16 @@ Route::middleware(["checkUserRole:1,2", "checkSessionId"])->group(function () {
     );
 
     Route::get("/get-employees", [FormOvertimeController::class, "getEmployees"]);
-    //
+
     Route::get("/stock-tinta-index", [StockTintaController::class, "index"])->name("stocktinta");
 
     Route::get("/statusfinish", [DeliveryScheduleController::class, "statusFinish"]);
 
     Route::get("/update-dept", [DisciplinePageController::class, "updateDeptColumn"]);
 
-    Route::get("monthlyBudgetSummaryReports", [
-        MonthlyBudgetSummaryReportController::class,
-        "index",
-    ])->name("monthly.budget.summary.report.index");
+    Route::get("monthlyBudgetSummaryReports", MonthlyBudgetSummaryIndex::class)->name(
+        "monthly-budget-summary-report.index",
+    );
     Route::get("monthlyBudgetSummaryReport/{id}", [
         MonthlyBudgetSummaryReportController::class,
         "show",
