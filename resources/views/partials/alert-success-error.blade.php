@@ -1,35 +1,39 @@
 @if ($message = Session::get('success'))
-    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-        <i class='bx bx-check-circle me-2' style="font-size:20px;"></i>
-        {{ $message }}
-        <button id="closeAlertButton" type="button" class="btn-close close-alert" data-bs-dismiss="alert"
-            aria-label="Close"></button>
-    </div>
+  <div
+    class="alert alert-success alert-dismissible fade show d-flex align-items-center auto-dismiss-alert"
+    role="alert">
+    <i class='bx bx-check-circle me-2' style="font-size:20px;"></i>
+    {{ $message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
 @elseif ($message = Session::get('error'))
-    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
-        <i class='bx bx-error-circle me-2' style="font-size:20px;"></i>
-        {{ $message }}
-        <button id="closeAlertButton" type="button" class="btn-close close-alert" data-bs-dismiss="alert"
-            aria-label="Close"></button>
-    </div>
-@elseif ($errors->any())
+  <div
+    class="alert alert-danger alert-dismissible fade show d-flex align-items-center auto-dismiss-alert"
+    role="alert">
+    <i class='bx bx-error-circle me-2' style="font-size:20px;"></i>
+    {{ $message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {{-- @elseif ($errors->any())
     @foreach ($errors->all() as $error)
-        <div class="alert alert-danger alert-dismissable d-flex align-items-center fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center auto-dismiss-alert"
+            role="alert">
             <i class='bx bx-error-circle me-2' style="font-size:20px;"></i>
             {{ $error }}
-            <button id="closeAlertButton" type="button" class="ms-auto btn-close close-alert" data-bs-dismiss="alert"
-                aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    @endforeach
+    @endforeach --}}
 @endif
 
+{{-- <!-- auto close after 5 seconds -->
 <script>
-    const closeAlertButtons = document.querySelectorAll('.close-alert');
-    setTimeout(() => {
-        if (closeAlertButtons) {
-            closeAlertButtons.forEach(btn => {
-                btn.click();
+    // Auto dismiss alerts after 5 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            document.querySelectorAll('.auto-dismiss-alert').forEach(alert => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                bsAlert.close();
             });
-        }
-    }, 5000);
-</script>
+        }, 5000); // 5000ms = 5 seconds
+    });
+</script> --}}

@@ -23,8 +23,8 @@ class ForecastCustomerMasterDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'forecastcustomermaster.action')
-            ->setRowId('id');
+            ->addColumn("action", "forecastcustomermaster.action")
+            ->setRowId("id");
     }
 
     /**
@@ -46,20 +46,20 @@ class ForecastCustomerMasterDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('forecastcustomermaster-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->selectStyleSingle()
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->setTableId("forecastcustomermaster-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->selectStyleSingle()
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                Button::make("pdf"),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -70,10 +70,10 @@ class ForecastCustomerMasterDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('forecast_code'),
-            Column::make('forecast_name'),
-            Column::make('customer'),
+            Column::make("id"),
+            Column::make("forecast_code"),
+            Column::make("forecast_name"),
+            Column::make("customer"),
         ];
     }
 
@@ -84,6 +84,6 @@ class ForecastCustomerMasterDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ForecastCustomerMaster_' . date('YmdHis');
+        return "ForecastCustomerMaster_" . date("YmdHis");
     }
 }

@@ -11,13 +11,16 @@ class MonthlyBudgetReportSummaryDetail extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'header_id',
-        'name',
-        'dept_no',
-        'quantity',
-        'uom',
-        'supplier',
-        'cost_per_unit',
-        'remark',
+        "header_id",
+        "name",
+        "dept_no",
+        "quantity",
+        "uom",
+        "supplier",
+        "cost_per_unit",
+        "remark",
+        "spec",
+        "last_recorded_stock",
+        "usage_per_month",
     ];
 }

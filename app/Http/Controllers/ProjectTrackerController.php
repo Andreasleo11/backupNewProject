@@ -13,7 +13,7 @@ class ProjectTrackerController extends Controller
     public function index()
     {
         $datas = ProjectMaster::get();
-        
+
         return view("projecttracker.index", compact("datas"));
     }
 
@@ -26,22 +26,22 @@ class ProjectTrackerController extends Controller
 
     public function store(Request $request)
     {
-          // Validate the form data
+        // Validate the form data
         $request->validate([
-            'project_name' => 'required|string',
-            'dept' => 'required|exists:departments,id',
-            'request_date' => 'required|date',
-            'pic' => 'required|string',
-            'description' => 'required|string',
+            "project_name" => "required|string",
+            "dept" => "required|exists:departments,id",
+            "request_date" => "required|date",
+            "pic" => "required|string",
+            "description" => "required|string",
         ]);
 
         // Create a new project instance
         $project = new ProjectMaster();
-        $project->project_name = $request->input('project_name');
-        $project->dept = $request->input('dept');
-        $project->request_date = $request->input('request_date');
-        $project->pic = $request->input('pic');
-        $project->description = $request->input('description');
+        $project->project_name = $request->input("project_name");
+        $project->dept = $request->input("dept");
+        $project->request_date = $request->input("request_date");
+        $project->pic = $request->input("pic");
+        $project->description = $request->input("description");
         $project->status = "Initiating";
         // You can also set other attributes here if needed
 
@@ -49,22 +49,21 @@ class ProjectTrackerController extends Controller
         $project->save();
 
         // Redirect to a success page or back to the form with a success message
-        return redirect()->route('pt.index')->with('success', 'Project created successfully');
+        return redirect()->route("pt.index")->with("success", "Project created successfully");
     }
 
-    
     public function detail($id)
     {
         $project = ProjectMaster::find($id);
         $histories = $project->prohist()->get();
-       
+
         return view("projecttracker.detail", compact("project", "histories"));
     }
 
     public function updateOngoing(Request $request, $id)
     {
         $request->validate([
-            'remark' => 'required|string|max:255', // Validation rule for the remark field
+            "remark" => "required|string|max:255", // Validation rule for the remark field
         ]);
 
         $project = ProjectMaster::findOrFail($id);
@@ -74,25 +73,25 @@ class ProjectTrackerController extends Controller
             $project->status = "OnGoing";
             $project->start_date = now();
             $project->save();
-    
+
             // Generate project history data and save it
             $projectHistory = new ProjectHistory();
             $projectHistory->project_id = $project->id;
             $projectHistory->date = now();
             $projectHistory->status = "OnGoing";
-            $projectHistory->remarks = $request->input('remark');
-           
+            $projectHistory->remarks = $request->input("remark");
+
             $projectHistory->save();
         }
-    
+
         // Redirect back to the project detail page
-        return redirect()->route('pt.index', $id);
+        return redirect()->route("pt.index", $id);
     }
 
-    public function updateTest(Request $request,$id)
+    public function updateTest(Request $request, $id)
     {
         $request->validate([
-            'remark' => 'required|string|max:255', // Validation rule for the remark field
+            "remark" => "required|string|max:255", // Validation rule for the remark field
         ]);
 
         $project = ProjectMaster::findOrFail($id);
@@ -101,31 +100,31 @@ class ProjectTrackerController extends Controller
             // Update the status to "Start"
             $project->status = "ReadyToTest";
             $project->save();
-    
+
             // Generate project history data and save it
             $projectHistory = new ProjectHistory();
             $projectHistory->project_id = $project->id;
             $projectHistory->date = now();
             $projectHistory->status = "ReadyToTest";
-            $projectHistory->remarks = $request->input('remark');
+            $projectHistory->remarks = $request->input("remark");
             // Add other project history data as needed
             $projectHistory->save();
         }
-    
+
         // Redirect back to the project detail page
-        return redirect()->route('pt.index', $id);
+        return redirect()->route("pt.index", $id);
     }
 
     public function updateRevision(Request $request, $id)
     {
-    //    dd($request->remarks);
+        //    dd($request->remarks);
         $project = ProjectMaster::findOrFail($id);
 
         if ($project->status == "ReadyToTest") {
             // Update the status to "Start"
             $project->status = "NeedToBeRevised";
             $project->save();
-    
+
             // Generate project history data and save it
             $projectHistory = new ProjectHistory();
             $projectHistory->project_id = $project->id;
@@ -135,15 +134,15 @@ class ProjectTrackerController extends Controller
             // Add other project history data as needed
             $projectHistory->save();
         }
-    
+
         // Redirect back to the project detail page
-        return redirect()->route('pt.index', $id);
+        return redirect()->route("pt.index", $id);
     }
 
     public function updateAccept(Request $request, $id)
     {
         $request->validate([
-            'remark' => 'required|string|max:255', // Validation rule for the remark field
+            "remark" => "required|string|max:255", // Validation rule for the remark field
         ]);
 
         $project = ProjectMaster::findOrFail($id);
@@ -153,18 +152,18 @@ class ProjectTrackerController extends Controller
             $project->status = "Accept";
             $project->end_date = now();
             $project->save();
-    
+
             // Generate project history data and save it
             $projectHistory = new ProjectHistory();
             $projectHistory->project_id = $project->id;
             $projectHistory->date = now();
             $projectHistory->status = "Accept";
-            $projectHistory->remarks = $request->input('remark');
+            $projectHistory->remarks = $request->input("remark");
             // Add other project history data as needed
             $projectHistory->save();
         }
-    
+
         // Redirect back to the project detail page
-        return redirect()->route('pt.index', $id);
+        return redirect()->route("pt.index", $id);
     }
 }

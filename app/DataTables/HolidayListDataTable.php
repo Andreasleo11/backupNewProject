@@ -23,15 +23,18 @@ class HolidayListDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-        ->addColumn('action', '
+            ->addColumn(
+                "action",
+                '
                                 <button data-bs-target="#edit-holiday-modal-{{ $id }}" data-bs-toggle="modal" class="btn btn-primary my-1 me-1">
                                     <i class="bx bx-edit"></i> <span class="d-none d-sm-inline">Edit</span>
                                 </button>
                                 <button class="btn btn-danger my-1 me-1" data-bs-toggle="modal" data-bs-target="#delete-confirmation-modal-{{ $id }}">
                                     <i class="bx bx-trash-alt"></i> <span class="d-none d-sm-inline">Delete</span>
                                 </button>
-         ')
-            ->setRowId('id');
+         ',
+            )
+            ->setRowId("id");
     }
 
     /**
@@ -53,20 +56,20 @@ class HolidayListDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->responsive(true)
-                    ->setTableId('holidaylist-table')
-                    ->columns($this->getColumns())
-                    ->minifiedAjax()
-                    //->dom('Bfrtip')
-                    ->orderBy(1)
-                    ->buttons([
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        // Button::make('pdf'),
-                        Button::make('print'),
-                        Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+            ->responsive(true)
+            ->setTableId("holidaylist-table")
+            ->columns($this->getColumns())
+            ->minifiedAjax()
+            //->dom('Bfrtip')
+            ->orderBy(1)
+            ->buttons([
+                Button::make("excel"),
+                Button::make("csv"),
+                // Button::make('pdf'),
+                Button::make("print"),
+                Button::make("reset"),
+                Button::make("reload"),
+            ]);
     }
 
     /**
@@ -77,12 +80,14 @@ class HolidayListDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('date'),
-            Column::make('holiday_name')->title('Name'),
-            Column::make('description'),
-            Column::make('half_day')->title('Half Day')->data('half_day')->addClass('text-center align middle')
-            ->renderRaw('function(data, type, row, meta){
+            Column::make("id"),
+            Column::make("date"),
+            Column::make("holiday_name")->title("Name"),
+            Column::make("description"),
+            Column::make("half_day")
+                ->title("Half Day")
+                ->data("half_day")
+                ->addClass("text-center align middle")->renderRaw('function(data, type, row, meta){
                 if (type === \'display\') {
                     if (data === 1) {
                         return \'Yes\';
@@ -92,10 +97,10 @@ class HolidayListDataTable extends DataTable
                 }
                 return data; // Return the original data for other types
             }'),
-            Column::computed('action')
-            ->exportable(false)
-            ->printable(false)
-            ->addClass('text-center'),
+            Column::computed("action")
+                ->exportable(false)
+                ->printable(false)
+                ->addClass("text-center"),
         ];
     }
 
@@ -106,6 +111,6 @@ class HolidayListDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'HolidayList_' . date('YmdHis');
+        return "HolidayList_" . date("YmdHis");
     }
 }

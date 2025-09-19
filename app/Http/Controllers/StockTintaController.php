@@ -9,6 +9,6 @@ class StockTintaController extends Controller
 {
     public function index()
     {
-        return view('stocktinta.index');
+        return view("stocktinta.index");
     }
 }

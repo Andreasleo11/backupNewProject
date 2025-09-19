@@ -2,23 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateMonthlyBudgetReportSummaryDetailRequest;
 use App\Models\MonthlyBudgetReportSummaryDetail;
 use Illuminate\Http\Request;
 
 class MonthlyBudgetReportSummaryDetailController extends Controller
 {
-    public function update(Request $request, $id)
+    public function update(UpdateMonthlyBudgetReportSummaryDetailRequest $request, $id)
     {
+        $validatedData = $request->validated();
+
         // Use preg_replace to remove everything except digits and the decimal point
-        if($request->cost_per_unit){
-            $formatedCost = preg_replace('/[^\d.]/', '', $request->cost_per_unit);
+        if ($request->cost_per_unit) {
+            $formattedCost = preg_replace("/[^\d.]/", "", $request->cost_per_unit);
+            if (is_numeric($formattedCost) && $formattedCost > 0) {
+                $validatedData["cost_per_unit"] = $formattedCost;
+            } else {
+                return redirect()
+                    ->back()
+                    ->withErrors([
+                        "cost_per_unit" => "The cost per unit must be a positive number.",
+                    ]);
+            }
         }
 
-        MonthlyBudgetReportSummaryDetail::find($id)->update([
-            'supplier' => $request->supplier,
-            'cost_per_unit' => $formatedCost ?? null,
-            'remark' => $request->remark
-        ]);
-        return redirect()->back()->with('success', 'Details has been updated!');
+        MonthlyBudgetReportSummaryDetail::findOrFail($id)->update($validatedData);
+        return redirect()->back()->with("success", "Details has been updated successfully!");
+    }
+
+    public function destroy($id)
+    {
+        MonthlyBudgetReportSummaryDetail::find($id)->delete();
+        return redirect()->back()->with("success", "Details has been deleted successfully!");
     }
 }

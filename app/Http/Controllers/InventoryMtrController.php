@@ -13,8 +13,6 @@ class InventoryMtrController extends Controller
     {
         // $datas = sapInventoryMtr::paginate(10);
 
-
-        
         return $dataTable->render("sap.inventorymtr");
     }
 }

@@ -23,17 +23,14 @@ class UpdateMonthlyBudgetReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'dept_no' => [
-                'required',
-                Rule::exists('departments', 'dept_no')
-            ],
-            'report_date' => 'required|date',
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|integer',
-            'items.*.name' => 'required|string|max:255',
-            'items.*.uom' => 'required|string|max:10',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.remark' => 'nullable|string|max:255',
+            "dept_no" => ["required", Rule::exists("departments", "dept_no")],
+            "report_date" => "required|date",
+            // 'items' => 'required|array|min:1',
+            // 'items.*.id' => 'required|integer|exists:monthly_budget_report_details,id',
+            // 'items.*.name' => 'required|string|max:255',
+            // 'items.*.uom' => 'required|string|max:10',
+            // 'items.*.quantity' => 'required|integer|min:1',
+            // 'items.*.remark' => 'nullable|string|max:255',
         ];
     }
 }

@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 class DetailSoftware extends Model
 {
     use HasFactory;
-    protected $table = 'detail_softwares';
+    protected $table = "detail_softwares";
     protected $fillable = [
-        'master_inventory_id',
-        'software_id',
-        'software_name',
-        'license',
-        'remark',
+        "master_inventory_id",
+        "software_id",
+        "software_brand",
+        "software_name",
+        "license",
+        "remark",
     ];
 
     public function masterInventory()
@@ -24,7 +25,6 @@ class DetailSoftware extends Model
 
     public function softwareType()
     {
-        return $this->belongsTo(SoftwareTypeInventory::class, 'software_id');
+        return $this->belongsTo(SoftwareTypeInventory::class, "software_id");
     }
-    
 }

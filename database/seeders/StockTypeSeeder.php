@@ -15,11 +15,11 @@ class StockTypeSeeder extends Seeder
     {
         StockType::truncate();
         StockType::create([
-            'name' => 'Tinta',
+            "name" => "Tinta",
         ]);
 
         StockType::create([
-            'name' => 'Toner',
+            "name" => "Toner",
         ]);
     }
 }

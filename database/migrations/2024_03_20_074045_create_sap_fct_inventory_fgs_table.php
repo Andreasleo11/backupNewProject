@@ -4,19 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('sap_fct_inventory_fgs', function (Blueprint $table) {
+        Schema::create("sap_fct_inventory_fgs", function (Blueprint $table) {
             $table->string("item_code")->primary();
             $table->string("item_name")->nullable();
             $table->integer("day_set_pps")->nullable();
             $table->integer("setup_time")->nullable();
-            $table->decimal("cycle_time", 8,5)->nullable();
+            $table->decimal("cycle_time", 8, 5)->nullable();
             $table->integer("cavity")->nullable();
             $table->integer("safety_stock")->nullable();
             $table->integer("daily_limit")->nullable();
@@ -45,6 +44,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sap_fct_inventory_fgs');
+        Schema::dropIfExists("sap_fct_inventory_fgs");
     }
 };

@@ -9,7 +9,6 @@ use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-
 class ForExport implements FromView, ShouldAutoSize, WithStyles
 {
     use Exportable;
@@ -22,8 +21,15 @@ class ForExport implements FromView, ShouldAutoSize, WithStyles
     private $qforecast;
     private $vendorname;
 
-    public function __construct($monthm, $materials, $values, $uniqueMonths, $vendorCode, $qforecast,$vendorname)
-    {
+    public function __construct(
+        $monthm,
+        $materials,
+        $values,
+        $uniqueMonths,
+        $vendorCode,
+        $qforecast,
+        $vendorname,
+    ) {
         $this->monthm = $monthm;
         $this->materials = $materials;
         $this->values = $values;
@@ -35,28 +41,27 @@ class ForExport implements FromView, ShouldAutoSize, WithStyles
 
     public function view(): View
     {
-        return view('purchasing.foremind_detail_print_excel', [
-            'monthm' => $this->monthm,
-            'materials' => $this->materials,
-            'values' => $this->values,
-            'mon' => $this->uniqueMonths,
-            'vendorCode' => $this->vendorCode,
-            'qforecast' => $this->qforecast,
-            'vendorName' => $this->vendorname,
+        return view("purchasing.foremind_detail_print_excel", [
+            "monthm" => $this->monthm,
+            "materials" => $this->materials,
+            "values" => $this->values,
+            "mon" => $this->uniqueMonths,
+            "vendorCode" => $this->vendorCode,
+            "qforecast" => $this->qforecast,
+            "vendorName" => $this->vendorname,
         ]);
     }
 
     public function styles(Worksheet $sheet)
     {
         // Apply all borders to all cells
-        $sheet->getStyle($sheet->calculateWorksheetDimension())
-            ->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => '000000'],
-                    ],
+        $sheet->getStyle($sheet->calculateWorksheetDimension())->applyFromArray([
+            "borders" => [
+                "allBorders" => [
+                    "borderStyle" => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    "color" => ["rgb" => "000000"],
                 ],
-            ]);
+            ],
+        ]);
     }
 }

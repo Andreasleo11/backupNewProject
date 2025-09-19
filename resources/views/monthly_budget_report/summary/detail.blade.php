@@ -1,287 +1,193 @@
 @extends('layouts.app')
 
-@section('content')
-    <section class="breadcrumb">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('monthly.budget.summary.report.index') }}">Monthly Budget
-                        Summary Reports</a>
-                </li>
-                <li class="breadcrumb-item active">Detail</li>
-            </ol>
-        </nav>
-    </section>
+@push('extraCss')
+  <style>
+    .autograph-box {
+      width: 200px;
+      height: 100px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      border: 1px solid #ccc;
+    }
 
-    <style>
-        .autograph-box {
-            width: 200px;
-            height: 100px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: 1px solid #ccc;
-        }
-
-        /* Optional: Add styling for merged rows */
-        .merged-row {
-            font-style: italic;
-            color: #888;
-        }
-    </style>
-
-    {{-- GLOBAL VARIABLE --}}
-    @php
-        $authUser = Auth::user();
-    @endphp
-
-    <section class="autographs">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="row text-center">
-                    {{-- CREATED AUTOGRAPH --}}
-                    <div class="col my-2">
-                        <h2>Dibuat</h2>
-                        <div class="autograph-box container" id="autographBox1"></div>
-                        <div class="container mt-2" id="autographUser1"></div>
-
-                        @php
-                            $showCreatedAutograph = false;
-                            if (!$report->created_autograph) {
-                                if ($report->creator_id === auth()->user()->id) {
-                                    $showCreatedAutograph = true;
-                                }
-                            }
-                        @endphp
-
-                        @if ($showCreatedAutograph)
-                            <div class="row px-4 d-flex justify-content-center">
-                                <div class="col-auto me-2">
-                                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                        class="btn btn-danger">Reject</button>
-                                </div>
-                                <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
-                                        method="POST" id="formIsKnownAutograph">
-                                        @csrf @method('PUT')
-                                        <input type="hidden" name="is_known_autograph"
-                                            value="{{ ucwords($authUser->name) }}">
-                                    </form>
-                                    @include('partials.approve-confirmation-modal2', [
-                                        'id' => '1',
-                                        'title' => 'Approval Confirmation',
-                                        'body' => 'Are you sure want to approve this report?',
-                                        'submitButton' =>
-                                            '<button class="btn btn-success" onclick="document.getElementById(\'formIsKnownAutograph\').submit()">Confirm</button>',
-                                    ])
-                                    <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
-                                        class="btn btn-success">Approve</button>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- IS KNOWN AUTOGRAPH --}}
-                    <div class="col my-2">
-                        <h2>Diketahui</h2>
-                        <div class="autograph-box container" id="autographBox2"></div>
-                        <div class="container mt-2 border-1" id="autographUser2"></div>
-                        @php
-                            $showIsKnownAutograph = false;
-                            if ($report->created_autograph && !$report->is_known_autograph) {
-                                if ($authUser->is_gm) {
-                                    $showIsKnownAutograph = true;
-                                }
-                            }
-                        @endphp
-
-                        @if ($showIsKnownAutograph)
-                            <div class="row px-4 d-flex justify-content-center">
-                                <div class="col-auto me-2">
-                                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                        class="btn btn-danger">Reject</button>
-                                </div>
-                                <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
-                                        method="POST" id="formIsKnownAutograph">
-                                        @csrf @method('PUT')
-                                        <input type="hidden" name="is_known_autograph"
-                                            value="{{ ucwords($authUser->name) }}">
-                                    </form>
-                                    @include('partials.approve-confirmation-modal2', [
-                                        'id' => '1',
-                                        'title' => 'Approval Confirmation',
-                                        'body' => 'Are you sure want to approve this report?',
-                                        'submitButton' =>
-                                            '<button class="btn btn-success" onclick="document.getElementById(\'formIsKnownAutograph\').submit()">Confirm</button>',
-                                    ])
-                                    <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-1"
-                                        class="btn btn-success">Approve</button>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- APPROVED AUTOGRAPH --}}
-                    <div class="my-2 col">
-                        <h2>Disetujui</h2>
-                        <div class="autograph-box container" id="autographBox3"></div>
-                        <div class="container mt-2 border-1" id="autographUser3"></div>
-                        @php
-                            $showApprovedAutograph = false;
-                            if (
-                                $report->created_autograph &&
-                                $report->is_known_autograph &&
-                                !$report->approved_autograph
-                            ) {
-                                if ($authUser->department->name === 'DIRECTOR') {
-                                    $showApprovedAutograph = true;
-                                }
-                            }
-                        @endphp
-                        @if ($showApprovedAutograph)
-                            <div class="row px-4 d-flex justify-content-center">
-                                <div class="col-auto me-2 ">
-                                    <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
-                                        class="btn btn-danger">Reject</button>
-                                </div>
-                                <div class="col-auto">
-                                    <form action="{{ route('monthly.budget.summary.save.autograph', $report->id) }}"
-                                        method="POST" id="formApprovedAutograph">
-                                        @csrf @method('PUT')
-                                        <input type="hidden" name="approved_autograph"
-                                            value="{{ ucwords($authUser->name) }}">
-                                    </form>
-                                    @include('partials.approve-confirmation-modal2', [
-                                        'id' => '2',
-                                        'title' => 'Approval Confirmation',
-                                        'body' => 'Are you sure want to approve this report?',
-                                        'submitButton' =>
-                                            '<button class="btn btn-success" onclick="document.getElementById(\'formApprovedAutograph\').submit()">Confirm</button>',
-                                    ])
-                                    <button data-bs-toggle="modal" data-bs-target="#approve-confirmation-modal-2"
-                                        class="btn btn-success">Approve</button>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section aria-label="report">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="text-center">
-                            <div class="h2 fw-bold mt-4">Monthly Budget Summary Report</div>
-                            <div class="fs-6 mt-2">
-                                <div class="fs-6 text-secondary">Created At : {{ $formattedCreatedAt }}</div>
-                                <div class="fs-6 text-secondary">Month : {{ $monthYear }} </div>
-                                <div class="mt-1">
-                                    @include('partials.monthly-budget-summary-report-status')
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card mt-4">
-                            <div class="card-body">
-                                <table class="table text-center">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Name</th>
-                                            <th>Dept</th>
-                                            <th>Quantity</th>
-                                            <th>UoM</th>
-                                            <th>Supplier</th>
-                                            <th>Cost Per Unit</th>
-                                            <th>Total Cost</th>
-                                            <th>Remark</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php
-                                            $rowIndex = 0; // Initialize row index
-                                        @endphp
-                                        @foreach ($groupedDetails as $index => $group)
-                                            @php
-                                                $rowspanCount = count($group['items']); // Calculate rowspan for the name column
-                                            @endphp
-                                            @foreach ($group['items'] as $itemIndex => $item)
-                                                @php
-                                                    $totalCost = $item['quantity'] * $item['cost_per_unit'];
-                                                @endphp
-                                                <tr>
-                                                    {{-- Render rowspan for the first row of each group --}}
-                                                    @if ($itemIndex === 0)
-                                                        <td rowspan="{{ $rowspanCount }}">{{ ++$rowIndex }}</td>
-                                                        <td rowspan="{{ $rowspanCount }}">{{ $group['name'] }}</td>
-                                                    @endif
-                                                    <td>{{ $item['dept_no'] }}</td>
-                                                    <td>{{ $item['quantity'] }}</td>
-                                                    <td>{{ $item['uom'] }}</td>
-                                                    <td>{{ $item['supplier'] ?? '-' }}</td>
-                                                    <td>@currency($item['cost_per_unit'])</td>
-                                                    <td>@currency($totalCost)</td>
-                                                    <td>{{ $item['remark'] }}</td>
-                                                    <td>
-                                                        @include('partials.edit-monthly-budget-report-summary-detail')
-                                                        <button class="btn btn-primary"
-                                                            data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
-                                                            data-bs-toggle="modal">Edit</button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        @endforeach
-                                        @if (empty($groupedDetails))
-                                            <tr>
-                                                <td colspan="10">No Data</td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-@endsection
-
-@push('extraJs')
-    <script>
-        checkAutographStatus();
-
-        function checkAutographStatus() {
-            // Assume you have a variable from the server side indicating the autograph status
-            var autographs = {
-                autograph_1: '{{ $report->created_autograph ?? null }}',
-                autograph_2: '{{ $report->is_known_autograph ?? null }}',
-                autograph_3: '{{ $report->approved_autograph ?? null }}',
-            };
-
-            // Loop through each autograph status and update the UI accordingly
-            for (var i = 1; i <= 3; i++) {
-                var autographBox = document.getElementById('autographBox' + i);
-                var autographNameBox = document.getElementById('autographUser' + i);
-
-
-                // Check if autograph status is present in the database
-                if (autographs['autograph_' + i]) {
-
-                    // Construct URL based on the current location
-                    var url = '/' + autographs['autograph_' + i];
-
-                    // Update the background image using the URL
-                    autographBox.style.backgroundImage = "url('" + url + '.png' + "')";
-
-                    var autographName = autographs['autograph_' + i].split('.')[0];
-                    autographNameBox.textContent = autographName;
-                    autographNameBox.style.display = 'block';
-                }
-            }
-        }
-    </script>
+    /* Optional: Add styling for merged rows */
+    .merged-row {
+      font-style: italic;
+      color: #888;
+    }
+  </style>
 @endpush
+
+@section('content')
+  {{-- GLOBAL VARIABLE --}}
+  @php
+    $authUser = Auth::user();
+  @endphp
+
+  @include('partials.alert-success-error')
+  <section class="breadcrumb">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ route('monthly.budget.summary.report.index') }}">Monthly
+            Budget
+            Summary Reports</a>
+        </li>
+        <li class="breadcrumb-item active">Detail</li>
+      </ol>
+    </nav>
+  </section>
+
+  <div class="row">
+    <div class="col-md-11 text-end mb-5">
+      @if ($authUser->email === 'nur@daijo.co.id')
+        <button class="btn btn-outline-primary" data-bs-target="#upload-files-modal"
+          data-bs-toggle="modal">
+          <i class='bx bx-upload'></i> Upload
+        </button>
+
+        @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
+      @endif
+    </div>
+  </div>
+
+  <section class="autographs">
+    @include('partials.monthly-budget-summary-report-autograph')
+  </section>
+  <section aria-label="report">
+    <div class="row justify-content-center mt-5">
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <div class="text-center">
+              <div class="h2 fw-bold mt-4">Monthly Budget Summary Report <span
+                  class="{{ $report->is_moulding ? '' : 'd-none' }}">Moulding</span></div>
+              <div class="fs-6 mt-2">
+                <div class="fs-5 ">Doc. Num : {{ $report->doc_num }}</div>
+                <div class="fs-6 text-secondary">Created At : {{ $formattedCreatedAt }}</div>
+                <div class="fs-6 text-secondary">Month : {{ $monthYear }} </div>
+                <div class="mt-1">
+                  @include('partials.monthly-budget-summary-report-status', [
+                      'status' => $report->status,
+                  ])
+                </div>
+              </div>
+            </div>
+            <div class="card mt-4">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table text-center table-striped ">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Dept</th>
+                        <th>Quantity</th>
+                        <th>UoM</th>
+                        @if ($report->is_moulding)
+                          <th>Spec</th>
+                          <th>Last Recorded Stock</th>
+                          <th>Usage Per Month</th>
+                        @endif
+                        <th>Supplier</th>
+                        <th>Cost Per Unit</th>
+                        <th>Total Cost</th>
+                        <th>Remark</th>
+                        @if (
+                            ($report->status === 1 && $report->user->id === $authUser->id) ||
+                                ($report->status === 2 && $authUser->is_gm === 1))
+                          <th>Action</th>
+                        @endif
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @php
+                        $rowIndex = 0; // Initialize row index
+                        $grandTotal = 0; // Initialize grand total
+                      @endphp
+                      @foreach ($groupedDetailsForView as $index => $group)
+                        @php
+                          $rowspanCount = count($group['items']); // Calculate rowspan for the name column
+                        @endphp
+                        @foreach ($group['items'] as $itemIndex => $item)
+                          @php
+                            $totalCost = $item['quantity'] * $item['cost_per_unit'];
+                            $grandTotal += $totalCost; // Accumulate total cost
+                          @endphp
+                          <tr>
+                            {{-- Render rowspan for the first row of each group --}}
+                            @if ($itemIndex === 0)
+                              <td rowspan="{{ $rowspanCount }}">{{ ++$rowIndex }}</td>
+                              <td rowspan="{{ $rowspanCount }}">{{ $group['name'] }}</td>
+                            @endif
+                            <td>{{ $item['dept_no'] }}</td>
+                            <td>{{ $item['quantity'] }}</td>
+                            <td>{{ $item['uom'] }}</td>
+                            @if ($report->is_moulding)
+                              <td>{{ $item['spec'] ?? '-' }}</td>
+                              <td>{{ $item['last_recorded_stock'] ?? '-' }}</td>
+                              <td>{{ $item['usage_per_month'] ?? '-' }}</td>
+                            @endif
+                            <td>{{ $item['supplier'] ?? '-' }}</td>
+                            <td>@currency($item['cost_per_unit'])</td>
+                            <td>@currency($totalCost)</td>
+                            <td style="width: 25%;">
+                              {{ $item['remark'] }}
+                            </td>
+                            <td>
+                              @if (
+                                  ($report->status === 1 && $report->user->id === $authUser->id) ||
+                                      ($report->status === 2 && $authUser->is_gm === 1) ||
+                                      ($report->status === 3 &&
+                                          $authUser->is_head === 1 &&
+                                          $authUser->department->name === 'MOULDING'))
+                                @include('partials.edit-monthly-budget-report-summary-detail')
+                                <button class="btn btn-primary"
+                                  data-bs-target="#edit-monthly-budget-report-summary-detail-{{ $item['id'] }}"
+                                  data-bs-toggle="modal"><i class='bx bx-edit'></i></button>
+                                @include('partials.delete-confirmation-modal', [
+                                    'title' => 'Delete item',
+                                    'body' => 'Are you sure want to delete this item?',
+                                    'id' => $item['id'],
+                                    'route' => 'monthly.budget.report.summary.detail.destroy',
+                                ])
+
+                                <button class="btn btn-danger my-1"
+                                  data-bs-target="#delete-confirmation-modal-{{ $item['id'] }}"
+                                  data-bs-toggle="modal"><i class='bx bx-trash-alt'></i>
+                                </button>
+                              @endif
+                            </td>
+                          </tr>
+                        @endforeach
+                      @endforeach
+                      @if (empty($groupedDetailsForView))
+                        <tr>
+                          <td colspan="13">No Data</td>
+                        </tr>
+                      @endif
+                      {{-- Display grand total row --}}
+                      <tr>
+                        <td colspan="{{ $report->is_moulding ? 10 : 7 }}"
+                          class="text-end align-content-center fw-bold">Total
+                        </td>
+                        <td class="fw-bold">@currency($grandTotal)</td>
+                        <td colspan="2"></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="mt-2">
+    @include('partials.uploaded-section', [
+        'showDeleteButton' => $report->status === 1,
+        'files' => $report->files,
+    ])
+  </div>
+@endsection

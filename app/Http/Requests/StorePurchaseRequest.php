@@ -24,27 +24,29 @@ class StorePurchaseRequest extends FormRequest
     public function rules()
     {
         return [
-            'from_department' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::exists('departments', 'name')
+            "from_department" => [
+                "required",
+                "string",
+                "max:255",
+                Rule::exists("departments", "name"),
             ],
-            'to_department' => 'required|string|max:255',
-            'date_of_pr' => 'required|date',
-            'date_of_required' => 'required|date',
-            'remark' => 'nullable|string|max:255',
-            'supplier' => 'required|string|max:255',
-            'pic' => 'required|string|max:255',
+            "to_department" => "required|string|max:255",
+            "date_of_pr" => "required|date",
+            "date_of_required" => "required|date",
+            "remark" => "nullable|string",
+            "supplier" => "required|string|max:255",
+            "pic" => "required|string|max:255",
+            "branch" => ["required", "string", Rule::in(["JAKARTA", "KARAWANG"])],
             // 'type' => [
             //     'nullable',
             //     'string',
             //     Rule::in(['factory', 'office'])
             // ],
             // 'is_import' => 'nullable|boolean',
-            'items' => 'required|array',
-            'items.*.item_name' => 'required|string|max:255',
-            'items.*.price' => ['required', new SanitizedNumeric],
+            "items" => "required|array",
+            "items.*.item_name" => "required|string|max:255",
+            "items.*.price" => ["required", new SanitizedNumeric()],
+            "is_draft" => "required|boolean",
         ];
     }
 
@@ -56,16 +58,18 @@ class StorePurchaseRequest extends FormRequest
     public function messages()
     {
         return [
-            'from_department.required' => 'The from department field is required.',
-            'to_department.required' => 'The to department field is required.',
-            'date_of_pr.required' => 'The date of PR field is required.',
-            'date_of_required.required' => 'The date required field is required.',
-            'supplier.required' => 'The supplier field is required.',
-            'pic.required' => 'The PIC field is required.',
-            'type.required' => 'The type field is required.',
-            'items.required' => 'At least one item is required.',
-            'items.*.name.required' => 'Each item must have a name.',
-            'items.*.price.required' => 'Each item must have a price.',
+            "from_department.required" => "The from department field is required.",
+            "to_department.required" => "The to department field is required.",
+            "date_of_pr.required" => "The date of PR field is required.",
+            "date_of_required.required" => "The date required field is required.",
+            "supplier.required" => "The supplier field is required.",
+            "pic.required" => "The PIC field is required.",
+            "type.required" => "The type field is required.",
+            "items.required" => "At least one item is required.",
+            "items.*.name.required" => "Each item must have a name.",
+            "items.*.price.required" => "Each item must have a price.",
+            "is_draft.required" => "The draft field is required.",
+            "is_draft.boolean" => "The draft should be boolean.",
         ];
     }
 }
