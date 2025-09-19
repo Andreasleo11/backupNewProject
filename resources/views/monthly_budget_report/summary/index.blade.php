@@ -59,6 +59,8 @@
               <th>#</th>
               <th>Doc. Number</th>
               <th>Report Date</th>
+              <th>Total Amount</th>
+              <th>Comparison with Prev Month</th>
               <th>Created At</th>
               <th>Status</th>
               <th>Action</th>
@@ -77,6 +79,29 @@
                 <th>{{ $loop->iteration }}</th>
                 <td>{{ $report->doc_num }}</td>
                 <td>{{ $monthYear }}</td>
+                <td class="text-end fw-semibold">
+                  {{ number_format($report->total_amount, 0, ',', '.') }}
+                </td>
+                <td class="text-end">
+                  @php($m = $report->mom)
+                  @if(!$m['has_prev'])
+                    <span class="text-muted">—</span>
+                  @elseif($m['direction'] === 'up')
+                    <span class="badge bg-success-subtle border border-success-subtle text-success" title="Prev: {{ number_format($m['prev'], 0, ',', '.') }}">
+                      <i class='bx bx-trending-up'></i>
+                      {{ number_format($m['diff'], 0, ',', '.') }} ({{ number_format($m['pct'], 2, ',', '.') }}%)
+                    </span>
+                  @elseif($m['direction'] === 'down')
+                    <span class="badge bg-danger-subtle border border-danger-subtle text-danger" title="Prev: {{ number_format($m['prev'], 0, ',', '.') }}">
+                      <i class='bx bx-trending-down'></i>
+                      {{ number_format($m['diff'], 0, ',', '.') }} ({{ number_format($m['pct'], 2, ',', '.') }}%)
+                    </span>
+                  @else
+                    <span class="badge bg-secondary-subtle border border-secondary-subtle text-secondary" title="Prev: {{ number_format($m['prev'], 0, ',', '.') }}">
+                      <i class='bx bx-minus'></i> 0 (0%)
+                    </span>
+                  @endif
+                </td>
                 <td>{{ $formattedCreatedAt }}</td>
                 <td>
                   @include('partials.monthly-budget-summary-report-status', [

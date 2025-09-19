@@ -13,7 +13,7 @@ class MonthlyBudgetSummaryReportController extends Controller
 {
     public function index()
     {
-        $reportsQuery = Report::with("details", "user");
+        $reportsQuery = Report::with("details", "user")->withTotals()->withPrevTotals();
         $authUser = auth()->user();
 
         if ($authUser->specification->name === "DIRECTOR") {
@@ -24,7 +24,7 @@ class MonthlyBudgetSummaryReportController extends Controller
             $reportsQuery->where("status", 2);
         }
 
-        $reports = $reportsQuery->orderBy("created_at", "desc")->paginate(15);
+        $reports = $reportsQuery->orderBy("created_at")->paginate(15);
         return view("monthly_budget_report.summary.index", compact("reports"));
     }
 
