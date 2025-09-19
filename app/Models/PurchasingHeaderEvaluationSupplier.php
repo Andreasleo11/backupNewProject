@@ -25,4 +25,13 @@ class PurchasingHeaderEvaluationSupplier extends Model
     {
         return $this->hasMany(PurchasingDetailEvaluationSupplier::class, "header_id", "id");
     }
+
+    public function contact()
+    {
+        return $this->belongsTo(
+            PurchasingContact::class, // Model relasi
+            "vendor_name", // foreign key di tabel purchasing_header_evaluation_supplier
+            "vendor_name", // primary/unique key di tabel purchasing_contacts
+        );
+    }
 }

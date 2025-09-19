@@ -34,7 +34,8 @@
               </th>
               <th align="center" style="vertical-align: middle; font-size: 18px;">Material Code</th>
               <th align="center" style="vertical-align: middle; font-size: 18px;">Material Name</th>
-              <th align="center" style="vertical-align: middle; font-size: 18px;">Item No</th>
+              <th align="center" style="vertical-align: middle; font-size: 18px;">Item No</th>              
+              <th align="center" style="vertical-align: middle; font-size: 18px;">Item Desc</th>
               <th align="center" style="vertical-align: middle; font-size: 18px;">Vendor Code</th>
               <th align="center" style="vertical-align: middle; font-size: 18px;">U/M</th>
               <th align="center" style="vertical-align: middle; font-size: 18px;">NET Quantity</th>

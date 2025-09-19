@@ -156,7 +156,7 @@ class PurchaseRequestsDataTable extends DataTable
                                     ->orWhere("to_department", "Computer");
                             });
                     })
-                    ->orWhere("from_department", "PERSONALIA");
+                    ->orWhere("status", 2);
             });
         } elseif ($isGM) {
             $query

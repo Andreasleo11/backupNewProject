@@ -114,7 +114,7 @@ class PurchasingSupplierEvaluationController extends Controller
             "start_month" => $startMonthName,
             "year" => $startYear,
             "end_month" => $endMonthName,
-            "end_year" => $endYear,
+            "year_end" => $endYear,
             "grade" => null, // Grade will be updated later
             "status" => null, // Status will be updated later
         ]);
@@ -686,7 +686,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
     public function details($id)
     {
-        $header = PurchasingHeaderEvaluationSupplier::with("details")->findOrFail($id);
+        $header = PurchasingHeaderEvaluationSupplier::with(["details", "contact"])->findOrFail($id);
         $detailsCount = $header->details->count();
 
         // Mapping nama bulan ke angka
@@ -816,7 +816,10 @@ class PurchasingSupplierEvaluationController extends Controller
 
         $vendorNames = PurchasingVendorClaim::distinct("vendor_name")->pluck("vendor_name");
 
-        return view("purchasing.evaluationsupplier.kriteria1", compact("datas", "vendorNames"));
+        return view(
+            "purchasing.evaluationsupplier.kriteria1",
+            compact("datas", "vendorNames", "header"),
+        );
     }
 
     public function kriteria2(Request $request)
