@@ -732,6 +732,12 @@
               Files
             </a>
           </li>
+          <li class="sidebar-item">
+            <a href="{{ route('files.index') }}" class="sidebar-link">
+              <i class='bx bx-file'></i>
+              Department Expenses
+            </a>
+          </li>
         </ul>
       </li>
     @endif

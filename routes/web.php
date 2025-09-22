@@ -2093,4 +2093,6 @@ Route::middleware("auth")->group(function () {
     Route::get("/files/{upload}/preview", PreviewUploadController::class)->name("files.preview");
 });
 
-Route::get("/reports/department-expenses", DepartmentExpenses::class)->middleware(["auth"]); // optional
+Route::get("/reports/department-expenses", DepartmentExpenses::class)
+    ->middleware(["auth"])
+    ->name("department-expenses.index");
