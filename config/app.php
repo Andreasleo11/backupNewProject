@@ -171,6 +171,7 @@ return [
             App\Providers\RouteServiceProvider::class,
             Yajra\DataTables\DataTablesServiceProvider::class,
             Barryvdh\Snappy\ServiceProvider::class,
+            App\Domain\Expenses\Providers\ExpensesServiceProvider::class,
         ])
         ->toArray(),
 

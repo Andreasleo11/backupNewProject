@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domain\Expenses\ExpenseRepository;
+use App\Expenses\Sources\MonthlyBudgetSource;
+use App\Expenses\Sources\PurchaseRequestSource;
 use App\Models\Detail;
 use App\Models\HeaderFormOvertime;
 use App\Observers\DetailObserver;
@@ -22,6 +25,14 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Payroll\Contracts\JPayrollClientContract::class,
             fn() => \App\Services\Payroll\JPayrollClient::fromConfig(),
         );
+
+        $this->app->bind(ExpenseRepository::class, function () {
+            return new ExpenseRepository(
+                new PurchaseRequestSource(),
+                new MonthlyBudgetSource(),
+                // add more sources here later...
+            );
+        });
     }
 
     /**
