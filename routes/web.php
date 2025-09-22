@@ -100,6 +100,7 @@ use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNotePrint;
 use App\Livewire\DeliveryNoteShow;
+use App\Livewire\DepartmentExpenses;
 use Illuminate\Support\Facades\Http;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
@@ -2091,3 +2092,7 @@ Route::middleware("auth")->group(function () {
     Route::get("/files/{upload}/download", DownloadUploadController::class)->name("files.download");
     Route::get("/files/{upload}/preview", PreviewUploadController::class)->name("files.preview");
 });
+
+Route::get("/reports/department-expenses", DepartmentExpenses::class)
+    ->middleware(["auth"])
+    ->name("department-expenses.index");
