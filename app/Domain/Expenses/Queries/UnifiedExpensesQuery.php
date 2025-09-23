@@ -23,6 +23,7 @@ class UnifiedExpensesQuery
             ->leftJoin("departments as dep", "dep.name", "=", "h.from_department")
             ->whereNull("d.deleted_at")
             ->whereNull("h.deleted_at")
+            ->where("h.status", 4) // approved
             ->where("h.is_cancel", 0)->selectRaw("
                 COALESCE(dep.id, 0)                                         as dept_id,
                 COALESCE(dep.name, h.from_department, 'Unknown')            as dept_name,
@@ -53,6 +54,7 @@ class UnifiedExpensesQuery
             ->whereNull("d.deleted_at")
             ->whereNull("h.deleted_at")
             ->where("h.is_cancel", 0)
+            ->where("h.status", 6) // approved
             ->where("h.is_reject", 0)->selectRaw("
                 COALESCE(dep.id, 0)                                         as dept_id,
                 COALESCE(dep.name, CONCAT('Dept ', d.dept_no))              as dept_name,
