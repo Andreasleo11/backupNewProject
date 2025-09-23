@@ -130,13 +130,19 @@
   </div>
 
   {{-- Pagination --}}
+  {{-- Pagination + meta --}}
+  @php
+    $from  = $rows->firstItem() ?? 0;
+    $to    = $rows->lastItem()  ?? 0;
+    $total = $rows->total();
+  @endphp
+
   <div class="d-flex justify-content-between align-items-center mt-3">
     <div class="small text-muted">
-      Showing {{ $rows->firstItem() }}–{{ $rows->lastItem() }} of {{ $rows->total() }}
+      Showing {{ $from }} to {{ $to }} of {{ $total }} results
     </div>
     <div>
-      {{ $rows->links() }}
-      {{-- If you use Bootstrap pagination views: {{ $rows->links('vendor.livewire.bootstrap') }} --}}
+      {{ $rows->links('vendor.livewire.bootstrap-noscroll') }}
     </div>
   </div>
 </div>
