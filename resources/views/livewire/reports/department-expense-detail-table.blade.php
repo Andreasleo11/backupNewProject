@@ -78,13 +78,29 @@
             $isPR  = $l->source === 'purchase_request';
             $label = $isPR ? 'Purchase Request' : 'Monthly Budget';
             $pill  = $isPR ? 'primary' : 'success';
+
+            // Build document URL using named routes if available; fall back to conventional URLs
+            $url = null;
+            if ($isPR) {
+                $url = \Illuminate\Support\Facades\Route::has('purchaseRequest.detail')
+                    ? route('purchaseRequest.detail', $l->doc_id)
+                    : url('/purchaserequest/detail/'.$l->doc_id);
+            } else {
+                $url = \Illuminate\Support\Facades\Route::has('monthly.budget.summary.report.show')
+                    ? route('monthly.budget.summary.report.show', $l->doc_id)
+                    : url('monthlyBudgetSummaryReport/'.$l->doc_id);
+            }
           @endphp
           <tr>
             <td class="text-nowrap">{{ \Illuminate\Support\Carbon::parse($l->expense_date)->format('Y-m-d') }}</td>
-            <td>
+            <td class="text-nowrap">
               <span class="badge text-bg-{{ $pill }} border border-{{ $pill }}-subtle">{{ $label }}</span>
             </td>
-            <td><div class="cell-clip" title="{{ $l->item_name }}">{{ $l->item_name }}</div></td>
+            <td>
+              <a href="{{ $url }}" target="_blank" rel="noopener" class="cell-clip text-decoration-none" title="{{ $l->item_name }}">
+                {{ $l->item_name }}
+              </a>
+            </td>
             <td class="text-end num">{{ number_format($l->quantity, 2, ',', '.') }}</td>
             <td class="text-nowrap">{{ $l->uom }}</td>
             <td class="text-end num">Rp {{ number_format($l->unit_price, 2, ',', '.') }}</td>

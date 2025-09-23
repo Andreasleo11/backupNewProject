@@ -31,6 +31,9 @@ class UnifiedExpensesQuery
                 CAST(COALESCE(h.approved_at, h.date_pr) AS DATE)            as expense_date,
                 'purchase_request'                                          as source,
 
+                h.id                                                        as doc_id,
+                COALESCE(h.pr_no, h.doc_num, h.id)                          as doc_num,
+
                 COALESCE(d.item_name, '')                                   as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
                 COALESCE(d.quantity, 0)                                     as quantity,
@@ -55,8 +58,11 @@ class UnifiedExpensesQuery
                 COALESCE(dep.name, CONCAT('Dept ', d.dept_no))              as dept_name,
                 COALESCE(dep.dept_no, CAST(d.dept_no AS CHAR))              as dept_no,
 
-                CAST(h.report_date AS DATE)                                  as expense_date,
+                CAST(h.report_date AS DATE)                                 as expense_date,
                 'monthly_budget'                                            as source,
+
+                h.id                                                        as doc_id,
+                COALESCE(h.doc_num, h.id)                                   as doc_num,
 
                 COALESCE(d.name, '')                                        as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,

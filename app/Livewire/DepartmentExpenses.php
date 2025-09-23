@@ -26,12 +26,9 @@ class DepartmentExpenses extends Component
         $this->dispatch("chart:clearSelection");
     }
 
-    public function render(\App\Domain\Expenses\ExpenseRepository $repo)
+    public function render(ExpenseRepository $repo)
     {
         $totals = $repo->totalsPerDepartmentForMonth($this->month);
-        $detail = $this->deptId
-            ? $repo->detailByDepartmentForMonth($this->deptId, $this->month)
-            : collect();
 
         // ✅ Seed/refresh the chart ONLY when the month changes (or first load)
         if ($this->chartMonthSent !== $this->month) {
@@ -46,7 +43,7 @@ class DepartmentExpenses extends Component
             $this->chartMonthSent = $this->month;
         }
 
-        return view("livewire.department-expenses", compact("totals", "detail"));
+        return view("livewire.department-expenses", compact("totals"));
     }
 
     public function showDetail(int $deptId): void

@@ -24,13 +24,6 @@ class ExpenseRepository
         return UnifiedExpensesQuery::totalsPerDepartment($start, $end)->get();
     }
 
-    /** Drilldown lines for a department for the month */
-    public function detailByDepartmentForMonth(int $deptId, string $ym): Collection
-    {
-        [$start, $end] = $this->monthRange($ym);
-        return UnifiedExpensesQuery::detailByDepartment($deptId, $start, $end)->get();
-    }
-
     /** return a Builder so child component can filter/sort/paginate */
     public function detailQueryForMonth(int $deptId, string $ym): Builder
     {
