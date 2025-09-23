@@ -99,6 +99,8 @@ class DepartmentExpenseDetailTable extends Component
         $sumQty = (clone $q)->sum("quantity");
         $sumTotal = (clone $q)->sum("line_total");
 
+        $q->reorder();
+
         // apply sort + pagination (safe due to whitelist)
         $rows = $q->orderBy($this->sortBy, $this->sortDir)->paginate($this->perPage);
 
