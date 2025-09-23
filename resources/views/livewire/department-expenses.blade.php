@@ -168,58 +168,13 @@
               Click a bar in the chart or the “View lines” button in the table to see details.
             </div>
           @else
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div class="small">
-                <span class="text-muted">Department:</span>
-                <span class="fw-semibold">
-                  {{ $deptSelected ?? $deptId }}
-                </span>
-                <span class="text-muted"> • Period:</span>
-                <span class="fw-semibold">{{ $monthLabel }}</span>
-              </div>
-              <button class="btn btn-outline-secondary btn-sm" wire:click="clearDetail">
-                <i class="bi bi-arrow-left-circle me-1"></i> Back
-              </button>
-            </div>
-
-            <div class="table-responsive">
-              <table class="table table-striped align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th style="min-width: 110px;">Date</th>
-                    <th style="min-width: 120px;">Source</th>
-                    <th>Item</th>
-                    <th class="text-end">Qty</th>
-                    <th>UoM</th>
-                    <th class="text-end">Unit Price</th>
-                    <th class="text-end" style="min-width: 140px;">Line Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @forelse($detail as $l)
-                    <tr>
-                      <td>{{ \Illuminate\Support\Carbon::parse($l->expense_date)->format('Y-m-d') }}</td>
-                      <td>
-                        <span class="badge text-bg-{{ $l->source === 'purchase_request' ? 'primary' : 'success' }} border">
-                          {{ str($l->source)->replace('_',' ')->title() }}
-                        </span>
-                      </td>
-                      <td>{{ $l->item_name }}</td>
-                      <td class="text-end">{{ number_format($l->quantity, 2, ',', '.') }}</td>
-                      <td>{{ $l->uom }}</td>
-                      <td class="text-end">{{ number_format($l->unit_price, 2, ',', '.') }}</td>
-                      <td class="text-end fw-semibold">{{ number_format($l->line_total, 2, ',', '.') }}</td>
-                    </tr>
-                  @empty
-                    <tr>
-                      <td colspan="7" class="text-center text-muted py-4">
-                        <i class="bi bi-inbox me-1"></i> No lines found.
-                      </td>
-                    </tr>
-                  @endforelse
-                </tbody>
-              </table>
-            </div>
+            <livewire:reports.department-expense-detail-table
+              :dept-id="$deptId"
+              :month="$month"
+              :dept-name="($deptSelected ?? $deptId)"
+              :month-label="$monthLabel"
+              :key="'detail-'.$deptId.'-'.$month"
+            />
           @endif
         </div>
       </div>
@@ -245,7 +200,6 @@
     box-shadow: 0 8px 24px rgba(99,102,241,.15);
   }
   .chart-shell { height: 380px; }
-  .row-hoverable:hover { background: #f8fafc !important; }
 </style>
 @endPushOnce
 
