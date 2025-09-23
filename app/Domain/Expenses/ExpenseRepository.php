@@ -3,6 +3,7 @@
 namespace App\Domain\Expenses;
 
 use App\Domain\Expenses\Queries\UnifiedExpensesQuery;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -23,10 +24,10 @@ class ExpenseRepository
         return UnifiedExpensesQuery::totalsPerDepartment($start, $end)->get();
     }
 
-    /** Drilldown lines for a department for the month */
-    public function detailByDepartmentForMonth(int $deptId, string $ym): Collection
+    /** return a Builder so child component can filter/sort/paginate */
+    public function detailQueryForMonth(int $deptId, string $ym): Builder
     {
         [$start, $end] = $this->monthRange($ym);
-        return UnifiedExpensesQuery::detailByDepartment($deptId, $start, $end)->get();
+        return UnifiedExpensesQuery::detailByDepartment($deptId, $start, $end);
     }
 }

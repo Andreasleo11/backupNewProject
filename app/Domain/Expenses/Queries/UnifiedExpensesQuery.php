@@ -23,6 +23,7 @@ class UnifiedExpensesQuery
             ->leftJoin("departments as dep", "dep.name", "=", "h.from_department")
             ->whereNull("d.deleted_at")
             ->whereNull("h.deleted_at")
+            ->where("h.status", 4) // approved
             ->where("h.is_cancel", 0)->selectRaw("
                 COALESCE(dep.id, 0)                                         as dept_id,
                 COALESCE(dep.name, h.from_department, 'Unknown')            as dept_name,
@@ -30,6 +31,9 @@ class UnifiedExpensesQuery
 
                 CAST(COALESCE(h.approved_at, h.date_pr) AS DATE)            as expense_date,
                 'purchase_request'                                          as source,
+
+                h.id                                                        as doc_id,
+                COALESCE(h.pr_no, h.doc_num, h.id)                          as doc_num,
 
                 COALESCE(d.item_name, '')                                   as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
@@ -50,13 +54,17 @@ class UnifiedExpensesQuery
             ->whereNull("d.deleted_at")
             ->whereNull("h.deleted_at")
             ->where("h.is_cancel", 0)
+            ->where("h.status", 6) // approved
             ->where("h.is_reject", 0)->selectRaw("
                 COALESCE(dep.id, 0)                                         as dept_id,
                 COALESCE(dep.name, CONCAT('Dept ', d.dept_no))              as dept_name,
                 COALESCE(dep.dept_no, CAST(d.dept_no AS CHAR))              as dept_no,
 
-                CAST(h.report_date AS DATE)                                  as expense_date,
+                CAST(h.report_date AS DATE)                                 as expense_date,
                 'monthly_budget'                                            as source,
+
+                h.id                                                        as doc_id,
+                COALESCE(h.doc_num, h.id)                                   as doc_num,
 
                 COALESCE(d.name, '')                                        as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
