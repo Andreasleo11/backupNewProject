@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\MonthlyBudgetReportDetail;
-use App\Notifications\MonthlyBudgetReportCreated;
 use App\Notifications\MonthlyBudgetReportUpdated;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -165,6 +164,8 @@ class MonthlyBudgetReport extends Model
                             $query->where("name", "LOGISTIC");
                         })
                         ->first();
+                } elseif ($this->department->name === "PLASTIC INJECTION") {
+                    $user = User::where("email", "albert@daijo.co.id")->first();
                 } else {
                     $user = User::where("department_id", $this->department->id)
                         ->where("is_head", 1)
@@ -192,7 +193,7 @@ class MonthlyBudgetReport extends Model
                         })
                         ->first();
                 } else {
-                    $user = User::where("is_gm", 1)->first();
+                    $user = User::where("email", "albert@daijo.co.id")->first();
                 }
             }
 

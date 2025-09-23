@@ -291,6 +291,9 @@ class MonthlyBudgetReportController extends Controller
             }
         } elseif ($report->created_autograph) {
             $report->status = 2;
+            if ($report->department->name === "PLASTIC INJECTION") {
+                $report->status = 4;
+            }
         }
 
         $report->save();

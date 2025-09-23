@@ -46,13 +46,13 @@
       </div>
 
       {{-- IS KNOWN AUTOGRAPH --}}
-      <div class="col my-2">
+      <div class="col my-2 {{ ($report->department->name === 'PLASTIC INJECTION') ? 'd-none' : ''}} ">
         <h2>Diketahui</h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographUser2"></div>
         @php
           $showIsKnownAutograph = false;
-          if (!$report->is_known_autograph && $authUser->is_head === 1) {
+          if (!$report->is_known_autograph && $authUser->is_head === 1 && $report->department->name !== 'PLASTIC INJECTION') {
               if ($authUser->department->name === $report->department->name) {
                   if (
                       $report->department->name === 'MOULDING' &&
