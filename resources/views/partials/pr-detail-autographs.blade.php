@@ -233,7 +233,7 @@
         @if ($count === $countItemHasApprovalStatus)
           <div class="row px-4 d-flex justify-content-center">
             <div
-              class="col-auto me-2 {{ ($count == 1 && $detailObj->is_approve_by_head) || $thereIsApprovedItem ? 'd-none' : '' }}">
+              class="col-auto me-2">
               <button data-bs-toggle="modal" data-bs-target="#reject-pr-confirmation"
                 class="btn btn-danger">Reject</button>
             </div>
