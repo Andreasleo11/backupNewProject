@@ -37,9 +37,9 @@ class UnifiedExpensesQuery
 
                 COALESCE(d.item_name, '')                                   as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
-                COALESCE(d.quantity, 0)                                     as quantity,
-                COALESCE(d.price, 0)                                        as unit_price,
-                (COALESCE(d.quantity,0) * COALESCE(d.price,0))              as line_total
+                CAST(COALESCE(d.quantity, 0) AS DECIMAL(20,4))                       as quantity,
+                CAST(COALESCE(d.price, 0)    AS DECIMAL(20,4))                       as unit_price,
+                CAST((COALESCE(d.quantity,0) * COALESCE(d.price,0)) AS DECIMAL(20,4)) as line_total
             ");
 
         // ---- MONTHLY BUDGET SUMMARY LINES ----
@@ -54,7 +54,7 @@ class UnifiedExpensesQuery
             ->whereNull("d.deleted_at")
             ->whereNull("h.deleted_at")
             ->where("h.is_cancel", 0)
-            ->where("h.status", 6) // approved
+            ->where("h.status", 5) // approved
             ->where("h.is_reject", 0)->selectRaw("
                 COALESCE(dep.id, 0)                                         as dept_id,
                 COALESCE(dep.name, CONCAT('Dept ', d.dept_no))              as dept_name,
@@ -68,9 +68,9 @@ class UnifiedExpensesQuery
 
                 COALESCE(d.name, '')                                        as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
-                COALESCE(d.quantity, 0)                                     as quantity,
-                COALESCE(d.cost_per_unit, 0)                                as unit_price,
-                (COALESCE(d.quantity,0) * COALESCE(d.cost_per_unit,0))      as line_total
+                CAST(COALESCE(d.quantity, 0)         AS DECIMAL(20,4)) as quantity,
+                CAST(COALESCE(d.cost_per_unit, 0)    AS DECIMAL(20,4)) as unit_price,
+                CAST((COALESCE(d.quantity,0) * COALESCE(d.cost_per_unit,0)) AS DECIMAL(20,4)) as line_total
             ");
 
         $union = $prLines->unionAll($mbLines);
