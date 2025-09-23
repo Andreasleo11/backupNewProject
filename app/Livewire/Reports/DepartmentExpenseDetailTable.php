@@ -10,6 +10,8 @@ class DepartmentExpenseDetailTable extends Component
 {
     use WithPagination;
 
+    protected string $paginationTheme = "bootstrap";
+
     public string $month;
     public int $deptId;
     public string $deptName = "";
