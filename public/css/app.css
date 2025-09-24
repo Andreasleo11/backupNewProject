@@ -1,40 +1,34 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+:root {
+  --sidebar-bg: #0e2238;
+  --sidebar-fg: #fff;
+  --sidebar-accent: #3b7ddd;
+  --navbar-bg: #14385e;
+  --page-bg: #fafbfe;
+}
 
-::after,
-::before {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-.navbar {
-  width: 100.5%;
-  margin-top: -3px;
-  margin-left: -2px;
-  background-color: #14385e;
-  color: #fff;
-}
-
-a {
-  text-decoration: none;
-}
-
-li {
-  list-style: none;
-}
-
-h1 {
-  font-weight: 600;
-  font-size: 1.5rem;
 }
 
 body {
   font-family: "Poppins", sans-serif;
+  background: var(--page-bg);
 }
 
-.avatar {
-  height: 40px;
-  width: 40px;
+.navbar {
+  width: 100%;
+  background-color: var(--navbar-bg);
+  color: #fff;
+}
+
+/* Accessibility-friendly transitions */
+@media (prefers-reduced-motion: no-preference) {
+  .main,
+  #sidebar {
+    transition: all 0.25s ease-in-out;
+  }
 }
 
 .wrapper {
@@ -45,17 +39,16 @@ body {
   min-height: 100vh;
   width: 100%;
   overflow: hidden;
-  transition: all 0.35s ease-in-out;
-  background-color: #fafbfe;
+  background-color: var(--page-bg);
 }
 
+/* Sidebar */
 #sidebar {
   padding-top: 12px;
   width: 70px;
   min-width: 70px;
   z-index: 1000;
-  transition: all 0.25s ease-in-out;
-  background-color: #0e2238;
+  background-color: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
 }
@@ -66,24 +59,19 @@ body {
 }
 
 .sidebar-toggle-btn {
-  background-color: transparent;
-  cursor: pointer;
+  background: transparent;
   border: 0;
   padding: 1rem 1.5rem;
-}
-
-.sidebar-toggle-btn i {
-  font-size: 1.5rem;
   color: #fff;
+  cursor: pointer;
 }
 
 .sidebar-logo {
   margin: auto 0;
 }
-
 .sidebar-logo a {
   color: #fff;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 600;
 }
 
@@ -93,17 +81,19 @@ body {
 }
 
 .sidebar-nav {
-  padding: 2rem 0;
+  padding: 0.75rem 0 1.25rem;
   flex: 1 1 auto;
 }
 
 a.sidebar-link {
-  padding: 0.625rem 1.625rem;
-  color: #fff;
+  position: relative;
   display: block;
-  font-size: 0.9rem;
+  padding: 0.625rem 1.625rem;
+  color: var(--sidebar-fg);
+  font-size: 0.92rem;
   white-space: nowrap;
   border-left: 3px solid transparent;
+  text-decoration: none;
 }
 
 .sidebar-link i {
@@ -111,9 +101,10 @@ a.sidebar-link {
   margin-right: 0.75rem;
 }
 
-a.sidebar-link:hover {
+a.sidebar-link:hover,
+a.sidebar-link.active {
   background-color: rgba(255, 255, 255, 0.075);
-  border-left: 3px solid #3b7ddd;
+  border-left-color: var(--sidebar-accent);
 }
 
 .sidebar-item {
@@ -124,7 +115,7 @@ a.sidebar-link:hover {
   position: absolute;
   top: 0;
   left: 70px;
-  background-color: #0e2238;
+  background-color: var(--sidebar-bg);
   padding: 0;
   min-width: 15rem;
   display: none;
@@ -134,29 +125,21 @@ a.sidebar-link:hover {
   display: block;
   max-height: 15em;
   width: 100%;
-  opacity: 1;
 }
 
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
-  border: solid;
-  border-width: 0 0.075rem 0.075rem 0;
   content: "";
-  display: inline-block;
-  padding: 2px;
   position: absolute;
   right: 1.5rem;
   top: 1.4rem;
+  border: solid;
+  border-width: 0 0.075rem 0.075rem 0;
+  padding: 2px;
   transform: rotate(-135deg);
-  transition: all 0.2s ease-out;
 }
 
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
   transform: rotate(45deg);
-  transition: all 0.2s ease-out;
-}
-
-#sidebar .sidebar-item .sidebar-dropdown .sidebar-item .sidebar-dropdown {
-  padding-left: 1rem;
 }
 
 #sidebar .sidebar-dropdown .sidebar-link {
@@ -165,12 +148,18 @@ a.sidebar-link:hover {
 
 .sidebar-search {
   padding: 10px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ffffff22;
 }
-
 #sidebar-search-input {
   width: 100%;
-  padding: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 6px 8px;
+  border: 1px solid #2a3c52;
+  border-radius: 6px;
+  color: #fff;
+  background: #0e2238;
+}
+
+/* Let main content breathe when sidebar expands (optional if you want push effect) */
+body.sidebar-open .main {
+  margin-left: 0;
 }
