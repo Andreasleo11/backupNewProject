@@ -1,18 +1,96 @@
 @php
+  use Illuminate\Support\Str;
+
   $user = Auth::user();
   $department = optional($user->department)->name ?? '';
   $specification = optional($user->specification)->name ?? '';
   $isSuper = optional($user->role)->name === 'SUPERADMIN';
-  $deptHead = Auth::user()->is_head;
+  $deptHead = (bool) $user->is_head;
+
+  // Helper: returns true if current route matches any pattern
+  function groupOpen(array $patterns): bool {
+      return request()->routeIs($patterns);
+  }
+
+  // ---- Route pattern maps for groups ----
+  $adminPatterns = [
+    'superadmin.users*',
+    'superadmin.departments*',
+    'superadmin.specifications*',
+    'superadmin.users.permissions*',
+    'superadmin.permissions*',
+    'changeemail.page',
+    'pt.*',
+    'md.parts.import',
+  ];
+
+  $computerPatterns = [
+    'mastertinta.*', 'masterinventory.*', 'index.employeesmaster',
+    'maintenance.inventory.*', 'masterinventory.typeindex'
+  ];
+
+  $qualityPatterns = [
+    'qaqc.report.*','listformadjust','qaqc.defectcategory'
+  ];
+
+  $productionPatterns = [
+    'indexpps','capacityforecastindex','pe.formlist'
+  ];
+
+  $businessPatterns = ['indexds'];
+
+  $maintenancePatterns = ['moulddown.*','linedown.*'];
+
+  $hrdPatterns = ['hrd.importantDocs.*'];
+
+  $purchasingPatterns = [
+    'purchasing_home','purchasing.evaluationsupplier.*','reminderindex',
+    'purchasingrequirement.*','indexds','fc.*'
+  ];
+
+  $accountingPatterns = ['accounting.purchase-request'];
+
+  $inventoryPatterns = ['delsched.averagemonth','inventoryfg','inventorymtr','invlinelist'];
+
+  $storePatterns = [
+    'barcodeindex','barcode.base.*','inandout.*','missingbarcode.*','list.barcode',
+    'barcode.historytable','stockallbarcode','updated.barcode.item.position',
+    'delivery-notes.*','destination.*','vehicles.*'
+  ];
+
+  $stockMgmtPatterns = ['mastertinta.*'];
+
+  $otherPatterns = [
+    'director.pr.index','purchaserequest.home','daily-reports.*','overtime.*',
+    'actual.import.form','formcuti.*','formkeluar.*','discipline.*','yayasan.table','magang.table',
+    'format.evaluation.year.*','exportyayasan.dateinput','purchaserequest.monthlyprlist',
+    'monthly.budget.report.*','monthly-budget-summary-report.*','spk.*','formkerusakan.*',
+    'po.dashboard','waiting_purchase_orders.*','employee_trainings.*','daily-report.form',
+    'files.*','department-expenses.*','indexds'
+  ];
+
+  $employeeEvalSubPatterns = [
+    'discipline.*','yayasan.table','magang.table','format.evaluation.year.*','exportyayasan.dateinput'
+  ];
+
+  $monthlyBudgetSubPatterns = [
+    'monthly.budget.report.*','monthly-budget-summary-report.*'
+  ];
 @endphp
 
 <aside id="sidebar" role="navigation" aria-label="Sidebar">
   <div class="d-flex align-items-center">
-    <button class="sidebar-toggle-btn" type="button" aria-control="sidebar" aria-expanded="false" aria-label="Toggle sidebar">
+    <button class="sidebar-toggle-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle sidebar">
       <i class='bx bx-grid-alt'></i>
     </button>
     <div class="sidebar-logo">
       <a href="{{ route('home') }}">Menu</a>
+    </div>
+
+    {{-- Expand/Collapse all groups --}}
+    <div class="ms-auto pe-2 d-none d-sm-block">
+      <button class="btn btn-sm btn-outline-light me-1" id="btnExpandAll" type="button">Expand all</button>
+      <button class="btn btn-sm btn-outline-light" id="btnCollapseAll" type="button">Collapse all</button>
     </div>
   </div>
 
@@ -22,725 +100,363 @@
   </div>
 
   <ul class="sidebar-nav" id="sidebarNavRoot">
+    {{-- Dashboard --}}
     <li class="sidebar-item">
-      <a href="{{ route('home') }}" class="sidebar-link {{ request()->routeIs('home') ? 'active' : '' }}">
-        <i class='bx bx-line-chart'></i>
-        <span>Dashboard</span>
-      </a>
+      <x-sidebar.link
+        :href="route('home')"
+        icon="bx bx-line-chart"
+        :active="request()->routeIs('home')">
+        Dashboard
+      </x-sidebar.link>
     </li>
 
+    {{-- Dashboard Employee (Dept Head) --}}
     @if ($deptHead)
       <li class="sidebar-item" id="sidebar-item-dashboard-employee">
-        <a href="{{ route('employee.dashboard') }}" class="sidebar-link">
-          <i class='bx bx-line-chart'></i>
+        <x-sidebar.link
+          :href="route('employee.dashboard')"
+          icon="bx bx-line-chart"
+          :active="request()->routeIs('employee.dashboard')">
           Dashboard Employee
-        </a>
+        </x-sidebar.link>
       </li>
     @endif
 
-    <!-- Admin -->
+    {{-- Admin --}}
     @if ($isSuper)
-      <li class="sidebar-item" id="sidebar-item-admin">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#adminGroup" aria-expanded="false" aria-controls="adminGroup">
-          <i class='bx bx-bug'></i>
-          <span>Admin</span>
-        </a>
-        <ul id="adminGroup" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('superadmin.users') }}" class="sidebar-link {{ request()->routeIs('superadmin.users') ? 'active' : '' }}">
-              <i class='bx bx-user'></i>
-              Users
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('superadmin.departments') }}" class="sidebar-link">
-              <i class='bx bx-building-house'></i>
-              Departments
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('superadmin.specifications') }}" class="sidebar-link">
-              <i class='bx bx-task'></i>
-              Specifications
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('superadmin.users.permissions.index') }}" class="sidebar-link">
-              <i class='bx bx-lock-alt'></i>
-              Users Permissions
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('superadmin.permissions.index') }}" class="sidebar-link">
-              <i class='bx bx-lock-alt'></i>
-              Permissions
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('changeemail.page') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Default Email QC
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('pt.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-             Project Tracker
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('md.parts.import') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Master Data Parts
-            </a>
-          </li>
-        </ul>
-      </li>
+      <x-sidebar.group id="adminGroup" icon="bx bx-bug" title="Admin" :open="groupOpen($adminPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('superadmin.users')" icon="bx bx-user" :active="request()->routeIs('superadmin.users*')">Users</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('superadmin.departments')" icon="bx bx-building-house" :active="request()->routeIs('superadmin.departments*')">Departments</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('superadmin.specifications')" icon="bx bx-task" :active="request()->routeIs('superadmin.specifications*')">Specifications</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('superadmin.users.permissions.index')" icon="bx bx-lock-alt" :active="request()->routeIs('superadmin.users.permissions*')">Users Permissions</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('superadmin.permissions.index')" icon="bx bx-lock-alt" :active="request()->routeIs('superadmin.permissions*')">Permissions</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('changeemail.page')" icon="bx bx-file" :active="request()->routeIs('changeemail.page')">Change Default Email QC</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('pt.index')" icon="bx bx-file" :active="request()->routeIs('pt.*')">Project Tracker</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('md.parts.import')" icon="bx bx-file" :active="request()->routeIs('md.parts.import')">Master Data Parts</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
     @endif
 
-    <!-- Computer -->
+    {{-- Computer --}}
     @if ($department === 'COMPUTER' || $isSuper)
-      <li class="sidebar-item" id="sidebar-item-computer">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#computerGroup" aria-expanded="false" aria-controls="computerGroup">
-          <i class='bx bx-desktop'></i>
-          <span>Computer</span>
-        </a>
-        <ul id="computerGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Stock Management
-            </a>
-          </li>
-
-          <li class="sidebar-item">
-            <a href="{{ route('masterinventory.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Inventory Master
-            </a>
-          </li>
-
-          @if ($user->is_head === 1 || $isSuper)
-            <li class="sidebar-item">
-              <a href="{{ route('index.employeesmaster') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Employee Master
-              </a>
-            </li>
-          @endif
-
-          <li class="sidebar-item">
-            <a href="{{ route('maintenance.inventory.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Maintenance Inventory
-            </a>
-          </li>
-
-          <li class="sidebar-list">
-            <a href="{{ route('masterinventory.typeindex') }}" class="sidebar-link">
-              <i class='bx bx-cube'></i>
-              Type Inventory
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-
-    <!-- Quality -->
-    @if (
-        $department === 'QA' ||
-            $department === 'QC' ||
-            $department === 'BUSINESS' ||
-            $isSuper || 
-            $user->name === 'herlina')
-      <li class="sidebar-item" id="sidebar-item-qaqc">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#qualityGroup" aria-expanded="false" aria-controls="qualityGroup">
-          <i class='bx bx-badge-check'></i>
-          <span>Quality</span>
-        </a>
-        <ul id="qualityGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('qaqc.report.index') }}" class="sidebar-link">
-              <i class='bx bx-file-blank'></i>
-              Verification Reports
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('listformadjust') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Form Adjust
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('qaqc.defectcategory') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Defect Categories
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-
-    <!-- Production -->
-    @if (
-        $department === 'PRODUCTION' ||
-            $department === 'PE' ||
-            $isSuper ||
-            $department === 'PPIC')
-      <li class="sidebar-item" id="sidebar-item-production">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#productionGroup" aria-expanded="false" aria-controls="productionGroup">
-          <i class='bx bxs-factory'></i>
-          <span>Production</span>
-        </a>
-        <ul id="productionGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('indexpps') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              PPS Wizard
-            </a>
-          </li>
-          <li class="sidebar-item">
-            <a href="{{ route('capacityforecastindex') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Capacity By Forecast
-            </a>
-          </li>
-          <li class="sidebar-pe">
-            <a href="{{ route('pe.formlist') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Form Request Trial
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-
-    <!-- Business -->
-    @if ($department === 'BUSINESS' || $isSuper || $department === 'PPIC')
-      <li class="sidebar-item" id="sidebar-item-business">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#businessGroup" aria-expanded="false" aria-controls="businessGroup">
-          <i class='bx bx-objects-vertical-bottom'></i>
-          <span>Business</span>
-        </a>
-        <ul id="businessGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('indexds') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Delivery Schedule
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-
-    <!-- Maintenance -->
-    @if ($department === 'MAINTENANCE' || $isSuper || $department === 'PPIC')
-      <li class="sidebar-item" id="sidebar-item-maintenance">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#maintenanceGroup" aria-expanded="false" aria-controls="maintenanceGroup">
-          <i class='bx bxs-wrench'></i>
-          <span>Maintenance</span>
-        </a>
-        <ul id="maintenanceGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('moulddown.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Mould Repair
-            </a>
-          </li>
-        </ul>
-        <ul id="maintenance" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item">
-            <a href="{{ route('linedown.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Line Repair
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-
-    <!-- Human Resource -->
-    @if (($department === 'PERSONALIA' && $deptHead) || $isSuper)
-      <li class="sidebar-item" id="sidebar-item-hrd">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#humanResourceGroup" aria-expanded="false" aria-controls="humanResourceGroup">
-          <i class='bx bxs-user'></i>
-          <span>Human Resource</span>
-        </a>
-        <ul id="humanResourceGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-item" id="sidebar-item-hrd">
-            <a href="{{ route('hrd.importantDocs.index') }}" class="sidebar-link">
-              <i class='bx bx-file-blank'></i>
-              Important Documents
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-    
-    <!-- Purchasing -->
-    @if ($department === 'PURCHASING' || $isSuper)
-      <li class="sidebar-item" id="sidebar-item-purchasing">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#purchasingGroup" aria-expanded="false" aria-controls="purchasingGroup">
-          <i class='bx bx-dollar-circle'></i>
-          <span>Purchasing</span>
-        </a>
-        <ul id="purchasingGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-purchasing">
-            <a href="{{ route('purchasing_home') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Forecast Prediction
-            </a>
-          </li>
-
-          <li class="sidebar-purchasing">
-            <a href="{{ route('purchasing.evaluationsupplier.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Evaluation Supplier
-            </a>
-          </li>
-
-          <li class="sidebar-purchasing">
-            <a href="{{ route('reminderindex') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Reminder
-            </a>
-          </li>
-
-          <li class="sidebar-purchasing">
-            <a href="{{ route('purchasingrequirement.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Purchasing Requirement
-            </a>
-          </li>
-          <li class="sidebar-purchasing">
-            <a href="{{ route('indexds') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Delivery Schedule
-            </a>
-          </li>
-
-          <li class="sidebar-purchasing">
-            <a href="{{ route('fc.index') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Forecast Customer Master
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-
-    <!-- Accounting -->
-    @if ($department === 'ACCOUNTING' || $isSuper)
-      <li class="sidebar-item" id="sidebar-item-accounting">
-        <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-          data-bs-target="#accountingGroup" aria-expanded="false" aria-controls="accountingGroup">
-          <i class='bx bx-dollar'></i>
-          <span>Accounting</span>
-        </a>
-        <ul id="accountingGroup" class="sidebar-dropdown list-unstyled collapse"
-          data-bs-parent="#sidebar">
-          <li class="sidebar-accounting">
-            <a href="{{ route('accounting.purchase-request') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Approved PRs
-            </a>
-          </li>
-        </ul>
-      </li>
-    @endif
-    
-    <!-- Inventory -->
-    <li class="sidebar-item" id="sidebar-item-list">
-      <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-        data-bs-target="#inventoryGroup" aria-expanded="false" aria-controls="inventoryGroup">
-        <i class='bx bxs-component'></i>
-        <span>Inventory</span>
-      </a>
-      <ul id="inventoryGroup" class="sidebar-dropdown list-unstyled collapse"
-        data-bs-parent="#sidebar">
+      <x-sidebar.group id="computerGroup" icon="bx bx-desktop" title="Computer" :open="groupOpen($computerPatterns)">
         <li class="sidebar-item">
-          <a href="{{ route('delsched.averagemonth') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            FG Stock Monitoring
-          </a>
+          <x-sidebar.link :href="route('mastertinta.index')" icon="bx bx-file" :active="request()->routeIs('mastertinta.*')">Stock Management</x-sidebar.link>
         </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('inventoryfg') }}" class="sidebar-link">
-            <i class='bx bx-cube'></i>
-            Inventory FG
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('inventorymtr') }}" class="sidebar-link">
-            <i class='bx bx-cube'></i>
-            Inventory MTR
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('invlinelist') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Machine and Line list
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Store -->
-    <li class="sidebar-item" id="sidebar-item-list">
-      <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-        data-bs-target="#storeGroup" aria-expanded="false" aria-controls="storeGroup">
-        <i class='bx bxs-component'></i>
-        <span>Store</span>
-      </a>
-      <ul id="storeGroup" class="sidebar-dropdown list-unstyled collapse"
-        data-bs-parent="#sidebar">
-        <li class="sidebar-list">
-          <a href="{{ route('barcodeindex') }}" class="sidebar-link">
-            <i class='bx bx-cube'></i>
-            Create Barcode
-          </a>
-        </li>
-
         <li class="sidebar-item">
-          <a href="{{ route('barcode.base.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Barcode Feature
-          </a>
+          <x-sidebar.link :href="route('masterinventory.index')" icon="bx bx-file" :active="request()->routeIs('masterinventory.*')">Inventory Master</x-sidebar.link>
         </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('inandout.index') }}" class="sidebar-link">
-            <i class='bx bx-cube'></i>
-            Scan Barcode
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('missingbarcode.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Missing Barcode Generator
-          </a>
-        </li>
-
-        @if ($user->name === 'raymond')
-          <li class="sidebar-list">
-            <a href="{{ route('list.barcode') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Report History
-            </a>
+        @if ($user->is_head === 1 || $isSuper)
+          <li class="sidebar-item">
+            <x-sidebar.link :href="route('index.employeesmaster')" icon="bx bx-file" :active="request()->routeIs('index.employeesmaster')">Employee Master</x-sidebar.link>
           </li>
         @endif
-
-        <li class="sidebar-list">
-          <a href="{{ route('barcode.historytable') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Report History Table Style
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('stockallbarcode') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            STOCK Item
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('updated.barcode.item.position') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            List All Item Barcode
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('delivery-notes.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Delivery Notes
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('destination.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Destination
-          </a>
-        </li>
-
-        <li class="sidebar-list">
-          <a href="{{ route('vehicles.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Vehicles
-          </a>
-        </li>
-      </ul>
-    </li>
-
-    <!-- Stock Management -->
-    <li class="sidebar-item" id="sidebar-item-stock-management">
-      <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-        data-bs-target="#stockManagementGroup" aria-expanded="false"
-        aria-controls="stockManagementGroup">
-        <i class='bx bxs-component'></i>
-        <span>Stock Management</span>
-      </a>
-      <ul id="stockManagementGroup" class="sidebar-dropdown list-unstyled collapse"
-        data-bs-parent="#sidebar">
         <li class="sidebar-item">
-          <a href="{{ route('mastertinta.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Master Stock
-          </a>
+          <x-sidebar.link :href="route('maintenance.inventory.index')" icon="bx bx-file" :active="request()->routeIs('maintenance.inventory.*')">Maintenance Inventory</x-sidebar.link>
         </li>
-      </ul>
-    </li>
-
-    <!-- Other -->
-    <li class="sidebar-item" id="sidebar-item-other">
-      <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
-        data-bs-target="#otherGroup" aria-expanded="false" aria-controls="otherGroup">
-        <i class='bx bx-dots-horizontal-rounded'></i>
-        <span>Other</span>
-      </a>
-      <ul id="otherGroup" class="sidebar-dropdown list-unstyled collapse"
-        data-bs-parent="#sidebar">
         <li class="sidebar-item">
-          <a href="{{ $specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}"
-            class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Purchase Request
-          </a>
+          <x-sidebar.link :href="route('masterinventory.typeindex')" icon="bx bx-cube" :active="request()->routeIs('masterinventory.typeindex')">Type Inventory</x-sidebar.link>
         </li>
+      </x-sidebar.group>
+    @endif
 
+    {{-- Quality --}}
+    @if (in_array($department, ['QA','QC','BUSINESS']) || $isSuper || $user->name === 'herlina')
+      <x-sidebar.group id="qualityGroup" icon="bx bx-badge-check" title="Quality" :open="groupOpen($qualityPatterns)">
         <li class="sidebar-item">
-          <a href="{{ route('daily-reports.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Job Report
-          </a>
+          <x-sidebar.link :href="route('qaqc.report.index')" icon="bx bx-file-blank" :active="request()->routeIs('qaqc.report.*')">Verification Reports</x-sidebar.link>
         </li>
-
         <li class="sidebar-item">
-          <a href="{{ route('overtime.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Form Overtime
-          </a>
+          <x-sidebar.link :href="route('listformadjust')" icon="bx bx-file" :active="request()->routeIs('listformadjust')">Form Adjust</x-sidebar.link>
         </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('qaqc.defectcategory')" icon="bx bx-file" :active="request()->routeIs('qaqc.defectcategory')">Defect Categories</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
 
+    {{-- Production --}}
+    @if (in_array($department, ['PRODUCTION','PE','PPIC']) || $isSuper)
+      <x-sidebar.group id="productionGroup" icon="bx bxs-factory" title="Production" :open="groupOpen($productionPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('indexpps')" icon="bx bx-file" :active="request()->routeIs('indexpps')">PPS Wizard</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('capacityforecastindex')" icon="bx bx-file" :active="request()->routeIs('capacityforecastindex')">Capacity By Forecast</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('pe.formlist')" icon="bx bx-file" :active="request()->routeIs('pe.formlist')">Form Request Trial</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
+
+    {{-- Business --}}
+    @if ($department === 'BUSINESS' || $isSuper || $department === 'PPIC')
+      <x-sidebar.group id="businessGroup" icon="bx bx-objects-vertical-bottom" title="Business" :open="groupOpen($businessPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('indexds')" icon="bx bx-file" :active="request()->routeIs('indexds')">Delivery Schedule</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
+
+    {{-- Maintenance --}}
+    @if ($department === 'MAINTENANCE' || $isSuper || $department === 'PPIC')
+      <x-sidebar.group id="maintenanceGroup" icon="bx bxs-wrench" title="Maintenance" :open="groupOpen($maintenancePatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('moulddown.index')" icon="bx bx-file" :active="request()->routeIs('moulddown.*')">Mould Repair</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('linedown.index')" icon="bx bx-file" :active="request()->routeIs('linedown.*')">Line Repair</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
+
+    {{-- Human Resource --}}
+    @if (($department === 'PERSONALIA' && $deptHead) || $isSuper)
+      <x-sidebar.group id="humanResourceGroup" icon="bx bxs-user" title="Human Resource" :open="groupOpen($hrdPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('hrd.importantDocs.index')" icon="bx bx-file-blank" :active="request()->routeIs('hrd.importantDocs.*')">Important Documents</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
+
+    {{-- Purchasing --}}
+    @if ($department === 'PURCHASING' || $isSuper)
+      <x-sidebar.group id="purchasingGroup" icon="bx bx-dollar-circle" title="Purchasing" :open="groupOpen($purchasingPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('purchasing_home')" icon="bx bx-file" :active="request()->routeIs('purchasing_home')">Forecast Prediction</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('purchasing.evaluationsupplier.index')" icon="bx bx-file" :active="request()->routeIs('purchasing.evaluationsupplier.*')">Evaluation Supplier</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('reminderindex')" icon="bx bx-file" :active="request()->routeIs('reminderindex')">Reminder</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('purchasingrequirement.index')" icon="bx bx-file" :active="request()->routeIs('purchasingrequirement.*')">Purchasing Requirement</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('indexds')" icon="bx bx-file" :active="request()->routeIs('indexds')">Delivery Schedule</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('fc.index')" icon="bx bx-file" :active="request()->routeIs('fc.*')">Forecast Customer Master</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
+
+    {{-- Accounting --}}
+    @if ($department === 'ACCOUNTING' || $isSuper)
+      <x-sidebar.group id="accountingGroup" icon="bx bx-dollar" title="Accounting" :open="groupOpen($accountingPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('accounting.purchase-request')" icon="bx bx-file" :active="request()->routeIs('accounting.purchase-request')">Approved PRs</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
+    @endif
+
+    {{-- Inventory --}}
+    <x-sidebar.group id="inventoryGroup" icon="bx bxs-component" title="Inventory" :open="groupOpen($inventoryPatterns)">
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('delsched.averagemonth')" icon="bx bx-file" :active="request()->routeIs('delsched.averagemonth')">FG Stock Monitoring</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('inventoryfg')" icon="bx bx-cube" :active="request()->routeIs('inventoryfg')">Inventory FG</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('inventorymtr')" icon="bx bx-cube" :active="request()->routeIs('inventorymtr')">Inventory MTR</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('invlinelist')" icon="bx bx-file" :active="request()->routeIs('invlinelist')">Machine and Line list</x-sidebar.link>
+      </li>
+    </x-sidebar.group>
+
+    {{-- Store --}}
+    <x-sidebar.group id="storeGroup" icon="bx bxs-component" title="Store" :open="groupOpen($storePatterns)">
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('barcodeindex')" icon="bx bx-cube" :active="request()->routeIs('barcodeindex')">Create Barcode</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('barcode.base.index')" icon="bx bx-file" :active="request()->routeIs('barcode.base.*')">Barcode Feature</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('inandout.index')" icon="bx bx-cube" :active="request()->routeIs('inandout.*')">Scan Barcode</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('missingbarcode.index')" icon="bx bx-file" :active="request()->routeIs('missingbarcode.*')">Missing Barcode Generator</x-sidebar.link>
+      </li>
+      @if ($user->name === 'raymond')
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('list.barcode')" icon="bx bx-file" :active="request()->routeIs('list.barcode')">Report History</x-sidebar.link>
+        </li>
+      @endif
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('barcode.historytable')" icon="bx bx-file" :active="request()->routeIs('barcode.historytable')">Report History Table Style</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('stockallbarcode')" icon="bx bx-file" :active="request()->routeIs('stockallbarcode')">STOCK Item</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('updated.barcode.item.position')" icon="bx bx-file" :active="request()->routeIs('updated.barcode.item.position')">List All Item Barcode</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('delivery-notes.index')" icon="bx bx-file" :active="request()->routeIs('delivery-notes.*')">Delivery Notes</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('destination.index')" icon="bx bx-file" :active="request()->routeIs('destination.*')">Destination</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('vehicles.index')" icon="bx bx-file" :active="request()->routeIs('vehicles.*')">Vehicles</x-sidebar.link>
+      </li>
+    </x-sidebar.group>
+
+    {{-- Stock Management --}}
+    <x-sidebar.group id="stockManagementGroup" icon="bx bxs-component" title="Stock Management" :open="groupOpen($stockMgmtPatterns)">
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('mastertinta.index')" icon="bx bx-file" :active="request()->routeIs('mastertinta.*')">Master Stock</x-sidebar.link>
+      </li>
+    </x-sidebar.group>
+
+    {{-- Other --}}
+    <x-sidebar.group id="otherGroup" icon="bx bx-dots-horizontal-rounded" title="Other" :open="groupOpen($otherPatterns)">
+      <li class="sidebar-item">
+        <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest.home')">
+          Purchase Request
+        </x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('daily-reports.index')" icon="bx bx-file" :active="request()->routeIs('daily-reports.*')">Job Report</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('overtime.index')" icon="bx bx-file" :active="request()->routeIs('overtime.index')">Form Overtime</x-sidebar.link>
+      </li>
+      @if ($isSuper)
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('actual.import.form')" icon="bx bx-file" :active="request()->routeIs('actual.import.form')">Import Actual Overtime</x-sidebar.link>
+        </li>
+      @endif
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('overtime.summary')" icon="bx bx-file" :active="request()->routeIs('overtime.summary')">Summary Form Overtime</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('formcuti.home')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form Cuti</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('formkeluar.home')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form Keluar</x-sidebar.link>
+      </li>
+
+      {{-- Employee Evaluation (Sub‑Group) --}}
+      <x-sidebar.group id="employeeEvaluationGroup" icon="bx bx-file" title="Employee Evaluation" :open="groupOpen($employeeEvalSubPatterns)">
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('discipline.index')" icon="bx bx-file" :active="request()->routeIs('discipline.*')">All</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('yayasan.table')" icon="bx bx-file" :active="request()->routeIs('yayasan.table')">Yayasan</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('magang.table')" icon="bx bx-file" :active="request()->routeIs('magang.table')">Magang</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('format.evaluation.year.allin')" icon="bx bx-file" :active="request()->routeIs('format.evaluation.year.allin')">Evaluasi Individu ALL IN</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('format.evaluation.year.yayasan')" icon="bx bx-file" :active="request()->routeIs('format.evaluation.year.yayasan')">Evaluasi Individu Yayasan</x-sidebar.link>
+        </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('format.evaluation.year.magang')" icon="bx bx-file" :active="request()->routeIs('format.evaluation.year.magang')">Evaluasi Individu Magang</x-sidebar.link>
+        </li>
         @if ($isSuper)
           <li class="sidebar-item">
-            <a href="{{ route('actual.import.form') }}" class="sidebar-link">
-              <i class='bx bx-file'></i>
-              Import Actual Overtime
-            </a>
+            <x-sidebar.link :href="route('exportyayasan.dateinput')" icon="bx bx-file" :active="request()->routeIs('exportyayasan.dateinput')">Export Yayasan Jpayroll</x-sidebar.link>
           </li>
         @endif
+      </x-sidebar.group>
 
-        <li class="sidebar-item">
-          <a href="{{ route('overtime.summary') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Summary Form Overtime
-          </a>
-        </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('indexds')" icon="bx bx-file" :active="request()->routeIs('indexds')">Delivery Schedule</x-sidebar.link>
+      </li>
 
-        <li class="sidebar-item">
-          <a href="{{ route('formcuti.home') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Form Cuti
-          </a>
-        </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('purchaserequest.monthlyprlist')" icon="bx bx-file" :active="request()->routeIs('purchaserequest.monthlyprlist')">Monthly PR</x-sidebar.link>
+      </li>
 
+      {{-- Monthly Budget (Sub‑Group) --}}
+      <x-sidebar.group id="monthlyBudgetGroup" icon="bx bx-file" title="Monthly Budget" :open="groupOpen($monthlyBudgetSubPatterns)">
         <li class="sidebar-item">
-          <a href="{{ route('formkeluar.home') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Form Keluar
-          </a>
+          <x-sidebar.link :href="route('monthly.budget.report.index')" icon="bx bx-file" :active="request()->routeIs('monthly.budget.report.*')">Reports</x-sidebar.link>
         </li>
+        <li class="sidebar-item">
+          <x-sidebar.link :href="route('monthly-budget-summary-report.index')" icon="bx bx-file" :active="request()->routeIs('monthly-budget-summary-report.*')">Summary Reports</x-sidebar.link>
+        </li>
+      </x-sidebar.group>
 
-        <li class="sidebar-item">
-          <a href="#" class="sidebar-link collapsed has-dropdown"
-            data-bs-toggle="collapse" data-bs-target="#employeeEvaluationGroup"
-            aria-expanded="false" aria-controls="employeeEvaluationGroup">
-            <i class='bx bx-file'></i>
-            Employee Evaluation
-          </a>
-          <ul id="employeeEvaluationGroup"
-            class="sidebar-dropdown list-unstyled collapse">
-            <li class="sidebar-item">
-              <a href="{{ route('discipline.index') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                All
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="{{ route('yayasan.table') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Yayasan
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="{{ route('magang.table') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Magang
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="{{ route('format.evaluation.year.allin') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Evaluasi Individu ALL IN
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="{{ route('format.evaluation.year.yayasan') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Evaluasi Individu Yayasan
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="{{ route('format.evaluation.year.magang') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Evaluasi Individu Magang
-              </a>
-            </li>
-            @if ($isSuper)
-              <li class="sidebar-item">
-                <a href="{{ route('exportyayasan.dateinput') }}" class="sidebar-link">
-                  <i class='bx bx-file'></i>
-                  Export Yayasan Jpayroll
-                </a>
-              </li>
-            @endif
-          </ul>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('indexds') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Delivery Schedule
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('purchaserequest.monthlyprlist') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Monthly PR
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="#" class="sidebar-link collapsed has-dropdown"
-            data-bs-toggle="collapse" data-bs-target="#monthlyBudgetGroup"
-            aria-expanded="false" aria-controls="monthlyBudgetGroup">
-            <i class='bx bx-file'></i>
-            Monthly Budget
-          </a>
-          <ul id="monthlyBudgetGroup"
-            class="sidebar-dropdown list-unstyled collapse">
-            <li class="sidebar-item">
-              <a href="{{ route('monthly.budget.report.index') }}" class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Reports
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="{{ route('monthly-budget-summary-report.index') }}"
-                class="sidebar-link">
-                <i class='bx bx-file'></i>
-                Summary Reports
-              </a>
-            </li>
-          </ul>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('spk.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            SPK
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('formkerusakan.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Form Kerusakan / Perbaikan
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('po.dashboard') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Purchase Orders
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('waiting_purchase_orders.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Waiting PO
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('employee_trainings.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Employee Training
-          </a>
-        </li>
-
-        <li class="sidebar-item">
-          <a href="{{ route('daily-report.form') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Upload Daily Report
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a href="{{ route('files.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Files
-          </a>
-        </li>
-        <li class="sidebar-item">
-          <a href="{{ route('department-expenses.index') }}" class="sidebar-link">
-            <i class='bx bx-file'></i>
-            Department Expenses
-          </a>
-        </li>
-      </ul>
-    </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('spk.index')" icon="bx bx-file" :active="request()->routeIs('spk.*')">SPK</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('formkerusakan.index')" icon="bx bx-file" :active="request()->routeIs('formkerusakan.*')">Form Kerusakan / Perbaikan</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('po.dashboard')" icon="bx bx-file" :active="request()->routeIs('po.dashboard')">Purchase Orders</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('waiting_purchase_orders.index')" icon="bx bx-file" :active="request()->routeIs('waiting_purchase_orders.*')">Waiting PO</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('employee_trainings.index')" icon="bx bx-file" :active="request()->routeIs('employee_trainings.*')">Employee Training</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('daily-report.form')" icon="bx bx-file" :active="request()->routeIs('daily-report.form')">Upload Daily Report</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('files.index')" icon="bx bx-file" :active="request()->routeIs('files.*')">Files</x-sidebar.link>
+      </li>
+      <li class="sidebar-item">
+        <x-sidebar.link :href="route('department-expenses.index')" icon="bx bx-file" :active="request()->routeIs('department-expenses.*')">Department Expenses</x-sidebar.link>
+      </li>
+    </x-sidebar.group>
   </ul>
 </aside>
 
 {{-- Better search: show parents if any child matches --}}
+{{-- Enhanced search + expand/collapse all --}}
 <script>
   (function () {
     const input = document.getElementById('sidebar-search-input');
     const navRoot = document.getElementById('sidebarNavRoot');
-    const debounce = (fn, d=120) => { let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a), d);} };
+    const btnExpandAll = document.getElementById('btnExpandAll');
+    const btnCollapseAll = document.getElementById('btnCollapseAll');
+    const sidebarEl = document.getElementById('sidebar');
 
-    function matches(text, q){ return (text||'').toLowerCase().includes(q); }
+    const debounce = (fn, d=120) => { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), d);} };
+    const matches = (text, q) => (text||'').toLowerCase().includes(q);
+
+    function ensureExpandedWidth() {
+      if (!sidebarEl.classList.contains('expand')) sidebarEl.classList.add('expand');
+      document.body.classList.add('sidebar-open');
+      document.body.classList.remove('sidebar-closed');
+      localStorage.setItem('daijo.sidebar.open', '1');
+    }
 
     function filterMenu() {
       const q = (input.value || '').trim().toLowerCase();
-      const groups = navRoot.querySelectorAll(':scope > li.sidebar-item');
+      const groups = navRoot.querySelectorAll(':scope > li.sidebar-item, :scope > x-sidebar-group, :scope > *[data-sidebar-group]');
 
-      groups.forEach(group => {
+      // Fallback: keep legacy behaviour – hide/show direct children and expand matches
+      navRoot.querySelectorAll(':scope > li.sidebar-item').forEach(group => {
         const link = group.querySelector(':scope > a.sidebar-link');
         const sub = group.querySelector(':scope > ul.sidebar-dropdown');
 
@@ -750,7 +466,6 @@
           return;
         }
 
-        // group with children
         const items = sub.querySelectorAll(':scope > li.sidebar-item');
         let anyChildVisible = false;
 
@@ -759,31 +474,52 @@
           const t = (a?.innerText || '');
           const show = !q || matches(t, q);
           li.style.display = show ? '' : 'none';
-          anyChildVisible = anyChildVisible || show;
+          anyChildVisible ||= show;
         });
 
-        // show group if itself matches OR any child matches
         const groupText = (link?.innerText || '');
         const groupShow = !q || matches(groupText, q) || anyChildVisible;
         group.style.display = groupShow ? '' : 'none';
 
-        // auto open when searching and has visible children
         if (q && anyChildVisible) {
           sub.classList.add('show');
-          link.classList.remove('collapsed');
-        } else if (!q) {
-          // leave current collapse state alone
+          link?.classList?.remove?.('collapsed');
         }
       });
     }
 
-    input.addEventListener('input', debounce(filterMenu, 120));
+    function expandAll() {
+      ensureExpandedWidth();
+      document.querySelectorAll('.sidebar-dropdown').forEach(ul => {
+        if (!ul.classList.contains('show')) {
+          bootstrap.Collapse.getOrCreateInstance(ul, {toggle: false}).show();
+        }
+      });
+      document.querySelectorAll('.has-dropdown').forEach(a => a.classList.remove('collapsed'));
+      localStorage.setItem('daijo.sidebar.expandAllGroups', '1');
+    }
 
-    // quick shortcut to focus search with "/"
+    function collapseAll() {
+      document.querySelectorAll('.sidebar-dropdown').forEach(ul => {
+        if (ul.classList.contains('show')) {
+          bootstrap.Collapse.getOrCreateInstance(ul, {toggle: false}).hide();
+        }
+      });
+      document.querySelectorAll('.has-dropdown').forEach(a => a.classList.add('collapsed'));
+      localStorage.setItem('daijo.sidebar.expandAllGroups', '0');
+    }
+
+    input.addEventListener('input', debounce(filterMenu, 120));
     window.addEventListener('keydown', (e) => {
       if (e.key === '/' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
         e.preventDefault(); input.focus();
       }
     });
+    btnExpandAll?.addEventListener('click', expandAll);
+    btnCollapseAll?.addEventListener('click', collapseAll);
+
+    if (localStorage.getItem('daijo.sidebar.expandAllGroups') === '1') {
+      expandAll();
+    }
   })();
 </script>
