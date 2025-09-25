@@ -1,4 +1,12 @@
 {
     "plugins": ["@shufo/prettier-plugin-blade", "@prettier/plugin-php"],
-    "printWidth": 100
+    "printWidth": 100,
+    "overrides": [
+        {
+            "files": ["*.blade.php"],
+            "options": {
+                "parser": "blade"
+            }
+        }
+    ]
 }
