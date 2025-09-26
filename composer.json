@@ -20,7 +20,6 @@
     "h4cc/wkhtmltoimage-amd64": "0.12.x",
     "h4cc/wkhtmltopdf-amd64": "0.12.x",
     "laravel/framework": "^10.10",
-    "laravel/pint": "*",
     "laravel/sanctum": "^3.3",
     "laravel/tinker": "^2.8",
     "laravel/ui": "^4.3",
@@ -40,6 +39,7 @@
   },
   "require-dev": {
     "fakerphp/faker": "^1.9.1",
+    "laravel/pint": "^1.25",
     "laravel/sail": "^1.18",
     "mockery/mockery": "^1.4.4",
     "nunomaduro/collision": "^7.0",
