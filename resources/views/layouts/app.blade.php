@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace("_", "-", app()->getLocale()) }}">
 
 <head>
   <meta charset="utf-8">
@@ -7,7 +7,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <meta name="app-user-id" content="{{ auth()->id() }}">
 
-  <title>@yield('title', config('app.name'))</title>
+  <title>@yield("title", config("app.name"))</title>
 
   <script>
     const meta = document.querySelector('meta[name="app-user-id"]');
@@ -15,28 +15,28 @@
       userId: meta ? meta.content : null
     };
   </script>
-  @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+  @vite(["resources/sass/app.scss", "resources/js/app.js"])
 
   <link rel="dns-prefetch" href="//fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
   <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
   <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+  <link rel="stylesheet" href="{{ asset("css/app.css") }}">
 
   @livewireStyles
-  @stack('extraCss')
+  @stack("extraCss")
 </head>
 
-<body class="{{ session('sidebar_open', false) ? 'sidebar-open' : 'sidebar-closed' }}">
+<body class="{{ session("sidebar_open", false) ? "sidebar-open" : "sidebar-closed" }}">
   <div class="wrapper">
     <livewire:sidebar />
 
     <div class="main">
-      @include('partials.navbar')
+      @include("partials.navbar")
 
       <main class="content px-4 px-md-5 py-4">
-        {{ $slot ?? '' }}
-        @yield('content')
+        {{ $slot ?? "" }}
+        @yield("content")
       </main>
     </div>
   </div>
@@ -61,7 +61,7 @@
   </div>
 
   @livewireScripts
-  @stack('extraJs')
+  @stack("extraJs")
   <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js" defer></script>
 </body>
 
