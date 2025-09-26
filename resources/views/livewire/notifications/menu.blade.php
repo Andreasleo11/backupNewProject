@@ -1,5 +1,5 @@
-<div class="dropdown position-relative" wire:poll.30s="refreshUnread" wire:key="notif-menu"
-  x-data="{ open: @entangle("open").live, ready: @js($ready) }" @click.outside="open = false" @keydown.escape.window="open = false">
+<div class="dropdown position-relative" wire:key="notif-menu" x-data="{ open: @entangle("open").live, ready: @js($ready) }"
+  @click.outside="open = false" @keydown.escape.window="open = false">
   {{-- Bell button --}}
   <button type="button" class="btn btn-icon btn-ghost-light position-relative"
     :aria-expanded="open.toString()" aria-haspopup="true" x-ref="trigger"
@@ -192,13 +192,24 @@
   </div>
 
   {{-- Bootstrap modal trigger via Livewire event --}}
-  <script>
+  <script type="module">
     document.addEventListener('livewire:initialized', () => {
       window.addEventListener('show-notif-modal', () => {
         const el = document.getElementById('notificationModal');
         bootstrap.Modal.getOrCreateInstance(el).show();
       });
     });
+
+    if (window.Laravel?.userId) {
+      window.Echo.private(`App.Models.User.${window.Laravel.userId}`).notification((n) => {
+        // Fire a browser event Livewire components can listen to
+        const fire = () => window.Livewire?.dispatch("refreshNotifications");
+        if (window.Livewire) fire();
+        else document.addEventListener("livewire:load", fire, {
+          once: true
+        });
+      });
+    }
   </script>
 </div>
 

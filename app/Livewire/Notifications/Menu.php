@@ -26,20 +26,17 @@ final class Menu extends Component
 
     public string $filter = 'all'; // 'all' | 'unread'
 
-    public $authUser;
-
     public function getListeners()
     {
         $id = auth()->id();
 
         return $id
-            ? ["echo:users.{$id},notification.pushed" => 'refreshUnread']
+            ? ["echo-private:users.{$id},NotificationPushed" => 'refreshUnread']
             : []; // no listeners if not authed
     }
 
     public function mount(): void
     {
-        $this->authUser = auth()->user();
         $this->refreshUnread();
     }
 
@@ -53,13 +50,13 @@ final class Menu extends Component
 
     public function refreshUnread(): void
     {
-        $user = $this->authUser;
+        $user = auth()->user();
         $this->unreadCount = $user ? $user->unreadNotifications()->count() : 0;
     }
 
     public function markAsRead(string $id): void
     {
-        $n = $this->authUser->notifications()->whereKey($id)->firstOrFail();
+        $n = auth()->user()->notifications()->whereKey($id)->firstOrFail();
         if (is_null($n->read_at)) {
             $n->markAsRead();
             $this->refreshUnread();
@@ -70,7 +67,7 @@ final class Menu extends Component
 
     public function markAllRead(): void
     {
-        $user = $this->authUser;
+        $user = auth()->user();
         $user->unreadNotifications->markAsRead();
         $this->refreshUnread();
 
@@ -81,7 +78,7 @@ final class Menu extends Component
 
     public function show(string $id): void
     {
-        $n = $this->authUser->notifications()->whereKey($id)->firstOrFail();
+        $n = auth()->user()->notifications()->whereKey($id)->firstOrFail();
 
         if (is_null($n->read_at)) {
             $n->markAsRead();
@@ -120,7 +117,7 @@ final class Menu extends Component
             return collect(); // empty before first open
         }
 
-        $q = $this->authUser->notifications()->latest();
+        $q = auth()->user()->notifications()->latest();
         if ($this->filter === 'unread') {
             $q->whereNull('read_at');
         }
