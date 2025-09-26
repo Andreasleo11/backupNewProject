@@ -13,6 +13,7 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
     use Queueable;
 
     private $pr;
+
     private $details;
 
     /**
@@ -27,11 +28,12 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
     /**
      * Get the notification's delivery channels.
      *`1`1
+     *
      * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        return ["mail", "database"];
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
@@ -39,11 +41,11 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage())
+        return (new MailMessage)
             ->line('There\'s a new Purchase Request has just been created!')
-            ->greeting($this->details["greeting"])
-            ->line(new \Illuminate\Support\HtmlString($this->details["body"]))
-            ->action($this->details["actionText"], $this->details["actionURL"]);
+            ->greeting($this->details['greeting'])
+            ->line(new \Illuminate\Support\HtmlString($this->details['body']))
+            ->action($this->details['actionText'], $this->details['actionURL']);
     }
 
     /**
@@ -54,8 +56,8 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            "message" => "PR with id = " . $this->pr->id . " has just been created!",
-            "status" => $this->pr->status,
+            'message' => 'PR with id = '.$this->pr->id.' has just been created!',
+            'status' => $this->pr->status,
         ];
     }
 }

@@ -1,0 +1,19 @@
+/* Cards */
+.card-like {
+  background: var(--card-bg);
+  border-radius: var(--radius-16);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+/* WebKit scrollbars (lists & flyout body) */
+.notif-list::-webkit-scrollbar,
+.sidebar-flyout-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.notif-list::-webkit-scrollbar-thumb,
+.sidebar-flyout-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+}

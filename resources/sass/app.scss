@@ -7,6 +7,16 @@
 // Bootstrap
 @import "bootstrap/scss/bootstrap";
 
+@import "tokens";
+@import "mixins";
+@import "base";
+@import "layout";
+@import "sidebar";
+@import "flyout";
+@import "notifications";
+@import "skeletons";
+@import "utilities";
+
 // DataTables
 @import "bootstrap-icons/font/bootstrap-icons.css";
 @import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
