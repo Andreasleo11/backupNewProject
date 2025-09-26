@@ -1,15 +1,26 @@
+/* default: perfect circle (single digit) */
 .badge-floating {
   position: absolute;
   top: -4px;
   right: -6px;
   transform: translate(50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.125rem; /* = height → circle */
+  height: 1.125rem;
+  padding: 0; /* remove padding so width==height */
+  border-radius: 50%;
+
   background: #0d6efd;
   color: #fff;
   font-size: 0.65rem;
-  padding: 0.2rem 0.35rem;
-  border-radius: 999px;
+  line-height: 1;
+  font-weight: 600;
   box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
 }
+
 .dot-pulse {
   position: absolute;
   top: 50%;
@@ -35,8 +46,8 @@
 
 .notif-menu {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -45,7 +56,7 @@
   color: #fff;
 }
 .notif-list {
-  max-height: 420px;
+  max-height: min(60vh, 520px);
   overflow: auto;
 }
 .notif-item {
@@ -87,4 +98,114 @@
   color: #fff;
   border-radius: 999px;
   padding: 0.15rem 0.5rem;
+}
+
+/* Ensure the navbar/wrappers don't clip the menu */
+.navbar,
+.main,
+.wrapper {
+  overflow: visible;
+}
+
+/* Position the custom dropdown without Bootstrap JS/Popper */
+.dropdown.position-relative > .notif-menu {
+  position: absolute;
+  right: 0; /* anchor the menu's right edge to the trigger's right */
+  left: auto;
+  top: calc(100% + 0.375rem);
+  /* keep it on-screen on small viewports */
+  width: min(420px, calc(100vw - 1rem));
+  max-height: min(70vh, 640px);
+  overflow: hidden;
+}
+
+/* ===== Notification filter chips ===== */
+.chip {
+  --chip-bg: #fff;
+  --chip-fg: #0b1523;
+  --chip-border: var(--border-subtle);
+  --chip-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  border-radius: 999px;
+  padding: 0.375rem 0.75rem; /* ~6px 12px */
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  box-shadow: var(--chip-shadow);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.02s ease;
+}
+
+.chip:hover {
+  background: #f8fafc;
+  border-color: #dbe3ee; /* a hair darker than --border-subtle */
+}
+
+.chip:active {
+  transform: translateY(0.5px);
+}
+
+.chip:focus-visible {
+  outline: 2px solid var(--brand-300);
+  outline-offset: 2px;
+}
+
+.chip[disabled],
+.chip[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Active/selected state (supports both class and aria-pressed) */
+.chip-active,
+.chip[aria-pressed="true"] {
+  --chip-bg: var(--brand-500);
+  --chip-fg: #fff;
+  --chip-border: transparent;
+
+  background: var(--chip-bg);
+  color: var(--chip-fg);
+  border-color: var(--chip-border);
+  box-shadow: 0 6px 16px rgba(59, 125, 221, 0.25);
+}
+
+.chip-active:hover,
+.chip[aria-pressed="true"]:hover {
+  filter: brightness(1.03);
+}
+
+/* Optional tiny count badge inside a chip */
+.chip .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  font-size: 0.7em;
+  line-height: 1;
+  background: rgba(0, 0, 0, 0.06);
+}
+.chip-active .count,
+.chip[aria-pressed="true"] .count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Slightly tighten chip spacing inside your dropdown filter row */
+.notif-menu .chip + .chip {
+  margin-left: 0.25rem;
 }
