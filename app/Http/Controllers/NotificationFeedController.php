@@ -9,8 +9,9 @@ class NotificationFeedController extends Controller
     public function unreadCount(Request $request)
     {
         $user = $request->user();
+
         return response()->json([
-            "unread" => $user->unreadNotifications()->count(),
+            'unread' => $user->unreadNotifications()->count(),
         ]);
     }
 
@@ -24,17 +25,17 @@ class NotificationFeedController extends Controller
             ->get()
             ->map(function ($n) {
                 return [
-                    "id" => $n->id,
-                    "type" => class_basename($n->type),
-                    "title" => data_get($n->data, "title", "Notification"),
-                    "body" => data_get($n->data, "body", ""),
-                    "url" => data_get($n->data, "url", null),
-                    "read_at" => optional($n->read_at)->toIso8601String(),
-                    "created_at" => $n->created_at->toIso8601String(),
+                    'id' => $n->id,
+                    'type' => class_basename($n->type),
+                    'title' => data_get($n->data, 'title', 'Notification'),
+                    'body' => data_get($n->data, 'body', ''),
+                    'url' => data_get($n->data, 'url', null),
+                    'read_at' => optional($n->read_at)->toIso8601String(),
+                    'created_at' => $n->created_at->toIso8601String(),
                 ];
             });
 
-        return response()->json(["items" => $items]);
+        return response()->json(['items' => $items]);
     }
 
     public function markAsRead(Request $request, ?string $id)
@@ -48,6 +49,6 @@ class NotificationFeedController extends Controller
             $user->unreadNotifications->markAsRead();
         }
 
-        return response()->json(["ok" => true]);
+        return response()->json(['ok' => true]);
     }
 }

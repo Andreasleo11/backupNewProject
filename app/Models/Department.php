@@ -9,7 +9,7 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["name", "dept_no", "is_office"];
+    protected $fillable = ['name', 'dept_no', 'is_office'];
 
     public function users()
     {
@@ -18,6 +18,6 @@ class Department extends Model
 
     public function employees()
     {
-        return $this->hasMany(Employee::class, "Dept", "dept_no");
+        return $this->hasMany(Employee::class, 'Dept', 'dept_no');
     }
 }

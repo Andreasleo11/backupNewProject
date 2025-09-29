@@ -13,6 +13,7 @@ class PurchaseRequestUpdated extends Notification implements ShouldQueue
     use Queueable;
 
     private $pr;
+
     private $details;
 
     /**
@@ -31,7 +32,7 @@ class PurchaseRequestUpdated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ["mail", "database"];
+        return ['mail', 'database'];
     }
 
     /**
@@ -39,11 +40,11 @@ class PurchaseRequestUpdated extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage())
+        return (new MailMessage)
             ->line('There\'s a new Purchase Request has just been updated!')
-            ->greeting($this->details["greeting"])
-            ->line(new \Illuminate\Support\HtmlString($this->details["body"]))
-            ->action($this->details["actionText"], $this->details["actionURL"]);
+            ->greeting($this->details['greeting'])
+            ->line(new \Illuminate\Support\HtmlString($this->details['body']))
+            ->action($this->details['actionText'], $this->details['actionURL']);
     }
 
     /**
@@ -54,8 +55,8 @@ class PurchaseRequestUpdated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            "message" => "PR with id = " . $this->pr->id . " has just been updated!",
-            "status" => $this->pr->status,
+            'message' => 'PR with id = '.$this->pr->id.' has just been updated!',
+            'status' => $this->pr->status,
         ];
     }
 }

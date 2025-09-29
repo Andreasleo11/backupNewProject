@@ -1,6 +1,7 @@
 <?php
 
 // app/Expenses/Sources/MonthlyBudgetSource.php
+
 namespace App\Domain\Expenses\Sources;
 
 use App\Contracts\ExpenseSource;
@@ -12,8 +13,8 @@ class MonthlyBudgetSource implements ExpenseSource
 {
     public function fetch(Carbon $start, Carbon $end): Collection
     {
-        return DB::table("monthly_budget_summary_reports")
-            ->whereBetween("report_date", [$start, $end])
+        return DB::table('monthly_budget_summary_reports')
+            ->whereBetween('report_date', [$start, $end])
             ->selectRaw(
                 "
                 department_id,

@@ -17,14 +17,14 @@ class NofifyMissingReports extends Command
      *
      * @var string
      */
-    protected $signature = "notify:missing-reports";
+    protected $signature = 'notify:missing-reports';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Notify department heads about missing employee daily reports until today";
+    protected $description = 'Notify department heads about missing employee daily reports until today';
 
     /**
      * Execute the console command.
@@ -33,19 +33,20 @@ class NofifyMissingReports extends Command
     {
         $today = Carbon::today();
 
-        $this->info("Checking for missing reports as of " . $today->toDateString());
+        $this->info('Checking for missing reports as of '.$today->toDateString());
 
-        $deptHeads = User::where("is_head", true)->get();
+        $deptHeads = User::where('is_head', true)->get();
 
         foreach ($deptHeads as $head) {
             $headDept = $head->department->dept_no ?? null;
 
-            if (!$headDept) {
+            if (! $headDept) {
                 $this->warn("No department found for user {$head->name}");
+
                 continue;
             }
 
-            $employees = Employee::where("Dept", $headDept)->whereNull("end_date")->get();
+            $employees = Employee::where('Dept', $headDept)->whereNull('end_date')->get();
 
             $missingReports = [];
 
@@ -60,18 +61,18 @@ class NofifyMissingReports extends Command
                     $expectedDates[] = $date->toDateString();
                 }
 
-                $submittedDates = EmployeeDailyReport::where("employee_id", $employee->NIK)
-                    ->whereDate("work_date", "<", $today)
-                    ->pluck("work_date")
-                    ->map(fn($d) => Carbon::parse($d)->toDateString())
+                $submittedDates = EmployeeDailyReport::where('employee_id', $employee->NIK)
+                    ->whereDate('work_date', '<', $today)
+                    ->pluck('work_date')
+                    ->map(fn ($d) => Carbon::parse($d)->toDateString())
                     ->toArray();
 
                 $missingDates = collect($expectedDates)->diff($submittedDates)->values()->toArray();
 
                 if (count($missingDates) > 0) {
                     $missingReports[] = [
-                        "employee" => $employee,
-                        "dates" => $missingDates,
+                        'employee' => $employee,
+                        'dates' => $missingDates,
                     ];
                 }
             }
@@ -80,15 +81,15 @@ class NofifyMissingReports extends Command
                 Notification::send($head, new MissingDailyReportsNotification($missingReports));
 
                 $this->info(
-                    "Notification sent to {$head->email} for " .
-                        count($missingReports) .
-                        " missing reports.",
+                    "Notification sent to {$head->email} for ".
+                        count($missingReports).
+                        ' missing reports.',
                 );
             } else {
                 $this->line("No missing reports for {$head->name}");
             }
         }
 
-        $this->info("Done.");
+        $this->info('Done.');
     }
 }

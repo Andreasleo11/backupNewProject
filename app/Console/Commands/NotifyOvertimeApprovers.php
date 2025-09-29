@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\HeaderFormOvertime;
-use Illuminate\Console\Command;
-use App\Notifications\DailyOvertimeSummaryNotification;
 use App\Models\User;
+use App\Notifications\DailyOvertimeSummaryNotification;
+use Illuminate\Console\Command;
 
 class NotifyOvertimeApprovers extends Command
 {
@@ -14,14 +14,14 @@ class NotifyOvertimeApprovers extends Command
      *
      * @var string
      */
-    protected $signature = "notify:overtime";
+    protected $signature = 'notify:overtime';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Send daily overtime reminders to approvers";
+    protected $description = 'Send daily overtime reminders to approvers';
 
     /**
      * Execute the console command.
@@ -29,16 +29,16 @@ class NotifyOvertimeApprovers extends Command
     public function handle()
     {
         $statuses = [
-            "waiting-dept-head",
-            "waiting-supervisor",
-            "waiting-verificator",
-            "waiting-director",
-            "waiting-gm",
+            'waiting-dept-head',
+            'waiting-supervisor',
+            'waiting-verificator',
+            'waiting-director',
+            'waiting-gm',
         ];
 
         foreach ($statuses as $status) {
-            $reports = HeaderFormOvertime::with(["department", "user"])
-                ->where("status", $status)
+            $reports = HeaderFormOvertime::with(['department', 'user'])
+                ->where('status', $status)
                 ->get();
 
             if ($reports->isEmpty()) {
@@ -46,10 +46,10 @@ class NotifyOvertimeApprovers extends Command
             }
 
             switch ($status) {
-                case "waiting-dept-head":
-                    $grouped = $reports->groupBy("dept_id");
+                case 'waiting-dept-head':
+                    $grouped = $reports->groupBy('dept_id');
                     foreach ($grouped as $deptId => $reportsGroup) {
-                        $user = User::where("is_head", 1)->where("department_id", $deptId)->first();
+                        $user = User::where('is_head', 1)->where('department_id', $deptId)->first();
 
                         if ($user) {
                             $user->notify(
@@ -59,45 +59,45 @@ class NotifyOvertimeApprovers extends Command
                     }
                     break;
 
-                case "waiting-supervisor":
+                case 'waiting-supervisor':
                     $user = User::whereHas(
-                        "specification",
-                        fn($q) => $q->where("name", "SUPERVISOR"),
+                        'specification',
+                        fn ($q) => $q->where('name', 'SUPERVISOR'),
                     )->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
-                case "waiting-verificator":
+                case 'waiting-verificator':
                     $user = User::whereHas(
-                        "specification",
-                        fn($q) => $q->where("name", "VERIFICATOR"),
+                        'specification',
+                        fn ($q) => $q->where('name', 'VERIFICATOR'),
                     )->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
-                case "waiting-director":
+                case 'waiting-director':
                     $user = User::whereHas(
-                        "specification",
-                        fn($q) => $q->where("name", "DIRECTOR"),
+                        'specification',
+                        fn ($q) => $q->where('name', 'DIRECTOR'),
                     )->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
-                case "waiting-gm":
-                    $grouped = $reports->groupBy("branch");
+                case 'waiting-gm':
+                    $grouped = $reports->groupBy('branch');
                     foreach ($grouped as $branch => $reportsGroup) {
                         $email =
-                            $branch === "Karawang"
-                                ? "pawarid_pannin@daijo.co.id"
-                                : "albert@daijo.co.id";
+                            $branch === 'Karawang'
+                                ? 'pawarid_pannin@daijo.co.id'
+                                : 'albert@daijo.co.id';
 
-                        $user = User::where("email", $email)->first();
+                        $user = User::where('email', $email)->first();
                         if ($user) {
                             $user->notify(
                                 new DailyOvertimeSummaryNotification($reportsGroup, $status),

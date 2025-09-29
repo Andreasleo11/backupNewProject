@@ -15,8 +15,8 @@ class QaqcHomeController extends Controller
         $rejectedDoc = Report::rejected()->count();
 
         return view(
-            "qaqc.home",
-            compact("approvedDoc", "waitingSignatureDoc", "waitingApprovalDoc", "rejectedDoc"),
+            'qaqc.home',
+            compact('approvedDoc', 'waitingSignatureDoc', 'waitingApprovalDoc', 'rejectedDoc'),
         );
     }
 }

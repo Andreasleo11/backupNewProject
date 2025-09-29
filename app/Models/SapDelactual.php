@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SapDelactual extends Model
 {
-    protected $table = "sap_delactual";
+    protected $table = 'sap_delactual';
+
     public $timestamps = false;
+
     public $incrementing = false;
+
     protected $primaryKey = null;
 
-    protected $fillable = ["item_no", "delivery_date", "item_name", "quantity", "so_num"];
+    protected $fillable = ['item_no', 'delivery_date', 'item_name', 'quantity', 'so_num'];
 }

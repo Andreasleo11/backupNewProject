@@ -22,39 +22,39 @@ class StoreMaintenanceInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "master_id" => "required|exists:master_inventories,id",
-            "revision_date" => "nullable|date",
-            "items" => "required|array",
-            "items.*" => "exists:category_maintenance_inventory_reports,id",
-            "conditions" => "required|array",
-            "conditions.*" => "in:good,bad",
-            "remarks" => "required|array",
-            "checked_by" => "required|array",
-            "checked_by.*" => "exists:users,name",
-            "new_items" => "array",
-            "new_items_names" => "array",
-            "new_items_names.*" => "required_with:new_items",
-            "new_conditions" => "array",
-            "new_conditions.*" => "in:good,bad",
-            "new_remarks" => "array",
+            'master_id' => 'required|exists:master_inventories,id',
+            'revision_date' => 'nullable|date',
+            'items' => 'required|array',
+            'items.*' => 'exists:category_maintenance_inventory_reports,id',
+            'conditions' => 'required|array',
+            'conditions.*' => 'in:good,bad',
+            'remarks' => 'required|array',
+            'checked_by' => 'required|array',
+            'checked_by.*' => 'exists:users,name',
+            'new_items' => 'array',
+            'new_items_names' => 'array',
+            'new_items_names.*' => 'required_with:new_items',
+            'new_conditions' => 'array',
+            'new_conditions.*' => 'in:good,bad',
+            'new_remarks' => 'array',
         ];
     }
 
     public function messages()
     {
         return [
-            "master_id.required" => "The master inventory is required.",
-            "master_id.exists" => "The selected master inventory does not exist.",
-            "revision_date.date" => "The revision date is not a valid date.",
-            "items.required" => "At least one item must be selected.",
-            "items.*.exists" => "One or more selected items do not exist.",
-            "conditions.required" => "Conditions are required.",
-            "conditions.*.in" => "Each condition must be either good or bad.",
-            "remarks.required" => "Remarks are required.",
-            "checked_by.required" => "Checked by field is required.",
-            "checked_by.*.exists" => "The selected checker does not exist.",
-            "new_items_names.*.required_with" => "The name for each new item is required.",
-            "new_conditions.*.in" => "Each new condition must be either good or bad.",
+            'master_id.required' => 'The master inventory is required.',
+            'master_id.exists' => 'The selected master inventory does not exist.',
+            'revision_date.date' => 'The revision date is not a valid date.',
+            'items.required' => 'At least one item must be selected.',
+            'items.*.exists' => 'One or more selected items do not exist.',
+            'conditions.required' => 'Conditions are required.',
+            'conditions.*.in' => 'Each condition must be either good or bad.',
+            'remarks.required' => 'Remarks are required.',
+            'checked_by.required' => 'Checked by field is required.',
+            'checked_by.*.exists' => 'The selected checker does not exist.',
+            'new_items_names.*.required_with' => 'The name for each new item is required.',
+            'new_conditions.*.in' => 'Each new condition must be either good or bad.',
         ];
     }
 }

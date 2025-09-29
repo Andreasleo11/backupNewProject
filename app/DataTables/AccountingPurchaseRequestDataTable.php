@@ -15,14 +15,13 @@ class AccountingPurchaseRequestDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn(
-                "action",
+                'action',
                 '
                                         <a href="{{ route("purchaserequest.detail", ["id" => $id]) }}" class="btn btn-secondary me-2">
                                             <i class="bx bx-info-circle" ></i> Detail
@@ -34,62 +33,55 @@ class AccountingPurchaseRequestDataTable extends DataTable
                                                         </a>
                                     ',
             )
-            ->setRowId("id");
+            ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
-     *
-     * @param \App\Models\PurchaseRequest $model
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
-        return $model->where("status", 4)->newQuery();
+        return $model->where('status', 4)->newQuery();
     }
 
     /**
      * Optional method if you want to use html builder.
-     *
-     * @return \Yajra\DataTables\Html\Builder
      */
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId("purchaserequest-table")
+            ->setTableId('purchaserequest-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            //->dom('Bfrtip')
+            // ->dom('Bfrtip')
             ->orderBy(1)
             ->selectStyleSingle()
             ->buttons([
-                Button::make("excel"),
-                Button::make("csv"),
-                Button::make("pdf"),
-                Button::make("print"),
+                Button::make('excel'),
+                Button::make('csv'),
+                Button::make('pdf'),
+                Button::make('print'),
             ]);
     }
 
     /**
      * Get the dataTable columns definition.
-     *
-     * @return array
      */
     public function getColumns(): array
     {
         return [
-            Column::make("pr_no")->addClass("text-center align-middle"),
-            Column::make("date_pr")->addClass("text-center align-middle"),
-            Column::make("from_department")->addClass("text-center align-middle"),
-            Column::make("to_department")->addClass("text-center align-middle"),
-            Column::make("supplier")->addClass("text-center align-middle"),
-            Column::computed("action")
+            Column::make('pr_no')->addClass('text-center align-middle'),
+            Column::make('date_pr')->addClass('text-center align-middle'),
+            Column::make('from_department')->addClass('text-center align-middle'),
+            Column::make('to_department')->addClass('text-center align-middle'),
+            Column::make('supplier')->addClass('text-center align-middle'),
+            Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass("text-center")
-                ->addClass("text-center align-middle"),
-            Column::make("status")
-                ->addClass("text-center align-middle")
+                ->addClass('text-center')
+                ->addClass('text-center align-middle'),
+            Column::make('status')
+                ->addClass('text-center align-middle')
                 ->renderRaw(
                     'function(data, type, row, meta){
                     if(type === \'display\'){
@@ -101,19 +93,17 @@ class AccountingPurchaseRequestDataTable extends DataTable
                 }',
                 )
                 ->exportable(false)
-                ->addClass("text-center align-middle"),
-            Column::make("description")->addClass("text-center align-middle"),
-            Column::make("approved_at")->addClass("text-center align-middle"),
+                ->addClass('text-center align-middle'),
+            Column::make('description')->addClass('text-center align-middle'),
+            Column::make('approved_at')->addClass('text-center align-middle'),
         ];
     }
 
     /**
      * Get filename for export.
-     *
-     * @return string
      */
     protected function filename(): string
     {
-        return "PurchaseRequest_" . date("YmdHis");
+        return 'PurchaseRequest_'.date('YmdHis');
     }
 }

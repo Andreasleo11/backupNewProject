@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\DefectCategory;
+use Illuminate\Database\Seeder;
 
 class DefectCategorySeeder extends Seeder
 {
@@ -13,8 +12,8 @@ class DefectCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        DefectCategory::create(["name" => "Nubmark"]);
-        DefectCategory::create(["name" => "Burn mark"]);
-        DefectCategory::create(["name" => "Salah warna"]);
+        DefectCategory::create(['name' => 'Nubmark']);
+        DefectCategory::create(['name' => 'Burn mark']);
+        DefectCategory::create(['name' => 'Salah warna']);
     }
 }

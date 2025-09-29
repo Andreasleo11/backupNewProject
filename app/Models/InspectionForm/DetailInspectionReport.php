@@ -11,19 +11,19 @@ class DetailInspectionReport extends Model
     use HasFactory;
 
     protected $fillable = [
-        "inspection_report_document_number",
-        "document_number",
-        "period",
-        "start_datetime",
-        "end_datetime",
+        'inspection_report_document_number',
+        'document_number',
+        'period',
+        'start_datetime',
+        'end_datetime',
     ];
 
     public function firstInspections()
     {
         return $this->hasMany(
             FirstInspection::class,
-            "detail_inspection_report_document_number",
-            "document_number",
+            'detail_inspection_report_document_number',
+            'document_number',
         );
     }
 
@@ -31,8 +31,8 @@ class DetailInspectionReport extends Model
     {
         return $this->hasMany(
             SecondInspection::class,
-            "detail_inspection_report_document_number",
-            "document_number",
+            'detail_inspection_report_document_number',
+            'document_number',
         );
     }
 
@@ -40,8 +40,8 @@ class DetailInspectionReport extends Model
     {
         return $this->hasMany(
             InspectionJudgement::class,
-            "detail_inspection_report_document_number",
-            "document_number",
+            'detail_inspection_report_document_number',
+            'document_number',
         );
     }
 }

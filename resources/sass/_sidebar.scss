@@ -1,4 +1,4 @@
-@use "mixins" as *;
+@use 'mixins' as *;
 
 /* Rail */
 #sidebar {
@@ -109,8 +109,8 @@
 }
 
 /* Collapse arrows (only when expanded) */
-#sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
-  content: "";
+#sidebar.expand .sidebar-link[data-bs-toggle='collapse']::after {
+  content: '';
   position: absolute;
   right: 1.5rem;
   top: 1.4rem;
@@ -119,7 +119,7 @@
   padding: 2px;
   transform: rotate(-135deg);
 }
-#sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
+#sidebar.expand .sidebar-link[data-bs-toggle='collapse'].collapsed::after {
   transform: rotate(45deg);
 }
 
@@ -151,4 +151,4 @@
 }
 
 /* Collapsed rail behavior */
-@include collapsed-rail(".sidebar-nav");
+@include collapsed-rail('.sidebar-nav');

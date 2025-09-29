@@ -4,16 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create("master_data_part_number_prices", function (Blueprint $table) {
+        Schema::create('master_data_part_number_prices', function (Blueprint $table) {
             $table->id();
-            $table->string("name");
-            $table->double("price")->default(0);
+            $table->string('name');
+            $table->double('price')->default(0);
 
             $table->timestamps();
         });
@@ -24,6 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists("master_data_part_number_prices");
+        Schema::dropIfExists('master_data_part_number_prices');
     }
 };

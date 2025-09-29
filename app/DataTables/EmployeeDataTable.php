@@ -8,8 +8,6 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class EmployeeDataTable extends DataTable
@@ -17,14 +15,13 @@ class EmployeeDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn(
-                "action",
+                'action',
                 '
             @if(auth()->user())
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-employee-modal{{$id}}"><i class="bx bx-edit"></i></button>
@@ -32,80 +29,74 @@ class EmployeeDataTable extends DataTable
             @endif
         ',
             )
-            ->setRowId("id");
+            ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
-     *
-     * @param \App\Models\Employee $model
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(Employee $model): QueryBuilder
     {
-        $query = $model->newQuery()->with("department");
+        $query = $model->newQuery()->with('department');
         $user = auth()->user();
 
-        if ($user && $user->is_head && $user->department->name !== "MANAGEMENT") {
-            $query->where("Dept", $user->department->dept_no);
+        if ($user && $user->is_head && $user->department->name !== 'MANAGEMENT') {
+            $query->where('Dept', $user->department->dept_no);
         }
+
         return $query;
     }
 
     /**
      * Optional method if you want to use html builder.
-     *
-     * @return \Yajra\DataTables\Html\Builder
      */
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId("employee-table")
+            ->setTableId('employee-table')
             ->columns($this->getColumns())
-            ->minifiedAjax(route("employee-dashboard.getEmployeesData"))
-            //->dom('Bfrtip')
+            ->minifiedAjax(route('employee-dashboard.getEmployeesData'))
+            // ->dom('Bfrtip')
             ->orderBy(1)
             ->buttons([
-                Button::make("excel"),
-                Button::make("csv"),
-                Button::make("pdf"),
-                Button::make("print"),
-                Button::make("reload"),
+                Button::make('excel'),
+                Button::make('csv'),
+                Button::make('pdf'),
+                Button::make('print'),
+                Button::make('reload'),
             ])
             ->parameters([
-                "autoWidth" => false,
-                "responsive" => true,
+                'autoWidth' => false,
+                'responsive' => true,
             ]);
     }
 
     /**
      * Get the dataTable columns definition.
-     *
-     * @return array
      */
     public function getColumns(): array
     {
         // Build the base columns
         $columns = [
-            Column::make("id"),
-            Column::make("NIK"),
-            Column::make("Nama"),
-            Column::make("Gender"),
-            Column::make("Branch"),
-            Column::make("Dept"),
-            Column::make("start_date"),
-            Column::make("end_date"),
-            Column::make("status"),
-            Column::make("jatah_cuti_tahun"),
+            Column::make('id'),
+            Column::make('NIK'),
+            Column::make('Nama'),
+            Column::make('Gender'),
+            Column::make('Branch'),
+            Column::make('Dept'),
+            Column::make('start_date'),
+            Column::make('end_date'),
+            Column::make('status'),
+            Column::make('jatah_cuti_tahun'),
         ];
 
         // Conditionally add the action column if a user is authenticated
         if (auth()->user()) {
-            $columns[] = Column::computed("action")
+            $columns[] = Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass("text-center")
-                ->addClass("align-middle");
+                ->addClass('text-center')
+                ->addClass('align-middle');
         }
 
         return $columns;
@@ -113,11 +104,9 @@ class EmployeeDataTable extends DataTable
 
     /**
      * Get filename for export.
-     *
-     * @return string
      */
     protected function filename(): string
     {
-        return "Employee_" . date("YmdHis");
+        return 'Employee_'.date('YmdHis');
     }
 }

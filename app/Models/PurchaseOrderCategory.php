@@ -8,5 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class PurchaseOrderCategory extends Model
 {
     use HasFactory;
-    protected $fillable = ["name"];
+
+    protected $fillable = ['name'];
 }

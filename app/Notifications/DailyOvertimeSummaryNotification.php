@@ -13,6 +13,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
     use Queueable;
 
     public $reports;
+
     public $status;
 
     /**
@@ -31,7 +32,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
      */
     public function via(object $notifiable): array
     {
-        return ["mail"];
+        return ['mail'];
     }
 
     /**
@@ -40,12 +41,12 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $name = ucwords($notifiable->name);
-        $mail = (new MailMessage())
+        $mail = (new MailMessage)
             ->subject(
-                "Overtime Approval Summary – " . ucwords(str_replace("-", " ", $this->status)),
+                'Overtime Approval Summary – '.ucwords(str_replace('-', ' ', $this->status)),
             )
             ->greeting("Dear {$name},")
-            ->line("Here are the overtime forms waiting for your action:");
+            ->line('Here are the overtime forms waiting for your action:');
 
         // Build the HTML table
         $table = '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 14px;">
@@ -62,7 +63,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         <tbody>';
 
         foreach ($this->reports as $report) {
-            $url = route("formovertime.detail", $report->id);
+            $url = route('formovertime.detail', $report->id);
             $table .= "<tr>
             <td>{$report->id}</td>
             <td>{$report->department->name}</td>
@@ -73,14 +74,14 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         </tr>";
         }
 
-        $table .= "</tbody></table>";
+        $table .= '</tbody></table>';
 
         $mail->line(new HtmlString($table));
-        $mail->line(new HtmlString("<br>"));
+        $mail->line(new HtmlString('<br>'));
 
-        $mail->action("Go to Dashboard", route("overtime.index"));
+        $mail->action('Go to Dashboard', route('overtime.index'));
 
-        return $mail->line("Please take necessary action. Thank you.");
+        return $mail->line('Please take necessary action. Thank you.');
     }
 
     /**
@@ -91,7 +92,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
     public function toArray(object $notifiable): array
     {
         return [
-                //
-            ];
+            //
+        ];
     }
 }

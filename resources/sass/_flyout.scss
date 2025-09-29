@@ -34,7 +34,7 @@
 
   /* Arrow that points back to the rail; --arrow-top set by JS */
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     left: -6px;
     top: var(--arrow-top, 14px);
