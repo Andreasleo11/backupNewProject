@@ -22,12 +22,12 @@ class StoreOvertimeRequest extends FormRequest
     public function rules()
     {
         return [
-            "from_department" => "required|exists:departments,id",
-            "branch" => "required|string",
-            "date_form_overtime" => "required|date",
-            "items" => "required_without:excel_file|array",
-            "items.*.NIK" => "required|string",
-            "excel_file" => "nullable|file|mimes:xlsx,xls",
+            'from_department' => 'required|exists:departments,id',
+            'branch' => 'required|string',
+            'date_form_overtime' => 'required|date',
+            'items' => 'required_without:excel_file|array',
+            'items.*.NIK' => 'required|string',
+            'excel_file' => 'nullable|file|mimes:xlsx,xls',
         ];
     }
 }

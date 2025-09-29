@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\DelschedFinal;
-use App\Models\DelschedFinalWip;
 use App\DataTables\DeliveryNewTableDataTable;
 use App\DataTables\WipFinalDsDataTable;
+use App\Models\DelschedFinal;
+use App\Models\DelschedFinalWip;
 
 class DSNewController extends Controller
 {
@@ -20,7 +18,7 @@ class DSNewController extends Controller
         //     dd($data);
         // }
 
-        return $dataTable->render("business.dsnewindex");
+        return $dataTable->render('business.dsnewindex');
     }
 
     public function indexfinal(WipFinalDsDataTable $dataTable)
@@ -32,6 +30,6 @@ class DSNewController extends Controller
         //     dd($data);
         // }
 
-        return $dataTable->render("business.dsnewindexwip");
+        return $dataTable->render('business.dsnewindexwip');
     }
 }

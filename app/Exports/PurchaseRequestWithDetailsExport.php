@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class PurchaseRequestWithDetailsExport implements WithMultipleSheets
@@ -14,9 +13,6 @@ class PurchaseRequestWithDetailsExport implements WithMultipleSheets
         $this->purchaseRequestIds = $purchaseRequestIds;
     }
 
-    /**
-     * @return array
-     */
     public function sheets(): array
     {
         return [

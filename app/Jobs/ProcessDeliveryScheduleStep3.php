@@ -11,7 +11,9 @@ use Illuminate\Queue\SerializesModels;
 class ProcessDeliveryScheduleStep3 extends BaseDeliveryScheduleStep implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
     public int $timeout = 300;
+
     /**
      * Create a new job instance.
      */

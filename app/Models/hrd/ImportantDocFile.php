@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ImportantDocFile extends Model
 {
-    protected $fillable = ["name", "mime_type", "data"];
+    protected $fillable = ['name', 'mime_type', 'data'];
 
     public function importantDoc()
     {

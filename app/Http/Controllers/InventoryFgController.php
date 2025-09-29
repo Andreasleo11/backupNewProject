@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\sapInventoryFg;
-
-use Illuminate\Http\Request;
 use App\DataTables\sapInventoryFgDataTable;
+use App\Models\sapInventoryFg;
 
 class InventoryFgController extends Controller
 {
@@ -13,6 +11,6 @@ class InventoryFgController extends Controller
     {
         // $datas = sapInventoryFg::paginate(10);
 
-        return $dataTable->render("sap.inventoryfg");
+        return $dataTable->render('sap.inventoryfg');
     }
 }

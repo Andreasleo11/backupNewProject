@@ -14,7 +14,7 @@ class HrdHomeController extends Controller
         $expiryThreshold = Carbon::now()->addMonths(2);
 
         // Retrieve documents expiring within the next two months
-        $importantDocs = ImportantDoc::where("expired_date", "<=", $expiryThreshold)->get();
+        $importantDocs = ImportantDoc::where('expired_date', '<=', $expiryThreshold)->get();
 
         // Retrieve all documents
         $allImportantDocs = ImportantDoc::all();
@@ -22,6 +22,6 @@ class HrdHomeController extends Controller
         // Filter out documents expiring within the next two months
         $importantDocs2 = $allImportantDocs->diff($importantDocs);
 
-        return view("hrd.home", compact("importantDocs", "importantDocs2"));
+        return view('hrd.home', compact('importantDocs', 'importantDocs2'));
     }
 }

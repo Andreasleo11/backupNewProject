@@ -13,7 +13,8 @@ class WaitingPurchaseOrderController extends Controller
     public function index()
     {
         $orders = WaitingPurchaseOrder::all();
-        return view("waiting_purchase_orders.index", compact("orders"));
+
+        return view('waiting_purchase_orders.index', compact('orders'));
     }
 
     /**
@@ -21,7 +22,7 @@ class WaitingPurchaseOrderController extends Controller
      */
     public function create()
     {
-        return view("waiting_purchase_orders.create");
+        return view('waiting_purchase_orders.create');
     }
 
     /**
@@ -30,20 +31,20 @@ class WaitingPurchaseOrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            "mold_name" => "required|string|max:255",
-            "capture_photo_path" => "required|string",
-            "process" => "required|string|max:255",
-            "price" => "required|numeric",
-            "quotation_number" => "required|string|max:255",
-            "remark" => "nullable|string",
-            "status" => "required|integer",
+            'mold_name' => 'required|string|max:255',
+            'capture_photo_path' => 'required|string',
+            'process' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'quotation_number' => 'required|string|max:255',
+            'remark' => 'nullable|string',
+            'status' => 'required|integer',
         ]);
 
         WaitingPurchaseOrder::create($request->all());
 
         return redirect()
-            ->route("waiting_purchase_orders.index")
-            ->with("success", "Purchase Order created successfully.");
+            ->route('waiting_purchase_orders.index')
+            ->with('success', 'Purchase Order created successfully.');
     }
 
     /**
@@ -51,7 +52,7 @@ class WaitingPurchaseOrderController extends Controller
      */
     public function show(string $id)
     {
-        return view("waiting_purchase_orders.show", compact("waitingPurchaseOrder"));
+        return view('waiting_purchase_orders.show', compact('waitingPurchaseOrder'));
     }
 
     /**
@@ -59,7 +60,7 @@ class WaitingPurchaseOrderController extends Controller
      */
     public function edit(string $id)
     {
-        return view("waiting_purchase_orders.edit", compact("waitingPurchaseOrder"));
+        return view('waiting_purchase_orders.edit', compact('waitingPurchaseOrder'));
     }
 
     /**
@@ -68,13 +69,13 @@ class WaitingPurchaseOrderController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            "mold_name" => "required|string|max:255",
-            "capture_photo_path" => "required|string",
-            "process" => "required|string|max:255",
-            "price" => "required|numeric",
-            "quotation_number" => "required|string|max:255",
-            "remark" => "nullable|string",
-            "status" => "required|integer",
+            'mold_name' => 'required|string|max:255',
+            'capture_photo_path' => 'required|string',
+            'process' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'quotation_number' => 'required|string|max:255',
+            'remark' => 'nullable|string',
+            'status' => 'required|integer',
         ]);
 
         $waitingPurchaseOrder = WaitingPurchaseOrder::find($id);
@@ -82,8 +83,8 @@ class WaitingPurchaseOrderController extends Controller
         $waitingPurchaseOrder->update($request->all());
 
         return redirect()
-            ->route("waiting_purchase_orders.index")
-            ->with("success", "Purchase Order updated successfully.");
+            ->route('waiting_purchase_orders.index')
+            ->with('success', 'Purchase Order updated successfully.');
     }
 
     /**
@@ -95,7 +96,7 @@ class WaitingPurchaseOrderController extends Controller
         $waitingPurchaseOrder->delete();
 
         return redirect()
-            ->route("waiting_purchase_orders.index")
-            ->with("success", "Purchase Order deleted successfully.");
+            ->route('waiting_purchase_orders.index')
+            ->with('success', 'Purchase Order deleted successfully.');
     }
 }

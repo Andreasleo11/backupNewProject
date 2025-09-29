@@ -2,10 +2,10 @@
 
 namespace App\Domain\Expenses\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use App\Domain\Expenses\ExpenseRepository;
 use App\Domain\Expenses\Sources\MonthlyBudgetSource;
 use App\Domain\Expenses\Sources\PurchaseRequestSource;
+use Illuminate\Support\ServiceProvider;
 
 class ExpensesServiceProvider extends ServiceProvider
 {
@@ -16,7 +16,7 @@ class ExpensesServiceProvider extends ServiceProvider
     {
         // Bind as a singleton so the same instance is reused per request.
         $this->app->singleton(ExpenseRepository::class, function ($app) {
-            return new ExpenseRepository(new PurchaseRequestSource(), new MonthlyBudgetSource());
+            return new ExpenseRepository(new PurchaseRequestSource, new MonthlyBudgetSource);
         });
     }
 

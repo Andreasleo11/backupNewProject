@@ -164,14 +164,14 @@
 }
 
 .chip[disabled],
-.chip[aria-disabled="true"] {
+.chip[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
 /* Active/selected state (supports both class and aria-pressed) */
 .chip-active,
-.chip[aria-pressed="true"] {
+.chip[aria-pressed='true'] {
   --chip-bg: var(--brand-500);
   --chip-fg: #fff;
   --chip-border: transparent;
@@ -183,7 +183,7 @@
 }
 
 .chip-active:hover,
-.chip[aria-pressed="true"]:hover {
+.chip[aria-pressed='true']:hover {
   filter: brightness(1.03);
 }
 
@@ -201,7 +201,7 @@
   background: rgba(0, 0, 0, 0.06);
 }
 .chip-active .count,
-.chip[aria-pressed="true"] .count {
+.chip[aria-pressed='true'] .count {
   background: rgba(255, 255, 255, 0.22);
 }
 

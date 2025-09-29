@@ -10,16 +10,16 @@ class InventoryRepairHistory extends Model
     use HasFactory;
 
     protected $fillable = [
-        "master_id",
-        "request_name",
-        "action",
-        "type",
-        "old_part",
-        "item_type",
-        "item_brand",
-        "item_name",
-        "action_date",
-        "remark",
+        'master_id',
+        'request_name',
+        'action',
+        'type',
+        'old_part',
+        'item_type',
+        'item_brand',
+        'item_name',
+        'action_date',
+        'remark',
     ];
 
     public function masterinventory()
@@ -29,11 +29,11 @@ class InventoryRepairHistory extends Model
 
     public function hardwareType()
     {
-        return $this->belongsTo(HardwareTypeInventory::class, "item_type");
+        return $this->belongsTo(HardwareTypeInventory::class, 'item_type');
     }
 
     public function softwareType()
     {
-        return $this->belongsTo(SoftwareTypeInventory::class, "item_type");
+        return $this->belongsTo(SoftwareTypeInventory::class, 'item_type');
     }
 }

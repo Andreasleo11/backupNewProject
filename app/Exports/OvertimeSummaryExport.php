@@ -7,6 +7,7 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class OvertimeSummaryExport implements WithMultipleSheets
 {
     protected $start_date;
+
     protected $end_date;
 
     public function __construct($start_date, $end_date)

@@ -29,11 +29,11 @@ class ReportsExport implements FromQuery, WithMultipleSheets
         $sheets[] = new ReportsSheet($this->query());
 
         // Add sheets for exporting details, defects, and defect categories
-        $sheets[] = new DetailsSheet();
+        $sheets[] = new DetailsSheet;
         // Add sheets for defects and defect categories similarly
 
-        $sheets[] = new DefectsSheet();
-        $sheets[] = new DefectCategoriesSheet();
+        $sheets[] = new DefectsSheet;
+        $sheets[] = new DefectCategoriesSheet;
 
         return $sheets;
     }

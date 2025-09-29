@@ -9,29 +9,29 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Report extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
-        "rec_date",
-        "verify_date",
-        "customer",
-        "invoice_no",
-        "autograph_1",
-        "autograph_2",
-        "autograph_3",
-        "autograph_user_1",
-        "autograph_user_2",
-        "autograph_user_3",
-        "created_by",
-        "attachment",
-        "is_approve",
-        "description",
-        "first_reject",
-        "rejected_at",
-        "updated_at",
-        "is_locked",
-        "has_been_emailed",
-        "approved_at",
+        'rec_date',
+        'verify_date',
+        'customer',
+        'invoice_no',
+        'autograph_1',
+        'autograph_2',
+        'autograph_3',
+        'autograph_user_1',
+        'autograph_user_2',
+        'autograph_user_3',
+        'created_by',
+        'attachment',
+        'is_approve',
+        'description',
+        'first_reject',
+        'rejected_at',
+        'updated_at',
+        'is_locked',
+        'has_been_emailed',
+        'approved_at',
     ];
 
     // Define relationships if needed
@@ -44,13 +44,13 @@ class Report extends Model
     {
         switch ($section) {
             case 1:
-                $this->update(["autograph_1" => $signaturePath]);
+                $this->update(['autograph_1' => $signaturePath]);
                 break;
             case 2:
-                $this->update(["autograph_2" => $signaturePath]);
+                $this->update(['autograph_2' => $signaturePath]);
                 break;
             case 3:
-                $this->update(["autograph_3" => $signaturePath]);
+                $this->update(['autograph_3' => $signaturePath]);
                 break;
             default:
                 // Handle other cases if needed
@@ -67,10 +67,10 @@ class Report extends Model
             $position = static::count() + 1;
 
             // Calculate the increment number
-            $increment = str_pad($position, 4, "0", STR_PAD_LEFT);
+            $increment = str_pad($position, 4, '0', STR_PAD_LEFT);
 
             // Get the date portion
-            $date = now()->format("ymd"); // Assuming you want the current date
+            $date = now()->format('ymd'); // Assuming you want the current date
 
             // Build the custom ID
             $customId = "VQC/{$increment}/{$date}";
@@ -82,37 +82,37 @@ class Report extends Model
 
     public function scopeWithAutographs($query)
     {
-        return $query->whereNotNull("autograph_3")->where(function ($query) {
-            $query->whereNotNull("autograph_1")->orWhereNotNull("autograph_2");
+        return $query->whereNotNull('autograph_3')->where(function ($query) {
+            $query->whereNotNull('autograph_1')->orWhereNotNull('autograph_2');
         });
     }
 
     public function scopeApprovedOrRejected($query)
     {
         return $query->where(function ($query) {
-            $query->where("is_approve", 0)->orWhere("is_approve", 1);
+            $query->where('is_approve', 0)->orWhere('is_approve', 1);
         });
     }
 
     public function scopeApproved($query)
     {
-        return $query->where("is_approve", 1);
+        return $query->where('is_approve', 1);
     }
 
     public function scopeWaitingSignature($query)
     {
-        return $query->where("is_approve", 2)->whereNot(function ($query) {
+        return $query->where('is_approve', 2)->whereNot(function ($query) {
             $query->WaitingApproval();
         });
     }
 
     public function scopeWaitingApproval($query)
     {
-        return $query->withAutographs()->where("is_approve", 2);
+        return $query->withAutographs()->where('is_approve', 2);
     }
 
     public function scopeRejected($query)
     {
-        return $query->where("is_approve", 0);
+        return $query->where('is_approve', 0);
     }
 }

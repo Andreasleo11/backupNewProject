@@ -11,6 +11,6 @@ class HolidayListTemplateExport implements FromCollection
      */
     public function collection()
     {
-        return collect([["Date", "Holiday Name", "Description", "Is Half Day"]]);
+        return collect([['Date', 'Holiday Name', 'Description', 'Is Half Day']]);
     }
 }

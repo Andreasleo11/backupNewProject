@@ -5,7 +5,7 @@
 }
 
 /* Hide text/badges in the rail when collapsed; center icons */
-@mixin collapsed-rail($scope: ".sidebar-nav") {
+@mixin collapsed-rail($scope: '.sidebar-nav') {
   #sidebar:not(.expand) #{$scope} .sidebar-link span,
   #sidebar:not(.expand) #{$scope} .sidebar-link .badge,
   #sidebar:not(.expand) .brand-text,

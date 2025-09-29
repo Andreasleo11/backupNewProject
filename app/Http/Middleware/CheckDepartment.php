@@ -23,6 +23,7 @@ class CheckDepartment
         ) {
             return $next($request);
         }
-        return redirect("/");
+
+        return redirect('/');
     }
 }

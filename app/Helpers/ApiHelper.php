@@ -12,15 +12,15 @@ class ApiHelper
         $missing = [];
 
         foreach ($required as $key) {
-            if (!isset($params[$key]) || $params[$key] === null || $params[$key] === "") {
+            if (! isset($params[$key]) || $params[$key] === null || $params[$key] === '') {
                 $missing[] = $key;
             }
         }
 
-        if (!empty($missing)) {
+        if (! empty($missing)) {
             return self::response(
                 false,
-                "Missing required parameter(s): " . implode(", ", $missing),
+                'Missing required parameter(s): '.implode(', ', $missing),
                 null,
             );
         }
@@ -34,10 +34,10 @@ class ApiHelper
     public static function response(bool $success, string $message, $data = null, $total = null)
     {
         return [
-            "success" => $success,
-            "message" => $message,
-            "data" => $data,
-            "total" => $total,
+            'success' => $success,
+            'message' => $message,
+            'data' => $data,
+            'total' => $total,
         ];
     }
 
@@ -46,15 +46,15 @@ class ApiHelper
      */
     public static function handleApiResponse(array $apiResult)
     {
-        if (empty($apiResult["data"] || $apiResult["total"] === 0)) {
-            return self::response(false, "No data found.", []);
+        if (empty($apiResult['data'] || $apiResult['total'] === 0)) {
+            return self::response(false, 'No data found.', []);
         }
 
         return self::response(
             true,
-            "Data retrieved successfully.",
-            $apiResult["data"],
-            $apiResult["total"],
+            'Data retrieved successfully.',
+            $apiResult['data'],
+            $apiResult['total'],
         );
     }
 }

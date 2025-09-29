@@ -2,24 +2,25 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\materialPredictionController;
+use App\Http\Controllers\PurchasingMaterialController;
+use App\Services\FctForecastService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\PurchasingMaterialController;
-use App\Http\Controllers\materialPredictionController;
-use App\Services\FctForecastService;
+use Illuminate\Support\Facades\Log;
 
 class SyncSapServiceJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $serviceClass;
+
     public $startDate;
+
     public $label;
 
     public function __construct(string $serviceClass, string $startDate, string $label)
@@ -40,40 +41,40 @@ class SyncSapServiceJob implements ShouldQueue
         Log::info("Queue done: {$this->label}");
 
         // Debug log
-        Log::info("Checking serviceClass: " . $this->serviceClass);
-        Log::info("Comparing with: " . FctForecastService::class);
+        Log::info('Checking serviceClass: '.$this->serviceClass);
+        Log::info('Comparing with: '.FctForecastService::class);
 
         if ($this->serviceClass === FctForecastService::class) {
-            Log::info("Condition matched! Starting post-processing...");
+            Log::info('Condition matched! Starting post-processing...');
             $this->handleForecastPostProcessing();
         } else {
-            Log::info("Condition not matched, skipping post-processing");
+            Log::info('Condition not matched, skipping post-processing');
         }
     }
 
     private function handleForecastPostProcessing()
     {
         try {
-            Log::info("Starting forecast post-processing...");
+            Log::info('Starting forecast post-processing...');
 
             // 1. Truncate tables
-            DB::table("foremind_final")->truncate();
-            DB::table("forecast_material_predictions")->truncate();
-            Log::info("Tables truncated successfully");
+            DB::table('foremind_final')->truncate();
+            DB::table('forecast_material_predictions')->truncate();
+            Log::info('Tables truncated successfully');
 
             // 2. Execute first controller method
             $purchasingController = app(PurchasingMaterialController::class);
             $purchasingController->storeDataInNewTable();
-            Log::info("PurchasingMaterialController::storeDataInNewTable executed");
+            Log::info('PurchasingMaterialController::storeDataInNewTable executed');
 
             // 3. Execute second controller method
             $predictionController = app(materialPredictionController::class);
             $predictionController->processForemindFinalData();
-            Log::info("materialPredictionController::processForemindFinalData executed");
+            Log::info('materialPredictionController::processForemindFinalData executed');
 
-            Log::info("Forecast post-processing completed successfully");
+            Log::info('Forecast post-processing completed successfully');
         } catch (\Exception $e) {
-            Log::error("Error in forecast post-processing: " . $e->getMessage());
+            Log::error('Error in forecast post-processing: '.$e->getMessage());
             throw $e; // Re-throw untuk trigger job failure
         }
     }

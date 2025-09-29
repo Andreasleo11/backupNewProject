@@ -9,16 +9,16 @@ class ActualOvertimeDetail extends Model
 {
     use HasFactory;
 
-    protected $table = "actual_overtime_details";
+    protected $table = 'actual_overtime_details';
 
     protected $fillable = [
-        "key",
-        "voucher",
-        "in_date",
-        "in_time",
-        "out_date",
-        "out_time",
-        "nett_overtime",
+        'key',
+        'voucher',
+        'in_date',
+        'in_time',
+        'out_date',
+        'out_time',
+        'nett_overtime',
     ];
 
     /**
@@ -27,6 +27,6 @@ class ActualOvertimeDetail extends Model
      */
     public function detailFormOvertime()
     {
-        return $this->belongsTo(DetailFormOvertime::class, "key", "id");
+        return $this->belongsTo(DetailFormOvertime::class, 'key', 'id');
     }
 }
