@@ -1,70 +1,69 @@
 <!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace("_", "-", app()->getLocale()) }}">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- CSRF Token -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="app-user-id" content="{{ auth()->id() }}">
 
-  <title>@yield('title')</title>
+  <title>@yield("title", config("app.name"))</title>
 
-  <!-- Fonts -->
+  <script>
+    const meta = document.querySelector('meta[name="app-user-id"]');
+    window.Laravel = {
+      userId: meta ? meta.content : null
+    };
+  </script>
+  @vite(["resources/sass/app.scss", "resources/js/app.js"])
+
   <link rel="dns-prefetch" href="//fonts.bunny.net">
   <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-
-  <!-- Scripts -->
-  @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-
   <link href="https://cdn.lineicons.com/4.0/lineicons.css" rel="stylesheet" />
-  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ asset("css/app.css") }}">
 
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-
-  @stack('extraCss')
-
+  @livewireStyles
+  @stack("extraCss")
 </head>
 
-<body>
+<body class="{{ session("sidebar_open", false) ? "sidebar-open" : "sidebar-closed" }}">
   <div class="wrapper">
-
-    @include('partials.sidebar')
+    <livewire:sidebar />
 
     <div class="main">
-      @include('partials.navbar')
+      @include("partials.navbar")
 
-      <main class="content px-5 py-5 height-vh-100">
-        {{ $slot ?? '' }}
-        @if (!empty($slot))
-          {{-- Toast Notification --}}
-          <div x-data class="toast-container position-fixed bottom-0 end-0 p-3"
-            style="z-index:1080;"
-            @toast.window="
-                            const el = $refs.toastOk;
-                            el.querySelector('.toast-body').textContent = ($event.detail?.message ?? '');
-                            bootstrap.Toast.getOrCreateInstance(el).show();
-                        ">
-            <div x-ref="toastOk" class="toast" role="alert" aria-live="assertive"
-              aria-atomic="true" data-bs-autohide="true">
-              <div class="toast-header">
-                <strong class="me-auto">Info</strong>
-                <small>Now</small>
-                <button class="btn-close" data-bs-dismiss="toast" type="button"></button>
-              </div>
-              <div class="toast-body"></div>
-            </div>
-          </div>
-        @endif
-        @yield('content')
+      <main class="content px-4 px-md-5 py-4">
+        {{ $slot ?? "" }}
+        @yield("content")
       </main>
-
     </div>
   </div>
 
-  @stack('extraJs')
-  <script src="{{ asset('js/app.js') }}"></script>
-  <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+  {{-- Toast: always present --}}
+  <div x-data class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1080;"
+    @toast.window="
+        const el = $refs.toastOk;
+        el.querySelector('.toast-body').textContent = ($event.detail?.message ?? '');
+        bootstrap.Toast.getOrCreateInstance(el).show();
+       ">
+    <div x-ref="toastOk" class="toast" role="alert" aria-live="assertive" aria-atomic="true"
+      data-bs-autohide="true">
+      <div class="toast-header">
+        <strong class="me-auto">Info</strong>
+        <small>Now</small>
+        <button class="btn-close" data-bs-dismiss="toast" type="button"
+          aria-label="Close"></button>
+      </div>
+      <div class="toast-body"></div>
+    </div>
+  </div>
 
+  @livewireScripts
+  @stack("extraJs")
+  <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js" defer></script>
 </body>
 
 </html>
+

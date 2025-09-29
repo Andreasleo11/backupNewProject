@@ -1,0 +1,35 @@
+:root {
+  /* Brand */
+  --brand-900: #0f2d4c;
+  --brand-800: #14385e;
+  --brand-700: #1e4e84;
+  --brand-500: #3b7ddd;
+  --brand-300: #8fb3ea;
+
+  /* UI */
+  --sidebar-bg: #0e2238;
+  --sidebar-fg: #fff;
+  --sidebar-accent: var(--brand-500);
+  --sidebar-collapsed: 70px;
+  --sidebar-expanded: 260px;
+  --navbar-bg: var(--brand-800);
+  --page-bg: #fafbfe;
+  --card-bg: #fff;
+  --border-subtle: #e9edf3;
+  --text-muted: #6b7280;
+  --shadow-sm: 0 6px 20px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.12);
+
+  /* Sizes */
+  --ctrl: 40px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-16: 16px;
+}
+
+/* Optional dark theme hook */
+[data-theme="dark"] {
+  --page-bg: #0b1523;
+  --card-bg: #0f172a;
+  --border-subtle: #203049;
+}
