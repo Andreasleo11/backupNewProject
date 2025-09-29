@@ -1444,6 +1444,10 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name(
         'yayasan.table',
     );
+
+    Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])
+        ->name('department.status.yayasan');
+
     Route::put('/edit/maganddiscipline/{id}', [
         DisciplinePageController::class,
         'updatemagang',

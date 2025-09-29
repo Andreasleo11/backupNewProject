@@ -409,6 +409,7 @@ class Index extends Component
                     fn ($q) => $q->where('name', 'ani'),
                 )
                     ->whereHas('department', fn ($q) => $q->where('name', 'BUSINESS'))
+                    ->where('status', '!=', 'waiting-creator')
                     ->get();
 
                 $andriani = \App\Models\User::where('name', 'andriani')->first();

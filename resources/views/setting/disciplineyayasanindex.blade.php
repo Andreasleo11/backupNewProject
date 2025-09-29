@@ -1,8 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-    @include('partials.info-discipline-page-yayasan-modal')
-    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal"> Info </a>
+  @include('partials.info-discipline-page-yayasan-modal')
+   <div class="mb-3">
+    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page-yayasan" data-bs-toggle="modal">Info</a>
+    <button class="btn btn-info float-right me-2" id="checkDeptStatusBtn">Department Status</button>
+  </div>
+
+  <div class="modal-body" id="department-status-container">
+    <!-- isi AJAX masuk sini -->
+  </div>
 
     @if (!$user->is_head && !$user->is_gm)
         @include('partials.upload-excel-file-discipline-yayasan-modal')
@@ -133,14 +140,14 @@
             </div>
         @endif
 
-        @if ($user->name === 'Bernadett')
-            <div class="col-auto">
-                <!-- Approve Form -->
-                <form method="POST" action="{{ route('approve.hrd.yayasan') }}" id="approve-form">
-                    @csrf
-                    <input type="hidden" name="filter_month" id="bulanDepthead">
-                    <input type="hidden" name="filter_year" id="tahunDepthead">
-                    <input type="hidden" name="filter_dept" id="hrdDept">
+    @if ($user->name === 'Bernadett' )
+      <div class="col-auto">
+        <!-- Approve Form -->
+        <form method="POST" action="{{ route('approve.hrd.yayasan') }}" id="approve-form">
+          @csrf
+          <input type="hidden" name="filter_month" id="bulanDepthead">
+          <input type="hidden" name="filter_year" id="tahunDepthead">
+          <input type="hidden" name="filter_dept" id="hrdDept">
 
                     <button type="submit" class="btn btn-success">Approve</button>
                 </form>
@@ -188,39 +195,39 @@
             <!-- Filtered employees will be displayed here -->
         </div>
 
-        @if ($user->is_gm === 1 || $user->name === 'Bernadett')
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="form-label">Filter Departement</div>
-                </div>
-                <div class="col-auto">
-                    <select name="filter_dept" id="dept-filter" class="form-select">
-                        <option value="">All</option>
-                        <option value="351">Maintenance Machine</option>
-                        <option value="311">PPIC</option>
-                        <option value="390">Plastic Injection</option>
-                        <option value="363">Moulding</option>
-                        <option value="362">Assembly</option>
-                        <option value="361">Second Process</option>
-                        <option value="350">Maintenance</option>
-                        <option value="331">Logistic</option>
-                        <option value="330">Store</option>
-                        <option value="340">QC</option>
-                    </select>
-                </div>
-                <div class="col text-end" id="filtered-employees">
-                    <!-- Filtered employees will be displayed here -->
-                </div>
-        @endif
-        <section class="content">
-            <div class="card mt-5">
-                <div class="card-body">
-                    <div class="table-responsive">
-                        {{ $dataTable->table() }}
-                    </div>
-                </div>
-            </div>
-        </section>
+    @if ($user->is_gm === 1 || $user->name === 'Bernadett')
+      <div class="row align-items-center">
+        <div class="col-auto">
+          <div class="form-label">Filter Departement</div>
+        </div>
+        <div class="col-auto">
+          <select name="filter_dept" id="dept-filter" class="form-select">
+            <option value="All">All</option>
+            <option value="351">Maintenance Machine</option>
+            <option value="311">PPIC</option>
+            <option value="390">Plastic Injection</option>
+            <option value="363">Moulding</option>
+            <option value="362">Assembly</option>
+            <option value="361">Second Process</option>
+            <option value="350">Maintenance</option>
+            <option value="331">Logistic</option>
+            <option value="330">Store</option>
+            <option value="340">QC</option>
+          </select>
+        </div>
+        <div class="col text-end" id="filtered-employees">
+          <!-- Filtered employees will be displayed here -->
+        </div>
+    @endif
+    <section class="content">
+      <div class="card mt-5">
+        <div class="card-body">
+          <div class="table-responsive">
+            {{ $dataTable->table() }}
+          </div>
+        </div>
+      </div>
+    </section>
 
         <div class="container border rounded-2 p-3 mt-4">
             <h4>Files</h4>
@@ -320,50 +327,67 @@
                         $('#relawan').val(employee.relawan);
                         $('#integritas').val(employee.integritas);
 
-                        $('#edit-form').attr('action', `/edit/yayasandiscipline/${employeeId}`);
-                    })
-                    .catch(error => {
-                        console.error("Error fetching employee data:", error);
-                    });
+            $('#edit-form').attr('action', `/edit/yayasandiscipline/${employeeId}`);
+          })
+          .catch(error => {
+            console.error("Error fetching employee data:", error);
+          });
+      });
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('checkDeptStatusBtn').addEventListener('click', function() {
+        const month = document.getElementById('status-filter').value;
+        const year = document.getElementById('year-filter').value;
+        
+        fetch("{{ route('department.status.yayasan') }}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          body: JSON.stringify({ month, year })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.status === 'success') {
+            let html = "<ul class='list-group'>";
+            Object.entries(data.data).forEach(([dept, status]) => {
+              const badgeClass = status === "Ready" ? "bg-success" : "bg-danger";
+              html += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <strong>${dept}</strong>
+                  <span class="badge ${badgeClass}">${status}</span>
+                </li>
+              `;
             });
-        </script>
+            html += "</ul>";
+            document.getElementById('department-status-container').innerHTML = html;
+            console.log(data)
+            // Show modal using jQuery (more reliable)
+            $('#departmentStatusModal').modal('show');
+          }
+        })
+      });
+    });
+    </script>
 
-        {{ $dataTable->scripts() }}
+    {{ $dataTable->scripts() }}
 
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                        const statusFilter = document.getElementById('status-filter');
-                        const yearFilter = document.getElementById('year-filter');
-                        const statusFilterDropdown = document.getElementById('status-filter');
-                        const deptFilterDropdown = document.getElementById('dept-filter');
-                        const yearFilterDropdown = document.getElementById('year-filter'); // Added year filter
-                        const filterMonthInput = document.getElementById('filter-month-input');
-                        const filterDeptInput = document.getElementById('filter-dept-input');
-                        const filterYearInput = document.getElementById('filter-year-input');
-                        const lockDataBtn = document.getElementById('approve-data-btn');
-                        const gmApprovalDataBtn = document.getElementById('approve-gm-data-btn');
-                        const triggerbutton = document.getElementById('trigger-script-btn');
-                        var isGm = @json(Auth::user()->is_gm);
-
-                        // Get current month in 'MM' format
-                        let selectedMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
-
-                        let selectedYear = new Date().getFullYear();
-
-                        // Initialize dropdown with the current month selected
-                        statusFilterDropdown.value = selectedMonth;
-                        yearFilterDropdown.value = selectedYear;
-                        // Initialize hidden input with the same month
-                        filterMonthInput.value = statusFilterDropdown.value;
-                        filterYearInput.value = selectedYear;
-        </script>
-
-        <script type="module">
-            $(function() {
-                let selectedMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
-                let selectedYear = new Date().getFullYear(); // Get current year
-                let realMonth = selectedMonth;
-                let realYear = selectedYear;
+   
+    <script type="module">
+    
+      $(function() {
+        let selectedMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+        let selectedYear = new Date().getFullYear(); // Get current year
+        let realMonth = selectedMonth;
+        let realYear = selectedYear;
 
                 let dataTable = window.LaravelDataTables["disciplineyayasantable-table"];
 
