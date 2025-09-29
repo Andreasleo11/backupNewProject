@@ -3,22 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ApprovalFlowStepResource\Pages;
-use App\Filament\Resources\ApprovalFlowStepResource\RelationManagers;
 use App\Models\ApprovalFlowStep;
-use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
 class ApprovalFlowStepResource extends Resource
 {
     protected static ?string $model = ApprovalFlowStep::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-rectangle-stack";
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
@@ -31,46 +27,46 @@ class ApprovalFlowStepResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("id")->label("ID")->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('id')->label('ID')->sortable()->toggleable(),
 
-                Tables\Columns\TextColumn::make("flow.name") // requires flow() relation
-                    ->label("Flow")
+                Tables\Columns\TextColumn::make('flow.name') // requires flow() relation
+                    ->label('Flow')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make("step_order")
-                    ->label("Order")
+                Tables\Columns\TextColumn::make('step_order')
+                    ->label('Order')
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make("role_slug")
-                    ->label("Role")
+                Tables\Columns\TextColumn::make('role_slug')
+                    ->label('Role')
                     ->formatStateUsing(
-                        fn(string $state) => str(Str::title(str_replace("_", " ", $state))), // dept_head → Dept Head
+                        fn (string $state) => str(Str::title(str_replace('_', ' ', $state))), // dept_head → Dept Head
                     )
                     ->badge() // ← replaces BadgeColumn
                     ->color(
-                        fn(string $state): string => match ($state) {
-                            "director" => "success",
-                            "gm" => "info",
-                            "dept_head" => "warning",
-                            default => "primary",
+                        fn (string $state): string => match ($state) {
+                            'director' => 'success',
+                            'gm' => 'info',
+                            'dept_head' => 'warning',
+                            default => 'primary',
                         },
                     )
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\IconColumn::make("mandatory")
-                    ->label("Mandatory")
+                Tables\Columns\IconColumn::make('mandatory')
+                    ->label('Mandatory')
                     ->boolean()
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make("created_at")
-                    ->label("Created")
-                    ->dateTime("Y-m-d H:i")
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Created')
+                    ->dateTime('Y-m-d H:i')
                     ->since() // shows “2 h ago”
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -88,7 +84,7 @@ class ApprovalFlowStepResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ManageApprovalFlowSteps::route("/"),
+            'index' => Pages\ManageApprovalFlowSteps::route('/'),
         ];
     }
 }

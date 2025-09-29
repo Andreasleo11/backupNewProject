@@ -10,14 +10,14 @@ class ProdplanInjDelraw extends Model
     use HasFactory;
 
     protected $fillable = [
-        "delivery_date",
-        "process_owner",
-        "bom_level",
-        "item_code",
-        "item_pair",
-        "item_fg",
-        "asm_on_line",
-        "fg_code_line",
-        "quantity",
+        'delivery_date',
+        'process_owner',
+        'bom_level',
+        'item_code',
+        'item_pair',
+        'item_fg',
+        'asm_on_line',
+        'fg_code_line',
+        'quantity',
     ];
 }

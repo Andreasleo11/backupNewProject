@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class FormAdjustMasterSheet implements FromCollection, WithTitle, WithHeadings
+class FormAdjustMasterSheet implements FromCollection, WithHeadings, WithTitle
 {
     /**
      * @return \Illuminate\Support\Collection
@@ -21,7 +21,7 @@ class FormAdjustMasterSheet implements FromCollection, WithTitle, WithHeadings
     public function headings(): array
     {
         // Get column names from the details table
-        $columnNames = Schema::getColumnListing("form_adjust_masters");
+        $columnNames = Schema::getColumnListing('form_adjust_masters');
 
         // Return the column names as headers
         return $columnNames;
@@ -29,6 +29,6 @@ class FormAdjustMasterSheet implements FromCollection, WithTitle, WithHeadings
 
     public function title(): string
     {
-        return "Form Adjust Master"; // Custom title for the sheet
+        return 'Form Adjust Master'; // Custom title for the sheet
     }
 }

@@ -9,7 +9,9 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 class MonthlyBudgetReportImport implements ToCollection
 {
     protected $deptNo;
+
     protected $reportDate;
+
     protected $headerId;
 
     public function __construct($deptNo, $reportDate, $headerId)
@@ -39,14 +41,14 @@ class MonthlyBudgetReportImport implements ToCollection
 
                 // Create MonthlyBudgetReportDetail entry
                 MonthlyBudgetReportDetail::create([
-                    "header_id" => $this->headerId, // Assign the header_id here
-                    "name" => $name,
-                    "spec" => $spec,
-                    "uom" => $uom,
-                    "last_recorded_stock" => $lastRecordedStock,
-                    "usage_per_month" => $usagePerMonth,
-                    "quantity" => $quantity,
-                    "remark" => $remark,
+                    'header_id' => $this->headerId, // Assign the header_id here
+                    'name' => $name,
+                    'spec' => $spec,
+                    'uom' => $uom,
+                    'last_recorded_stock' => $lastRecordedStock,
+                    'usage_per_month' => $usagePerMonth,
+                    'quantity' => $quantity,
+                    'remark' => $remark,
                 ]);
             } else {
                 $name = $row[0];
@@ -56,14 +58,14 @@ class MonthlyBudgetReportImport implements ToCollection
 
                 // Create MonthlyBudgetReportDetail entry
                 MonthlyBudgetReportDetail::create([
-                    "header_id" => $this->headerId, // Assign the header_id here
-                    "name" => $name,
-                    "spec" => null,
-                    "uom" => $uom,
-                    "last_recorded_stock" => null,
-                    "usage_per_month" => null,
-                    "quantity" => $quantity,
-                    "remark" => $remark,
+                    'header_id' => $this->headerId, // Assign the header_id here
+                    'name' => $name,
+                    'spec' => null,
+                    'uom' => $uom,
+                    'last_recorded_stock' => null,
+                    'usage_per_month' => null,
+                    'quantity' => $quantity,
+                    'remark' => $remark,
                 ]);
             }
         }

@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Number;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
 class Upload extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ["original_name", "path", "mime_type", "size", "disk", "uploaded_by"];
+    protected $fillable = ['original_name', 'path', 'mime_type', 'size', 'disk', 'uploaded_by'];
 
-    protected $appends = ["size_for_humans", "category"];
+    protected $appends = ['size_for_humans', 'category'];
 
     public function getSizeForHumansAttribute()
     {
@@ -24,25 +24,26 @@ class Upload extends Model
     public function getCategoryAttribute(): string
     {
         $m = $this->mime_type;
+
         return match (true) {
-            Str::startsWith($m, "image/") => "image",
-            $m === "application/pdf" => "pdf",
-            Str::contains($m, ["wordprocessingml", "msword", "rtf", "text/"]) => "doc",
-            Str::contains($m, ["spreadsheetml", "excel", "csv"]) => "sheet",
-            Str::startsWith($m, "video/") => "video",
-            Str::startsWith($m, "audio/") => "audio",
-            Str::contains($m, ["zip", "x-7z", "x-rar"]) => "archive",
-            default => "other",
+            Str::startsWith($m, 'image/') => 'image',
+            $m === 'application/pdf' => 'pdf',
+            Str::contains($m, ['wordprocessingml', 'msword', 'rtf', 'text/']) => 'doc',
+            Str::contains($m, ['spreadsheetml', 'excel', 'csv']) => 'sheet',
+            Str::startsWith($m, 'video/') => 'video',
+            Str::startsWith($m, 'audio/') => 'audio',
+            Str::contains($m, ['zip', 'x-7z', 'x-rar']) => 'archive',
+            default => 'other',
         };
     }
 
     public function getCreatedAtWibAttribute()
     {
-        return $this->created_at->timezone("Asia/Jakarta");
+        return $this->created_at->timezone('Asia/Jakarta');
     }
 
     public function tags()
     {
-        return $this->morphToMany(Tag::class, "taggable")->withTimestamps();
+        return $this->morphToMany(Tag::class, 'taggable')->withTimestamps();
     }
 }

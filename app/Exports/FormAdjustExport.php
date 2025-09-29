@@ -29,10 +29,10 @@ class FormAdjustExport implements FromQuery, WithMultipleSheets
         $sheets[] = new HeaderFormAdjustSheet($this->query());
 
         // Add sheets for exporting details, defects, and defect categories
-        $sheets[] = new DetailsSheet();
+        $sheets[] = new DetailsSheet;
         // Add sheets for defects and defect categories similarly
 
-        $sheets[] = new FormAdjustMasterSheet();
+        $sheets[] = new FormAdjustMasterSheet;
 
         return $sheets;
     }

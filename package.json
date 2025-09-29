@@ -4,12 +4,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "format": "prettier --write ."
+    "format": "npm run format:blade && npm run format:prettier && npm run format:pint",
+    "format:blade": "npx blade-formatter \"resources/views/**/*.blade.php\" --write",
+    "format:prettier": "prettier --write \"{resources,resources/js,resources/css,public,*.{js,ts,css,scss,vue,json,md}}/**/*\"",
+    "format:pint": "composer pint"
   },
   "devDependencies": {
     "@popperjs/core": "^2.11.6",
-    "@prettier/plugin-php": "^0.24.0",
-    "@shufo/prettier-plugin-blade": "^1.16.1",
     "axios": "^1.6.1",
     "laravel-datatables-vite": "^0.5.2",
     "laravel-vite-plugin": "^1.0.0",

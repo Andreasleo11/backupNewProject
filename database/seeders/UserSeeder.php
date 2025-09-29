@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Database\Seeder;
 
 class UserSeeder extends seeder
 {
@@ -135,20 +134,20 @@ class UserSeeder extends seeder
         //     'department'=> 'DIREKTUR'
         // ] );
 
-        DB::table("users")->insert([
-            "name" => "Suwanto",
-            "email" => "suwanto@daijo.co.id",
-            "password" => Hash::make("suwanto1234"),
-            "role_id" => "2",
-            "department" => "HRD",
+        DB::table('users')->insert([
+            'name' => 'Suwanto',
+            'email' => 'suwanto@daijo.co.id',
+            'password' => Hash::make('suwanto1234'),
+            'role_id' => '2',
+            'department' => 'HRD',
         ]);
 
-        DB::table("users")->insert([
-            "name" => "Vicky",
-            "email" => "vicky@daijo.co.id",
-            "password" => Hash::make("vicky123"),
-            "role_id" => "2",
-            "department" => "COMP",
+        DB::table('users')->insert([
+            'name' => 'Vicky',
+            'email' => 'vicky@daijo.co.id',
+            'password' => Hash::make('vicky123'),
+            'role_id' => '2',
+            'department' => 'COMP',
         ]);
     }
 }

@@ -14,6 +14,7 @@ class ProcessDeliverySchedule implements ShouldQueue
 
     // Set a higher timeout (in seconds)
     public int $timeout = 600; // 10 minutes
+
     /**
      * Create a new job instance.
      */

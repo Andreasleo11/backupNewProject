@@ -15,14 +15,14 @@ class SendTrainingReminders extends Command
      *
      * @var string
      */
-    protected $signature = "send:training-reminders";
+    protected $signature = 'send:training-reminders';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Send email reminders for upcoming or due trainings";
+    protected $description = 'Send email reminders for upcoming or due trainings';
 
     /**
      * Execute the console command.
@@ -32,16 +32,16 @@ class SendTrainingReminders extends Command
         $targetDate = Carbon::today()->subDays(75);
 
         // Fetch trainings 2.5 months or older
-        $trainings = EmployeeTraining::with("employee")
-            ->whereDate("last_training_at", "<=", $targetDate)
-            ->where("evaluated", true)
-            ->where("evaluated", false)
+        $trainings = EmployeeTraining::with('employee')
+            ->whereDate('last_training_at', '<=', $targetDate)
+            ->where('evaluated', true)
+            ->where('evaluated', false)
             ->get();
 
         // Fetch users to be notified
-        $usersToBeNotified = User::whereHas("department", function ($query) {
+        $usersToBeNotified = User::whereHas('department', function ($query) {
             $query->where(function ($query) {
-                $query->where("name", "PERSONALIA")->whereNot("email", "nur@daijo.co.id");
+                $query->where('name', 'PERSONALIA')->whereNot('email', 'nur@daijo.co.id');
             });
         })->get();
 
@@ -56,6 +56,6 @@ class SendTrainingReminders extends Command
             }
         }
 
-        $this->info("Employee Training reminders sent successfully for trainings 2.5 months old.");
+        $this->info('Employee Training reminders sent successfully for trainings 2.5 months old.');
     }
 }

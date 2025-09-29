@@ -10,10 +10,10 @@ class InspectionProblem extends Model
     use HasFactory;
 
     protected $fillable = [
-        "inspection_report_document_number",
-        "type",
-        "time",
-        "cycle_time",
-        "remarks",
+        'inspection_report_document_number',
+        'type',
+        'time',
+        'cycle_time',
+        'remarks',
     ];
 }

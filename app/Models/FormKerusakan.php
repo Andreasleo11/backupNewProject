@@ -8,18 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class FormKerusakan extends Model
 {
     use HasFactory;
-    protected $table = "form_kerusakan";
+
+    protected $table = 'form_kerusakan';
 
     protected $fillable = [
-        "customer",
-        "release_date",
-        "nama_barang",
-        "proses",
-        "masalah",
-        "sebab",
-        "penanggulangan",
-        "pic",
-        "target",
-        "keterangan",
+        'customer',
+        'release_date',
+        'nama_barang',
+        'proses',
+        'masalah',
+        'sebab',
+        'penanggulangan',
+        'pic',
+        'target',
+        'keterangan',
     ];
 }

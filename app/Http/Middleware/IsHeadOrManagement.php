@@ -17,10 +17,10 @@ class IsHeadOrManagement
     {
         $user = auth()->user();
 
-        if ($user && ($user->is_head == 1 || $user->department?->name === "MANAGEMENT")) {
+        if ($user && ($user->is_head == 1 || $user->department?->name === 'MANAGEMENT')) {
             return $next($request);
         }
 
-        abort(403, "Unauthorized access.");
+        abort(403, 'Unauthorized access.');
     }
 }

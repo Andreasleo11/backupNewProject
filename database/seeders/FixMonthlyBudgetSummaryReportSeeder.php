@@ -25,11 +25,11 @@ class FixMonthlyBudgetSummaryReportSeeder extends Seeder
 
     private function updateDocNum($report)
     {
-        $prefix = "MBSR";
+        $prefix = 'MBSR';
         $id = $report->id;
-        $date = $report->created_at->format("dmY");
+        $date = $report->created_at->format('dmY');
         $docNum = "$prefix/$id/$date";
 
-        $report->update(["doc_num" => $docNum]);
+        $report->update(['doc_num' => $docNum]);
     }
 }

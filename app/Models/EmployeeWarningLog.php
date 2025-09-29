@@ -9,5 +9,5 @@ class EmployeeWarningLog extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["NIK", "warning_type", "reason"];
+    protected $fillable = ['NIK', 'warning_type', 'reason'];
 }

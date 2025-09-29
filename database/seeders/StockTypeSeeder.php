@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\StockType;
+use Illuminate\Database\Seeder;
 
 class StockTypeSeeder extends Seeder
 {
@@ -15,11 +14,11 @@ class StockTypeSeeder extends Seeder
     {
         StockType::truncate();
         StockType::create([
-            "name" => "Tinta",
+            'name' => 'Tinta',
         ]);
 
         StockType::create([
-            "name" => "Toner",
+            'name' => 'Toner',
         ]);
     }
 }

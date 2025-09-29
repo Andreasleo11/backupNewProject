@@ -2,11 +2,11 @@
 <html>
 
 <head>
-  <title>{{ env('APP_NAME') }}</title>
+    <title>{{ env('APP_NAME') }}</title>
 </head>
 
 <body>
-  {!! nl2br(e($mailData['body'])) !!}
+    {!! nl2br(e($mailData['body'])) !!}
 </body>
 
 </html>
