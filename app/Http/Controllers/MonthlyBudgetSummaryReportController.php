@@ -28,29 +28,58 @@ class MonthlyBudgetSummaryReportController extends Controller
             ->where('status', 6)
             ->get();
 
-        // Collect all details, no need to filter by dept_no
-        $allDetails = [];
+        // Separate the details based on dept_no
+        $detailsForAllDeptExcept363 = [];
+        $detailsForDept363 = [];
 
         foreach ($monthlyBudgetReports as $monthlyBudgetReport) {
             foreach ($monthlyBudgetReport->details as $detail) {
-                $allDetails[] = [
-                    'dept_no' => $monthlyBudgetReport->dept_no,
-                    'detail' => $detail,
-                ];
+                if ($monthlyBudgetReport->dept_no == 363) {
+                    $detailsForDept363[] = [
+                        'dept_no' => $monthlyBudgetReport->dept_no,
+                        'detail' => $detail,
+                    ];
+                } else {
+                    $detailsForAllDeptExcept363[] = [
+                        'dept_no' => $monthlyBudgetReport->dept_no,
+                        'detail' => $detail,
+                    ];
+                }
             }
         }
 
-        $report = Report::create([
+        $report1 = Report::create([
             'report_date' => $date,
             'creator_id' => auth()->user()->id,
         ]);
 
-        foreach ($allDetails as $detail) {
+        foreach ($detailsForAllDeptExcept363 as $detail) {
             Detail::create([
-                'header_id' => $report->id,
+                'header_id' => $report1->id,
                 'name' => $detail['detail']['name'],
                 'dept_no' => $detail['dept_no'],
                 'quantity' => $detail['detail']['quantity'],
+                'uom' => $detail['detail']['uom'],
+                'remark' => $detail['detail']['remark'],
+            ]);
+        }
+
+        // Create the second report for dept_no 363
+        $report2 = Report::create([
+            'report_date' => $date,
+            'creator_id' => auth()->user()->id,
+            'is_moulding' => true,
+        ]);
+
+        foreach ($detailsForDept363 as $detail) {
+            Detail::create([
+                'header_id' => $report2->id,
+                'name' => $detail['detail']['name'],
+                'dept_no' => $detail['dept_no'],
+                'quantity' => $detail['detail']['quantity'],
+                'spec' => $detail['detail']['spec'],
+                'last_recorded_stock' => $detail['detail']['last_recorded_stock'],
+                'usage_per_month' => $detail['detail']['usage_per_month'],
                 'uom' => $detail['detail']['uom'],
                 'remark' => $detail['detail']['remark'],
             ]);
