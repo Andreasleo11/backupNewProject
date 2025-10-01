@@ -39,7 +39,7 @@
                         data-bs-toggle="modal">
                         <i class='bx bx-envelope'></i> Send mail
                     </button>
-                    @include('partials.send-mail-modal', ['report' => $report])
+                    @include('partials.send-mail-modal', ['report' => $report, 'files' => $report->files])
                     @include('partials.send-mail-confirmation')
                     {{--
                     <a href="{{ route('qaqc.report.sendEmail', $report->id) }}" class="btn btn-outline-secondary">Test
@@ -273,6 +273,7 @@
     <section aria-label="uploaded">
         @include('partials.uploaded-section', [
             'showDeleteButton' => true,
+            'files' => $report->files,
         ])
     </section>
 @endsection
