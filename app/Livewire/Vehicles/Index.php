@@ -29,6 +29,16 @@ class Index extends Component
 
     public function sortBy(string $field): void
     {
+        $isSuper = auth()->user()?->role === 'SUPERADMIN';
+
+        $allowed = $isSuper
+            ? ['plate_number', 'driver_name', 'odometer', 'status', 'last_service_date']
+            : ['plate_number', 'driver_name'];
+
+        if (! in_array($field, $allowed, true)) {
+            return; // ignore disallowed sorts
+        }
+
         if ($this->sort === $field) {
             $this->dir = $this->dir === 'asc' ? 'desc' : 'asc';
         } else {
@@ -55,35 +65,55 @@ class Index extends Component
 
     public function render()
     {
-        $query = Vehicle::query()
-            ->select('vehicles.*')
-            ->selectSub(
-                ServiceRecord::select('service_date')
-                    ->whereColumn('vehicle_id', 'vehicles.id')
-                    ->orderByDesc('service_date')
-                    ->limit(1),
-                'last_service_date'
-            )
-            ->selectSub(
-                ServiceRecord::select('odometer')
-                    ->whereColumn('vehicle_id', 'vehicles.id')
-                    ->orderByDesc('service_date')
-                    ->limit(1),
-                'last_service_odometer'
-            )
-            ->with([
-                'latestService' => fn ($q) => $q->withCount('items'),
-                'latestService.items' => fn ($q) => $q->limit(5),
-            ])
+        $isSuper = auth()->user()?->role->name !== 'SUPERADMIN';
+
+        // Ensure sort field is allowed for this role
+        $allowed = $isSuper
+            ? ['plate_number', 'driver_name', 'odometer', 'status', 'last_service_date']
+            : ['plate_number', 'driver_name'];
+
+        $sortField = in_array($this->sort, $allowed, true) ? $this->sort : 'plate_number';
+        $sortDir = $this->dir === 'desc' ? 'desc' : 'asc';
+
+        $query = Vehicle::query()->select('vehicles.*');
+
+        if ($isSuper) {
+            // Only SUPERADMIN needs these extras
+            $query
+                ->selectSub(
+                    ServiceRecord::select('service_date')
+                        ->whereColumn('vehicle_id', 'vehicles.id')
+                        ->orderByDesc('service_date')
+                        ->limit(1),
+                    'last_service_date'
+                )
+                ->selectSub(
+                    ServiceRecord::select('odometer')
+                        ->whereColumn('vehicle_id', 'vehicles.id')
+                        ->orderByDesc('service_date')
+                        ->limit(1),
+                    'last_service_odometer'
+                )
+                ->with([
+                    'latestService' => fn ($q) => $q->withCount('items'),
+                    'latestService.items' => fn ($q) => $q->limit(5),
+                ]);
+        }
+
+        $query
             ->when($this->q, fn ($q) => $q->where(function ($w) {
                 $w->where('plate_number', 'like', '%'.$this->q.'%')
                     ->orWhere('brand', 'like', '%'.$this->q.'%')
                     ->orWhere('model', 'like', '%'.$this->q.'%')
                     ->orWhere('driver_name', 'like', '%'.$this->q.'%');
             }))
-            ->when($this->status !== 'all', fn ($q) => $q->where('status', $this->status))
-            ->orderBy($this->sort, $this->dir);
+            // Only SUPERADMIN can filter by status; others ignore it
+            ->when($isSuper && $this->status !== 'all', fn ($q) => $q->where('status', $this->status))
+            ->orderBy($sortField, $sortDir);
 
-        return view('livewire.vehicles.index', ['vehicles' => $query->paginate($this->perPage)]);
+        return view('livewire.vehicles.index', [
+            'vehicles' => $query->paginate($this->perPage),
+            'isSuperadmin' => $isSuper,
+        ]);
     }
 }

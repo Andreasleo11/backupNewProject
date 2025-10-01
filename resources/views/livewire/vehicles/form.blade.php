@@ -50,7 +50,7 @@
                 </div>
             </div>
             <div class="d-none d-md-flex align-items-center gap-2">
-                @if ($vehicle?->exists)
+                @if ($isSuperadmin && $vehicle?->exists)
                     <button type="button" class="btn btn-outline-danger" wire:click="delete"
                         wire:confirm="Delete this vehicle? This cannot be undone." wire:loading.attr="disabled"
                         wire:target="delete">
@@ -70,20 +70,22 @@
     <form wire:submit.prevent="save" class="card border-0 shadow-sm" x-data="{
         driver_name: @entangle('driver_name'),
         plate_number: @entangle('plate_number'),
-        brand: @entangle('brand'),
-        model: @entangle('model'),
-        year: @entangle('year'),
-        vin: @entangle('vin'),
-        odometer: @entangle('odometer'),
-        status: @entangle('status')
+        @if ($isSuperadmin) brand: @entangle('brand'),
+          model: @entangle('model'),
+          year: @entangle('year'),
+          vin: @entangle('vin'),
+          odometer: @entangle('odometer'),
+          status: @entangle('status'), @endif
     }">
         <div class="card-body mb-2">
             {{-- Section: Driver & Plate --}}
             <div class ="d-flex align-items-center justify-content-between mb-2">
                 <h6 class="mb-0 text-uppercase text-muted">Driver & Plate</h6>
-                <span class="badge text-bg-light">
-                    Status: <span class="ms-1 fw-semibold text-capitalize" x-text="status"></span>
-                </span>
+                @if ($isSuperadmin)
+                    <span class="badge text-bg-light">
+                        Status: <span class="ms-1 fw-semibold text-capitalize" x-text="status"></span>
+                    </span>
+                @endif
             </div>
 
             <div class="row g-3 mb-4">
@@ -114,6 +116,7 @@
                     <div class="form-text">Unique per vehicle.</div>
                 </div>
 
+                @if($isSuperadmin)
                 <div class="col-md-4">
                     <label class="form-label">Status</label>
                     <div class="btn-group w-100" role="group" aria-label="Status">
@@ -136,94 +139,97 @@
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
+                @endif
             </div>
 
-            <hr class="text-body-tertiary">
+            @if ($isSuperadmin)
+                <hr class="text-body-tertiary">
 
-            {{-- Section: Vehicle Specs --}}
-            <h6 class="text-uppercase text-muted mb-2">Vehicle Specs</h6>
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Brand</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-badge-ad"></i></span>
-                        <input type="text" class="form-control @error('brand') is-invalid @enderror"
-                            x-model.trim="brand" placeholder="Toyota" autocomplete="organization">
-                        @error('brand')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                {{-- Section: Vehicle Specs --}}
+                <h6 class="text-uppercase text-muted mb-2">Vehicle Specs</h6>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Brand</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-badge-ad"></i></span>
+                            <input type="text" class="form-control @error('brand') is-invalid @enderror"
+                                x-model.trim="brand" placeholder="Toyota" autocomplete="organization">
+                            @error('brand')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Model</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-badge-3d"></i></span>
-                        <input type="text" class="form-control @error('model') is-invalid @enderror"
-                            x-model.trim="model" placeholder="Avanza" autocomplete="on">
-                        @error('model')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="col-md-4">
+                        <label class="form-label">Model</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-badge-3d"></i></span>
+                            <input type="text" class="form-control @error('model') is-invalid @enderror"
+                                x-model.trim="model" placeholder="Avanza" autocomplete="on">
+                            @error('model')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Year</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
-                        <input type="number" min="1900" max="{{ now()->year }}"
-                            class="form-control @error('year') is-invalid @enderror" x-model.number="year"
-                            placeholder="{{ now()->year }}">
-                        @error('year')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="col-md-4">
+                        <label class="form-label">Year</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                            <input type="number" min="1900" max="{{ now()->year }}"
+                                class="form-control @error('year') is-invalid @enderror" x-model.number="year"
+                                placeholder="{{ now()->year }}">
+                            @error('year')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-6">
-                    <label class="form-label">VIN</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
-                        <input type="text" class="form-control @error('vin') is-invalid @enderror"
-                            x-model.trim="vin" placeholder="Vehicle Identification Number">
-                        @error('vin')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="col-md-6">
+                        <label class="form-label">VIN</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                            <input type="text" class="form-control @error('vin') is-invalid @enderror"
+                                x-model.trim="vin" placeholder="Vehicle Identification Number">
+                            @error('vin')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="form-text">Useful for official records and warranty.</div>
                     </div>
-                    <div class="form-text">Useful for official records and warranty.</div>
-                </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Odometer</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-speedometer"></i></span>
-                        <input type="number" min="0" step="1"
-                            class="form-control @error('odometer') is-invalid @enderror" x-model.number="odometer"
-                            placeholder="0" inputmode="numeric" min="0" step="1">
-                        <span class="input-group-text">km</span>
-                        @error('odometer')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                    <div class="col-md-3">
+                        <label class="form-label">Odometer</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-speedometer"></i></span>
+                            <input type="number" min="0" step="1"
+                                class="form-control @error('odometer') is-invalid @enderror" x-model.number="odometer"
+                                placeholder="0" inputmode="numeric" min="0" step="1">
+                            <span class="input-group-text">km</span>
+                            @error('odometer')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-3 d-flex align-items-end">
-                    {{-- Quick preview pill --}}
-                    <div class="bg-body-tertiary rounded-3 px-3 py-2 w-100 text-center">
-                        <div class="small text-muted">Preview</div>
-                        <div class="fw-semibold ">
-                            <span x-text="(plate_number || 'PLATE').toUpperCase()"></span>
-                            <template x-if="brand || model">
-                                <span> — <span x-text="brand"></span> <span
-                                        x-text="model || 'MODEL'"></span></span>
-                            </template>
-                            <template x-if="year">
-                                <span> (<span x-text="year"></span>)</span>
-                            </template>
+                    <div class="col-md-3 d-flex align-items-end">
+                        {{-- Quick preview pill --}}
+                        <div class="bg-body-tertiary rounded-3 px-3 py-2 w-100 text-center">
+                            <div class="small text-muted">Preview</div>
+                            <div class="fw-semibold ">
+                                <span x-text="(plate_number || 'PLATE').toUpperCase()"></span>
+                                <template x-if="brand || model">
+                                    <span> — <span x-text="brand"></span> <span
+                                            x-text="model || 'MODEL'"></span></span>
+                                </template>
+                                <template x-if="year">
+                                    <span> (<span x-text="year"></span>)</span>
+                                </template>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
         </div>
     </form>
 </div>
