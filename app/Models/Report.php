@@ -40,6 +40,11 @@ class Report extends Model
         return $this->hasMany(Detail::class);
     }
 
+    public function files()
+    {
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
+    }
+
     public function updateAutograph($section, $signaturePath)
     {
         switch ($section) {
