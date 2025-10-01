@@ -26,17 +26,17 @@ class Form extends Component
 
     public string $status = 'active';
 
-    public bool $isSuperadmin = false;
+    public bool $fullFeature = false;
 
     public function mount(?Vehicle $vehicle): void
     {
-        $this->isSuperadmin = auth()->user()?->role === 'SUPERADMIN';
+        $this->fullFeature = auth()->user()?->role->name === 'SUPERADMIN' || (auth()->user()->is_head && auth()->user()->department->name === 'PERSONALIA');
 
         if ($vehicle?->exists) {
             $this->vehicle = $vehicle;
 
             // Fill only the fields allowed for this role
-            $fields = $this->isSuperadmin
+            $fields = $this->fullFeature
                 ? ['driver_name', 'plate_number', 'brand', 'model', 'year', 'vin', 'odometer', 'status']
                 : ['driver_name', 'plate_number'];
 
@@ -47,7 +47,7 @@ class Form extends Component
     protected function rules(): array
     {
         // Non-SUPERADMIN can only edit these two
-        if (! $this->isSuperadmin) {
+        if (! $this->fullFeature) {
             return [
                 'driver_name' => ['nullable', 'string', 'max:255'],
                 'plate_number' => [
@@ -92,7 +92,7 @@ class Form extends Component
             'status' => $this->status,
         ];
 
-        $allowedKeys = $this->isSuperadmin
+        $allowedKeys = $this->fullFeature
             ? array_keys($payload)
             : ['driver_name', 'plate_number']; // hard guard
 
@@ -100,7 +100,7 @@ class Form extends Component
         $data = array_intersect_key($payload, array_flip($allowedKeys));
 
         // Optionally enforce a safe default for non-superadmin creates
-        if (! $this->isSuperadmin && ! $this->vehicle?->exists) {
+        if (! $this->fullFeature && ! $this->vehicle?->exists) {
             $data['status'] = 'active'; // only if your DB column is NOT NULL
         }
 
@@ -112,13 +112,17 @@ class Form extends Component
             session()->flash('success', 'Vehicle created.');
         }
 
+        if (! $this->fullFeature) {
+            return redirect()->route('vehicles.index');
+        }
+
         return redirect()->route('vehicles.show', $this->vehicle);
     }
 
     public function delete(): void
     {
-        // Only SUPERADMIN can delete
-        if (! $this->isSuperadmin) {
+        // Only ALLOWED USER can delete
+        if (! $this->fullFeature) {
             abort(403);
         }
 
@@ -132,7 +136,7 @@ class Form extends Component
     public function render()
     {
         return view('livewire.vehicles.form', [
-            'isSuperadmin' => $this->isSuperadmin,
+            'fullFeature' => $this->fullFeature,
         ]);
     }
 }

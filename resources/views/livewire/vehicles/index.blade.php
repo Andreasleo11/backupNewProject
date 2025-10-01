@@ -13,7 +13,7 @@
             </div>
 
             {{-- Status filter --}}
-            @if ($isSuperadmin)
+            @if ($fullFeature)
                 <div class="btn-group" role="group" aria-label="Status filter">
                     <input type="radio" class="btn-check" id="st-all" value="all" wire:model.live="status"
                         autocomplete="off">
@@ -66,7 +66,7 @@
                             : 'bi-chevron-down')
                         : 'bi-chevron-expand';
                 @endphp
-                @if ($isSuperadmin)
+                @if ($fullFeature)
                     <thead class="position-sticky top-0 bg-body">
                         <tr class="text-muted small">
                             <th scope="col" role="button" wire:click="sortBy('plate_number')"
@@ -272,7 +272,7 @@
                 $shown = $last?->items?->count() ?? 0;
                 $total = $last?->items_total ?? ($last?->items_count ?? $shown);
             @endphp
-            @if ($isSuperadmin)
+            @if ($fullFeature)
                 <div class="card border-0 shadow-sm mb-2">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">

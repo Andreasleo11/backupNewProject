@@ -105,6 +105,7 @@ class Sidebar extends Component
         'files.*',
         'department-expenses.*',
         'indexds',
+        'vehicles.*',
     ];
 
     public array $employeeEvalSubPatterns = [
