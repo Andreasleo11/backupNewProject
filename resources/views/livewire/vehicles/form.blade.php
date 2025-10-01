@@ -50,7 +50,7 @@
                 </div>
             </div>
             <div class="d-none d-md-flex align-items-center gap-2">
-                @if ($isSuperadmin && $vehicle?->exists)
+                @if ($fullFeature && $vehicle?->exists)
                     <button type="button" class="btn btn-outline-danger" wire:click="delete"
                         wire:confirm="Delete this vehicle? This cannot be undone." wire:loading.attr="disabled"
                         wire:target="delete">
@@ -70,7 +70,7 @@
     <form wire:submit.prevent="save" class="card border-0 shadow-sm" x-data="{
         driver_name: @entangle('driver_name'),
         plate_number: @entangle('plate_number'),
-        @if ($isSuperadmin) brand: @entangle('brand'),
+        @if ($fullFeature) brand: @entangle('brand'),
           model: @entangle('model'),
           year: @entangle('year'),
           vin: @entangle('vin'),
@@ -81,7 +81,7 @@
             {{-- Section: Driver & Plate --}}
             <div class ="d-flex align-items-center justify-content-between mb-2">
                 <h6 class="mb-0 text-uppercase text-muted">Driver & Plate</h6>
-                @if ($isSuperadmin)
+                @if ($fullFeature)
                     <span class="badge text-bg-light">
                         Status: <span class="ms-1 fw-semibold text-capitalize" x-text="status"></span>
                     </span>
@@ -116,7 +116,7 @@
                     <div class="form-text">Unique per vehicle.</div>
                 </div>
 
-                @if($isSuperadmin)
+                @if($fullFeature)
                 <div class="col-md-4">
                     <label class="form-label">Status</label>
                     <div class="btn-group w-100" role="group" aria-label="Status">
@@ -142,7 +142,7 @@
                 @endif
             </div>
 
-            @if ($isSuperadmin)
+            @if ($fullFeature)
                 <hr class="text-body-tertiary">
 
                 {{-- Section: Vehicle Specs --}}
