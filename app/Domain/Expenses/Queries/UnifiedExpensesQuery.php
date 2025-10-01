@@ -34,6 +34,8 @@ class UnifiedExpensesQuery
 
                 h.id                                                        as doc_id,
                 COALESCE(h.pr_no, h.doc_num, h.id)                          as doc_num,
+                
+                COALESCE(h.autograph_5, '')                                 as autograph_5,
 
                 COALESCE(d.item_name, '')                                   as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
@@ -65,6 +67,8 @@ class UnifiedExpensesQuery
 
                 h.id                                                        as doc_id,
                 COALESCE(h.doc_num, h.id)                                   as doc_num,
+                
+                CAST(NULL AS CHAR)                                          as autograph_5,
 
                 COALESCE(d.name, '')                                        as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,

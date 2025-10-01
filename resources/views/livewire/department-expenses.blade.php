@@ -25,6 +25,16 @@
                         <input type="month" class="form-control" wire:model.live="month">
                     </div>
 
+                    <div class="input-group input-group-sm" style="width: 260px;">
+                        <span class="input-group-text bg-white"><i class="bi bi-person-check"></i></span>
+                        <select class="form-select" wire:model.live="prSigner">
+                            <option value="">All PR approvers</option>
+                            @foreach ($prSigners as $signer)
+                                <option value="{{ $signer }}">{{ $signer }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     @if ($deptId)
                         <button class="btn btn-outline-secondary btn-sm" wire:click="clearDetail">
                             <i class="bi bi-arrow-left-circle me-1"></i> Back to all
@@ -52,6 +62,12 @@
                         class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle fw-normal">
                         <i class="bi bi-pin-angle me-1"></i> Selected: <span
                             class="fw-semibold ms-1">{{ $deptSelected }}</span>
+                    </span>
+                @endif
+                @if ($prSigner)
+                    <span class="badge rounded-pill text-bg-light border fw-normal">
+                        <i class="bi bi-person-check me-1"></i> PR Approver:
+                        <span class="fw-semibold ms-1">{{ $prSigner }}</span>
                     </span>
                 @endif
             </div>
@@ -174,7 +190,7 @@
                         </div>
                     @else
                         <livewire:reports.department-expense-detail-table :dept-id="$deptId" :month="$month"
-                            :dept-name="$deptSelected ?? $deptId" :month-label="$monthLabel" :key="'detail-' . $deptId . '-' . $month" />
+                            :dept-name="$deptSelected ?? $deptId" :month-label="$monthLabel" :pr-signer="$prSigner" :key="'detail-' . $deptId . '-' . $month . '-' . ($prSigner ?? 'all')" />
                     @endif
                 </div>
             </div>

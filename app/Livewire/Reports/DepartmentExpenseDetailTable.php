@@ -20,6 +20,8 @@ class DepartmentExpenseDetailTable extends Component
 
     public string $monthLabel = '';
 
+    public ?string $prSigner = null;   // 👈 add
+
     public string $search = '';
 
     public int $perPage = 25;
@@ -40,11 +42,13 @@ class DepartmentExpenseDetailTable extends Component
         string $month,
         string $deptName = '',
         string $monthLabel = '',
+        ?string $prSigner = null,
     ): void {
         $this->deptId = $deptId;
         $this->month = $month;
         $this->deptName = $deptName;
         $this->monthLabel = $monthLabel;
+        $this->prSigner = $prSigner;   // 👈
     }
 
     public function updatingSearch()
@@ -93,7 +97,8 @@ class DepartmentExpenseDetailTable extends Component
 
     public function render(ExpenseRepository $repo)
     {
-        $q = $repo->detailQueryForMonth($this->deptId, $this->month);
+        // Base query with department + month
+        $q = $repo->detailQueryForMonth($this->deptId, $this->month, $this->prSigner); // 👈 filter applied in repo
 
         if ($this->search !== '') {
             $term = '%'.$this->search.'%';
@@ -104,13 +109,12 @@ class DepartmentExpenseDetailTable extends Component
             });
         }
 
-        // totals for the filtered set (not just current page)
+        // Aggregates (filtered)
         $sumQty = (clone $q)->sum('quantity');
         $sumTotal = (clone $q)->sum('line_total');
 
         $q->reorder();
 
-        // apply sort + pagination (safe due to whitelist)
         $rows = $q->orderBy($this->sortBy, $this->sortDir)->paginate($this->perPage);
 
         return view(
