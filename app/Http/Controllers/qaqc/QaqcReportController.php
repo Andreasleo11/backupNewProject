@@ -61,19 +61,19 @@ class QaqcReportController extends Controller
 
     public function detail($id)
     {
-        $report = Report::with('details', 'details.defects', 'details.defects.category')->find($id);
+        $report = Report::with('details', 'details.defects', 'details.defects.category', 'files')->find($id);
         $user = Auth::user();
         $autographNames = [
             'autograph_name_1' => $report->autograph_user_1 ?? null,
             'autograph_name_2' => $report->autograph_user_2 ?? null,
             'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
-        $files = File::where('doc_id', $report->doc_num)->get();
+
         $adjustForm = HeaderFormAdjust::where('report_id', $report->id)->first();
 
         return view(
             'qaqc.reports.detail',
-            compact('report', 'user', 'autographNames', 'files', 'adjustForm'),
+            compact('report', 'user', 'autographNames', 'adjustForm'),
         );
     }
 
