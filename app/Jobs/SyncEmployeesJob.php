@@ -15,6 +15,7 @@ class SyncEmployeesJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $companyArea;
+
     protected int $year;
 
     /**
@@ -33,10 +34,10 @@ class SyncEmployeesJob implements ShouldQueue
     {
         $result = $service->syncEmployeesLeaveAndAttendanceFromApi($this->companyArea, $this->year);
 
-        if (!$result["success"]) {
-            Log::error("Sync failed in job: " . $result["message"]);
+        if (! $result['success']) {
+            Log::error('Sync failed in job: '.$result['message']);
         } else {
-            Log::info("Sync completed in job: " . $result["message"]);
+            Log::info('Sync completed in job: '.$result['message']);
         }
     }
 }

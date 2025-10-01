@@ -13,14 +13,14 @@ class DeleteOldActivityLogs extends Command
      *
      * @var string
      */
-    protected $signature = "logs:delete-old";
+    protected $signature = 'logs:delete-old';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Delete activity logs older than one month";
+    protected $description = 'Delete activity logs older than one month';
 
     /**
      * Execute the console command.
@@ -28,10 +28,10 @@ class DeleteOldActivityLogs extends Command
     public function handle()
     {
         // Delete logs older than 1 month
-        DB::table("activity_logs")
-            ->where("created_at", "<", Carbon::now()->subMonth())
+        DB::table('activity_logs')
+            ->where('created_at', '<', Carbon::now()->subMonth())
             ->delete();
 
-        $this->info("Old activity logs deleted successfully.");
+        $this->info('Old activity logs deleted successfully.');
     }
 }

@@ -1,0 +1,97 @@
+/* Smart Flyout (appears when rail is collapsed) */
+.sidebar-flyout {
+  position: fixed;
+  z-index: 1025;
+  left: var(--sidebar-collapsed);
+  top: 8px;
+  width: min(var(--sidebar-expanded), 360px);
+  max-height: calc(100vh - 16px);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-fg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 0;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+
+  /* scroll only the list; keep header pinned */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  /* hidden by default */
+  opacity: 0;
+  transform: translateX(-8px) scale(0.98);
+  pointer-events: none;
+  transition:
+    transform 0.16s ease,
+    opacity 0.16s ease;
+
+  &.visible {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+  }
+
+  /* Arrow that points back to the rail; --arrow-top set by JS */
+  &::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: var(--arrow-top, 14px);
+    width: 12px;
+    height: 12px;
+    background: var(--sidebar-bg);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    transform: rotate(45deg);
+    border-radius: 2px 0 0 0;
+  }
+
+  &-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: linear-gradient(90deg, rgba(20, 56, 94, 0.92) 0%, rgba(30, 78, 132, 0.92) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08),
+      0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  &-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.25rem 0;
+
+    /* all content inside the flyout is always expanded & static */
+    .sidebar-dropdown {
+      display: block !important;
+      position: static !important;
+      max-height: none !important;
+      padding: 0;
+      box-shadow: none;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+      padding: 0.625rem 1rem 0.625rem 1.25rem;
+      i {
+        margin-right: 0.75rem;
+      }
+      span,
+      .badge {
+        display: inline !important;
+      } /* ensure text shows in flyout */
+    }
+  }
+}
+
+/* Disable legacy hover dropdowns while the rail is collapsed */
+#sidebar:not(.expand) .sidebar-item .sidebar-dropdown {
+  display: none !important;
+}

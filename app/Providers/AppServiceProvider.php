@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Domain\Expenses\ExpenseRepository;
+use App\Domain\Expenses\Sources\MonthlyBudgetSource;
+use App\Domain\Expenses\Sources\PurchaseRequestSource;
 use App\Models\Detail;
 use App\Models\HeaderFormOvertime;
 use App\Observers\DetailObserver;
@@ -20,8 +23,16 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             \App\Services\Payroll\Contracts\JPayrollClientContract::class,
-            fn() => \App\Services\Payroll\JPayrollClient::fromConfig()
+            fn () => \App\Services\Payroll\JPayrollClient::fromConfig(),
         );
+
+        $this->app->bind(ExpenseRepository::class, function () {
+            return new ExpenseRepository(
+                new PurchaseRequestSource,
+                new MonthlyBudgetSource,
+                // add more sources here later...
+            );
+        });
     }
 
     /**
@@ -33,19 +44,19 @@ class AppServiceProvider extends ServiceProvider
         HeaderFormOvertime::observe(HeaderFormOvertimeObserver::class);
         Detail::observe(DetailObserver::class);
 
-        Blade::directive("currency", function ($expression) {
+        Blade::directive('currency', function ($expression) {
             return "<?php echo $expression !== null ? 'Rp ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
-        Blade::directive("currencyUSD", function ($expression) {
+        Blade::directive('currencyUSD', function ($expression) {
             return "<?php echo $expression !== null ? '$ ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
-        Blade::directive("currencyCNY", function ($expression) {
+        Blade::directive('currencyCNY', function ($expression) {
             return "<?php echo $expression !== null ? '¥ ' . number_format(floatval($expression), 2, ',', '.') : ''; ?>";
         });
 
-        Blade::directive("formatDate", function ($expression) {
+        Blade::directive('formatDate', function ($expression) {
             return "<?php echo $expression !== null ? \Carbon\Carbon::parse($expression)->format('d-m-Y') : '-'; ?>";
         });
         Paginator::useBootstrap();

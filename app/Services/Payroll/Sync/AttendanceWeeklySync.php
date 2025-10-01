@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Payroll\Sync;
@@ -12,7 +13,7 @@ final class AttendanceWeeklySync
 {
     public function __construct(
         private readonly EvaluationWeeklyRepository $repo,
-        private readonly EmployeeRepository $employees
+        private readonly EmployeeRepository $employees,
     ) {}
 
     /** @param AttendanceDto[] $items */
@@ -22,11 +23,11 @@ final class AttendanceWeeklySync
 
         foreach ($items as $it) {
             $week = $it->shiftDate->startOfWeek(CarbonInterface::MONDAY)->toDateString();
-            $key  = $it->nik.'|'.$week;
+            $key = $it->nik.'|'.$week;
 
-            if (!isset($bucket[$key])) {
+            if (! isset($bucket[$key])) {
                 $dept = $this->employees->getDeptForNik($it->nik);
-                if (!$dept) {
+                if (! $dept) {
                     // skip if no employee row yet
                     continue;
                 }
@@ -44,7 +45,7 @@ final class AttendanceWeeklySync
 
             $bucket[$key]['Alpha'] += $it->alpha;
             $bucket[$key]['Telat'] += $it->telat;
-            $bucket[$key]['Izin']  += $it->izin;
+            $bucket[$key]['Izin'] += $it->izin;
             $bucket[$key]['Sakit'] += $it->sakit;
         }
 

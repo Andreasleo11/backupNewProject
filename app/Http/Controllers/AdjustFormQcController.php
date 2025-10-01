@@ -2,29 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Models\Report;
-use App\Models\MasterDataAdjust;
-use App\Models\HeaderFormAdjust;
-use App\Models\FormAdjustMaster;
 use App\Models\Detail;
+use App\Models\FormAdjustMaster;
+use App\Models\HeaderFormAdjust;
+use App\Models\MasterDataAdjust;
+use App\Models\Report;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdjustFormQcController extends Controller
 {
     public function index(Request $request)
     {
-        $reports = $request->input("reports");
+        $reports = $request->input('reports');
 
-        $datas = Report::with("details")->find($reports);
+        $datas = Report::with('details')->find($reports);
 
         foreach ($datas->details as $detail) {
             $partName = $detail->part_name;
             // Now you can work with $partName, such as echoing it or storing it in an array
             // Split the string by space
-            $parts = explode("/", $partName);
+            $parts = explode('/', $partName);
 
             // Extract the first part
             $firstPart = $parts[0];
@@ -33,19 +32,19 @@ class AdjustFormQcController extends Controller
         $masterDataCollection = collect(); // Create an empty collection to store the results
 
         foreach ($firstParts as $part) {
-            $masterData = MasterDataAdjust::where("fg_code", $part)->get();
+            $masterData = MasterDataAdjust::where('fg_code', $part)->get();
             $masterDataCollection = $masterDataCollection->merge($masterData); // Merge the results into the collection
         }
 
-        $found = HeaderFormAdjust::where("report_id", $reports)->first();
+        $found = HeaderFormAdjust::where('report_id', $reports)->first();
 
-        if (!$found) {
+        if (! $found) {
             HeaderFormAdjust::create([
-                "report_id" => $reports,
+                'report_id' => $reports,
             ]);
         }
 
-        return view("qaqc.reports.adjustindex", compact("datas", "masterDataCollection", "found"));
+        return view('qaqc.reports.adjustindex', compact('datas', 'masterDataCollection', 'found'));
     }
 
     public function save(Request $request)
@@ -62,18 +61,18 @@ class AdjustFormQcController extends Controller
         // dd($masterData);
 
         FormAdjustMaster::create([
-            "detail_id" => $detailid,
-            "header_id" => $headerid,
-            "rm_code" => $masterData->rm_code,
-            "rm_description" => $masterData->rm_description,
-            "rm_quantity" => $masterData->rm_quantity,
-            "fg_measure" => $masterData->fg_measure,
-            "rm_measure" => $masterData->rm_measure,
-            "warehouse_name" => $rmwarehouse,
+            'detail_id' => $detailid,
+            'header_id' => $headerid,
+            'rm_code' => $masterData->rm_code,
+            'rm_description' => $masterData->rm_description,
+            'rm_quantity' => $masterData->rm_quantity,
+            'fg_measure' => $masterData->fg_measure,
+            'rm_measure' => $masterData->rm_measure,
+            'warehouse_name' => $rmwarehouse,
         ]);
 
-        Detail::where("id", $detailid)->update([
-            "fg_measure" => $masterData->fg_measure,
+        Detail::where('id', $detailid)->update([
+            'fg_measure' => $masterData->fg_measure,
         ]);
 
         return redirect()->back();
@@ -84,9 +83,10 @@ class AdjustFormQcController extends Controller
         $detailid = $request->detail_id;
         $fgwarehouse = $request->fg_warehouse;
 
-        Detail::where("id", $detailid)->update([
-            "fg_warehouse_name" => $fgwarehouse,
+        Detail::where('id', $detailid)->update([
+            'fg_warehouse_name' => $fgwarehouse,
         ]);
+
         return redirect()->back();
     }
 
@@ -95,8 +95,8 @@ class AdjustFormQcController extends Controller
         $reportid = $request->report_id;
         // dd($reportid);
 
-        $datas = HeaderFormAdjust::with("report", "report.details", "report.details.adjustdetail")
-            ->where("report_id", $reportid)
+        $datas = HeaderFormAdjust::with('report', 'report.details', 'report.details.adjustdetail')
+            ->where('report_id', $reportid)
             ->first();
 
         // dd($datas);
@@ -139,7 +139,7 @@ class AdjustFormQcController extends Controller
         // }
 
         // dd($groupedData);
-        return view("qaqc.reports.adjustformview", compact("datas"));
+        return view('qaqc.reports.adjustformview', compact('datas'));
     }
 
     public function addremarkadjust(Request $request)
@@ -147,9 +147,10 @@ class AdjustFormQcController extends Controller
         $detailid = $request->detail_id;
         $remark = $request->remark;
 
-        Detail::where("id", $detailid)->update([
-            "remark" => $remark,
+        Detail::where('id', $detailid)->update([
+            'remark' => $remark,
         ]);
+
         return redirect()->back();
     }
 
@@ -157,7 +158,7 @@ class AdjustFormQcController extends Controller
     {
         $username = Auth::user()->name;
         // Log::info('Username:', ['username' => $username]);
-        $imagePath = $username . ".png";
+        $imagePath = $username.'.png';
         // Log::info('imagepath : ', $imagePath);
 
         // Save $imagePath to the database for the specified $reportId and $section
@@ -166,18 +167,18 @@ class AdjustFormQcController extends Controller
             "autograph_{$section}" => $imagePath,
         ]);
 
-        return response()->json(["success" => "Autograph saved successfully!"]);
+        return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
     public function listformadjust()
     {
         $datas = HeaderFormAdjust::with(
-            "report",
-            "report.details",
-            "report.details.adjustdetail",
+            'report',
+            'report.details',
+            'report.details.adjustdetail',
         )->get();
         // dd($datas);
 
-        return view("qaqc.formadjustlistall", compact("datas"));
+        return view('qaqc.formadjustlistall', compact('datas'));
     }
 }

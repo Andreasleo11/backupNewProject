@@ -8,6 +8,6 @@ class StepOutput extends Component
 {
     public function render()
     {
-        return view("livewire.inspection-form.step-output");
+        return view('livewire.inspection-form.step-output');
     }
 }

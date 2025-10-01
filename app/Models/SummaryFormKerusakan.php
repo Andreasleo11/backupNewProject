@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class SummaryFormKerusakan extends Model
 {
     use HasFactory;
-    protected $table = "summary_form_kerusakan";
 
-    protected $fillable = ["doc_num", "customer", "release_date"];
+    protected $table = 'summary_form_kerusakan';
+
+    protected $fillable = ['doc_num', 'customer', 'release_date'];
 }

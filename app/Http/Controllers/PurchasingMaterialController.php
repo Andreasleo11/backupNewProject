@@ -2,21 +2,11 @@
 
 namespace App\Http\Controllers;
 
-ini_set("max_execution_time", 100000);
+ini_set('max_execution_time', 100000);
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Str;
-use App\Models\sapForecast;
-use App\Models\sapFctBomWip;
-use App\Models\sapFctInventoryMtr;
 use App\Models\foremindFinal;
-use App\Models\sapFctBomWipFirst;
-use App\Models\sapFctBomWipSecond;
-use App\Models\sapFctBomWipThird;
-use App\Models\sapFctBomWipFgCode;
 use App\Models\PurchasingUpdateLog;
+use App\Models\sapForecast;
 use Carbon\Carbon;
 
 class PurchasingMaterialController extends Controller
@@ -27,35 +17,35 @@ class PurchasingMaterialController extends Controller
         $log->updated_at = Carbon::now();
         $log->save();
         // function buat insert data
-        $case1Data = SapForecast::whereNotIn("item_no", function ($query) {
-            $query->select("fg_code")->from("sap_fct_bom_wip");
+        $case1Data = SapForecast::whereNotIn('item_no', function ($query) {
+            $query->select('fg_code')->from('sap_fct_bom_wip');
         })
-            ->with("inventoryMtr")
+            ->with('inventoryMtr')
             ->get();
 
-        $case2Data = SapForecast::whereHas("bomWip", function ($query) {
-            $query->whereHas("rawMaterialFgcode");
+        $case2Data = SapForecast::whereHas('bomWip', function ($query) {
+            $query->whereHas('rawMaterialFgcode');
         })
-            ->with("bomWip.rawMaterialFgcode")
+            ->with('bomWip.rawMaterialFgcode')
             ->get();
         // dd($case2Data);
 
-        $case3Data = SapForecast::whereHas("firstBomWip", function ($query) {
-            $query->where("level", 1)->whereHas("semiFirstInventoryMtrForecast");
+        $case3Data = SapForecast::whereHas('firstBomWip', function ($query) {
+            $query->where('level', 1)->whereHas('semiFirstInventoryMtrForecast');
         })
-            ->with("firstBomWip.semiFirstInventoryMtrForecast")
+            ->with('firstBomWip.semiFirstInventoryMtrForecast')
             ->get();
 
-        $case4Data = SapForecast::whereHas("secondBomWip", function ($query) {
-            $query->where("level", 2)->whereHas("semiSecondInventoryMtrForecast");
+        $case4Data = SapForecast::whereHas('secondBomWip', function ($query) {
+            $query->where('level', 2)->whereHas('semiSecondInventoryMtrForecast');
         })
-            ->with("secondBomWip.semiSecondInventoryMtrForecast")
+            ->with('secondBomWip.semiSecondInventoryMtrForecast')
             ->get();
 
-        $case5Data = SapForecast::whereHas("thirdBomWip", function ($query) {
-            $query->where("level", 3)->whereHas("semiThirdInventoryMtrForecast");
+        $case5Data = SapForecast::whereHas('thirdBomWip', function ($query) {
+            $query->where('level', 3)->whereHas('semiThirdInventoryMtrForecast');
         })
-            ->with("thirdBomWip.semiThirdInventoryMtrForecast")
+            ->with('thirdBomWip.semiThirdInventoryMtrForecast')
             ->get();
 
         // Iterate through each dataset and store in the new_table
@@ -91,19 +81,19 @@ class PurchasingMaterialController extends Controller
                 $materialPrediction = $material_quan * $item->quantity;
 
                 foremindFinal::create([
-                    "forecast_code" => $item->forecast_code,
-                    "forecast_name" => $item->forecast_name,
-                    "vendor_code" => $vendor_code,
-                    "vendor_name" => $vendor_name,
-                    "day_forecast" => $item->forecast_date,
-                    "Item_no" => $item->item_no,
-                    "quantity_forecast" => $item->quantity,
-                    "item_group" => $item_group,
-                    "material_code" => $material_code,
-                    "material_name" => $material_name,
-                    "quantity_material" => $material_quan,
-                    "material_prediction" => $materialPrediction,
-                    "U/M" => $material_measure,
+                    'forecast_code' => $item->forecast_code,
+                    'forecast_name' => $item->forecast_name,
+                    'vendor_code' => $vendor_code,
+                    'vendor_name' => $vendor_name,
+                    'day_forecast' => $item->forecast_date,
+                    'Item_no' => $item->item_no,
+                    'quantity_forecast' => $item->quantity,
+                    'item_group' => $item_group,
+                    'material_code' => $material_code,
+                    'material_name' => $material_name,
+                    'quantity_material' => $material_quan,
+                    'material_prediction' => $materialPrediction,
+                    'U/M' => $material_measure,
                 ]);
             }
         }
@@ -137,19 +127,19 @@ class PurchasingMaterialController extends Controller
                     $materialPrediction = $material_quan * $item->quantity;
 
                     foremindFinal::create([
-                        "forecast_code" => $item->forecast_code,
-                        "forecast_name" => $item->forecast_name,
-                        "vendor_code" => $vendor_code,
-                        "vendor_name" => $vendor_name,
-                        "day_forecast" => $item->forecast_date,
-                        "Item_no" => $item->item_no,
-                        "quantity_forecast" => $item->quantity,
-                        "item_group" => $item_group,
-                        "material_code" => $material_code,
-                        "material_name" => $material_name,
-                        "quantity_material" => $material_quan,
-                        "material_prediction" => $materialPrediction,
-                        "U/M" => $material_measure,
+                        'forecast_code' => $item->forecast_code,
+                        'forecast_name' => $item->forecast_name,
+                        'vendor_code' => $vendor_code,
+                        'vendor_name' => $vendor_name,
+                        'day_forecast' => $item->forecast_date,
+                        'Item_no' => $item->item_no,
+                        'quantity_forecast' => $item->quantity,
+                        'item_group' => $item_group,
+                        'material_code' => $material_code,
+                        'material_name' => $material_name,
+                        'quantity_material' => $material_quan,
+                        'material_prediction' => $materialPrediction,
+                        'U/M' => $material_measure,
                     ]);
                 }
             }
@@ -188,21 +178,21 @@ class PurchasingMaterialController extends Controller
                     $materialPrediction = $material_quan * $item->quantity;
 
                     foremindFinal::create([
-                        "forecast_code" => $item->forecast_code,
-                        "forecast_name" => $item->forecast_name,
-                        "vendor_code" => $vendor_code,
-                        "vendor_name" => $vendor_name,
-                        "day_forecast" => $item->forecast_date,
-                        "Item_no" => $item->item_no,
-                        "semi_code" => $semi_code,
-                        "quantity_forecast" => $item->quantity,
-                        "item_group" => $item_group,
-                        "material_code" => $material_code,
-                        "material_name" => $material_name,
-                        "quantity_material" => $material_quan,
-                        "quantity_bomWip" => $bom_quantity,
-                        "material_prediction" => $materialPrediction,
-                        "U/M" => $material_measure,
+                        'forecast_code' => $item->forecast_code,
+                        'forecast_name' => $item->forecast_name,
+                        'vendor_code' => $vendor_code,
+                        'vendor_name' => $vendor_name,
+                        'day_forecast' => $item->forecast_date,
+                        'Item_no' => $item->item_no,
+                        'semi_code' => $semi_code,
+                        'quantity_forecast' => $item->quantity,
+                        'item_group' => $item_group,
+                        'material_code' => $material_code,
+                        'material_name' => $material_name,
+                        'quantity_material' => $material_quan,
+                        'quantity_bomWip' => $bom_quantity,
+                        'material_prediction' => $materialPrediction,
+                        'U/M' => $material_measure,
                     ]);
                 }
             }
@@ -242,21 +232,21 @@ class PurchasingMaterialController extends Controller
                     $materialPrediction = $material_quan * $item->quantity;
 
                     foremindFinal::create([
-                        "forecast_code" => $item->forecast_code,
-                        "forecast_name" => $item->forecast_name,
-                        "vendor_code" => $vendor_code,
-                        "vendor_name" => $vendor_name,
-                        "day_forecast" => $item->forecast_date,
-                        "Item_no" => $item->item_no,
-                        "semi_code" => $semi_code,
-                        "quantity_forecast" => $item->quantity,
-                        "item_group" => $item_group,
-                        "material_code" => $material_code,
-                        "material_name" => $material_name,
-                        "quantity_material" => $material_quan,
-                        "quantity_bomWip" => $bom_quantity,
-                        "material_prediction" => $materialPrediction,
-                        "U/M" => $material_measure,
+                        'forecast_code' => $item->forecast_code,
+                        'forecast_name' => $item->forecast_name,
+                        'vendor_code' => $vendor_code,
+                        'vendor_name' => $vendor_name,
+                        'day_forecast' => $item->forecast_date,
+                        'Item_no' => $item->item_no,
+                        'semi_code' => $semi_code,
+                        'quantity_forecast' => $item->quantity,
+                        'item_group' => $item_group,
+                        'material_code' => $material_code,
+                        'material_name' => $material_name,
+                        'quantity_material' => $material_quan,
+                        'quantity_bomWip' => $bom_quantity,
+                        'material_prediction' => $materialPrediction,
+                        'U/M' => $material_measure,
                     ]);
                 }
             }
@@ -295,21 +285,21 @@ class PurchasingMaterialController extends Controller
                     $material_measure = $thirdInventory->Measure;
                     $materialPrediction = $material_quan * $item->quantity;
                     foremindFinal::create([
-                        "forecast_code" => $item->forecast_code,
-                        "forecast_name" => $item->forecast_name,
-                        "vendor_code" => $vendor_code,
-                        "vendor_name" => $vendor_name,
-                        "day_forecast" => $item->forecast_date,
-                        "Item_no" => $item->item_no,
-                        "semi_code" => $semi_code,
-                        "quantity_forecast" => $item->quantity,
-                        "item_group" => $item_group,
-                        "material_code" => $material_code,
-                        "material_name" => $material_name,
-                        "quantity_material" => $material_quan,
-                        "quantity_bomWip" => $bom_quantity,
-                        "material_prediction" => $materialPrediction,
-                        "U/M" => $material_measure,
+                        'forecast_code' => $item->forecast_code,
+                        'forecast_name' => $item->forecast_name,
+                        'vendor_code' => $vendor_code,
+                        'vendor_name' => $vendor_name,
+                        'day_forecast' => $item->forecast_date,
+                        'Item_no' => $item->item_no,
+                        'semi_code' => $semi_code,
+                        'quantity_forecast' => $item->quantity,
+                        'item_group' => $item_group,
+                        'material_code' => $material_code,
+                        'material_name' => $material_name,
+                        'quantity_material' => $material_quan,
+                        'quantity_bomWip' => $bom_quantity,
+                        'material_prediction' => $materialPrediction,
+                        'U/M' => $material_measure,
                         // Add more attributes as needed
                     ]);
                 }

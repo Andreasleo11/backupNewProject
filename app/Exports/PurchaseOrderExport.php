@@ -2,8 +2,8 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromView;
 use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 
 class PurchaseOrderExport implements FromView
 {
@@ -16,8 +16,8 @@ class PurchaseOrderExport implements FromView
 
     public function view(): View
     {
-        return view("exports.purchase_orders", [
-            "data" => $this->filteredData,
+        return view('exports.purchase_orders', [
+            'data' => $this->filteredData,
         ]);
     }
 }

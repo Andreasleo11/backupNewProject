@@ -28,7 +28,7 @@ class MissingDailyReportsNotification extends Notification implements ShouldQueu
      */
     public function via(object $notifiable): array
     {
-        return ["mail", "database"];
+        return ['mail', 'database'];
     }
 
     /**
@@ -36,11 +36,11 @@ class MissingDailyReportsNotification extends Notification implements ShouldQueu
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new \Illuminate\Notifications\Messages\MailMessage())
-            ->subject("📋 Missing Daily Reports Summary")
-            ->markdown("emails.notifications.missing-daily-reports", [
-                "notifiable" => $notifiable,
-                "employees" => $this->employees,
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->subject('📋 Missing Daily Reports Summary')
+            ->markdown('emails.notifications.missing-daily-reports', [
+                'notifiable' => $notifiable,
+                'employees' => $this->employees,
             ]);
     }
 
@@ -52,13 +52,13 @@ class MissingDailyReportsNotification extends Notification implements ShouldQueu
     public function toArray(object $notifiable): array
     {
         return [
-            "title" => "Missing Daily Reports",
-            "total_employees" => count($this->employees),
-            "employees" => collect($this->employees)->map(
-                fn($entry) => [
-                    "name" => $entry["employee"]->Nama,
-                    "NIK" => $entry["employee"]->NIK,
-                    "missing_dates" => $entry["dates"],
+            'title' => 'Missing Daily Reports',
+            'total_employees' => count($this->employees),
+            'employees' => collect($this->employees)->map(
+                fn ($entry) => [
+                    'name' => $entry['employee']->Nama,
+                    'NIK' => $entry['employee']->NIK,
+                    'missing_dates' => $entry['dates'],
                 ],
             ),
         ];

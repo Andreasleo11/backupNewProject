@@ -11,30 +11,31 @@ class InspectionReport extends Model
     use HasFactory;
 
     protected $fillable = [
-        "document_number",
-        "customer",
-        "inspection_date",
-        "part_number",
-        "part_name",
-        "weight",
-        "weight_uom",
-        "material",
-        "color",
-        "tool_number_or_cav_number",
-        "machine_number",
-        "shift",
-        "operator",
-        "inspector_autograph",
-        "leader_autograph",
-        "head_autograph",
+        'document_number',
+        'customer',
+        'inspection_date',
+        'part_number',
+        'part_name',
+        'weight',
+        'weight_uom',
+        'material',
+        'color',
+        'tool_number_or_cav_number',
+        'machine_number',
+        'shift',
+        'operator',
+        'inspector_autograph',
+        'leader_autograph',
+        'head_autograph',
+        'inspector',
     ];
 
     public function detailInspectionReports()
     {
         return $this->hasMany(
             DetailInspectionReport::class,
-            "inspection_report_document_number",
-            "document_number",
+            'inspection_report_document_number',
+            'document_number',
         );
     }
 
@@ -42,8 +43,8 @@ class InspectionReport extends Model
     {
         return $this->hasMany(
             InspectionDimension::class,
-            "inspection_report_document_number",
-            "document_number",
+            'inspection_report_document_number',
+            'document_number',
         );
     }
 
@@ -51,8 +52,8 @@ class InspectionReport extends Model
     {
         return $this->hasMany(
             InspectionProblem::class,
-            "inspection_report_document_number",
-            "document_number",
+            'inspection_report_document_number',
+            'document_number',
         );
     }
 
@@ -60,8 +61,8 @@ class InspectionReport extends Model
     {
         return $this->hasOne(
             InspectionQuantity::class,
-            "inspection_report_document_number",
-            "document_number",
+            'inspection_report_document_number',
+            'document_number',
         );
     }
 }

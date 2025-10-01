@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class ManagementHomeController extends Controller
 {
     public function index()
     {
-        return view("management.home");
+        return view('management.home');
     }
 }

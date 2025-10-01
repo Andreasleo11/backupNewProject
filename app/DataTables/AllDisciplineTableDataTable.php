@@ -8,8 +8,6 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class AllDisciplineTableDataTable extends DataTable
@@ -17,14 +15,13 @@ class AllDisciplineTableDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn(
-                "totalkehadiran",
+                'totalkehadiran',
                 '
         @php
 
@@ -44,7 +41,7 @@ class AllDisciplineTableDataTable extends DataTable
         {{ $all }}',
             )
             ->addColumn(
-                "totaldiscipline",
+                'totaldiscipline',
                 '@php
 
         $total = 0;
@@ -157,7 +154,7 @@ class AllDisciplineTableDataTable extends DataTable
             )
 
             ->addColumn(
-                "grade",
+                'grade',
                 '
         @php
 
@@ -181,125 +178,118 @@ class AllDisciplineTableDataTable extends DataTable
         {{ $grade }}',
             )
             ->addColumn(
-                "action",
+                'action',
                 '
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#edit-discipline-modal-{{str_replace(\' \', \'\',$id)}}" {{ ($is_lock === 1) ? "disabled" : ""  }} ><i class="bx bx-edit"></i></button>
         ',
             )
-            ->setRowId("id");
+            ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\AllDisciplineTable $model
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \App\Models\AllDisciplineTable  $model
      */
     public function query(EvaluationData $model): QueryBuilder
     {
-        return $model::with("karyawan")->newQuery();
+        return $model::with('karyawan')->newQuery();
     }
 
     /**
      * Optional method if you want to use html builder.
-     *
-     * @return \Yajra\DataTables\Html\Builder
      */
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId("alldisciplinetable-table")
+            ->setTableId('alldisciplinetable-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->dom("Bfrtip")
-            ->orderBy(1, "asc")
+            ->dom('Bfrtip')
+            ->orderBy(1, 'asc')
             ->buttons([
-                Button::make("excel"),
-                Button::make("csv"),
-                Button::make("pdf"),
-                Button::make("print"),
-                Button::make("reset"),
-                Button::make("reload"),
+                Button::make('excel'),
+                Button::make('csv'),
+                Button::make('pdf'),
+                Button::make('print'),
+                Button::make('reset'),
+                Button::make('reload'),
             ]);
     }
 
     /**
      * Get the dataTable columns definition.
-     *
-     * @return array
      */
     public function getColumns(): array
     {
         return [
-            Column::make("id")->visible(false),
-            Column::make("NIK")->title("NIK")->addClass("align-middle text-center"),
-            Column::make("Name")
-                ->data("karyawan.Nama")
+            Column::make('id')->visible(false),
+            Column::make('NIK')->title('NIK')->addClass('align-middle text-center'),
+            Column::make('Name')
+                ->data('karyawan.Nama')
                 ->searchable(false)
-                ->addClass("align-middle text-center")
+                ->addClass('align-middle text-center')
                 ->orderable(false),
-            Column::make("Department")
-                ->data("karyawan.Dept")
+            Column::make('Department')
+                ->data('karyawan.Dept')
                 ->searchable(false)
-                ->addClass("align-middle text-center")
+                ->addClass('align-middle text-center')
                 ->orderable(false),
-            Column::make("start_date")
-                ->title("Start Date")
-                ->data("karyawan.start_date")
+            Column::make('start_date')
+                ->title('Start Date')
+                ->data('karyawan.start_date')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass("align-middle text-center")
+                ->addClass('align-middle text-center')
                 ->orderable(false),
-            Column::make("status")
-                ->title("Status")
-                ->data("karyawan.status")
+            Column::make('status')
+                ->title('Status')
+                ->data('karyawan.status')
                 ->exportable(false)
                 ->searchable(false)
-                ->addClass("align-middle text-center")
+                ->addClass('align-middle text-center')
                 ->orderable(false),
-            Column::make("Month")->addClass("align-middle text-center"),
-            Column::make("Alpha")->exportable(false)->addClass("align-middle text-center"),
-            Column::make("Telat")->exportable(false)->addClass("align-middle text-center"),
-            Column::make("Izin")->exportable(false)->addClass("align-middle text-center"),
-            Column::make("Sakit")->exportable(false)->addClass("align-middle text-center"),
-            Column::make("totalkehadiran")
-                ->title("Total Nilai Kehadiran")
+            Column::make('Month')->addClass('align-middle text-center'),
+            Column::make('Alpha')->exportable(false)->addClass('align-middle text-center'),
+            Column::make('Telat')->exportable(false)->addClass('align-middle text-center'),
+            Column::make('Izin')->exportable(false)->addClass('align-middle text-center'),
+            Column::make('Sakit')->exportable(false)->addClass('align-middle text-center'),
+            Column::make('totalkehadiran')
+                ->title('Total Nilai Kehadiran')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass("align-middle text-center text-bg-secondary")
+                ->addClass('align-middle text-center text-bg-secondary')
                 ->orderable(false),
-            Column::make("kerajinan_kerja")
-                ->addClass("align-middle text-center")
-                ->title("Kinerja Kerja"),
-            Column::make("kerapian_kerja")->addClass("align-middle text-center")->title("Kerapian"),
-            Column::make("loyalitas")->addClass("align-middle text-center"),
-            Column::make("perilaku_kerja")
-                ->addClass("align-middle text-center")
-                ->title("Etika dan Kesopanan"),
-            Column::make("prestasi")->addClass("align-middle text-center"),
-            Column::make("totaldiscipline")
-                ->title("Total Nilai Kedisiplinan")
+            Column::make('kerajinan_kerja')
+                ->addClass('align-middle text-center')
+                ->title('Kinerja Kerja'),
+            Column::make('kerapian_kerja')->addClass('align-middle text-center')->title('Kerapian'),
+            Column::make('loyalitas')->addClass('align-middle text-center'),
+            Column::make('perilaku_kerja')
+                ->addClass('align-middle text-center')
+                ->title('Etika dan Kesopanan'),
+            Column::make('prestasi')->addClass('align-middle text-center'),
+            Column::make('totaldiscipline')
+                ->title('Total Nilai Kedisiplinan')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass("align-middle text-center text-bg-secondary")
+                ->addClass('align-middle text-center text-bg-secondary')
                 ->orderable(false),
-            Column::make("total")->exportable(false)->addClass("align-middle text-center"),
-            Column::make("grade")
-                ->title("Grade")
+            Column::make('total')->exportable(false)->addClass('align-middle text-center'),
+            Column::make('grade')
+                ->title('Grade')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass("align-middle text-center")
+                ->addClass('align-middle text-center')
                 ->orderable(false),
         ];
     }
 
     /**
      * Get filename for export.
-     *
-     * @return string
      */
     protected function filename(): string
     {
-        return "AllDisciplineTable_" . date("YmdHis");
+        return 'AllDisciplineTable_'.date('YmdHis');
     }
 }

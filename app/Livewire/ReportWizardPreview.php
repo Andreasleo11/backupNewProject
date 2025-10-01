@@ -3,20 +3,22 @@
 namespace App\Livewire;
 
 use App\Mail\QaqcMail;
-use Livewire\Component;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Report;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
 
 class ReportWizardPreview extends Component
 {
     public $report;
+
     public $details;
+
     public $reportId;
 
     public function mount($reportId)
@@ -24,15 +26,16 @@ class ReportWizardPreview extends Component
         $this->reportId = $reportId;
 
         $this->report = [
-            "rec_date" => session("report.rec_date"),
-            "verify_date" => session("report.verify_date"),
-            "customer" => session("report.customer"),
-            "invoice_no" => session("report.invoice_no"),
+            'rec_date' => session('report.rec_date'),
+            'verify_date' => session('report.verify_date'),
+            'customer' => session('report.customer'),
+            'invoice_no' => session('report.invoice_no'),
         ];
 
-        $this->details = collect(Session::get("report.details", []))->map(function ($item, $i) {
-            $item["id"] = $i;
-            $item["defects"] = $item["defects"] ?? [];
+        $this->details = collect(Session::get('report.details', []))->map(function ($item, $i) {
+            $item['id'] = $i;
+            $item['defects'] = $item['defects'] ?? [];
+
             return (object) $item;
         });
     }
@@ -45,10 +48,10 @@ class ReportWizardPreview extends Component
             if ($isUpdate) {
                 $report = Report::findOrFail($this->reportId);
                 $report->update([
-                    "rec_date" => $this->report["rec_date"],
-                    "verify_date" => $this->report["verify_date"],
-                    "customer" => $this->report["customer"],
-                    "invoice_no" => $this->report["invoice_no"],
+                    'rec_date' => $this->report['rec_date'],
+                    'verify_date' => $this->report['verify_date'],
+                    'customer' => $this->report['customer'],
+                    'invoice_no' => $this->report['invoice_no'],
                 ]);
 
                 // Delete defects and details (cascade preferred, but doing manually)
@@ -59,24 +62,24 @@ class ReportWizardPreview extends Component
                 $report->details()->delete();
             } else {
                 $report = Report::create([
-                    "rec_date" => $this->report["rec_date"],
-                    "verify_date" => $this->report["verify_date"],
-                    "customer" => $this->report["customer"],
-                    "invoice_no" => $this->report["invoice_no"],
-                    "created_by" => Auth::user()->name,
-                    "autograph_1" => Auth::user()->name . ".png",
+                    'rec_date' => $this->report['rec_date'],
+                    'verify_date' => $this->report['verify_date'],
+                    'customer' => $this->report['customer'],
+                    'invoice_no' => $this->report['invoice_no'],
+                    'created_by' => Auth::user()->name,
+                    'autograph_1' => Auth::user()->name.'.png',
                 ]);
             }
 
             foreach ($this->details as $detailData) {
                 $detail = $report->details()->create([
-                    "part_name" => $detailData->part_name,
-                    "rec_quantity" => $detailData->rec_quantity,
-                    "verify_quantity" => $detailData->verify_quantity,
-                    "can_use" => $detailData->can_use,
-                    "cant_use" => $detailData->cant_use,
-                    "price" => $detailData->price,
-                    "currency" => $detailData->currency ?? "IDR",
+                    'part_name' => $detailData->part_name,
+                    'rec_quantity' => $detailData->rec_quantity,
+                    'verify_quantity' => $detailData->verify_quantity,
+                    'can_use' => $detailData->can_use,
+                    'cant_use' => $detailData->cant_use,
+                    'price' => $detailData->price,
+                    'currency' => $detailData->currency ?? 'IDR',
                 ]);
 
                 foreach ($detailData->defects ?? [] as $defect) {
@@ -86,21 +89,21 @@ class ReportWizardPreview extends Component
 
             if ($report) {
                 $customer = $report->customer;
-                $pdfName = "pdfs/verification-report-" . $report->id . ".pdf";
+                $pdfName = 'pdfs/verification-report-'.$report->id.'.pdf';
                 $pdfPath[] = Storage::url($pdfName);
 
                 $this->savePdf($report->id);
 
                 // Get 'to' and 'cc' email addresses from the configuration file
-                $to = Config::get("email.feature_qc.to");
-                $cc = Config::get("email.feature_qc.cc");
+                $to = Config::get('email.feature_qc.to');
+                $cc = Config::get('email.feature_qc.cc');
 
                 $mailData = [
-                    "to" => $to,
-                    "cc" => $cc,
-                    "subject" => "QAQC Verification Report Mail " . $customer,
-                    "body" => "Mail from " . env("APP_NAME"),
-                    "file_paths" => $pdfPath,
+                    'to' => $to,
+                    'cc' => $cc,
+                    'subject' => 'QAQC Verification Report Mail '.$customer,
+                    'body' => 'Mail from '.env('APP_NAME'),
+                    'file_paths' => $pdfPath,
                 ];
                 // dd($mailData);
 
@@ -111,17 +114,17 @@ class ReportWizardPreview extends Component
         });
 
         session()->flash(
-            "success",
-            $isUpdate ? "Report successfully updated!" : "Report successfully created!",
+            'success',
+            $isUpdate ? 'Report successfully updated!' : 'Report successfully created!',
         );
-        $this->dispatch("resetWizard")->to("report-wizard");
+        $this->dispatch('resetWizard')->to('report-wizard');
 
-        return redirect()->route("qaqc.report.detail", $report->id);
+        return redirect()->route('qaqc.report.detail', $report->id);
     }
 
     private function savePdf($id)
     {
-        $report = Report::with("details")->find($id);
+        $report = Report::with('details')->find($id);
         $user = Auth::user();
         foreach ($report->details as $detail) {
             $data1 = json_decode($detail->daijo_defect_detail);
@@ -136,22 +139,22 @@ class ReportWizardPreview extends Component
         }
 
         $autographNames = [
-            "autograph_name_1" => $report->autograph_user_1 ?? null,
-            "autograph_name_2" => $report->autograph_user_2 ?? null,
-            "autograph_name_3" => $report->autograph_user_3 ?? null,
+            'autograph_name_1' => $report->autograph_user_1 ?? null,
+            'autograph_name_2' => $report->autograph_user_2 ?? null,
+            'autograph_name_3' => $report->autograph_user_3 ?? null,
         ];
 
         $pdf = Pdf::loadView(
-            "pdf/verification-report-pdf",
-            compact("report", "user", "autographNames"),
-        )->setPaper("a4", "landscape");
+            'pdf/verification-report-pdf',
+            compact('report', 'user', 'autographNames'),
+        )->setPaper('a4', 'landscape');
 
         // Define the file path and name
-        $fileName = "verification-report-" . $report->id . ".pdf";
-        $filePath = "pdfs/" . $fileName; // Adjust the directory structure as needed
+        $fileName = 'verification-report-'.$report->id.'.pdf';
+        $filePath = 'pdfs/'.$fileName; // Adjust the directory structure as needed
 
         // Save the PDF file to the public storage
-        Storage::disk("public")->put($filePath, $pdf->output());
+        Storage::disk('public')->put($filePath, $pdf->output());
 
         // Optionally, you can return a response indicating that the PDF has been saved
         // return redirect()->back()->with(['message' => 'PDF saved successfully', 'file_path' => $filePath]);
@@ -159,15 +162,15 @@ class ReportWizardPreview extends Component
 
     public function goBack()
     {
-        $this->dispatch("goBack")->to("report-wizard");
+        $this->dispatch('goBack')->to('report-wizard');
     }
 
     public function render()
     {
-        return view("livewire.report-wizard-preview", [
-            "report" => $this->report,
-            "details" => $this->details,
-            "categories" => \App\Models\DefectCategory::pluck("name", "id")->toArray(),
+        return view('livewire.report-wizard-preview', [
+            'report' => $this->report,
+            'details' => $this->details,
+            'categories' => \App\Models\DefectCategory::pluck('name', 'id')->toArray(),
         ]);
     }
 }
