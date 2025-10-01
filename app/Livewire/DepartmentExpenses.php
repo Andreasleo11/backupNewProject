@@ -2,7 +2,9 @@
 
 namespace App\Livewire;
 
-use App\Domain\Expenses\ExpenseRepository;
+use App\Domain\Expenses\DTO\DepartmentTotal;
+use App\Domain\Expenses\UseCases\GetDepartmentTotals;
+use App\Domain\Expenses\UseCases\ListPrSigners;
 use Livewire\Component;
 
 class DepartmentExpenses extends Component
@@ -38,13 +40,22 @@ class DepartmentExpenses extends Component
         $this->chartKeySent = null;         // chart depends on signer too
     }
 
-    public function render(ExpenseRepository $repo)
+    public function render(GetDepartmentTotals $getTotals, ListPrSigners $listSigners)
     {
         // dropdown values for this month
-        $this->prSigners = $repo->prSignersForMonth($this->month)->values()->all();
+        $this->prSigners = $listSigners->execute($this->month);
 
         // totals respect PR signer filter
-        $totals = $repo->totalsPerDepartmentForMonth($this->month, $this->prSigner);
+        $totalsDto = $getTotals->execute($this->month, $this->prSigner);
+
+        $totals = collect($totalsDto)->map(function (DepartmentTotal $d) {
+            return (object) [
+                'dept_id' => $d->deptId,
+                'dept_name' => $d->deptName,
+                'dept_no' => $d->deptNo,
+                'total_expense' => $d->totalExpense,
+            ];
+        });
 
         // chart data seeded when (month|signer) changes
         $key = $this->month.'|'.($this->prSigner ?? '');

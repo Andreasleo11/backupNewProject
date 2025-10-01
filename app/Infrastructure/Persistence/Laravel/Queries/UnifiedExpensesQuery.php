@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Expenses\Queries;
+namespace App\Infrastructure\Persistence\Laravel\Queries;
 
-use Illuminate\Support\Carbon;
+use DateTimeInterface;
 use Illuminate\Support\Facades\DB;
 
 class UnifiedExpensesQuery
@@ -13,7 +13,7 @@ class UnifiedExpensesQuery
      *  - dept_id, dept_name, dept_no
      *  - expense_date, source, item_name, uom, quantity, unit_price, line_total
      */
-    public static function base(Carbon $start, Carbon $end)
+    public static function base(DateTimeInterface $start, DateTimeInterface $end)
     {
         // ---- PURCHASE REQUEST LINES ----
         // amount = quantity * price
@@ -39,8 +39,8 @@ class UnifiedExpensesQuery
 
                 COALESCE(d.item_name, '')                                   as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
-                CAST(COALESCE(d.quantity, 0) AS DECIMAL(20,4))                       as quantity,
-                CAST(COALESCE(d.price, 0)    AS DECIMAL(20,4))                       as unit_price,
+                CAST(COALESCE(d.quantity, 0) AS DECIMAL(20,4))              as quantity,
+                CAST(COALESCE(d.price, 0)    AS DECIMAL(20,4))              as unit_price,
                 CAST((COALESCE(d.quantity,0) * COALESCE(d.price,0)) AS DECIMAL(20,4)) as line_total
             ");
 
@@ -72,8 +72,8 @@ class UnifiedExpensesQuery
 
                 COALESCE(d.name, '')                                        as item_name,
                 COALESCE(d.uom, 'PCS')                                      as uom,
-                CAST(COALESCE(d.quantity, 0)         AS DECIMAL(20,4)) as quantity,
-                CAST(COALESCE(d.cost_per_unit, 0)    AS DECIMAL(20,4)) as unit_price,
+                CAST(COALESCE(d.quantity, 0)         AS DECIMAL(20,4))      as quantity,
+                CAST(COALESCE(d.cost_per_unit, 0)    AS DECIMAL(20,4))      as unit_price,
                 CAST((COALESCE(d.quantity,0) * COALESCE(d.cost_per_unit,0)) AS DECIMAL(20,4)) as line_total
             ");
 
@@ -81,11 +81,11 @@ class UnifiedExpensesQuery
 
         return DB::query()
             ->fromSub($union, 'u')
-            ->whereBetween('u.expense_date', [$start->toDateString(), $end->toDateString()]);
+            ->whereBetween('u.expense_date', [$start->format('Y-m-d'), $end->format('Y-m-d')]);
     }
 
     /** Totals per department (stable on dept_id) */
-    public static function totalsPerDepartment(Carbon $start, Carbon $end)
+    public static function totalsPerDepartment(DateTimeInterface $start, DateTimeInterface $end)
     {
         return self::base($start, $end)
             ->selectRaw('u.dept_id, u.dept_name, u.dept_no, SUM(u.line_total) AS total_expense')
@@ -94,7 +94,7 @@ class UnifiedExpensesQuery
     }
 
     /** Drilldown lines for a department */
-    public static function detailByDepartment(int $deptId, Carbon $start, Carbon $end)
+    public static function detailByDepartment(int $deptId, DateTimeInterface $start, DateTimeInterface $end)
     {
         return self::base($start, $end)
             ->where('u.dept_id', $deptId)

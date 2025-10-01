@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Reports;
 
-use App\Domain\Expenses\ExpenseRepository;
+use App\Domain\Expenses\DTO\ExpenseLine;
+use App\Domain\Expenses\UseCases\GetExpenseDetail;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -11,6 +14,8 @@ class DepartmentExpenseDetailTable extends Component
     use WithPagination;
 
     protected string $paginationTheme = 'bootstrap';
+
+    protected string $pageName = 'detailPage';
 
     public string $month;
 
@@ -48,7 +53,12 @@ class DepartmentExpenseDetailTable extends Component
         $this->month = $month;
         $this->deptName = $deptName;
         $this->monthLabel = $monthLabel;
-        $this->prSigner = $prSigner;   // 👈
+        $this->prSigner = $prSigner;
+    }
+
+    protected function getPageName(): string
+    {
+        return $this->pageName;
     }
 
     public function updatingSearch()
@@ -95,27 +105,49 @@ class DepartmentExpenseDetailTable extends Component
         $this->resetPage();
     }
 
-    public function render(ExpenseRepository $repo)
+    public function render(GetExpenseDetail $getDetail)
     {
-        // Base query with department + month
-        $q = $repo->detailQueryForMonth($this->deptId, $this->month, $this->prSigner); // 👈 filter applied in repo
+        $page = Paginator::resolveCurrentPage($this->getPageName());
 
-        if ($this->search !== '') {
-            $term = '%'.$this->search.'%';
-            $q->where(function ($qq) use ($term) {
-                $qq->where('item_name', 'like', $term)
-                    ->orWhere('source', 'like', $term)
-                    ->orWhere('uom', 'like', $term);
-            });
-        }
+        $resp = $getDetail->execute(
+            deptId: $this->deptId,
+            ym: $this->month,
+            prSigner: $this->prSigner,
+            sortBy: $this->sortBy,
+            sortDir: $this->sortDir,
+            page: $page,
+            perPage: $this->perPage,
+        );
 
-        // Aggregates (filtered)
-        $sumQty = (clone $q)->sum('quantity');
-        $sumTotal = (clone $q)->sum('line_total');
+        $items = collect($resp['items'])->map(function (ExpenseLine $l) {
+            return (object) [
+                'expense_date' => $l->expenseDate->format('Y-m-d'),
+                'source' => $l->source,
+                'autograph_5' => $l->autograph5,
+                'doc_id' => $l->docId,
+                'doc_num' => $l->docNum,
+                'item_name' => $l->itemName,
+                'uom' => $l->uom,
+                'quantity' => $l->quantity,
+                'unit_price' => $l->unitPrice,
+                'line_total' => $l->lineTotal,
+            ];
+        });
 
-        $q->reorder();
+        // If you extended the repo to return global filtered totals:
+        $sumQty = $resp['sumQty'] ?? (float) $items->sum('quantity');   // fallback: current page
+        $sumTotal = $resp['sumTotal'] ?? (float) $items->sum('line_total'); // fallback: current page
 
-        $rows = $q->orderBy($this->sortBy, $this->sortDir)->paginate($this->perPage);
+        $rows = new LengthAwarePaginator(
+            items: $items,
+            total: (int) $resp['total'],
+            perPage: (int) $resp['perPage'],
+            currentPage: (int) $resp['page'],
+            options: [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]
+        );
 
         return view(
             'livewire.reports.department-expense-detail-table',
