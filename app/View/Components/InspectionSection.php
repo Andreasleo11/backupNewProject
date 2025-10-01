@@ -21,6 +21,6 @@ class InspectionSection extends Component
      */
     public function render(): View|Closure|string
     {
-        return view("components.inspection-section");
+        return view('components.inspection-section');
     }
 }

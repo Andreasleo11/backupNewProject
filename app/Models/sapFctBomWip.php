@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class sapFctBomWip extends Model
 {
-    protected $table = "sap_fct_bom_wip";
+    protected $table = 'sap_fct_bom_wip';
+
     public $timestamps = false;
+
     protected $primaryKey = null; // No explicit primary key
 
     // Define relationships

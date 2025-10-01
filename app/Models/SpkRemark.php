@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class SpkRemark extends Model
 {
     use HasFactory;
-    protected $table = "spk_remarks";
 
-    protected $fillable = ["spk_id", "remarks", "status", "is_revision"];
+    protected $table = 'spk_remarks';
+
+    protected $fillable = ['spk_id', 'remarks', 'status', 'is_revision'];
 
     public function spkRelation()
     {

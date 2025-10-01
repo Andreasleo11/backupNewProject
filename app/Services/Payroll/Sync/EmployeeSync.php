@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Payroll\Sync;
@@ -13,8 +14,8 @@ final class EmployeeSync
     /** @param EmployeeDto[] $items */
     public function sync(array $items): int
     {
-        $statusMap = config("payroll.status_map", []);
-        $branchHints = config("payroll.branch_hints", []);
+        $statusMap = config('payroll.status_map', []);
+        $branchHints = config('payroll.branch_hints', []);
 
         $rows = [];
         foreach ($items as $e) {
@@ -22,17 +23,17 @@ final class EmployeeSync
             $branch = $this->inferBranch($e->employeeStatusRaw, $branchHints);
 
             $rows[] = [
-                "NIK" => $e->nik,
-                "Nama" => $e->name,
-                "Gender" => $e->sex,
-                "Dept" => substr($e->costCenterCode, 0, 3),
-                "start_date" => $e->startDate?->toDateString(),
-                "end_date" => $e->endDate?->toDateString(),
-                "Grade" => $e->gradeCode,
-                "employee_status" => $empStatus ?? "UNKNOWN",
-                "Branch" => $branch ?? "JAKARTA",
-                "status" => $e->employeeStatusRaw,
-                "organization_structure" => $e->organizationStructure,
+                'NIK' => $e->nik,
+                'Nama' => $e->name,
+                'Gender' => $e->sex,
+                'Dept' => substr($e->costCenterCode, 0, 3),
+                'start_date' => $e->startDate?->toDateString(),
+                'end_date' => $e->endDate?->toDateString(),
+                'Grade' => $e->gradeCode,
+                'employee_status' => $empStatus ?? 'UNKNOWN',
+                'Branch' => $branch ?? 'JAKARTA',
+                'status' => $e->employeeStatusRaw,
+                'organization_structure' => $e->organizationStructure,
             ];
         }
 
@@ -46,6 +47,7 @@ final class EmployeeSync
                 return $value;
             }
         }
+
         return null;
     }
 
@@ -56,6 +58,7 @@ final class EmployeeSync
                 return $branch;
             }
         }
+
         return null;
     }
 }

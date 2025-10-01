@@ -4,14 +4,15 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::table("master_inventories", function (Blueprint $table) {
-            $table->string("position_image")->after("username")->nullable();
+        Schema::table('master_inventories', function (Blueprint $table) {
+            $table->string('position_image')->after('username')->nullable();
         });
     }
 
@@ -20,8 +21,8 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table("master_inventories", function (Blueprint $table) {
-            $table->dropColumn("position_image");
+        Schema::table('master_inventories', function (Blueprint $table) {
+            $table->dropColumn('position_image');
         });
     }
 };

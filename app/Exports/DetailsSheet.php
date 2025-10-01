@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class DetailsSheet implements FromCollection, WithTitle, WithHeadings
+class DetailsSheet implements FromCollection, WithHeadings, WithTitle
 {
     /**
      * @return \Illuminate\Support\Collection
@@ -21,7 +21,7 @@ class DetailsSheet implements FromCollection, WithTitle, WithHeadings
     public function headings(): array
     {
         // Get column names from the details table
-        $columnNames = Schema::getColumnListing("details");
+        $columnNames = Schema::getColumnListing('details');
 
         // Return the column names as headers
         return $columnNames;
@@ -29,6 +29,6 @@ class DetailsSheet implements FromCollection, WithTitle, WithHeadings
 
     public function title(): string
     {
-        return "Details"; // Custom title for the sheet
+        return 'Details'; // Custom title for the sheet
     }
 }

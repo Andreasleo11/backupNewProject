@@ -2,53 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\foremindFinal;
 use App\Models\PurchaseRequest;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use App\Models\PurchasingContact;
 use App\Models\PurchasingUpdateLog;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PurchasingController extends Controller
 {
     public function index()
     {
         $statuses = [
-            "approved" => 4,
-            "rejected" => 5,
-            "waitingDeptHead" => 1,
-            "waitingPurchaser" => 6,
-            "waitingGm" => 7,
-            "waitingVerificator" => 2,
-            "waitingDirector" => 3,
+            'approved' => 4,
+            'rejected' => 5,
+            'waitingDeptHead' => 1,
+            'waitingPurchaser' => 6,
+            'waitingGm' => 7,
+            'waitingVerificator' => 2,
+            'waitingDirector' => 3,
         ];
 
         $data = [];
 
         foreach ($statuses as $key => $status) {
-            $data[$key] = PurchaseRequest::where("status", $status)
-                ->where("to_department", "Purchasing")
-                ->whereHas("createdBy", function ($query) {
-                    $query->orWhere("id", auth()->user()->id);
+            $data[$key] = PurchaseRequest::where('status', $status)
+                ->where('to_department', 'Purchasing')
+                ->whereHas('createdBy', function ($query) {
+                    $query->orWhere('id', auth()->user()->id);
                 })
-                ->orWhere("from_department", "Purchasing")
+                ->orWhere('from_department', 'Purchasing')
                 ->get()
                 ->count();
         }
 
         $twoDaysAgo = Carbon::now()->subDays(2);
 
-        $prOver2Days = PurchaseRequest::where("status", $status)
-            ->where("to_department", "Purchasing")
-            ->whereHas("createdBy", function ($query) {
-                $query->orWhere("id", auth()->user()->id);
+        $prOver2Days = PurchaseRequest::where('status', $status)
+            ->where('to_department', 'Purchasing')
+            ->whereHas('createdBy', function ($query) {
+                $query->orWhere('id', auth()->user()->id);
             })
-            ->whereDate("created_at", "<=", $twoDaysAgo)
+            ->whereDate('created_at', '<=', $twoDaysAgo)
             ->get();
 
-        return view("purchasing.purchasing_landing", compact("data", "prOver2Days"));
+        return view('purchasing.purchasing_landing', compact('data', 'prOver2Days'));
     }
 
     public function indexhome()
@@ -65,7 +63,7 @@ class PurchasingController extends Controller
 
         foreach ($forecasts as $forecast) {
             $dayForecast = Carbon::parse($forecast->day_forecast);
-            $allMonths[] = $dayForecast->format("Y-m");
+            $allMonths[] = $dayForecast->format('Y-m');
         }
 
         // Ensure unique months and sort them
@@ -73,7 +71,7 @@ class PurchasingController extends Controller
         sort($uniqueMonths);
 
         // Fetch your materials data from the database
-        $materials = DB::table("forecast_material_predictions")->paginate(10);
+        $materials = DB::table('forecast_material_predictions')->paginate(10);
         $allmonth = [];
         foreach ($materials as $material) {
             $decodedForecast = json_decode($material->quantity_forecast, true);
@@ -94,14 +92,14 @@ class PurchasingController extends Controller
 
         // dd($qforecast);
 
-        return view("purchasing.foremind_detail", [
+        return view('purchasing.foremind_detail', [
             // 'monthm' => $monthm, // Ensure this is the correct data
-            "materials" => $materials,
-            "values" => $values,
-            "mon" => $uniqueMonths,
-            "qforecast" => $qforecast,
-            "contacts" => $contacts,
-            "log" => $log,
+            'materials' => $materials,
+            'values' => $values,
+            'mon' => $uniqueMonths,
+            'qforecast' => $qforecast,
+            'contacts' => $contacts,
+            'log' => $log,
         ]);
     }
 }

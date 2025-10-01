@@ -8,8 +8,6 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class ImportantDocumentDataTable extends DataTable
@@ -17,14 +15,13 @@ class ImportantDocumentDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn(
-                "action",
+                'action',
                 '
             <a href="{{ route("hrd.importantDocs.detail", $id) }}"
                 class="btn btn-secondary me-1">
@@ -53,64 +50,59 @@ class ImportantDocumentDataTable extends DataTable
             ',
             )
             // ->editColumn('expired_date', '{{ \Carbon\Carbon::parse($expired_date)->format(\'d-m-Y\') }}')
-            ->setRowId("id");
+            ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\ImportantDocument $model
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \App\Models\ImportantDocument  $model
      */
     public function query(ImportantDoc $model): QueryBuilder
     {
-        return $model::with("type")->newQuery();
+        return $model::with('type')->newQuery();
     }
 
     /**
      * Optional method if you want to use html builder.
-     *
-     * @return \Yajra\DataTables\Html\Builder
      */
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId("importantdocument-table")
+            ->setTableId('importantdocument-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(5, "asc")
-            //->dom('Bfrtip')
+            ->orderBy(5, 'asc')
+            // ->dom('Bfrtip')
             ->buttons([
-                Button::make("excel"),
-                Button::make("csv"),
+                Button::make('excel'),
+                Button::make('csv'),
                 // Button::make('pdf'),
-                Button::make("print"),
-                Button::make("reset"),
-                Button::make("reload"),
+                Button::make('print'),
+                Button::make('reset'),
+                Button::make('reload'),
             ]);
     }
 
     /**
      * Get the dataTable columns definition.
-     *
-     * @return array
      */
     public function getColumns(): array
     {
         return [
-            Column::make("id")->addClass("text-center align-middle"),
-            Column::make("document_id")->addClass("text-center align-middle"),
-            Column::make("name")->addClass("text-center align-middle"),
-            Column::make("type")
-                ->data("type.name")
+            Column::make('id')->addClass('text-center align-middle'),
+            Column::make('document_id')->addClass('text-center align-middle'),
+            Column::make('name')->addClass('text-center align-middle'),
+            Column::make('type')
+                ->data('type.name')
                 ->searchable(false)
                 ->orderable(false)
-                ->addClass("text-center align-middle"),
-            Column::make("description")->addClass("text-center align-middle"),
-            Column::make("expired_date")
-                ->data("expired_date")
-                ->title("Expired Date")
-                ->addClass("text-center align-middle")->renderRaw('
+                ->addClass('text-center align-middle'),
+            Column::make('description')->addClass('text-center align-middle'),
+            Column::make('expired_date')
+                ->data('expired_date')
+                ->title('Expired Date')
+                ->addClass('text-center align-middle')->renderRaw('
                 function(data, type, row, meta){
                     if (type === \'display\') {
                         // Example date string from the database
@@ -135,20 +127,18 @@ class ImportantDocumentDataTable extends DataTable
                     return data; // Return the original data for other types
                 }
             '),
-            Column::computed("action")
+            Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass("text-center"),
+                ->addClass('text-center'),
         ];
     }
 
     /**
      * Get filename for export.
-     *
-     * @return string
      */
     protected function filename(): string
     {
-        return "ImportantDocument_" . date("YmdHis");
+        return 'ImportantDocument_'.date('YmdHis');
     }
 }

@@ -9,7 +9,7 @@ class Specification extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["name"];
+    protected $fillable = ['name'];
 
     public function users()
     {

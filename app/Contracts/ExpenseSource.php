@@ -1,5 +1,7 @@
 <?php
+
 // app/Contracts/ExpenseSource.php
+
 namespace App\Contracts;
 
 use Illuminate\Support\Carbon;

@@ -1,9 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Payroll\Contracts;
 
-use App\Services\Payroll\Dto\{EmployeeDto, AnnualLeaveDto, AttendanceDto};
+use App\Services\Payroll\Dto\AnnualLeaveDto;
+use App\Services\Payroll\Dto\AttendanceDto;
+use App\Services\Payroll\Dto\EmployeeDto;
 use Carbon\CarbonImmutable;
 
 interface JPayrollClientContract

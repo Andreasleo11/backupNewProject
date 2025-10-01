@@ -10,6 +10,7 @@ class DepartmentExpenses extends Component
     // app/Livewire/DepartmentExpenses.php
 
     public string $month;
+
     public ?int $deptId = null;
 
     // Track the last month we fed to the chart
@@ -17,13 +18,13 @@ class DepartmentExpenses extends Component
 
     public function mount(): void
     {
-        $this->month = now()->format("Y-m");
+        $this->month = now()->format('Y-m');
     }
 
     public function updatedMonth(): void
     {
         $this->chartMonthSent = null;
-        $this->dispatch("chart:clearSelection");
+        $this->dispatch('chart:clearSelection');
     }
 
     public function render(ExpenseRepository $repo)
@@ -33,17 +34,17 @@ class DepartmentExpenses extends Component
         // ✅ Seed/refresh the chart ONLY when the month changes (or first load)
         if ($this->chartMonthSent !== $this->month) {
             $this->dispatch(
-                "chart:render",
+                'chart:render',
                 data: [
-                    "labels" => $totals->pluck("dept_name")->values(),
-                    "data" => $totals->pluck("total_expense")->map(fn($v) => (float) $v)->values(),
-                    "deptIds" => $totals->pluck("dept_id")->map(fn($v) => (int) $v)->values(),
+                    'labels' => $totals->pluck('dept_name')->values(),
+                    'data' => $totals->pluck('total_expense')->map(fn ($v) => (float) $v)->values(),
+                    'deptIds' => $totals->pluck('dept_id')->map(fn ($v) => (int) $v)->values(),
                 ],
             );
             $this->chartMonthSent = $this->month;
         }
 
-        return view("livewire.department-expenses", compact("totals"));
+        return view('livewire.department-expenses', compact('totals'));
     }
 
     public function showDetail(int $deptId): void
@@ -54,6 +55,6 @@ class DepartmentExpenses extends Component
     public function clearDetail(): void
     {
         $this->deptId = null;
-        $this->dispatch("chart:clearSelection");
+        $this->dispatch('chart:clearSelection');
     }
 }

@@ -12,8 +12,9 @@ class ExpenseRepository
     /** Return [start, end] Carbon objects for a given "YYYY-MM" */
     private function monthRange(string $ym): array
     {
-        $start = Carbon::parse($ym . "-01")->startOfMonth();
-        $end = Carbon::parse($ym . "-01")->endOfMonth();
+        $start = Carbon::parse($ym.'-01')->startOfMonth();
+        $end = Carbon::parse($ym.'-01')->endOfMonth();
+
         return [$start, $end];
     }
 
@@ -21,6 +22,7 @@ class ExpenseRepository
     public function totalsPerDepartmentForMonth(string $ym): Collection
     {
         [$start, $end] = $this->monthRange($ym);
+
         return UnifiedExpensesQuery::totalsPerDepartment($start, $end)->get();
     }
 
@@ -28,6 +30,7 @@ class ExpenseRepository
     public function detailQueryForMonth(int $deptId, string $ym): Builder
     {
         [$start, $end] = $this->monthRange($ym);
+
         return UnifiedExpensesQuery::detailByDepartment($deptId, $start, $end);
     }
 }

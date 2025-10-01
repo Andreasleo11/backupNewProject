@@ -8,7 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class DetailPurchaseRequestsExport implements FromCollection, WithTitle, WithHeadings
+class DetailPurchaseRequestsExport implements FromCollection, WithHeadings, WithTitle
 {
     protected $purchaseRequestIds;
 
@@ -24,7 +24,7 @@ class DetailPurchaseRequestsExport implements FromCollection, WithTitle, WithHea
     {
         // Fetch DetailPurchaseRequests where purchase_request_id is in the selected PurchaseRequests
         return DetailPurchaseRequest::whereIn(
-            "purchase_request_id",
+            'purchase_request_id',
             $this->purchaseRequestIds,
         )->get();
     }
@@ -32,7 +32,7 @@ class DetailPurchaseRequestsExport implements FromCollection, WithTitle, WithHea
     public function headings(): array
     {
         // Get column names from the reports table
-        $columnNames = Schema::getColumnListing("detail_purchase_requests");
+        $columnNames = Schema::getColumnListing('detail_purchase_requests');
 
         // Return the column names as headers
         return $columnNames;
@@ -40,6 +40,6 @@ class DetailPurchaseRequestsExport implements FromCollection, WithTitle, WithHea
 
     public function title(): string
     {
-        return "Detail Purchase Requests"; // Custom title for the sheet
+        return 'Detail Purchase Requests'; // Custom title for the sheet
     }
 }

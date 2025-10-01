@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-
 use App\Models\HardwareTypeInventory;
+use Illuminate\Database\Seeder;
 
 class HardwareTypeInventorySeeder extends Seeder
 {
@@ -14,19 +13,19 @@ class HardwareTypeInventorySeeder extends Seeder
     public function run(): void
     {
         $hardwareTypes = [
-            "MONITOR",
-            "PRINTER 1",
-            "PRINTER 2",
-            "PROCESSOR",
-            "MAINBOARD",
-            "MEMORY",
-            "DRIVE 1",
-            "DRIVE 2",
-            "VGA",
+            'MONITOR',
+            'PRINTER 1',
+            'PRINTER 2',
+            'PROCESSOR',
+            'MAINBOARD',
+            'MEMORY',
+            'DRIVE 1',
+            'DRIVE 2',
+            'VGA',
         ];
 
         foreach ($hardwareTypes as $type) {
-            HardwareTypeInventory::create(["name" => $type]);
+            HardwareTypeInventory::create(['name' => $type]);
         }
     }
 }

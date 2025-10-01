@@ -10,17 +10,17 @@ class EmployeeController extends Controller
 {
     public function showImportForm()
     {
-        return view("employees.import-jabatan");
+        return view('employees.import-jabatan');
     }
 
     public function importJabatan(Request $request)
     {
         $request->validate([
-            "file" => "required|mimes:xlsx,csv,xls",
+            'file' => 'required|mimes:xlsx,csv,xls',
         ]);
 
-        Excel::import(new EmployeeJabatanImport(), $request->file("file"));
+        Excel::import(new EmployeeJabatanImport, $request->file('file'));
 
-        return back()->with("success", "Jabatan updated successfully!");
+        return back()->with('success', 'Jabatan updated successfully!');
     }
 }

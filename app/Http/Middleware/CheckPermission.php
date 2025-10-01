@@ -16,9 +16,10 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, $permission): Response
     {
-        if (Auth::check() && Auth::user()->permissions->contains("name", $permission)) {
+        if (Auth::check() && Auth::user()->permissions->contains('name', $permission)) {
             return $next($request);
         }
-        return abort(403, "You do not have permission to access this page.");
+
+        return abort(403, 'You do not have permission to access this page.');
     }
 }

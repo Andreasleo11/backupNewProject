@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class SyncProgressController extends Controller
@@ -12,14 +11,14 @@ class SyncProgressController extends Controller
         $key = "sync_progress_{$companyArea}";
         $payload = Cache::get($key);
 
-        if (!$payload) {
+        if (! $payload) {
             $payload = [
-                "phase" => "idle",
-                "processed" => 0,
-                "total" => null,
-                "percent" => 0,
-                "last_range" => null,
-                "updated" => now("Asia/Jakarta")->toDateTimeString(),
+                'phase' => 'idle',
+                'processed' => 0,
+                'total' => null,
+                'percent' => 0,
+                'last_range' => null,
+                'updated' => now('Asia/Jakarta')->toDateTimeString(),
             ];
         }
 

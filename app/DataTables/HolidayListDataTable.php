@@ -8,8 +8,6 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class HolidayListDataTable extends DataTable
@@ -17,14 +15,13 @@ class HolidayListDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
-     * @return \Yajra\DataTables\EloquentDataTable
+     * @param  QueryBuilder  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn(
-                "action",
+                'action',
                 '
                                 <button data-bs-target="#edit-holiday-modal-{{ $id }}" data-bs-toggle="modal" class="btn btn-primary my-1 me-1">
                                     <i class="bx bx-edit"></i> <span class="d-none d-sm-inline">Edit</span>
@@ -34,14 +31,13 @@ class HolidayListDataTable extends DataTable
                                 </button>
          ',
             )
-            ->setRowId("id");
+            ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
      *
-     * @param \App\Models\HolidayList $model
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \App\Models\HolidayList  $model
      */
     public function query(UtiHolidayList $model): QueryBuilder
     {
@@ -50,44 +46,40 @@ class HolidayListDataTable extends DataTable
 
     /**
      * Optional method if you want to use html builder.
-     *
-     * @return \Yajra\DataTables\Html\Builder
      */
     public function html(): HtmlBuilder
     {
         return $this->builder()
             ->responsive(true)
-            ->setTableId("holidaylist-table")
+            ->setTableId('holidaylist-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            //->dom('Bfrtip')
+            // ->dom('Bfrtip')
             ->orderBy(1)
             ->buttons([
-                Button::make("excel"),
-                Button::make("csv"),
+                Button::make('excel'),
+                Button::make('csv'),
                 // Button::make('pdf'),
-                Button::make("print"),
-                Button::make("reset"),
-                Button::make("reload"),
+                Button::make('print'),
+                Button::make('reset'),
+                Button::make('reload'),
             ]);
     }
 
     /**
      * Get the dataTable columns definition.
-     *
-     * @return array
      */
     public function getColumns(): array
     {
         return [
-            Column::make("id"),
-            Column::make("date"),
-            Column::make("holiday_name")->title("Name"),
-            Column::make("description"),
-            Column::make("half_day")
-                ->title("Half Day")
-                ->data("half_day")
-                ->addClass("text-center align middle")->renderRaw('function(data, type, row, meta){
+            Column::make('id'),
+            Column::make('date'),
+            Column::make('holiday_name')->title('Name'),
+            Column::make('description'),
+            Column::make('half_day')
+                ->title('Half Day')
+                ->data('half_day')
+                ->addClass('text-center align middle')->renderRaw('function(data, type, row, meta){
                 if (type === \'display\') {
                     if (data === 1) {
                         return \'Yes\';
@@ -97,20 +89,18 @@ class HolidayListDataTable extends DataTable
                 }
                 return data; // Return the original data for other types
             }'),
-            Column::computed("action")
+            Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass("text-center"),
+                ->addClass('text-center'),
         ];
     }
 
     /**
      * Get filename for export.
-     *
-     * @return string
      */
     protected function filename(): string
     {
-        return "HolidayList_" . date("YmdHis");
+        return 'HolidayList_'.date('YmdHis');
     }
 }
