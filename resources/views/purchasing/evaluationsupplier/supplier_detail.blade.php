@@ -553,7 +553,7 @@
                 <div class="signature-box">
 
                 </div>
-                <p class="signature-name"><br> <br>Purchasing </p>
+                <p class="signature-name"><br>{{ $header->contact->p_member ?? '-' }}<br>Purchasing </p>
             </div>
         </div>
         <div class="signature-section">

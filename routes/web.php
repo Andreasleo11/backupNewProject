@@ -111,12 +111,16 @@ use App\Livewire\MonthlyBudgetSummary\Index as MonthlyBudgetSummaryIndex;
 use App\Livewire\Overtime\Create as FormOvertimeCreate;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use App\Livewire\ReportWizard;
+use App\Livewire\Services\Form as ServiceForm;
 use App\Livewire\VehicleForm;
 use App\Livewire\VehicleIndex;
+use App\Livewire\Vehicles\Form as VehiclesForm;
+use App\Livewire\Vehicles\Index as VehiclesIndex;
+use App\Livewire\Vehicles\Show as VehiclesShow;
+// TESTING SAP SERVICE
 use App\Services\BaseSapService;
 use App\Services\FctBomWipService;
 use App\Services\FctForecastService;
-// TESTING SAP SERVICE
 use App\Services\FctInventoryFgService;
 use App\Services\FctInventoryMtrService;
 use App\Services\FctLineProductionService;
@@ -1444,6 +1448,10 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name(
         'yayasan.table',
     );
+
+    Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])
+        ->name('department.status.yayasan');
+
     Route::put('/edit/maganddiscipline/{id}', [
         DisciplinePageController::class,
         'updatemagang',
@@ -2031,9 +2039,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
 
-    Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
-    Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
-    Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
+    // Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
+    // Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
+    // Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
 });
 
 Route::prefix('delivery-notes')
@@ -2082,4 +2090,13 @@ Route::middleware(['auth'])->group(function () {
         NotificationFeedController::class,
         'markAsRead',
     ])->name('notifications.mark-read');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/vehicles', VehiclesIndex::class)->name('vehicles.index');
+    Route::get('/vehicles/{vehicle}', VehiclesShow::class)->name('vehicles.show');
+    Route::get('/vehicle/create', VehiclesForm::class)->name('vehicles.create');
+    Route::get('/vehicles/{vehicle}/edit', VehiclesForm::class)->name('vehicles.edit');
+    Route::get('/services/create/{vehicle}', ServiceForm::class)->name('services.create');
+    Route::get('/services/{record}/edit', ServiceForm::class)->name('services.edit');
 });

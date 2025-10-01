@@ -818,7 +818,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         return view(
             'purchasing.evaluationsupplier.kriteria1',
-            compact('datas', 'vendorNames', 'header'),
+            compact('datas', 'vendorNames'),
         );
     }
 

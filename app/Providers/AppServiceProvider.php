@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Domain\Expenses\ExpenseRepository;
-use App\Expenses\Sources\MonthlyBudgetSource;
-use App\Expenses\Sources\PurchaseRequestSource;
+use App\Domain\Expenses\Sources\MonthlyBudgetSource;
+use App\Domain\Expenses\Sources\PurchaseRequestSource;
 use App\Models\Detail;
 use App\Models\HeaderFormOvertime;
 use App\Observers\DetailObserver;
