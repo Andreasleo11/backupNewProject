@@ -416,6 +416,9 @@
                 <x-sidebar.link :href="route('department-expenses.index')" icon="bx bx-file" :active="request()->routeIs('department-expenses.*')">Department
                     Expenses</x-sidebar.link>
             </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('vehicles.index')" icon="bx bx-file" :active="request()->routeIs('vehicles.*')">Vehicles</x-sidebar.link>
+            </li>
         </x-sidebar.group>
     </ul>
 
