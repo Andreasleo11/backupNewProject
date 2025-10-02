@@ -15,11 +15,11 @@ class DepartmentExpenses extends Component
 
     public ?int $deptId = null;
 
-    public ?string $prSigner = null;        // 👈 selected approver
+    public ?string $prSigner = null;
 
-    public array $prSigners = [];           // 👈 dropdown options
+    public array $prSigners = [];
 
-    public ?string $chartKeySent = null;    // month|signer key
+    public ?string $chartKeySent = null;
 
     // Track the last month we fed to the chart
     public ?string $chartMonthSent = null;
@@ -37,17 +37,20 @@ class DepartmentExpenses extends Component
 
     public function updatedPrSigner(): void
     {
-        $this->chartKeySent = null;         // chart depends on signer too
+        $this->chartKeySent = null;
     }
 
     public function render(GetDepartmentTotals $getTotals, ListPrSigners $listSigners)
     {
-        // dropdown values for this month
-        $this->prSigners = $listSigners->execute($this->month);
+        $signers = $listSigners->execute($this->month);
+        $this->prSigners = $signers;
 
-        // totals respect PR signer filter
+        if ($this->prSigner !== null && ! in_array($this->prSigner, $signers, true)) {
+            $this->prSigner = null;
+            $this->chartKeySent = null;
+        }
+
         $totalsDto = $getTotals->execute($this->month, $this->prSigner);
-
         $totals = collect($totalsDto)->map(function (DepartmentTotal $d) {
             return (object) [
                 'dept_id' => $d->deptId,
@@ -56,6 +59,14 @@ class DepartmentExpenses extends Component
                 'total_expense' => $d->totalExpense,
             ];
         });
+
+        if ($this->deptId !== null) {
+            $validDeptIds = $totals->pluck('dept_id')->all();
+            if (! in_array($this->deptId, $validDeptIds, true)) {
+                $this->deptId = null;
+                $this->dispatch('chart:clearSelection');
+            }
+        }
 
         // chart data seeded when (month|signer) changes
         $key = $this->month.'|'.($this->prSigner ?? '');

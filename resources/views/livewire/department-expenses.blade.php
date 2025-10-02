@@ -99,15 +99,16 @@
                 <div class="chart-overlay" wire:loading wire:target="month,showDetail,clearDetail"></div>
             </div>
 
-            <div class="d-flex justify-content-end mt-2">
-                <button type="button" class="btn btn-link btn-sm text-decoration-none"
-                    @click="$dispatch('chart:clearSelection')">
-                    <i class="bi bi-x-circle me-1"></i> Clear highlight
-                </button>
-            </div>
+            {{--  
+                <div class="d-flex justify-content-end mt-2">
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none"
+                        @click="$dispatch('chart:clearSelection')">
+                        <i class="bi bi-x-circle me-1"></i> Clear highlight
+                    </button>
+                </div>
+            --}}
         </div>
     </div>
-
 
     {{-- Content area: overview totals vs. details --}}
     <div class="card border-0 shadow-sm">
