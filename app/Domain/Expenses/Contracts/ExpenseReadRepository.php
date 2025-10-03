@@ -34,4 +34,10 @@ interface ExpenseReadRepository
         Month $end,
         ?string $prSigner
     ): array;
+
+    /**
+     * Returns the latest year-month (YYYY-MM) that has any expense data.
+     * If $prSigner is set, PR lines are restricted to that signer; MB lines are unaffected.
+     */
+    public function getLatestMonth(?string $prSigner = null): ?string;
 }
