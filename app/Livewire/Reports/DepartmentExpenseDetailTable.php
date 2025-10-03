@@ -117,6 +117,7 @@ class DepartmentExpenseDetailTable extends Component
             sortDir: $this->sortDir,
             page: $page,
             perPage: $this->perPage,
+            search: $this->search,
         );
 
         $items = collect($resp['items'])->map(function (ExpenseLine $l) {
@@ -134,9 +135,7 @@ class DepartmentExpenseDetailTable extends Component
             ];
         });
 
-        // If you extended the repo to return global filtered totals:
-        $sumQty = $resp['sumQty'] ?? (float) $items->sum('quantity');   // fallback: current page
-        $sumTotal = $resp['sumTotal'] ?? (float) $items->sum('line_total'); // fallback: current page
+        $sumTotal = $resp['sumTotal'] ?? (float) $items->sum('line_total');
 
         $rows = new LengthAwarePaginator(
             items: $items,
@@ -151,7 +150,7 @@ class DepartmentExpenseDetailTable extends Component
 
         return view(
             'livewire.reports.department-expense-detail-table',
-            compact('rows', 'sumQty', 'sumTotal'),
+            compact('rows', 'sumTotal'),
         );
     }
 }

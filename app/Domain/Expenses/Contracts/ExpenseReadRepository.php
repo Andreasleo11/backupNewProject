@@ -22,6 +22,16 @@ interface ExpenseReadRepository
         string $sortBy,
         string $sortDir,
         int $page,
-        int $perPage
+        int $perPage,
+        ?string $search = null,
+    ): array;
+
+    /**
+     * @return list<DepartmentTotal>
+     */
+    public function getMonthlyDepartmentTotals(
+        Month $start,
+        Month $end,
+        ?string $prSigner
     ): array;
 }
