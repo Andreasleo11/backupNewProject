@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Domain\Expenses\DTO\DepartmentTotal;
 use App\Domain\Expenses\UseCases\GetDepartmentMonthlyTotals;
 use App\Domain\Expenses\UseCases\GetDepartmentTotals;
+use App\Domain\Expenses\UseCases\GetLatestAvailableMonth;
 use App\Domain\Expenses\UseCases\GetRollingDepartmentTotals;
 use App\Domain\Expenses\UseCases\ListPrSigners;
 use Carbon\Carbon;
@@ -36,16 +37,16 @@ class DepartmentExpenses extends Component
 
     public ?string $compareKeySent = null;     // event dedupe
 
-    // --- Active tab (overview | detail | compare) ---
-    public string $activeTab = 'overview';
+    public string $activeTab = 'overview'; // --- Active tab (overview | detail | compare) ---
 
     public bool $skipChartClearOnce = false;
 
-    public function mount(): void
+    public function mount(GetLatestAvailableMonth $getLatest): void
     {
-        $this->month = now()->format('Y-m');
+        $ym = $getLatest->execute(null); // Find latest month overall (no signer yet on first load)
+        $this->month = $ym ?: now()->format('Y-m');
         $this->endMonth = $this->month;
-        $this->startMonth = now()->subMonths(1)->format('Y-m');
+        $this->startMonth = Carbon::parse($this->month.'-01')->subMonth()->format('Y-m');
     }
 
     public function updatedMonth(): void
