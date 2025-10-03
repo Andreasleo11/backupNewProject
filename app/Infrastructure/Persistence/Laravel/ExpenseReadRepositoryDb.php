@@ -153,4 +153,47 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
             'departments' => array_values($byDept),
         ];
     }
+
+    public function getLatestMonth(?string $prSigner = null): ?string
+    {
+        // Latest date among PR (approved, not canceled, has details)
+        $prQ = DB::table('detail_purchase_requests as d')
+            ->join('purchase_requests as h', 'h.id', '=', 'd.purchase_request_id')
+            ->whereNull('d.deleted_at')
+            ->whereNull('h.deleted_at')
+            ->where('h.status', 4)   // approved
+            ->where('h.is_cancel', 0);
+
+        if ($prSigner) {
+            $prQ->where('h.autograph_5', $prSigner);
+        }
+
+        // COALESCE(approved_at, date_pr) is the line's date in UnifiedExpenses
+        $prMax = $prQ->max(DB::raw('COALESCE(h.approved_at, h.date_pr)'));
+
+        // Latest date among Monthly Budget (approved, not rejected/canceled, has details)
+        $mbMax = DB::table('monthly_budget_report_summary_details as d')
+            ->join('monthly_budget_summary_reports as h', 'h.id', '=', 'd.header_id')
+            ->whereNull('d.deleted_at')
+            ->whereNull('h.deleted_at')
+            ->where('h.is_cancel', 0)
+            ->where('h.status', 5) // approved
+            ->where('h.is_reject', 0)
+            ->max('h.report_date');
+
+        // Decide the later of the two
+        $latest = null;
+        if ($prMax && $mbMax) {
+            $latest = ($prMax > $mbMax) ? $prMax : $mbMax;
+        } elseif ($prMax) {
+            $latest = $prMax;
+        } elseif ($mbMax) {
+            $latest = $mbMax;
+        } else {
+            return null;
+        }
+
+        // Return as 'YYYY-MM'
+        return \Illuminate\Support\Carbon::parse($latest)->format('Y-m');
+    }
 }
