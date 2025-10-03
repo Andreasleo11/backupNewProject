@@ -70,7 +70,12 @@
     </div>
 
     {{-- Chart card --}}
-    <div class="card border-0 shadow-sm mb-3" wire:key="dept-expenses-chart" x-data="departmentChart()">
+    <div class="card border-0 shadow-sm mb-3" wire:key="dept-expenses-chart" x-data="departmentChart()"
+        x-init="init({
+            labels: @js($totals->pluck('dept_name')->values()),
+            data: @js($totals->pluck('total_expense')->map(fn($v) => (float) $v)->values()),
+            deptIds: @js($totals->pluck('dept_id')->map(fn($v) => (int) $v)->values())
+        })">
         <div class="card-body p-3 p-md-4">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <h6 class="mb-0">Expenses by Department</h6>
