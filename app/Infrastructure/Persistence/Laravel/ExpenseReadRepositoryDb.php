@@ -54,12 +54,10 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
     }
 
     public function getExpenseLinesByDepartment(
-        int $deptId, Month $month, ?string $prSigner, string $sortBy, string $sortDir, int $page, int $perPage
-    ): array {
+        int $deptId, Month $month, ?string $prSigner, string $sortBy, string $sortDir, int $page, int $perPage,
+        ?string $search = null): array
+    {
         $q = UnifiedExpensesQuery::detailByDepartment($deptId, $month->start(), $month->end());
-        $qAgg = clone $q;
-        $sumQty = (float) $qAgg->sum('quantity');
-        $sumTotal = (float) $qAgg->sum('line_total');
 
         if ($prSigner) {
             $q->where(function ($w) use ($prSigner) {
@@ -67,6 +65,19 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
                     ->orWhere(fn ($x) => $x->where('source', 'purchase_request')->where('autograph_5', $prSigner));
             });
         }
+
+        if ($search !== null && $search !== '') {
+            $term = '%'.$search.'%';
+            $q->where(function ($qq) use ($term) {
+                $qq->where('item_name', 'like', $term)
+                    ->orWhere('source', 'like', $term)
+                    ->orWhere('uom', 'like', $term)
+                    ->orWhere('doc_num', 'like', $term);
+            });
+        }
+
+        $sumTotal = (clone $q)->sum('line_total');
+
         $q->reorder()->orderBy($sortBy, $sortDir);
         $p = $q->paginate($perPage, ['*'], 'page', $page);
 
@@ -88,8 +99,58 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
             'total' => $p->total(),
             'page' => $p->currentPage(),
             'perPage' => $p->perPage(),
-            'sumQty' => $sumQty,
             'sumTotal' => $sumTotal,
+        ];
+    }
+
+    public function getMonthlyDepartmentTotals(Month $start, Month $end, ?string $prSigner): array
+    {
+        // 1) Build the base builder
+        $q = UnifiedExpensesQuery::monthlyTotalsPerDepartment($start->start(), $end->end());
+
+        // 2) Apply signer filter (same logic you already use)
+        if ($prSigner) {
+            $q->where(function ($w) use ($prSigner) {
+                $w->where('u.source', 'monthly_budget')
+                    ->orWhere(function ($x) use ($prSigner) {
+                        $x->where('u.source', 'purchase_request')
+                            ->where('u.autograph_5', $prSigner);
+                    });
+            });
+        }
+
+        $rows = $q->get();
+
+        // 3) Build ordered month axis (YYYY-MM)
+        $months = [];
+        $cur = \DateTimeImmutable::createFromFormat('Y-m-d', $start->start()->format('Y-m-01'));
+        $endYm = $end->end()->format('Y-m');
+        while ($cur->format('Y-m') <= $endYm) {
+            $months[] = $cur->format('Y-m');
+            $cur = $cur->modify('+1 month');
+        }
+
+        // 4) Group rows by department and align values to months array
+        $byDept = [];
+        foreach ($rows as $r) {
+            $id = (int) $r->dept_id;
+            if (! isset($byDept[$id])) {
+                $byDept[$id] = [
+                    'deptId' => $id,
+                    'deptName' => (string) $r->dept_name,
+                    'deptNo' => $r->dept_no !== null ? (string) $r->dept_no : null,
+                    'series' => array_fill(0, count($months), 0.0),
+                ];
+            }
+            $idx = array_search($r->ym, $months, true);
+            if ($idx !== false) {
+                $byDept[$id]['series'][$idx] = (float) $r->total_expense;
+            }
+        }
+
+        return [
+            'months' => $months,
+            'departments' => array_values($byDept),
         ];
     }
 }

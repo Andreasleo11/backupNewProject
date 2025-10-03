@@ -101,4 +101,20 @@ class UnifiedExpensesQuery
             ->select('u.*')
             ->orderBy('u.expense_date', 'desc');
     }
+
+    /** Monthly totals per department between $start..$end (inclusive). */
+    public static function monthlyTotalsPerDepartment(DateTimeInterface $start, DateTimeInterface $end)
+    {
+        return self::base($start, $end)
+            ->selectRaw("
+                u.dept_id,
+                u.dept_name,
+                u.dept_no,
+                DATE_FORMAT(u.expense_date, '%Y-%m') as ym,
+                SUM(u.line_total) AS total_expense
+            ")
+            ->groupBy('u.dept_id', 'u.dept_name', 'u.dept_no', DB::raw("DATE_FORMAT(u.expense_date, '%Y-%m')"))
+            ->orderBy('u.dept_name')
+            ->orderBy('ym');
+    }
 }

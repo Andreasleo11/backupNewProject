@@ -8,6 +8,8 @@
             <span class="fw-semibold">
                 {{ $monthLabel !== '' ? $monthLabel : \Illuminate\Support\Carbon::parse($month . '-01')->isoFormat('MMMM YYYY') }}
             </span>
+            <span class="text-muted"> • Approvers:</span>
+            <span class="fw-semibold">{{ $prSigner }}</span>
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-2">
@@ -31,10 +33,6 @@
         <span class="badge rounded-pill text-bg-light border">
             <i class="bi bi-list-check me-1"></i> Lines:
             <span class="fw-semibold ms-1">{{ $rows->total() }}</span>
-        </span>
-        <span class="badge rounded-pill text-bg-light border">
-            <i class="bi bi-basket2 me-1"></i> Qty:
-            <span class="fw-semibold ms-1">{{ number_format($sumQty, 2, ',', '.') }}</span>
         </span>
         <span class="badge rounded-pill text-bg-light border">
             <i class="bi bi-cash-coin me-1"></i> Total:
@@ -126,8 +124,8 @@
             @if ($rows->total())
                 <tfoot>
                     <tr class="table-light">
-                        <th colspan="3" class="text-end">Totals (filtered)</th>
-                        <th class="text-end num">{{ number_format($sumQty, 2, ',', '.') }}</th>
+                        <th colspan="3" class="text-end">Totals</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th class="text-end num fw-bold">Rp {{ number_format($sumTotal, 2, ',', '.') }}</th>

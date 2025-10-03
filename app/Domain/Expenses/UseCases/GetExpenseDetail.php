@@ -34,6 +34,7 @@ final class GetExpenseDetail
         string $sortDir = 'desc',
         int $page = 1,
         int $perPage = 25,
+        ?string $search = null
     ): array {
         // Basic guards (keep domain safe; infra can still re-validate)
         $page = max(1, $page);
@@ -49,6 +50,7 @@ final class GetExpenseDetail
             sortDir: strtolower($sortDir) === 'asc' ? 'asc' : 'desc',
             page: $page,
             perPage: $perPage,
+            search: $search,
         );
     }
 }
