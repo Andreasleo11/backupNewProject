@@ -196,4 +196,44 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
         // Return as 'YYYY-MM'
         return \Illuminate\Support\Carbon::parse($latest)->format('Y-m');
     }
+
+    public function listMonths(?string $prSigner = null, int $limit = 24): array
+    {
+        // PURCHASE REQUEST months (approved, not canceled/deleted)
+        $pr = DB::table('detail_purchase_requests as d')
+            ->join('purchase_requests as h', 'h.id', '=', 'd.purchase_request_id')
+            ->selectRaw("DATE_FORMAT(COALESCE(h.approved_at, h.date_pr), '%Y-%m') as ym")
+            ->whereNull('d.deleted_at')
+            ->whereNull('h.deleted_at')
+            ->where('h.status', 4)
+            ->where('h.is_cancel', 0);
+
+        if ($prSigner !== null && $prSigner !== '') {
+            $pr->where('h.autograph_5', $prSigner);
+        }
+
+        // MONTHLY BUDGET months (approved, not canceled/rejected/deleted)
+        $mb = DB::table('monthly_budget_report_summary_details as d')
+            ->join('monthly_budget_summary_reports as h', 'h.id', '=', 'd.header_id')
+            ->selectRaw("DATE_FORMAT(h.report_date, '%Y-%m') as ym")
+            ->whereNull('d.deleted_at')
+            ->whereNull('h.deleted_at')
+            ->where('h.is_cancel', 0)
+            ->where('h.status', 5)
+            ->where('h.is_reject', 0);
+
+        // union -> distinct month strings -> newest first -> limit
+        $union = $pr->union($mb);
+
+        $rows = DB::query()
+            ->fromSub($union, 'm')
+            ->select('m.ym')
+            ->whereNotNull('m.ym')
+            ->groupBy('m.ym')
+            ->orderBy('m.ym', 'desc')
+            ->limit($limit)
+            ->get();
+
+        return array_values(array_map(fn ($r) => (string) $r->ym, $rows->all()));
+    }
 }

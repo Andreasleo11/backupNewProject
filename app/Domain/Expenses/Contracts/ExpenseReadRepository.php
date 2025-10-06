@@ -40,4 +40,9 @@ interface ExpenseReadRepository
      * If $prSigner is set, PR lines are restricted to that signer; MB lines are unaffected.
      */
     public function getLatestMonth(?string $prSigner = null): ?string;
+
+    /**
+     * @return array<int, string> // list of 'YYYY-MM' sorted DESC (latest first)
+     */
+    public function listMonths(?string $prSigner = null, int $limit = 24): array;
 }
