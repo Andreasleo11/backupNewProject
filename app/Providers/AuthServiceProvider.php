@@ -23,8 +23,10 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('approve-requirements', function ($user) {
-            // adapt to your roles/permissions implementation
-            return $user->role->name === 'SUPERADMIN' || $user->hasPermissionTo('requirements.approve');
+            //   return method_exists($user, 'hasRoles')
+            //     ? $user->hasRole('Admin')
+            //     : in_array($user->email, ['yuli@daijo.co.id', 'raymond@daijo.co.id']);
+            return $user->role->name === 'SUPERADMIN' || $user->hasPermissionTo('requirements.approve') || in_array($user->email, ['yuli@daijo.co.id']);
         });
     }
 }
