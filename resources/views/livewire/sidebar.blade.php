@@ -420,6 +420,20 @@
                 <x-sidebar.link :href="route('vehicles.index')" icon="bx bx-file" :active="request()->routeIs('vehicles.*')">Vehicles</x-sidebar.link>
             </li>
         </x-sidebar.group>
+
+        {{-- File Compliance --}}
+        <x-sidebar.group id="fileComplianceGroup" icon="bx bx-file"
+            title="File Compliance" :open="$groupOpen['fileComplianceGroup'] ?? false">
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('requirements.index')" icon="bx bx-file" :active="request()->routeIs('requirements.index')">Requirements</x-sidebar.link>
+            </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('requirements.assign')" icon="bx bx-file" :active="request()->routeIs('requirements.assign')">Requirements Assign</x-sidebar.link>
+            </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('admin.requirement-uploads')" icon="bx bx-file" :active="request()->routeIs('admin.requirement-uploads')">Review Upload</x-sidebar.link>
+            </li>
+        </x-sidebar.group>
     </ul>
 
     <!-- Smart flyout container (one per page) -->
