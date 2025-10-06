@@ -41,12 +41,26 @@ class DepartmentExpenses extends Component
 
     public bool $skipChartClearOnce = false;
 
+    public array $monthOptions = [];
+
     public function mount(GetLatestAvailableMonth $getLatest): void
     {
         $ym = $getLatest->execute(null); // Find latest month overall (no signer yet on first load)
         $this->month = $ym ?: now()->format('Y-m');
         $this->endMonth = $this->month;
         $this->startMonth = Carbon::parse($this->month.'-01')->subMonth()->format('Y-m');
+
+        $start = \Illuminate\Support\Carbon::parse('2025-01-01');
+        $end = \Illuminate\Support\Carbon::today()->startOfMonth();
+
+        for ($d = $end->copy(); $d->gte($start); $d->subMonth()) {
+            $this->monthOptions[] = [
+                'value' => $d->format('Y-m'),
+                'text' => $d->isoFormat('MMM YYYY'),
+            ];
+        }
+
+        // dd($this->monthOptions);
     }
 
     public function updatedMonth(): void
@@ -197,14 +211,13 @@ class DepartmentExpenses extends Component
             usort($deltas, fn ($x, $y) => abs($y->diff) <=> abs($x->diff));
         }
 
-        // Only dispatch when inputs changed
-
         $this->dispatch('compare:render', data: [
             'labels' => $labels,
             'deptIds' => $deptIds,
             'months' => $months,
             'datasets' => $datasets,
         ]);
+
         $this->compareKeySent = $cmpKey;
 
         return view('livewire.department-expenses', compact('totals'));
