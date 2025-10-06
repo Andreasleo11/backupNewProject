@@ -17,6 +17,11 @@ class Department extends Model
         $this->hasMany(User::class);
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'name';
+    }
+
     public function employees()
     {
         return $this->hasMany(Employee::class, 'Dept', 'dept_no');

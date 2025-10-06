@@ -15,7 +15,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Upload Requirement</h5>
-                    <button type="button" class="btn-close" @click="open = false"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @click="open = false">Close</button>
+                    <button class="btn btn-secondary" @click="$dispatch('hide-upload-modal')">Close</button>
                     <button class="btn btn-primary" wire:click="save" wire:loading.attr="disabled">Save</button>
                 </div>
             </div>

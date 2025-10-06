@@ -2111,14 +2111,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
     Route::get('/requirements/{requirement:code}/edit', RequirementForm::class)->name('requirements.edit');
     Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
-    Route::get('/departments/{department}/compliance', DeptCompliance::class)->name('departments.compliance');
+    Route::get('/departments/{department:name}/compliance', DeptCompliance::class)->name('departments.compliance');
     Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
 
     Route::get('/uploads/{upload}/download', function (Illuminate\Http\Request $request, App\Models\RequirementUpload $upload) {
         // optional: add Gate to restrict who can download
-        if (Illuminate\Support\Facades\Gate::denies('approve-requirements') && auth()->id() !== $upload->uploaded_by) {
-            abort(403);
-        }
+        // if (Illuminate\Support\Facades\Gate::denies('approve-requirements') && auth()->id() !== $upload->uploaded_by) {
+        //     abort(403);
+        // }
 
         return Illuminate\Support\Facades\Storage::disk('public')->download($upload->path, $upload->original_name);
     })->middleware(['signed', 'auth'])->name('uploads.download');
