@@ -5,8 +5,8 @@ namespace App\Livewire;
 use App\Domain\Expenses\DTO\DepartmentTotal;
 use App\Domain\Expenses\UseCases\GetDepartmentMonthlyTotals;
 use App\Domain\Expenses\UseCases\GetDepartmentTotals;
-use App\Domain\Expenses\UseCases\GetLatestAvailableMonth;
 use App\Domain\Expenses\UseCases\GetRollingDepartmentTotals;
+use App\Domain\Expenses\UseCases\ListAvailableMonths;
 use App\Domain\Expenses\UseCases\ListPrSigners;
 use Carbon\Carbon;
 use Livewire\Component;
@@ -43,24 +43,15 @@ class DepartmentExpenses extends Component
 
     public array $monthOptions = [];
 
-    public function mount(GetLatestAvailableMonth $getLatest): void
+    public function mount(ListAvailableMonths $listMonths): void
     {
-        $ym = $getLatest->execute(null); // Find latest month overall (no signer yet on first load)
-        $this->month = $ym ?: now()->format('Y-m');
+        // initial options (no signer yet)
+        $this->monthOptions = $listMonths->execute(null, 24);
+        $this->month = $this->monthOptions[0]['value'] ?? now()->format('Y-m'); // latest with data, else today
+
+        // compare defaults
         $this->endMonth = $this->month;
-        $this->startMonth = Carbon::parse($this->month.'-01')->subMonth()->format('Y-m');
-
-        $start = \Illuminate\Support\Carbon::parse('2025-01-01');
-        $end = \Illuminate\Support\Carbon::today()->startOfMonth();
-
-        for ($d = $end->copy(); $d->gte($start); $d->subMonth()) {
-            $this->monthOptions[] = [
-                'value' => $d->format('Y-m'),
-                'text' => $d->isoFormat('MMM YYYY'),
-            ];
-        }
-
-        // dd($this->monthOptions);
+        $this->startMonth = now()->subMonthsNoOverflow(1)->format('Y-m');
     }
 
     public function updatedMonth(): void
@@ -74,10 +65,33 @@ class DepartmentExpenses extends Component
         $this->skipChartClearOnce = false;
     }
 
-    public function updatedPrSigner(): void
+    public function updatedPrSigner(ListAvailableMonths $listMonths): void
     {
+        // refresh month options based on signer filter
+        $this->monthOptions = $listMonths->execute($this->prSigner, 24);
+
+        // keep current month if still valid, else pick latest available
+        $valid = array_column($this->monthOptions, 'value');
+        if (! in_array($this->month, $valid, true)) {
+            $this->month = $valid[0] ?? now()->format('Y-m');
+        }
+
         $this->chartKeySent = null;
         $this->compareKeySent = null;
+
+        // also ensure compare range stays valid
+        if ($this->compareMode === 'range') {
+            if (! in_array($this->startMonth, $valid, true)) {
+                $this->startMonth = $valid[array_key_last($valid)] ?? $this->month; // oldest available
+            }
+            if (! in_array($this->endMonth, $valid, true)) {
+                $this->endMonth = $valid[0] ?? $this->month; // latest available
+            }
+        } else { // rolling mode
+            if (! in_array($this->endMonth, $valid, true)) {
+                $this->endMonth = $valid[0] ?? $this->month;
+            }
+        }
     }
 
     public function updatedStartMonth(): void
@@ -113,12 +127,14 @@ class DepartmentExpenses extends Component
         GetDepartmentTotals $getTotals,
         ListPrSigners $listSigners,
         GetDepartmentMonthlyTotals $getMonthlyTotals,
-        GetRollingDepartmentTotals $getRollingTotals
+        GetRollingDepartmentTotals $getRollingTotals,
+        ListAvailableMonths $listMonths
     ) {
         $signers = $listSigners->execute($this->month);
         $this->prSigners = $signers;
 
         if ($this->prSigner !== null && ! in_array($this->prSigner, $signers, true)) {
+            $this->monthOptions = $listMonths->execute($this->prSigner, 24);
             $this->prSigner = null;
             $this->chartKeySent = null;
             $this->compareKeySent = null;

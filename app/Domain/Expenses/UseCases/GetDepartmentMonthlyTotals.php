@@ -2,9 +2,11 @@
 
 namespace App\Domain\Expenses\UseCases;
 
+use App\Domain\Expenses\Contracts\ExpenseReadRepository;
+
 final class GetDepartmentMonthlyTotals
 {
-    public function __construct(private \App\Domain\Expenses\Contracts\ExpenseReadRepository $repo) {}
+    public function __construct(private ExpenseReadRepository $repo) {}
 
     public function execute(string $startYm, string $endYm, ?string $prSigner): array
     {

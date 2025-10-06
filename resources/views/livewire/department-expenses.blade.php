@@ -224,17 +224,18 @@
 
                                 <div class="vr mx-2 d-none d-md-block"></div>
 
+                                {{-- Range controls --}}
                                 @if ($compareMode === 'range')
-                                    {{-- Range controls --}}
-                                    <div class="d-flex flex-wrap align-items-center gap-2"
-                                        x-show="$wire.compareMode === 'range'">
-                                        <div x-data="tomMonthSelect({ value: @entangle('startMonth').live, options: @js($monthOptions), placeholder: 'Start…' })" x-init="mount()">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div x-data="tomMonthSelect({ value: @entangle('startMonth').live, options: @js($monthOptions), placeholder: 'Start…' })" x-init="mount()"
+                                            wire:key="cmp-range-start">
                                             <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
                                                 <span class="input-group-text bg-white">Start</span>
                                                 <select x-ref="select"></select>
                                             </div>
                                         </div>
-                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()">
+                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
+                                            wire:key="cmp-range-end">
                                             <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
                                                 <span class="input-group-text bg-white">End</span>
                                                 <select x-ref="select"></select>
@@ -243,12 +244,14 @@
                                     </div>
                                 @else
                                     {{-- Rolling controls --}}
-                                    <div class="d-flex flex-wrap align-items-center gap-2"
-                                        x-show="$wire.compareMode === 'rolling'">
-                                        <div class="input-group input-group-sm" style="width: 220px;">
-                                            <span class="input-group-text bg-white"><i
-                                                    class="bi bi-calendar2-month"></i></span>
-                                            <input type="month" class="form-control" wire:model.live="endMonth">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
+                                            wire:key="cmp-rolling-end">
+                                            <div class="input-group input-group-sm" style="width: 220px;" wire:ignore>
+                                                <span class="input-group-text bg-white"><i
+                                                        class="bi bi-calendar2-month"></i></span>
+                                                <select x-ref="select"></select>
+                                            </div>
                                         </div>
                                         <select class="form-select form-select-sm" style="width: 110px;"
                                             wire:model.live="rollingN">
@@ -259,7 +262,6 @@
                                         </select>
                                     </div>
                                 @endif
-
                                 <div class="vr mx-2 d-none d-md-block"></div>
 
                                 {{-- View toggles (local to chart via Alpine) --}}
@@ -358,7 +360,6 @@
 
 @pushOnce('extraCss')
     <style>
-        /* Hero styling */
         .design-hero {
             background:
                 radial-gradient(1200px 200px at -10% -20%, rgba(99, 102, 241, 0.15), transparent 60%),
@@ -382,7 +383,6 @@
         .chart-shell {
             height: 380px;
         }
-        
     </style>
 @endPushOnce
 
@@ -404,7 +404,7 @@
                     for (const opt of (this.options || [])) {
                         const o = document.createElement('option');
                         o.value = opt.value;
-                        o.textContent = opt.text;
+                        o.textContent = opt.label;
                         sel.appendChild(o);
                     }
 
@@ -416,7 +416,7 @@
                         persist: true,
                         selectOnTab: true,
                         placeholder,
-                        plugins: ['dropdown_input', 'clear_button'],
+                        plugins: ['dropdown_input'],
                         render: {
                             option: (data, escape) => `<div>${escape(data.text)}</div>`,
                             item: (data, escape) => `<div>${escape(data.text)}</div>`
