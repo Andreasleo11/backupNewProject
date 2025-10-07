@@ -26,7 +26,7 @@ class AuthServiceProvider extends ServiceProvider
             //   return method_exists($user, 'hasRoles')
             //     ? $user->hasRole('Admin')
             //     : in_array($user->email, ['yuli@daijo.co.id', 'raymond@daijo.co.id']);
-            return $user->role->name === 'SUPERADMIN' || $user->hasPermissionTo('requirements.approve') || in_array($user->email, ['yuli@daijo.co.id']);
+            return $user->role->name === 'SUPERADMIN' || in_array($user->email, ['yuli@daijo.co.id']);
         });
     }
 }
