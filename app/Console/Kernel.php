@@ -51,6 +51,20 @@ class Kernel extends ConsoleKernel
             ->dailyAt('13:30')
             ->timezone('Asia/Jakarta');
         // $schedule->command('app:update-forecast')->dailyAt('13:00')->timezone('Asia/Jakarta');
+
+        // Hourly refresh all department snapshots (lightweight)
+        $schedule->call(function () {
+            \App\Models\Department::query()->pluck('id')->each(function ($id) {
+                \App\Jobs\UpdateDepartmentComplianceSnapshot::dispatch($id, writeMonthly: true);
+            });
+        })->hourly();
+
+        // Weekly Compliance Threshold Notification
+        $schedule->command('compliance:weekly-digest --threshold=70 --channel=both --limit=200')
+            ->weeklyOn(1, '08:00')
+            ->timezone('Asia/Jakarta')
+            ->withoutOverlapping()
+            ->onOneServer();
     }
 
     /**

@@ -95,6 +95,7 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
+use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
@@ -2129,5 +2130,5 @@ Route::middleware(['auth'])->group(function () {
         ->name('requirements.departments');
 
     Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
-
+    Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
 });

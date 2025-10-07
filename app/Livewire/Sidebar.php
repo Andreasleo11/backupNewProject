@@ -125,6 +125,7 @@ class Sidebar extends Component
         'requirements.*',
         'admin.requirement-uploads',
         'departments.overview',
+        'compliance.dashboard',
     ];
 
     public function mount()

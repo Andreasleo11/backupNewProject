@@ -436,6 +436,9 @@
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('departments.overview')" icon="bx bx-file" :active="request()->routeIs('departments.overview')">Departments Overview</x-sidebar.link>
             </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('compliance.dashboard')" icon="bx bx-file" :active="request()->routeIs('compliance.dashboard')">Compliance Dashboard</x-sidebar.link>
+            </li>
         </x-sidebar.group>
     </ul>
 
