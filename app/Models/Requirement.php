@@ -18,11 +18,6 @@ class Requirement extends Model
         'requires_approval' => 'boolean',
     ];
 
-    public function getRouteKeyName(): string
-    {
-        return 'code';
-    }
-
     public function assignments()
     {
         return $this->hasMany(RequirementAssignment::class);

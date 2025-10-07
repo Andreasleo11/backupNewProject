@@ -95,6 +95,7 @@ use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
+use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
@@ -102,6 +103,7 @@ use App\Livewire\DeliveryNote\DeliveryNotePrint;
 use App\Livewire\DeliveryNoteShow;
 use App\Livewire\DepartmentExpenses;
 use App\Livewire\Departments\Compliance as DeptCompliance;
+use App\Livewire\Departments\Overview as DepartmentsOverview;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
 use App\Livewire\FileLibrary;
@@ -114,6 +116,7 @@ use App\Livewire\Overtime\Create as FormOvertimeCreate;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use App\Livewire\ReportWizard;
 use App\Livewire\Requirements\Assign as ReqAssign;
+use App\Livewire\Requirements\Departments as RequirementDepartments;
 use App\Livewire\Requirements\Form as RequirementForm;
 use App\Livewire\Requirements\Index as ReqIndex;
 use App\Livewire\Services\Form as ServiceForm;
@@ -2109,7 +2112,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/requirements', ReqIndex::class)->name('requirements.index');
     Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
-    Route::get('/requirements/{requirement:code}/edit', RequirementForm::class)->name('requirements.edit');
+    Route::get('/requirements/{requirement}/edit', RequirementForm::class)->name('requirements.edit');
     Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
     Route::get('/departments/{department:name}/compliance', DeptCompliance::class)->name('departments.compliance');
     Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
@@ -2122,4 +2125,10 @@ Route::middleware(['auth'])->group(function () {
 
         return Illuminate\Support\Facades\Storage::disk('public')->download($upload->path, $upload->original_name);
     })->middleware(['signed', 'auth'])->name('uploads.download');
+
+    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)
+        ->name('requirements.departments');
+
+    Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
+    Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
 });

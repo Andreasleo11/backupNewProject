@@ -17,6 +17,27 @@ class RequirementUpload extends Model
         'valid_until' => 'date',
     ];
 
+    protected static function booted()
+    {
+        static::created(function ($upload) {
+            if ($upload->scope_type === \App\Models\Department::class) {
+                \App\Jobs\UpdateDepartmentComplianceSnapshot::dispatch($upload->scope_id);
+            }
+        });
+
+        static::updated(function ($upload) {
+            if ($upload->isDirty('status') && $upload->scope_type === \App\Models\Department::class) {
+                \App\Jobs\UpdateDepartmentComplianceSnapshot::dispatch($upload->scope_id);
+            }
+        });
+
+        static::deleted(function ($upload) {
+            if ($upload->scope_type === \App\Models\Department::class) {
+                \App\Jobs\UpdateDepartmentComplianceSnapshot::dispatch($upload->scope_id);
+            }
+        });
+    }
+
     public function requirement()
     {
         return $this->belongsTo(Requirement::class);

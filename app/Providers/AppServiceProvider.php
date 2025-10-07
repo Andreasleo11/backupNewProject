@@ -55,12 +55,5 @@ class AppServiceProvider extends ServiceProvider
         });
         Paginator::useBootstrap();
         Builder::useVite();
-
-        \Illuminate\Support\Facades\Gate::define('approve-requirements', function ($user) {
-            // adjust to you auth/roles system
-            return method_exists($user, 'hasRoles')
-                ? $user->hasRole('Admin')
-                : in_array($user->email, ['yuli@daijo.co.id']);
-        });
     }
 }

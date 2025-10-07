@@ -124,6 +124,8 @@ class Sidebar extends Component
     public array $fileCompliancePatterns = [
         'requirements.*',
         'admin.requirement-uploads',
+        'departments.overview',
+        'compliance.dashboard',
     ];
 
     public function mount()
