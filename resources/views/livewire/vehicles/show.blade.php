@@ -1,4 +1,17 @@
 <div class="container-fluid px-0">
+    @if (session('success'))
+        <div class="alert alert-success d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <div>{{ session('error') }}</div>
+        </div>
+    @endif
 
     {{-- Back link --}}
     <a href="{{ route('vehicles.index') }}" class="text-decoration-none small">
@@ -143,7 +156,7 @@
                             $rest = $items->skip(3);
                             $collapseId = 'svc' . $r->id . '-items';
                         @endphp
-                        <tr>
+                        <tr wire:key="svc-row-{{ $r->id }}">
                             <td class="text-nowrap">{{ optional($r->service_date)->isoFormat('DD MMM YYYY') }}</td>
                             <td>{{ number_format($r->odometer ?? 0) }} km</td>
                             <td>{{ $r->workshop ?? 'Internal' }}</td>
@@ -174,7 +187,8 @@
                                             <div class="collapse w-100 mt-1" id="{{ $collapseId }}">
                                                 <div class="d-flex flex-wrap gap-1">
                                                     @foreach ($rest as $it)
-                                                        <span class="badge rounded-pill text-bg-light border me-1 mb-1">
+                                                        <span
+                                                            class="badge rounded-pill text-bg-light border me-1 mb-1">
                                                             {{ $it->part_name }}
                                                             <span class="opacity-75">({{ $it->action }})</span>
                                                             @if ($it->qty)
@@ -203,6 +217,16 @@
                                 <a href="{{ route('services.edit', $r) }}" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @if ($canManage)
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        wire:click="deleteService({{ $r->id }})"
+                                        wire:confirm="Delete service on {{ optional($r->service_date)->isoFormat('DD MMM YYYY') }} ({{ number_format($r->odometer ?? 0) }} km)? This cannot be undone."
+                                        wire:loading.attr="disabled" wire:target="deleteService">
+                                        <span class="spinner-border spinner-border-sm me-1" wire:loading
+                                            wire:target="deleteService"></span>
+                                        <i class="bi bi-trash" wire:loading.remove wire:target="deleteService"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty

@@ -30,7 +30,7 @@ class Form extends Component
 
     public function mount(?Vehicle $vehicle): void
     {
-        $this->fullFeature = auth()->user()?->role->name === 'SUPERADMIN' || (auth()->user()->is_head && auth()->user()->department->name === 'PERSONALIA');
+        $this->fullFeature = auth()->user()?->role->name === 'SUPERADMIN' || (auth()->user()->department->name === 'PERSONALIA');
 
         if ($vehicle?->exists) {
             $this->vehicle = $vehicle;
