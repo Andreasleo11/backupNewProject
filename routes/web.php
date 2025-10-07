@@ -2114,7 +2114,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
     Route::get('/requirements/{requirement}/edit', RequirementForm::class)->name('requirements.edit');
     Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
-    Route::get('/departments/{department:name}/compliance', DeptCompliance::class)->name('departments.compliance');
+    Route::get('/departments/{department}/compliance', DeptCompliance::class)->name('departments.compliance');
     Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
 
     Route::get('/uploads/{upload}/download', function (Illuminate\Http\Request $request, App\Models\RequirementUpload $upload) {
