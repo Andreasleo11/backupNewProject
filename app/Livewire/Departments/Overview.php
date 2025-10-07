@@ -1,7 +1,5 @@
 <?php
 
-// app/Livewire/Departments/Overview.php
-
 namespace App\Livewire\Departments;
 
 use App\Models\Department;
@@ -57,6 +55,19 @@ class Overview extends Component
             $this->dir = 'asc';
         }
         $this->resetPage();
+    }
+
+    public function sortIcon(string $field): string
+    {
+        if ($this->sort !== $field) {
+            // Not active sort column → neutral icon
+            return '<i class="bi bi-arrow-down-up text-muted small ms-1"></i>';
+        }
+
+        // Active sort column → show asc/desc arrow
+        return $this->dir === 'asc'
+            ? '<i class="bi bi-arrow-up text-primary small ms-1"></i>'
+            : '<i class="bi bi-arrow-down text-primary small ms-1"></i>';
     }
 
     public function toggleDir(): void
