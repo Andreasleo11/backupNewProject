@@ -102,6 +102,7 @@ use App\Livewire\DeliveryNote\DeliveryNotePrint;
 use App\Livewire\DeliveryNoteShow;
 use App\Livewire\DepartmentExpenses;
 use App\Livewire\Departments\Compliance as DeptCompliance;
+use App\Livewire\Departments\Overview as DepartmentsOverview;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
 use App\Livewire\FileLibrary;
@@ -114,6 +115,7 @@ use App\Livewire\Overtime\Create as FormOvertimeCreate;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use App\Livewire\ReportWizard;
 use App\Livewire\Requirements\Assign as ReqAssign;
+use App\Livewire\Requirements\Departments as RequirementDepartments;
 use App\Livewire\Requirements\Form as RequirementForm;
 use App\Livewire\Requirements\Index as ReqIndex;
 use App\Livewire\Services\Form as ServiceForm;
@@ -2122,4 +2124,10 @@ Route::middleware(['auth'])->group(function () {
 
         return Illuminate\Support\Facades\Storage::disk('public')->download($upload->path, $upload->original_name);
     })->middleware(['signed', 'auth'])->name('uploads.download');
+
+    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)
+        ->name('requirements.departments');
+
+    Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
+
 });
