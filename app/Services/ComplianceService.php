@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Requirement;
 use App\Models\RequirementAssignment;
 use App\Models\RequirementUpload;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -73,5 +74,18 @@ class ComplianceService
         $ok = $mandatory->where('status', 'OK')->count();
 
         return (int) round(($ok / $total) * 100);
+    }
+
+    /**
+     * Count how many unique requirements are assigned to a given scope.
+     * Works for Department or any other model you use as a scope.
+     */
+    public function getScopeAssignedRequirementsCount(Model $scope): int
+    {
+        return RequirementAssignment::query()
+            ->where('scope_type', $scope::class)
+            ->where('scope_id', $scope->getKey())
+            ->distinct('requirement_id')
+            ->count('requirement_id');
     }
 }
