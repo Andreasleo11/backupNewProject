@@ -1458,7 +1458,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])
         ->name('department.status.yayasan');
 
-    Route::put('/edit/maganddiscipline/{id}', [
+    Route::put('/edit/magangdiscipline/{id}', [
         DisciplinePageController::class,
         'updatemagang',
     ])->name('updatemagang');
