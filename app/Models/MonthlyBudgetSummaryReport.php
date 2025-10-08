@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Notifications\MonthlyBudgetSummaryReportCreated;
 use App\Notifications\MonthlyBudgetSummaryReportUpdated;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
 class MonthlyBudgetSummaryReport extends Model
@@ -14,50 +16,115 @@ class MonthlyBudgetSummaryReport extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        "report_date",
-        "creator_id",
-        "created_autograph",
-        "is_known_autograph",
-        "approved_autograph",
-        "doc_num",
-        "is_reject",
-        "reject_reason",
-        "is_moulding",
-        "is_cancel",
-        "cancel_reason",
-        "status",
+        'report_date',
+        'creator_id',
+        'created_autograph',
+        'is_known_autograph',
+        'approved_autograph',
+        'doc_num',
+        'is_reject',
+        'reject_reason',
+        'is_moulding',
+        'is_cancel',
+        'cancel_reason',
+        'status',
     ];
+
+    protected $appends = ['total_amount', 'mom'];
+
+    public function scopeWithTotals(Builder $q): Builder
+    {
+        return $q->addSelect([
+            'total_amount' => DB::table('monthly_budget_report_summary_details as d')
+                ->selectRaw('COALESCE(SUM(d.quantity * d.cost_per_unit), 0)')
+                ->whereColumn('d.header_id', 'monthly_budget_summary_reports.id'),
+        ]);
+    }
+
+    public function scopeWithPrevTotals(Builder $q): Builder
+    {
+        return $q->addSelect([
+            'prev_total' => DB::table('monthly_budget_report_summary_details as d2')
+                ->join('monthly_budget_summary_reports as r2', 'r2.id', '=', 'd2.header_id')
+                ->selectRaw('COALESCE(SUM(d2.quantity * d2.cost_per_unit), 0)')
+                ->whereColumn('r2.creator_id', 'monthly_budget_summary_reports.creator_id')
+                ->whereRaw(
+                    'r2.report_date = DATE_SUB(monthly_budget_summary_reports.report_date, INTERVAL 1 MONTH)',
+                ),
+        ]);
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        // Use preloaded selectSub if present; otherwise fall back to eager-loaded details
+        if (array_key_exists('total_amount', $this->attributes)) {
+            return (float) $this->attributes['total_amount'];
+        }
+
+        return $this->relationLoaded('details')
+            ? (float) $this->details->sum(
+                fn ($d) => (float) ($d->quantity ?? 0) * (float) ($d->cost_per_unit ?? 0),
+            )
+            : 0.0;
+    }
+
+    public function getMomAttribute(): array
+    {
+        $curr = (float) $this->total_amount;
+        $prev = (float) ($this->attributes['prev_total'] ?? 0.0);
+
+        if ($prev <= 0) {
+            return [
+                'has_prev' => false,
+                'diff' => null,
+                'pct' => null,
+                'direction' => 'none',
+                'prev' => $prev,
+            ];
+        }
+
+        $diff = $curr - $prev;
+        $pct = ($diff / $prev) * 100;
+
+        return [
+            'has_prev' => true,
+            'diff' => $diff,
+            'pct' => $pct,
+            'direction' => $diff > 0 ? 'up' : ($diff < 0 ? 'down' : 'flat'),
+            'prev' => $prev,
+        ];
+    }
 
     // Relations
     public function details()
     {
-        return $this->hasMany(MonthlyBudgetReportSummaryDetail::class, "header_id");
+        return $this->hasMany(MonthlyBudgetReportSummaryDetail::class, 'header_id');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, "creator_id");
+        return $this->belongsTo(User::class, 'creator_id');
     }
 
     public function files()
     {
-        return $this->hasMany(File::class, "doc_id", "doc_num");
+        return $this->hasMany(File::class, 'doc_id', 'doc_num');
     }
 
     // Queries
     public function scopeApproved($query)
     {
-        return $query->where("status", 5);
+        return $query->where('status', 5);
     }
 
     public function scopeWaitingDirector($query)
     {
-        return $query->where("status", 4);
+        return $query->where('status', 4);
     }
 
     public function scopeRejected($query)
     {
-        return $query->where("status", 5);
+        return $query->where('status', 5);
     }
 
     // Other
@@ -66,22 +133,22 @@ class MonthlyBudgetSummaryReport extends Model
         parent::boot();
 
         static::created(function ($report) {
-            $prefix = "MBSR";
+            $prefix = 'MBSR';
             if ($report->is_moulding) {
-                $prefix = $prefix . "/MOULD";
+                $prefix = $prefix.'/MOULD';
             }
             $id = $report->id;
-            $date = $report->created_at->format("dmY");
+            $date = $report->created_at->format('dmY');
             $docNum = "$prefix/$id/$date";
 
-            $report->update(["doc_num" => $docNum]);
+            $report->update(['doc_num' => $docNum]);
 
-            $report->sendNotification("created");
+            $report->sendNotification('created');
         });
 
         static::updated(function ($report) {
-            if ($report->isDirty("status")) {
-                $report->sendNotification("updated");
+            if ($report->isDirty('status')) {
+                $report->sendNotification('updated');
             }
         });
     }
@@ -97,14 +164,14 @@ class MonthlyBudgetSummaryReport extends Model
         $status = $this->getStatusText($this->status);
 
         $commonDetails = [
-            "greeting" => "Monthly Budget Summary Report Notification",
-            "actionText" => "Check Now",
-            "actionURL" => route("monthly.budget.summary.report.show", $this->id),
+            'greeting' => 'Monthly Budget Summary Report Notification',
+            'actionText' => 'Check Now',
+            'actionURL' => route('monthly.budget.summary.report.show', $this->id),
         ];
 
-        $reportDate = \Carbon\Carbon::parse($this->report_date)->format("F Y");
+        $reportDate = \Carbon\Carbon::parse($this->report_date)->format('F Y');
 
-        $commonDetails["body"] = "Notification for Monthly Budget Summary Report: <br>
+        $commonDetails['body'] = "Notification for Monthly Budget Summary Report: <br>
             - Document Number : $this->doc_num <br>
             - Month : $reportDate <br>
             - Status : $status";
@@ -116,21 +183,21 @@ class MonthlyBudgetSummaryReport extends Model
     {
         switch ($status) {
             case 1:
-                return "Waiting Creator";
+                return 'Waiting Creator';
             case 2:
-                return "Waiting GM";
+                return 'Waiting GM';
             case 3:
-                return "Waiting Dept Head";
+                return 'Waiting Dept Head';
             case 4:
-                return "Waiting Director";
+                return 'Waiting Director';
             case 5:
-                return "Approved";
+                return 'Approved';
             case 6:
-                return "Rejected";
+                return 'Rejected';
             case 7:
-                return "Cancelled";
+                return 'Cancelled';
             default:
-                return "Unknown";
+                return 'Unknown';
         }
     }
 
@@ -140,26 +207,26 @@ class MonthlyBudgetSummaryReport extends Model
         $users = [];
         array_push($users, $creator);
 
-        if ($event === "created") {
+        if ($event === 'created') {
             // $creator[0]->notify(new MonthlyBudgetSummaryReportCreated($this, $details));
-        } elseif ($event === "updated") {
+        } elseif ($event === 'updated') {
             if ($this->status == 2) {
-                $gm = User::where("is_gm", 1)->first();
+                $gm = User::where('is_gm', 1)->first();
                 array_push($users, $gm);
             } elseif ($this->status == 3) {
-                $mouldingHead = User::whereHas("department", function ($query) {
-                    $query->where("name", "MOULDING");
+                $mouldingHead = User::whereHas('department', function ($query) {
+                    $query->where('name', 'MOULDING');
                 })
-                    ->whereHas("specification", function ($query) {
-                        $query->where("name", "DESIGN");
+                    ->whereHas('specification', function ($query) {
+                        $query->where('name', 'DESIGN');
                     })
-                    ->where("is_head", 1)
+                    ->where('is_head', 1)
                     ->first();
                 array_push($users, $mouldingHead);
             } elseif ($this->status == 4) {
-                $director = User::with("specification")
-                    ->whereHas("specification", function ($query) {
-                        $query->where("name", "DIRECTOR");
+                $director = User::with('specification')
+                    ->whereHas('specification', function ($query) {
+                        $query->where('name', 'DIRECTOR');
                     })
                     ->first();
                 array_push($users, $director);

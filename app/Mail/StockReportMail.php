@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -28,7 +27,7 @@ class StockReportMail extends Mailable
      */
     public function envelope(): Envelope
     {
-        return new Envelope(subject: "Stock Report Mail");
+        return new Envelope(subject: 'Stock Report Mail');
     }
 
     /**
@@ -36,7 +35,7 @@ class StockReportMail extends Mailable
      */
     public function content(): Content
     {
-        return new Content(view: "emails.stock_report");
+        return new Content(view: 'emails.stock_report');
     }
 
     /**

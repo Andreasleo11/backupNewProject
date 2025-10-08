@@ -8,25 +8,25 @@ class PeriodValidator
     public static function missing(array $sectionData): array
     {
         $sections = [
-            "details" => $sectionData["details"] ?? [],
-            "first inspections" => $sectionData["first_inspections"] ?? [],
-            "seconds inspections" => $sectionData["second_inspections"] ?? [],
-            "samples" => $sectionData["samples"] ?? [],
-            "packagings" => $sectionData["packagings"] ?? [],
-            "judgements" => $sectionData["judgements"] ?? [],
-            // 'problems' => $sectionData['problems'] ?? [],
-            // 'quantities' => $sectionData['quantities'] ?? [],
+            // "details" => $sectionData["details"] ?? [],
+            'first inspections' => $sectionData['first_inspections'] ?? [],
+            'seconds inspections' => $sectionData['second_inspections'] ?? [],
+            'samples' => $sectionData['samples'] ?? [],
+            'packagings' => $sectionData['packagings'] ?? [],
+            'judgements' => $sectionData['judgements'] ?? [],
         ];
 
         $missing = [];
         foreach ($sections as $label => $data) {
+            $missing[$label] = [];
             foreach (range(1, 4) as $p) {
                 $key = "p$p";
-                if (!array_key_exists($key, $data) || empty($data[$key])) {
+                if (! array_key_exists($key, $data) || empty($data[$key])) {
                     $missing[$label][] = $p;
                 }
             }
         }
+
         return $missing; //  empty array => everything is complete
     }
 }

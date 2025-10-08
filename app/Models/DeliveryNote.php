@@ -11,37 +11,37 @@ class DeliveryNote extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        "branch",
-        "ritasi",
-        "delivery_note_date",
-        "departure_time",
-        "return_time",
-        "vehicle_id",
-        "status",
+        'branch',
+        'ritasi',
+        'delivery_note_date',
+        'departure_time',
+        'return_time',
+        'vehicle_id',
+        'status',
     ];
 
     protected $casts = [
-        "branch" => "string",
-        "status" => "string",
+        'branch' => 'string',
+        'status' => 'string',
     ];
 
     public function getFormattedDeliveryNoteDateAttribute()
     {
-        return \Carbon\Carbon::parse($this->delivery_note_date)->format("d-m-Y");
+        return \Carbon\Carbon::parse($this->delivery_note_date)->format('d-m-Y');
     }
 
     public function getFormattedDepartureTimeAttribute()
     {
         return $this->departure_time
-            ? \Carbon\Carbon::createFromFormat("H:i:s", $this->departure_time)->format("H:i")
-            : "-";
+            ? \Carbon\Carbon::createFromFormat('H:i:s', $this->departure_time)->format('H:i')
+            : '-';
     }
 
     public function getFormattedReturnTimeAttribute()
     {
         return $this->return_time
-            ? \Carbon\Carbon::createFromFormat("H:i:s", $this->return_time)->format("H:i")
-            : "-";
+            ? \Carbon\Carbon::createFromFormat('H:i:s', $this->return_time)->format('H:i')
+            : '-';
     }
 
     public function destinations()

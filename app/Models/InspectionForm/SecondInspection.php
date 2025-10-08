@@ -10,17 +10,17 @@ class SecondInspection extends Model
     use HasFactory;
 
     protected $fillable = [
-        "detail_inspection_report_document_number",
-        "document_number",
-        "lot_size_quantity",
+        'detail_inspection_report_document_number',
+        'document_number',
+        'lot_size_quantity',
     ];
 
     public function samplingData()
     {
         return $this->hasMany(
             InspectionSampling::class,
-            "second_inspection_document_number",
-            "document_number",
+            'second_inspection_document_number',
+            'document_number',
         );
     }
 
@@ -28,8 +28,8 @@ class SecondInspection extends Model
     {
         return $this->hasMany(
             InspectionPackaging::class,
-            "second_inspection_document_number",
-            "document_number",
+            'second_inspection_document_number',
+            'document_number',
         );
     }
 }

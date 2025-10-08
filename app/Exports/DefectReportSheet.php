@@ -2,11 +2,10 @@
 
 namespace App\Exports;
 
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithTitle;
-
-use Illuminate\Support\Collection;
 
 class DefectReportSheet implements FromCollection, WithHeadings, WithTitle
 {
@@ -24,24 +23,24 @@ class DefectReportSheet implements FromCollection, WithHeadings, WithTitle
         // Extract unique defect categories
         $defectCategories = [];
         foreach ($this->defectData as $item) {
-            foreach ($item["defects"] as $defect) {
-                $defectCategories[$defect["category_name"]] = true;
+            foreach ($item['defects'] as $defect) {
+                $defectCategories[$defect['category_name']] = true;
             }
         }
 
         // Generate rows with dynamic defect category columns
         foreach ($this->defectData as $item) {
             $row = [
-                "Part Name" => $item["part_name"],
-                "Quantity" => $item["rec_quantity"],
+                'Part Name' => $item['part_name'],
+                'Quantity' => $item['rec_quantity'],
             ];
 
             foreach ($defectCategories as $category => $_) {
                 $row[$category] = 0;
             }
 
-            foreach ($item["defects"] as $defect) {
-                $row[$defect["category_name"]] = $defect["quantity"];
+            foreach ($item['defects'] as $defect) {
+                $row[$defect['category_name']] = $defect['quantity'];
             }
 
             $data[] = $row;
@@ -55,13 +54,13 @@ class DefectReportSheet implements FromCollection, WithHeadings, WithTitle
         // Extract unique defect categories
         $defectCategories = [];
         foreach ($this->defectData as $item) {
-            foreach ($item["defects"] as $defect) {
-                $defectCategories[$defect["category_name"]] = true;
+            foreach ($item['defects'] as $defect) {
+                $defectCategories[$defect['category_name']] = true;
             }
         }
 
         // Generate headings with dynamic defect category columns
-        $headings = ["Part Name", "Quantity"];
+        $headings = ['Part Name', 'Quantity'];
         foreach ($defectCategories as $category => $_) {
             $headings[] = $category;
         }
@@ -71,6 +70,6 @@ class DefectReportSheet implements FromCollection, WithHeadings, WithTitle
 
     public function title(): string
     {
-        return "Defects";
+        return 'Defects';
     }
 }

@@ -8,15 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class StockType extends Model
 {
     use HasFactory;
-    protected $table = "stock_type";
+
+    protected $table = 'stock_type';
 
     protected $fillable = [
-        "name",
+        'name',
         // Add other fields as needed
     ];
 
     public function masterStocks()
     {
-        return $this->hasMany(MasterStock::class, "stock_type_id");
+        return $this->hasMany(MasterStock::class, 'stock_type_id');
     }
 }

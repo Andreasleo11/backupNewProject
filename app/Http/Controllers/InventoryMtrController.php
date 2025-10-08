@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\sapInventoryMtr;
-
 use App\DataTables\sapInventoryMtrDataTable;
+use App\Models\sapInventoryMtr;
 
 class InventoryMtrController extends Controller
 {
@@ -13,6 +11,6 @@ class InventoryMtrController extends Controller
     {
         // $datas = sapInventoryMtr::paginate(10);
 
-        return $dataTable->render("sap.inventorymtr");
+        return $dataTable->render('sap.inventorymtr');
     }
 }

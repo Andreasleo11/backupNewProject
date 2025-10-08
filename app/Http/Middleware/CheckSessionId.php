@@ -18,14 +18,16 @@ class CheckSessionId
     {
         if (Auth::check()) {
             $user = Auth::user();
-            $session_token = session("remember_token");
+            $session_token = session('remember_token');
 
             if ($user && $user->remember_token !== $session_token) {
-                Auth::user()->update(["remember_token" => null]);
+                Auth::user()->update(['remember_token' => null]);
                 Auth::logout();
-                return redirect("/")->with("error", "Session expired. Please login again!");
+
+                return redirect('/')->with('error', 'Session expired. Please login again!');
             }
         }
+
         return $next($request);
     }
 }

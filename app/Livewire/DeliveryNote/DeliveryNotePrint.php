@@ -11,11 +11,11 @@ class DeliveryNotePrint extends Component
 
     public function mount(DeliveryNote $deliveryNote)
     {
-        $this->deliveryNote = $deliveryNote->load("destinations.deliveryOrders");
+        $this->deliveryNote = $deliveryNote->load('destinations.deliveryOrders');
     }
 
     public function render()
     {
-        return view("livewire.delivery-note.print-view")->layout("layouts.print");
+        return view('livewire.delivery-note.print-view')->layout('layouts.print');
     }
 }

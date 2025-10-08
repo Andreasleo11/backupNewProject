@@ -8,30 +8,32 @@ use Illuminate\Database\Eloquent\Model;
 class OvertimeFormApproval extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        "overtime_form_id",
-        "flow_step_id",
-        "status",
-        "approver_id",
-        "signed_at",
-        "signature_path",
+        'overtime_form_id',
+        'flow_step_id',
+        'status',
+        'approver_id',
+        'signed_at',
+        'signature_path',
     ];
+
     protected $casts = [
-        "signed_at" => "datetime", // ← add this
+        'signed_at' => 'datetime', // ← add this
     ];
 
     public function form()
     {
-        return $this->belongsTo(HeaderFormOvertime::class, "overtime_form_id", "id");
+        return $this->belongsTo(HeaderFormOvertime::class, 'overtime_form_id', 'id');
     }
 
     public function step()
     {
-        return $this->belongsTo(ApprovalFlowStep::class, "flow_step_id");
+        return $this->belongsTo(ApprovalFlowStep::class, 'flow_step_id');
     }
 
     public function approver()
     {
-        return $this->hasOne(User::class, "id", "approver_id");
+        return $this->hasOne(User::class, 'id', 'approver_id');
     }
 }

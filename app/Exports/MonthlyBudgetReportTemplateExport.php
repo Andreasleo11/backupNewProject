@@ -22,17 +22,17 @@ class MonthlyBudgetReportTemplateExport implements FromArray, WithHeadings
             // If Moulding
             return [
                 [
-                    "Name",
-                    "Spec",
-                    "UoM",
-                    "Last Recorded Stock",
-                    "Usage Per Month",
-                    "Quantity Request",
-                    "Remark",
+                    'Name',
+                    'Spec',
+                    'UoM',
+                    'Last Recorded Stock',
+                    'Usage Per Month',
+                    'Quantity Request',
+                    'Remark',
                 ],
             ];
         } else {
-            return [["Name", "UoM", "Quantity Request", "Remark"]];
+            return [['Name', 'UoM', 'Quantity Request', 'Remark']];
         }
     }
 

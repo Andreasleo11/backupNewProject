@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -29,10 +28,10 @@ class PRMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->mailData["subject"],
-            from: $this->mailData["from"],
-            to: $this->mailData["to"],
-            cc: $this->mailData["cc"],
+            subject: $this->mailData['subject'],
+            from: $this->mailData['from'],
+            to: $this->mailData['to'],
+            cc: $this->mailData['cc'],
         );
     }
 
@@ -42,9 +41,9 @@ class PRMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: "emails.pr-notification-mail",
+            markdown: 'emails.pr-notification-mail',
             with: [
-                "data" => $this->mailData,
+                'data' => $this->mailData,
             ],
         );
     }

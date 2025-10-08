@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <h1>TEST</h1>
-        {{-- <div class="card">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h1>TEST</h1>
+                {{-- <div class="card">
                 <div class="card-header">{{ __('Dashboard') }}</div>
 
                 <div class="card-body">
@@ -31,8 +31,8 @@
                 @csrf
                 <button type="submit">Remove SuperAdmin Role</button>
             </form> --}}
-      </div>
+            </div>
+        </div>
+        {{-- <a href="{{ route('assignRoleManually') }}" class="btn btn-primary">PressMEE</a> --}}
     </div>
-    {{-- <a href="{{ route('assignRoleManually') }}" class="btn btn-primary">PressMEE</a> --}}
-  </div>
 @endsection

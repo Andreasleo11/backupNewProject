@@ -1,4 +1,5 @@
 {
-    "plugins": ["@shufo/prettier-plugin-blade", "@prettier/plugin-php"],
-    "printWidth": 100
+  "printWidth": 100,
+  "singleQuote": true,
+  "trailingComma": "es5"
 }
