@@ -4,6 +4,7 @@ namespace App\Livewire\Vehicles;
 
 use App\Models\ServiceRecord;
 use App\Models\Vehicle;
+use Illuminate\Database\QueryException;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -31,7 +32,7 @@ class Index extends Component
 
     public function mount()
     {
-        $this->fullFeature = auth()->user()->role->name === 'SUPERADMIN' || (auth()->user()->is_head && auth()->user()->department->name === 'PERSONALIA');
+        $this->fullFeature = auth()->user()->role->name === 'SUPERADMIN' || (auth()->user()->department->name === 'PERSONALIA');
     }
 
     public function sortBy(string $field): void
@@ -63,6 +64,27 @@ class Index extends Component
 
     public function updatingPerPage()
     {
+        $this->resetPage();
+    }
+
+    public function deleteVehicle(int $id): void
+    {
+        // Only allow delete for "full feature" users
+        if (! $this->fullFeature) {
+            abort(403);
+        }
+
+        $vehicle = Vehicle::findOrFail($id);
+
+        try {
+            $vehicle->delete(); // Soft delete if your model uses SoftDeletes
+            session()->flash('success', 'Vehicle deleted.');
+        } catch (QueryException $e) {
+            // (Optional) Handle FK constraint or other DB issues gracefully
+            session()->flash('error', 'Unable to delete this vehicle (it may have related records).');
+        }
+
+        // Reset pagination so you don’t land on an empty page after deletion
         $this->resetPage();
     }
 

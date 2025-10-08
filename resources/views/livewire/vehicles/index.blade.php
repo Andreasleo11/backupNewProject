@@ -1,4 +1,18 @@
 <div class="container-fluid px-0">
+    @if (session('success'))
+        <div class="alert alert-success d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <div>{{ session('error') }}</div>
+        </div>
+    @endif
+
     {{-- Toolbar --}}
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body d-flex flex-wrap align-items-center gap-2">
@@ -172,6 +186,15 @@
                                         <a class="btn btn-sm btn-primary" href="{{ route('services.create', $v) }}"
                                             title="Add Service"> <i class="bi bi-wrench-adjustable"></i>
                                         </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            wire:click="deleteVehicle({{ $v->id }})"
+                                            wire:confirm="Delete {{ $v->display_name }}? This cannot be undone."
+                                            wire:loading.attr="disabled" wire:target="deleteVehicle">
+                                            <span class="spinner-border spinner-border-sm" role="status" wire:loading
+                                                wire:target="deleteVehicle"></span>
+                                            <i class="bi bi-trash" wire:loading.remove
+                                                wire:target="deleteVehicle"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -329,6 +352,14 @@
                             href="{{ route('vehicles.edit', $v) }}"><i class="bi bi-pencil me-1"></i>Edit</a>
                         <a class="btn btn-sm btn-primary flex-fill" href="{{ route('services.create', $v) }}"><i
                                 class="bi bi-wrench-adjustable me-1"></i>Service</a>
+                        <button type="button" class="btn btn-sm btn-outline-danger flex-fill"
+                            wire:click="deleteVehicle({{ $v->id }})"
+                            wire:confirm="Delete {{ $v->display_name }}? This cannot be undone."
+                            wire:loading.attr="disabled" wire:target="deleteVehicle">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" wire:loading
+                                wire:target="deleteVehicle"></span>
+                            <i class="bi bi-trash" wire:loading.remove wire:target="deleteVehicle"></i>Delete
+                        </button>
                     </div>
                 </div>
             @else
