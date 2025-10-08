@@ -1,4 +1,17 @@
 <div class="container-fluid px-0">
+    @if (session('success'))
+        <div class="alert alert-success d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <div>{{ session('error') }}</div>
+        </div>
+    @endif
 
     {{-- Back link --}}
     <a href="{{ route('vehicles.index') }}" class="text-decoration-none small">
@@ -9,15 +22,6 @@
         $last = $vehicle->latestService;
         $lastKm = (int) ($last->odometer ?? 0);
         $nextKm = $lastKm ? $lastKm + 10000 : null;
-
-        $statusBadge =
-            $vehicle->status === 'active' ? 'success' : ($vehicle->status === 'maintenance' ? 'warning' : 'secondary');
-        $statusIcon =
-            $vehicle->status === 'active'
-                ? 'check2-circle'
-                : ($vehicle->status === 'maintenance'
-                    ? 'tools'
-                    : 'archive');
     @endphp
 
     {{-- Header card --}}
@@ -34,8 +38,9 @@
                         <div class="text-muted">
                             VIN: <span class="font-monospace">{{ $vehicle->vin ?? '—' }}</span>
                             • Status:
-                            <span class="badge text-bg-{{ $statusBadge }}">
-                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ ucfirst($vehicle->status) }}
+                            <span class="badge text-bg-{{ $vehicle->status->variant() }}">
+                                <i class="bi bi-{{ $vehicle->status->icon() }} me-1"></i>
+                                {{ $vehicle->status->label() }}
                             </span>
                         </div>
                     </div>
@@ -44,11 +49,19 @@
                     <a class="btn btn-outline-secondary" href="{{ route('vehicles.edit', $vehicle) }}">
                         <i class="bi bi-pencil me-1"></i> Edit Vehicle
                     </a>
-                    <a class="btn btn-primary" href="{{ route('services.create', $vehicle) }}">
-                        <i class="bi bi-wrench-adjustable me-1"></i> Add Service
-                    </a>
+                    @if (!$vehicle->is_sold)
+                        <a class="btn btn-primary" href="{{ route('services.create', $vehicle) }}">
+                            <i class="bi bi-wrench-adjustable me-1"></i> Add Service
+                        </a>
+                    @endif
                 </div>
             </div>
+            @if ($vehicle->is_sold)
+                <div class="alert alert-secondary d-flex align-items-center my-2" role="alert">
+                    <i class="bi bi-cash-coin me-2"></i>
+                    <div>Sold on <strong>{{ $vehicle->sold_at?->isoFormat('DD MMM YYYY') ?? '—' }}</strong></div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -117,9 +130,6 @@
                     <option selected>20</option>
                     <option>50</option>
                 </select>
-                <a class="btn btn-sm btn-primary" href="{{ route('services.create', $vehicle) }}">
-                    <i class="bi bi-plus-lg me-1"></i> Add Service
-                </a>
             </div>
         </div>
 
@@ -143,7 +153,7 @@
                             $rest = $items->skip(3);
                             $collapseId = 'svc' . $r->id . '-items';
                         @endphp
-                        <tr>
+                        <tr wire:key="svc-row-{{ $r->id }}">
                             <td class="text-nowrap">{{ optional($r->service_date)->isoFormat('DD MMM YYYY') }}</td>
                             <td>{{ number_format($r->odometer ?? 0) }} km</td>
                             <td>{{ $r->workshop ?? 'Internal' }}</td>
@@ -174,7 +184,8 @@
                                             <div class="collapse w-100 mt-1" id="{{ $collapseId }}">
                                                 <div class="d-flex flex-wrap gap-1">
                                                     @foreach ($rest as $it)
-                                                        <span class="badge rounded-pill text-bg-light border me-1 mb-1">
+                                                        <span
+                                                            class="badge rounded-pill text-bg-light border me-1 mb-1">
                                                             {{ $it->part_name }}
                                                             <span class="opacity-75">({{ $it->action }})</span>
                                                             @if ($it->qty)
@@ -203,6 +214,16 @@
                                 <a href="{{ route('services.edit', $r) }}" class="btn btn-sm btn-outline-secondary">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                @if ($canManage)
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                        wire:click="deleteService({{ $r->id }})"
+                                        wire:confirm="Delete service on {{ optional($r->service_date)->isoFormat('DD MMM YYYY') }} ({{ number_format($r->odometer ?? 0) }} km)? This cannot be undone."
+                                        wire:loading.attr="disabled" wire:target="deleteService">
+                                        <span class="spinner-border spinner-border-sm me-1" wire:loading
+                                            wire:target="deleteService"></span>
+                                        <i class="bi bi-trash" wire:loading.remove wire:target="deleteService"></i>
+                                    </button>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -211,10 +232,12 @@
                                 <div class="mb-2"><i class="bi bi-clipboard2-x fs-2"></i></div>
                                 <div class="fw-semibold">No records yet.</div>
                                 <div class="small">Add the first service record to get started.</div>
-                                <a class="btn btn-sm btn-primary mt-2"
-                                    href="{{ route('services.create', $vehicle) }}">
-                                    <i class="bi bi-plus-lg me-1"></i> Add Service
-                                </a>
+                                @if (!$vehicle->is_sold)
+                                    <a class="btn btn-sm btn-primary mt-2"
+                                        href="{{ route('services.create', $vehicle) }}">
+                                        <i class="bi bi-plus-lg me-1"></i> Add Service
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

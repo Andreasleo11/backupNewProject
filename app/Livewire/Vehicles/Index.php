@@ -2,8 +2,10 @@
 
 namespace App\Livewire\Vehicles;
 
+use App\Enums\VehicleStatus;
 use App\Models\ServiceRecord;
 use App\Models\Vehicle;
+use Illuminate\Database\QueryException;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -31,7 +33,7 @@ class Index extends Component
 
     public function mount()
     {
-        $this->fullFeature = auth()->user()->role->name === 'SUPERADMIN' || (auth()->user()->is_head && auth()->user()->department->name === 'PERSONALIA');
+        $this->fullFeature = auth()->user()->role->name === 'SUPERADMIN' || (auth()->user()->department->name === 'PERSONALIA');
     }
 
     public function sortBy(string $field): void
@@ -66,6 +68,27 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function deleteVehicle(int $id): void
+    {
+        // Only allow delete for "full feature" users
+        if (! $this->fullFeature) {
+            abort(403);
+        }
+
+        $vehicle = Vehicle::findOrFail($id);
+
+        try {
+            $vehicle->delete(); // Soft delete if your model uses SoftDeletes
+            session()->flash('success', 'Vehicle deleted.');
+        } catch (QueryException $e) {
+            // (Optional) Handle FK constraint or other DB issues gracefully
+            session()->flash('error', 'Unable to delete this vehicle (it may have related records).');
+        }
+
+        // Reset pagination so you don’t land on an empty page after deletion
+        $this->resetPage();
+    }
+
     public function render()
     {
         // Ensure sort field is allowed for this role
@@ -77,7 +100,6 @@ class Index extends Component
         $query = Vehicle::query()->select('vehicles.*');
 
         if ($this->fullFeature) {
-            // Only SUPERADMIN needs these extras
             $query
                 ->selectSub(ServiceRecord::select('service_date')->whereColumn('vehicle_id', 'vehicles.id')->orderByDesc('service_date')->limit(1), 'last_service_date')
                 ->selectSub(ServiceRecord::select('odometer')->whereColumn('vehicle_id', 'vehicles.id')->orderByDesc('service_date')->limit(1), 'last_service_odometer')
@@ -97,8 +119,9 @@ class Index extends Component
                         ->orWhere('driver_name', 'like', '%'.$this->q.'%');
                 }),
             )
-            // Only SUPERADMIN can filter by status; others ignore it
-            ->when($this->fullFeature && $this->status !== 'all', fn ($q) => $q->where('status', $this->status))
+            ->when($this->fullFeature && $this->status !== 'all', function ($q) {
+                $q->where('status', VehicleStatus::from($this->status));
+            })
             ->orderBy($sortField, $sortDir);
 
         return view('livewire.vehicles.index', [

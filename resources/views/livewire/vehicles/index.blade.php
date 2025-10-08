@@ -1,4 +1,18 @@
 <div class="container-fluid px-0">
+    @if (session('success'))
+        <div class="alert alert-success d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-check2-circle me-2"></i>
+            <div>{{ session('success') }}</div>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger d-flex align-items-center my-2" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <div>{{ session('error') }}</div>
+        </div>
+    @endif
+
     {{-- Toolbar --}}
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body d-flex flex-wrap align-items-center gap-2">
@@ -13,27 +27,24 @@
             </div>
 
             {{-- Status filter --}}
+            @php use App\Enums\VehicleStatus; @endphp
             @if ($fullFeature)
                 <div class="btn-group" role="group" aria-label="Status filter">
+                    {{-- All --}}
                     <input type="radio" class="btn-check" id="st-all" value="all" wire:model.live="status"
                         autocomplete="off">
-                    <label class="btn btn-outline-secondary" for="st-all"><i
-                            class="bi bi-ui-checks-grid me-1"></i>All</label>
+                    <label class="btn btn-outline-secondary" for="st-all">
+                        <i class="bi bi-ui-checks-grid me-1"></i>All
+                    </label>
 
-                    <input type="radio" class="btn-check" id="st-active" value="active" wire:model.live="status"
-                        autocomplete="off">
-                    <label class="btn btn-outline-success" for="st-active"><i
-                            class="bi bi-check2-circle me-1"></i>Active</label>
-
-                    <input type="radio" class="btn-check" id="st-maint" value="maintenance" wire:model.live="status"
-                        autocomplete="off">
-                    <label class="btn btn-outline-warning" for="st-maint"><i
-                            class="bi bi-tools me-1"></i>Maintenance</label>
-
-                    <input type="radio" class="btn-check" id="st-retired" value="retired" wire:model.live="status"
-                        autocomplete="off">
-                    <label class="btn btn-outline-secondary" for="st-retired"><i
-                            class="bi bi-archive me-1"></i>Retired</label>
+                    {{-- Enum-driven options --}}
+                    @foreach (VehicleStatus::cases() as $st)
+                        <input type="radio" class="btn-check" id="st-{{ $st->value }}" value="{{ $st->value }}"
+                            wire:model.live="status" autocomplete="off">
+                        <label class="btn btn-outline-{{ $st->variant() }}" for="st-{{ $st->value }}">
+                            <i class="bi bi-{{ $st->icon() }} me-1"></i>{{ $st->label() }}
+                        </label>
+                    @endforeach
                 </div>
             @endif
 
@@ -51,6 +62,8 @@
                     <i class="bi bi-plus-lg me-1"></i> New Vehicle
                 </a>
             </div>
+
+
         </div>
     </div>
 
@@ -108,15 +121,9 @@
                                 </td>
                                 <td>{{ number_format($v->odometer) }} <span class="text-muted">km</span></td>
                                 <td>
-                                    <span @class([
-                                        'badge',
-                                        'text-bg-success' => $v->status === 'active',
-                                        'text-bg-warning' => $v->status === 'maintenance',
-                                        'text-bg-secondary' => $v->status === 'retired',
-                                    ])>
-                                        <i
-                                            class="bi bi-{{ $v->status === 'active' ? 'check2-circle' : ($v->status === 'maintenance' ? 'tools' : 'archive') }} me-1"></i>
-                                        {{ ucfirst($v->status) }}
+                                    <span class="badge text-bg-{{ $v->status->variant() }}">
+                                        <i class="bi bi-{{ $v->status->icon() }} me-1"></i>
+                                        {{ $v->status->label() }}
                                     </span>
                                 </td>
                                 <td class="text-nowrap">
@@ -172,6 +179,15 @@
                                         <a class="btn btn-sm btn-primary" href="{{ route('services.create', $v) }}"
                                             title="Add Service"> <i class="bi bi-wrench-adjustable"></i>
                                         </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                            wire:click="deleteVehicle({{ $v->id }})"
+                                            wire:confirm="Delete {{ $v->display_name }}? This cannot be undone."
+                                            wire:loading.attr="disabled" wire:target="deleteVehicle">
+                                            <span class="spinner-border spinner-border-sm" role="status" wire:loading
+                                                wire:target="deleteVehicle"></span>
+                                            <i class="bi bi-trash" wire:loading.remove
+                                                wire:target="deleteVehicle"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -281,15 +297,9 @@
                                 <div class="text-muted small">VIN: <span
                                         class="font-monospace">{{ $v->vin ?? '—' }}</span></div>
                             </div>
-                            <span @class([
-                                'badge',
-                                'text-bg-success' => $v->status === 'active',
-                                'text-bg-warning' => $v->status === 'maintenance',
-                                'text-bg-secondary' => $v->status === 'retired',
-                            ])>
-                                <i
-                                    class="bi bi-{{ $v->status === 'active' ? 'check2-circle' : ($v->status === 'maintenance' ? 'tools' : 'archive') }} me-1"></i>
-                                {{ ucfirst($v->status) }}
+                            <span class="badge text-bg-{{ $v->status->variant() }}">
+                                <i class="bi bi-{{ $v->status->icon() }} me-1"></i>
+                                {{ $v->status->label() }}
                             </span>
 
                         </div>
@@ -327,8 +337,18 @@
                             href="{{ route('vehicles.show', $v) }}"><i class="bi bi-eye me-1"></i>Detail</a>
                         <a class="btn btn-sm btn-outline-primary flex-fill"
                             href="{{ route('vehicles.edit', $v) }}"><i class="bi bi-pencil me-1"></i>Edit</a>
-                        <a class="btn btn-sm btn-primary flex-fill" href="{{ route('services.create', $v) }}"><i
-                                class="bi bi-wrench-adjustable me-1"></i>Service</a>
+                        @if (!$v->is_sold)
+                            <a class="btn btn-sm btn-primary flex-fill" href="{{ route('services.create', $v) }}"><i
+                                    class="bi bi-wrench-adjustable me-1"></i>Service</a>
+                        @endif
+                        <button type="button" class="btn btn-sm btn-outline-danger flex-fill"
+                            wire:click="deleteVehicle({{ $v->id }})"
+                            wire:confirm="Delete {{ $v->display_name }}? This cannot be undone."
+                            wire:loading.attr="disabled" wire:target="deleteVehicle">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" wire:loading
+                                wire:target="deleteVehicle"></span>
+                            <i class="bi bi-trash" wire:loading.remove wire:target="deleteVehicle"></i>Delete
+                        </button>
                     </div>
                 </div>
             @else

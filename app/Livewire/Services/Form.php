@@ -32,6 +32,9 @@ class Form extends Component
 
     public function mount(?Vehicle $vehicle, ?ServiceRecord $record)
     {
+        if ($this->vehicle->is_sold) {
+            abort(403, 'This vehicle has been sold and cannot receive new service records.');
+        }
         if ($record?->exists) {
             $this->record = $record->load('items', 'vehicle');
             $this->vehicle = $record->vehicle;
@@ -69,7 +72,6 @@ class Form extends Component
     public function save()
     {
         $this->validate();
-        // validate items
         foreach ($this->items as $idx => $row) {
             $this->validate([
                 "items.$idx.part_name" => 'required|string|max:120',
