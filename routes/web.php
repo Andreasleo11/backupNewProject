@@ -1502,58 +1502,25 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
     Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
-    Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name(
-        'formovertime.insert',
-    );
-    Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name(
-        'formovertime.detail',
-    );
-    Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name(
-        'formovertime.delete',
-    );
-    Route::post('/save-autographot-path/{reportId}/{section}', [
-        FormOvertimeController::class,
-        'saveAutographOtPath',
-    ]);
-    Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name(
-        'formovertime.edit',
-    );
-    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name(
-        'formovertime.update',
-    );
-    Route::delete('/formovertime/{id}/delete', [
-        FormOvertimeController::class,
-        'destroyDetail',
-    ])->name('formovertime.destroyDetail');
-    Route::get('export-overtime/{headerId}', [
-        FormOvertimeController::class,
-        'exportOvertime',
-    ])->name('export.overtime');
-    Route::get('/formovertime/template/download', [
-        FormOvertimeController::class,
-        'downloadTemplate',
-    ])->name('formovertime.template.download');
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name(
-        'overtime.reject',
-    );
-    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name(
-        'overtime.sign',
-    );
+    Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name('formovertime.insert');
+    Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
+    Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name('formovertime.delete');
+    Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
+    Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name('formovertime.edit');
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+    Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
+    Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
+    Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
 
-    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name(
-        'overtime.summary',
-    );
-    Route::get('/overtime/summary/export', [
-        FormOvertimeController::class,
-        'exportSummaryExcel',
-    ])->name('overtime.summary.export');
+    Route::delete('/overtime-detail/{id}/reject-server-side', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime-detail.reject-server-side');
 
-    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name(
-        'actual.import.form',
-    );
-    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name(
-        'actual.import',
-    );
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
+
+    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
