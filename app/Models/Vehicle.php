@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\VehicleStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -9,14 +10,21 @@ class Vehicle extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['plate_number', 'driver_name', 'brand', 'model', 'year', 'vin', 'odometer', 'status'];
+    protected $fillable = ['plate_number', 'driver_name', 'brand', 'model', 'year', 'vin', 'odometer', 'status', 'sold_at'];
 
     protected $appends = ['display_name'];
 
     protected $casts = [
+        'status' => VehicleStatus::class,
         'year' => 'integer',
         'odometer' => 'integer',
+        'sold_at' => 'date',
     ];
+
+    public function getIsSoldAttribute(): bool
+    {
+        return (bool) $this->sold_at || $this->status === 'sold';
+    }
 
     public function setPlateNumberAttribute($value)
     {

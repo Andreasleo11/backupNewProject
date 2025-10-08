@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Vehicles;
 
+use App\Enums\VehicleStatus;
 use App\Models\ServiceRecord;
 use App\Models\Vehicle;
 use Illuminate\Database\QueryException;
@@ -99,7 +100,6 @@ class Index extends Component
         $query = Vehicle::query()->select('vehicles.*');
 
         if ($this->fullFeature) {
-            // Only SUPERADMIN needs these extras
             $query
                 ->selectSub(ServiceRecord::select('service_date')->whereColumn('vehicle_id', 'vehicles.id')->orderByDesc('service_date')->limit(1), 'last_service_date')
                 ->selectSub(ServiceRecord::select('odometer')->whereColumn('vehicle_id', 'vehicles.id')->orderByDesc('service_date')->limit(1), 'last_service_odometer')
@@ -119,8 +119,9 @@ class Index extends Component
                         ->orWhere('driver_name', 'like', '%'.$this->q.'%');
                 }),
             )
-            // Only SUPERADMIN can filter by status; others ignore it
-            ->when($this->fullFeature && $this->status !== 'all', fn ($q) => $q->where('status', $this->status))
+            ->when($this->fullFeature && $this->status !== 'all', function ($q) {
+                $q->where('status', VehicleStatus::from($this->status));
+            })
             ->orderBy($sortField, $sortDir);
 
         return view('livewire.vehicles.index', [
