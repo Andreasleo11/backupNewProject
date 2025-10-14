@@ -94,12 +94,16 @@ use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
+use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
+use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
 use App\Livewire\DeliveryNote\DeliveryNoteIndex;
 use App\Livewire\DeliveryNote\DeliveryNotePrint;
 use App\Livewire\DeliveryNoteShow;
 use App\Livewire\DepartmentExpenses;
+use App\Livewire\Departments\Compliance as DeptCompliance;
+use App\Livewire\Departments\Overview as DepartmentsOverview;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
 use App\Livewire\FileLibrary;
@@ -111,9 +115,11 @@ use App\Livewire\MonthlyBudgetSummary\Index as MonthlyBudgetSummaryIndex;
 use App\Livewire\Overtime\Create as FormOvertimeCreate;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use App\Livewire\ReportWizard;
+use App\Livewire\Requirements\Assign as ReqAssign;
+use App\Livewire\Requirements\Departments as RequirementDepartments;
+use App\Livewire\Requirements\Form as RequirementForm;
+use App\Livewire\Requirements\Index as ReqIndex;
 use App\Livewire\Services\Form as ServiceForm;
-use App\Livewire\VehicleForm;
-use App\Livewire\VehicleIndex;
 use App\Livewire\Vehicles\Form as VehiclesForm;
 use App\Livewire\Vehicles\Index as VehiclesIndex;
 use App\Livewire\Vehicles\Show as VehiclesShow;
@@ -1452,7 +1458,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])
         ->name('department.status.yayasan');
 
-    Route::put('/edit/maganddiscipline/{id}', [
+    Route::put('/edit/magangdiscipline/{id}', [
         DisciplinePageController::class,
         'updatemagang',
     ])->name('updatemagang');
@@ -1496,58 +1502,25 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
     Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
-    Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name(
-        'formovertime.insert',
-    );
-    Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name(
-        'formovertime.detail',
-    );
-    Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name(
-        'formovertime.delete',
-    );
-    Route::post('/save-autographot-path/{reportId}/{section}', [
-        FormOvertimeController::class,
-        'saveAutographOtPath',
-    ]);
-    Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name(
-        'formovertime.edit',
-    );
-    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name(
-        'formovertime.update',
-    );
-    Route::delete('/formovertime/{id}/delete', [
-        FormOvertimeController::class,
-        'destroyDetail',
-    ])->name('formovertime.destroyDetail');
-    Route::get('export-overtime/{headerId}', [
-        FormOvertimeController::class,
-        'exportOvertime',
-    ])->name('export.overtime');
-    Route::get('/formovertime/template/download', [
-        FormOvertimeController::class,
-        'downloadTemplate',
-    ])->name('formovertime.template.download');
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name(
-        'overtime.reject',
-    );
-    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name(
-        'overtime.sign',
-    );
+    Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name('formovertime.insert');
+    Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
+    Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name('formovertime.delete');
+    Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
+    Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name('formovertime.edit');
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+    Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
+    Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
+    Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
 
-    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name(
-        'overtime.summary',
-    );
-    Route::get('/overtime/summary/export', [
-        FormOvertimeController::class,
-        'exportSummaryExcel',
-    ])->name('overtime.summary.export');
+    Route::delete('/overtime-detail/{id}/reject-server-side', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime-detail.reject-server-side');
 
-    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name(
-        'actual.import.form',
-    );
-    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name(
-        'actual.import',
-    );
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
+
+    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
@@ -2038,10 +2011,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
-
-    // Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
-    // Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
-    // Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
 });
 
 Route::prefix('delivery-notes')
@@ -2099,4 +2068,28 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vehicles/{vehicle}/edit', VehiclesForm::class)->name('vehicles.edit');
     Route::get('/services/create/{vehicle}', ServiceForm::class)->name('services.create');
     Route::get('/services/{record}/edit', ServiceForm::class)->name('services.edit');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/requirements', ReqIndex::class)->name('requirements.index');
+    Route::get('/requirements/create', RequirementForm::class)->name('requirements.create');
+    Route::get('/requirements/{requirement}/edit', RequirementForm::class)->name('requirements.edit');
+    Route::get('/requirements/assign', ReqAssign::class)->name('requirements.assign');
+    Route::get('/departments/{department}/compliance', DeptCompliance::class)->name('departments.compliance');
+    Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
+
+    Route::get('/uploads/{upload}/download', function (Illuminate\Http\Request $request, App\Models\RequirementUpload $upload) {
+        // optional: add Gate to restrict who can download
+        // if (Illuminate\Support\Facades\Gate::denies('approve-requirements') && auth()->id() !== $upload->uploaded_by) {
+        //     abort(403);
+        // }
+
+        return Illuminate\Support\Facades\Storage::disk('public')->download($upload->path, $upload->original_name);
+    })->middleware(['signed', 'auth'])->name('uploads.download');
+
+    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)
+        ->name('requirements.departments');
+
+    Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
+    Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
 });

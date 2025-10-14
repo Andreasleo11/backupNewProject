@@ -6,7 +6,7 @@
 
 <div class="container-fluid px-0">
     {{-- Top header / toolbar --}}
-    <div class="card border-0 shadow-sm mb-3 overflow-hidden design-hero">
+    <div class="card border-0 shadow-sm mb-3 design-hero">
         <div class="card-body p-3 p-md-4">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <div class="d-flex align-items-center gap-3">
@@ -19,17 +19,26 @@
                     </div>
                 </div>
 
-                <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
-                    <div class="input-group input-group-sm" style="width: 220px;">
+                <div x-data="tomMonthSelect({
+                    value: @entangle('month').live,
+                    options: @js($monthOptions),
+                    placeholder: 'Select month…'
+                })" x-init="mount()"
+                    class="ms-auto d-flex flex-wrap align-items-center gap-2">
+                    <div wire:ignore class="input-group input-group-sm" style="width: 220px;">
                         <span class="input-group-text bg-white"><i class="bi bi-calendar2-month"></i></span>
-                        <input type="month" class="form-control" wire:model.live="month">
+                        <select x-ref="select"></select>
                     </div>
 
-                    @if ($deptId)
-                        <button class="btn btn-outline-secondary btn-sm" wire:click="clearDetail">
-                            <i class="bi bi-arrow-left-circle me-1"></i> Back to all
-                        </button>
-                    @endif
+                    <div class="input-group input-group-sm" style="width: 260px;">
+                        <span class="input-group-text bg-white"><i class="bi bi-person-check"></i></span>
+                        <select class="form-select" wire:model.live="prSigner">
+                            <option value="">All PR approvers</option>
+                            @foreach ($prSigners as $signer)
+                                <option value="{{ $signer }}">{{ $signer }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -52,6 +61,12 @@
                         class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle fw-normal">
                         <i class="bi bi-pin-angle me-1"></i> Selected: <span
                             class="fw-semibold ms-1">{{ $deptSelected }}</span>
+                    </span>
+                @endif
+                @if ($prSigner)
+                    <span class="badge rounded-pill text-bg-light border fw-normal">
+                        <i class="bi bi-person-check me-1"></i> PR Approver:
+                        <span class="fw-semibold ms-1">{{ $prSigner }}</span>
                     </span>
                 @endif
             </div>
@@ -83,32 +98,39 @@
                 <div class="chart-overlay" wire:loading wire:target="month,showDetail,clearDetail"></div>
             </div>
 
-            <div class="d-flex justify-content-end mt-2">
-                <button type="button" class="btn btn-link btn-sm text-decoration-none"
-                    @click="$dispatch('chart:clearSelection')">
-                    <i class="bi bi-x-circle me-1"></i> Clear highlight
-                </button>
-            </div>
+            @if ($deptId)
+                <div class="d-flex justify-content-end mt-2">
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none" wire:click="clearDetail">
+                        <i class="bi bi-x-circle me-1"></i> Clear highlight
+                    </button>
+                </div>
+            @endif
         </div>
     </div>
-
 
     {{-- Content area: overview totals vs. details --}}
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white border-0 pb-0">
             <ul class="nav nav-tabs small" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link @if (!$deptId) active @endif" data-bs-toggle="tab"
-                        data-bs-target="#tabOverview" type="button" role="tab"
-                        aria-selected="{{ $deptId ? 'false' : 'true' }}">
+                    <button class="nav-link @if ($activeTab === 'overview') active @endif" type="button"
+                        role="tab" wire:click="$set('activeTab','overview')"
+                        aria-selected="{{ $activeTab === 'overview' ? 'true' : 'false' }}">
                         <i class="bi bi-table me-1"></i> Overview
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link @if ($deptId) active @endif" data-bs-toggle="tab"
-                        data-bs-target="#tabDetail" type="button" role="tab"
-                        aria-selected="{{ $deptId ? 'true' : 'false' }}">
+                    <button class="nav-link @if ($activeTab === 'detail') active @endif" type="button"
+                        role="tab" wire:click="$set('activeTab','detail')"
+                        aria-selected="{{ $activeTab === 'detail' ? 'true' : 'false' }}">
                         <i class="bi bi-list-ul me-1"></i> Details
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @if ($activeTab === 'compare') active @endif" type="button"
+                        role="tab" wire:click="$set('activeTab','compare')"
+                        aria-selected="{{ $activeTab === 'compare' ? 'true' : 'false' }}">
+                        <i class="bi bi-arrow-left-right me-1"></i> Compare
                     </button>
                 </li>
             </ul>
@@ -117,16 +139,16 @@
         <div class="card-body pt-3">
             <div class="tab-content">
                 {{-- OVERVIEW TAB --}}
-                <div class="tab-pane fade @if (!$deptId) show active @endif" id="tabOverview"
+                <div class="tab-pane fade @if ($activeTab === 'overview') show active @endif" id="tabOverview"
                     role="tabpanel">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th style="min-width: 240px;">Department</th>
+                                    <th>Department</th>
                                     <th>Dept No</th>
-                                    <th class="text-end" style="min-width: 160px;">Total Expense</th>
-                                    <th class="text-end" style="width: 1%;"></th>
+                                    <th class="text-end">Total Expense</th>
+                                    <th class="text-end"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -165,7 +187,7 @@
                 </div>
 
                 {{-- DETAIL TAB --}}
-                <div class="tab-pane fade @if ($deptId) show active @endif" id="tabDetail"
+                <div class="tab-pane fade @if ($activeTab === 'detail') show active @endif" id="tabDetail"
                     role="tabpanel">
                     @if (!$deptId)
                         <div class="alert alert-info small mb-0">
@@ -174,8 +196,162 @@
                         </div>
                     @else
                         <livewire:reports.department-expense-detail-table :dept-id="$deptId" :month="$month"
-                            :dept-name="$deptSelected ?? $deptId" :month-label="$monthLabel" :key="'detail-' . $deptId . '-' . $month" />
+                            :dept-name="$deptSelected ?? $deptId" :month-label="$monthLabel" :pr-signer="$prSigner" :key="'detail-' . $deptId . '-' . $month . '-' . ($prSigner ?? 'all')" />
                     @endif
+                </div>
+
+                {{-- COMPARE TAB --}}
+                <div class="tab-pane fade @if ($activeTab === 'compare') show active @endif" id="tabCompare"
+                    role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-3 p-md-4" x-data="compareChart()" x-init="mount()">
+
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                <h6 class="mb-0 me-2">Compare</h6>
+
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <input type="radio" class="btn-check" id="cmpRange" value="range"
+                                        wire:model.live="compareMode">
+                                    <label class="btn btn-outline-primary" for="cmpRange">
+                                        <i class="bi bi-arrow-left-right me-1"></i> Range
+                                    </label>
+                                    <input type="radio" class="btn-check" id="cmpRolling" value="rolling"
+                                        wire:model.live="compareMode">
+                                    <label class="btn btn-outline-primary" for="cmpRolling">
+                                        <i class="bi bi-graph-up-arrow me-1"></i> Rolling
+                                    </label>
+                                </div>
+
+                                <div class="vr mx-2 d-none d-md-block"></div>
+
+                                {{-- Range controls --}}
+                                @if ($compareMode === 'range')
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div x-data="tomMonthSelect({ value: @entangle('startMonth').live, options: @js($monthOptions), placeholder: 'Start…' })" x-init="mount()"
+                                            wire:key="cmp-range-start">
+                                            <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
+                                                <span class="input-group-text bg-white">Start</span>
+                                                <select x-ref="select"></select>
+                                            </div>
+                                        </div>
+                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
+                                            wire:key="cmp-range-end">
+                                            <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
+                                                <span class="input-group-text bg-white">End</span>
+                                                <select x-ref="select"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    {{-- Rolling controls --}}
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
+                                            wire:key="cmp-rolling-end">
+                                            <div class="input-group input-group-sm" style="width: 220px;" wire:ignore>
+                                                <span class="input-group-text bg-white"><i
+                                                        class="bi bi-calendar2-month"></i></span>
+                                                <select x-ref="select"></select>
+                                            </div>
+                                        </div>
+                                        <select class="form-select form-select-sm" style="width: 110px;"
+                                            wire:model.live="rollingN">
+                                            <option value="3">Last 3</option>
+                                            <option value="4">Last 4</option>
+                                            <option value="5">Last 5</option>
+                                            <option value="6">Last 6</option>
+                                        </select>
+                                    </div>
+                                @endif
+                                <div class="vr mx-2 d-none d-md-block"></div>
+
+                                {{-- View toggles (local to chart via Alpine) --}}
+                                <div class="form-check form-switch form-switch-sm">
+                                    <input class="form-check-input" type="checkbox" id="cmpStacked"
+                                        x-model="stacked" @change="update()">
+                                    <label class="form-check-label small" for="cmpStacked">Stacked</label>
+                                </div>
+                                <div class="form-check form-switch form-switch-sm">
+                                    <input class="form-check-input" type="checkbox" id="cmpNormalized"
+                                        x-model="normalized" @change="update()">
+                                    <label class="form-check-label small" for="cmpNormalized">Normalize (%)</label>
+                                </div>
+
+                                <div class="ms-auto small text-muted d-none d-sm-block">
+                                    Click any bar to open department details.
+                                </div>
+                            </div>
+
+                            {{-- Compare chart --}}
+                            <div class="position-relative chart-shell">
+                                <div wire:ignore class="h-100">
+                                    <canvas x-ref="canvas"></canvas>
+                                </div>
+                                <div class="chart-overlay" wire:loading
+                                    wire:target="compareMode,startMonth,endMonth,rollingN,prSigner"></div>
+                            </div>
+
+                            {{-- Δ table (only in range & exactly 2 months) --}}
+                            @if (($compareMonths ?? null) && count($compareMonths) === 2 && ($compareDeltas ?? null))
+                                @php
+                                    [$m0, $m1] = $compareMonths;
+                                    $ml0 = \Illuminate\Support\Carbon::parse($m0 . '-01')->isoFormat('MMM YYYY');
+                                    $ml1 = \Illuminate\Support\Carbon::parse($m1 . '-01')->isoFormat('MMM YYYY');
+                                @endphp
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Department</th>
+                                                <th class="text-end" style="min-width:140px;">{{ $ml0 }}
+                                                </th>
+                                                <th class="text-end" style="min-width:140px;">{{ $ml1 }}
+                                                </th>
+                                                <th class="text-end" style="min-width:140px;">Δ</th>
+                                                <th class="text-end" style="min-width:120px;">Δ%</th>
+                                                <th class="text-end" style="width:1%;"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($compareDeltas as $row)
+                                                @php
+                                                    $pos = $row->diff > 0;
+                                                    $badge =
+                                                        $row->diff == 0 ? 'secondary' : ($pos ? 'success' : 'danger');
+                                                @endphp
+                                                <tr>
+                                                    <td>{{ $row->dept_name }}</td>
+                                                    <td class="text-end">Rp {{ number_format($row->a, 0, ',', '.') }}
+                                                    </td>
+                                                    <td class="text-end">Rp {{ number_format($row->b, 0, ',', '.') }}
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <span class="badge text-bg-{{ $badge }}">
+                                                            {{ $pos ? '+' : '' }}Rp
+                                                            {{ number_format($row->diff, 0, ',', '.') }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        @if ($row->pct === null)
+                                                            <span class="text-muted">—</span>
+                                                        @else
+                                                            <span
+                                                                class="badge text-bg-{{ $badge }}">{{ ($row->pct > 0 ? '+' : '') . number_format($row->pct, 1, ',', '.') }}%</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-outline-primary btn-sm"
+                                                            wire:click="showDetail({{ $row->dept_id }})">
+                                                            View lines
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -184,7 +360,6 @@
 
 @pushOnce('extraCss')
     <style>
-        /* Hero styling */
         .design-hero {
             background:
                 radial-gradient(1200px 200px at -10% -20%, rgba(99, 102, 241, 0.15), transparent 60%),
@@ -212,6 +387,80 @@
 @endPushOnce
 
 @pushOnce('extraJs')
+    <script>
+        function tomMonthSelect({
+            value,
+            options,
+            placeholder = 'Select…'
+        }) {
+            return {
+                ts: null,
+                value, // entangled with Livewire (e.g. $this->month)
+                options, // [{value, text}, ...]
+                mount() {
+                    // populate the <select>
+                    const sel = this.$refs.select;
+                    sel.innerHTML = '';
+                    for (const opt of (this.options || [])) {
+                        const o = document.createElement('option');
+                        o.value = opt.value;
+                        o.textContent = opt.label;
+                        sel.appendChild(o);
+                    }
+
+                    // init Tom Select
+                    this.ts = new TomSelect(sel, {
+                        maxItems: 1,
+                        create: false,
+                        allowEmptyOption: false,
+                        persist: true,
+                        selectOnTab: true,
+                        placeholder,
+                        plugins: ['dropdown_input'],
+                        render: {
+                            option: (data, escape) => `<div>${escape(data.text)}</div>`,
+                            item: (data, escape) => `<div>${escape(data.text)}</div>`
+                        },
+                    });
+
+                    // initial value (if Livewire already has one)
+                    if (this.value) {
+                        this.ts.setValue(this.value, true);
+                    }
+
+                    // when user selects → push to Livewire
+                    this.ts.on('change', (v) => {
+                        // prevent feedback loops: only set if changed
+                        if (this.value !== v) this.value = v; // entangle updates $wire.month
+                    });
+
+                    // when Livewire changes (e.g., programmatic updates) → update Tom Select
+                    this.$watch('value', (v) => {
+                        if (!this.ts) return;
+                        const current = this.ts.getValue();
+                        if (current !== v) {
+                            // ensure option exists; if months are dynamic, add it on the fly
+                            if (v && !this.ts.options[v]) {
+                                const label = v; // or compute a label here if needed
+                                this.ts.addOption({
+                                    value: v,
+                                    text: label
+                                });
+                            }
+                            this.ts.setValue(v || '', true);
+                        }
+                    });
+                },
+                destroy() {
+                    this.ts?.destroy();
+                    this.ts = null;
+                }
+            }
+        }
+    </script>
+@endPushOnce
+
+@pushOnce('extraJs')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
         function departmentChart() {
@@ -235,11 +484,27 @@
                         });
                     });
 
-                    // Livewire -> clear highlight (back button / month change)
-                    window.addEventListener('chart:clearSelection', () => {
-                        this.selectedDeptId = null;
-                        this.updateChart();
-                    });
+                    if (!this._boundClear) {
+                        this._boundClear = true;
+                        window.addEventListener('chart:clearSelection', () => this.clearSelection(), {
+                            passive: true
+                        });
+                    }
+
+                    if (!this._boundHighlight) {
+                        this._boundHighlight = true;
+                        window.addEventListener('chart:highlightDept', (e) => {
+                            this.selectedDeptId = Number(e.detail?.deptId ?? null);
+                            this.updateChart();
+                        }, {
+                            passive: true
+                        });
+                    }
+                },
+
+                clearSelection() {
+                    this.selectedDeptId = null;
+                    this.updateChart();
                 },
 
                 setData(payload = {}) {
@@ -358,6 +623,212 @@
                     current.data.datasets[0].borderColor = col.borderColor;
 
                     current.update('none');
+                }
+            }
+        }
+        // Alpine controller for the Compare chart
+        function compareChart() {
+            return {
+                chart: null,
+                raw: null, // { labels, deptIds, months, datasets:[{label, data:[]}, ...] }
+                stacked: false,
+                normalized: false,
+                selDatasetIdx: null,
+                selDeptIdx: null,
+
+                mount() {
+                    if (!this._bound) {
+                        this._bound = true;
+                        window.addEventListener('compare:render', (e) => {
+                            this.raw = e.detail?.data || null;
+                            this.buildOrUpdate();
+                        }, {
+                            passive: true
+                        });
+                    }
+                },
+
+                // per-dataset/per-bar colors with selection emphasis
+                colorFor(datasetIdx, barIdx) {
+                    const selected = this.selDatasetIdx === datasetIdx && this.selDeptIdx === barIdx;
+                    const hue = Math.round((datasetIdx * 53) % 360);
+                    const baseBg = `hsla(${hue}, 70%, 55%,`;
+                    const baseBd = `hsla(${hue}, 70%, 40%, 1)`;
+                    return {
+                        bg: selected ? `${baseBg} 0.90)` : `${baseBg} 0.35)`,
+                        bd: baseBd,
+                    };
+                },
+
+                // Build a pleasant categorical palette
+                color(i) {
+                    // evenly-spaced hues, good contrast
+                    const h = Math.round((i * 53) % 360);
+                    return {
+                        bg: `hsla(${h}, 70%, 55%, 0.75)`,
+                        bd: `hsla(${h}, 70%, 40%, 1)`,
+                    };
+                },
+
+                // Compute normalized datasets (% of month total) if toggled
+                normalizedDatasets() {
+                    if (!this.raw) return [];
+                    const base = this.raw.datasets || [];
+                    const mCount = base.length;
+                    if (mCount === 0) return [];
+
+                    // totals per month (sum of all departments)
+                    const totals = [];
+                    for (let j = 0; j < mCount; j++) {
+                        totals[j] = (base[j].data || []).reduce((a, b) => a + (Number(b) || 0), 0);
+                    }
+
+                    return base.map((ds, j) => ({
+                        label: ds.label + ' (%)',
+                        data: (ds.data || []).map(v => {
+                            const val = Number(v) || 0;
+                            const t = totals[j] || 1;
+                            return (val / t) * 100;
+                        }),
+                    }));
+                },
+
+                buildOrUpdate() {
+                    if (!this.raw) return;
+
+                    const canvas = this.$refs.canvas;
+                    if (!canvas) return;
+
+                    // empty state
+                    if (!this.raw || !Array.isArray(this.raw.datasets) || this.raw.datasets.length === 0) {
+                        const ctx = canvas.getContext('2d');
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.font = '12px system-ui';
+                        ctx.fillStyle = '#6c757d';
+                        ctx.fillText('No comparison data', 12, 24);
+                        if (this.chart) {
+                            this.chart.destroy();
+                            this.chart = null;
+                        }
+                        return;
+                    }
+
+                    // destroy if exists
+                    const existing = Chart.getChart(canvas);
+                    if (existing) existing.destroy();
+                    if (this.chart) {
+                        this.chart.destroy();
+                        this.chart = null;
+                    }
+
+                    const ctx = canvas.getContext('2d');
+                    const fmt = new Intl.NumberFormat('id-ID');
+
+                    const labels = this.raw.labels || [];
+                    const deptIds = (this.raw.deptIds || []).map(Number);
+                    const datasets = this.normalized ? this.normalizedDatasets() : (this.raw.datasets || []);
+
+                    // decorate datasets with palette
+                    const chartDs = datasets.map((ds, i) => {
+                        const c = this.color(i);
+                        return {
+                            label: ds.label,
+                            data: (ds.data || []).map(Number),
+                            backgroundColor: c.bg,
+                            borderColor: c.bd,
+                            borderWidth: 1,
+                        };
+                    });
+
+                    this.chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels,
+                            datasets: chartDs
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (ctx) => {
+                                            const v = ctx.parsed.y;
+                                            return this.normalized ?
+                                                ` ${ctx.dataset.label}: ${v.toFixed(1)}%` :
+                                                ` ${ctx.dataset.label}: Rp ${fmt.format(v)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    stacked: this.stacked,
+                                    ticks: {
+                                        autoSkip: false,
+                                        maxRotation: 45,
+                                        minRotation: 0
+                                    }
+                                },
+                                y: {
+                                    stacked: this.stacked,
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: (v) => this.normalized ? v + '%' : 'Rp ' + fmt.format(v)
+                                    }
+                                }
+                            },
+                            onClick: (evt) => this.handleClick(evt, deptIds),
+                        }
+                    });
+                },
+
+                handleClick(evt, deptIds) {
+                    if (!this.chart) return;
+                    const pts = this.chart.getElementsAtEventForMode(evt, 'nearest', {
+                        intersect: true
+                    }, true);
+                    if (!pts.length) return;
+
+                    const {
+                        datasetIndex: di,
+                        index: bi
+                    } = pts[0]; // which dataset (month) and which bar (dept)
+                    this.selDatasetIdx = di;
+                    this.selDeptIdx = bi;
+
+                    // Re-build to apply selection colors
+                    this.buildOrUpdate();
+
+                    const deptId = deptIds[bi];
+                    const ym = (this.raw.months || [])[di]; // e.g. '2025-03'
+                    const canvas = this.$refs.canvas;
+                    const host = canvas?.closest('[wire\\:id]');
+                    if (!host) return;
+                    const comp = Livewire.find(host.getAttribute('wire:id'));
+                    if (!comp) return;
+
+                    comp.set('skipChartClearOnce', true);
+                    comp.set('month', ym);
+                    comp.set('activeTab', 'detail');
+
+                    setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('chart:highlightDept', {
+                            detail: {
+                                deptId
+                            }
+                        }));
+                        comp.call('showDetail', deptId);
+                    }, 50);
+                },
+
+
+                update() {
+                    // rebuild with toggles applied
+                    this.buildOrUpdate();
                 }
             }
         }

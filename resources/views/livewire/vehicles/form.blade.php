@@ -75,7 +75,8 @@
           year: @entangle('year'),
           vin: @entangle('vin'),
           odometer: @entangle('odometer'),
-          status: @entangle('status'), @endif
+          status: @entangle('status'),
+          sold_at: @entangle('sold_at'), @endif
     }">
         <div class="card-body mb-2">
             {{-- Section: Driver & Plate --}}
@@ -116,29 +117,24 @@
                     <div class="form-text">Unique per vehicle.</div>
                 </div>
 
-                @if($fullFeature)
-                <div class="col-md-4">
-                    <label class="form-label">Status</label>
-                    <div class="btn-group w-100" role="group" aria-label="Status">
-                        <input type="radio" class="btn-check" id="st-active" autocomplete="off" value="active"
-                            x-model="status">
-                        <label class="btn btn-outline-success" for="st-active"><i
-                                class="bi bi-check2-circle me-1"></i>Active</label>
-
-                        <input type="radio" class="btn-check" id="st-maint" autocomplete="off" value="maintenance"
-                            x-model="status">
-                        <label class="btn btn-outline-warning" for="st-maint"><i
-                                class="bi bi-tools me-1"></i>Maintenance</label>
-
-                        <input type="radio" class="btn-check" id="st-retired" autocomplete="off" value="retired"
-                            x-model="status">
-                        <label class="btn btn-outline-secondary" for="st-retired"><i
-                                class="bi bi-archive me-1"></i>Retired</label>
+                @php use App\Enums\VehicleStatus; @endphp
+                @if ($fullFeature)
+                    <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        <div class="btn-group w-100" role="group" aria-label="Status">
+                            @foreach (VehicleStatus::cases() as $case)
+                                @php $v = $case->value; @endphp
+                                <input type="radio" class="btn-check" id="st-{{ $v }}"
+                                    value="{{ $v }}" x-model="status" autocomplete="off">
+                                <label class="btn btn-outline-{{ $case->variant() }}" for="st-{{ $v }}">
+                                    <i class="bi bi-{{ $case->icon() }} me-1"></i>{{ $case->label() }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('status')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
-                    @error('status')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                    @enderror
-                </div>
                 @endif
             </div>
 
@@ -225,6 +221,29 @@
                                 <template x-if="year">
                                     <span> (<span x-text="year"></span>)</span>
                                 </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Sold details --}}
+                <div x-show="status === 'sold'" x-transition class="mt-3">
+                    <hr class="text-body-tertiary">
+                    <h6 class="text-uppercase text-muted mb-2">Sold Details</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Sold Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control @error('sold_at') is-invalid @enderror"
+                                x-model="sold_at" name="sold_at">
+                            @error('sold_at')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-12">
+                            <div class="alert alert-warning py-2 px-3 mb-0 small">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Marking as <strong>Sold</strong> will hide this vehicle from active lists and prevent
+                                new service records.
                             </div>
                         </div>
                     </div>

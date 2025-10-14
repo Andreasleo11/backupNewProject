@@ -121,6 +121,13 @@ class Sidebar extends Component
         'monthly-budget-summary-report.*',
     ];
 
+    public array $fileCompliancePatterns = [
+        'requirements.*',
+        'admin.requirement-uploads',
+        'departments.overview',
+        'compliance.dashboard',
+    ];
+
     public function mount()
     {
         $this->user = Auth::user();
@@ -146,6 +153,7 @@ class Sidebar extends Component
             'otherGroup' => request()->routeIs($this->otherPatterns),
             'employeeEvaluationGroup' => request()->routeIs($this->employeeEvalSubPatterns),
             'monthlyBudgetGroup' => request()->routeIs($this->monthlyBudgetSubPatterns),
+            'fileComplianceGroup' => request()->routeIs($this->fileCompliancePatterns),
         ];
         // dd($this->groupOpen);
     }

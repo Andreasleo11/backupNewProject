@@ -60,7 +60,7 @@
                                 <!-- Calculate and display the total prediction per month before the blank row -->
                                 @if ($previousMaterialCode !== null)
                                     <tr>
-                                        <td colspan="7" align=right>Total FG</td>
+                                        <td colspan="8" align=right>Total FG</td>
 
                                         @foreach ($monthlyfgs as $monthlyfg)
                                             <td align="center" style="vertical-align: middle;">
@@ -74,7 +74,7 @@
                                     </tr>
 
                                     <tr>
-                                        <td colspan="7" align=right>Total Akhir</td>
+                                        <td colspan="8" align=right>Total Akhir</td>
 
                                         @foreach ($monthlyTotalPredictions as $monthlyTotalPrediction)
                                             <td align="center" style="vertical-align: middle;">
@@ -163,7 +163,7 @@
                         @endforeach
 
                         <tr>
-                            <td colspan="7" align=right>Total FG</td>
+                            <td colspan="8" align=right>Total FG</td>
 
                             @foreach ($monthlyfgs as $monthlyfg)
                                 <td align="center" style="vertical-align: middle;">
@@ -178,7 +178,7 @@
 
                         <!-- Calculate and display the total prediction per month for the last material code -->
                         <tr>
-                            <td colspan="7" align=right>Total Akhir</td>
+                            <td colspan="8" align=right>Total Akhir</td>
 
                             @foreach ($monthlyTotalPredictions as $monthlyTotalPrediction)
                                 <td align="center" style="vertical-align: middle;">

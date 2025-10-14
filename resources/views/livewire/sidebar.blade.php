@@ -420,6 +420,26 @@
                 <x-sidebar.link :href="route('vehicles.index')" icon="bx bx-file" :active="request()->routeIs('vehicles.*')">Vehicles</x-sidebar.link>
             </li>
         </x-sidebar.group>
+
+        {{-- File Compliance --}}
+        <x-sidebar.group id="fileComplianceGroup" icon="bx bx-file"
+            title="File Compliance" :open="$groupOpen['fileComplianceGroup'] ?? false">
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('requirements.index')" icon="bx bx-file" :active="request()->routeIs('requirements.index')">Requirements</x-sidebar.link>
+            </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('requirements.assign')" icon="bx bx-file" :active="request()->routeIs('requirements.assign')">Requirements Assign</x-sidebar.link>
+            </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('admin.requirement-uploads')" icon="bx bx-file" :active="request()->routeIs('admin.requirement-uploads')">Review Upload</x-sidebar.link>
+            </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('departments.overview')" icon="bx bx-file" :active="request()->routeIs('departments.overview')">Departments Overview</x-sidebar.link>
+            </li>
+            <li class="sidebar-item">
+                <x-sidebar.link :href="route('compliance.dashboard')" icon="bx bx-file" :active="request()->routeIs('compliance.dashboard')">Compliance Dashboard</x-sidebar.link>
+            </li>
+        </x-sidebar.group>
     </ul>
 
     <!-- Smart flyout container (one per page) -->
@@ -710,20 +730,6 @@
                 });
                 flyout.addEventListener('mouseleave', () => {
                     if (isRailCollapsed()) scheduleClose();
-                });
-
-                // Clicking a group header while collapsed should open flyout instead of collapsing in-rail
-                sidebar.addEventListener('click', (e) => {
-                    const a = e.target.closest('a.has-dropdown');
-                    if (!a || !isRailCollapsed()) return;
-                    e.preventDefault();
-                    clearTimeout(openTimer);
-                    clearTimeout(closeTimer);
-                    if (currentAnchor === a && flyout.classList.contains('visible')) {
-                        closeFlyout();
-                    } else {
-                        openFlyoutFor(a);
-                    }
                 });
 
                 // Attach hover listeners to all group headers
