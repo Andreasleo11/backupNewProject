@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -27,6 +26,10 @@ class AuthServiceProvider extends ServiceProvider
             //     ? $user->hasRole('Admin')
             //     : in_array($user->email, ['yuli@daijo.co.id', 'raymond@daijo.co.id']);
             return $user->role->name === 'SUPERADMIN' || in_array($user->email, ['yuli@daijo.co.id']);
+        });
+        Gate::define('manage-approvals', function ($user) {
+            // adjust to your roles/permissions system
+            return $user->role->name === 'SUPERADMIN' || $user->can('manage-approvals');
         });
     }
 }

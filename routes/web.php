@@ -94,6 +94,8 @@ use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
+use App\Livewire\Admin\Approvals\RuleTemplates\Edit as RuleTemplatesEdit;
+use App\Livewire\Admin\Approvals\RuleTemplates\Index as RuleTemplatesIndex;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
@@ -123,6 +125,9 @@ use App\Livewire\Services\Form as ServiceForm;
 use App\Livewire\Vehicles\Form as VehiclesForm;
 use App\Livewire\Vehicles\Index as VehiclesIndex;
 use App\Livewire\Vehicles\Show as VehiclesShow;
+use App\Livewire\Verification\Edit as VerificationEdit;
+use App\Livewire\Verification\Index as VerificationIndex;
+use App\Livewire\Verification\Show as VerificationShow;
 // TESTING SAP SERVICE
 use App\Services\BaseSapService;
 use App\Services\FctBomWipService;
@@ -444,107 +449,62 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     ])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
-        Route::post('/save-image-path/{reportId}/{section}', [
-            QaqcReportController::class,
-            'saveImagePath',
-        ]);
-        Route::post('/qaqc/{id}/upload-attachment', [
-            QaqcReportController::class,
-            'uploadAttachment',
-        ])->name('uploadAttachment');
-        Route::post('/qaqc/report/{reportId}/autograph/{section}', [
-            QaqcReportController::class,
-            'storeSignature',
-        ])->name('qaqc.report.autograph.store');
+        Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
+        Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
+        Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
-        Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])
-            ->name('qaqc.report.index')
-            ->middleware('permission:get-vqc-reports');
-        Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])
-            ->name('qaqc.report.detail')
-            ->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)
-            ->name('qaqc.report.edit')
-            ->middleware('permission:edit-vqc-report');
-        Route::get('/qaqc/reports/create', ReportWizard::class)
-            ->name('qaqc.report.create')
-            ->middleware('permission:create-vqc-report');
-        Route::get('qaqc/report/{id}/rejectAuto', [
-            QaqcReportController::class,
-            'rejectAuto',
-        ])->name('qaqc.report.rejectAuto');
-        Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name(
-            'qaqc.report.savePdf',
-        );
-        Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name(
-            'qaqc.report.sendEmail',
-        );
-        Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])
-            ->name('qaqc.report.delete')
-            ->middleware('permission:delete-vqc-report');
+        Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index')->middleware('permission:get-vqc-reports');
+        Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail')->middleware('permission:detail-vqc-reports');
+        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
+        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create')->middleware('permission:create-vqc-report');
+        Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
+        Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
+        Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
+        Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete')->middleware('permission:delete-vqc-report');
 
         // adding new defect category
-        Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])
-            ->name('qaqc.defectcategory')
-            ->middleware('permission:get-defect-categories');
-        Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])
-            ->name('qaqc.defectcategory.store')
-            ->middleware('permission:store-defect-category');
-        Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])
-            ->name('qaqc.defectcategory.update')
-            ->middleware('permission:update-defect-category');
-        Route::delete('/qaqc/defectcategory/{id}/delete', [
-            DefectCategoryController::class,
-            'destroy',
-        ])
-            ->name('qaqc.defectcategory.delete')
-            ->middleware('permission:delete-defect-category');
+        Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory')->middleware('permission:get-defect-categories');
+        Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store')->middleware('permission:store-defect-category');
+        Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update')->middleware('permission:update-defect-category');
+        Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete')->middleware('permission:delete-defect-category');
         // adding new defect category
 
-        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
-            ->name('price-log.import')
-            ->middleware(['auth']);
+        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)->name('price-log.import')->middleware(['auth']);
 
-        Route::get('/qaqc/reports/redirectToIndex', [
-            QaqcReportController::class,
-            'redirectToIndex',
-        ])->name('qaqc.report.redirect.to.index');
+        Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         Route::get('/item/price', [QaqcReportController::class, 'getItemPrice']);
 
-        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])
-            ->name('qaqc.report.download')
-            ->middleware('permission:download-vqc-report');
-        Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name(
-            'qaqc.report.preview',
-        );
-        Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])
-            ->name('qaqc.report.lock')
-            ->middleware('permission:lock-vqc-report');
-        Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])
-            ->name('export.reports')
-            ->middleware('permission:export-to-excel-vqc-report');
-        Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])
-            ->name('export.formadjusts')
-            ->middleware();
+        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download')->middleware('permission:download-vqc-report');
+        Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
+        Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock')->middleware('permission:lock-vqc-report');
+        Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports')->middleware('permission:export-to-excel-vqc-report');
+        Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts')->middleware();
 
-        Route::put('/qaqc/reports/{id}/updateDoNumber', [
-            QaQcReportController::class,
-            'updateDoNumber',
-        ])->name('update.do.number');
+        Route::put('/qaqc/reports/{id}/updateDoNumber', [QaQcReportController::class, 'updateDoNumber'])->name('update.do.number');
 
-        Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name(
-            'qaqc.summarymonth',
-        );
-        Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name(
-            'monthlyreport.details',
-        );
-        Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name(
-            'monthlyreport.export',
-        );
+        Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
+        Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
+        Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
     });
+
+    Route::middleware(['auth'])->prefix('verification-reports')->name('verification.')->group(function () {
+        Route::get('/', VerificationIndex::class)->name('index');
+        Route::get('/create', VerificationEdit::class)->name('create');
+        Route::get('/{report}/edit', VerificationEdit::class)->name('edit');
+        Route::get('/{report}', VerificationShow::class)->name('show');
+    });
+
+    Route::middleware(['auth', 'can:manage-approvals'])
+        ->prefix('admin/approvals')
+        ->name('admin.approvals.')
+        ->group(function () {
+            Route::get('/rules', RuleTemplatesIndex::class)->name('rules.index');
+            Route::get('/rules/create', RuleTemplatesEdit::class)->name('rules.create');
+            Route::get('/rules/{templateId}/edit', RuleTemplatesEdit::class)->name('rules.edit');
+        });
 
     Route::middleware([
         'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION',
