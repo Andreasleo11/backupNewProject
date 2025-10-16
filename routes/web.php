@@ -82,6 +82,7 @@ use App\Http\Controllers\PurchasingRequirementController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\qaqc\QaqcHomeController;
 use App\Http\Controllers\qaqc\QaqcReportController;
+use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\SpecificationController;
 use App\Http\Controllers\SPHomeController;
 use App\Http\Controllers\StockTintaController;
@@ -122,6 +123,8 @@ use App\Livewire\Requirements\Departments as RequirementDepartments;
 use App\Livewire\Requirements\Form as RequirementForm;
 use App\Livewire\Requirements\Index as ReqIndex;
 use App\Livewire\Services\Form as ServiceForm;
+use App\Livewire\Signature\CaptureSignature;
+use App\Livewire\Signature\ManageSignatures;
 use App\Livewire\Vehicles\Form as VehiclesForm;
 use App\Livewire\Vehicles\Index as VehiclesIndex;
 use App\Livewire\Vehicles\Show as VehiclesShow;
@@ -2052,4 +2055,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
     Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
+});
+Route::middleware(['web', 'auth'])->group(function () {
+    // Secure stream of a signature image (PNG or SVG) from private disk
+    Route::get('/signatures/{id}', [SignatureController::class, 'show'])
+        ->name('signatures.show');
+
+    // Livewire pages
+    Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
+    Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });

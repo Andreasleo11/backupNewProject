@@ -169,6 +169,7 @@ return [
             App\Providers\EventServiceProvider::class,
             App\Providers\Filament\AdminPanelProvider::class,
             App\Providers\RouteServiceProvider::class,
+            App\Providers\RepositoryServiceProvider::class,
             Yajra\DataTables\DataTablesServiceProvider::class,
             Barryvdh\Snappy\ServiceProvider::class,
             App\Domain\Expenses\Providers\ExpensesServiceProvider::class,
