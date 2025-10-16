@@ -32,5 +32,9 @@ class AuthServiceProvider extends ServiceProvider
             return $user->role->name === 'SUPERADMIN' || in_array($user->email, ['yuli@daijo.co.id']);
         });
         $this->registerPolicies();
+        Gate::define('manage-approvals', function ($user) {
+            // adjust to your roles/permissions system
+            return $user->role->name === 'SUPERADMIN' || $user->can('manage-approvals');
+        });
     }
 }

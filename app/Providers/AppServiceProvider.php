@@ -27,6 +27,15 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Expenses\Contracts\ExpenseReadRepository::class,
             \App\Infrastructure\Persistence\Laravel\ExpenseReadRepositoryDb::class
         );
+
+        $this->app->bind(
+            \App\Domain\Verification\Repositories\VerificationReportRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentVerificationReportRepository::class
+        );
+
+        $this->app->bind(\App\Domain\Approval\Contracts\RuleResolver::class, \App\Infrastructure\Approval\Services\DefaultRuleResolver::class);
+        $this->app->bind(\App\Domain\Approval\Contracts\Approvals::class, \App\Infrastructure\Approval\Services\ApprovalEngine::class);
+
     }
 
     /**
