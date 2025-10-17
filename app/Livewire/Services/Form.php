@@ -32,12 +32,14 @@ class Form extends Component
 
     public function mount(?Vehicle $vehicle, ?ServiceRecord $record)
     {
-        if ($this->vehicle->is_sold) {
-            abort(403, 'This vehicle has been sold and cannot receive new service records.');
-        }
         if ($record?->exists) {
-            $this->record = $record->load('items', 'vehicle');
             $this->vehicle = $record->vehicle;
+
+            if ($this->vehicle->is_sold) {
+                abort(403, 'This vehicle has been sold and cannot receive new service records.');
+            }
+
+            $this->record = $record->load('items', 'vehicle');
             $this->service_date = $record->service_date->toDateString();
             $this->odometer = $record->odometer;
             $this->workshop = $record->workshop;
