@@ -11,7 +11,7 @@ class ServiceRecordItem extends Model
 
     protected $fillable = [
         'service_record_id', 'part_id', 'part_name', 'action', 'condition_before', 'condition_after',
-        'qty', 'uom', 'unit_cost', 'line_total', 'remarks',
+        'qty', 'uom', 'unit_cost', 'discount', 'line_total', 'remarks',
     ];
 
     public function record()
