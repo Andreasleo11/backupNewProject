@@ -21,18 +21,18 @@
                 </div>
                 <hr>
                 @if (Route::has('change.password.show'))
-                    <a class="dropdown-item" href="#"
-                        onclick="event.preventDefault(); document.getElementById('change-password-form').submit()">
-                        <i class='bx bx-reset me-2'></i>{{ __('Change Password') }}
+                    <a class="dropdown-item" href="{{ route('change.password.show') }}">
+                        <i class='bi bi-key me-2'></i>{{ __('Change Password') }}
                     </a>
                 @endif
+                <a href="{{ route('signatures.manage') }}" class="dropdown-item">
+                    <i class='bi bi-pencil-square me-2'></i>{{ __('My Signatures') }}
+                </a>
                 <a class="dropdown-item" href="#"
                     onclick="event.preventDefault();document.getElementById('logout-form').submit();">
-                    <i class='bx bx-exit me-2'></i>Logout
+                    <i class='bi bi-door-closed me-2'></i>{{ __('Logout') }}
                 </a>
 
-                <form id="change-password-form" action="{{ route('change.password.show') }}" method="get"
-                    class="d-none">@csrf</form>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
             </div>
         </div>
