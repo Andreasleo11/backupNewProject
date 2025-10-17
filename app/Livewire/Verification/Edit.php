@@ -18,15 +18,47 @@ class Edit extends Component
 
     /** @var array{title:string,description:?string,meta?:array} */
     public array $form = [
-        'title' => '',
-        'description' => null,
+        'rec_date' => null,
+        'verify_date' => null,
+        'customer' => null,
+        'invoice_number' => null,
         'meta' => [],
     ];
 
     /** @var array<int, array{name:string,notes:?string,amount:float|int|string}> */
     public array $items = [
-        ['name' => '', 'notes' => null, 'amount' => 0],
+        [
+            'part_name' => '',
+            'rec_quantity' => 0,
+            'verify_quantity' => 0,
+            'can_use' => 0,
+            'cant_use' => 0,
+            'price' => 0,
+            'currency' => 'IDR',
+        ],
     ];
+
+    // --- Validation ---------------------------------------------------------
+
+    protected function rules(): array
+    {
+        return [
+            'form.rec_date' => ['required', 'date'],
+            'form.verify_date' => ['required', 'date', 'after_or_equal:form.rec_date'],
+            'form.customer' => ['required', 'string', 'max:191'],
+            'form.invoice_number' => ['required', 'string', 'max:191'],
+            'form.meta' => ['nullable', 'array'],
+
+            'items' => ['array', 'min:1'],
+            'items.*.part_name' => ['required', 'string', 'max:255'],
+            'items.*.rec_quantity' => ['required', 'numeric', 'min:0'],
+            'items.*.verify_quantity' => ['required', 'numeric', 'min:0'],
+            'items.*.can_use' => ['required', 'numeric', 'min:0'],
+            'items.*.cant_use' => ['required', 'numeric', 'min:0'],
+            'items.*.price' => ['required', 'numeric', 'min:0'],
+            'items.*.currency' => ['required', 'string', 'max:10'],
+        ];
+    }
 
     // --- Lifecycle ----------------------------------------------------------
 
@@ -39,35 +71,25 @@ class Edit extends Component
             $this->authorize('update', $report);
 
             $this->form = [
-                'title' => $report->title,
-                'description' => $report->description,
+                'rec_date' => optional($report->rec_date)?->format('Y-m-d'),
+                'verify_date' => optional($report->verify_date)?->format('Y-m-d'),
+                'customer' => $report->customer,
+                'invoice_number' => $report->invoice_number,
                 'meta' => $report->meta ?? [],
             ];
 
             $this->items = $report->items
                 ->map(fn ($i) => [
-                    'name' => $i->name,
-                    'notes' => $i->notes,
-                    'amount' => (float) $i->amount,
+                    'part_name' => $i->part_name,
+                    'rec_quantity' => (float) $i->rec_quantity,
+                    'verify_quantity' => (float) $i->verify_quantity,
+                    'can_use' => (float) $i->can_use,
+                    'cant_use' => (float) $i->cant_use,
+                    'price' => (float) $i->price,
+                    'currency' => $i->currency,
                 ])
                 ->toArray();
         }
-    }
-
-    // --- Validation ---------------------------------------------------------
-
-    protected function rules(): array
-    {
-        return [
-            'form.title' => ['required', 'string', 'max:255'],
-            'form.description' => ['nullable', 'string'],
-            'form.meta' => ['nullable', 'array'],
-
-            'items' => ['array', 'min:1'],
-            'items.*.name' => ['required', 'string', 'max:255'],
-            'items.*.notes' => ['nullable', 'string'],
-            'items.*.amount' => ['nullable', 'numeric', 'min:0'],
-        ];
     }
 
     // --- Commands -----------------------------------------------------------
