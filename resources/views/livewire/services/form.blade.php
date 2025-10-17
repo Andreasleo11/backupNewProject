@@ -100,6 +100,7 @@
                             <th style="width:10%">Qty</th>
                             <th style="width:10%">UoM</th>
                             <th style="width:14%">Unit Cost</th>
+                            <th style="width:12%">Discount</th>
                             <th style="width:14%">Line Total</th>
                             <th>Remarks</th>
                             <th style="width:1%"></th>
@@ -110,7 +111,8 @@
                             @php
                                 $qty = (float) ($items[$i]['qty'] ?? 0);
                                 $uc = (float) ($items[$i]['unit_cost'] ?? 0);
-                                $lt = $qty * $uc;
+                                $disc = (float) ($items[$i]['discount'] ?? 0);
+                                $lt = $qty * ($uc - ($disc / 100) * $uc);
                             @endphp
                             <tr wire:key="svc-row-{{ $row['id'] ?? 'n' }}-{{ $i }}">
                                 <td>
@@ -134,8 +136,8 @@
                                 </td>
                                 <td>
                                     <input type="number" class="form-control form-control-sm"
-                                        wire:model.live="items.{{ $i }}.qty" step="0.01" min="0"
-                                        placeholder="0">
+                                        wire:model.live="items.{{ $i }}.qty" step="0.01"
+                                        min="0" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="text" class="form-control form-control-sm"
@@ -148,6 +150,11 @@
                                             wire:model.live="items.{{ $i }}.unit_cost" step="0.01"
                                             min="0" placeholder="0">
                                     </div>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control"
+                                        wire:model.live="items.{{ $i }}.discount" step="0.01"
+                                        min="0" placeholder="0.00">
                                 </td>
                                 <td class="text-nowrap fw-semibold">
                                     Rp {{ number_format($lt, 0, ',', '.') }}
@@ -182,10 +189,17 @@
 
         {{-- Footer totals --}}
         @php
-            $grand = collect($items)->reduce(
-                fn($c, $r) => $c + (float) ($r['qty'] ?? 0) * (float) ($r['unit_cost'] ?? 0),
-                0,
-            );
+            $grand = collect($items)->reduce(function ($carry, $r) {
+                $qty = (float) ($r['qty'] ?? 0);
+                $uc = (float) ($r['unit_cost'] ?? 0);
+                $disc = (float) ($r['discount'] ?? 0);
+
+                // clamp discount to 0..100 (percent)
+                $disc = max(0, min(100, $disc));
+
+                $line = $qty * $uc * (1 - $disc / 100);
+                return $carry + $line;
+            }, 0.0);
         @endphp
         <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div class="d-flex align-items-center gap-3">

@@ -51,6 +51,7 @@ class Form extends Component
                 'qty' => $i->qty,
                 'uom' => $i->uom,
                 'unit_cost' => $i->unit_cost,
+                'discount' => $i->discount,
                 'remarks' => $i->remarks,
             ])->toArray();
         } else {
@@ -62,7 +63,13 @@ class Form extends Component
     public function addItem(): void
     {
         $this->items[] = [
-            'part_name' => '', 'action' => 'checked', 'qty' => null, 'uom' => null, 'unit_cost' => 0, 'remarks' => null,
+            'part_name' => '',
+            'action' => 'checked',
+            'qty' => null,
+            'uom' => null,
+            'unit_cost' => '',
+            'discount' => '',
+            'remarks' => null,
         ];
     }
 
@@ -81,6 +88,7 @@ class Form extends Component
                 "items.$idx.qty" => 'nullable|numeric|min:0',
                 "items.$idx.uom" => 'nullable|string|max:20',
                 "items.$idx.unit_cost" => 'nullable|numeric|min:0',
+                "items.$idx.discount" => 'nullable|numeric|min:0',
                 "items.$idx.remarks" => 'nullable|string',
             ]);
         }
@@ -104,13 +112,21 @@ class Form extends Component
             // sync items (upsert‑y)
             $keepIds = [];
             foreach ($this->items as $row) {
+                $qty = (float) ($row['qty'] ?? 0);
+                $uc = (float) ($row['unit_cost'] ?? 0);
+                $disc = (float) ($row['discount'] ?? 0);
+
+                $disc = max(0, min(100, $disc));
+                $line_total = $qty * $uc * (1 - $disc / 100);
+
                 $data = [
                     'part_name' => $row['part_name'],
                     'action' => $row['action'],
                     'qty' => $row['qty'],
                     'uom' => $row['uom'],
                     'unit_cost' => $row['unit_cost'] ?? 0,
-                    'line_total' => (float) ($row['qty'] ?? 0) * (float) ($row['unit_cost'] ?? 0),
+                    'discount' => $row['discount'] ?? 0,
+                    'line_total' => $line_total,
                     'remarks' => $row['remarks'] ?? null,
                 ];
 
