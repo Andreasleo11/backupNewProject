@@ -98,6 +98,8 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Livewire\Admin\Approvals\RuleTemplates\Edit as RuleTemplatesEdit;
 use App\Livewire\Admin\Approvals\RuleTemplates\Index as RuleTemplatesIndex;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
+use App\Livewire\Admin\Verification\Defects\CatalogEdit;
+use App\Livewire\Admin\Verification\Defects\CatalogIndex;
 use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
@@ -2065,3 +2067,12 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
     Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });
+
+Route::middleware(['auth', 'can:manage-defects'])
+    ->prefix('admin/verification/defects')
+    ->name('admin.verification.defects.')
+    ->group(function () {
+        Route::get('/', CatalogIndex::class)->name('index');
+        Route::get('/create', CatalogEdit::class)->name('create');
+        Route::get('/{id}/edit', CatalogEdit::class)->name('edit');
+    });

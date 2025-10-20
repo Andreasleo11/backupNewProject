@@ -9,14 +9,14 @@ final class EloquentVerificationReportRepository implements VerificationReportRe
 {
     public function findById(int $id): ?VerificationReport
     {
-        return VerificationReport::with(['items'])->find($id);
+        return VerificationReport::with(['items', 'items.defects'])->find($id);
     }
 
     public function store(VerificationReport $report): VerificationReport
     {
         $report->save();
 
-        return $report->fresh(['items']);
+        return $report->fresh(['items', 'items.defects']);
     }
 
     public function nextDocumentNumber(): string

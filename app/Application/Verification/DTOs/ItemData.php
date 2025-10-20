@@ -20,6 +20,8 @@ final class ItemData
 
     public string $currency;
 
+    public array $defects = [];
+
     public function __construct(
         ?int $id,
         string $part_name,
@@ -28,7 +30,8 @@ final class ItemData
         float $can_use,
         float $cant_use,
         float $price,
-        string $currency = 'IDR'
+        string $currency = 'IDR',
+        array $defects = [],
     ) {
         $this->id = $id;
         $this->part_name = $part_name;
@@ -38,6 +41,8 @@ final class ItemData
         $this->cant_use = $cant_use;
         $this->price = $price;
         $this->currency = $currency;
+        $this->defects = $defects;
+
     }
 
     public static function fromArray(array $a): self
@@ -51,6 +56,9 @@ final class ItemData
             (float) ($a['cant_use'] ?? 0),
             (float) ($a['price'] ?? 0),
             (string) ($a['currency'] ?? 'IDR'),
+            array_map(
+                fn ($d) => DefectData::fromArray((array) $d), (array) $a['defects'] ?? []
+            ),
         );
     }
 
@@ -65,6 +73,9 @@ final class ItemData
             'cant_use' => $this->cant_use,
             'price' => $this->price,
             'currency' => $this->currency,
+            'defects' => array_map(
+                fn ($d) => $d instanceof DefectData ? $d->toArray() : [], $this->defects
+            ),
         ];
     }
 }

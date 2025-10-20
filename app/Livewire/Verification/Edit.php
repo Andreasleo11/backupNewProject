@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Verification;
 
+use App\Application\Verification\DTOs\DefectData;
 use App\Application\Verification\DTOs\ItemData;
 use App\Application\Verification\DTOs\ReportData;
 use App\Application\Verification\UseCases\CreateReport;
 use App\Application\Verification\UseCases\UpdateReport;
+use App\Infrastructure\Persistence\Eloquent\Models\DefectCatalog;
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
@@ -15,6 +17,12 @@ class Edit extends Component
     use AuthorizesRequests;
 
     public ?VerificationReport $report = null;
+
+    public ?int $pickerForItem = null;
+
+    public string $defectSearch = '';
+
+    public array $catalogResults = [];
 
     /** @var array{title:string,description:?string,meta?:array} */
     public array $form = [
@@ -35,6 +43,7 @@ class Edit extends Component
             'cant_use' => 0,
             'price' => 0,
             'currency' => 'IDR',
+            'defects' => [],
         ],
     ];
 
@@ -57,6 +66,13 @@ class Edit extends Component
             'items.*.cant_use' => ['required', 'numeric', 'min:0'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.currency' => ['required', 'string', 'max:10'],
+            'items.*.defects' => ['array'],
+            'items.*.defects.*.code' => ['nullable', 'string', 'max:64'],
+            'items.*.defects.*.name' => ['required_with:items.*.defects.*.quantity', 'string', 'max:191'],
+            'items.*.defects.*.severity' => ['nullable', 'in:LOW,MEDIUM,HIGH'],
+            'items.*.defects.*.source' => ['nullable', 'in:DAIJO,CUSTOMER,SUPPLIER'],
+            'items.*.defects.*.quantity' => ['nullable', 'numeric', 'min:0'],
+            'items.*.defects.*.notes' => ['nullable', 'string'],
         ];
     }
 
@@ -87,12 +103,86 @@ class Edit extends Component
                     'cant_use' => (float) $i->cant_use,
                     'price' => (float) $i->price,
                     'currency' => $i->currency,
-                ])
-                ->toArray();
+                    'defects' => $i->defects->map(fn ($d) => [
+                        'id' => $d->id,
+                        'code' => $d->code,
+                        'name' => $d->name,
+                        'severity' => $d->severity->value,
+                        'source' => $d->source->value,
+                        'quantity' => (float) $d->quantity,
+                        'notes' => $d->notes,
+                    ])->toArray(),
+                ])->toArray();
         }
     }
 
     // --- Commands -----------------------------------------------------------
+
+    // open picker for a specific item index
+    public function openDefectPicker(int $itemIndex): void
+    {
+        $this->pickerForItem = $itemIndex;
+        $this->defectSearch = '';
+        $this->catalogResults = $this->searchCatalog('');
+    }
+
+    // close picker
+    public function closeDefectPicker(): void
+    {
+        $this->pickerForItem = null;
+        $this->defectSearch = '';
+        $this->catalogResults = [];
+    }
+
+    // live-search in catalog
+    public function updatedDefectSearch(): void
+    {
+        $this->catalogResults = $this->searchCatalog($this->defectSearch);
+    }
+
+    private function searchCatalog(string $term): array
+    {
+        $q = DefectCatalog::query()->where('active', true);
+        if (trim($term) !== '') {
+            $s = "%{$term}%";
+            $q->where(fn ($qq) => $qq->where('code', 'like', $s)->orWhere('name', 'like', $s));
+        }
+
+        return $q->orderBy('code')->limit(15)->get()
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'code' => $r->code,
+                'name' => $r->name,
+                'severity' => $r->default_severity?->value ?? (string) $r->default_severity,
+                'source' => $r->default_source?->value ?? (string) $r->default_source,
+                'quantity' => (float) $r->default_quantity,
+                'notes' => $r->notes,
+            ])->toArray();
+    }
+
+    // inject selected catalog defect into item defects
+    public function pickCatalogDefect(int $catalogId): void
+    {
+        if ($this->pickerForItem === null) {
+            return;
+        }
+
+        $c = DefectCatalog::findOrFail($catalogId);
+        $row = [
+            'code' => $c->code,
+            'name' => $c->name,
+            'severity' => $c->default_severity?->value ?? (string) $c->default_severity,
+            'source' => $c->default_source?->value ?? (string) $c->default_source,
+            'quantity' => (float) $c->default_quantity,
+            'notes' => $c->notes,
+        ];
+
+        $this->items[$this->pickerForItem]['defects'] = array_values(array_merge(
+            $this->items[$this->pickerForItem]['defects'] ?? [], [$row]
+        ));
+
+        $this->closeDefectPicker();
+    }
 
     public function addItem(): void
     {
@@ -105,13 +195,35 @@ class Edit extends Component
         $this->items = array_values($this->items);
     }
 
+    public function addDefect(int $itemIndex): void
+    {
+        $this->items[$itemIndex]['defects'][] = [
+            'code' => null, 'name' => '', 'severity' => 'LOW', 'source' => 'DAIJO', 'quantity' => null, 'notes' => null,
+        ];
+    }
+
+    public function removeDefect(int $itemIndex, int $defectIndex): void
+    {
+        unset($this->items[$itemIndex]['defects'][$defectIndex]);
+        $this->items[$itemIndex]['defects'] = array_values($this->items[$itemIndex]['defects'] ?? []);
+    }
+
     public function save(CreateReport $create, UpdateReport $update): void
     {
+        // dd($this->items);
         $this->validate();
 
         // Build DTOs
         $reportDto = ReportData::fromArray($this->form);
-        $itemDtos = array_map(fn ($row) => ItemData::fromArray($row), $this->items);
+        $itemDtos = array_map(function ($row) {
+            // map defects
+            $row['defects'] = array_map(
+                fn ($d) => DefectData::fromArray($d),
+                $row['defects'] ?? []
+            );
+
+            return ItemData::fromArray($row);
+        }, $this->items);
 
         if ($this->report?->exists) {
             // Update existing

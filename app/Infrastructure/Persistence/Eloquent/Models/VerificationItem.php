@@ -27,4 +27,9 @@ class VerificationItem extends Model
     {
         return $this->belongsTo(VerificationReport::class, 'verification_report_id');
     }
+
+    public function defects()
+    {
+        return $this->hasMany(VerificationItemDefect::class, 'verification_item_id');
+    }
 }

@@ -91,7 +91,7 @@
                     @endcan
 
                     {{-- Approve / Reject (approvers) --}}
-                    @if ($report->status === 'IN_REVIEW')
+                    @if ($report->status === 'IN_REVIEW') 
                         <div class="mb-2">
                             <label class="form-label">Remarks (optional)</label>
                             <textarea rows="2" class="form-control" wire:model.live.defer="remarks" placeholder="Reason / note"></textarea>
@@ -166,6 +166,42 @@
                                 <td>{{ $i->currency }}</td>
                                 <td class="text-end">{{ number_format($line, 2) }}</td>
                             </tr>
+                            {{-- Defects row --}}
+                            @if ($i->defects->count())
+                                <tr class="bg-light">
+                                    <td colspan="8" class="py-2">
+                                        <div class="small text-muted mb-1">Defects</div>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm align-middle mb-0">
+                                                <thead class="table-secondary">
+                                                    <tr>
+                                                        <th style="width:12%">Code</th>
+                                                        <th style="width:28%">Name</th>
+                                                        <th style="width:14%">Severity</th>
+                                                        <th style="width:14%">Source</th>
+                                                        <th class="text-end" style="width:14%">Qty</th>
+                                                        <th>Notes</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($i->defects as $d)
+                                                        <tr>
+                                                            <td>{{ $d->code ?? '—' }}</td>
+                                                            <td>{{ $d->name }}</td>
+                                                            <td>{{ $d->severity }}</td>
+                                                            <td>{{ $d->source }}</td>
+                                                            <td class="text-end">
+                                                                {{ rtrim(rtrim(number_format($d->quantity, 4, '.', ''), '0'), '.') }}
+                                                            </td>
+                                                            <td class="text-muted">{{ $d->notes ?: '—' }}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
                         @empty
                             <tr>
                                 <td colspan="8" class="text-center text-muted py-4">No items.</td>
