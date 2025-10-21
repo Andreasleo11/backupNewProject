@@ -12,7 +12,8 @@ class ServiceRecord extends Model
 
     protected $casts = [
         'service_date' => 'date',
-        'global_tax_rate' => 'float',
+        'global_tax_rate' => 'decimal:2',
+        'total_cost' => 'decimal:2',
     ];
 
     public function vehicle()

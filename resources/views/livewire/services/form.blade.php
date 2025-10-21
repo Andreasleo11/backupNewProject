@@ -104,12 +104,12 @@
             </div>
         </div>
 
-        <div class="card-body p-0">
+        <div class="card-body p-3">
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
                     <thead class="position-sticky top-0 bg-body text-muted small">
                         <tr>
-                            <th style="width:22%">Part / Check</th>
+                            <th style="width:22%">Part / Check <span class="text-danger text-sm">*</span></th>
                             <th style="width:14%">Action</th>
                             <th style="width:10%">Qty</th>
                             <th style="width:10%">UoM</th>
@@ -146,7 +146,8 @@
                                     @enderror
                                 </td>
                                 <td>
-                                    <select class="form-select form-select-sm"
+                                    <select
+                                        class="form-select form-select-sm @error('items.' . $i . '.action') is-invalid @enderror"
                                         wire:model.live="items.{{ $i }}.action">
                                         <option value="checked">checked</option>
                                         <option value="replaced">replaced</option>
@@ -154,34 +155,57 @@
                                         <option value="topped_up">topped_up</option>
                                         <option value="cleaned">cleaned</option>
                                     </select>
+                                    @error('items.' . $i . '.action')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control form-control-sm"
+                                    <input type="number"
+                                        class="form-control form-control-sm @error('items.' . $i . '.qty') is-invalid @enderror"
                                         wire:model.live="items.{{ $i }}.qty" step="0.01"
                                         min="0" placeholder="0">
+                                    @error('items.' . $i . '.qty')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control form-control-sm"
+                                    <input type="text"
+                                        class="form-control form-control-sm @error('items.' . $i . '.uom') is-invalid @enderror"
                                         wire:model.live="items.{{ $i }}.uom" placeholder="L, pcs">
+                                    @error('items.' . $i . '.uom')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
                                 <td>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="number" class="form-control"
+                                        <input type="number"
+                                            class="form-control form-control-sm @error('items.' . $i . '.unit_cost') is-invalid @enderror"
                                             wire:model.live="items.{{ $i }}.unit_cost" step="0.01"
                                             min="0" placeholder="0">
+                                        @error('items.' . $i . '.unit_cost')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control"
+                                    <input type="number"
+                                        class="form-control form-control-sm @error('items.' . $i . '.discount') is-invalid @enderror"
                                         wire:model.live="items.{{ $i }}.discount" step="0.01"
-                                        min="0" placeholder="0.00">
+                                        min="0" placeholder="0.00" inputmode="decimal">
+                                    @error('items.' . $i . '.discount')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control"
+                                    <input type="number"
+                                        class="form-control form-control-sm @error('items.' . $i . '.tax_rate') is-invalid @enderror"
                                         wire:model.live="items.{{ $i }}.tax_rate" step="0.01"
                                         min="0" max="100"
-                                        placeholder="{{ (string) ($global_tax_rate ?? 0) }}">
+                                        placeholder="{{ (string) ($global_tax_rate ?? 0) }}" inputmode="decimal">
+                                    @error('items.' . $i . '.tax_rate')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
                                 <td class="text-nowrap">
                                     Rp {{ number_format($lt, 0, ',', '.') }}
@@ -191,8 +215,12 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <input type="text" class="form-control form-control-sm"
+                                    <input type="text"
+                                        class="form-control form-control-sm @error('items.' . $i . '.remarks') is-invalid @enderror"
                                         wire:model.live="items.{{ $i }}.remarks" placeholder="Optional">
+                                    @error('items.' . $i . '.remarks')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
                                 <td class="text-end">
                                     <button class="btn btn-sm btn-outline-danger" title="Remove"
@@ -229,14 +257,14 @@
                 $disc = max(0, min(100, (float) ($r['discount'] ?? 0)));
 
                 $rowTr = $r['tax_rate'] ?? null;
-                $rowTr = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
-                $rate = $rowTr ?? ($global_tax_rate ?? 0);
+                $tr = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
+                $rate = $tr ?? ($global_tax_rate ?? 0);
 
                 $base = $qty * $uc * (1 - $disc / 100);
                 $tax = $base * ($rate / 100);
 
-                $totBase += $base;
-                $totTax += $tax;
+                $totBase += round($base, 2);
+                $totTax += round($tax, 2);
             }
 
             $grand = $totBase + $totTax;

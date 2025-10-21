@@ -12,10 +12,10 @@ class ServiceRecordItem extends Model
     ];
 
     protected $casts = [
-        'qty' => 'float',
-        'unit_cost' => 'float',
-        'discount' => 'float',
-        'tax_rate' => 'float',
+        'qty' => 'decimal:2',
+        'unit_cost' => 'decimal:2',
+        'discount' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
     ];
 
     public function record()
