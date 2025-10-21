@@ -71,6 +71,20 @@
                             placeholder="Internal / Vendor name">
                     </div>
                 </div>
+                <div class="col-md-3">
+                    <label class="form-label">Global VAT (%)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-percent"></i></span>
+                        <input type="number" min="0" max="100" step="0.01"
+                            class="form-control @error('global_tax_rate') is-invalid @enderror"
+                            wire:model.live="global_tax_rate" placeholder="e.g. 11">
+                        @error('global_tax_rate')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="form-text">Default VAT for all items (can be overridden per item).</div>
+                </div>
+
                 <div class="col-12">
                     <label class="form-label">Notes</label>
                     <textarea class="form-control" rows="2" wire:model.live="notes" placeholder="Optional notes"></textarea>
@@ -101,6 +115,7 @@
                             <th style="width:10%">UoM</th>
                             <th style="width:14%">Unit Cost</th>
                             <th style="width:12%">Discount</th>
+                            <th style="width:12%">Tax %</th>
                             <th style="width:14%">Line Total</th>
                             <th>Remarks</th>
                             <th style="width:1%"></th>
@@ -111,8 +126,14 @@
                             @php
                                 $qty = (float) ($items[$i]['qty'] ?? 0);
                                 $uc = (float) ($items[$i]['unit_cost'] ?? 0);
-                                $disc = (float) ($items[$i]['discount'] ?? 0);
-                                $lt = $qty * ($uc - ($disc / 100) * $uc);
+                                $disc = max(0, min(100, (float) ($items[$i]['discount'] ?? 0)));
+                                $rowTr = $items[$i]['tax_rate'] ?? null;
+                                $rowTr = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
+                                $rate = $rowTr ?? ($global_tax_rate ?? 0);
+
+                                $base = $qty * $uc * (1 - $disc / 100);
+                                $tax = $base * ($rate / 100);
+                                $lt = $base + $tax;
                             @endphp
                             <tr wire:key="svc-row-{{ $row['id'] ?? 'n' }}-{{ $i }}">
                                 <td>
@@ -156,8 +177,18 @@
                                         wire:model.live="items.{{ $i }}.discount" step="0.01"
                                         min="0" placeholder="0.00">
                                 </td>
-                                <td class="text-nowrap fw-semibold">
+                                <td>
+                                    <input type="number" class="form-control"
+                                        wire:model.live="items.{{ $i }}.tax_rate" step="0.01"
+                                        min="0" max="100"
+                                        placeholder="{{ (string) ($global_tax_rate ?? 0) }}">
+                                </td>
+                                <td class="text-nowrap">
                                     Rp {{ number_format($lt, 0, ',', '.') }}
+                                    <div class="small text-muted">
+                                        <span>Base: Rp {{ number_format($base, 0, ',', '.') }}</span>
+                                        <span class="ms-2">VAT: Rp {{ number_format($tax, 0, ',', '.') }}</span>
+                                    </div>
                                 </td>
                                 <td>
                                     <input type="text" class="form-control form-control-sm"
@@ -189,17 +220,26 @@
 
         {{-- Footer totals --}}
         @php
-            $grand = collect($items)->reduce(function ($carry, $r) {
+            $totBase = 0.0;
+            $totTax = 0.0;
+
+            foreach ($items as $r) {
                 $qty = (float) ($r['qty'] ?? 0);
                 $uc = (float) ($r['unit_cost'] ?? 0);
-                $disc = (float) ($r['discount'] ?? 0);
+                $disc = max(0, min(100, (float) ($r['discount'] ?? 0)));
 
-                // clamp discount to 0..100 (percent)
-                $disc = max(0, min(100, $disc));
+                $rowTr = $r['tax_rate'] ?? null;
+                $rowTr = $rowTr === '' || $rowTr === null ? null : max(0, min(100, (float) $rowTr));
+                $rate = $rowTr ?? ($global_tax_rate ?? 0);
 
-                $line = $qty * $uc * (1 - $disc / 100);
-                return $carry + $line;
-            }, 0.0);
+                $base = $qty * $uc * (1 - $disc / 100);
+                $tax = $base * ($rate / 100);
+
+                $totBase += $base;
+                $totTax += $tax;
+            }
+
+            $grand = $totBase + $totTax;
         @endphp
         <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div class="d-flex align-items-center gap-3">
@@ -210,6 +250,11 @@
                         class="fw-semibold">{{ $service_date ?: now()->toDateString() }}</span></div>
             </div>
             <div class="d-flex align-items-center gap-3">
+                <div class="small text-muted">
+                    Subtotal: <strong>Rp {{ number_format($totBase, 0, ',', '.') }}</strong>
+                    <span class="mx-2">•</span>
+                    VAT: <strong>Rp {{ number_format($totTax, 0, ',', '.') }}</strong>
+                </div>
                 <div class="fs-6">Grand Total:
                     <span class="fw-bold">Rp {{ number_format($grand, 0, ',', '.') }}</span>
                 </div>
