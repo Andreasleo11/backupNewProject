@@ -24,6 +24,17 @@ class Edit extends Component
 
     public array $catalogResults = [];
 
+    public string $defaultCurrency = 'IDR';
+
+    public bool $pasteDialog = false;
+
+    public string $pasteBuffer = '';
+
+    /** Wizard state */
+    public int $step = 1;                // 1=Header, 2=Items, 3=Defects
+
+    public ?int $activeItem = null;      // which item is being edited in Step 3
+
     /** @var array{title:string,description:?string,meta?:array} */
     public array $form = [
         'rec_date' => null,
@@ -95,24 +106,31 @@ class Edit extends Component
             ];
 
             $this->items = $report->items
-                ->map(fn ($i) => [
-                    'part_name' => $i->part_name,
-                    'rec_quantity' => (float) $i->rec_quantity,
-                    'verify_quantity' => (float) $i->verify_quantity,
-                    'can_use' => (float) $i->can_use,
-                    'cant_use' => (float) $i->cant_use,
-                    'price' => (float) $i->price,
-                    'currency' => $i->currency,
-                    'defects' => $i->defects->map(fn ($d) => [
-                        'id' => $d->id,
-                        'code' => $d->code,
-                        'name' => $d->name,
-                        'severity' => $d->severity->value,
-                        'source' => $d->source->value,
-                        'quantity' => (float) $d->quantity,
-                        'notes' => $d->notes,
-                    ])->toArray(),
-                ])->toArray();
+                ->map(
+                    fn ($i) => [
+                        'part_name' => $i->part_name,
+                        'rec_quantity' => (float) $i->rec_quantity,
+                        'verify_quantity' => (float) $i->verify_quantity,
+                        'can_use' => (float) $i->can_use,
+                        'cant_use' => (float) $i->cant_use,
+                        'price' => (float) $i->price,
+                        'currency' => $i->currency,
+                        'defects' => $i->defects
+                            ->map(
+                                fn ($d) => [
+                                    'id' => $d->id,
+                                    'code' => $d->code,
+                                    'name' => $d->name,
+                                    'severity' => $d->severity->value,
+                                    'source' => $d->source->value,
+                                    'quantity' => (float) $d->quantity,
+                                    'notes' => $d->notes,
+                                ],
+                            )
+                            ->toArray(),
+                    ],
+                )
+                ->toArray();
         }
     }
 
@@ -148,16 +166,22 @@ class Edit extends Component
             $q->where(fn ($qq) => $qq->where('code', 'like', $s)->orWhere('name', 'like', $s));
         }
 
-        return $q->orderBy('code')->limit(15)->get()
-            ->map(fn ($r) => [
-                'id' => $r->id,
-                'code' => $r->code,
-                'name' => $r->name,
-                'severity' => $r->default_severity?->value ?? (string) $r->default_severity,
-                'source' => $r->default_source?->value ?? (string) $r->default_source,
-                'quantity' => (float) $r->default_quantity,
-                'notes' => $r->notes,
-            ])->toArray();
+        return $q
+            ->orderBy('code')
+            ->limit(15)
+            ->get()
+            ->map(
+                fn ($r) => [
+                    'id' => $r->id,
+                    'code' => $r->code,
+                    'name' => $r->name,
+                    'severity' => $r->default_severity?->value ?? (string) $r->default_severity,
+                    'source' => $r->default_source?->value ?? (string) $r->default_source,
+                    'quantity' => (float) $r->default_quantity,
+                    'notes' => $r->notes,
+                ],
+            )
+            ->toArray();
     }
 
     // inject selected catalog defect into item defects
@@ -177,9 +201,7 @@ class Edit extends Component
             'notes' => $c->notes,
         ];
 
-        $this->items[$this->pickerForItem]['defects'] = array_values(array_merge(
-            $this->items[$this->pickerForItem]['defects'] ?? [], [$row]
-        ));
+        $this->items[$this->pickerForItem]['defects'] = array_values(array_merge($this->items[$this->pickerForItem]['defects'] ?? [], [$row]));
 
         $this->closeDefectPicker();
     }
@@ -198,7 +220,12 @@ class Edit extends Component
     public function addDefect(int $itemIndex): void
     {
         $this->items[$itemIndex]['defects'][] = [
-            'code' => null, 'name' => '', 'severity' => 'LOW', 'source' => 'DAIJO', 'quantity' => null, 'notes' => null,
+            'code' => null,
+            'name' => '',
+            'severity' => 'LOW',
+            'source' => 'DAIJO',
+            'quantity' => null,
+            'notes' => null,
         ];
     }
 
@@ -206,6 +233,87 @@ class Edit extends Component
     {
         unset($this->items[$itemIndex]['defects'][$defectIndex]);
         $this->items[$itemIndex]['defects'] = array_values($this->items[$itemIndex]['defects'] ?? []);
+    }
+
+    public function applyDefaultCurrency(): void
+    {
+        foreach ($this->items as &$r) {
+            $r['currency'] = $this->defaultCurrency ?: $r['currency'] ?? 'IDR';
+        }
+        unset($r);
+    }
+
+    public function fillCantUseFromDefects(int $i): void
+    {
+        $sum = collect($this->items[$i]['defects'] ?? [])->sum(fn ($d) => (float) ($d['quantity'] ?? 0));
+        $this->items[$i]['cant_use'] = round((float) $sum, 4);
+    }
+
+    public function fillAllCantUseFromDefects(): void
+    {
+        foreach ($this->items as $i => $_) {
+            $this->fillCantUseFromDefects($i);
+        }
+    }
+
+    // optional QoL already suggested earlier
+    public function insertItemBelow(int $i): void
+    {
+        $empty = [
+            'part_name' => '',
+            'rec_quantity' => 0,
+            'verify_quantity' => 0,
+            'can_use' => 0,
+            'cant_use' => 0,
+            'price' => 0,
+            'currency' => $this->defaultCurrency ?: 'IDR',
+            'defects' => [],
+        ];
+        array_splice($this->items, $i + 1, 0, [$empty]);
+    }
+
+    public function duplicateItem(int $i): void
+    {
+        $copy = $this->items[$i];
+        array_splice($this->items, $i + 1, 0, [$copy]);
+    }
+
+    public function moveItemUp(int $i): void
+    {
+        if ($i > 0) {
+            [$this->items[$i - 1], $this->items[$i]] = [$this->items[$i], $this->items[$i - 1]];
+        }
+    }
+
+    public function moveItemDown(int $i): void
+    {
+        if ($i < count($this->items) - 1) {
+            [$this->items[$i + 1], $this->items[$i]] = [$this->items[$i], $this->items[$i + 1]];
+        }
+    }
+
+    // Paste handler (tab or comma separated)
+    public function applyPastedItems(): void
+    {
+        $rows = preg_split('/\r\n|\r|\n/', trim($this->pasteBuffer));
+        foreach ($rows as $line) {
+            if ($line === '') {
+                continue;
+            }
+            $cols = str_getcsv($line, str_contains($line, "\t") ? "\t" : ','); // TSV or CSV
+            $this->items[] = [
+                'part_name' => (string) ($cols[0] ?? ''),
+                'rec_quantity' => (float) ($cols[1] ?? 0),
+                'verify_quantity' => (float) ($cols[2] ?? 0),
+                'can_use' => (float) ($cols[3] ?? 0),
+                'cant_use' => (float) ($cols[4] ?? 0),
+                'price' => (float) ($cols[5] ?? 0),
+                'currency' => (string) ($cols[6] ?? ($this->defaultCurrency ?: 'IDR')),
+                'defects' => [],
+            ];
+        }
+        $this->pasteBuffer = '';
+        $this->pasteDialog = false;
     }
 
     public function save(CreateReport $create, UpdateReport $update): void
@@ -217,10 +325,7 @@ class Edit extends Component
         $reportDto = ReportData::fromArray($this->form);
         $itemDtos = array_map(function ($row) {
             // map defects
-            $row['defects'] = array_map(
-                fn ($d) => DefectData::fromArray($d),
-                $row['defects'] ?? []
-            );
+            $row['defects'] = array_map(fn ($d) => DefectData::fromArray($d), $row['defects'] ?? []);
 
             return ItemData::fromArray($row);
         }, $this->items);
@@ -229,22 +334,13 @@ class Edit extends Component
             // Update existing
             $this->authorize('update', $this->report);
 
-            $this->report = $update->handle(
-                reportId: $this->report->id,
-                data: $reportDto,
-                items: $itemDtos,
-                actorId: auth()->id()
-            );
+            $this->report = $update->handle(reportId: $this->report->id, data: $reportDto, items: $itemDtos, actorId: auth()->id());
 
             session()->flash('ok', 'Report updated.');
             $this->redirectRoute('verification.show', $this->report->id);
         } else {
             // Create new
-            $created = $create->handle(
-                data: $reportDto,
-                items: $itemDtos,
-                creatorId: auth()->id()
-            );
+            $created = $create->handle(data: $reportDto, items: $itemDtos, creatorId: auth()->id());
 
             session()->flash('ok', 'Report created.');
             $this->redirectRoute('verification.show', $created->id);
