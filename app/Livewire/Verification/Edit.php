@@ -8,6 +8,7 @@ use App\Application\Verification\DTOs\ReportData;
 use App\Application\Verification\UseCases\CreateReport;
 use App\Application\Verification\UseCases\UpdateReport;
 use App\Infrastructure\Persistence\Eloquent\Models\DefectCatalog;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationDraft;
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
@@ -17,6 +18,11 @@ class Edit extends Component
     use AuthorizesRequests;
 
     public ?VerificationReport $report = null;
+
+    /** Wizard state */
+    public int $step = 1;                // 1=Header, 2=Items, 3=Defects
+
+    public ?int $activeItem = null;      // which item is being edited in Step 3
 
     public ?int $pickerForItem = null;
 
@@ -30,11 +36,6 @@ class Edit extends Component
 
     public string $pasteBuffer = '';
 
-    /** Wizard state */
-    public int $step = 1;                // 1=Header, 2=Items, 3=Defects
-
-    public ?int $activeItem = null;      // which item is being edited in Step 3
-
     /** @var array{title:string,description:?string,meta?:array} */
     public array $form = [
         'rec_date' => null,
@@ -45,22 +46,74 @@ class Edit extends Component
     ];
 
     /** @var array<int, array{name:string,notes:?string,amount:float|int|string}> */
-    public array $items = [
-        [
-            'part_name' => '',
-            'rec_quantity' => 0,
-            'verify_quantity' => 0,
-            'can_use' => 0,
-            'cant_use' => 0,
-            'price' => 0,
-            'currency' => 'IDR',
-            'defects' => [],
-        ],
-    ];
+    public array $items = [];
 
-    // --- Validation ---------------------------------------------------------
+    /** Wizard UI */
+    public ?string $lastAutosaveAt = null;
 
-    protected function rules(): array
+    public bool $autosaveEnabled = true;
+
+    public int $autosaveMs = 15000; // 15s interval
+
+    protected function reportKey(): string
+    {
+        return $this->report?->id ? (string) $this->report->id : 'new';
+    }
+
+    public function autosaveDraft(): void
+    {
+        if (! $this->autosaveEnabled) {
+            return;
+        }
+
+        VerificationDraft::updateOrCreate(
+            ['user_id' => auth()->id(), 'report_key' => $this->reportKey()],
+            ['payload' => [
+                'form' => $this->form,
+                'items' => $this->items,
+                'defaultCurrency' => $this->defaultCurrency,
+                'step' => $this->step,
+                'activeItem' => $this->activeItem,
+            ]]
+        );
+
+        $this->lastAutosaveAt = now()->format('H:i:s');
+    }
+
+    protected function recoverDraftIfAny(): void
+    {
+        $draft = VerificationDraft::where('user_id', auth()->id())
+            ->where('report_key', $this->reportKey())
+            ->latest('updated_at')
+            ->first();
+
+        if (! $draft) {
+            return;
+        }
+
+        $payload = $draft->payload ?? [];
+
+        $this->form = $payload['form'] ?? $this->form;
+        $this->items = $payload['items'] ?? $this->items;
+        $this->defaultCurrency = $payload['defaultCurrency'] ?? $this->defaultCurrency;
+        $this->step = $payload['step'] ?? $this->step;
+        $this->activeItem = $payload['activeItem'] ?? $this->activeItem;
+
+        session()->flash('ok', 'Recovered your auto-saved draft.');
+    }
+
+    public function clearDraft(): void
+    {
+        VerificationDraft::where('user_id', auth()->id())
+            ->where('report_key', $this->reportKey())
+            ->delete();
+
+        $this->dispatch('draft-cleared', message: 'Draft cleared!');
+    }
+
+    /* ---------------- Validation rules (split per step) ---------------- */
+
+    protected function rulesHeader(): array
     {
         return [
             'form.rec_date' => ['required', 'date'],
@@ -68,7 +121,12 @@ class Edit extends Component
             'form.customer' => ['required', 'string', 'max:191'],
             'form.invoice_number' => ['required', 'string', 'max:191'],
             'form.meta' => ['nullable', 'array'],
+        ];
+    }
 
+    protected function rulesItems(): array
+    {
+        return [
             'items' => ['array', 'min:1'],
             'items.*.part_name' => ['required', 'string', 'max:255'],
             'items.*.rec_quantity' => ['required', 'numeric', 'min:0'],
@@ -77,6 +135,12 @@ class Edit extends Component
             'items.*.cant_use' => ['required', 'numeric', 'min:0'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.currency' => ['required', 'string', 'max:10'],
+        ];
+    }
+
+    protected function rulesDefects(): array
+    {
+        return [
             'items.*.defects' => ['array'],
             'items.*.defects.*.code' => ['nullable', 'string', 'max:64'],
             'items.*.defects.*.name' => ['required_with:items.*.defects.*.quantity', 'string', 'max:191'],
@@ -87,14 +151,19 @@ class Edit extends Component
         ];
     }
 
-    // --- Lifecycle ----------------------------------------------------------
+    protected function rulesAll(): array
+    {
+        return array_merge($this->rulesHeader(), $this->rulesItems(), $this->rulesDefects());
+    }
+
+    /* ---------------- Lifecycle ---------------- */
 
     public function mount(?VerificationReport $report): void
     {
+
         $this->report = $report;
 
         if ($report?->exists) {
-            // Gate: only creator can edit while DRAFT
             $this->authorize('update', $report);
 
             $this->form = [
@@ -105,38 +174,90 @@ class Edit extends Component
                 'meta' => $report->meta ?? [],
             ];
 
-            $this->items = $report->items
-                ->map(
-                    fn ($i) => [
-                        'part_name' => $i->part_name,
-                        'rec_quantity' => (float) $i->rec_quantity,
-                        'verify_quantity' => (float) $i->verify_quantity,
-                        'can_use' => (float) $i->can_use,
-                        'cant_use' => (float) $i->cant_use,
-                        'price' => (float) $i->price,
-                        'currency' => $i->currency,
-                        'defects' => $i->defects
-                            ->map(
-                                fn ($d) => [
-                                    'id' => $d->id,
-                                    'code' => $d->code,
-                                    'name' => $d->name,
-                                    'severity' => $d->severity->value,
-                                    'source' => $d->source->value,
-                                    'quantity' => (float) $d->quantity,
-                                    'notes' => $d->notes,
-                                ],
-                            )
-                            ->toArray(),
-                    ],
-                )
-                ->toArray();
+            $this->items = $report->items->map(function ($i) {
+                return [
+                    'part_name' => $i->part_name,
+                    'rec_quantity' => (float) $i->rec_quantity,
+                    'verify_quantity' => (float) $i->verify_quantity,
+                    'can_use' => (float) $i->can_use,
+                    'cant_use' => (float) $i->cant_use,
+                    'price' => (float) $i->price,
+                    'currency' => $i->currency,
+                    'defects' => $i->defects->map(fn ($d) => [
+                        'id' => $d->id,
+                        'code' => $d->code,
+                        'name' => $d->name,
+                        'severity' => $d->severity->value,
+                        'source' => $d->source->value,
+                        'quantity' => (float) $d->quantity,
+                        'notes' => $d->notes,
+                    ])->toArray(),
+                ];
+            })->toArray();
+
+            $this->activeItem = count($this->items) ? 0 : null;
+        } else {
+            // New report → start wizard at step 1 with empty items
+            $this->items = [];
+            $this->activeItem = null;
         }
+
+        $this->recoverDraftIfAny();
     }
 
-    // --- Commands -----------------------------------------------------------
+    /* ---------------- Wizard actions ---------------- */
 
-    // open picker for a specific item index
+    public function goToStep(int $s): void
+    {
+        // Guard transitions forward with validation
+        if ($s > $this->step) {
+            if ($this->step === 1) {
+                $this->validate($this->rulesHeader());
+            }
+            if ($this->step === 2) {
+                $this->validate($this->rulesItems());
+            }
+        }
+        // Backward is always allowed
+        $this->step = max(1, min(3, $s));
+
+        // When entering Step 3, ensure an active item exists
+        if ($this->step === 3) {
+            if (count($this->items) === 0) {
+                $this->step = 2;
+
+                return;
+            }
+            if ($this->activeItem === null || ! array_key_exists($this->activeItem, $this->items)) {
+                $this->activeItem = 0;
+            }
+        }
+
+        $this->autosaveDraft();
+
+    }
+
+    public function nextStep(): void
+    {
+        $this->goToStep($this->step + 1);
+    }
+
+    public function prevStep(): void
+    {
+        $this->goToStep($this->step - 1);
+    }
+
+    public function goToItem(int $i): void
+    {
+        if (! array_key_exists($i, $this->items)) {
+            return;
+        }
+        $this->activeItem = $i;
+        $this->step = 3;
+    }
+
+    /* ---------------- Catalog picker ---------------- */
+
     public function openDefectPicker(int $itemIndex): void
     {
         $this->pickerForItem = $itemIndex;
@@ -144,7 +265,6 @@ class Edit extends Component
         $this->catalogResults = $this->searchCatalog('');
     }
 
-    // close picker
     public function closeDefectPicker(): void
     {
         $this->pickerForItem = null;
@@ -152,7 +272,6 @@ class Edit extends Component
         $this->catalogResults = [];
     }
 
-    // live-search in catalog
     public function updatedDefectSearch(): void
     {
         $this->catalogResults = $this->searchCatalog($this->defectSearch);
@@ -166,25 +285,17 @@ class Edit extends Component
             $q->where(fn ($qq) => $qq->where('code', 'like', $s)->orWhere('name', 'like', $s));
         }
 
-        return $q
-            ->orderBy('code')
-            ->limit(15)
-            ->get()
-            ->map(
-                fn ($r) => [
-                    'id' => $r->id,
-                    'code' => $r->code,
-                    'name' => $r->name,
-                    'severity' => $r->default_severity?->value ?? (string) $r->default_severity,
-                    'source' => $r->default_source?->value ?? (string) $r->default_source,
-                    'quantity' => (float) $r->default_quantity,
-                    'notes' => $r->notes,
-                ],
-            )
-            ->toArray();
+        return $q->orderBy('code')->limit(15)->get()->map(fn ($r) => [
+            'id' => $r->id,
+            'code' => $r->code,
+            'name' => $r->name,
+            'severity' => $r->default_severity?->value ?? (string) $r->default_severity,
+            'source' => $r->default_source?->value ?? (string) $r->default_source,
+            'quantity' => (float) $r->default_quantity,
+            'notes' => $r->notes,
+        ])->toArray();
     }
 
-    // inject selected catalog defect into item defects
     public function pickCatalogDefect(int $catalogId): void
     {
         if ($this->pickerForItem === null) {
@@ -200,21 +311,40 @@ class Edit extends Component
             'quantity' => (float) $c->default_quantity,
             'notes' => $c->notes,
         ];
-
-        $this->items[$this->pickerForItem]['defects'] = array_values(array_merge($this->items[$this->pickerForItem]['defects'] ?? [], [$row]));
+        $this->items[$this->pickerForItem]['defects'] =
+            array_values(array_merge($this->items[$this->pickerForItem]['defects'] ?? [], [$row]));
 
         $this->closeDefectPicker();
     }
 
+    /* ---------------- Items & defects commands ---------------- */
+
     public function addItem(): void
     {
-        $this->items[] = ['name' => '', 'notes' => null, 'amount' => 0];
+        $this->items[] = [
+            'part_name' => '',
+            'rec_quantity' => 0,
+            'verify_quantity' => 0,
+            'can_use' => 0,
+            'cant_use' => 0,
+            'price' => 0,
+            'currency' => $this->defaultCurrency ?: 'IDR',
+            'defects' => [],
+        ];
+        if ($this->activeItem === null) {
+            $this->activeItem = 0;
+        }
     }
 
     public function removeItem(int $index): void
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+        if ($this->activeItem !== null) {
+            if (! array_key_exists($this->activeItem, $this->items)) {
+                $this->activeItem = count($this->items) ? 0 : null;
+            }
+        }
     }
 
     public function addDefect(int $itemIndex): void
@@ -233,12 +363,13 @@ class Edit extends Component
     {
         unset($this->items[$itemIndex]['defects'][$defectIndex]);
         $this->items[$itemIndex]['defects'] = array_values($this->items[$itemIndex]['defects'] ?? []);
+
     }
 
     public function applyDefaultCurrency(): void
     {
         foreach ($this->items as &$r) {
-            $r['currency'] = $this->defaultCurrency ?: $r['currency'] ?? 'IDR';
+            $r['currency'] = $this->defaultCurrency ?: ($r['currency'] ?? 'IDR');
         }
         unset($r);
     }
@@ -256,7 +387,6 @@ class Edit extends Component
         }
     }
 
-    // optional QoL already suggested earlier
     public function insertItemBelow(int $i): void
     {
         $empty = [
@@ -292,7 +422,8 @@ class Edit extends Component
         }
     }
 
-    // Paste handler (tab or comma separated)
+    /* ---------------- Paste handler ---------------- */
+
     public function applyPastedItems(): void
     {
         $rows = preg_split('/\r\n|\r|\n/', trim($this->pasteBuffer));
@@ -300,7 +431,7 @@ class Edit extends Component
             if ($line === '') {
                 continue;
             }
-            $cols = str_getcsv($line, str_contains($line, "\t") ? "\t" : ','); // TSV or CSV
+            $cols = str_getcsv($line, (str_contains($line, "\t") ? "\t" : ','));
             $this->items[] = [
                 'part_name' => (string) ($cols[0] ?? ''),
                 'rec_quantity' => (float) ($cols[1] ?? 0),
@@ -314,37 +445,47 @@ class Edit extends Component
         }
         $this->pasteBuffer = '';
         $this->pasteDialog = false;
+        if ($this->activeItem === null && count($this->items)) {
+            $this->activeItem = 0;
+        }
     }
+
+    /* ---------------- Persist ---------------- */
 
     public function save(CreateReport $create, UpdateReport $update): void
     {
-        // dd($this->items);
-        $this->validate();
+        // For Save (finish), validate everything
+        $this->validate($this->rulesAll());
 
-        // Build DTOs
         $reportDto = ReportData::fromArray($this->form);
         $itemDtos = array_map(function ($row) {
-            // map defects
             $row['defects'] = array_map(fn ($d) => DefectData::fromArray($d), $row['defects'] ?? []);
 
             return ItemData::fromArray($row);
         }, $this->items);
 
         if ($this->report?->exists) {
-            // Update existing
             $this->authorize('update', $this->report);
-
-            $this->report = $update->handle(reportId: $this->report->id, data: $reportDto, items: $itemDtos, actorId: auth()->id());
-
+            $this->report = $update->handle(
+                reportId: $this->report->id,
+                data: $reportDto,
+                items: $itemDtos,
+                actorId: auth()->id()
+            );
             session()->flash('ok', 'Report updated.');
             $this->redirectRoute('verification.show', $this->report->id);
         } else {
-            // Create new
-            $created = $create->handle(data: $reportDto, items: $itemDtos, creatorId: auth()->id());
-
+            $created = $create->handle(
+                data: $reportDto,
+                items: $itemDtos,
+                creatorId: auth()->id()
+            );
             session()->flash('ok', 'Report created.');
             $this->redirectRoute('verification.show', $created->id);
         }
+
+        $this->clearDraft();
+
     }
 
     // --- Rendering ----------------------------------------------------------

@@ -133,6 +133,7 @@ use App\Livewire\Vehicles\Show as VehiclesShow;
 use App\Livewire\Verification\Edit as VerificationEdit;
 use App\Livewire\Verification\Index as VerificationIndex;
 use App\Livewire\Verification\Show as VerificationShow;
+use App\Livewire\Verification\Wizard;
 // TESTING SAP SERVICE
 use App\Services\BaseSapService;
 use App\Services\FctBomWipService;
@@ -497,8 +498,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['auth'])->prefix('verification-reports')->name('verification.')->group(function () {
         Route::get('/', VerificationIndex::class)->name('index');
-        Route::get('/create', VerificationEdit::class)->name('create');
-        Route::get('/{report}/edit', VerificationEdit::class)->name('edit');
+        Route::get('/create', Wizard::class)->name('create');
+        // Route::get('/create2', VerificationEdit::class)->name('create2');
+        Route::get('/{report}/edit', Wizard::class)->name('edit');
+        // Route::get('/{report}/edit2', VerificationEdit::class)->name('edit2');
         Route::get('/{report}', VerificationShow::class)->name('show');
     });
 

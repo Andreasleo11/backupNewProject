@@ -1,6 +1,14 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h5 mb-0">Verification Reports</h1>
+        <div>
+            <h3 class="mb-0">Verification Reports</h3>
+            <nav aria-label="breadcrumb" class="mb-2">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{{ url('/') }}">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Verification Reports</li>
+                </ol>
+            </nav>
+        </div>
         <a class="btn btn-primary" href="{{ route('verification.create') }}">New</a>
     </div>
 
