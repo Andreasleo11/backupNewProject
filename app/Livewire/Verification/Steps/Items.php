@@ -2,11 +2,15 @@
 
 namespace App\Livewire\Verification\Steps;
 
+use App\Livewire\Verification\Concerns\VerificationRules;
 use Livewire\Attributes\Modelable;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Items extends Component
 {
+    use VerificationRules;
+
     #[Modelable]
     public array $items = [];
 
@@ -20,14 +24,48 @@ class Items extends Component
 
     public string $pasteBuffer = '';
 
+    protected function messages(): array
+    {
+        return method_exists($this, 'messagesAll') ? $this->messagesAll() : [];
+    }
+
+    protected function validationAttributes(): array
+    {
+        return method_exists($this, 'attributesAll') ? $this->attributesAll() : [];
+    }
+
+    public function updated()
+    {
+        $this->validate($this->rulesItems());
+    }
+
+    #[On('request-validate')]
+    public function handleValidation(int $step): void
+    {
+        if ($step !== 2) {
+            return;
+        }
+
+        try {
+            $this->validate($this->rulesItems());
+            $this->resetErrorBag();
+            $this->dispatch('step-valid', step: 2);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $this->dispatch('step-invalid', step: 2, errors: $e->errors());
+
+            return;
+        }
+    }
+
     public function addItem(): void
     {
         $this->items[] = [
             'part_name' => '',
-            'rec_quantity' => 0,
-            'verify_quantity' => 0,
-            'can_use' => 0,
-            'cant_use' => 0,
+            'rec_quantity' => null,
+            'verify_quantity' => null,
+            'can_use' => null,
+            'cant_use' => null,
             'price' => 0,
             'currency' => $this->defaultCurrency ?: 'IDR',
             'defects' => [],

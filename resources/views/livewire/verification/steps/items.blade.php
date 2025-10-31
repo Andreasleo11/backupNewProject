@@ -1,37 +1,46 @@
 <div>
-    {{-- Items toolbar --}}
-    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+    {{-- Toolbar --}}
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
         <div class="fs-5">
             @if ($customer)
-                Items for
-                <span class="fw-semibold">
-                    {{ $customer }}
-                </span>
+                Items for <span class="fw-semibold">{{ $customer }}</span>
+            @else
+                <span class="text-muted">Items</span>
             @endif
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            {{-- default currency for new rows --}}
-            <div class="input-group input-group-sm" style="width: 250px;">
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            {{-- Default Currency --}}
+            <div class="input-group input-group-sm" style="width: 260px;" x-data="{ cur: @entangle('defaultCurrency') }">
                 <span class="input-group-text">Default currency</span>
-                <input type="text" class="form-control" placeholder="IDR" wire:model.live.defer="defaultCurrency">
-                <button class="btn btn-outline-secondary" type="button" wire:click="applyDefaultCurrency">
+                <input list="dl-currencies" type="text" class="form-control" placeholder="IDR"
+                    wire:model.live.defer="defaultCurrency">
+                <button type="button" class="btn btn-outline-secondary"
+                    @click.prevent="confirm(`Apply '${cur || ''}' to all rows?`) && $wire.applyDefaultCurrency()">
                     Apply to all
                 </button>
             </div>
+            <datalist id="dl-currencies">
+                <option value="IDR" />
+                <option value="USD" />
+                <option value="EUR" />
+                <option value="JPY" />
+                <option value="CNY" />
+            </datalist>
 
-            {{-- paste from Excel --}}
+            {{-- Paste from Excel --}}
             <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="$set('pasteDialog', true)"
                 data-bs-toggle="tooltip" title="Paste from Excel/CSV">
                 <i class="bi bi-clipboard"></i>
             </button>
 
-            {{-- bulk helper --}}
+            {{-- Bulk helper --}}
             <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="fillAllCantUseFromDefects"
-                data-bs-toggle="tooltip" title="Copy Defect -> Can't Use (all)">
+                data-bs-toggle="tooltip" title="Copy Defect → Can't Use (all)">
                 <i class="bi bi-arrow-down-square"></i>
             </button>
 
-            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="addItem">
+            <button type="button" class="btn btn-sm btn-primary" wire:click="addItem">
                 <i class="bi bi-plus-lg"></i> Add item
             </button>
         </div>
@@ -66,18 +75,21 @@
                         $okPct = $verify > 0 ? ($can / $verify) * 100 : 0;
                         $ngPct = $verify > 0 ? ($cant / $verify) * 100 : 0;
                         $line = $verify * $price;
+
                         $defects = $items[$i]['defects'] ?? [];
                         $errBag = collect($errors->getBag('default')->get("items.$i.*"))->collapse();
                     @endphp
 
-                    <tr class="align-middle item-row {{ $errBag->isNotEmpty() ? 'table-warning' : '' }}">
+                    <tr wire:key="row-{{ $i }}"
+                        class="align-middle item-row {{ $errBag->isNotEmpty() ? 'table-warning' : '' }}">
                         <td class="text-muted small">{{ $i + 1 }}</td>
 
-                        <td style="min-width: 220px;">
+                        <td style="min-width: 240px;">
                             <div class="d-flex gap-2 align-items-start">
                                 <input type="text" autocomplete="off"
                                     class="form-control form-control-sm @error('items.' . $i . '.part_name') is-invalid @enderror"
-                                    placeholder="Part name" wire:model.live.defer="items.{{ $i }}.part_name">
+                                    placeholder="Part name" wire:model.live.defer="items.{{ $i }}.part_name"
+                                    id="fld-items-{{ $i }}-part-name">
                                 {{-- row error chip --}}
                                 @if ($errBag->isNotEmpty())
                                     <span class="badge text-bg-warning" data-bs-toggle="tooltip"
@@ -96,8 +108,9 @@
                             @endphp
                             <div class="d-flex flex-wrap gap-1 mt-1 small">
                                 @if ($hi + $md + $lo > 0)
-                                    <span class="badge bg-dark-subtle text-dark-emphasis border"><i
-                                            class="bi bi-bug"></i> {{ $hi + $md + $lo }}</span>
+                                    <span class="badge bg-dark-subtle text-dark-emphasis border">
+                                        <i class="bi bi-bug"></i> {{ $hi + $md + $lo }}
+                                    </span>
                                 @endif
                                 @if ($hi > 0)
                                     <span class="badge bg-danger-subtle text-danger">HIGH {{ $hi }}</span>
@@ -112,41 +125,42 @@
                             </div>
                         </td>
 
-                        <td class="text-end" style="max-width:110px;">
-                            <input type="number" step="0.0001"
-                                class="form-control form-control-sm @error('items.' . $i . '.rec_quantity') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.rec_quantity">
+                        {{-- Numbers --}}
+                        <td class="text-end" style="min-width:110px;">
+                            <input type="number" step="0.0001" id="fld-items-{{ $i }}-rec-quantity"
+                                class="form-control form-control-sm text-end @error('items.' . $i . '.rec_quantity') is-invalid @enderror"
+                                wire:model.live.defer="items.{{ $i }}.rec_quantity" inputmode="decimal">
                             @error('items.' . $i . '.rec_quantity')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </td>
 
-                        <td class="text-end" style="max-width:110px;">
-                            <input type="number" step="0.0001"
-                                class="form-control form-control-sm @error('items.' . $i . '.verify_quantity') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.verify_quantity">
+                        <td class="text-end" style="min-width:110px;">
+                            <input type="number" step="0.0001" id="fld-items-{{ $i }}-verify-quantity"
+                                class="form-control form-control-sm text-end @error('items.' . $i . '.verify_quantity') is-invalid @enderror"
+                                wire:model.live.defer="items.{{ $i }}.verify_quantity" inputmode="decimal">
                             @error('items.' . $i . '.verify_quantity')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </td>
 
-                        <td class="text-end" style="max-width:110px;">
-                            <input type="number" step="0.0001"
-                                class="form-control form-control-sm @error('items.' . $i . '.can_use') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.can_use">
+                        <td class="text-end" style="min-width:110px;">
+                            <input type="number" step="0.0001" id="fld-items-{{ $i }}-can-use"
+                                class="form-control form-control-sm text-end @error('items.' . $i . '.can_use') is-invalid @enderror"
+                                wire:model.live.defer="items.{{ $i }}.can_use" inputmode="decimal">
                             @error('items.' . $i . '.can_use')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </td>
 
-                        <td class="text-end" style="max-width:140px;">
+                        <td class="text-end" style="min-width:110px;">
                             <div class="input-group input-group-sm">
-                                <input type="number" step="0.0001"
-                                    class="form-control @error('items.' . $i . '.cant_use') is-invalid @enderror"
-                                    wire:model.live.defer="items.{{ $i }}.cant_use">
+                                <input type="number" step="0.0001" id="fld-items-{{ $i }}-cant-use"
+                                    class="form-control text-end @error('items.' . $i . '.cant_use') is-invalid @enderror"
+                                    wire:model.live.defer="items.{{ $i }}.cant_use" inputmode="decimal">
                                 <button class="btn btn-outline-secondary" type="button"
                                     wire:click="fillCantUseFromDefects({{ $i }})" data-bs-toggle="tooltip"
-                                    title="Copy Defect -> Can't Use">
+                                    title="Copy Defect → Can't Use">
                                     <i class="bi bi-arrow-down-square"></i>
                                 </button>
                             </div>
@@ -164,25 +178,26 @@
                             {{ number_format($ngPct, 1) }}%
                         </td>
 
-                        <td class="text-end" style="max-width:120px;">
-                            <input type="number" step="0.01"
-                                class="form-control form-control-sm @error('items.' . $i . '.price') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.price">
+                        <td class="text-end" style="min-width:120px;">
+                            <input type="number" step="0.01" id="fld-items-{{ $i }}-price"
+                                class="form-control form-control-sm text-end @error('items.' . $i . '.price') is-invalid @enderror"
+                                wire:model.live.defer="items.{{ $i }}.price" inputmode="decimal">
                             @error('items.' . $i . '.price')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </td>
 
-                        <td style="max-width:90px;">
-                            <input type="text"
+                        <td style="min-width:90px;">
+                            <input type="text" id="fld-items-{{ $i }}-currency"
                                 class="form-control form-control-sm @error('items.' . $i . '.currency') is-invalid @enderror"
-                                wire:model.live.defer="items.{{ $i }}.currency">
+                                wire:model.live.defer="items.{{ $i }}.currency"
+                                placeholder="{{ $defaultCurrency }}">
                             @error('items.' . $i . '.currency')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </td>
 
-                        <td class="text-end fw-semibold">{{ number_format($line, 2) }}</td>
+                        <td class="text-end fw-semibold"> {{ number_format($line, 2) }} </td>
 
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
@@ -199,11 +214,8 @@
                                     wire:click="moveItemDown({{ $i }})" data-bs-toggle="tooltip"
                                     title="Down">↓</button>
                                 <button class="btn btn-outline-danger" wire:click="removeItem({{ $i }})"
-                                    data-bs-toggle="tooltip" title="Remove">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                    data-bs-toggle="tooltip" title="Remove"><i class="bi bi-trash"></i></button>
                             </div>
-
                         </td>
                     </tr>
                 @empty
@@ -214,17 +226,31 @@
             </tbody>
 
             @php
-                $grand = collect($items)->sum(
-                    fn($r) => (float) ($r['verify_quantity'] ?? 0) * (float) ($r['price'] ?? 0),
+                // group totals by currency (handles mixed currencies gracefully)
+                $byCurr = collect($items)->groupBy(
+                    fn($r) => trim($r['currency'] ?? $defaultCurrency) ?: $defaultCurrency,
                 );
+                $grandRows = $byCurr
+                    ->map(
+                        fn($rows, $cur) => [
+                            'currency' => $cur,
+                            'sum' => $rows->sum(
+                                fn($r) => (float) ($r['verify_quantity'] ?? 0) * (float) ($r['price'] ?? 0),
+                            ),
+                        ],
+                    )
+                    ->values();
             @endphp
+
             @if (count($items))
                 <tfoot class="sticky-foot">
-                    <tr>
-                        <th colspan="10" class="text-end">Monetary Total (Σ verify_qty × price)</th>
-                        <th class="text-end">{{ number_format($grand, 2) }}</th>
-                        <th></th>
-                    </tr>
+                    @foreach ($grandRows as $gr)
+                        <tr>
+                            <th colspan="10" class="text-end">Monetary Total ({{ $gr['currency'] }})</th>
+                            <th class="text-end">{{ number_format($gr['sum'], 2) }}</th>
+                            <th></th>
+                        </tr>
+                    @endforeach
                 </tfoot>
             @endif
         </table>
@@ -240,33 +266,14 @@
             .sticky-head {
                 position: sticky;
                 top: 0;
-                z-index: 1;
-            }
-
-            .sticky-subhead {
-                position: sticky;
-                top: 0;
-                z-index: 1;
+                z-index: 2;
             }
 
             .sticky-foot {
                 position: sticky;
                 bottom: 0;
                 background: var(--bs-body-bg);
-            }
-
-            .fade-in {
-                animation: fade .15s ease-in;
-            }
-
-            @keyframes fade {
-                from {
-                    opacity: .6
-                }
-
-                to {
-                    opacity: 1
-                }
+                z-index: 1;
             }
 
             .pick-table tr:hover {
@@ -275,7 +282,7 @@
         </style>
     @endPushOnce
 
-    {{-- keep your Paste dialog modal below if you split tables --}}
+    {{-- Paste dialog (kept) --}}
     @if ($pasteDialog ?? false)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,.35);">
             <div class="modal-dialog modal-lg">

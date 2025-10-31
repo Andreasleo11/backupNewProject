@@ -9,12 +9,15 @@ use App\Application\Verification\UseCases\CreateReport;
 use App\Application\Verification\UseCases\UpdateReport;
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationDraft;
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
+use App\Livewire\Verification\Concerns\VerificationRules;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\MessageBag;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Wizard extends Component
 {
-    use AuthorizesRequests;
+    use AuthorizesRequests, VerificationRules;
 
     public ?VerificationReport $report = null;
 
@@ -23,6 +26,8 @@ class Wizard extends Component
     public ?int $activeItem = null;
 
     public string $defaultCurrency = 'IDR';
+
+    public int $previewVersion = 1;
 
     public array $form = [
         'rec_date' => null,
@@ -41,48 +46,16 @@ class Wizard extends Component
 
     public int $autosaveMs = 15000;
 
-    /* ---------- Validation per step ---------- */
-    protected function rulesHeader(): array
+    public bool $isDirty = false;
+
+    protected function messages(): array
     {
-        return [
-            'form.rec_date' => ['required', 'date'],
-            'form.verify_date' => ['required', 'date', 'after_or_equal:form.rec_date'],
-            'form.customer' => ['required', 'string', 'max:191'],
-            'form.invoice_number' => ['required', 'string', 'max:191'],
-            'form.meta' => ['nullable', 'array'],
-        ];
+        return method_exists($this, 'messagesAll') ? $this->messagesAll() : [];
     }
 
-    protected function rulesItems(): array
+    protected function validationAttributes(): array
     {
-        return [
-            'items' => ['array', 'min:1'],
-            'items.*.part_name' => ['required', 'string', 'max:255'],
-            'items.*.rec_quantity' => ['required', 'numeric', 'min:0'],
-            'items.*.verify_quantity' => ['required', 'numeric', 'min:0'],
-            'items.*.can_use' => ['required', 'numeric', 'min:0'],
-            'items.*.cant_use' => ['required', 'numeric', 'min:0'],
-            'items.*.price' => ['required', 'numeric', 'min:0'],
-            'items.*.currency' => ['required', 'string', 'max:10'],
-        ];
-    }
-
-    protected function rulesDefects(): array
-    {
-        return [
-            'items.*.defects' => ['array'],
-            'items.*.defects.*.code' => ['nullable', 'string', 'max:64'],
-            'items.*.defects.*.name' => ['required_with:items.*.defects.*.quantity', 'string', 'max:191'],
-            'items.*.defects.*.severity' => ['nullable', 'in:LOW,MEDIUM,HIGH'],
-            'items.*.defects.*.source' => ['nullable', 'in:DAIJO,CUSTOMER,SUPPLIER'],
-            'items.*.defects.*.quantity' => ['nullable', 'numeric', 'min:0'],
-            'items.*.defects.*.notes' => ['nullable', 'string'],
-        ];
-    }
-
-    protected function rulesAll(): array
-    {
-        return array_merge($this->rulesHeader(), $this->rulesItems(), $this->rulesDefects());
+        return method_exists($this, 'attributesAll') ? $this->attributesAll() : [];
     }
 
     protected function reportKey(): string
@@ -97,7 +70,7 @@ class Wizard extends Component
             $this->authorize('update', $report);
             $this->form = [
                 'rec_date' => optional($report->rec_date)?->format('Y-m-d'),
-                'rec_date' => optional($report->rec_date)?->format('Y-m-d'),
+                'verify_date' => optional($report->verify_date)?->format('Y-m-d'),
                 'customer' => $report->customer,
                 'invoice_number' => $report->invoice_number,
                 'meta' => $report->meta ?? [],
@@ -136,6 +109,10 @@ class Wizard extends Component
             return;
         }
 
+        if (! $this->isDirty) {
+            return;
+        } // only save when dirty
+
         VerificationDraft::updateOrCreate(
             ['user_id' => auth()->id(), 'report_key' => $this->reportKey()],
             ['payload' => [
@@ -148,6 +125,8 @@ class Wizard extends Component
         );
 
         $this->lastAutosaveAt = now()->format('H:i:s');
+        $this->isDirty = false;
+        $this->dispatch('saved-clean');
     }
 
     protected function recoverDraftIfAny(): void
@@ -181,47 +160,57 @@ class Wizard extends Component
         $this->dispatch('draft-cleared', message: 'Draft cleared!');
     }
 
-    public function goToStep(int $s): void
+    #[On('go-to-step')]
+    public function goToStep(int $step): void
     {
-        try {
-            // Guard transitions forward with validation
-            if ($s > $this->step) {
-                if ($this->step === 1) {
-                    $this->validate($this->rulesHeader());
-                }
-                if ($this->step === 2) {
-                    $this->validate($this->rulesItems());
-                }
-            }
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->dispatch('validation-errors-updated', errors: $e->errors());
-            throw $e;
-        }
-
-        // Backward allowed
-        $this->step = max(1, min(3, $s));
-
-        // When entering Step 3, ensure an active item exists
-        if ($this->step === 3) {
-            if (! count($this->items)) {
-                $this->step = 2;
-
-                return;
-            }
-            $this->activeItem ??= 0;
-        }
-
+        $this->step = max(1, min(4, $step));
         $this->autosaveDraft();
     }
 
     public function nextStep(): void
     {
-        $this->goToStep($this->step + 1);
+        $this->dispatch('request-validate', step: $this->step);
     }
 
     public function prevStep(): void
     {
-        $this->goToStep($this->step - 1);
+        $this->step = max(1, $this->step - 1);
+        $this->autosaveDraft();
+    }
+
+    #[On('step-valid')]
+    public function onStepValid(int $step): void
+    {
+        if ($step !== $this->step) {
+            return;
+        }
+
+        $this->resetErrorBag();
+
+        $this->step = min(4, $this->step + 1);
+
+        if ($this->step === 3 && ! count($this->items)) {
+            $this->step = 2;
+        }
+
+        if ($this->step === 4) {
+            $this->previewVersion++;
+        }
+
+        $this->autosaveDraft();
+    }
+
+    #[On('step-invalid')]
+    public function onStepInvalid(int $step, array $errors): void
+    {
+        if ($step !== $this->step) {
+            return;
+        }
+
+        $this->setErrorBag(new MessageBag($errors));
+
+        // optional if want to broadcast to other children as well
+        // $this->dispatch('validation-errors-updated', errors: $errors);
     }
 
     public function save(CreateReport $create, UpdateReport $update): void
