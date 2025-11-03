@@ -82,6 +82,7 @@ use App\Http\Controllers\PurchasingRequirementController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\qaqc\QaqcHomeController;
 use App\Http\Controllers\qaqc\QaqcReportController;
+use App\Http\Controllers\RequirementUploadDownloadController;
 use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\SpecificationController;
 use App\Http\Controllers\SPHomeController;
@@ -2095,6 +2096,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
     Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
+
+    Route::get('/uploads/{upload}/download', [RequirementUploadDownloadController::class, 'show'])
+        ->name('uploads.download')
+        ->middleware('signed');
 });
 Route::middleware(['web', 'auth'])->group(function () {
     // Secure stream of a signature image (PNG or SVG) from private disk
