@@ -212,6 +212,16 @@
                                                     Reject
                                                 </button>
                                             @endif
+                                            @if($data->status !== 'Rejected')
+                                                <form method="POST"
+                                                    action="{{ route('overtime-detail.reject-server-side', $data->id) }}"
+                                                    class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to reject this overtime detail? (Server side)');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-link text-danger btn-sm text-nowrap">Reject (Server side)</button>
+                                                </form>
+                                            @endif
                                         </td>
                                     @else
                                         <td>

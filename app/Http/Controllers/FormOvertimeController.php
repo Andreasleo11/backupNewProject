@@ -24,6 +24,16 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FormOvertimeController extends Controller
 {
+    public function rejectDetailServerSide($id)
+    {
+        DetailFormOvertime::find($id)->update([
+            'status' => 'Rejected',
+            'reason' => 'Rejected manually from DISS server',
+        ]);
+
+        return redirect()->back()->with('success', 'Detail rejected successfully !');
+    }
+
     public function downloadTemplate()
     {
         return Excel::download(new OvertimeExportExample, 'overtime_template.xlsx');

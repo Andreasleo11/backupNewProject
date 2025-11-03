@@ -83,6 +83,7 @@ use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\qaqc\QaqcHomeController;
 use App\Http\Controllers\qaqc\QaqcReportController;
 use App\Http\Controllers\RequirementUploadDownloadController;
+use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\SpecificationController;
 use App\Http\Controllers\SPHomeController;
 use App\Http\Controllers\StockTintaController;
@@ -121,8 +122,8 @@ use App\Livewire\Requirements\Departments as RequirementDepartments;
 use App\Livewire\Requirements\Form as RequirementForm;
 use App\Livewire\Requirements\Index as ReqIndex;
 use App\Livewire\Services\Form as ServiceForm;
-use App\Livewire\VehicleForm;
-use App\Livewire\VehicleIndex;
+use App\Livewire\Signature\CaptureSignature;
+use App\Livewire\Signature\ManageSignatures;
 use App\Livewire\Vehicles\Form as VehiclesForm;
 use App\Livewire\Vehicles\Index as VehiclesIndex;
 use App\Livewire\Vehicles\Show as VehiclesShow;
@@ -1461,7 +1462,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])
         ->name('department.status.yayasan');
 
-    Route::put('/edit/maganddiscipline/{id}', [
+    Route::put('/edit/magangdiscipline/{id}', [
         DisciplinePageController::class,
         'updatemagang',
     ])->name('updatemagang');
@@ -1505,58 +1506,25 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
     Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
-    Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name(
-        'formovertime.insert',
-    );
-    Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name(
-        'formovertime.detail',
-    );
-    Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name(
-        'formovertime.delete',
-    );
-    Route::post('/save-autographot-path/{reportId}/{section}', [
-        FormOvertimeController::class,
-        'saveAutographOtPath',
-    ]);
-    Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name(
-        'formovertime.edit',
-    );
-    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name(
-        'formovertime.update',
-    );
-    Route::delete('/formovertime/{id}/delete', [
-        FormOvertimeController::class,
-        'destroyDetail',
-    ])->name('formovertime.destroyDetail');
-    Route::get('export-overtime/{headerId}', [
-        FormOvertimeController::class,
-        'exportOvertime',
-    ])->name('export.overtime');
-    Route::get('/formovertime/template/download', [
-        FormOvertimeController::class,
-        'downloadTemplate',
-    ])->name('formovertime.template.download');
-    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name(
-        'overtime.reject',
-    );
-    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name(
-        'overtime.sign',
-    );
+    Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name('formovertime.insert');
+    Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
+    Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name('formovertime.delete');
+    Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
+    Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name('formovertime.edit');
+    Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+    Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
+    Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
+    Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
 
-    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name(
-        'overtime.summary',
-    );
-    Route::get('/overtime/summary/export', [
-        FormOvertimeController::class,
-        'exportSummaryExcel',
-    ])->name('overtime.summary.export');
+    Route::delete('/overtime-detail/{id}/reject-server-side', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime-detail.reject-server-side');
 
-    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name(
-        'actual.import.form',
-    );
-    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name(
-        'actual.import',
-    );
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
+
+    Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
+    Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
@@ -2047,10 +2015,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
-
-    // Route::get('/vehicles', VehicleIndex::class)->name('vehicles.index');
-    // Route::get('/vehicles/create', VehicleForm::class)->name('vehicles.create');
-    // Route::get('/vehicles/{id}/edit', VehicleForm::class)->name('vehicles.edit');
 });
 
 Route::prefix('delivery-notes')
@@ -2136,4 +2100,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/uploads/{upload}/download', [RequirementUploadDownloadController::class, 'show'])
         ->name('uploads.download')
         ->middleware('signed');
+});
+Route::middleware(['web', 'auth'])->group(function () {
+    // Secure stream of a signature image (PNG or SVG) from private disk
+    Route::get('/signatures/{id}', [SignatureController::class, 'show'])
+        ->name('signatures.show');
+
+    // Livewire pages
+    Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
+    Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });

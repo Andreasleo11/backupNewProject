@@ -732,20 +732,6 @@
                     if (isRailCollapsed()) scheduleClose();
                 });
 
-                // Clicking a group header while collapsed should open flyout instead of collapsing in-rail
-                sidebar.addEventListener('click', (e) => {
-                    const a = e.target.closest('a.has-dropdown');
-                    if (!a || !isRailCollapsed()) return;
-                    e.preventDefault();
-                    clearTimeout(openTimer);
-                    clearTimeout(closeTimer);
-                    if (currentAnchor === a && flyout.classList.contains('visible')) {
-                        closeFlyout();
-                    } else {
-                        openFlyoutFor(a);
-                    }
-                });
-
                 // Attach hover listeners to all group headers
                 function bindAnchors() {
                     sidebar.querySelectorAll('a.has-dropdown').forEach(a => {

@@ -6,7 +6,7 @@
 
 <div class="container-fluid px-0">
     {{-- Top header / toolbar --}}
-    <div class="card border-0 shadow-sm mb-3 overflow-hidden design-hero">
+    <div class="card border-0 shadow-sm mb-3 design-hero">
         <div class="card-body p-3 p-md-4">
             <div class="d-flex flex-wrap align-items-center gap-3">
                 <div class="d-flex align-items-center gap-3">
@@ -19,10 +19,15 @@
                     </div>
                 </div>
 
-                <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
-                    <div class="input-group input-group-sm" style="width: 220px;">
+                <div x-data="tomMonthSelect({
+                    value: @entangle('month').live,
+                    options: @js($monthOptions),
+                    placeholder: 'Select month…'
+                })" x-init="mount()"
+                    class="ms-auto d-flex flex-wrap align-items-center gap-2">
+                    <div wire:ignore class="input-group input-group-sm" style="width: 220px;">
                         <span class="input-group-text bg-white"><i class="bi bi-calendar2-month"></i></span>
-                        <input type="month" class="form-control" wire:model.live="month">
+                        <select x-ref="select"></select>
                     </div>
 
                     <div class="input-group input-group-sm" style="width: 260px;">
@@ -35,7 +40,6 @@
                         </select>
                     </div>
                 </div>
-
             </div>
 
             {{-- KPI chips --}}
@@ -220,27 +224,34 @@
 
                                 <div class="vr mx-2 d-none d-md-block"></div>
 
+                                {{-- Range controls --}}
                                 @if ($compareMode === 'range')
-                                    {{-- Range controls --}}
-                                    <div class="d-flex flex-wrap align-items-center gap-2"
-                                        x-show="$wire.compareMode === 'range'">
-                                        <div class="input-group input-group-sm" style="width: 180px;">
-                                            <span class="input-group-text bg-white">Start</span>
-                                            <input type="month" class="form-control" wire:model.live="startMonth">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div x-data="tomMonthSelect({ value: @entangle('startMonth').live, options: @js($monthOptions), placeholder: 'Start…' })" x-init="mount()"
+                                            wire:key="cmp-range-start">
+                                            <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
+                                                <span class="input-group-text bg-white">Start</span>
+                                                <select x-ref="select"></select>
+                                            </div>
                                         </div>
-                                        <div class="input-group input-group-sm" style="width: 180px;">
-                                            <span class="input-group-text bg-white">End</span>
-                                            <input type="month" class="form-control" wire:model.live="endMonth">
+                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
+                                            wire:key="cmp-range-end">
+                                            <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
+                                                <span class="input-group-text bg-white">End</span>
+                                                <select x-ref="select"></select>
+                                            </div>
                                         </div>
                                     </div>
                                 @else
                                     {{-- Rolling controls --}}
-                                    <div class="d-flex flex-wrap align-items-center gap-2"
-                                        x-show="$wire.compareMode === 'rolling'">
-                                        <div class="input-group input-group-sm" style="width: 220px;">
-                                            <span class="input-group-text bg-white"><i
-                                                    class="bi bi-calendar2-month"></i></span>
-                                            <input type="month" class="form-control" wire:model.live="endMonth">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
+                                            wire:key="cmp-rolling-end">
+                                            <div class="input-group input-group-sm" style="width: 220px;" wire:ignore>
+                                                <span class="input-group-text bg-white"><i
+                                                        class="bi bi-calendar2-month"></i></span>
+                                                <select x-ref="select"></select>
+                                            </div>
                                         </div>
                                         <select class="form-select form-select-sm" style="width: 110px;"
                                             wire:model.live="rollingN">
@@ -251,7 +262,6 @@
                                         </select>
                                     </div>
                                 @endif
-
                                 <div class="vr mx-2 d-none d-md-block"></div>
 
                                 {{-- View toggles (local to chart via Alpine) --}}
@@ -350,7 +360,6 @@
 
 @pushOnce('extraCss')
     <style>
-        /* Hero styling */
         .design-hero {
             background:
                 radial-gradient(1200px 200px at -10% -20%, rgba(99, 102, 241, 0.15), transparent 60%),
@@ -374,14 +383,81 @@
         .chart-shell {
             height: 380px;
         }
-
-        /* keep the top toolbar visible while scrolling */
-        .design-hero .card-body {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
     </style>
+@endPushOnce
+
+@pushOnce('extraJs')
+    <script>
+        function tomMonthSelect({
+            value,
+            options,
+            placeholder = 'Select…'
+        }) {
+            return {
+                ts: null,
+                value, // entangled with Livewire (e.g. $this->month)
+                options, // [{value, text}, ...]
+                mount() {
+                    // populate the <select>
+                    const sel = this.$refs.select;
+                    sel.innerHTML = '';
+                    for (const opt of (this.options || [])) {
+                        const o = document.createElement('option');
+                        o.value = opt.value;
+                        o.textContent = opt.label;
+                        sel.appendChild(o);
+                    }
+
+                    // init Tom Select
+                    this.ts = new TomSelect(sel, {
+                        maxItems: 1,
+                        create: false,
+                        allowEmptyOption: false,
+                        persist: true,
+                        selectOnTab: true,
+                        placeholder,
+                        plugins: ['dropdown_input'],
+                        render: {
+                            option: (data, escape) => `<div>${escape(data.text)}</div>`,
+                            item: (data, escape) => `<div>${escape(data.text)}</div>`
+                        },
+                    });
+
+                    // initial value (if Livewire already has one)
+                    if (this.value) {
+                        this.ts.setValue(this.value, true);
+                    }
+
+                    // when user selects → push to Livewire
+                    this.ts.on('change', (v) => {
+                        // prevent feedback loops: only set if changed
+                        if (this.value !== v) this.value = v; // entangle updates $wire.month
+                    });
+
+                    // when Livewire changes (e.g., programmatic updates) → update Tom Select
+                    this.$watch('value', (v) => {
+                        if (!this.ts) return;
+                        const current = this.ts.getValue();
+                        if (current !== v) {
+                            // ensure option exists; if months are dynamic, add it on the fly
+                            if (v && !this.ts.options[v]) {
+                                const label = v; // or compute a label here if needed
+                                this.ts.addOption({
+                                    value: v,
+                                    text: label
+                                });
+                            }
+                            this.ts.setValue(v || '', true);
+                        }
+                    });
+                },
+                destroy() {
+                    this.ts?.destroy();
+                    this.ts = null;
+                }
+            }
+        }
+    </script>
 @endPushOnce
 
 @pushOnce('extraJs')

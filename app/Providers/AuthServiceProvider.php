@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
+
+use App\Domain\Signature\Entities\UserSignature as DomainUserSignature;
+use App\Policies\SignaturePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -14,7 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        //
+        DomainUserSignature::class => SignaturePolicy::class,
     ];
 
     /**
@@ -28,5 +31,6 @@ class AuthServiceProvider extends ServiceProvider
             //     : in_array($user->email, ['yuli@daijo.co.id', 'raymond@daijo.co.id']);
             return $user->role->name === 'SUPERADMIN' || in_array($user->email, ['yuli@daijo.co.id']);
         });
+        $this->registerPolicies();
     }
 }

@@ -1550,6 +1550,113 @@ class DisciplinePageController extends Controller
         }
     }
 
+    // public function getDepartmentStatusYayasan(Request $request)
+    // {
+    //         $selectedMonth = $request->input("month");
+    //         $currentYear = $request->input("year");
+
+    //         $selectedDate = Carbon::createFromDate($currentYear, $selectedMonth, 1);
+    //         $cutoffDate = $selectedDate->copy()->subMonths(6)->startOfMonth();
+
+    //     $employees = EvaluationData::with('karyawan')
+    //         ->whereHas('karyawan', function ($query) use ($cutoffDate) {
+    //             $query
+    //                 ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+    //                 ->where('start_date', '<', $cutoffDate);
+    //         })
+    //         ->whereMonth('month', $selectedMonth)
+    //         ->get()
+    //         ->groupBy('dept');
+
+    //     $actualdata = EvaluationData::with('karyawan')
+    //         ->whereHas('karyawan', function ($query) use ($cutoffDate) {
+    //             $query
+    //                 ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+    //                 ->where('start_date', '<', $cutoffDate);
+    //         })
+    //         ->whereMonth('month', $selectedMonth)
+    //         ->whereNotNull('depthead')
+    //         ->where('depthead', '!=', '')
+    //         ->get()
+    //         ->groupBy('dept');
+
+    //     // Initialize department statuses
+    //     $departmentStatus = [];
+
+    //     $departments = Department::pluck('name', 'dept_no');
+
+    //     // Loop through employees to assign department names and statuses
+    //     foreach ($employees as $dept_no => $employeeGroup) {
+    //         $departmentName = $departments->get($dept_no, 'Unknown Department');
+
+    //         // Check if department has valid `depthead` entries in `$actualdata`
+    //         $departmentStatus[$departmentName] = isset($actualdata[$dept_no])
+    //             ? 'Ready'
+    //             : 'Not Ready';
+    //     }
+
+    //     // // Debugging output (remove in production)
+    //     // dd($departmentStatus);
+
+    //     return view(
+    //         'setting.exportYayasanJpayroll',
+    //         compact('departmentStatus', 'selectedMonth', 'currentYear'),
+    //     );
+    // }
+
+    // public function getDepartmentStatusYayasan(Request $request)
+    // {
+    //     try {
+    //         $selectedMonth = $request->input('month');
+    //         $currentYear = $request->input('year');
+
+    //         $selectedDate = Carbon::createFromDate($currentYear, $selectedMonth, 1);
+    //         $cutoffDate = $selectedDate->copy()->subMonths(6)->startOfMonth();
+
+    //         $employees = EvaluationData::with('karyawan')
+    //             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
+    //                 $query
+    //                     ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+    //                     ->where('start_date', '<', $cutoffDate);
+    //             })
+    //             ->whereMonth('month', $selectedMonth)
+    //             ->get()
+    //             ->groupBy('dept');
+
+    //         $actualdata = EvaluationData::with('karyawan')
+    //             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
+    //                 $query
+    //                     ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+    //                     ->where('start_date', '<', $cutoffDate);
+    //             })
+    //             ->whereMonth('month', $selectedMonth)
+    //             ->whereNotNull('depthead')
+    //             ->where('depthead', '!=', '')
+    //             ->get()
+    //             ->groupBy('dept');
+
+    //         $departments = Department::pluck('name', 'dept_no');
+
+    //         $departmentStatus = [];
+    //         foreach ($employees as $dept_no => $employeeGroup) {
+    //             $departmentName = $departments->get($dept_no, 'Unknown Department');
+    //             $departmentStatus[$departmentName] = isset($actualdata[$dept_no])
+    //                 ? 'Ready'
+    //                 : 'Not Ready';
+    //         }
+
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'data' => $departmentStatus,
+    //         ]);
+    //     } catch (\Throwable $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
     public function exportYayasanJpayrollFunction(Request $request)
     {
         $selectedMonth = $request->input('filter_status');
