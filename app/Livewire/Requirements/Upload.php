@@ -15,7 +15,7 @@ class Upload extends Component
 {
     use WithFileUploads;
 
-    public Department $department; // scope
+    public ?Department $department = null; // scope
 
     public ?int $requirementId = null;
 
@@ -25,14 +25,16 @@ class Upload extends Component
     public $valid_from;
 
     #[On('open-upload')]
-    public function open($requirementId): void
+    public function open($requirementId, $departmentId): void
     {
-        // dd($requirementId);
+        // dd($departmentId);
         $this->resetErrorBag();
         $this->resetValidation();
         $this->file = null;
         $this->valid_from = now()->toDateString();
         $this->requirementId = $requirementId;
+        $this->department = Department::findOrFail($departmentId);
+
         $this->dispatch('show-upload-modal');
     }
 

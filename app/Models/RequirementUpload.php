@@ -63,4 +63,9 @@ class RequirementUpload extends Model
 
         return true;
     }
+
+    public function uploadedBy(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'uploaded_by');
+    }
 }
