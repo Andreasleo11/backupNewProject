@@ -8,12 +8,14 @@ use Livewire\Component;
 class SyncProgress extends Component
 {
     public string $companyArea = '10000';
+
     public array $data = [];
+
     public array $events = [];
 
     public bool $compact = true;
 
-    public function mount(String $companyArea = '10000'): void 
+    public function mount(string $companyArea = '10000'): void
     {
         // Cache::forget("sync_progress_10000");
         // Cache::forget("sync_progress_events_10000");
@@ -31,7 +33,7 @@ class SyncProgress extends Component
     public function toggleDetail(): void
     {
         // if (optional(auth()->user()->role)->name !== 'SUPERADMIN') return;
-        $this->compact = !$this->compact;
+        $this->compact = ! $this->compact;
         session(['sync_progress.compact' => $this->compact]);
     }
 

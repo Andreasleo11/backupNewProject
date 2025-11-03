@@ -21,6 +21,6 @@ class LockableCard extends Component
      */
     public function render(): View|Closure|string
     {
-        return view("components.lockable-card");
+        return view('components.lockable-card');
     }
 }

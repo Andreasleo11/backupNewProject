@@ -2,9 +2,7 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -30,11 +28,11 @@ class DeliveryScheduleStepProgressed implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [new PrivateChannel("delivery-schedule-progress")];
+        return [new PrivateChannel('delivery-schedule-progress')];
     }
 
     public function broadcastAs(): string
     {
-        return "step.progressed";
+        return 'step.progressed';
     }
 }

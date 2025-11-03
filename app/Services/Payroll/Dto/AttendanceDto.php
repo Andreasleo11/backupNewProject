@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Services\Payroll\Dto;
@@ -19,14 +20,18 @@ final class AttendanceDto
     public static function fromApi(array $r): self
     {
         $date = CarbonImmutable::createFromFormat('d/m/Y', $r['ShiftDate']);
-        $sakit = (int)($r['OP'] ?? 0) + (int)($r['HOS'] ?? 0) + (int)($r['WA'] ?? 0) + (int)($r['HOSWA'] ?? 0);
+        $sakit =
+            (int) ($r['OP'] ?? 0) +
+            (int) ($r['HOS'] ?? 0) +
+            (int) ($r['WA'] ?? 0) +
+            (int) ($r['HOSWA'] ?? 0);
 
         return new self(
-            nik: (string)($r['NIK'] ?? ''),
+            nik: (string) ($r['NIK'] ?? ''),
             shiftDate: $date->startOfDay(),
-            alpha: (int)($r['ABS'] ?? 0),
-            telat: (int)($r['LT']  ?? 0),
-            izin:  (int)($r['CT']  ?? 0),
+            alpha: (int) ($r['ABS'] ?? 0),
+            telat: (int) ($r['LT'] ?? 0),
+            izin: (int) ($r['CT'] ?? 0),
             sakit: $sakit,
         );
     }

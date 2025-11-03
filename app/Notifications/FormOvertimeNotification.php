@@ -13,6 +13,7 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
     use Queueable;
 
     private $report;
+
     private $details;
 
     /**
@@ -31,7 +32,7 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ["mail"];
+        return ['mail'];
     }
 
     /**
@@ -39,12 +40,12 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage())
+        return (new MailMessage)
             // ->from(env('MAIL_FROM_ADDRESS', 'pt.daijoindustrial@daijo.co.id'))
-            ->cc($this->details["cc"])
-            ->greeting($this->details["greeting"])
-            ->line(new \Illuminate\Support\HtmlString($this->details["body"]))
-            ->action($this->details["actionText"], $this->details["actionURL"]);
+            ->cc($this->details['cc'])
+            ->greeting($this->details['greeting'])
+            ->line(new \Illuminate\Support\HtmlString($this->details['body']))
+            ->action($this->details['actionText'], $this->details['actionURL']);
     }
 
     /**
@@ -55,7 +56,7 @@ class FormOvertimeNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-                //
-            ];
+            //
+        ];
     }
 }

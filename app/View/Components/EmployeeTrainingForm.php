@@ -2,19 +2,25 @@
 
 namespace App\View\Components;
 
-use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
 class EmployeeTrainingForm extends Component
 {
     public $action;
+
     public $method;
+
     public $employees;
+
     public $employeeId;
+
     public $description;
+
     public $lastTrainingAt;
+
     public $evaluated;
+
     public $submitLabel;
 
     /**
@@ -22,13 +28,13 @@ class EmployeeTrainingForm extends Component
      */
     public function __construct(
         $action,
-        $method = "POST",
+        $method = 'POST',
         $employees = [],
         $employeeId = null,
         $description = null,
         $lastTrainingAt = null,
         $evaluated = null,
-        $submitLabel = "Save",
+        $submitLabel = 'Save',
     ) {
         $this->action = $action;
         $this->method = $method;
@@ -45,6 +51,6 @@ class EmployeeTrainingForm extends Component
      */
     public function render()
     {
-        return view("components.employee-training-form");
+        return view('components.employee-training-form');
     }
 }

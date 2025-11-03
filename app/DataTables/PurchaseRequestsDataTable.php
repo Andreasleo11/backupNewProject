@@ -17,83 +17,82 @@ class PurchaseRequestsDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param QueryBuilder $query Results from query() method.
+     * @param  QueryBuilder  $query  Results from query() method.
      * @return \Yajra\DataTables\EloquentDataTable
      */
-
     protected $statusMap = [
-        1 => "WAITING FOR DEPT HEAD",
-        2 => "WAITING FOR VERIFICATOR",
-        3 => "WAITING FOR DIRECTOR",
-        4 => "APPROVED",
-        5 => "REJECTED",
-        6 => "WAITING FOR PURCHASER",
-        7 => "WAITING FOR GM",
-        8 => "DRAFT",
+        1 => 'WAITING FOR DEPT HEAD',
+        2 => 'WAITING FOR VERIFICATOR',
+        3 => 'WAITING FOR DIRECTOR',
+        4 => 'APPROVED',
+        5 => 'REJECTED',
+        6 => 'WAITING FOR PURCHASER',
+        7 => 'WAITING FOR GM',
+        8 => 'DRAFT',
     ];
 
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn("action", "purchaserequests.action")
-            ->editColumn("status", function ($pr) {
-                return view("partials.pr-status-badge", ["pr" => $pr])->render();
+            ->addColumn('action', 'purchaserequests.action')
+            ->editColumn('status', function ($pr) {
+                return view('partials.pr-status-badge', ['pr' => $pr])->render();
             })
-            ->editColumn("action", function ($pr) {
-                return view("partials.pr-action-buttons", [
-                    "pr" => $pr,
-                    "user" => auth()->user(),
+            ->editColumn('action', function ($pr) {
+                return view('partials.pr-action-buttons', [
+                    'pr' => $pr,
+                    'user' => auth()->user(),
                 ])->render();
             })
-            ->editColumn("date_pr", function ($pr) {
-                return Carbon::parse($pr->date_pr)->setTimezone("Asia/Jakarta")->format("d-m-Y");
+            ->editColumn('date_pr', function ($pr) {
+                return Carbon::parse($pr->date_pr)->setTimezone('Asia/Jakarta')->format('d-m-Y');
             })
-            ->editColumn("approved_at", function ($pr) {
+            ->editColumn('approved_at', function ($pr) {
                 return $pr->approved_date
                     ? Carbon::parse($pr->approved_at)
-                        ->setTimezone("Asia/Jakarta")
-                        ->format("d-m-Y (H:i)")
-                    : "";
+                        ->setTimezone('Asia/Jakarta')
+                        ->format('d-m-Y (H:i)')
+                    : '';
             })
             ->searchPane(
-                "branch",
+                'branch',
                 PurchaseRequest::query()
-                    ->select("branch as value", "branch as label")
+                    ->select('branch as value', 'branch as label')
                     ->distinct()
                     ->get(),
                 function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn("branch", $values);
+                    return $query->whereIn('branch', $values);
                 },
             )
             ->searchPane(
-                "from_department",
+                'from_department',
                 PurchaseRequest::query()
-                    ->select("from_department as value", "from_department as label")
+                    ->select('from_department as value', 'from_department as label')
                     ->distinct()
                     ->get(),
                 function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn("from_department", $values);
+                    return $query->whereIn('from_department', $values);
                 },
             )
             ->searchPane(
-                "to_department",
+                'to_department',
                 PurchaseRequest::query()
-                    ->select("to_department as value", "to_department as label")
+                    ->select('to_department as value', 'to_department as label')
                     ->distinct()
                     ->get(),
                 function (\Illuminate\Database\Eloquent\Builder $query, array $values) {
-                    return $query->whereIn("to_department", $values);
+                    return $query->whereIn('to_department', $values);
                 },
             )
             ->searchPane(
-                "status",
+                'status',
                 PurchaseRequest::query()
                     ->select(
-                        "status as value",
+                        'status as value',
                         DB::raw(
-                            "(CASE " .
+                            '(CASE '.
                                 implode(
-                                    " ",
+                                    ' ',
                                     array_map(
                                         function ($key, $label) {
                                             return "WHEN status = $key THEN '$label'";
@@ -101,34 +100,31 @@ class PurchaseRequestsDataTable extends DataTable
                                         array_keys($this->statusMap),
                                         $this->statusMap,
                                     ),
-                                ) .
-                                " ELSE status END) as label",
+                                ).
+                                ' ELSE status END) as label',
                         ),
                     )
                     ->distinct()
                     ->get(),
             )
-            ->rawColumns(["action", "status"])
-            ->setRowId("id");
+            ->rawColumns(['action', 'status'])
+            ->setRowId('id');
     }
 
     /**
      * Get query source of dataTable.
-     *
-     * @param \App\Models\PurchaseRequest $model
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
         $user = auth()->user();
         $userDepartmentName = $user->department->name ?? null;
-        $isPersonaliaHead = $userDepartmentName === "PERSONALIA" && $user->is_head === 1;
+        $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && $user->is_head === 1;
         $isHead = $user->is_head === 1;
-        $isPurchaser = $user->specification->name === "PURCHASER";
+        $isPurchaser = $user->specification->name === 'PURCHASER';
         $isGM = $user->is_gm === 1;
 
         // Initialize the query
-        $query = $model->newQuery()->with("files", "createdBy");
+        $query = $model->newQuery()->with('files', 'createdBy');
 
         $query->where(function ($q) use ($userDepartmentName, $user, $isPersonaliaHead, $isGM, $isHead, $isPurchaser) {
             if ($isPersonaliaHead) {
@@ -229,69 +225,63 @@ class PurchaseRequestsDataTable extends DataTable
 
     /**
      * Optional method if you want to use html builder.
-     *
-     * @return \Yajra\DataTables\Html\Builder
      */
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId("purchaserequests-table")
+            ->setTableId('purchaserequests-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->dom("PBflrtip")
+            ->dom('PBflrtip')
             ->addColumnDef([
-                "searchPanes" => [
-                    "show" => true,
-                    "viewTotal" => false,
-                    "viewCount" => false,
+                'searchPanes' => [
+                    'show' => true,
+                    'viewTotal' => false,
+                    'viewCount' => false,
                 ],
             ])
             ->orderBy(3)
             // ->selectStyleSingle()
             ->buttons([
-                Button::make("excel"),
-                Button::make("csv"),
-                Button::make("pdf"),
-                Button::make("print"),
+                Button::make('excel'),
+                Button::make('csv'),
+                Button::make('pdf'),
+                Button::make('print'),
             ]);
     }
 
     /**
      * Get the dataTable columns definition.
-     *
-     * @return array
      */
     public function getColumns(): array
     {
         return [
-            Column::make("id"),
-            Column::make("doc_num"),
-            Column::make("branch"),
-            Column::make("date_pr"),
-            Column::make("from_department"),
-            Column::make("to_department"),
-            Column::make("pr_no"),
-            Column::make("supplier"),
-            Column::computed("action")
+            Column::make('id'),
+            Column::make('doc_num'),
+            Column::make('branch'),
+            Column::make('date_pr'),
+            Column::make('from_department'),
+            Column::make('to_department'),
+            Column::make('pr_no'),
+            Column::make('supplier'),
+            Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass("text-center"),
-            Column::computed("status")
+                ->addClass('text-center'),
+            Column::computed('status')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass("text-center"),
-            Column::make("approved_at")->title("Approved Date")->data("approved_at"),
-            Column::make("po_number"),
+                ->addClass('text-center'),
+            Column::make('approved_at')->title('Approved Date')->data('approved_at'),
+            Column::make('po_number'),
         ];
     }
 
     /**
      * Get filename for export.
-     *
-     * @return string
      */
     protected function filename(): string
     {
-        return "PurchaseRequests_" . date("YmdHis");
+        return 'PurchaseRequests_'.date('YmdHis');
     }
 }

@@ -2,20 +2,13 @@
 
 namespace App\Exports;
 
-use App\Models\EvaluationData;
-use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithCustomStartCell;
 use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 
-class YayasanDisciplineFullExport implements
-    FromCollection,
-    WithHeadings,
-    WithMapping,
-    WithCustomStartCell,
-    WithStrictNullComparison
+class YayasanDisciplineFullExport implements FromCollection, WithCustomStartCell, WithHeadings, WithMapping, WithStrictNullComparison
 {
     protected $employees;
 
@@ -34,34 +27,34 @@ class YayasanDisciplineFullExport implements
 
     public function startCell(): string
     {
-        return "A1";
+        return 'A1';
     }
 
     public function headings(): array
     {
         return [
-            "ID",
-            "NIK",
-            "Dept",
-            "Karyawan Name",
-            "Status",
-            "Start Date",
-            "Month",
-            "Alpha",
-            "Telat",
-            "Izin",
-            "Sakit",
-            "Kemampuan Kerja",
-            "Kecerdasan Kerja",
-            "Kualitas Kerja",
-            "Disiplin Kerja",
-            "Kepatuhan Kerja",
-            "Lembur",
-            "Efektifitas Kerja",
-            "Ringan Tangan",
-            "Integritas",
-            "Total", // Add more column titles as needed
-            "Grade Akhir", //column baru
+            'ID',
+            'NIK',
+            'Dept',
+            'Karyawan Name',
+            'Status',
+            'Start Date',
+            'Month',
+            'Alpha',
+            'Telat',
+            'Izin',
+            'Sakit',
+            'Kemampuan Kerja',
+            'Kecerdasan Kerja',
+            'Kualitas Kerja',
+            'Disiplin Kerja',
+            'Kepatuhan Kerja',
+            'Lembur',
+            'Efektifitas Kerja',
+            'Ringan Tangan',
+            'Integritas',
+            'Total', // Add more column titles as needed
+            'Grade Akhir', // column baru
         ];
     }
 
@@ -71,11 +64,11 @@ class YayasanDisciplineFullExport implements
 
         return [
             $row->id,
-            $row->karyawan->NIK ?? "N/A",
+            $row->karyawan->NIK ?? 'N/A',
             $row->dept,
-            $row->karyawan->Nama ?? "N/A", // Assuming 'karyawan' relation has 'name'
-            $row->karyawan->status ?? "N/A",
-            $row->karyawan->start_date ?? "N/A",
+            $row->karyawan->Nama ?? 'N/A', // Assuming 'karyawan' relation has 'name'
+            $row->karyawan->status ?? 'N/A',
+            $row->karyawan->start_date ?? 'N/A',
             $row->Month,
             $row->Alpha,
             $row->Telat,
@@ -98,13 +91,13 @@ class YayasanDisciplineFullExport implements
     private function determineGrade($total)
     {
         if ($total >= 91) {
-            return "A";
+            return 'A';
         } elseif ($total >= 71) {
-            return "B";
+            return 'B';
         } elseif ($total >= 61) {
-            return "C";
+            return 'C';
         } else {
-            return "D";
+            return 'D';
         }
     }
 }

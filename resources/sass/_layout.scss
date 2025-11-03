@@ -1,0 +1,29 @@
+@use 'mixins' as *;
+
+.wrapper {
+  display: flex;
+  min-height: 100dvh;
+}
+.main {
+  min-height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.navbar {
+  width: 100%;
+  color: #fff;
+  background: linear-gradient(90deg, var(--navbar-bg) 0%, var(--brand-700) 100%);
+  box-shadow: var(--shadow-sm);
+  h4 {
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Optional push effect hook */
+body.sidebar-open .main {
+  margin-left: 0;
+}
+
+/* Transitions */
+@include reduced-motion();

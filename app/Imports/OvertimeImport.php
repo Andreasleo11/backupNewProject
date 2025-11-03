@@ -2,16 +2,18 @@
 
 namespace App\Imports;
 
-use App\Models\Employee;
 use App\Models\DetailFormOvertime;
+use App\Models\Employee;
 use Carbon\Carbon;
-use Maatwebsite\Excel\Concerns\ToCollection;
 use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
 
 class OvertimeImport implements ToCollection
 {
     protected $headerOvertimeId;
+
     protected $isAfterHour;
+
     public $createdCount = 0;
 
     public function __construct($headerOvertimeId, $isAfterHour)
@@ -26,9 +28,9 @@ class OvertimeImport implements ToCollection
 
         foreach ($dataRows as $row) {
             $employeeId = $row[0];
-            $employee = Employee::where("NIK", $employeeId)->first();
+            $employee = Employee::where('NIK', $employeeId)->first();
 
-            if (!$employee) {
+            if (! $employee) {
                 continue;
             }
 
@@ -47,10 +49,10 @@ class OvertimeImport implements ToCollection
             }
 
             // ✅ Skip jika kombinasi NIK + overtime_date sudah ada
-            $exists = DetailFormOvertime::where("NIK", $employee->NIK)
-                ->where("overtime_date", $overtimeDate)
-                ->whereHas("header", function ($query) {
-                    $query->where("is_after_hour", $this->isAfterHour);
+            $exists = DetailFormOvertime::where('NIK', $employee->NIK)
+                ->where('overtime_date', $overtimeDate)
+                ->whereHas('header', function ($query) {
+                    $query->where('is_after_hour', $this->isAfterHour);
                 })
                 ->exists();
 
@@ -59,17 +61,17 @@ class OvertimeImport implements ToCollection
             }
 
             DetailFormOvertime::create([
-                "header_id" => $this->headerOvertimeId,
-                "NIK" => $employee->NIK,
-                "name" => $employee->Nama,
-                "overtime_date" => $overtimeDate,
-                "job_desc" => $jobDesc,
-                "start_date" => $startDate,
-                "start_time" => $startTime,
-                "end_date" => $endDate,
-                "end_time" => $endTime,
-                "break" => $break,
-                "remarks" => $remarks,
+                'header_id' => $this->headerOvertimeId,
+                'NIK' => $employee->NIK,
+                'name' => $employee->Nama,
+                'overtime_date' => $overtimeDate,
+                'job_desc' => $jobDesc,
+                'start_date' => $startDate,
+                'start_time' => $startTime,
+                'end_date' => $endDate,
+                'end_time' => $endTime,
+                'break' => $break,
+                'remarks' => $remarks,
             ]);
             $this->createdCount++;
         }
@@ -80,11 +82,11 @@ class OvertimeImport implements ToCollection
         // Check if value is numeric (Excel date format)
         if (is_numeric($value)) {
             return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format(
-                "Y-m-d",
+                'Y-m-d',
             );
         } else {
             // Assume the value is a standard date string
-            return \Carbon\Carbon::createFromFormat("d/m/Y", $value)->format("Y-m-d");
+            return \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
         }
     }
 
@@ -94,17 +96,18 @@ class OvertimeImport implements ToCollection
             // Check if the value is a numeric time (Excel time format)
             if (is_numeric($value)) {
                 return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format(
-                    "H:i:s",
+                    'H:i:s',
                 );
             } else {
                 // Attempt to parse various time formats
-                $formats = ["H:i", "H:i:s", "g:i A", "g:i:s A", "H.i"];
+                $formats = ['H:i', 'H:i:s', 'g:i A', 'g:i:s A', 'H.i'];
                 foreach ($formats as $format) {
                     $parsedTime = Carbon::createFromFormat($format, $value);
                     if ($parsedTime !== false) {
-                        return $parsedTime->format("H:i:s");
+                        return $parsedTime->format('H:i:s');
                     }
                 }
+
                 // If none of the formats match, return null or handle the error as needed
                 return null;
             }

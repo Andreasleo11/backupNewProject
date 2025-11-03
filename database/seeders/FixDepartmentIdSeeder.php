@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class FixDepartmentIdSeeder extends Seeder
@@ -31,8 +30,8 @@ class FixDepartmentIdSeeder extends Seeder
 
         // Update users based on the new department ID mapping
         foreach ($deptMapping as $oldDeptId => $newDeptId) {
-            \App\Models\User::where("department_id", $oldDeptId)->update([
-                "department_id" => $newDeptId,
+            \App\Models\User::where('department_id', $oldDeptId)->update([
+                'department_id' => $newDeptId,
             ]);
         }
     }

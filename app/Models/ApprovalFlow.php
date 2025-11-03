@@ -9,11 +9,11 @@ class ApprovalFlow extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["name", "slug", "created_by"];
+    protected $fillable = ['name', 'slug', 'created_by'];
 
     public function creator()
     {
-        return $this->belongsTo(User::class, "created_by");
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function steps()

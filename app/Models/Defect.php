@@ -11,13 +11,13 @@ class Defect extends Model
     use HasFactory, LogsActivity;
 
     protected $fillable = [
-        "detail_id",
-        "category_id",
-        "is_daijo",
-        "is_customer",
-        "is_supplier",
-        "quantity",
-        "remarks",
+        'detail_id',
+        'category_id',
+        'is_daijo',
+        'is_customer',
+        'is_supplier',
+        'quantity',
+        'remarks',
     ];
 
     public function detail()
@@ -27,6 +27,6 @@ class Defect extends Model
 
     public function category()
     {
-        return $this->hasOne(DefectCategory::class, "id", "category_id");
+        return $this->hasOne(DefectCategory::class, 'id', 'category_id');
     }
 }

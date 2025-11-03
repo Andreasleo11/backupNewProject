@@ -10,8 +10,8 @@ class InspectionJudgement extends Model
     use HasFactory;
 
     protected $fillable = [
-        "detail_inspection_report_document_number",
-        "pass_quantity",
-        "reject_quantity",
+        'detail_inspection_report_document_number',
+        'pass_quantity',
+        'reject_quantity',
     ];
 }

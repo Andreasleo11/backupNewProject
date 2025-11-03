@@ -9,10 +9,10 @@ class MasterDataPr extends Model
 {
     use HasFactory;
 
-    protected $fillable = ["name", "currency", "price", "latest_price"];
+    protected $fillable = ['name', 'currency', 'price', 'latest_price'];
 
     public function details()
     {
-        $this->belongsTo(DetailPurchaseRequest::class, "name", "item_name");
+        $this->belongsTo(DetailPurchaseRequest::class, 'name', 'item_name');
     }
 }
