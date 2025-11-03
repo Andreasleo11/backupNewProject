@@ -105,6 +105,11 @@ class MonthlyBudgetSummaryReportController extends Controller
         // dd($report->details->where('name', 'SELANG PU TRANSPARANT'));
         $this->updateStatus($report);
 
+        // Extract month and year from report_date
+        $reportDate = Carbon::parse($report->report_date);
+        $month = $reportDate->month;
+        $year = $reportDate->year;
+
         // Prepare an array to hold grouped details
         $groupedDetails = [];
         $detailsToDelete = [];
