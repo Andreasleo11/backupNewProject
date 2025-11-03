@@ -95,6 +95,8 @@
                         Department {!! $this->sortIcon('departments.name') !!}
                     </th>
 
+                    <th>File</th>
+
                     <th role="button" wire:click="sortBy('status')">
                         Status {!! $this->sortIcon('status') !!}
                     </th>
