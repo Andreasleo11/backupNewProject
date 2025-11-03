@@ -1534,42 +1534,19 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
 
-    Route::get('monthlyBudgetSummaryReports', MonthlyBudgetSummaryIndex::class)->name(
-        'monthly-budget-summary-report.index',
-    );
-    Route::get('monthlyBudgetSummaryReport/{id}', [
-        MonthlyBudgetSummaryReportController::class,
-        'show',
-    ])->name('monthly.budget.summary.report.show');
-    Route::post('monthlyBudgetSummaryReport', [
-        MonthlyBudgetSummaryReportController::class,
-        'store',
-    ])->name('monthly.budget.summary.report.store');
-    Route::delete('monthlyBudgetSummaryReport/{id}', [
-        MonthlyBudgetSummaryReportController::class,
-        'destroy',
-    ])->name('monthly.budget.summary.report.delete');
-    Route::put('monthlyBudgetSummaryReport/save-autograph/{id}', [
-        MonthlyBudgetSummaryReportController::class,
-        'saveAutograph',
-    ])->name('monthly.budget.summary.save.autograph');
-    Route::put('monthlyBudgetSummaryReport/{id}/reject', [
-        MonthlyBudgetSummaryReportController::class,
-        'reject',
-    ])->name('monthly.budget.summary.report.reject');
-    Route::put('monthlyBudgetSummaryReport/{id}/cancel', [
-        MonthlyBudgetSummaryReportController::class,
-        'cancel',
-    ])->name('monthly.budget.summary.report.cancel');
+    Route::prefix('monthly-budget-summaries')->group(function() {
+        Route::get('/', MonthlyBudgetSummaryIndex::class)->name('monthly-budget-summary-report.index');
+        Route::get('/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
+        Route::post('/', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
+        Route::delete('/id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
+        Route::put('/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
+        Route::put('/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
+        Route::put('/{id}/cancel', [MonthlyBudgetSummaryReportController::class, 'cancel'])->name('monthly.budget.summary.report.cancel');
+        Route::post('/{id}/refresh', [MonthlyBudgetSummaryReportController::class, 'refresh'])->name('monthly-budget-summary.refresh');
+    });
 
-    Route::put('monthlyBudgetReportSummaryDetail/{id}', [
-        MonthlyBudgetReportSummaryDetailController::class,
-        'update',
-    ])->name('monthly.budget.report.summary.detail.update');
-    Route::delete('monthlyBudgetReportSummaryDetail/{id}', [
-        MonthlyBudgetReportSummaryDetailController::class,
-        'destroy',
-    ])->name('monthly.budget.report.summary.detail.destroy');
+    Route::put('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
+    Route::delete('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'destroy'])->name('monthly.budget.report.summary.detail.destroy');
 
     Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name(
         'monthly.budget.report.index',
