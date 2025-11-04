@@ -114,6 +114,12 @@ class HeaderFormOvertime extends Model
                             $query->where('name', 'LOGISTIC');
                         })
                         ->first();
+                } elseif($report->department->name === 'QA') {
+                    $user = User::where('is_head', 1)
+                        ->whereHas('department', function ($query) {
+                            $query->where('name', 'QC');
+                        })
+                        ->first();
                 } else {
                     $user = $deptHead;
                 }
