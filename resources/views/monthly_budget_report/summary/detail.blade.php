@@ -24,6 +24,12 @@
         $authUser = Auth::user();
     @endphp
 
+    @if (session('status'))
+        <div class="alert alert-info">
+            {{ session('status') }}
+        </div>
+    @endif
+
     @include('partials.alert-success-error')
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
@@ -45,6 +51,13 @@
                 </button>
 
                 @include('partials.upload-files-modal', ['doc_id' => $report->doc_num])
+
+                <form action="{{ route('monthly-budget-summary.refresh', $report->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-primary" title="Refresh Newly Approved Departments" data-bs-target="tooltip">
+                        <i class='bx bx-refresh'></i> Refresh
+                    </button>
+                </form>
             @endif
         </div>
     </div>
