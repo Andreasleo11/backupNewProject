@@ -31,14 +31,14 @@
     <div class="wrapper">
         <livewire:sidebar />
 
-        <div class="main">
+        <main class="main">
             @include('partials.navbar')
 
-            <main class="content px-4 px-md-5 py-4">
+            <div class="content">
                 {{ $slot ?? '' }}
                 @yield('content')
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 
     {{-- Toast: always present --}}

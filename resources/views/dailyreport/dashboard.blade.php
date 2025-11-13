@@ -18,7 +18,7 @@
 
     {{-- Filter Tanggal --}}
     <div class="max-w-7xl mx-auto mb-4">
-        <form method="GET" action="{{ route('daily-report.user') }}" class="flex items-center gap-4">
+        <form method="GET" action="{{ route('daily-reports.index') }}" class="flex items-center gap-4">
             <label for="filter_date" class="text-sm font-medium text-gray-700">Filter Tanggal:</label>
             <input type="date" id="filter_date" name="filter_date" value="{{ request('filter_date') }}"
                 class="border border-gray-300 rounded px-3 py-2">
@@ -26,7 +26,7 @@
                 Filter
             </button>
             @if (request('filter_date'))
-                <a href="{{ route('daily-report.user') }}" class="text-sm text-red-600 hover:underline">Reset</a>
+                <a href="{{ route('daily-reports.index') }}" class="text-sm text-red-600 hover:underline">Reset</a>
             @endif
         </form>
     </div>
