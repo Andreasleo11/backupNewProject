@@ -275,49 +275,13 @@ Route::get('/fctinventoryfg-sync', [FctInventoryFgService::class, 'SyncData']);
 Route::get('/fctlineproduction-sync', [FctLineProductionService::class, 'SyncData']);
 Route::get('/forecast-sync', [FctForecastService::class, 'SyncData']);
 
-// TESTING SYNC DATA END
-
-Route::get('/user-list', [UserRoleController::class, 'User']);
-
 // Route::get('/', fn() => view('welcome'))->name('/');
-Route::get('/test-overtime', function () {
-    $params = [
-        'CompanyArea' => '10000', // Mandatory
-        'NIK' => '05551', // Mandatory              // Optional
-        'Date1' => '01/05/2022', // Optional
-        'Date2' => '30/04/2025', // Optional
-    ];
 
-    // Filter null values (biar gak dikirim kalau kosong)
-    $filteredParams = array_filter($params);
+Route::get('daily-reports/login', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
+Route::post('/daily-reports/login', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
+Route::get('/daily-reports/', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-reports.index');
+Route::post('/daily-reports/logout', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
-    $response = Http::asJson()
-        ->withHeaders([
-            'Authorization' => 'Basic QVBJPUV4VCtEQCFqMDpEQCFqMEBKcDR5cjAxMQ==', // kalau pakai auth
-        ])
-        ->post(
-            'http://192.168.6.75/JPayroll/thirdparty/ext/API_View_Overtime.php',
-            $filteredParams,
-        );
-
-    // Dump response untuk debugging
-    if ($response->successful()) {
-        return response()->json([
-            'success' => true,
-            'data' => $response->json(),
-        ]);
-    } else {
-        return response()->json([
-            'success' => false,
-            'status' => $response->status(),
-            'body' => $response->body(),
-        ]);
-    }
-});
-
-Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
-Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
-Route::get('/user-list', [UserRoleController::class, 'User']);
 Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 
 Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
@@ -325,23 +289,12 @@ Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'uplo
 Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
 Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
 
-Route::get('/login-daily-employee', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
-Route::post('/login-de', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
-Route::get('/dashboard-daily-report', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-report.user');
-Route::post('/logout-daily-employee', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
 });
 
-Route::get('/', function () {
-    if (Auth::check()) {
-        return redirect('/home'); // Redirect to the home route for authenticated users
-    }
-
-    return redirect('login');
-})->name('/');
-
+Route::get('/', fn () => Auth::check() ? redirect('/home') : redirect('login'))->name('/');
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -350,20 +303,11 @@ Route::get('/change-password', [PasswordChangeController::class, 'showChangePass
 Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
 
 Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
-    Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name(
-        'changeemail.page',
-    );
-    Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name(
-        'email.update',
-    );
-    Route::get('/get-email-settings/{feature}', [
-        SuperAdminHomeController::class,
-        'getEmailSettings',
-    ]);
+    Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
+    Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
+    Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
 
-    Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name(
-        'superadmin.home',
-    );
+    Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
 
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {
@@ -408,20 +352,14 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
             Route::put('/specifications/{id}/update', [SpecificationController::class, 'update'])
                 ->name('specifications.update')
                 ->middleware('permission:update-specifications');
-            Route::delete('/specifications/{id}/delete', [
-                SpecificationController::class,
-                'destroy',
-            ])
+            Route::delete('/specifications/{id}/delete', [SpecificationController::class, 'destroy'])
                 ->name('specifications.delete')
                 ->middleware('permission:delete-specifications');
 
             Route::get('/users-permissions', [UserPermissionController::class, 'index'])
                 ->name('users.permissions.index')
                 ->middleware('permission:get-users-permissions');
-            Route::put('/users-permissions/{id}/update', [
-                UserPermissionController::class,
-                'update',
-            ])
+            Route::put('/users-permissions/{id}/update', [UserPermissionController::class, 'update'])
                 ->name('users.permissions.update')
                 ->middleware('permission:update-users-permissions');
 
@@ -442,24 +380,12 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 });
 
 Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
-    Route::middleware([
-        'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS',
-        'checkSessionId',
-    ])->group(function () {
+    Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
 
-        Route::post('/save-image-path/{reportId}/{section}', [
-            QaqcReportController::class,
-            'saveImagePath',
-        ]);
-        Route::post('/qaqc/{id}/upload-attachment', [
-            QaqcReportController::class,
-            'uploadAttachment',
-        ])->name('uploadAttachment');
-        Route::post('/qaqc/report/{reportId}/autograph/{section}', [
-            QaqcReportController::class,
-            'storeSignature',
-        ])->name('qaqc.report.autograph.store');
+        Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
+        Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
+        Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
         Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])
             ->name('qaqc.report.index')
@@ -467,22 +393,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])
             ->name('qaqc.report.detail')
             ->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)
-            ->name('qaqc.report.edit')
-            ->middleware('permission:edit-vqc-report');
-        Route::get('/qaqc/reports/create', ReportWizard::class)
-            ->name('qaqc.report.create')
-            ->middleware('permission:create-vqc-report');
-        Route::get('qaqc/report/{id}/rejectAuto', [
-            QaqcReportController::class,
-            'rejectAuto',
-        ])->name('qaqc.report.rejectAuto');
-        Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name(
-            'qaqc.report.savePdf',
-        );
-        Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name(
-            'qaqc.report.sendEmail',
-        );
+        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
+        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create')->middleware('permission:create-vqc-report');
+        Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
+        Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
+        Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
         Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])
             ->name('qaqc.report.delete')
             ->middleware('permission:delete-vqc-report');
@@ -497,10 +412,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])
             ->name('qaqc.defectcategory.update')
             ->middleware('permission:update-defect-category');
-        Route::delete('/qaqc/defectcategory/{id}/delete', [
-            DefectCategoryController::class,
-            'destroy',
-        ])
+        Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])
             ->name('qaqc.defectcategory.delete')
             ->middleware('permission:delete-defect-category');
         // adding new defect category
@@ -509,10 +421,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
             ->name('price-log.import')
             ->middleware(['auth']);
 
-        Route::get('/qaqc/reports/redirectToIndex', [
-            QaqcReportController::class,
-            'redirectToIndex',
-        ])->name('qaqc.report.redirect.to.index');
+        Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
         Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
@@ -521,9 +430,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])
             ->name('qaqc.report.download')
             ->middleware('permission:download-vqc-report');
-        Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name(
-            'qaqc.report.preview',
-        );
+        Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
         Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])
             ->name('qaqc.report.lock')
             ->middleware('permission:lock-vqc-report');
@@ -534,52 +441,23 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
             ->name('export.formadjusts')
             ->middleware();
 
-        Route::put('/qaqc/reports/{id}/updateDoNumber', [
-            QaQcReportController::class,
-            'updateDoNumber',
-        ])->name('update.do.number');
+        Route::put('/qaqc/reports/{id}/updateDoNumber', [QaQcReportController::class, 'updateDoNumber'])->name('update.do.number');
 
-        Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name(
-            'qaqc.summarymonth',
-        );
-        Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name(
-            'monthlyreport.details',
-        );
-        Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name(
-            'monthlyreport.export',
-        );
+        Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
+        Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
+        Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
     });
 
-    Route::middleware([
-        'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION',
-        'checkSessionId',
-    ])->group(function () {
+    Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
         // FORM ADJUST SECITON
-        Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name(
-            'adjust.index',
-        );
-        Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name(
-            'save.rawmaterial',
-        );
-        Route::post('/fgwarehouse/save/adjust', [
-            AdjustFormQcController::class,
-            'savewarehouse',
-        ])->name('fgwarehousesave');
-        Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name(
-            'adjustview',
-        );
-        Route::post('/remark/detail/adjust', [
-            AdjustFormQcController::class,
-            'addremarkadjust',
-        ])->name('addremarkadjust');
-        Route::post('/save-autograph-path/{reportId}/{section}', [
-            AdjustFormQcController::class,
-            'saveAutographPath',
-        ]);
+        Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
+        Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
+        Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
+        Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
+        Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
+        Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class, 'saveAutographPath']);
 
-        Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name(
-            'listformadjust',
-        );
+        Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
     });
 
     Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
@@ -609,9 +487,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
-        Route::get('/director/home', [DirectorHomeController::class, 'index'])->name(
-            'director.home',
-        );
+        Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])
             ->name('director.qaqc.index')
             ->middleware('permission:get-vqc-reports-director');
@@ -634,16 +510,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/director/pr/index', [DirectorPurchaseRequestController::class, 'index'])
             ->name('director.pr.index')
             ->middleware('permission:get-pr-director');
-        Route::put('/director/pr/approveSelected', [
-            DirectorPurchaseRequestController::class,
-            'approveSelected',
-        ])
+        Route::put('/director/pr/approveSelected', [DirectorPurchaseRequestController::class, 'approveSelected'])
             ->name('director.pr.approveSelected')
             ->middleware('permission:approve-selected-director');
-        Route::put('/director/pr/rejectSelected', [
-            DirectorPurchaseRequestController::class,
-            'rejectSelected',
-        ])
+        Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])
             ->name('director.pr.rejectSelected')
             ->middleware('permission:reject-selected-director');
     });
@@ -656,66 +526,31 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/pe/listformrequest', [PEController::class, 'view'])
             ->name('pe.formlist')
             ->middleware('permission:get-pe-form-list');
-        Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name(
-            'trial.detail',
-        );
-        Route::post('/pe/listformrequest/detai/updateTonage/{id}', [
-            PEController::class,
-            'updateTonage',
-        ])->name('update.tonage');
+        Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
+        Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
     });
 
     Route::middleware(['checkDepartment:PURCHASING'])->group(function () {
         Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.home');
 
-        Route::get('/store-data', [
-            PurchasingMaterialController::class,
-            'storeDataInNewTable',
-        ])->name('construct_data');
-        Route::get('/insert-material_prediction', [
-            materialPredictionController::class,
-            'processForemindFinalData',
-        ])->name('material_prediction');
-        Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name(
-            'purchasing_home',
-        );
+        Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
+        Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
+        Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
         Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
-        Route::get('/foremind-detail/printCustomer', [
-            PurchasingDetailController::class,
-            'indexcustomer',
-        ]);
+        Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class, 'indexcustomer']);
 
-        Route::get('/foremind-detail/print/excel/{vendor_code}', [
-            PurchasingDetailController::class,
-            'exportExcel',
-        ]);
-        Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [
-            PurchasingDetailController::class,
-            'exportExcelcustomer',
-        ]);
+        Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
+        Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
 
-        Route::get('purchasing/reminder', [PurchasingReminderController::class, 'index'])->name(
-            'reminderindex',
-        );
-        Route::get('purchasing/reminder/detail', [
-            PurchasingReminderController::class,
-            'detail',
-        ])->name('reminderdetail');
+        Route::get('purchasing/reminder', [PurchasingReminderController::class, 'index'])->name('reminderindex');
+        Route::get('purchasing/reminder/detail', [PurchasingReminderController::class, 'detail'])->name('reminderdetail');
 
-        Route::get('purchasing/requirement', [
-            PurchasingRequirementController::class,
-            'index',
-        ])->name('purchasingrequirement.index');
-        Route::get('purchasing/requirement/detail', [
-            PurchasingRequirementController::class,
-            'detail',
-        ])->name('purchasingrequirement.detail');
+        Route::get('purchasing/requirement', [PurchasingRequirementController::class, 'index'])->name('purchasingrequirement.index');
+        Route::get('purchasing/requirement/detail', [PurchasingRequirementController::class, 'detail'])->name('purchasingrequirement.detail');
     });
 
     Route::middleware(['checkDepartment:COMPUTER', 'checkSessionId'])->group(function () {
-        Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name(
-            'computer.home',
-        );
+        Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
     });
 
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
@@ -724,106 +559,45 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
             ->name('indexds')
             ->middleware('permission:get-delivery-schedule-index');
 
-        Route::get('deliveryschedule/raw', [DeliveryScheduleController::class, 'indexraw'])->name(
-            'rawdelsched',
-        );
-        Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name(
-            'indexfinalwip',
-        );
+        Route::get('deliveryschedule/raw', [DeliveryScheduleController::class, 'indexraw'])->name('rawdelsched');
+        Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
 
-        Route::get('delsched/start1', [DeliveryScheduleController::class, 'step1'])->name(
-            'deslsched.step1',
-        );
-        Route::get('delsched/start2', [DeliveryScheduleController::class, 'step2'])->name(
-            'deslsched.step2',
-        );
-        Route::get('delsched/start3', [DeliveryScheduleController::class, 'step3'])->name(
-            'deslsched.step3',
-        );
-        Route::get('delsched/start4', [DeliveryScheduleController::class, 'step4'])->name(
-            'deslsched.step4',
-        );
+        Route::get('delsched/start1', [DeliveryScheduleController::class, 'step1'])->name('deslsched.step1');
+        Route::get('delsched/start2', [DeliveryScheduleController::class, 'step2'])->name('deslsched.step2');
+        Route::get('delsched/start3', [DeliveryScheduleController::class, 'step3'])->name('deslsched.step3');
+        Route::get('delsched/start4', [DeliveryScheduleController::class, 'step4'])->name('deslsched.step4');
 
-        Route::get('delsched/wip/step1', [DeliveryScheduleController::class, 'step1wip'])->name(
-            'delschedwip.step1',
-        );
-        Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name(
-            'delschedwip.step2',
-        );
+        Route::get('delsched/wip/step1', [DeliveryScheduleController::class, 'step1wip'])->name('delschedwip.step1');
+        Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name('delschedwip.step2');
     });
 
     Route::middleware(['checkDepartment:BUSINESS'])->group(function () {
-        Route::get('business/home', [BusinessHomeController::class, 'index'])->name(
-            'business.home',
-        );
+        Route::get('business/home', [BusinessHomeController::class, 'index'])->name('business.home');
     });
 
     Route::middleware(['checkDepartment:ACCOUNTING'])->group(function () {
-        Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name(
-            'accounting.home',
-        );
-        Route::get('accounting/purchase-requests/', [
-            AccountingPurchaseRequestController::class,
-            'index',
-        ])->name('accounting.purchase-request');
+        Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
+        Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
     });
 
     Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
-        Route::get('production/home', [ProductionHomeController::class, 'index'])->name(
-            'production.home',
-        );
+        Route::get('production/home', [ProductionHomeController::class, 'index'])->name('production.home');
 
-        Route::get('/production/capacity-forecast', [
-            CapacityByForecastController::class,
-            'index',
-        ])->name('capacityforecastindex');
-        Route::get('/production/capacity-line', [
-            CapacityByForecastController::class,
-            'line',
-        ])->name('capacityforecastline');
-        Route::get('/production/capacity-distribution', [
-            CapacityByForecastController::class,
-            'distribution',
-        ])->name('capacityforecastdistribution');
-        Route::get('/production/capacity-detail', [
-            CapacityByForecastController::class,
-            'detail',
-        ])->name('capacityforecastdetail');
+        Route::get('/production/capacity-forecast', [CapacityByForecastController::class, 'index'])->name('capacityforecastindex');
+        Route::get('/production/capacity-line', [CapacityByForecastController::class, 'line'])->name('capacityforecastline');
+        Route::get('/production/capacity-distribution', [CapacityByForecastController::class, 'distribution'])->name('capacityforecastdistribution');
+        Route::get('/production/capacity-detail', [CapacityByForecastController::class, 'detail'])->name('capacityforecastdetail');
 
-        Route::get('/production/capacity-forecast/view-step', [
-            CapacityByForecastController::class,
-            'viewstep1',
-        ])->name('viewstep1');
-        Route::get('/production/capacity-forecast/step1', [
-            CapacityByForecastController::class,
-            'step1',
-        ])->name('step1');
-        Route::get('/production/capacity-forecast/step1second', [
-            CapacityByForecastController::class,
-            'step1_second',
-        ])->name('step1second');
+        Route::get('/production/capacity-forecast/view-step', [CapacityByForecastController::class, 'viewstep1'])->name('viewstep1');
+        Route::get('/production/capacity-forecast/step1', [CapacityByForecastController::class, 'step1'])->name('step1');
+        Route::get('/production/capacity-forecast/step1second', [CapacityByForecastController::class, 'step1_second'])->name('step1second');
 
-        Route::get('/production/capacity-forecast/step2', [
-            CapacityByForecastController::class,
-            'step2',
-        ])->name('step2');
-        Route::get('/production/capacity-forecast/step2logic', [
-            CapacityByForecastController::class,
-            'step2logic',
-        ])->name('step2logic');
+        Route::get('/production/capacity-forecast/step2', [CapacityByForecastController::class, 'step2'])->name('step2');
+        Route::get('/production/capacity-forecast/step2logic', [CapacityByForecastController::class, 'step2logic'])->name('step2logic');
 
-        Route::get('/production/capacity-forecast/step3', [
-            CapacityByForecastController::class,
-            'step3',
-        ])->name('step3');
-        Route::get('/production/capacity-forecast/step3logic', [
-            CapacityByForecastController::class,
-            'step3logic',
-        ])->name('step3logic');
-        Route::get('/production/capacity-forecast/step3last', [
-            CapacityByForecastController::class,
-            'step3logiclast',
-        ])->name('step3logiclast');
+        Route::get('/production/capacity-forecast/step3', [CapacityByForecastController::class, 'step3'])->name('step3');
+        Route::get('/production/capacity-forecast/step3logic', [CapacityByForecastController::class, 'step3logic'])->name('step3logic');
+        Route::get('/production/capacity-forecast/step3last', [CapacityByForecastController::class, 'step3logiclast'])->name('step3logiclast');
 
         Route::get('/pps/index', [PPSGeneralController::class, 'index'])
             ->name('indexpps')
@@ -833,203 +607,94 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         // KarawangRoute
         Route::get('/pps/karawang', [PPSKarawangController::class, 'index'])->name('indexkarawang');
-        Route::post('/pps/process-karawang-form', [
-            PPSKarawangController::class,
-            'processKarawangForm',
-        ])->name('processKarawangForm');
-        Route::get('pps/karawang/process1', [PPSKarawangController::class, 'process1'])->name(
-            'karawangprocess1',
-        );
-        Route::get('pps/karawang/process2', [PPSKarawangController::class, 'process2'])->name(
-            'karawangprocess2',
-        );
-        Route::get('pps/karawang/process3', [PPSKarawangController::class, 'process3'])->name(
-            'karawangprocess3',
-        );
+        Route::post('/pps/process-karawang-form', [PPSKarawangController::class, 'processKarawangForm'])->name('processKarawangForm');
+        Route::get('pps/karawang/process1', [PPSKarawangController::class, 'process1'])->name('karawangprocess1');
+        Route::get('pps/karawang/process2', [PPSKarawangController::class, 'process2'])->name('karawangprocess2');
+        Route::get('pps/karawang/process3', [PPSKarawangController::class, 'process3'])->name('karawangprocess3');
 
-        Route::get('/pps/karawang/delivery', [
-            PPSKarawangController::class,
-            'karawanginjection',
-        ])->name('karawanginjection');
-        Route::get('pps/karawang/process4', [PPSKarawangController::class, 'process4'])->name(
-            'karawangprocess4',
-        );
-        Route::get('pps/karawang/process5', [PPSKarawangController::class, 'process5'])->name(
-            'karawangprocess5',
-        );
-        Route::get('pps/karawang/process6', [PPSKarawangController::class, 'process6'])->name(
-            'karawangprocess6',
-        );
+        Route::get('/pps/karawang/delivery', [PPSKarawangController::class, 'karawanginjection'])->name('karawanginjection');
+        Route::get('pps/karawang/process4', [PPSKarawangController::class, 'process4'])->name('karawangprocess4');
+        Route::get('pps/karawang/process5', [PPSKarawangController::class, 'process5'])->name('karawangprocess5');
+        Route::get('pps/karawang/process6', [PPSKarawangController::class, 'process6'])->name('karawangprocess6');
 
-        Route::get('/pps/karawang/items', [PPSKarawangController::class, 'itemkarawang'])->name(
-            'itemkarawang',
-        );
+        Route::get('/pps/karawang/items', [PPSKarawangController::class, 'itemkarawang'])->name('itemkarawang');
 
-        Route::get('/pps/karawang/line', [PPSKarawangController::class, 'linekarawang'])->name(
-            'linekarawang',
-        );
+        Route::get('/pps/karawang/line', [PPSKarawangController::class, 'linekarawang'])->name('linekarawang');
 
-        Route::get('pps/karawanginjectionfinal', [
-            PPSKarawangController::class,
-            'finalresultkarawanginjection',
-        ])->name('finalkarawanginjectionpps');
+        Route::get('pps/karawanginjectionfinal', [PPSKarawangController::class, 'finalresultkarawanginjection'])->name('finalkarawanginjectionpps');
 
-        Route::get('/pps/injection/start', [PPSInjectionController::class, 'indexscenario'])->name(
-            'indexinjection',
-        );
-        Route::post('/pps/process-injection-form', [
-            PPSInjectionController::class,
-            'processInjectionForm',
-        ])->name('processInjectionForm');
-        Route::get('pps/injection/process1', [PPSInjectionController::class, 'process1'])->name(
-            'injectionprocess1',
-        );
-        Route::get('pps/injection/process2', [PPSInjectionController::class, 'process2'])->name(
-            'injectionprocess2',
-        );
-        Route::get('pps/injection/process3', [PPSInjectionController::class, 'process3'])->name(
-            'injectionprocess3',
-        );
+        Route::get('/pps/injection/start', [PPSInjectionController::class, 'indexscenario'])->name('indexinjection');
+        Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
+        Route::get('pps/injection/process1', [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
+        Route::get('pps/injection/process2', [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
+        Route::get('pps/injection/process3', [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
 
-        Route::get('/pps/injection/delivery', [
-            PPSInjectionController::class,
-            'deliveryinjection',
-        ])->name('deliveryinjection');
-        Route::get('pps/injection/process4', [PPSInjectionController::class, 'process4'])->name(
-            'injectionprocess4',
-        );
-        Route::get('pps/injection/process5', [PPSInjectionController::class, 'process5'])->name(
-            'injectionprocess5',
-        );
-        Route::get('pps/injection/process6', [PPSInjectionController::class, 'process6'])->name(
-            'injectionprocess6',
-        );
+        Route::get('/pps/injection/delivery', [PPSInjectionController::class, 'deliveryinjection'])->name('deliveryinjection');
+        Route::get('pps/injection/process4', [PPSInjectionController::class, 'process4'])->name('injectionprocess4');
+        Route::get('pps/injection/process5', [PPSInjectionController::class, 'process5'])->name('injectionprocess5');
+        Route::get('pps/injection/process6', [PPSInjectionController::class, 'process6'])->name('injectionprocess6');
         // jika ada post untuk delivery
 
-        Route::get('/pps/injection/items', [PPSInjectionController::class, 'iteminjection'])->name(
-            'iteminjection',
-        );
+        Route::get('/pps/injection/items', [PPSInjectionController::class, 'iteminjection'])->name('iteminjection');
         // jika ada post untuk items
 
-        Route::get('/pps/injection/line', [PPSInjectionController::class, 'lineinjection'])->name(
-            'lineinjection',
-        );
+        Route::get('/pps/injection/line', [PPSInjectionController::class, 'lineinjection'])->name('lineinjection');
         // jika ada post untuk line
 
-        Route::get('pps/injectionfinal', [
-            PPSInjectionController::class,
-            'finalresultinjection',
-        ])->name('finalinjectionpps');
+        Route::get('pps/injectionfinal', [PPSInjectionController::class, 'finalresultinjection'])->name('finalinjectionpps');
 
-        Route::get('/pps/second/start', [PPSSecondController::class, 'indexscenario'])->name(
-            'indexsecond',
-        );
-        Route::post('/pps/second-process-form', [
-            PPSSecondController::class,
-            'processSecondForm',
-        ])->name('processSecondForm');
-        Route::get('pps/second/process1', [PPSSecondController::class, 'process1'])->name(
-            'secondprocess1',
-        );
-        Route::get('pps/second/process2', [PPSSecondController::class, 'process2'])->name(
-            'secondprocess2',
-        );
-        Route::get('pps/second/process3', [PPSSecondController::class, 'process3'])->name(
-            'secondprocess3',
-        );
+        Route::get('/pps/second/start', [PPSSecondController::class, 'indexscenario'])->name('indexsecond');
+        Route::post('/pps/second-process-form', [PPSSecondController::class, 'processSecondForm'])->name('processSecondForm');
+        Route::get('pps/second/process1', [PPSSecondController::class, 'process1'])->name('secondprocess1');
+        Route::get('pps/second/process2', [PPSSecondController::class, 'process2'])->name('secondprocess2');
+        Route::get('pps/second/process3', [PPSSecondController::class, 'process3'])->name('secondprocess3');
         // jika ada post untuk start
 
-        Route::get('/pps/second/delivery', [PPSSecondController::class, 'deliverysecond'])->name(
-            'deliverysecond',
-        );
-        Route::get('pps/second/process4', [PPSSecondController::class, 'process4'])->name(
-            'secondprocess4',
-        );
-        Route::get('pps/second/process5', [PPSSecondController::class, 'process5'])->name(
-            'secondprocess5',
-        );
-        Route::get('pps/second/process6', [PPSSecondController::class, 'process6'])->name(
-            'secondprocess6',
-        );
+        Route::get('/pps/second/delivery', [PPSSecondController::class, 'deliverysecond'])->name('deliverysecond');
+        Route::get('pps/second/process4', [PPSSecondController::class, 'process4'])->name('secondprocess4');
+        Route::get('pps/second/process5', [PPSSecondController::class, 'process5'])->name('secondprocess5');
+        Route::get('pps/second/process6', [PPSSecondController::class, 'process6'])->name('secondprocess6');
         // jika ada post untuk delivery
 
-        Route::get('/pps/second/items', [PPSSecondController::class, 'itemsecond'])->name(
-            'itemsecond',
-        );
+        Route::get('/pps/second/items', [PPSSecondController::class, 'itemsecond'])->name('itemsecond');
         // jika ada post untuk items
 
-        Route::get('/pps/second/line', [PPSSecondController::class, 'linesecond'])->name(
-            'linesecond',
-        );
+        Route::get('/pps/second/line', [PPSSecondController::class, 'linesecond'])->name('linesecond');
         // jika ada post untuk line
 
-        Route::get('pps/secondfinal', [PPSSecondController::class, 'finalresultsecond'])->name(
-            'finalsecondpps',
-        );
+        Route::get('pps/secondfinal', [PPSSecondController::class, 'finalresultsecond'])->name('finalsecondpps');
 
-        Route::get('/pps/assembly/start', [PPSAssemblyController::class, 'indexscenario'])->name(
-            'indexassembly',
-        );
-        Route::post('/pps/assembly-process-form', [
-            PPSAssemblyController::class,
-            'processAssemblyForm',
-        ])->name('processAssemblyForm');
-        Route::get('pps/assembly/process1', [PPSAssemblyController::class, 'process1'])->name(
-            'assemblyprocess1',
-        );
-        Route::get('pps/assembly/process2', [PPSAssemblyController::class, 'process2'])->name(
-            'assemblyprocess2',
-        );
-        Route::get('pps/assembly/process3', [PPSAssemblyController::class, 'process3'])->name(
-            'assemblyprocess3',
-        );
+        Route::get('/pps/assembly/start', [PPSAssemblyController::class, 'indexscenario'])->name('indexassembly');
+        Route::post('/pps/assembly-process-form', [PPSAssemblyController::class, 'processAssemblyForm'])->name('processAssemblyForm');
+        Route::get('pps/assembly/process1', [PPSAssemblyController::class, 'process1'])->name('assemblyprocess1');
+        Route::get('pps/assembly/process2', [PPSAssemblyController::class, 'process2'])->name('assemblyprocess2');
+        Route::get('pps/assembly/process3', [PPSAssemblyController::class, 'process3'])->name('assemblyprocess3');
         // jika ada post untuk start
 
-        Route::get('/pps/assembly/delivery', [
-            PPSAssemblyController::class,
-            'deliveryassembly',
-        ])->name('deliveryassembly');
-        Route::get('pps/assembly/process4', [PPSAssemblyController::class, 'process4'])->name(
-            'assemblyprocess4',
-        );
-        Route::get('pps/assembly/process5', [PPSAssemblyController::class, 'process5'])->name(
-            'assemblyprocess5',
-        );
-        Route::get('pps/assembly/process6', [PPSAssemblyController::class, 'process6'])->name(
-            'assemblyprocess6',
-        );
+        Route::get('/pps/assembly/delivery', [PPSAssemblyController::class, 'deliveryassembly'])->name('deliveryassembly');
+        Route::get('pps/assembly/process4', [PPSAssemblyController::class, 'process4'])->name('assemblyprocess4');
+        Route::get('pps/assembly/process5', [PPSAssemblyController::class, 'process5'])->name('assemblyprocess5');
+        Route::get('pps/assembly/process6', [PPSAssemblyController::class, 'process6'])->name('assemblyprocess6');
         // jika ada post untuk delivery
 
-        Route::get('/pps/assembly/items', [PPSAssemblyController::class, 'itemassembly'])->name(
-            'itemassembly',
-        );
+        Route::get('/pps/assembly/items', [PPSAssemblyController::class, 'itemassembly'])->name('itemassembly');
         // jika ada post untuk items
 
-        Route::get('/pps/assembly/line', [PPSAssemblyController::class, 'lineassembly'])->name(
-            'lineassembly',
-        );
+        Route::get('/pps/assembly/line', [PPSAssemblyController::class, 'lineassembly'])->name('lineassembly');
         // jika ada post untuk line
 
-        Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name(
-            'finalresultassembly',
-        );
+        Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name('finalresultassembly');
     });
 
     Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
-        Route::get('maintenance/home', [MaintenanceHomeController::class, 'index'])->name(
-            'maintenance.home',
-        );
+        Route::get('maintenance/home', [MaintenanceHomeController::class, 'index'])->name('maintenance.home');
 
         Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])
             ->name('moulddown.index')
             ->middleware('permission:get-mould-down-index');
         Route::post('/add/mould', [MouldDownController::class, 'addmould'])->name('addmould');
-        Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name(
-            'linedown.index',
-        );
-        Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name(
-            'addlinedown',
-        );
+        Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
+        Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name('addlinedown');
     });
 
     Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function () {
@@ -1037,9 +702,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:MOULDING'])->group(function () {
-        Route::get('moulding/home', [MouldingHomeController::class, 'index'])->name(
-            'moulding.home',
-        );
+        Route::get('moulding/home', [MouldingHomeController::class, 'index'])->name('moulding.home');
     });
 
     Route::middleware(['checkDepartment:STORE'])->group(function () {
@@ -1051,27 +714,19 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:ASSEMBLY'])->group(function () {
-        Route::get('assembly/home', [AssemblyHomeController::class, 'index'])->name(
-            'assembly.home',
-        );
+        Route::get('assembly/home', [AssemblyHomeController::class, 'index'])->name('assembly.home');
     });
 
     Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
-        Route::get('personalia/home', [PersonaliaHomeController::class, 'index'])->name(
-            'personalia.home',
-        );
+        Route::get('personalia/home', [PersonaliaHomeController::class, 'index'])->name('personalia.home');
     });
 
     Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
-        Route::get('management/home', [ManagementHomeController::class, 'index'])->name(
-            'management.home',
-        );
+        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('management.home');
     });
 
     Route::middleware(['checkDepartment:LOGISTIC'])->group(function () {
-        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name(
-            'logistic.home',
-        );
+        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
     });
 
     Route::middleware(['checkDepartment:MAINTENANCE MACHINE'])->group(function () {
@@ -1089,9 +744,7 @@ Route::middleware(['checkUserRole:3'])->group(function () {
 
 Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
-    Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation'])->name(
-        'file.upload.evaluation',
-    );
+    Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation'])->name('file.upload.evaluation');
 
     Route::get('/get-files', [FileController::class, 'getFiles']);
 
@@ -1122,74 +775,29 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])
         ->name('purchaserequest.cancel')
         ->middleware('permission:cancel-purchase-request');
-    Route::put('purchaserequest/{id}/ponum', [
-        PurchaseRequestController::class,
-        'updatePoNumber',
-    ])->name('purchaserequest.update.ponumber');
+    Route::put('purchaserequest/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
 
     // PR MONTHLY
-    Route::get('/purchaserequest/monthly-list', [
-        PurchaseRequestController::class,
-        'monthlyprlist',
-    ])->name('purchaserequest.monthlyprlist');
-    Route::get('/purchaserequest/monthly-detail/{id}', [
-        PurchaseRequestController::class,
-        'monthlydetail',
-    ])->name('purchaserequest.monthlydetail');
-    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [
-        PurchaseRequestController::class,
-        'saveImagePathMonthly',
-    ]);
-    Route::get('/purchaserequest/monthlypr', [
-        PurchaseRequestController::class,
-        'monthlyview',
-    ])->name('purchaserequest.monthly');
-    Route::get('/purchaserequest/month-selected', [
-        PurchaseRequestController::class,
-        'monthlyviewmonth',
-    ])->name('purchaserequest.monthlyselected');
-    Route::post('/save-signature-path/{prId}/{section}', [
-        PurchaseRequestController::class,
-        'saveImagePath',
-    ]);
+    Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
+    Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
+    Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class, 'saveImagePathMonthly']);
+    Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
+    Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
+    Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveImagePath']);
     // Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
-    Route::get('approveAllDetailItems/{prId}/{type}', [
-        PurchaseRequestController::class,
-        'approveAllDetailItems',
-    ]);
+    Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
 
-    Route::get('/purchaserequest/detail/{id}/approve', [
-        DetailPurchaseRequestController::class,
-        'approve',
-    ])->name('purchaserequest.detail.approve');
-    Route::get('/purchaserequest/detail/{id}/reject', [
-        DetailPurchaseRequestController::class,
-        'reject',
-    ])->name('purchaserequest.detail.reject');
-    Route::post('/purchaserequest/detail/update', [
-        DetailPurchaseRequestController::class,
-        'update',
-    ])->name('purchaserequest.detail.update');
+    Route::get('/purchaserequest/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
+    Route::get('/purchaserequest/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
+    Route::post('/purchaserequest/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
     // REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
     Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
 
-    Route::post('/purchaseRequest/detail/{id}/updateReceivedQuantity', [
-        DetailPurchaseRequestController::class,
-        'updateReceivedQuantity',
-    ])->name('purchaserequest.update.receivedQuantity');
-    Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [
-        DetailPurchaseRequestController::class,
-        'updateAllReceivedQuantity',
-    ])->name('purchaserequest.update.allReceivedQuantity');
+    Route::post('/purchaseRequest/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
+    Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
 
-    Route::get('/purchaseRequest/{id}/exportToPdf', [
-        PurchaseRequestController::class,
-        'exportToPdf',
-    ])->name('purchaserequest.exportToPdf');
-    Route::get('/purchaseRequest/exportExcel', [
-        PurchaseRequestController::class,
-        'exportExcel',
-    ])->name('purchaserequest.export.excel');
+    Route::get('/purchaseRequest/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
+    Route::get('/purchaseRequest/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
 
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])
@@ -1204,10 +812,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])
         ->name('formcuti.detail')
         ->middleware('permission:detail-form-cuti');
-    Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [
-        FormCutiController::class,
-        'saveImagePath',
-    ]);
+    Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class, 'saveImagePath']);
 
     // FORM KELUAR
     Route::get('/form-keluar', [FormKeluarController::class, 'index'])
@@ -1222,10 +827,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])
         ->name('formkeluar.detail')
         ->middleware('permission:detail-form-keluar');
-    Route::post('/save-autosignature-path/{formId}/{section}', [
-        FormKeluarController::class,
-        'saveImagePath',
-    ]);
+    Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
 
     Route::get('/inventory/fg', [InventoryFgController::class, 'index'])
         ->name('inventoryfg')
@@ -1239,9 +841,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
         ->middleware('permission:get-inventory-line-list');
     Route::post('/add/line', [InvLineListController::class, 'addline'])->name('addline');
     Route::put('/edit/line/{id}', [InvLineListController::class, 'editline'])->name('editline');
-    Route::delete('/delete/line/{linecode}', [InvLineListController::class, 'deleteline'])->name(
-        'deleteline',
-    );
+    Route::delete('/delete/line/{linecode}', [InvLineListController::class, 'deleteline'])->name('deleteline');
 
     // Holiday list feature
     Route::get('setting/holiday-list', [HolidayListController::class, 'index'])
@@ -1253,10 +853,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::post('setting/input/holidays', [HolidayListController::class, 'store'])
         ->name('holidays.store')
         ->middleware('permission:store-holiday-list');
-    Route::get('/download-holiday-list-template', [
-        HolidayListController::class,
-        'downloadTemplate',
-    ])
+    Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])
         ->name('download.holiday.template')
         ->middleware('permission:download-holiday-list-template');
     Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])
@@ -1272,237 +869,105 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])
         ->name('pt.index')
         ->middleware('permission:get-project-tracker-index');
-    Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name(
-        'pt.create',
-    );
-    Route::post('projecttracker/post', [ProjectTrackerController::class, 'store'])->name(
-        'pt.store',
-    );
-    Route::get('projecttracker/detail/{id}', [ProjectTrackerController::class, 'detail'])->name(
-        'pt.detail',
-    );
-    Route::put('projecttracker/{id}/update-ongoing', [
-        ProjectTrackerController::class,
-        'updateOngoing',
-    ])->name('pt.updateongoing');
-    Route::put('projecttracker/{id}/update-test', [
-        ProjectTrackerController::class,
-        'updateTest',
-    ])->name('pt.updatetest');
-    Route::put('projecttracker/{id}/update-revision', [
-        ProjectTrackerController::class,
-        'updateRevision',
-    ])->name('pt.updaterevision');
-    Route::put('projecttracker/{id}/accept', [
-        ProjectTrackerController::class,
-        'updateAccept',
-    ])->name('pt.updateaccept');
+    Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name('pt.create');
+    Route::post('projecttracker/post', [ProjectTrackerController::class, 'store'])->name('pt.store');
+    Route::get('projecttracker/detail/{id}', [ProjectTrackerController::class, 'detail'])->name('pt.detail');
+    Route::put('projecttracker/{id}/update-ongoing', [ProjectTrackerController::class, 'updateOngoing'])->name('pt.updateongoing');
+    Route::put('projecttracker/{id}/update-test', [ProjectTrackerController::class, 'updateTest'])->name('pt.updatetest');
+    Route::put('projecttracker/{id}/update-revision', [ProjectTrackerController::class, 'updateRevision'])->name('pt.updaterevision');
+    Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'updateAccept'])->name('pt.updateaccept');
 
-    Route::get('updatepage/index', [UpdateDailyController::class, 'index'])->name(
-        'indexupdatepage',
-    );
+    Route::get('updatepage/index', [UpdateDailyController::class, 'index'])->name('indexupdatepage');
     Route::post('/processdailydata', [UpdateDailyController::class, 'update'])->name('updatedata');
 
     Route::get('/employeemaster/index', [EmployeeMasterController::class, 'index'])
         ->name('index.employeesmaster')
         ->middleware('permission:get-employee-master-index');
-    Route::post('/employeemaster/add', [EmployeeMasterController::class, 'addemployee'])->name(
-        'addemployee',
-    );
-    Route::put('/edit/employee/{id}', [EmployeeMasterController::class, 'editemployee'])->name(
-        'editemployee',
-    );
-    Route::delete('/delete/employee/{linecode}', [
-        EmployeeMasterController::class,
-        'deleteemployee',
-    ])->name('deleteemployee');
-    Route::get('/import-annual-leave-quota', [
-        EmployeeMasterController::class,
-        'showImportForm',
-    ])->name('import.annual-leave-quota.form');
-    Route::post('/import-annual-leave-quota', [
-        EmployeeMasterController::class,
-        'importAnnualLeaveQuota',
-    ])->name('import.annual-leave-quota');
+    Route::post('/employeemaster/add', [EmployeeMasterController::class, 'addemployee'])->name('addemployee');
+    Route::put('/edit/employee/{id}', [EmployeeMasterController::class, 'editemployee'])->name('editemployee');
+    Route::delete('/delete/employee/{linecode}', [EmployeeMasterController::class, 'deleteemployee'])->name('deleteemployee');
+    Route::get('/import-annual-leave-quota', [EmployeeMasterController::class, 'showImportForm'])->name('import.annual-leave-quota.form');
+    Route::post('/import-annual-leave-quota', [EmployeeMasterController::class, 'importAnnualLeaveQuota'])->name('import.annual-leave-quota');
 
     Route::get('/evaluation/index', [EvaluationDataController::class, 'index'])
         ->name('evaluation.index')
         ->middleware('permission:get-evaluation-index');
-    Route::post('/processevaluationdata', [EvaluationDataController::class, 'update'])->name(
-        'UpdateEvaluation',
-    );
+    Route::post('/processevaluationdata', [EvaluationDataController::class, 'update'])->name('UpdateEvaluation');
 
     Route::get('/weekly-evaluation/index', [EvaluationDataController::class, 'weeklyIndex'])
         ->name('weekly.evaluation.index')
         ->middleware('permission:get-evaluation-index');
-    Route::post('/weeklyprocessevaluationdata', [
-        EvaluationDataController::class,
-        'updateWeekly',
-    ])->name('WeeklyUpdateEvaluation');
+    Route::post('/weeklyprocessevaluationdata', [EvaluationDataController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
 
-    Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name(
-        'DeleteEvaluation',
-    );
+    Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
 
-    Route::get('/format-evaluation-year-yayasan', [
-        EvaluationDataController::class,
-        'evaluationformatrequestpageYayasan',
-    ])->name('format.evaluation.year.yayasan');
-    Route::get('/format-evaluation-year-allin', [
-        EvaluationDataController::class,
-        'evaluationformatrequestpageAllin',
-    ])->name('format.evaluation.year.allin');
-    Route::get('/format-evaluation-year-magang', [
-        EvaluationDataController::class,
-        'evaluationformatrequestpageMagang',
-    ])->name('format.evaluation.year.magang');
-    Route::post('/getformatyayasan', [
-        EvaluationDataController::class,
-        'getFormatYearyayasan',
-    ])->name('get.format');
-    Route::post('/getformatallin', [EvaluationDataController::class, 'getFormatYearallin'])->name(
-        'get.format.allin',
-    );
-    Route::post('/getformatmagang', [EvaluationDataController::class, 'getFormatYearmagang'])->name(
-        'get.format.magang',
-    );
-    Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name(
-        'single.employee',
-    );
+    Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
+    Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
+    Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
+    Route::post('/getformatyayasan', [EvaluationDataController::class, 'getFormatYearyayasan'])->name('get.format');
+    Route::post('/getformatallin', [EvaluationDataController::class, 'getFormatYearallin'])->name('get.format.allin');
+    Route::post('/getformatmagang', [EvaluationDataController::class, 'getFormatYearmagang'])->name('get.format.magang');
+    Route::get('/single/eval', [EvaluationDataController::class, 'allEmployees'])->name('single.employee');
 
-    Route::get('/discipline/indexall', [DisciplinePageController::class, 'allindex'])->name(
-        'alldiscipline.index',
-    );
-    Route::get('/discipline/indexallyayasan', [
-        DisciplinePageController::class,
-        'yayasanallindex',
-    ])->name('allyayasandiscipline.index');
+    Route::get('/discipline/indexall', [DisciplinePageController::class, 'allindex'])->name('alldiscipline.index');
+    Route::get('/discipline/indexallyayasan', [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
     Route::get('/discipline/index', [DisciplinePageController::class, 'index'])
         ->name('discipline.index')
         ->middleware('permission:get-discipline-index');
-    Route::get('/firstimeexport/yayasan/discipline', [
-        DisciplinePageController::class,
-        'exportYayasan',
-    ])->name('export.yayasan.first.time');
-    Route::get('/export/yayasan-full/discipline', [
-        DisciplinePageController::class,
-        'exportYayasanFull',
-    ])->name('export.yayasan.full');
+    Route::get('/firstimeexport/yayasan/discipline', [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan.first.time');
+    Route::get('/export/yayasan-full/discipline', [DisciplinePageController::class, 'exportYayasanFull'])->name('export.yayasan.full');
 
-    Route::post('/lock-data/discipline', [DisciplinePageController::class, 'lockdata'])->name(
-        'lock.data',
-    );
+    Route::post('/lock-data/discipline', [DisciplinePageController::class, 'lockdata'])->name('lock.data');
 
-    Route::post('/approve-data-yayasan/depthead', [
-        DisciplinePageController::class,
-        'approve_depthead',
-    ])->name('approve.data.depthead');
+    Route::post('/approve-data-yayasan/depthead', [DisciplinePageController::class, 'approve_depthead'])->name('approve.data.depthead');
 
-    Route::post('/reject-data-yayasan/depthead', [
-        DisciplinePageController::class,
-        'reject_depthead_button',
-    ])->name('reject.depthead.yayasan');
-    Route::post('/reject-data-yayasan/hrd', [
-        DisciplinePageController::class,
-        'reject_hrd_button',
-    ])->name('reject.hrd.yayasan');
+    Route::post('/reject-data-yayasan/depthead', [DisciplinePageController::class, 'reject_depthead_button'])->name('reject.depthead.yayasan');
+    Route::post('/reject-data-yayasan/hrd', [DisciplinePageController::class, 'reject_hrd_button'])->name('reject.hrd.yayasan');
 
-    Route::post('/approve-data-depthead/yayasan', [
-        DisciplinePageController::class,
-        'approve_depthead_button',
-    ])->name('approve.depthead.yayasan');
-    Route::post('/approve-data-hrd/yayasan', [
-        DisciplinePageController::class,
-        'approve_hrd_button',
-    ])->name('approve.hrd.yayasan');
+    Route::post('/approve-data-depthead/yayasan', [DisciplinePageController::class, 'approve_depthead_button'])->name('approve.depthead.yayasan');
+    Route::post('/approve-data-hrd/yayasan', [DisciplinePageController::class, 'approve_hrd_button'])->name('approve.hrd.yayasan');
 
-    Route::post('/approve-data-yayasan/gm', [DisciplinePageController::class, 'approve_gm'])->name(
-        'approve.data.gm',
-    );
+    Route::post('/approve-data-yayasan/gm', [DisciplinePageController::class, 'approve_gm'])->name('approve.data.gm');
 
     Route::post('/set-filter-value', [DisciplinePageController::class, 'setFilterValue']);
     Route::get('/get-filter-value', [DisciplinePageController::class, 'getFilterValue']);
-    Route::put('/edit/discipline/{id}', [DisciplinePageController::class, 'update'])->name(
-        'editdiscipline',
-    );
-    Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name(
-        'discipline.import',
-    );
-    Route::get('/disciplineupdate/step1', [DisciplinePageController::class, 'step1'])->name(
-        'update.point',
-    );
-    Route::get('/disciplineupdate/step2', [DisciplinePageController::class, 'step2'])->name(
-        'update.excel',
-    );
+    Route::put('/edit/discipline/{id}', [DisciplinePageController::class, 'update'])->name('editdiscipline');
+    Route::post('/updatediscipline', [DisciplinePageController::class, 'import'])->name('discipline.import');
+    Route::get('/disciplineupdate/step1', [DisciplinePageController::class, 'step1'])->name('update.point');
+    Route::get('/disciplineupdate/step2', [DisciplinePageController::class, 'step2'])->name('update.excel');
 
     Route::get('/updatedept', [DisciplinePageController::class, 'updateDept'])->name('update.dept');
 
-    Route::get('/exportyayasanexcel', [DisciplinePageController::class, 'exportYayasan'])->name(
-        'exportyayasan',
-    );
+    Route::get('/exportyayasanexcel', [DisciplinePageController::class, 'exportYayasan'])->name('exportyayasan');
 
-    Route::get('/fetch/filtered/employees', [
-        DisciplinePageController::class,
-        'fetchFilteredEmployees',
-    ])->name('fetch.filtered.employees');
-    Route::get('/fetch/filtered/yayasan-employees', [
-        DisciplinePageController::class,
-        'fetchFilteredYayasanEmployees',
-    ])->name('fetch.filtered.yayasan.employees');
+    Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
+    Route::get('/fetch/filtered/yayasan-employees', [DisciplinePageController::class, 'fetchFilteredYayasanEmployees'])->name('fetch.filtered.yayasan.employees');
 
-    Route::get('/fetch/filtered/yayasan-employees-GM', [
-        DisciplinePageController::class,
-        'fetchFilteredEmployeesGM',
-    ]);
+    Route::get('/fetch/filtered/yayasan-employees-GM', [DisciplinePageController::class, 'fetchFilteredEmployeesGM']);
 
-    Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name(
-        'yayasan.table',
-    );
+    Route::get('/yayasan/disciplineindex', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
 
-    Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])
-        ->name('department.status.yayasan');
+    Route::post('/department-status-yayasan', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])->name('department.status.yayasan');
 
-    Route::put('/edit/magangdiscipline/{id}', [
-        DisciplinePageController::class,
-        'updatemagang',
-    ])->name('updatemagang');
-    Route::put('/edit/yayasandiscipline/{id}', [
-        DisciplinePageController::class,
-        'updateyayasan',
-    ])->name('updateyayasan');
-    Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name(
-        'yayasan.import',
-    );
-    Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name(
-        'magang.import',
-    );
+    Route::put('/edit/magangdiscipline/{id}', [DisciplinePageController::class, 'updatemagang'])->name('updatemagang');
+    Route::put('/edit/yayasandiscipline/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('updateyayasan');
+    Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name('yayasan.import');
+    Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name('magang.import');
 
     Route::get('/evaluationDatas/{id}', [DisciplinePageController::class, 'getEvaluationData']);
 
     Route::get('/unlock/data', [DisciplinePageController::class, 'unlockdata']);
 
-    Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name(
-        'magang.table',
-    );
+    Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
 
-    Route::get('/exportyayasandateinput', [DisciplinePageController::class, 'dateExport'])->name(
-        'exportyayasan.dateinput',
-    );
-    Route::get('/exportyayasansummary', [
-        DisciplinePageController::class,
-        'exportYayasanJpayroll',
-    ])->name('exportyayasan.summary');
-    Route::get('/export/yayasan/discipline', [
-        DisciplinePageController::class,
-        'exportYayasanJpayrollFunction',
-    ])->name('export.yayasan.jpayroll');
+    Route::get('/exportyayasandateinput', [DisciplinePageController::class, 'dateExport'])->name('exportyayasan.dateinput');
+    Route::get('/exportyayasansummary', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('exportyayasan.summary');
+    Route::get('/export/yayasan/discipline', [DisciplinePageController::class, 'exportYayasanJpayrollFunction'])->name('export.yayasan.jpayroll');
 
     Route::get('/forecastcustomermaster', [ForecastCustomerController::class, 'index'])
         ->name('fc.index')
         ->middleware('permission:get-forecast-customer-index');
-    Route::post('/add/forecastmaster', [ForecastCustomerController::class, 'addnewmaster'])->name(
-        'addnewforecastmaster',
-    );
+    Route::post('/add/forecastmaster', [ForecastCustomerController::class, 'addnewmaster'])->name('addnewforecastmaster');
 
     Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
     Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
@@ -1528,13 +993,16 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
+    Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
+    Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
+
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
 
     Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
 
-    Route::prefix('monthly-budget-summaries')->group(function() {
+    Route::prefix('monthly-budget-summaries')->group(function () {
         Route::get('/', MonthlyBudgetSummaryIndex::class)->name('monthly-budget-summary-report.index');
         Route::get('/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
         Route::post('/', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
@@ -1548,410 +1016,159 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::put('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
     Route::delete('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'destroy'])->name('monthly.budget.report.summary.detail.destroy');
 
-    Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name(
-        'monthly.budget.report.index',
-    );
-    Route::get('monthlyBudgetReport/create', [
-        MonthlyBudgetReportController::class,
-        'create',
-    ])->name('monthly.budget.report.create');
-    Route::get('monthlyBudgetReport/{id}/edit', [
-        MonthlyBudgetReportController::class,
-        'edit',
-    ])->name('monthly.budget.report.edit');
-    Route::put('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'update'])->name(
-        'monthly.budget.report.update',
-    );
-    Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name(
-        'monthly.budget.report.store',
-    );
-    Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name(
-        'monthly.budget.report.show',
-    );
-    Route::delete('monthlyBudgetReport/{id}', [
-        MonthlyBudgetReportController::class,
-        'destroy',
-    ])->name('monthly.budget.report.delete');
-    Route::put('monthlyBudgetReport/{id}/reject', [
-        MonthlyBudgetReportController::class,
-        'reject',
-    ])->name('monthly.budget.report.reject');
-    Route::put('monthlyBudgetReport/{id}/cancel', [
-        MonthlyBudgetReportController::class,
-        'cancel',
-    ])->name('monthly.budget.report.cancel');
-    Route::put('monthlyBudgetReport/save-autograph/{id}', [
-        MonthlyBudgetReportController::class,
-        'saveAutograph',
-    ])->name('monthly.budget.save.autograph');
-    Route::post('/download-monthly-excel-template', [
-        MonthlyBudgetReportController::class,
-        'downloadExcelTemplate',
-    ])->name('monthly.budget.download.excel.template');
+    Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
+    Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
+    Route::get('monthlyBudgetReport/{id}/edit', [MonthlyBudgetReportController::class, 'edit'])->name('monthly.budget.report.edit');
+    Route::put('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'update'])->name('monthly.budget.report.update');
+    Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
+    Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
+    Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
+    Route::put('monthlyBudgetReport/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly.budget.report.reject');
+    Route::put('monthlyBudgetReport/{id}/cancel', [MonthlyBudgetReportController::class, 'cancel'])->name('monthly.budget.report.cancel');
+    Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
+    Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
 
-    Route::post('monthlyBudgetReportDetail', [
-        MonthlyBudgetReportDetailController::class,
-        'store',
-    ])->name('monthly.budget.report.detail.store');
-    Route::put('monthlyBudgetReportDetail/{id}', [
-        MonthlyBudgetReportDetailController::class,
-        'update',
-    ])->name('monthly.budget.report.detail.update');
-    Route::delete('monthlyBudgetReportDetail/{id}', [
-        MonthlyBudgetReportDetailController::class,
-        'destroy',
-    ])->name('monthly.budget.report.detail.delete');
+    Route::post('monthlyBudgetReportDetail', [MonthlyBudgetReportDetailController::class, 'store'])->name('monthly.budget.report.detail.store');
+    Route::put('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
+    Route::delete('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
 
     Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
-    Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name(
-        'inandout.index',
-    );
-    Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name(
-        'missingbarcode.index',
-    );
-    Route::post('barcode/missing/generate', [
-        BarcodeController::class,
-        'missingbarcodegenerator',
-    ])->name('generateBarcodeMissing');
+    Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
+    Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
+    Route::post('barcode/missing/generate', [BarcodeController::class, 'missingbarcodegenerator'])->name('generateBarcodeMissing');
 
-    Route::post('barcode/process/save', [BarcodeController::class, 'processInAndOut'])->name(
-        'process.in.and.out',
-    );
+    Route::post('barcode/process/save', [BarcodeController::class, 'processInAndOut'])->name('process.in.and.out');
 
-    Route::post('process/inandoutbarcode', [BarcodeController::class, 'storeInAndOut'])->name(
-        'processbarcodeinandout',
-    );
+    Route::post('process/inandoutbarcode', [BarcodeController::class, 'storeInAndOut'])->name('processbarcodeinandout');
     Route::get('indexbarcode', [BarcodeController::class, 'indexBarcode'])->name('barcodeindex');
-    Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name(
-        'generateBarcode',
-    );
+    Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
 
     Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
 
-    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name(
-        'updated.barcode.item.position',
-    );
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 
-    Route::get('barcode/historytable', [BarcodeController::class, 'historybarcodelist'])->name(
-        'barcode.historytable',
-    );
+    Route::get('barcode/historytable', [BarcodeController::class, 'historybarcodelist'])->name('barcode.historytable');
 
-    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name(
-        'mastertinta.index',
-    );
+    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
 
-    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name(
-        'testing.request',
-    );
+    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
 
-    Route::get('mastertinta/transaction/list', [
-        MasterTintaController::class,
-        'listtransaction',
-    ])->name('transaction.list');
+    Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
 
-    Route::post('/mastertinta/request/process', [
-        MasterTintaController::class,
-        'requeststore',
-    ])->name('stockrequest.store');
+    Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
 
-    Route::get('mastertinta/transaction/index', [
-        MasterTintaController::class,
-        'transactiontintaview',
-    ])->name('mastertinta.transaction.index');
-    Route::post('mastertinta/transaction/process', [
-        MasterTintaController::class,
-        'storetransaction',
-    ])->name('mastertinta.process');
-    Route::get('/masterstock/get-items/{masterStockId}', [
-        MasterTintaController::class,
-        'getItems',
-    ]);
+    Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
+    Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
+    Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
 
-    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [
-        MasterTintaController::class,
-        'getAvailableQuantity',
-    ]);
+    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
 
     Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
-    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name(
-        'updated.barcode.item.position',
-    );
-    Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name(
-        'stockallbarcode',
-    );
+    Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
+    Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
 
     Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
-    Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name(
-        'spk.create',
-    );
-    Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name(
-        'spk.input',
-    );
+    Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
+    Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
     Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
     Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
-    Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name(
-        'spk.delete',
-    );
-    Route::get('/spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name(
-        'spk.monthlyreport',
-    );
-    Route::put('/spk/save-autograph/{id}', [
-        SuratPerintahKerjaController::class,
-        'saveAutograph',
-    ])->name('spk.save.autograph');
-    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name(
-        'spk.revision',
-    );
-    Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name(
-        'spk.finish',
-    );
+    Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
+    Route::get('/spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
+    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
+    Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
 
-    Route::get('deliveryschedule/averagemonth', [
-        DeliveryScheduleController::class,
-        'averageschedule',
-    ])->name('delsched.averagemonth');
+    Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
     Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])
         ->name('indexds')
         ->middleware('permission:get-delivery-schedule-index');
 
-    Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name(
-        'masterinventory.index',
-    );
-    Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name(
-        'masterinventory.createpage',
-    );
-    Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name(
-        'masterinventory.store',
-    );
-    Route::get('masterinventory/detail/{id}', [MasterInventoryController::class, 'detail'])->name(
-        'masterinventory.detail',
-    );
-    Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name(
-        'masterinventory.typeindex',
-    );
-    Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name(
-        'masterinventory.delete',
-    );
+    Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
+    Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
+    Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
+    Route::get('masterinventory/detail/{id}', [MasterInventoryController::class, 'detail'])->name('masterinventory.detail');
+    Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
+    Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name('masterinventory.delete');
 
-    Route::post('masterinventory/generate/qr/{id}', [
-        MasterInventoryController::class,
-        'generateQr',
-    ])->name('generate.hardware.qrcode');
+    Route::post('masterinventory/generate/qr/{id}', [MasterInventoryController::class, 'generateQr'])->name('generate.hardware.qrcode');
 
     // Route to handle adding new types
-    Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name(
-        'add.hardware.type',
-    );
-    Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name(
-        'add.software.type',
-    );
-    Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name(
-        'delete.type',
-    );
-    Route::get('/export-inventory', [MasterInventoryController::class, 'export'])->name(
-        'export.inventory',
-    );
+    Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
+    Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');
+    Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name('delete.type');
+    Route::get('/export-inventory', [MasterInventoryController::class, 'export'])->name('export.inventory');
 
-    Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name(
-        'masterinventory.editpage',
-    );
-    Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name(
-        'masterinventory.update',
-    );
-    Route::put('masterinventory/update/repairhistory/{id}', [
-        MasterInventoryController::class,
-        'updateHistory',
-    ])->name('inventory.update');
-    Route::post('masterinventory/repairs', [
-        MasterInventoryController::class,
-        'CreateRepair',
-    ])->name('repair.store');
-    Route::get('/items/types/{type}', [MasterInventoryController::class, 'getItems'])->name(
-        'items.get',
-    );
+    Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
+    Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
+    Route::put('masterinventory/update/repairhistory/{id}', [MasterInventoryController::class, 'updateHistory'])->name('inventory.update');
+    Route::post('masterinventory/repairs', [MasterInventoryController::class, 'CreateRepair'])->name('repair.store');
+    Route::get('/items/types/{type}', [MasterInventoryController::class, 'getItems'])->name('items.get');
     Route::get('/items/available', [MasterInventoryController::class, 'getAvailableItems']);
 
-    Route::get('maintenanceInventoryReports', [
-        MaintenanceInventoryController::class,
-        'index',
-    ])->name('maintenance.inventory.index');
-    Route::get('maintenanceInventoryReports/create/{id?}', [
-        MaintenanceInventoryController::class,
-        'create',
-    ])->name('maintenance.inventory.create');
-    Route::get('maintenanceInventoryReports/edit/{id}', [
-        MaintenanceInventoryController::class,
-        'edit',
-    ])->name('maintenance.inventory.edit');
-    Route::put('maintenanceInventoryReports/{id}', [
-        MaintenanceInventoryController::class,
-        'update',
-    ])->name('maintenance.inventory.update');
-    Route::post('maintenanceInventoryReports', [
-        MaintenanceInventoryController::class,
-        'store',
-    ])->name('maintenance.inventory.store');
-    Route::get('maintenanceInventoryReports/{id}', [
-        MaintenanceInventoryController::class,
-        'show',
-    ])->name('maintenance.inventory.show');
+    Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
+    Route::get('maintenanceInventoryReports/create/{id?}', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
+    Route::get('maintenanceInventoryReports/edit/{id}', [MaintenanceInventoryController::class, 'edit'])->name('maintenance.inventory.edit');
+    Route::put('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'update'])->name('maintenance.inventory.update');
+    Route::post('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'store'])->name('maintenance.inventory.store');
+    Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 
-    Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name(
-        'formkerusakan.index',
-    );
-    Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name(
-        'laporan-kerusakan.store',
-    );
-    Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name(
-        'laporan-kerusakan.report',
-    );
-    Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name(
-        'laporan-kerusakan.show',
-    );
-    Route::delete('laporan-kerusakan-delete/{id}', [
-        FormKerusakanController::class,
-        'destroy',
-    ])->name('laporan-kerusakan.destroy');
+    Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
+    Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
+    Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name('laporan-kerusakan.report');
+    Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
+    Route::delete('laporan-kerusakan-delete/{id}', [FormKerusakanController::class, 'destroy'])->name('laporan-kerusakan.destroy');
 
-    Route::get('purc/evaluationsupplier/index', [
-        PurchasingSupplierEvaluationController::class,
-        'index',
-    ])->name('purchasing.evaluationsupplier.index');
-    Route::post('purc/evaluationsupplier/generate', [
-        PurchasingSupplierEvaluationController::class,
-        'calculate',
-    ])->name('purchasing.evaluationsupplier.calculate');
-    Route::get('purc/evaluationsupplier/details/{id}', [
-        PurchasingSupplierEvaluationController::class,
-        'details',
-    ])->name('purchasing.evaluationsupplier.details');
-    Route::get('purc/vendorclaim', [
-        PurchasingSupplierEvaluationController::class,
-        'kriteria1',
-    ])->name('kriteria1');
-    Route::get('purc/vendoraccuracygood', [
-        PurchasingSupplierEvaluationController::class,
-        'kriteria2',
-    ])->name('kriteria2');
-    Route::get('purc/vendorontimedelivery', [
-        PurchasingSupplierEvaluationController::class,
-        'kriteria3',
-    ])->name('kriteria3');
-    Route::get('purc/vendorurgentrequest', [
-        PurchasingSupplierEvaluationController::class,
-        'kriteria4',
-    ])->name('kriteria4');
-    Route::get('purc/vendorclaimresponse', [
-        PurchasingSupplierEvaluationController::class,
-        'kriteria5',
-    ])->name('kriteria5');
-    Route::get('purc/vendorlistcertificate', [
-        PurchasingSupplierEvaluationController::class,
-        'kriteria6',
-    ])->name('kriteria6');
+    Route::get('purc/evaluationsupplier/index', [PurchasingSupplierEvaluationController::class, 'index'])->name('purchasing.evaluationsupplier.index');
+    Route::post('purc/evaluationsupplier/generate', [PurchasingSupplierEvaluationController::class, 'calculate'])->name('purchasing.evaluationsupplier.calculate');
+    Route::get('purc/evaluationsupplier/details/{id}', [PurchasingSupplierEvaluationController::class, 'details'])->name('purchasing.evaluationsupplier.details');
+    Route::get('purc/vendorclaim', [PurchasingSupplierEvaluationController::class, 'kriteria1'])->name('kriteria1');
+    Route::get('purc/vendoraccuracygood', [PurchasingSupplierEvaluationController::class, 'kriteria2'])->name('kriteria2');
+    Route::get('purc/vendorontimedelivery', [PurchasingSupplierEvaluationController::class, 'kriteria3'])->name('kriteria3');
+    Route::get('purc/vendorurgentrequest', [PurchasingSupplierEvaluationController::class, 'kriteria4'])->name('kriteria4');
+    Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
+    Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
     Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
-    Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name(
-        'po.create',
-    );
-    Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name(
-        'po.store',
-    );
+    Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
+    Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
     Route::get('/purchaseOrder/{id}', [PurchaseOrderController::class, 'view'])->name('po.view');
     Route::post('/purchaseOrder/sign', [PurchaseOrderController::class, 'sign'])->name('po.sign');
-    Route::post('/purchaseOrder/reject-pdf', [PurchaseOrderController::class, 'rejectPDF'])->name(
-        'po.reject',
-    );
-    Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name(
-        'po.download',
-    );
-    Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name(
-        'po.destroy',
-    );
-    Route::post('/purchaseOrder/rejectAll', [PurchaseOrderController::class, 'rejectAll'])->name(
-        'po.rejectAll',
-    );
-    Route::get('/purchase-orders/export', [PurchaseOrderController::class, 'exportExcel'])->name(
-        'po.export',
-    );
-    Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name(
-        'po.edit',
-    );
-    Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name(
-        'po.update',
-    );
-    Route::post('purchase-orders/approve-selected', [
-        PurchaseOrderController::class,
-        'approveSelected',
-    ])->name('purchase_orders.approve_selected');
-    Route::post('purchase-orders/reject-selected', [
-        PurchaseOrderController::class,
-        'rejectSelected',
-    ])->name('purchase_orders.reject_selected');
-    Route::get('purchaseOrders/dashboard', [PurchaseOrderController::class, 'dashboard'])->name(
-        'po.dashboard',
-    );
+    Route::post('/purchaseOrder/reject-pdf', [PurchaseOrderController::class, 'rejectPDF'])->name('po.reject');
+    Route::get('/download-pdf/{filename}', [PurchaseOrderController::class, 'downloadPDF'])->name('po.download');
+    Route::delete('/purchaseOrder/{id}', [PurchaseOrderController::class, 'destroy'])->name('po.destroy');
+    Route::post('/purchaseOrder/rejectAll', [PurchaseOrderController::class, 'rejectAll'])->name('po.rejectAll');
+    Route::get('/purchase-orders/export', [PurchaseOrderController::class, 'exportExcel'])->name('po.export');
+    Route::get('/purchaseOrder/{id}/edit', [PurchaseOrderController::class, 'edit'])->name('po.edit');
+    Route::put('/purchaseOrder/{po}', [PurchaseOrderController::class, 'update'])->name('po.update');
+    Route::post('purchase-orders/approve-selected', [PurchaseOrderController::class, 'approveSelected'])->name('purchase_orders.approve_selected');
+    Route::post('purchase-orders/reject-selected', [PurchaseOrderController::class, 'rejectSelected'])->name('purchase_orders.reject_selected');
+    Route::get('purchaseOrders/dashboard', [PurchaseOrderController::class, 'dashboard'])->name('po.dashboard');
     Route::get('/purchase-orders/filter', [PurchaseOrderController::class, 'filter']);
-    Route::get('/purchase-orders/vendor-monthly-totals', [
-        PurchaseOrderController::class,
-        'vendorMonthlyTotals',
-    ])->name('po.vendor-monthly-totals');
-    Route::get('/purchase-orders/vendor-details', [
-        PurchaseOrderController::class,
-        'getVendorDetails',
-    ]);
-    Route::put('/purchase-orders/cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name(
-        'po.cancel',
-    );
+    Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
+    Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);
+    Route::put('/purchase-orders/cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name('po.cancel');
 
     Route::resource('waiting_purchase_orders', WaitingPurchaseOrderController::class);
     Route::resource('employee_trainings', EmployeeTrainingController::class);
-    Route::patch('employee_trainings/{employee_training}/evaluate', [
-        EmployeeTrainingController::class,
-        'evaluate',
-    ])->name('employee_trainings.evaluate');
+    Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });
 
 Route::middleware(['auth', 'is.head.or.management'])->group(function () {
-    Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name(
-        'employee.dashboard',
-    );
-    Route::post('/employee-dashboard/update-employee-data', [
-        EmployeeDashboardController::class,
-        'updateEmployeeData',
-    ])->name('employee.dashboard.updateEmployeeData');
+    Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');
+    Route::post('/employee-dashboard/update-employee-data', [EmployeeDashboardController::class, 'updateEmployeeData'])->name('employee.dashboard.updateEmployeeData');
     Route::get('/sync-progress/{companyArea}', [SyncProgressController::class, 'show']);
-    Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name(
-        'director.warning-log.store',
-    );
-    Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name(
-        'filter.employees',
-    );
-    Route::post('/get-employees-by-category', [
-        EmployeeDashboardController::class,
-        'getEmployeesByCategory',
-    ])->name('getEmployeesByCategory');
-    Route::post('/get-employees-by-department', [
-        EmployeeDashboardController::class,
-        'getEmployeesByDepartment',
-    ])->name('getEmployeesByDepartment');
-    Route::post('/get-employees-by-chart-category', [
-        EmployeeDashboardController::class,
-        'getEmployeesByChartCategory',
-    ])->name('getEmployeesByChartCategory');
+    Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.warning-log.store');
+    Route::post('/filter-employees', [EmployeeDashboardController::class, 'filterEmployees'])->name('filter.employees');
+    Route::post('/get-employees-by-category', [EmployeeDashboardController::class, 'getEmployeesByCategory'])->name('getEmployeesByCategory');
+    Route::post('/get-employees-by-department', [EmployeeDashboardController::class, 'getEmployeesByDepartment'])->name('getEmployeesByDepartment');
+    Route::post('/get-employees-by-chart-category', [EmployeeDashboardController::class, 'getEmployeesByChartCategory'])->name('getEmployeesByChartCategory');
     Route::get('/employees/{id}/warnings', function ($id) {
         $warnings = \App\Models\EmployeeWarningLog::where('nik', $id)->get();
 
         return response()->json($warnings);
     });
-    Route::get('/get-employee-count-by-month/{year?}', [
-        EmployeeDashboardController::class,
-        'getEmployeeCountByMonth',
-    ])->name('getEmployeeCountByMonth');
-    Route::get('employee-with-evaluation', [
-        EmployeeDashboardController::class,
-        'getEmployeeWithEvaluationData',
-    ])->name('employee-dashboard.getEmployeeWithEvaluationData');
+    Route::get('/get-employee-count-by-month/{year?}', [EmployeeDashboardController::class, 'getEmployeeCountByMonth'])->name('getEmployeeCountByMonth');
+    Route::get('employee-with-evaluation', [EmployeeDashboardController::class, 'getEmployeeWithEvaluationData'])->name('employee-dashboard.getEmployeeWithEvaluationData');
     Route::get('employees', [EmployeeDashboardController::class, 'getEmployeesData'])->name('employee-dashboard.getEmployeesData');
     Route::get('/get-weekly-evaluation-data/{year}/{week}', [EmployeeDashboardController::class, 'getWeeklyEvaluationData'])->name('getWeeklyEvaluationData');
     Route::get('/get-employees-by-category-week/{department}/{category}/{year}/{week}', [EmployeeDashboardController::class, 'getEmployeesByCategoryAndWeek'])->name('getEmployeesByCategoryAndWeek');
@@ -1959,7 +1176,7 @@ Route::middleware(['auth', 'is.head.or.management'])->group(function () {
 
 Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     // dd($request->all());
-    if (! $request->hasValidSignature()) {
+    if (!$request->hasValidSignature()) {
         abort(403, 'Invalid or expired link.');
     }
 
@@ -1973,20 +1190,14 @@ Route::get('/autologin', function (\Illuminate\Http\Request $request) {
 Route::get('/dashboard-employee-login', function () {
     $user = \App\Models\User::where('name', 'dashboardemployee')->first();
 
-    $link = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-        'autologin',
-        now()->addMinutes(30),
-        ['name' => $user->name],
-    );
+    $link = \Illuminate\Support\Facades\URL::temporarySignedRoute('autologin', now()->addMinutes(30), ['name' => $user->name]);
 
     return redirect($link);
 });
 
 Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
 Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
-Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name(
-    'inspection-reports.show',
-);
+Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
@@ -2005,14 +1216,9 @@ Route::prefix('delivery-notes')
     });
 
 Route::middleware('auth')->group(function () {
-    Route::get(
-        '/master-data/parts/import',
-        fn () => view('master-data-part.import-dashboard'),
-    )->name('md.parts.import');
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
     Route::get('/parts/import', ImportParts::class)->name('parts.import');
-    Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name(
-        'import-jobs.log',
-    );
+    Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });
 
 Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
@@ -2029,17 +1235,9 @@ Route::get('/reports/department-expenses', DepartmentExpenses::class)
     ->name('department-expenses.index');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/notifications/unread-count', [
-        NotificationFeedController::class,
-        'unreadCount',
-    ])->name('notifications.unread-count');
-    Route::get('/notifications/feed', [NotificationFeedController::class, 'feed'])->name(
-        'notifications.feed',
-    );
-    Route::post('/notifications/mark-read/{id?}', [
-        NotificationFeedController::class,
-        'markAsRead',
-    ])->name('notifications.mark-read');
+    Route::get('/notifications/unread-count', [NotificationFeedController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::get('/notifications/feed', [NotificationFeedController::class, 'feed'])->name('notifications.feed');
+    Route::post('/notifications/mark-read/{id?}', [NotificationFeedController::class, 'markAsRead'])->name('notifications.mark-read');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -2066,10 +1264,11 @@ Route::middleware(['auth'])->group(function () {
         // }
 
         return Illuminate\Support\Facades\Storage::disk('public')->download($upload->path, $upload->original_name);
-    })->middleware(['signed', 'auth'])->name('uploads.download');
+    })
+        ->middleware(['signed', 'auth'])
+        ->name('uploads.download');
 
-    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)
-        ->name('requirements.departments');
+    Route::get('/requirements/{requirement}/departments', RequirementDepartments::class)->name('requirements.departments');
 
     Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
     Route::get('/compliance/dashboard', ComplianceDashboard::class)->name('compliance.dashboard');
@@ -2080,8 +1279,7 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::middleware(['web', 'auth'])->group(function () {
     // Secure stream of a signature image (PNG or SVG) from private disk
-    Route::get('/signatures/{id}', [SignatureController::class, 'show'])
-        ->name('signatures.show');
+    Route::get('/signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
 
     // Livewire pages
     Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
