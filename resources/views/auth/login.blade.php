@@ -104,8 +104,7 @@
                         </form>
                         <div class="col mt-4 text-end">
                             Daily Employee Job?
-                            <a href="{{ route('employee-login') }}" class="btn btn-outline-primary btn-sm">Click
-                                Here</a>
+                            <a href="{{ route('employee.login') }}" class="btn btn-outline-primary btn-sm">Click Here</a>
                         </div>
                     </div>
                 </div>

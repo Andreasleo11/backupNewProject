@@ -1,16 +1,12 @@
 <?php
 
-use App\Http\Controllers\accounting\AccountingHomeController;
 use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\AdjustFormQcController;
 use App\Http\Controllers\admin\DepartmentController;
 use App\Http\Controllers\admin\UserController;
-use App\Http\Controllers\AssemblyHomeController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\BarcodeController;
-use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\CapacityByForecastController;
-use App\Http\Controllers\ComputerHomeController;
 use App\Http\Controllers\DefectCategoryController;
 use App\Http\Controllers\DeliveryScheduleController;
 use App\Http\Controllers\DetailPurchaseRequestController;
@@ -26,11 +22,9 @@ use App\Http\Controllers\EmployeeMasterController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\FileController;
-// ROUTE SPECIAL PURCHASING
 use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
-// ROUTE SPECIAL PURCHASING
 use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\HolidayListController;
@@ -42,35 +36,24 @@ use App\Http\Controllers\InventoryFgController;
 use App\Http\Controllers\InventoryMtrController;
 use App\Http\Controllers\InvLineListController;
 use App\Http\Controllers\LineDownController;
-use App\Http\Controllers\LogisticHomeController;
-use App\Http\Controllers\maintenance\MaintenanceHomeController;
 use App\Http\Controllers\MaintenanceInventoryController;
-use App\Http\Controllers\ManagementHomeController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\MasterTintaController;
 use App\Http\Controllers\materialPredictionController;
-use App\Http\Controllers\MMHomeController;
 use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
 use App\Http\Controllers\MonthlyBudgetReportSummaryDetailController;
 use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MouldDownController;
-use App\Http\Controllers\MouldingHomeController;
-use App\Http\Controllers\MUHomeController;
 use App\Http\Controllers\NotificationFeedController;
-use App\Http\Controllers\pe\PEHomeController;
 use App\Http\Controllers\PEController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\PersonaliaHomeController;
-use App\Http\Controllers\PIHomeController;
-use App\Http\Controllers\PPICHomeController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSGeneralController;
 use App\Http\Controllers\pps\PPSInjectionController;
 use App\Http\Controllers\pps\PPSKarawangController;
 use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\PreviewUploadController;
-use App\Http\Controllers\ProductionHomeController;
 use App\Http\Controllers\ProjectTrackerController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\PurchaseRequestController;
@@ -85,17 +68,15 @@ use App\Http\Controllers\qaqc\QaqcReportController;
 use App\Http\Controllers\RequirementUploadDownloadController;
 use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\SpecificationController;
-use App\Http\Controllers\SPHomeController;
 use App\Http\Controllers\StockTintaController;
-use App\Http\Controllers\StoreHomeController;
 use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\SyncProgressController;
 use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\UserPermissionController;
-use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
+use App\Http\Controllers\PEHomeController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
@@ -127,18 +108,8 @@ use App\Livewire\Signature\ManageSignatures;
 use App\Livewire\Vehicles\Form as VehiclesForm;
 use App\Livewire\Vehicles\Index as VehiclesIndex;
 use App\Livewire\Vehicles\Show as VehiclesShow;
-// TESTING SAP SERVICE
-use App\Services\BaseSapService;
-use App\Services\FctBomWipService;
-use App\Services\FctForecastService;
-use App\Services\FctInventoryFgService;
-use App\Services\FctInventoryMtrService;
-use App\Services\FctLineProductionService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
-
-// TESTING SAP SERVICE
 
 /*
 |--------------------------------------------------------------------------
@@ -151,150 +122,27 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// /TESTING API SAP FORECAST
-
-Route::get('/test-sap-login', function (BaseSapService $sap) {
-    return response()->json([
-        'token' => $sap->getToken(), // nanti kita bikin fungsi getToken() di service
-    ]);
-});
-
-Route::get('/test-sap-data', function (BaseSapService $sap) {
-    $data = $sap->testGet('/api/sap_bom_wip/list', [
-        'startDate' => '2025-03-01',
-        'itemGroupCode' => '104',
-    ]);
-
-    return response()->json($data);
-});
-
-Route::get('/sap/bom/raw1', function (FctBomWipService $svc) {
-    $startDate = request('startDate', now()->toDateString());
-    $itemGroupCode = request('itemGroupCodes', '103,168');
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'bom_wip',
-        'data' => $svc->getBomWip($startDate, $itemGroupCode),
-    ]);
-});
-
-// GET /sap/bom/raw2 → Get data BOM WIP SEMI
-Route::get('/sap/bom/raw2', function (FctBomWipService $svc) {
-    $startDate = request('startDate', now()->toDateString());
-    $itemGroupCode = request('itemGroupCodes', '103,168');
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'bom_wip_semi',
-        'data' => $svc->getSemi($startDate, $itemGroupCode),
-    ]);
-});
-
-// GET /sap/bom/raw3 → Get data BOM WIP SEMI-SEMI
-Route::get('/sap/bom/raw3', function (FctBomWipService $svc) {
-    $startDate = request('startDate', now()->toDateString());
-    $itemGroupCode = request('itemGroupCodes', '103,168');
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'bom_wip_semi_semi',
-        'data' => $svc->getSemiSemi($startDate, $itemGroupCode),
-    ]);
-});
-// GET /sap/bom/combined → Get gabungan semua data
-Route::get('/sap/bom/combined', function (FctBomWipService $svc) {
-    $startDate = request('startDate', '2025-06-01');
-    $itemGroupCode = request('itemGroupCodes', '103,168');
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'combined',
-        'data' => $svc->getAllCombined($startDate, $itemGroupCode),
-    ]);
-});
-
-// GET /sap/bom/distinct → Get item_code unik dari gabungan semua data
-Route::get('/sap/bom/distinct', function (FctBomWipService $svc) {
-    $startDate = request('startDate', now()->toDateString());
-    $itemGroupCode = request('itemGroupCodes', '103,168');
-
-    return response()->json([
-        'status' => 'success',
-        'distinct_item_codes' => $svc->getDistinctItemCodes($startDate, $itemGroupCode),
-    ]);
-});
-
-Route::get('/sap/fct/inventory/mtr', function (FctInventoryMtrService $svc) {
-    $startDate = request('startDate', '2025-03-01');
-
-    // $itemGroupCodes = '104,167';
-    return response()->json([
-        'status' => 'success',
-        'source' => 'fct_inventory_mtr_combined',
-        'data' => $svc->getAll($startDate),
-    ]);
-});
-
-Route::get('test/bomwip', [FctBomWipService::class, 'SyncData']);
-
-Route::get('/sap/fct/inventory/fg', function (FctInventoryFgService $svc) {
-    $startDate = request('startDate', now()->toDateString());
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'fct_inventory_fg',
-        'data' => $svc->getAll($startDate),
-    ]);
-});
-
-Route::get('/sap/fct/line/production', function (FctLineProductionService $svc) {
-    $startDate = '2024-11-01';
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'fct_line_production',
-        'data' => $svc->getAll($startDate),
-    ]);
-});
-
-Route::get('/sap/fct/forecast', function (FctForecastService $svc) {
-    $startDate = request('startDate', now()->toDateString());
-
-    return response()->json([
-        'status' => 'success',
-        'source' => 'sap_forecast',
-        'data' => $svc->getAll($startDate),
-    ]);
-});
-
-// TESTING SYNC DATA
-Route::get('/fctbomwip-sync', [FctBomWipService::class, 'SyncData']);
-Route::get('/fctinventorymtr-sync', [FctInventoryMtrService::class, 'SyncData']);
-Route::get('/fctinventoryfg-sync', [FctInventoryFgService::class, 'SyncData']);
-Route::get('/fctlineproduction-sync', [FctLineProductionService::class, 'SyncData']);
-Route::get('/forecast-sync', [FctForecastService::class, 'SyncData']);
-
 // Route::get('/', fn() => view('welcome'))->name('/');
 
-Route::get('daily-reports/login', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
-Route::post('/daily-reports/login', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
-Route::get('/daily-reports/', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-reports.index');
-Route::post('/daily-reports/logout', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
-
-Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
-
-Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
-Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
-Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
-Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
+Route::middleware('guest')->prefix('daily-reports')->group(function() {
+    Route::get('login', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
+    Route::post('/login', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
+    Route::get('/', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-reports.index');
+    Route::post('/logout', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
+    
+    Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
+    
+    Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
+    Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
+    Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+    Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');  
 });
 
-Route::get('/', fn () => Auth::check() ? redirect('/home') : redirect('login'))->name('/');
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
+// });
+
+Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -307,7 +155,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
     Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
     Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
 
-    Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin.home');
+    Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin');
 
     Route::prefix('superadmin')->group(function () {
         Route::name('superadmin.')->group(function () {
@@ -381,7 +229,7 @@ Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
 
 Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
-        Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
+        Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
 
         Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
         Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
@@ -461,7 +309,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
-        Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd.home');
+        Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd');
 
         Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])
             ->name('hrd.importantDocs.index')
@@ -487,7 +335,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
-        Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director.home');
+        Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director');
         Route::get('/director/qaqc/index', [ReportController::class, 'index'])
             ->name('director.qaqc.index')
             ->middleware('permission:get-vqc-reports-director');
@@ -519,7 +367,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
-        Route::get('pe/home', [PEHomeController::class, 'index'])->name('pe.home');
+        Route::get('pe/home', [PEHomeController::class, 'index'])->name('pe');
 
         Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
         Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
@@ -531,7 +379,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:PURCHASING'])->group(function () {
-        Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing.home');
+        Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing');
 
         Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
         Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
@@ -549,12 +397,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('purchasing/requirement/detail', [PurchasingRequirementController::class, 'detail'])->name('purchasingrequirement.detail');
     });
 
-    Route::middleware(['checkDepartment:COMPUTER', 'checkSessionId'])->group(function () {
-        Route::get('/computer/home', [ComputerHomeController::class, 'index'])->name('computer.home');
-    });
-
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
-        Route::get('/ppic/home', [PPICHomeController::class, 'index'])->name('ppic.home');
         Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])
             ->name('indexds')
             ->middleware('permission:get-delivery-schedule-index');
@@ -571,17 +414,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name('delschedwip.step2');
     });
 
-    Route::middleware(['checkDepartment:BUSINESS'])->group(function () {
-        Route::get('business/home', [BusinessHomeController::class, 'index'])->name('business.home');
-    });
-
     Route::middleware(['checkDepartment:ACCOUNTING'])->group(function () {
-        Route::get('accounting/home', [AccountingHomeController::class, 'index'])->name('accounting.home');
         Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
     });
 
     Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
-        Route::get('production/home', [ProductionHomeController::class, 'index'])->name('production.home');
 
         Route::get('/production/capacity-forecast', [CapacityByForecastController::class, 'index'])->name('capacityforecastindex');
         Route::get('/production/capacity-line', [CapacityByForecastController::class, 'line'])->name('capacityforecastline');
@@ -687,7 +524,6 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
-        Route::get('maintenance/home', [MaintenanceHomeController::class, 'index'])->name('maintenance.home');
 
         Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])
             ->name('moulddown.index')
@@ -696,50 +532,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
         Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name('addlinedown');
     });
-
-    Route::middleware(['checkDepartment:PLASTIC INJECTION'])->group(function () {
-        Route::get('pi/home', [PIHomeController::class, 'index'])->name('pi.home');
-    });
-
-    Route::middleware(['checkDepartment:MOULDING'])->group(function () {
-        Route::get('moulding/home', [MouldingHomeController::class, 'index'])->name('moulding.home');
-    });
-
-    Route::middleware(['checkDepartment:STORE'])->group(function () {
-        Route::get('store/home', [StoreHomeController::class, 'index'])->name('store.home');
-    });
-
-    Route::middleware(['checkDepartment:SECOND PROCESS'])->group(function () {
-        Route::get('sp/home', [SPHomeController::class, 'index'])->name('sp.home');
-    });
-
-    Route::middleware(['checkDepartment:ASSEMBLY'])->group(function () {
-        Route::get('assembly/home', [AssemblyHomeController::class, 'index'])->name('assembly.home');
-    });
-
-    Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
-        Route::get('personalia/home', [PersonaliaHomeController::class, 'index'])->name('personalia.home');
-    });
-
-    Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
-        Route::get('management/home', [ManagementHomeController::class, 'index'])->name('management.home');
-    });
-
-    Route::middleware(['checkDepartment:LOGISTIC'])->group(function () {
-        Route::get('logistic/home', [LogisticHomeController::class, 'index'])->name('logistic.home');
-    });
-
-    Route::middleware(['checkDepartment:MAINTENANCE MACHINE'])->group(function () {
-        Route::get('mm/home', [MMHomeController::class, 'index'])->name('mm.home');
-    });
-
-    Route::middleware(['checkDepartment:MAINTENANCE UTILITY'])->group(function () {
-        Route::get('mu/home', [MUHomeController::class, 'index'])->name('mu.home');
-    });
 });
 
 Route::middleware(['checkUserRole:3'])->group(function () {
-    Route::get('/user/home', [UserHomeController::class, 'index'])->name('user.home');
+    Route::get('/user/home', [UserHomeController::class, 'index'])->name('user');
 });
 
 Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
@@ -752,7 +548,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     // PR
     Route::get('/purchaseRequest', [PurchaseRequestController::class, 'index'])
-        ->name('purchaserequest.home')
+        ->name('purchaserequest')
         ->middleware('permission:get-purchase-requests');
     Route::get('/purchaseRequest/create', [PurchaseRequestController::class, 'create'])
         ->name('purchaserequest.create')
@@ -801,7 +597,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     // FORM CUTI
     Route::get('/form-cuti', [FormCutiController::class, 'index'])
-        ->name('formcuti.home')
+        ->name('formcuti')
         ->middleware('permission:get-form-cuti');
     Route::get('/form-cuti/create', [FormCutiController::class, 'create'])
         ->name('formcuti.create')
@@ -816,7 +612,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     // FORM KELUAR
     Route::get('/form-keluar', [FormKeluarController::class, 'index'])
-        ->name('formkeluar.home')
+        ->name('formkeluar')
         ->middleware('permission:get-form-keluar');
     Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])
         ->name('formkeluar.create')
@@ -1176,7 +972,7 @@ Route::middleware(['auth', 'is.head.or.management'])->group(function () {
 
 Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     // dd($request->all());
-    if (!$request->hasValidSignature()) {
+    if (! $request->hasValidSignature()) {
         abort(403, 'Invalid or expired link.');
     }
 
@@ -1216,7 +1012,7 @@ Route::prefix('delivery-notes')
     });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/master-data/parts/import', fn () => view('master-data-part.import-dashboard'))->name('md.parts.import');
     Route::get('/parts/import', ImportParts::class)->name('parts.import');
     Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });
@@ -1285,3 +1081,5 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
     Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });
+
+// require __DIR__.'/admin.php';
