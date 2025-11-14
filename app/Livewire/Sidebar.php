@@ -89,7 +89,7 @@ class Sidebar extends Component
 
     public array $otherPatterns = [
         'director.pr.index',
-        'purchaserequest.home',
+        'purchaserequest',
         'daily-reports.*',
         'overtime.*',
         'actual.import.form',
