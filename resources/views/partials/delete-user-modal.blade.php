@@ -11,7 +11,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ route('superadmin.users.delete', $user->id) }}" method="POST"
+                <form action="{{ route('admin.users.delete', $user->id) }}" method="POST"
                     style="display: inline;">
                     @csrf
                     @method('DELETE')

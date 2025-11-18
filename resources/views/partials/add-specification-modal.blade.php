@@ -1,7 +1,7 @@
 <div class="modal fade" tabindex="-1" id="add-specification-modal">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('superadmin.specifications.store') }}">
+            <form method="POST" action="{{ route('admin.specifications.store') }}">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Add Specification</h5>

@@ -57,7 +57,7 @@ class UserController extends Controller
         $user->syncPermissions();
 
         return redirect()
-            ->route('superadmin.users')
+            ->route('admin.users')
             ->with(['success' => 'User added successfully!']);
     }
 
@@ -89,7 +89,7 @@ class UserController extends Controller
         $user->syncPermissions();
 
         return redirect()
-            ->route('superadmin.users')
+            ->route('admin.users')
             ->with(['success' => 'User updated successfully!']);
     }
 

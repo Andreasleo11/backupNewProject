@@ -24,7 +24,7 @@ class HomeController extends Controller
         $user = auth()->user();
 
         if ($user->role_id == 1) {
-            return view('superadmin_home');
+            return view('admin.home');
         } elseif ($user->specification->name === 'DIRECTOR') {
             return redirect()->intended(route('director'));
         } elseif ($user->role_id == 2) {
@@ -43,24 +43,6 @@ class HomeController extends Controller
             return view('home');
         } else {
             return view('welcome');
-        }
-    }
-
-    private function abbreviateString($string)
-    {
-        // Check if the string contains multiple words
-        if (strpos($string, ' ') !== false) {
-            $lowercaseString = strtolower($string);
-            $words = explode(' ', $lowercaseString);
-
-            $abbreviation = '';
-            foreach ($words as $word) {
-                $abbreviation .= substr($word, 0, 1);
-            }
-
-            return $abbreviation;
-        } else {
-            return strtolower($string);
         }
     }
 }

@@ -18,7 +18,7 @@
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('superadmin') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin') }}">Home</a></li>
                 <li class="breadcrumb-item active">Users</li>
             </ol>
         </nav>
@@ -51,7 +51,7 @@
             <!-- Table body -->
             <div class="card-body">
                 <div class="table-responsive p-2">
-                    <button id="delete-selected-btn" data-delete-url="{{ route('superadmin.users.deleteSelected') }}"
+                    <button id="delete-selected-btn" data-delete-url="{{ route('admin.users.deleteSelected') }}"
                         class="btn btn-danger mb-3">Delete Selected</button>
 
                     {{ $dataTable->table() }}

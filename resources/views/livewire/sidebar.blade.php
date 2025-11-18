@@ -51,15 +51,15 @@
         @if ($isSuper)
             <x-sidebar.group id="adminGroup" icon="bx bx-bug" title="Admin" :open="$groupOpen['adminGroup'] ?? false">
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.users')" icon="bx bx-user" :active="request()->routeIs('superadmin.users*')">Users</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.users.index')" icon="bx bx-user" :active="request()->routeIs('admin.users*')">Users</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.departments')" icon="bx bx-building-house"
-                        :active="request()->routeIs('superadmin.departments*')">Departments</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.departments.index')" icon="bx bx-building-house"
+                        :active="request()->routeIs('admin.departments*')">Departments</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.specifications')" icon="bx bx-task"
-                        :active="request()->routeIs('superadmin.specifications*')">Specifications</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.specifications.index')" icon="bx bx-task"
+                        :active="request()->routeIs('admin.specifications*')">Specifications</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
                     <x-sidebar.link :href="route('changeemail.page')" icon="bx bx-file" :active="request()->routeIs('changeemail.page')">Change Default

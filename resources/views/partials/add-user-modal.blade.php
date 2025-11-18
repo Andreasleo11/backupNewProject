@@ -1,7 +1,7 @@
 <div class="modal" tabindex="-1" class="modal fade" id="add-user-modal" aria-labelledby="addUserModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('superadmin.users.store') }}">
+            <form method="POST" action="{{ route('admin.users.store') }}">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Add User</h5>
