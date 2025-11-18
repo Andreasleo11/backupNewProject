@@ -124,22 +124,14 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', fn() => view('welcome'))->name('/');
 
-Route::middleware('guest')->prefix('daily-reports')->group(function() {
-    Route::get('/', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-reports.index'); 
-});
-
-
 Route::middleware('auth')->group(function() {
-    Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+    Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
+    Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('reports.depthead.show');
+    
     Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
     Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');  
     Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
-    Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 });
-
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
-// });
 
 Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
 Auth::routes();

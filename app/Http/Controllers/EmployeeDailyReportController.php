@@ -8,7 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeDailyReport;
 use App\Models\EmployeeDailyReportLog;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod; // Kalau pakai Excel
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,33 +16,46 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class EmployeeDailyReportController extends Controller
 {
-    public function dashboardDailyReport(Request $request)
+    public function index(Request $request)
     {
-        $employeeNik = Session::get('employee_nik');
+        $search = $request->input('search');
+        $from   = $request->input('from');
+        $to     = $request->input('to');
+        
+        $query = EmployeeDailyReport::query();
 
-        $query = EmployeeDailyReport::where('employee_id', $employeeNik);
-
-        if ($request->filled('filter_date')) {
-            $query->whereDate('work_date', $request->filter_date);
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('employee_name', 'like', '%' . $search . '%')
+                  ->orWhere('work_description', 'like', '%' . $search . '%');
+            });
         }
 
-        $reports = $query->orderBy('work_date', 'desc')->get();
+        if ($from) {
+            $query->whereDate('work_date', '>=', $from);
+        }
 
-        return view('dailyreport.dashboard', compact('reports'));
+        if ($to) {
+            $query->whereDate('work_date', '<=', $to);
+        }
+
+        $employeeNik = Session::get('logged_in_employee_nik');
+        $query->where('employee_id', $employeeNik);
+
+        $query->orderBy('work_date', 'desc');
+
+        $reports = $query->paginate(20)->withQueryString();
+
+        return view('employee.index', compact('reports'));
     }
 
-    public function index()
-    {
-        $reports = EmployeeDailyReport::all();
-
-        return view('dailyreport.index', compact('reports'));
-    }
-
+    // planned to move this to livewire 
     public function showUploadForm()
     {
         return view('dailyreport.upload-daily-report');
     }
 
+    // planned to move this to livewire
     public function upload(Request $request)
     {
         $request->validate([
@@ -142,7 +155,8 @@ class EmployeeDailyReportController extends Controller
 
         return view('dailyreport.preview', compact('previewData'));
     }
-
+    
+    // planned to move this to livewire
     public function confirmUpload(Request $request)
     {
         $encoded = $request->input('data');
@@ -181,8 +195,9 @@ class EmployeeDailyReportController extends Controller
 
         return view('dailyreport.upload-log', compact('logs'));
     }
-
-    public function showDepthead(Request $request, $employee_id)
+    
+    // planned to move this to livewire
+    public function show(Request $request, $employee_id)
     {
         $user = auth()->user();
 

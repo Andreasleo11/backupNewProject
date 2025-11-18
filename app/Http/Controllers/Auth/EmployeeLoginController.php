@@ -37,13 +37,14 @@ class EmployeeLoginController extends Controller
         }
 
         Auth::guard('employee')->login($employee);
-        // dd("TEST");
+        session()->put('logged_in_employee_nik', $employee->NIK);
         return redirect('/employees/home');
     }
 
     public function logout()
     {
         Auth::guard('employee')->logout();
+        session()->forget('logged_in_employee_nik');
 
         return redirect(route('employee.login'));
     }
