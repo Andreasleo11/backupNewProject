@@ -1,19 +1,22 @@
 @section('title', 'Create Overtime Form - ' . env('APP_NAME'))
 
-<div class="container">
+<div class="container mt-5" x-data="overtimeForm($wire)">
     @include('partials.alert-success-error')
+
     <h2 class="h4 fw-bold text-primary mb-4">Create Overtime Form</h2>
+
     <form wire:submit.prevent="submit" enctype="multipart/form-data">
-        <div class="bg-white p-4 rounded shadow-sm border">
+        {{-- ====================== GENERAL INFORMATION ====================== --}}
+        <div class="bg-white p-4 rounded shadow-sm border mb-4">
             <h5 class="fw-semibold text-secondary mb-3">General Information</h5>
-            <!-- Department & Branch -->
-            <div class="row g-4 mb-4">
+            <div class="row g-2">
+                {{-- Department --}}
                 <div class="col">
                     <label for="dept_id" class="form-label">From Department <span class="text-danger">*</span></label>
-                    <select wire:model.live="dept_id" id="dept_id"
+                    <select wire:model.lazy="dept_id" id="dept_id"
                         class="form-select shadow-sm @error('dept_id') is-invalid @enderror">
                         <option value="">-- Select Department --</option>
-                        @foreach ($departements as $dept)
+                        @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                         @endforeach
                     </select>
@@ -21,9 +24,11 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
+
+                {{-- Branch --}}
                 <div class="col">
                     <label for="branch" class="form-label">Branch <span class="text-danger">*</span></label>
-                    <select wire:model="branch" id="branch"
+                    <select wire:model.lazy="branch" id="branch"
                         class="form-select shadow-sm @error('branch') is-invalid @enderror">
                         <option value="">-- Select Branch --</option>
                         <option value="Jakarta">Jakarta</option>
@@ -33,6 +38,8 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
+
+                {{-- After Hour --}}
                 <div class="col">
                     <label for="is_after_hour" class="form-label">After Hour OT? <span
                             class="text-danger">*</span></label>
@@ -45,10 +52,12 @@
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
-                @if ($dept_id && optional($departements->firstWhere('id', $dept_id))->name === 'MOULDING')
+
+                {{-- Design (only for MOULDING) --}}
+                @if ($dept_id && optional($departments->firstWhere('id', $dept_id))->name === 'MOULDING')
                     <div class="col">
                         <label for="design" class="form-label">Design <span class="text-danger">*</span></label>
-                        <select wire:model="design" id="design" class="form-select shadow-sm">
+                        <select wire:model.lazy="design" id="design" class="form-select shadow-sm">
                             <option value="">-- Select Design --</option>
                             <option value="1">Yes</option>
                             <option value="0">No</option>
@@ -60,150 +69,222 @@
                 @endif
             </div>
         </div>
-        <div class="bg-white p-4 rounded shadow-sm border mt-4">
-            <h5 class="fw-semibold text-secondary mb-3">Input Mode</h5>
-            <!-- Excel / Manual toggle -->
-            <div class="mb-4">
-                @php
-                    $cardBase = 'card shadow-sm border bg-transparent';
-                @endphp
-                <div class="row g-2">
-                    <div class="col-md-6">
-                        <div class="{{ $cardBase }} {{ !$isExcelMode ? 'border-primary bg-primary-subtle ' : '' }}"
-                            wire:click="$set('isExcelMode', false)" style="cursor: pointer;">
-                            <div class="card-body d-flex align-items-center gap-2">
-                                <i class="bi bi-pencil-square fs-4 text-primary"></i>
-                                <div>
-                                    <h6 class="mb-0 {{ !$isExcelMode ? 'text-primary' : '' }}">Manual Entry</h6>
-                                    <small class="text-muted">Fill in the form manually.</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="{{ $cardBase }} {{ $isExcelMode ? 'border-success bg-success-subtle' : '' }}"
-                            wire:click="$set('isExcelMode', true)" style="cursor: pointer;">
-                            <div class="card-body d-flex align-items-center gap-2">
-                                <i class="bi bi-file-earmark-excel fs-4 text-success"></i>
-                                <div>
-                                    <h6 class="mb-0 {{ $isExcelMode ? 'text-success' : '' }}">Import from Excel</h6>
-                                    <small class="text-muted">Upload Excel file with overtime data.</small>
-                                </div>
+
+        {{-- ====================== INPUT MODE ====================== --}}
+        <div class="bg-white rounded shadow-sm border" x-data="{ excel: @entangle('isExcelMode') }">
+            <h5 class="fw-semibold text-secondary m-4 mb-2">Input Mode</h5>
+
+            <div class="m-4 mt-0 row g-2">
+                <div class="col">
+                    <div class="card shadow-sm border cursor-pointer"
+                        :class="!excel ? 'border-primary bg-primary-subtle' : ''" @click="excel = false">
+                        <div class="card-body d-flex align-items-center gap-2">
+                            <i class="bi bi-pencil-square fs-4 text-primary"></i>
+                            <div>
+                                <h6 :class="!excel ? 'text-primary mb-0' : 'mb-0'">Manual Entry</h6>
+                                <small class="text-muted">Fill in the form manually.</small>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div>
-                    <small class="text-muted">Choose how you'd like to enter the data.</small>
+                <div class="col">
+                    <div class="card shadow-sm border cursor-pointer"
+                        :class="excel ? 'border-success bg-success-subtle' : ''" @click="excel = true">
+                        <div class="card-body d-flex align-items-center gap-2">
+                            <i class="bi bi-file-earmark-excel fs-4 text-success"></i>
+                            <div>
+                                <h6 :class="excel ? 'text-success mb-0' : 'mb-0'">Import from Excel</h6>
+                                <small class="text-muted">Upload Excel file with overtime data.</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <h5 class="fw-semibold text-secondary mt-4 mb-3">Overtime Entries</h5>
-            @if ($isExcelMode)
-                <div class="mb-4" wire:key="excel-mode">
-                    <a href="{{ route('formovertime.template.download') }}"
-                        class="btn btn-outline-primary btn-sm mb-2">
+
+            {{-- Excel Upload Mode --}}
+            <template x-if="excel">
+                <div class="mb-4 py-4 px-3 border-top" wire:key="excel-mode">
+                    <a href="{{ route('formovertime.template.download') }}" class="btn btn-outline-primary btn-sm mb-2">
                         📄 Download Excel Template
                     </a>
-                    <input wire:model="excel_file" type="file" class="form-control shadow-sm" accept=".xlsx,.xls">
+                    <input wire:model.defer="excel_file" type="file" class="form-control shadow-sm"
+                        accept=".xlsx,.xls">
                     @error('excel_file')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
                 </div>
-            @else
-                <div class="card border shadow-sm mb-4" wire:key="manual-mode">
+            </template>
+
+            {{-- Manual Entry Mode --}}
+            <template x-if="!excel">
+                <div class="card border-0 bg-secondary-subtle rounded-0" wire:key="manual-mode">
                     <div class="card-body">
-                        @foreach ($items as $index => $item)
-                            <div class="card mb-4 border-0 shadow" wire:key="employee-item-{{ $index }}">
-                                <div class="card-body bg-white rounded">
-                                    <div class="row g-3">
-                                        <!-- NIK Dropdown -->
-                                        <div class="col-md-3">
-                                            <div x-data="{ open: false, search: @entangle('items.' . $index . '.nik') }" x-init="$watch('search', value => open = true)"
-                                                class="position-relative">
-                                                <label class="form-label">NIK <span class="text-danger">*</span></label>
-                                                <input
-                                                    class='form-control form-control-sm shadow-sm @error("items.$index.nik") is-invalid @enderror'
-                                                    placeholder="Search NIK..." type="text" x-model="search"
-                                                    @click="open = true" @keydown.escape.window="open = false"
-                                                    @blur="setTimeout(() => open = false, 200)">
+                        <template x-for="(row, index) in items" :key="index">
+                            <div class="card border-0 mb-3 shadow-sm">
+                                <div class="card-body">
+                                    <div class="row g-2 align-items-end">
 
-                                                <ul x-show="open && search.length > 0" x-transition
-                                                    class="list-group position-absolute bg-white border rounded shadow-sm w-100 z-10"
-                                                    style="max-height: 200px; overflow-y: auto;">
-                                                    @foreach ($employees as $emp)
+                                        {{-- NIK --}}
+                                        <div class="col" x-data="{ open: false, q: '' }">
+                                            <label class="form-label">NIK <span class="text-danger">*</span></label>
+                                            <div>
+                                                <input type="text" class='form-control form-control-sm shadow-sm'
+                                                    :class="{ 'is-invalid': hasError(index, 'nik') }"
+                                                    placeholder="Search NIK..." x-model="items[index].nik"
+                                                    @focus="open = true" @input="q = $event.target.value; open = !!q"
+                                                    @keydown.escape.window="open = false">
+
+                                                <ul x-cloak x-show="open && filteredBy('nik', q).length" x-transition
+                                                    class="list-group position-absolute bg-white border rounded shadow-sm w-auto mt-1"
+                                                    style="max-height: 180px; overflow-y: auto; z-index: 10;">
+                                                    <template x-for="emp in filteredBy('nik', q)"
+                                                        :key="emp.nik">
                                                         <li class="list-group-item list-group-item-action"
-                                                            x-show="'{{ $emp->NIK }}'.toLowerCase().includes(search.toLowerCase())"
-                                                            @click="search = '{{ $emp->NIK }}'; open = false; $wire.set('items.{{ $index }}.nik', '{{ $emp->NIK }}')">
-                                                            {{ $emp->NIK }} - {{ $emp->Nama }}
+                                                            @click="pick(index, emp); open=false; q=''">
+                                                            <span x-text="emp.nik + ' - ' + emp.name"></span>
                                                         </li>
-                                                    @endforeach
+                                                    </template>
                                                 </ul>
-                                                @error("items.$index.nik")
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
                                             </div>
+
+                                            <small x-text="getError(index, 'nik')" x-show="hasError(index, 'nik')"
+                                                class="text-danger"></small>
                                         </div>
 
-                                        <!-- Name Dropdown -->
-                                        <div class="col-md-3">
-                                            <div x-data="{ open: false, search: @entangle('items.' . $index . '.name') }" x-init="$watch('search', value => open = true)"
-                                                class="position-relative">
-                                                <label class="form-label">Name <span
-                                                        class="text-danger">*</span></label>
-                                                <input
-                                                    class='form-control form-control-sm shadow-sm @error("items.$index.name") is-invalid @enderror'
-                                                    placeholder="Search Name..." type="text" x-model="search"
-                                                    @click="open = true" @keydown.escape.window="open = false"
-                                                    @blur="setTimeout(() => open = false, 200)">
+                                        {{-- Name --}}
+                                        <div class="col" x-data="{ open: false, q: '' }">
+                                            <label class="form-label mt-2">Name <span
+                                                    class="text-danger">*</span></label>
+                                            <div>
+                                                <input type="text" class='form-control form-control-sm shadow-sm'
+                                                    :class="{ 'is-invalid': hasError(index, 'name') }"
+                                                    placeholder="Search Name..." x-model="items[index].name"
+                                                    @focus="open = true" @input="q = $event.target.value; open = !!q"
+                                                    @keydown.escape.window="open = false">
 
-                                                <ul x-show="open && search.length > 0" x-transition
-                                                    class="list-group position-absolute bg-white border rounded shadow-sm w-100 z-10"
-                                                    style="max-height: 200px; overflow-y: auto;">
-                                                    @foreach ($employees as $emp)
+                                                <ul x-cloak x-show="open && filteredBy('name', q).length" x-transition
+                                                    class="list-group position-absolute bg-white border rounded shadow-sm w-auto mt-1"
+                                                    style="max-height: 180px; overflow-y: auto; z-index: 10;">
+                                                    <template x-for="emp in filteredBy('name', q)"
+                                                        :key="emp.nik">
                                                         <li class="list-group-item list-group-item-action"
-                                                            x-show="'{{ strtolower($emp->Nama) }}'.includes(search.toLowerCase())"
-                                                            @click="search = '{{ $emp->Nama }}'; open = false; $wire.set('items.{{ $index }}.name', '{{ $emp->Nama }}')">
-                                                            {{ $emp->Nama }} ({{ $emp->NIK }})
+                                                            @click="pick(index, emp); open=false; q=''">
+                                                            <span x-text="emp.name + ' (' + emp.nik + ')'"></span>
                                                         </li>
-                                                    @endforeach
+                                                    </template>
                                                 </ul>
-                                                @error("items.$index.name")
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
                                             </div>
+                                            <small x-text="getError(index, 'name')" x-show="hasError(index, 'name')"
+                                                class="text-danger"></small>
                                         </div>
 
-                                        @foreach ([['key' => 'overtime_date', 'label' => 'Overtime Date'], ['key' => 'job_desc', 'label' => 'Job Desc'], ['key' => 'start_date', 'label' => 'Start Date'], ['key' => 'start_time', 'label' => 'Start Time'], ['key' => 'end_date', 'label' => 'End Date'], ['key' => 'end_time', 'label' => 'End Time'], ['key' => 'break', 'label' => 'Break (min)'], ['key' => 'remarks', 'label' => 'Remark']] as $field)
-                                            <div class="col-md-3">
-                                                <label class="form-label">{{ $field['label'] }} <span
+                                        @foreach ([['overtime_date', 'Overtime Date', 'date'], ['job_desc', 'Job Desc', 'text'], ['start_date', 'Start Date', 'date'], ['start_time', 'Start Time', 'time'], ['end_date', 'End Date', 'date'], ['end_time', 'End Time', 'time'], ['break', 'Break (min)', 'number'], ['remarks', 'Remark', 'text']] as [$key, $label, $type])
+                                            <div class="col">
+                                                <label class="form-label">{{ $label }} <span
                                                         class="text-danger">*</span></label>
-                                                <input wire:model="items.{{ $index }}.{{ $field['key'] }}"
-                                                    type="{{ in_array($field['key'], ['start_date', 'end_date', 'overtime_date']) ? 'date' : (in_array($field['key'], ['start_time', 'end_time']) ? 'time' : ($field['key'] === 'break' ? 'number' : 'text')) }}"
-                                                    class="form-control form-control-sm shadow-sm @error("items.$index.{$field['key']}") is-invalid @enderror">
-                                                @error("items.$index.{$field['key']}")
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
+                                                <input x-model="items[index].{{ $key }}"
+                                                    type="{{ $type }}"
+                                                    class='form-control form-control-sm shadow-sm'
+                                                    :class="{ 'is-invalid': hasError(index, '{{ $key }}') }">
+                                                <small x-text="getError(index, '{{ $key }}')"
+                                                    x-show="hasError(index, '{{ $key }}')"
+                                                    class="text-danger"></small>
                                             </div>
                                         @endforeach
-                                        <div class="col-md-1 d-flex align-items-end">
-                                            <button wire:click.prevent="removeItem({{ $index }})"
+
+                                        {{-- Buttons (pure Alpine) --}}
+                                        <div class="col-auto">
+                                            <button @click.prevent="removeRow(index)" title="Remove"
                                                 class="btn btn-outline-danger btn-sm">
                                                 <i class="bi bi-trash"></i>
+                                            </button>
+                                            <button @click.prevent="addRow()" type="button" title="Add"
+                                                class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-plus-circle"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                        <button wire:click.prevent="addItem" type="button" class="btn btn-outline-secondary btn-sm">
+                        </template>
+
+                        <button @click.prevent="addRow()" type="button" class="btn btn-outline-primary btn-sm mt-2">
                             <i class="bi bi-plus-circle me-1"></i> Add Employee
                         </button>
                     </div>
                 </div>
-            @endif
-            <div class="text-end mt-3">
-                <button type="submit" class="btn btn-success px-4">Submit</button>
-            </div>
+            </template>
+
+        </div>
+
+        {{-- ====================== SUBMIT BUTTON ====================== --}}
+        <div class="text-end mt-3">
+            <button type="submit" class="btn btn-lg btn-success" wire:loading.attr="disabled">
+                <span wire:loading.remove><i class="bi bi-check-circle me-1"></i> Submit</span>
+                <span wire:loading><i class="spinner-border spinner-border-sm me-1"></i> Processing...</span>
+            </button>
         </div>
     </form>
+
+    @push('extraJs')
+        <script>
+            function overtimeForm($wire) {
+                return {
+                    items: $wire.entangle('items'),
+                    excel: $wire.entangle('isExcelMode'),
+                    employees: $wire.entangle('employees'),
+                    errors: $wire.entangle('validationErrors'),
+
+                    // Helper to check if a field has an error
+                    hasError(index, field) {
+                        return !!this.errors[`items.${index}.${field}`];
+                    },
+                    getError(index, field) {
+                        return this.errors[`items.${index}.${field}`] ?? '';
+                    },
+
+                    // Row operations on the FRONTEND (then sync once)
+                    addRow() {
+                        this.items.push({
+                            nik: '',
+                            name: '',
+                            overtime_date: '',
+                            job_desc: '',
+                            start_date: '',
+                            start_time: '',
+                            end_date: '',
+                            end_time: '',
+                            break: '',
+                            remarks: '',
+                        });
+                        // ensure server catches the array mutation
+                        $wire.set('items', this.items);
+                    },
+                    removeRow(i) {
+                        this.items.splice(i, 1);
+                        $wire.set('items', this.items);
+                    },
+
+                    // Employee searching fully on the frontend
+                    filteredBy(field, q) {
+                        q = (q || '').toLowerCase();
+                        if (!q) return [];
+                        return this.employees
+                            .filter(e =>
+                                String(e[field]).toLowerCase().includes(q) ||
+                                String(e.name).toLowerCase().includes(q)
+                            )
+                            .slice(0, 10);
+                    },
+
+                    // Pick employee into a specific row
+                    pick(index, emp) {
+                        this.items[index].nik = emp.nik;
+                        this.items[index].name = emp.name;
+                        $wire.set('items', this.items);
+                    },
+                }
+            }
+        </script>
+    @endpush
 </div>

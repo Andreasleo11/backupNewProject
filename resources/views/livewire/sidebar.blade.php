@@ -345,7 +345,7 @@
         {{-- Other --}}
         <x-sidebar.group id="otherGroup" icon="bx bx-dots-horizontal-rounded" title="Other" :open="$groupOpen['otherGroup'] ?? false">
             <li class="sidebar-item">
-                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest.home')">
+                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest')">
                     Purchase Request
                 </x-sidebar.link>
             </li>
@@ -368,11 +368,11 @@
                     Overtime</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formcuti.home')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form
+                <x-sidebar.link :href="route('formcuti')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form
                     Cuti</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formkeluar.home')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
+                <x-sidebar.link :href="route('formkeluar')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
                     Keluar</x-sidebar.link>
             </li>
 

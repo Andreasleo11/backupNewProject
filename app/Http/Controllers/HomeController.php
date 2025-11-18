@@ -26,17 +26,21 @@ class HomeController extends Controller
         if ($user->role_id == 1) {
             return view('superadmin_home');
         } elseif ($user->specification->name === 'DIRECTOR') {
-            return redirect()->route('director.home');
+            return redirect()->intended(route('director'));
         } elseif ($user->role_id == 2) {
             $department = $user->department->name;
 
             if ($department === 'QC' || $department === 'QA') {
-                return redirect()->route('qaqc.home');
+                return redirect()->route('qaqc');
+            } elseif ($department === 'PURCHASING') {
+                return redirect()->route('purchasing');
+            } elseif($department === 'PERSONALIA' && $user->is_head) {
+                return redirect()->route('hrd');
+            } elseif($department === 'PE') {
+                return redirect()->route('pe');
             }
 
-            $abbrString = $this->abbreviateString($department);
-
-            return redirect()->route($abbrString.'.home');
+            return view('home');
         } else {
             return view('welcome');
         }
@@ -46,25 +50,16 @@ class HomeController extends Controller
     {
         // Check if the string contains multiple words
         if (strpos($string, ' ') !== false) {
-            // Convert the string to lowercase
             $lowercaseString = strtolower($string);
-
-            // Split the string into words
             $words = explode(' ', $lowercaseString);
 
-            // Initialize an empty abbreviation string
             $abbreviation = '';
-
-            // Iterate through each word
             foreach ($words as $word) {
-                // Add the first letter of each word to the abbreviation string
                 $abbreviation .= substr($word, 0, 1);
             }
 
-            // Return the abbreviation
             return $abbreviation;
         } else {
-            // Return the lowercase version of the string
             return strtolower($string);
         }
     }

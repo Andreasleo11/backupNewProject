@@ -1,58 +1,60 @@
 @extends('layouts.app')
 
 @section('content')
-    <section class="header">
-        <div class="row">
-            <div class="col">
-                <h1 class="h1">DELIVERY SCHEDULE</h1>
+    <div class="p-4">
+        <section class="header">
+            <div class="row">
+                <div class="col">
+                    <h1 class="h1">DELIVERY SCHEDULE</h1>
+                </div>
+                <div class="col-auto">
+                    <a href="{{ route('delsched.averagemonth') }}" class="btn btn-secondary"> Average PerMonth</a>
+                    <a href="{{ route('deslsched.step1') }}" class="btn btn-primary"> Update</a>
+                </div>
             </div>
-            <div class="col-auto">
-                <a href="{{ route('delsched.averagemonth') }}" class="btn btn-secondary"> Average PerMonth</a>
-                <a href="{{ route('deslsched.step1') }}" class="btn btn-primary"> Update</a>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    {{-- Realtime Progress Section --}}
-    <section class="mt-4">
-        <h5>Update Progress</h5>
-        <div class="list-group mb-3">
-            @foreach ([\App\Jobs\Step1DeliverySchedule::class, \App\Jobs\Step2DeliverySchedule::class, \App\Jobs\Step3DeliverySchedule::class, \App\Jobs\Step4DeliverySchedule::class] as $stepClass)
-                @php
-                    $stepName = class_basename($stepClass);
-                @endphp
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ $stepName }}</strong>
+        {{-- Realtime Progress Section --}}
+        <section class="mt-4">
+            <h5>Update Progress</h5>
+            <div class="list-group mb-3">
+                @foreach ([\App\Jobs\Step1DeliverySchedule::class, \App\Jobs\Step2DeliverySchedule::class, \App\Jobs\Step3DeliverySchedule::class, \App\Jobs\Step4DeliverySchedule::class] as $stepClass)
+                    @php
+                        $stepName = class_basename($stepClass);
+                    @endphp
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ $stepName }}</strong>
+                        </div>
+                        <span class="badge bg-secondary" id="{{ $stepClass }}-status">Pending</span>
                     </div>
-                    <span class="badge bg-secondary" id="{{ $stepClass }}-status">Pending</span>
-                </div>
-            @endforeach
-        </div>
-
-        <div class="progress mb-4">
-            <div class="progress-bar" role="progressbar" id="progress-bar" style="width: 0%;" aria-valuenow="0"
-                aria-valuemin="0" aria-valuemax="100">
-                0%
+                @endforeach
             </div>
-        </div>
-    </section>
 
-    {{-- Main Content --}}
-    <section class="content">
-        <div class="card mt-3">
-            <div class="card-body">
-                <div class="table-responsive">
-                    {{ $dataTable->table() }}
+            <div class="progress mb-4">
+                <div class="progress-bar" role="progressbar" id="progress-bar" style="width: 0%;" aria-valuenow="0"
+                    aria-valuemin="0" aria-valuemax="100">
+                    0%
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="d-flex justify-content-between mt-3 ">
-            <a href="{{ route('indexfinalwip') }}" class="btn btn-secondary"> Delivery Schedule (WIP)</a>
-            <a href="{{ route('rawdelsched') }}" class="btn btn-secondary"> Delivery Schedule (RAW)</a>
-        </div>
-    </section>
+        {{-- Main Content --}}
+        <section class="content">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        {{ $dataTable->table() }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3 ">
+                <a href="{{ route('indexfinalwip') }}" class="btn btn-secondary"> Delivery Schedule (WIP)</a>
+                <a href="{{ route('rawdelsched') }}" class="btn btn-secondary"> Delivery Schedule (RAW)</a>
+            </div>
+        </section>
+    </div>
 @endsection
 
 @push('extraJs')

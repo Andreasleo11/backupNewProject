@@ -8,7 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeDailyReport;
 use App\Models\EmployeeDailyReportLog;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod; // Kalau pakai Excel
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
@@ -16,18 +16,46 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class EmployeeDailyReportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $reports = EmployeeDailyReport::all();
+        $search = $request->input('search');
+        $from   = $request->input('from');
+        $to     = $request->input('to');
+        
+        $query = EmployeeDailyReport::query();
 
-        return view('dailyreport.index', compact('reports'));
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('employee_name', 'like', '%' . $search . '%')
+                  ->orWhere('work_description', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($from) {
+            $query->whereDate('work_date', '>=', $from);
+        }
+
+        if ($to) {
+            $query->whereDate('work_date', '<=', $to);
+        }
+
+        $employeeNik = Session::get('logged_in_employee_nik');
+        $query->where('employee_id', $employeeNik);
+
+        $query->orderBy('work_date', 'desc');
+
+        $reports = $query->paginate(20)->withQueryString();
+
+        return view('employee.index', compact('reports'));
     }
 
+    // planned to move this to livewire 
     public function showUploadForm()
     {
         return view('dailyreport.upload-daily-report');
     }
 
+    // planned to move this to livewire
     public function upload(Request $request)
     {
         $request->validate([
@@ -127,7 +155,8 @@ class EmployeeDailyReportController extends Controller
 
         return view('dailyreport.preview', compact('previewData'));
     }
-
+    
+    // planned to move this to livewire
     public function confirmUpload(Request $request)
     {
         $encoded = $request->input('data');
@@ -166,69 +195,13 @@ class EmployeeDailyReportController extends Controller
 
         return view('dailyreport.upload-log', compact('logs'));
     }
-
-    public function showLoginForm()
-    {
-        return view('dailyreport.login');
-    }
-
-    public function login(Request $request)
-    {
-        $request->validate([
-            'nik' => 'required',
-            'password' => 'required',
-        ]);
-
-        $employee = Employee::where('nik', $request->nik)->first();
-        // dd($employee); // Debugging line, remove in production
-
-        if (! $employee) {
-            return back()->withErrors(['nik' => 'NIK tidak ditemukan.']);
-        }
-
-        // Generate expected password: NIK + ddmmyyyy
-        $expectedPassword = $employee->NIK.$employee->date_birth->format('dmY');
-        // dd($expectedPassword); // Debugging line, remove in production
-
-        if ($request->password === $expectedPassword) {
-            // Simpan info login manual ke session
-            Session::put('employee_id', $employee->id);
-            Session::put('employee_nik', $employee->NIK);
-
-            return redirect()->route('daily-report.user')->with('success', 'Login berhasil!');
-        }
-
-        return back()->withErrors(['password' => 'Password salah.']);
-    }
-
-    public function dashboardDailyReport(Request $request)
-    {
-        $employeeNik = Session::get('employee_nik');
-
-        $query = EmployeeDailyReport::where('employee_id', $employeeNik);
-
-        if ($request->filled('filter_date')) {
-            $query->whereDate('work_date', $request->filter_date);
-        }
-
-        $reports = $query->orderBy('work_date', 'desc')->get();
-
-        return view('dailyreport.dashboard', compact('reports'));
-    }
-
-    public function logout(Request $request)
-    {
-        $request->session()->forget(['employee_id', 'employee_nik']);
-        $request->session()->flush(); // optional kalau mau hapus semua
-
-        return redirect()->route('employee-login')->with('success', 'Logout berhasil.');
-    }
-
-    public function showDepthead(Request $request, $employee_id)
+    
+    // planned to move this to livewire
+    public function show(Request $request, $employee_id)
     {
         $user = auth()->user();
 
-        if ($user->is_head || $user->specification->name === 'DIRECTOR') {
+        if (true) {
             $query = EmployeeDailyReport::where('employee_id', $employee_id);
 
             if ($user->name === 'Bernadett' || $user->specification->name === 'DIRECTOR') {
