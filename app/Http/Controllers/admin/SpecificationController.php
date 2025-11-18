@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\admin;
 
 use App\DataTables\SpecificationDataTable;
+use App\Http\Controllers\Controller;
 use App\Models\Specification;
 use Illuminate\Http\Request;
 

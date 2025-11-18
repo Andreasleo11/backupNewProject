@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\AdjustFormQcController;
-use App\Http\Controllers\admin\DepartmentController;
-use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CapacityByForecastController;
@@ -47,7 +45,7 @@ use App\Http\Controllers\MonthlyBudgetSummaryReportController;
 use App\Http\Controllers\MouldDownController;
 use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\PEController;
-use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PEHomeController;
 use App\Http\Controllers\pps\PPSAssemblyController;
 use App\Http\Controllers\pps\PPSGeneralController;
 use App\Http\Controllers\pps\PPSInjectionController;
@@ -67,16 +65,12 @@ use App\Http\Controllers\qaqc\QaqcHomeController;
 use App\Http\Controllers\qaqc\QaqcReportController;
 use App\Http\Controllers\RequirementUploadDownloadController;
 use App\Http\Controllers\SignatureController;
-use App\Http\Controllers\SpecificationController;
 use App\Http\Controllers\StockTintaController;
-use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\SyncProgressController;
 use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\UserHomeController;
-use App\Http\Controllers\UserPermissionController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
-use App\Http\Controllers\PEHomeController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
@@ -124,98 +118,23 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', fn() => view('welcome'))->name('/');
 
-Route::middleware('auth')->group(function() {
-    Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
-    Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('reports.depthead.show');
-    
-    Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
-    Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');  
-    Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
-});
-
 Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
+
 Auth::routes();
 
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::middleware('auth')->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
+    Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
 
-Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
-Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
+    Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
+    Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('reports.depthead.show');
 
-Route::middleware(['checkUserRole:1', 'checkSessionId'])->group(function () {
-    Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
-    Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
-    Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
+    Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
+    Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
+    Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
 
-    Route::get('/superadmin/home', [SuperAdminHomeController::class, 'index'])->name('superadmin');
-
-    Route::prefix('superadmin')->group(function () {
-        Route::name('superadmin.')->group(function () {
-            Route::get('/users', [UserController::class, 'index'])
-                ->name('users')
-                ->middleware('permission:get-users');
-            Route::post('/users/store', [UserController::class, 'store'])
-                ->name('users.store')
-                ->middleware('permission:store-users');
-            Route::put('/users/update/{id}', [UserController::class, 'update'])
-                ->name('users.update')
-                ->middleware('permission:update-users');
-            Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])
-                ->name('users.delete')
-                ->middleware('permission:delete-users');
-            Route::get('/users/reset/{id}', [UserController::class, 'resetPassword'])
-                ->name('users.reset.password')
-                ->middleware('permission:reset-password-users');
-            Route::delete('/users/delete-selected', [UserController::class, 'deleteSelected'])
-                ->name('users.deleteSelected')
-                ->middleware('permission:delete-selected-users');
-
-            Route::get('/departments', [DepartmentController::class, 'index'])
-                ->name('departments')
-                ->middleware('permission:get-departments');
-            Route::post('/departments/store', [DepartmentController::class, 'store'])
-                ->name('departments.store')
-                ->middleware('permission:store-departments');
-            Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])
-                ->name('departments.update')
-                ->middleware('permission:update-departments');
-            Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])
-                ->name('departments.delete')
-                ->middleware('permission:delete-departments');
-
-            Route::get('/specifications', [SpecificationController::class, 'index'])
-                ->name('specifications')
-                ->middleware('permission:get-specifications');
-            Route::post('/specifications/store', [SpecificationController::class, 'store'])
-                ->name('specifications.store')
-                ->middleware('permission:store-specifications');
-            Route::put('/specifications/{id}/update', [SpecificationController::class, 'update'])
-                ->name('specifications.update')
-                ->middleware('permission:update-specifications');
-            Route::delete('/specifications/{id}/delete', [SpecificationController::class, 'destroy'])
-                ->name('specifications.delete')
-                ->middleware('permission:delete-specifications');
-
-            Route::get('/users-permissions', [UserPermissionController::class, 'index'])
-                ->name('users.permissions.index')
-                ->middleware('permission:get-users-permissions');
-            Route::put('/users-permissions/{id}/update', [UserPermissionController::class, 'update'])
-                ->name('users.permissions.update')
-                ->middleware('permission:update-users-permissions');
-
-            Route::get('/permissions', [PermissionController::class, 'index'])
-                ->name('permissions.index')
-                ->middleware('permission:get-permissions');
-            Route::post('/permissions/store', [PermissionController::class, 'store'])
-                ->name('permissions.store')
-                ->middleware('permission:store-permissions');
-            Route::put('/permissions/{permission}', [PermissionController::class, 'update'])
-                ->name('permissions.update')
-                ->middleware('permission:update-permissions');
-            Route::delete('/permissions/{permission}', [PermissionController::class, 'destroy'])
-                ->name('permissions.destroy')
-                ->middleware('permission:delete-permissions');
-        });
-    });
+    require __DIR__.'/admin.php';
 });
 
 Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
@@ -1064,7 +983,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('uploads.download')
         ->middleware('signed');
 });
-Route::middleware(['web', 'auth'])->group(function () {
+
+Route::middleware(['auth'])->group(function () {
     // Secure stream of a signature image (PNG or SVG) from private disk
     Route::get('/signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
 
@@ -1072,5 +992,3 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
     Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });
-
-// require __DIR__.'/admin.php';
