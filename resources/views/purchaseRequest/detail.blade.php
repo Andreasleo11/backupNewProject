@@ -21,7 +21,7 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a
-                        href="{{ auth()->user()->specification->name === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home') }}">Purchase
+                        href="{{ auth()->user()->specification->name === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest') }}">Purchase
                         Requests</a></li>
                 <li class="breadcrumb-item active">Detail</li>
             </ol>

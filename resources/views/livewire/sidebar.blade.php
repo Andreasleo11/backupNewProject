@@ -62,14 +62,6 @@
                         :active="request()->routeIs('superadmin.specifications*')">Specifications</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.users.permissions.index')" icon="bx bx-lock-alt" :active="request()->routeIs('superadmin.users.permissions*')">Users
-                        Permissions</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.permissions.index')" icon="bx bx-lock-alt"
-                        :active="request()->routeIs('superadmin.permissions*')">Permissions</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
                     <x-sidebar.link :href="route('changeemail.page')" icon="bx bx-file" :active="request()->routeIs('changeemail.page')">Change Default
                         Email QC</x-sidebar.link>
                 </li>

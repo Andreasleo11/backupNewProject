@@ -145,39 +145,23 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
         Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
-        Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])
-            ->name('qaqc.report.index')
-            ->middleware('permission:get-vqc-reports');
-        Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])
-            ->name('qaqc.report.detail')
-            ->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
-        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create')->middleware('permission:create-vqc-report');
+        Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
+        Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
+        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit');
+        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create');
         Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
         Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
         Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
-        Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])
-            ->name('qaqc.report.delete')
-            ->middleware('permission:delete-vqc-report');
+        Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
         // adding new defect category
-        Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])
-            ->name('qaqc.defectcategory')
-            ->middleware('permission:get-defect-categories');
-        Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])
-            ->name('qaqc.defectcategory.store')
-            ->middleware('permission:store-defect-category');
-        Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])
-            ->name('qaqc.defectcategory.update')
-            ->middleware('permission:update-defect-category');
-        Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])
-            ->name('qaqc.defectcategory.delete')
-            ->middleware('permission:delete-defect-category');
+        Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
+        Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
+        Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
+        Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
         // adding new defect category
 
-        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
-            ->name('price-log.import')
-            ->middleware(['auth']);
+        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)->name('price-log.import')->middleware(['auth']);
 
         Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
@@ -185,19 +169,11 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
         Route::get('/item/price', [QaqcReportController::class, 'getItemPrice']);
 
-        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])
-            ->name('qaqc.report.download')
-            ->middleware('permission:download-vqc-report');
+        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download');
         Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
-        Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])
-            ->name('qaqc.report.lock')
-            ->middleware('permission:lock-vqc-report');
-        Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])
-            ->name('export.reports')
-            ->middleware('permission:export-to-excel-vqc-report');
-        Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])
-            ->name('export.formadjusts')
-            ->middleware();
+        Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock');
+        Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports');
+        Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts');
 
         Route::put('/qaqc/reports/{id}/updateDoNumber', [QaQcReportController::class, 'updateDoNumber'])->name('update.do.number');
 
@@ -221,59 +197,27 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
         Route::get('/hrd/home', [HrdHomeController::class, 'index'])->name('hrd');
 
-        Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])
-            ->name('hrd.importantDocs.index')
-            ->middleware('permission:get-important-docs');
-        Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])
-            ->name('hrd.importantDocs.create')
-            ->middleware('permission:create-important-doc');
-        Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])
-            ->name('hrd.importantDocs.store')
-            ->middleware('permission:store-important-doc');
-        Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])
-            ->name('hrd.importantDocs.detail')
-            ->middleware('permission:detail-important-doc');
-        Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])
-            ->name('hrd.importantDocs.edit')
-            ->middleware('permission:edit-important-doc');
-        Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])
-            ->name('hrd.importantDocs.update')
-            ->middleware('permission:update-important-doc');
-        Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])
-            ->name('hrd.importantDocs.delete')
-            ->middleware('permission:delete-important-doc');
+        Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
+        Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
+        Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
+        Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
+        Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
+        Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
+        Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
     });
 
     Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
         Route::get('/director/home', [DirectorHomeController::class, 'index'])->name('director');
-        Route::get('/director/qaqc/index', [ReportController::class, 'index'])
-            ->name('director.qaqc.index')
-            ->middleware('permission:get-vqc-reports-director');
-        Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])
-            ->name('director.qaqc.detail')
-            ->middleware('permission:detail-vqc-report-director');
-        Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])
-            ->name('director.qaqc.approve')
-            ->middleware('permission:approve-vqc-report-director');
-        Route::put('/director/qaqc/reject/{id}', [ReportController::class, 'reject'])
-            ->name('director.qaqc.reject')
-            ->middleware('permission:reject-vqc-report-director');
-        Route::put('/director/qaqc/approveSelected', [ReportController::class, 'approveSelected'])
-            ->name('director.qaqc.approveSelected')
-            ->middleware('permission:approve-selected-vqc-report-director');
-        Route::put('/director/qaqc/rejectSelected', [ReportController::class, 'rejectSelected'])
-            ->name('director.qaqc.rejectSelected')
-            ->middleware('permission:reject-selected-vqc-report-director');
+        Route::get('/director/qaqc/index', [ReportController::class, 'index'])->name('director.qaqc.index');
+        Route::get('/director/qaqc/detail/{id}', [ReportController::class, 'detail'])->name('director.qaqc.detail');
+        Route::put('/director/qaqc/approve/{id}', [ReportController::class, 'approve'])->name('director.qaqc.approve');
+        Route::put('/director/qaqc/reject/{id}', [ReportController::class, 'reject'])->name('director.qaqc.reject');
+        Route::put('/director/qaqc/approveSelected', [ReportController::class, 'approveSelected'])->name('director.qaqc.approveSelected');
+        Route::put('/director/qaqc/rejectSelected', [ReportController::class, 'rejectSelected'])->name('director.qaqc.rejectSelected');
 
-        Route::get('/director/pr/index', [DirectorPurchaseRequestController::class, 'index'])
-            ->name('director.pr.index')
-            ->middleware('permission:get-pr-director');
-        Route::put('/director/pr/approveSelected', [DirectorPurchaseRequestController::class, 'approveSelected'])
-            ->name('director.pr.approveSelected')
-            ->middleware('permission:approve-selected-director');
-        Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])
-            ->name('director.pr.rejectSelected')
-            ->middleware('permission:reject-selected-director');
+        Route::get('/director/pr/index', [DirectorPurchaseRequestController::class, 'index'])->name('director.pr.index');
+        Route::put('/director/pr/approveSelected', [DirectorPurchaseRequestController::class, 'approveSelected'])->name('director.pr.approveSelected');
+        Route::put('/director/pr/rejectSelected', [DirectorPurchaseRequestController::class, 'rejectSelected'])->name('director.pr.rejectSelected');
     });
 
     Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
@@ -281,9 +225,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
         Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
         Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
-        Route::get('/pe/listformrequest', [PEController::class, 'view'])
-            ->name('pe.formlist')
-            ->middleware('permission:get-pe-form-list');
+        Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
         Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
         Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
     });
@@ -308,9 +250,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
     });
 
     Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
-        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])
-            ->name('indexds')
-            ->middleware('permission:get-delivery-schedule-index');
+        Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
 
         Route::get('deliveryschedule/raw', [DeliveryScheduleController::class, 'indexraw'])->name('rawdelsched');
         Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
@@ -346,9 +286,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
         Route::get('/production/capacity-forecast/step3logic', [CapacityByForecastController::class, 'step3logic'])->name('step3logic');
         Route::get('/production/capacity-forecast/step3last', [CapacityByForecastController::class, 'step3logiclast'])->name('step3logiclast');
 
-        Route::get('/pps/index', [PPSGeneralController::class, 'index'])
-            ->name('indexpps')
-            ->middleware('permission:get-pps-index');
+        Route::get('/pps/index', [PPSGeneralController::class, 'index'])->name('indexpps');
         Route::get('/pps/menu', [PPSGeneralController::class, 'menu'])->name('menupps');
         Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
 
@@ -435,9 +373,7 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
 
-        Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])
-            ->name('moulddown.index')
-            ->middleware('permission:get-mould-down-index');
+        Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])->name('moulddown.index');
         Route::post('/add/mould', [MouldDownController::class, 'addmould'])->name('addmould');
         Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
         Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name('addlinedown');
@@ -457,30 +393,14 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 
     // PR
-    Route::get('/purchaseRequest', [PurchaseRequestController::class, 'index'])
-        ->name('purchaserequest')
-        ->middleware('permission:get-purchase-requests');
-    Route::get('/purchaseRequest/create', [PurchaseRequestController::class, 'create'])
-        ->name('purchaserequest.create')
-        ->middleware('permission:create-purchase-request');
-    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class, 'insert'])
-        ->name('purchaserequest.insert')
-        ->middleware('permission:store-purchase-request');
-    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])
-        ->name('purchaserequest.detail')
-        ->middleware('permission:detail-purchase-request');
-    Route::get('/purchaserequest/reject/{id}', [PurchaseRequestController::class, 'reject'])
-        ->name('purchaserequest.reject')
-        ->middleware('permission:reject-purchase-request');
-    Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])
-        ->name('purchaserequest.update')
-        ->middleware('permission:update-purchase-request');
-    Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class, 'destroy'])
-        ->name('purchaserequest.delete')
-        ->middleware('permission:delete-purchase-request');
-    Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])
-        ->name('purchaserequest.cancel')
-        ->middleware('permission:cancel-purchase-request');
+    Route::get('/purchaseRequest', [PurchaseRequestController::class, 'index'])->name('purchaserequest');
+    Route::get('/purchaseRequest/create', [PurchaseRequestController::class, 'create'])->name('purchaserequest.create');
+    Route::post('/purchaseRequest/insert', [PurchaseRequestController::class, 'insert'])->name('purchaserequest.insert');
+    Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
+    Route::get('/purchaserequest/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject');
+    Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update');
+    Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete');
+    Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel');
     Route::put('purchaserequest/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
 
     // PR MONTHLY
@@ -506,75 +426,37 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/purchaseRequest/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
 
     // FORM CUTI
-    Route::get('/form-cuti', [FormCutiController::class, 'index'])
-        ->name('formcuti')
-        ->middleware('permission:get-form-cuti');
-    Route::get('/form-cuti/create', [FormCutiController::class, 'create'])
-        ->name('formcuti.create')
-        ->middleware('permission:create-form-cuti');
-    Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])
-        ->name('formcuti.insert')
-        ->middleware('permission:store-form-cuti');
-    Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])
-        ->name('formcuti.detail')
-        ->middleware('permission:detail-form-cuti');
+    Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti');
+    Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
+    Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
+    Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
     Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class, 'saveImagePath']);
 
     // FORM KELUAR
-    Route::get('/form-keluar', [FormKeluarController::class, 'index'])
-        ->name('formkeluar')
-        ->middleware('permission:get-form-keluar');
-    Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])
-        ->name('formkeluar.create')
-        ->middleware('permission:create-form-keluar');
-    Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])
-        ->name('formkeluar.insert')
-        ->middleware('permission:store-form-keluar');
-    Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])
-        ->name('formkeluar.detail')
-        ->middleware('permission:detail-form-keluar');
+    Route::get('/form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar');
+    Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
+    Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
+    Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
     Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
 
-    Route::get('/inventory/fg', [InventoryFgController::class, 'index'])
-        ->name('inventoryfg')
-        ->middleware('permission:get-inventory-fg');
-    Route::get('/inventory/mtr', [InventoryMtrController::class, 'index'])
-        ->name('inventorymtr')
-        ->middleware('permission:get-inventory-mtr');
+    Route::get('/inventory/fg', [InventoryFgController::class, 'index'])->name('inventoryfg');
+    Route::get('/inventory/mtr', [InventoryMtrController::class, 'index'])        ->name('inventorymtr');
 
-    Route::get('/inventory/line-list', [InvLineListController::class, 'index'])
-        ->name('invlinelist')
-        ->middleware('permission:get-inventory-line-list');
+    Route::get('/inventory/line-list', [InvLineListController::class, 'index'])->name('invlinelist');
     Route::post('/add/line', [InvLineListController::class, 'addline'])->name('addline');
     Route::put('/edit/line/{id}', [InvLineListController::class, 'editline'])->name('editline');
     Route::delete('/delete/line/{linecode}', [InvLineListController::class, 'deleteline'])->name('deleteline');
 
     // Holiday list feature
-    Route::get('setting/holiday-list', [HolidayListController::class, 'index'])
-        ->name('indexholiday')
-        ->middleware('permission:get-holiday-list-index');
-    Route::get('setting/holiday-list/create', [HolidayListController::class, 'create'])
-        ->name('createholiday')
-        ->middleware('permission:create-holiday-list');
-    Route::post('setting/input/holidays', [HolidayListController::class, 'store'])
-        ->name('holidays.store')
-        ->middleware('permission:store-holiday-list');
-    Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])
-        ->name('download.holiday.template')
-        ->middleware('permission:download-holiday-list-template');
-    Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])
-        ->name('upload.holiday.template')
-        ->middleware('permission:upload-holiday-list-template');
-    Route::delete('/holiday/{id}/delete', [HolidayListController::class, 'delete'])
-        ->name('holiday.delete')
-        ->middleware('permission:delete-holiday-list');
-    Route::put('/holiday/{id}/update', [HolidayListController::class, 'update'])
-        ->name('holiday.update')
-        ->middleware('permission:update-holiday-list');
+    Route::get('setting/holiday-list', [HolidayListController::class, 'index'])->name('indexholiday');
+    Route::get('setting/holiday-list/create', [HolidayListController::class, 'create'])->name('createholiday');
+    Route::post('setting/input/holidays', [HolidayListController::class, 'store'])->name('holidays.store');
+    Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])->name('download.holiday.template');
+    Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])->name('upload.holiday.template');
+    Route::delete('/holiday/{id}/delete', [HolidayListController::class, 'delete'])->name('holiday.delete');
+    Route::put('/holiday/{id}/update', [HolidayListController::class, 'update'])->name('holiday.update');
 
-    Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])
-        ->name('pt.index')
-        ->middleware('permission:get-project-tracker-index');
+    Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])->name('pt.index');
     Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name('pt.create');
     Route::post('projecttracker/post', [ProjectTrackerController::class, 'store'])->name('pt.store');
     Route::get('projecttracker/detail/{id}', [ProjectTrackerController::class, 'detail'])->name('pt.detail');
@@ -586,23 +468,17 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('updatepage/index', [UpdateDailyController::class, 'index'])->name('indexupdatepage');
     Route::post('/processdailydata', [UpdateDailyController::class, 'update'])->name('updatedata');
 
-    Route::get('/employeemaster/index', [EmployeeMasterController::class, 'index'])
-        ->name('index.employeesmaster')
-        ->middleware('permission:get-employee-master-index');
+    Route::get('/employeemaster/index', [EmployeeMasterController::class, 'index'])->name('index.employeesmaster');
     Route::post('/employeemaster/add', [EmployeeMasterController::class, 'addemployee'])->name('addemployee');
     Route::put('/edit/employee/{id}', [EmployeeMasterController::class, 'editemployee'])->name('editemployee');
     Route::delete('/delete/employee/{linecode}', [EmployeeMasterController::class, 'deleteemployee'])->name('deleteemployee');
     Route::get('/import-annual-leave-quota', [EmployeeMasterController::class, 'showImportForm'])->name('import.annual-leave-quota.form');
     Route::post('/import-annual-leave-quota', [EmployeeMasterController::class, 'importAnnualLeaveQuota'])->name('import.annual-leave-quota');
 
-    Route::get('/evaluation/index', [EvaluationDataController::class, 'index'])
-        ->name('evaluation.index')
-        ->middleware('permission:get-evaluation-index');
+    Route::get('/evaluation/index', [EvaluationDataController::class, 'index'])->name('evaluation.index');
     Route::post('/processevaluationdata', [EvaluationDataController::class, 'update'])->name('UpdateEvaluation');
 
-    Route::get('/weekly-evaluation/index', [EvaluationDataController::class, 'weeklyIndex'])
-        ->name('weekly.evaluation.index')
-        ->middleware('permission:get-evaluation-index');
+    Route::get('/weekly-evaluation/index', [EvaluationDataController::class, 'weeklyIndex'])->name('weekly.evaluation.index');
     Route::post('/weeklyprocessevaluationdata', [EvaluationDataController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
 
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
@@ -617,9 +493,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
 
     Route::get('/discipline/indexall', [DisciplinePageController::class, 'allindex'])->name('alldiscipline.index');
     Route::get('/discipline/indexallyayasan', [DisciplinePageController::class, 'yayasanallindex'])->name('allyayasandiscipline.index');
-    Route::get('/discipline/index', [DisciplinePageController::class, 'index'])
-        ->name('discipline.index')
-        ->middleware('permission:get-discipline-index');
+    Route::get('/discipline/index', [DisciplinePageController::class, 'index'])->name('discipline.index');
     Route::get('/firstimeexport/yayasan/discipline', [DisciplinePageController::class, 'exportYayasan'])->name('export.yayasan.first.time');
     Route::get('/export/yayasan-full/discipline', [DisciplinePageController::class, 'exportYayasanFull'])->name('export.yayasan.full');
 
@@ -670,9 +544,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/exportyayasansummary', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('exportyayasan.summary');
     Route::get('/export/yayasan/discipline', [DisciplinePageController::class, 'exportYayasanJpayrollFunction'])->name('export.yayasan.jpayroll');
 
-    Route::get('/forecastcustomermaster', [ForecastCustomerController::class, 'index'])
-        ->name('fc.index')
-        ->middleware('permission:get-forecast-customer-index');
+    Route::get('/forecastcustomermaster', [ForecastCustomerController::class, 'index'])->name('fc.index');
     Route::post('/add/forecastmaster', [ForecastCustomerController::class, 'addnewmaster'])->name('addnewforecastmaster');
 
     Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
@@ -785,9 +657,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
 
     Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
-    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])
-        ->name('indexds')
-        ->middleware('permission:get-delivery-schedule-index');
+    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
 
     Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
     Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');

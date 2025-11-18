@@ -28,8 +28,6 @@ class Sidebar extends Component
         'superadmin.users*',
         'superadmin.departments*',
         'superadmin.specifications*',
-        'superadmin.users.permissions*',
-        'superadmin.permissions*',
         'changeemail.page',
         'pt.*',
         'md.parts.import',

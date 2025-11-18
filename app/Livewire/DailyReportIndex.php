@@ -48,7 +48,7 @@ class DailyReportIndex extends Component
         $user = auth()->user();
 
         // Authorization (same logic as controller)
-        if (false) {
+        if (! $user->is_head && $user->specification->name !== 'DIRECTOR') {
             abort(403, 'Anda tidak memiliki akses');
         }
 
