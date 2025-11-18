@@ -12,7 +12,7 @@ class EmployeeLoginController extends Controller
     public function showLoginForm()
     {
         if(Auth::guard('employee')->check()) {
-            return redirect('/employee/home');
+            return redirect('/employees/home');
         }
         return view('employee.auth.login');
     }
@@ -37,8 +37,8 @@ class EmployeeLoginController extends Controller
         }
 
         Auth::guard('employee')->login($employee);
-
-        return redirect()->intended('/employee/home');
+        // dd("TEST");
+        return redirect('/employees/home');
     }
 
     public function logout()

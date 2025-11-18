@@ -16,38 +16,6 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class EmployeeDailyReportController extends Controller
 {
-    public function showLoginForm()
-    {
-        return view('dailyreport.login');
-    }
-
-    public function login(Request $request)
-    {
-        $request->validate([
-            'nik' => 'required',
-            'password' => 'required',
-        ]);
-
-        $employee = Employee::where('nik', $request->nik)->first();
-
-        if (! $employee) {
-            return back()->withErrors(['nik' => 'NIK tidak ditemukan.']);
-        }
-
-        // Generate expected password: NIK + ddmmyyyy
-        $expectedPassword = $employee->NIK.$employee->date_birth->format('dmY');
-        
-        if ($request->password === $expectedPassword) {
-            // Simpan info login manual ke session
-            Session::put('employee_id', $employee->id);
-            Session::put('employee_nik', $employee->NIK);
-            
-            return redirect()->route('daily-reports.index')->with('success', 'Login berhasil!');
-        }
-
-        return back()->withErrors(['password' => 'Password salah.']);
-    }
-
     public function dashboardDailyReport(Request $request)
     {
         $employeeNik = Session::get('employee_nik');
@@ -61,14 +29,6 @@ class EmployeeDailyReportController extends Controller
         $reports = $query->orderBy('work_date', 'desc')->get();
 
         return view('dailyreport.dashboard', compact('reports'));
-    }
-
-    public function logout(Request $request)
-    {
-        $request->session()->forget(['employee_id', 'employee_nik']);
-        $request->session()->flush(); // optional kalau mau hapus semua
-
-        return redirect()->route('employee-login')->with('success', 'Logout berhasil.');
     }
 
     public function index()

@@ -125,17 +125,16 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/', fn() => view('welcome'))->name('/');
 
 Route::middleware('guest')->prefix('daily-reports')->group(function() {
-    Route::get('login', [EmployeeDailyReportController::class, 'showLoginForm'])->name('employee-login');
-    Route::post('/login', [EmployeeDailyReportController::class, 'login'])->name('employee.login');
-    Route::get('/', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-reports.index');
-    Route::post('/logout', [EmployeeDailyReportController::class, 'logout'])->name('employee.logout');
-    
-    Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
-    
-    Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
-    Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
+    Route::get('/', [EmployeeDailyReportController::class, 'dashboardDailyReport'])->name('daily-reports.index'); 
+});
+
+
+Route::middleware('auth')->group(function() {
     Route::get('/employee-daily-reports', [EmployeeDailyReportController::class, 'index']);
+    Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
     Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');  
+    Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
+    Route::get('/depthead/report/{employee_id}', [EmployeeDailyReportController::class, 'showDepthead'])->name('reports.depthead.show');
 });
 
 // Route::middleware(['auth'])->group(function () {
