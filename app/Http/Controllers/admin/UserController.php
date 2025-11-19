@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admin;
+namespace App\Http\Controllers\Admin;
 
 use App\DataTables\UsersDataTable;
 use App\Http\Controllers\Controller;

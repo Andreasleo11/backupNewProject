@@ -23,6 +23,8 @@ class HomeController extends Controller
     {
         $user = auth()->user();
 
+        return view('admin.home');
+
         if ($user->role_id == 1) {
             return view('admin.home');
         } elseif ($user->specification->name === 'DIRECTOR') {

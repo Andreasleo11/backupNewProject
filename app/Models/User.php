@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -47,11 +48,6 @@ class User extends Authenticatable implements FilamentUser
         'password' => 'hashed',
     ];
 
-    public function role()
-    {
-        return $this->belongsTo(Role::class);
-    }
-
     public function department()
     {
         return $this->belongsTo(Department::class);
@@ -60,11 +56,6 @@ class User extends Authenticatable implements FilamentUser
     public function specification()
     {
         return $this->belongsTo(Specification::class);
-    }
-
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class, 'role_user');
     }
 
     protected static function boot()

@@ -131,7 +131,7 @@ class Sidebar extends Component
         $this->user = Auth::user();
         $this->department = optional($this->user->department)->name ?? '';
         $this->specification = optional($this->user->specification)->name ?? '';
-        $this->isSuper = optional($this->user->role)->name === 'SUPERADMIN';
+        $this->isSuper = true;
         $this->deptHead = (bool) $this->user->is_head;
 
         // Default open state per group based on current route
