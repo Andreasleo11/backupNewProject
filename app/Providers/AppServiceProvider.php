@@ -27,6 +27,16 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Expenses\Contracts\ExpenseReadRepository::class,
             \App\Infrastructure\Persistence\Laravel\ExpenseReadRepositoryDb::class
         );
+
+        $this->app->bind(
+            \App\Domain\User\Repositories\UserRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentUserRepository::class,
+        );
+        
+        $this->app->bind(
+            \App\Domain\Employee\Repositories\EmployeeRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEmployeeRepository::class,
+        );
     }
 
     /**

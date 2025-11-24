@@ -58,11 +58,6 @@ class User extends Authenticatable implements FilamentUser
         return $this->belongsTo(Specification::class);
     }
 
-    protected static function boot()
-    {
-        parent::boot();
-    }
-
     public function canAccessPanel(Panel $panel): bool
     {
         return User::where('email', $this->email)->first()->role->name === 'SUPERADMIN';

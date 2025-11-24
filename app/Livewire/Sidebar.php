@@ -25,7 +25,7 @@ class Sidebar extends Component
 
     // Route pattern maps
     public array $adminPatterns = [
-        'admin.users*',
+        'admin.access-control*',
         'admin.departments*',
         'admin.specifications*',
         'changeemail.page',

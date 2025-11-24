@@ -5,7 +5,7 @@ return [
 
     'departments' => ['view', 'create', 'update', 'delete'],
 
-    'specifications' => ['view', 'create', 'update', 'delete'],
+    // 'specifications' => ['view', 'create', 'update', 'delete'],
 
     // 'overtime' => ['view', 'create', 'update', 'delete', 'approve'],
 

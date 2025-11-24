@@ -1,8 +1,8 @@
 @extends('layouts.app')
-@section('content')
+@pushOnce('extraCss')
     <script src="https://cdn.tailwindcss.com"></script>
-
-
+@endPushOnce
+@section('content')
     <div class="max-w-6xl mx-auto px-4 py-6">
         {{-- Page header --}}
         <div class="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

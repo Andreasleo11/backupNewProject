@@ -23,7 +23,6 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
-    @livewireStyles
     @stack('extraCss')
 </head>
 
@@ -59,7 +58,6 @@
         </div>
     </div>
 
-    @livewireScripts
     @stack('extraJs')
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js" defer></script>
 </body>

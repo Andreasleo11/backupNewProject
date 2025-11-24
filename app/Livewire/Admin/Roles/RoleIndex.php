@@ -102,7 +102,7 @@ class RoleIndex extends Component
 
     public function render()
     {
-        return view('livewire.admin.roles.index', [
+        return view('livewire.admin.roles.role-index', [
             'roles'       => $this->roles,
             'permissions' => $this->permissions,
         ]);

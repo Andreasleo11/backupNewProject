@@ -13,7 +13,7 @@
     "barryvdh/laravel-snappy": "^1.0",
     "creagia/laravel-sign-pad": "^2.1",
     "datatables.net/datatables.net-dt": "^2.0",
-    "doctrine/dbal": "^3.9",
+    "doctrine/dbal": "^3.10",
     "endroid/qr-code": "^6.0",
     "filament/filament": "3.3",
     "guzzlehttp/guzzle": "^7.8",
