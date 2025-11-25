@@ -18,6 +18,6 @@ class ChangeUserPassword
             throw new DomainException('User not Found');
         }
 
-        $this->users->changePassword($userId, $newPassword);
+        $this->users->changeUserPassword($userId, $newPassword);
     }
 }

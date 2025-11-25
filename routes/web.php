@@ -72,6 +72,7 @@ use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\UserHomeController;
 use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
+use App\Livewire\Auth\ChangePasswordPage;
 use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
 use App\Livewire\DeliveryNote\DeliveryNoteForm;
@@ -121,6 +122,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
 
 Auth::routes();
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/account/security', ChangePasswordPage::class)
+        ->name('account.security');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');

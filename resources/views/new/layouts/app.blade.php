@@ -210,11 +210,16 @@
                                 </div>
                             </div>
 
+                            <a href="{{ route('account.security') }}"
+                                class="block px-3 py-2 text-slate-600 hover:bg-slate-50">
+                                Account security
+                            </a>
+
+
                             {{-- Future: Profile, Settings, etc.
-                <a href="#" class="block px-3 py-2 hover:bg-slate-50 text-slate-600">
-                    Profile
-                </a>
-                --}}
+                            <a href="#" class="block px-3 py-2 hover:bg-slate-50 text-slate-600">
+                                Profile
+                            </a> --}}
 
                             <form method="POST" action="{{ route('logout') }}" class="mt-1">
                                 @csrf
@@ -244,6 +249,7 @@
                 @endif
 
                 @yield('content')
+                {{ $slot ?? '' }}
             </main>
         </div>
     </div>

@@ -23,5 +23,5 @@ interface UserRepository
     public function delete(int $id): void;
 
     public function setRoles(User $user, array $roleNames): void;
-    public function changePassword(int $userId, string $plainPassword): void;
+    public function changeUserPassword(int $userId, string $plainPassword): void;
 }

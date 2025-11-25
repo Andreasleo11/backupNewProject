@@ -107,7 +107,7 @@ class EloquentUserRepository implements UserRepository
         $model->syncRoles($roleNames);
     }
 
-    public function changePassword(int $userId, string $plainPassword): void
+    public function changeUserPassword(int $userId, string $plainPassword): void
     {
         $model = UserModel::findOrFail($userId);
         $model->password = Hash::make($plainPassword);
