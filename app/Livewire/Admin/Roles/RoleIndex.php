@@ -105,6 +105,6 @@ class RoleIndex extends Component
         return view('livewire.admin.roles.role-index', [
             'roles'       => $this->roles,
             'permissions' => $this->permissions,
-        ]);
+        ])->layout('new.layouts.app');
     }
 }

@@ -24,14 +24,26 @@
         ],
         [
             'type' => 'group',
-            'label' => 'Access Control',
+            'label' => 'Admin',
             'icon' => 'shield',
             'children' => [
                 [
                     'label' => 'Access Overview',
-                    'route' => 'admin.access-control.index',
+                    'route' => 'admin.access-overview.index',
                     'icon' => 'key',
-                    'active' => request()->routeIs('admin.access-control.index'),
+                    'active' => request()->routeIs('admin.access-overview.index'),
+                ],
+                [
+                    'label' => 'Users',
+                    'route' => 'admin.users.index',
+                    'icon' => 'key',
+                    'active' => request()->routeIs('admin.users.index'),
+                ],
+                [
+                    'label' => 'Roles',
+                    'route' => 'admin.roles.index',
+                    'icon' => 'key',
+                    'active' => request()->routeIs('admin.roles.index'),
                 ],
             ],
         ],
@@ -69,7 +81,7 @@
                     @mouseenter="hover = true; flyoutTop = $el.getBoundingClientRect().top" @mouseleave="hover = false"
                     x-show="q === '' || label.includes(q.toLowerCase())">
                     <a href="{{ route($item['route']) }}"
-                        class="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-slate-800  {{ $isActive ? 'bg-slate-900 text-white shadow-sm' : '' }}"
+                        class="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-slate-100  {{ $isActive ? 'bg-slate-900 text-white shadow-sm hover:text-slate-500 border-2' : '' }}"
                         :class="{
                             'justify-center': sidebarCollapsed,
                             'justify-start': !sidebarCollapsed,
@@ -156,7 +168,7 @@
                             <li x-data="{ label: '{{ strtolower($childLabel) }}' }" x-show="q === '' || label.includes(q.toLowerCase())">
                                 <a href="{{ route($child['route']) }}"
                                     class="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition hover:bg-slate-100
-                                          {{ $childActive ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-600' }}">
+                                          {{ $childActive ? 'bg-slate-900 text-white shadow-sm hover:text-slate-500 border-2' : 'text-slate-600' }}">
                                     <span
                                         class="flex h-6 w-6 items-center justify-center rounded-md {{ $childActive ? 'bg-slate-800/80 text-white' : 'bg-slate-100 text-slate-500' }}">
                                         @include('new.layouts.partials.nav-icon', ['name' => $child['icon']])

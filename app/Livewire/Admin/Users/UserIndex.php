@@ -7,7 +7,6 @@ use App\Application\User\DTOs\UserData;
 use App\Application\User\DTOs\UserFilter;
 use App\Application\User\UseCases\ChangeUserPassword;
 use App\Application\User\UseCases\CreateUser;
-use App\Application\User\UseCases\ListUsers;
 use App\Application\User\UseCases\ListUsersWithEmployees;
 use App\Application\User\UseCases\ToggleUserStatus;
 use App\Application\User\UseCases\UpdateUser;
@@ -32,7 +31,7 @@ class UserIndex extends Component
     // Modal state
     public bool $showModal = false;
 
-    public ?int $editingId = null;   // null = create, not null = edit
+    public ?int $editingId = null; // null = create, not null = edit
 
     // Form fields
     public string $name = '';
@@ -91,10 +90,7 @@ class UserIndex extends Component
     public function mount(): void
     {
         // Load all roles (you can filter or sort if needed)
-        $this->availableRoles = Role::query()
-            ->orderBy('name')
-            ->pluck('name')
-            ->toArray();
+        $this->availableRoles = Role::query()->orderBy('name')->pluck('name')->toArray();
     }
 
     protected function rules(): array
@@ -123,24 +119,13 @@ class UserIndex extends Component
     public function toggleStatus(int $userId, ToggleUserStatus $toggleUserStatus): void
     {
         $toggleUserStatus->execute($userId);
-        session()->flash('success', 'User status updated.');
+        $this->dispatch('flash', type: 'success', message: 'User status updated.');
         $this->resetPage();
     }
 
     private function resetForm(): void
     {
-        $this->reset([
-            'name',
-            'email',
-            'selectedRoles',
-            'active',
-            'password',
-            'password_confirmation',
-            'employeeId',
-            'employeeSearch',
-            'employeeOptions',
-            'selectedEmployeeLabel',
-        ]);
+        $this->reset(['name', 'email', 'selectedRoles', 'active', 'password', 'password_confirmation', 'employeeId', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel']);
 
         $this->active = true;
         $this->selectedRoles = [];
@@ -170,23 +155,17 @@ class UserIndex extends Component
 
     public function selectEmployee(int $employeeId): void
     {
-        $option = collect($this->employeeOptions)
-            ->firstWhere('id', $employeeId);
+        $option = collect($this->employeeOptions)->firstWhere('id', $employeeId);
 
-        if (! $option) {
+        if (!$option) {
             // Nothing to select (optional: you could resolve EmployeeRepository here to re-fetch)
             return;
         }
 
         $this->employeeId = $option['id'];
-        $this->selectedEmployeeLabel = sprintf(
-            '%s - %s (%s)',
-            $option['nik'],
-            $option['name'],
-            $option['branch'] ?? '-',
-        );
+        $this->selectedEmployeeLabel = sprintf('%s - %s (%s)', $option['nik'], $option['name'], $option['branch'] ?? '-');
 
-        $this->employeeSearch = $option['nik'].' - '.$option['name'];
+        $this->employeeSearch = $option['nik'] . ' - ' . $option['name'];
         $this->employeeOptions = [];
     }
 
@@ -203,8 +182,8 @@ class UserIndex extends Component
 
         $user = $users->findById($userId);
 
-        if (! $user) {
-            session()->flash('error', 'User not found.');
+        if (!$user) {
+            $this->dispatch('flash', type: 'error', message: 'User not found.');
 
             return;
         }
@@ -220,13 +199,8 @@ class UserIndex extends Component
             $employee = $employees->findById($this->employeeId);
 
             if ($employee) {
-                $this->selectedEmployeeLabel = sprintf(
-                    '%s - %s (%s)',
-                    $employee->nik(),
-                    $employee->name(),
-                    $employee->branch(),
-                );
-                $this->employeeSearch = $employee->nik().' - '.$employee->name();
+                $this->selectedEmployeeLabel = sprintf('%s - %s (%s)', $employee->nik(), $employee->name(), $employee->branch());
+                $this->employeeSearch = $employee->nik() . ' - ' . $employee->name();
             }
         }
 
@@ -241,29 +215,20 @@ class UserIndex extends Component
         $this->showPasswordModal = true;
     }
 
-    public function save(
-        CreateUser $createUser,
-        UpdateUser $updateUser
-    ): void {
+    public function save(CreateUser $createUser, UpdateUser $updateUser): void
+    {
         $this->validate();
 
         $password = is_null($this->editingId) ? $this->password : null;
 
-        $dto = new UserData(
-            name: $this->name,
-            email: $this->email,
-            password: $password,
-            roles: $this->selectedRoles,
-            active: $this->active,
-            employeeId: $this->employeeId,
-        );
+        $dto = new UserData(name: $this->name, email: $this->email, password: $password, roles: $this->selectedRoles, active: $this->active, employeeId: $this->employeeId);
 
         if (is_null($this->editingId)) {
             $createUser->execute($dto);
-            session()->flash('success', 'User created successfully.');
+            $this->dispatch('flash', type: 'success', message: 'User created successfully.');
         } else {
             $updateUser->execute($this->editingId, $dto);
-            session()->flash('success', 'User updated successfully.');
+            $this->dispatch('flash', type: 'success', message: 'User updated successfully.');
         }
 
         $this->showModal = false;
@@ -274,8 +239,8 @@ class UserIndex extends Component
     public function savePassword(ChangeUserPassword $changeUserPassword): void
     {
         $this->validate($this->passwordRules());
-        if (! $this->passwordUserId) {
-            session()->flash('error', 'User tidak ditemukan');
+        if (!$this->passwordUserId) {
+            $this->dispatch('flash', type: 'error', message: 'User not found.');
         }
 
         $changeUserPassword->execute($this->passwordUserId, $this->newPassword);
@@ -288,16 +253,12 @@ class UserIndex extends Component
 
     public function render(ListUsersWithEmployees $listUsers)
     {
-        $filter = new UserFilter(
-            search: $this->search !== '' ? $this->search : null,
-            onlyActive: $this->onlyActive ? true : null,
-            perPage: $this->perPage,
-        );
+        $filter = new UserFilter(search: $this->search !== '' ? $this->search : null, onlyActive: $this->onlyActive ? true : null, perPage: $this->perPage);
 
         $users = $listUsers->execute($filter);
 
         return view('livewire.admin.users.user-index', [
             'users' => $users,
-        ]);
+        ])->layout('new.layouts.app');
     }
 }

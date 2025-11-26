@@ -1,7 +1,7 @@
 @section('title', 'Account Security')
 
-@section('page-title', 'Account security')
-@section('page-subtitle', 'Manage your password.')
+@section('page-title', $pageTitle)
+@section('page-subtitle', $pageSubtitle)
 
 <div class="max-w-xl mx-auto">
     @if (session('success'))

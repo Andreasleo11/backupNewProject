@@ -51,7 +51,7 @@
         @if ($isSuper)
             <x-sidebar.group id="adminGroup" icon="bx bx-bug" title="Admin" :open="$groupOpen['adminGroup'] ?? false">
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('admin.access-control.index')" icon="bx bx-user" :active="request()->routeIs('admin.access-control*')">Access Control</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.access-overview.index')" icon="bx bx-user" :active="request()->routeIs('admin.access-overview.index')">Access Control</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
                     <x-sidebar.link :href="route('admin.departments.index')" icon="bx bx-building-house"

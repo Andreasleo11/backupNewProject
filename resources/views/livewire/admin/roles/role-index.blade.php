@@ -1,37 +1,11 @@
-<div class="max-w-6xl mx-auto px-4 py-6">
-    {{-- Alerts --}}
-    @if (session('success'))
-        <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            <div class="flex items-start gap-2">
-                <svg class="mt-0.5 h-4 w-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 12.75l6 6 9-13.5" />
-                </svg>
-                <span>{{ session('success') }}</span>
-            </div>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-            <div class="flex items-start gap-2">
-                <svg class="mt-0.5 h-4 w-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M12 9v3.75m0 3.75h.007M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>{{ session('error') }}</span>
-            </div>
-        </div>
-    @endif
-
-    {{-- Header --}}
+<div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+    {{-- Filter / actions row --}}
     <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-lg font-semibold text-slate-900">Role Management</h1>
-            <p class="mt-0.5 text-xs text-slate-500">
+            <!-- <p class="mt-0.5 text-xs text-slate-500">
                 Manage roles and their permissions for your application.
-            </p>
+            </p> -->
         </div>
 
         <div class="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
@@ -44,7 +18,7 @@
                     </svg>
                 </span>
                 <input type="text" wire:model.live="search"
-                    class="block w-full rounded-md border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-xs text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    class="block w-full rounded-md border border-slate-200 bg-white py-1.5 pl-8 pr-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     placeholder="Search role...">
             </div>
 
@@ -58,7 +32,7 @@
         </div>
     </div>
 
-    {{-- Roles card --}}
+    {{-- Roles table --}}
     <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200 text-sm">
@@ -134,7 +108,7 @@
         </div>
     </div>
 
-    {{-- Modal (Livewire only, no JS required to show/hide) --}}
+    {{-- Modal --}}
     @if ($showModal)
         <div class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50">
             <div class="mx-4 w-full max-w-3xl rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">

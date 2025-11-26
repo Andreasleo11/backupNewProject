@@ -50,10 +50,9 @@ class ChangePasswordPage extends Component
 
     public function render()
     {
-        return view('livewire.auth.change-password-page')
-            ->layout('new.layouts.app', [
-                'pageTitle' => 'Account security',
-                'pageSubtitle' => 'Manage your password.',
-            ]);
+        return view('livewire.auth.change-password-page', [
+            'pageTitle' => 'Account Security',
+            'pageSubtitle' => 'Manage your password.',
+        ])->layout('new.layouts.app');
     }
 }

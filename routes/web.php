@@ -123,25 +123,19 @@ Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirec
 
 Auth::routes();
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/account/security', ChangePasswordPage::class)
-        ->name('account.security');
-});
-
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::get('/change-password', [PasswordChangeController::class, 'showChangePasswordForm'])->name('change.password.show');
-    Route::post('/change-password', [PasswordChangeController::class, 'changePassword'])->name('change.password');
-
+    Route::get('/account/security', ChangePasswordPage::class)->name('account.security');
+    
     Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
     Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('reports.depthead.show');
 
     Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
     Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
     Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
-
-    require __DIR__.'/admin.php';
 });
+
+require __DIR__.'/admin.php';
 
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
     Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');

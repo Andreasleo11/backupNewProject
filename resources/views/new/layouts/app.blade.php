@@ -235,19 +235,7 @@
 
             {{-- Main content --}}
             <main class="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6">
-                @if (session('success'))
-                    <div
-                        class="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
+                <livewire:layout.flash-messages />
                 @yield('content')
                 {{ $slot ?? '' }}
             </main>
