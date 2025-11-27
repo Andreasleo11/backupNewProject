@@ -1,21 +1,8 @@
-<div class="space-y-4">
-    {{-- Alerts --}}
-    @if (session('success'))
-        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800">
-            {{ session('error') }}
-        </div>
-    @endif
-
+<div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm space-y-4">
     {{-- Header + filters --}}
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-sm font-semibold text-slate-900">Department master</h2>
+            <h2 class="text-lg font-semibold text-slate-900">Department master</h2>
             <p class="mt-0.5 text-xs text-slate-500">
                 Manage department codes, names, branches and active status.
             </p>
@@ -162,13 +149,12 @@
                 </tbody>
             </table>
         </div>
-
-        @if ($departments->hasPages())
-            <div class="px-4 py-3">
-                {{ $departments->links() }}
-            </div>
-        @endif
     </div>
+    @if ($departments->hasPages())
+        <div>
+            {{ $departments->links() }}
+        </div>
+    @endif
 
     {{-- Modal --}}
     <div x-data="{ open: @entangle('showModal').live }">
