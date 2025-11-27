@@ -5,6 +5,7 @@ namespace App\Infrastructure\Persistence\Eloquent\Repositories;
 use App\Domain\Employee\Entities\Employee as EmployeeEntity;
 use App\Domain\Employee\Repositories\EmployeeRepository;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee as EmployeeModel;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentEmployeeRepository implements EmployeeRepository
 {
@@ -54,6 +55,22 @@ class EloquentEmployeeRepository implements EmployeeRepository
         return $models
             ->map(fn (EmployeeModel $model) => $this->toEntity($model))
             ->all();
+    }
+
+    public function paginate(
+        ?string $search,
+        int $perPage = 10,
+    ):LengthAwarePaginator {
+        $query = EmployeeModel::query();
+
+        if($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nik', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%");
+            });
+        }
+
+        return $query->paginate($perPage);
     }
 
     private function toEntity(EmployeeModel $model): EmployeeEntity

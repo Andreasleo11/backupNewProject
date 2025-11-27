@@ -58,6 +58,12 @@
                     'icon' => 'building',
                     'active' => request()->routeIs('admin.departments.*'),
                 ],
+                [
+                    'label' => 'Employees',
+                    'route' => 'admin.employees.index',
+                    'icon' => 'users',
+                    'active' => request()->routeIs('admin.employees.*'),
+                ],
             ],
         ],
     ];

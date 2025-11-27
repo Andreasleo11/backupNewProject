@@ -3,6 +3,7 @@
 namespace App\Domain\Employee\Repositories;
 
 use App\Domain\Employee\Entities\Employee;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface EmployeeRepository
 {
@@ -20,4 +21,9 @@ interface EmployeeRepository
      * @return Employee[]
      */
     public function findByIds(array $ids): array;
+
+    public function paginate(
+        ?string $search,
+        int $perPage = 10,
+    ): LengthAwarePaginator;
 }

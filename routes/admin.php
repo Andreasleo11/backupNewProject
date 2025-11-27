@@ -20,16 +20,7 @@ Route::middleware(['auth'])->group(function () {
             Route::view('/users', 'admin.users.index')->name('users.index');
             Route::view('/roles/', 'admin.roles.index')->name('roles.index');
             Route::view('/departments', 'admin.departments.index')->name('departments.index');
-
-            // Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
-            // Route::post('/departments/store', [DepartmentController::class, 'store'])->name('departments.store');
-            // Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
-            // Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
-
-            Route::get('/specifications', [SpecificationController::class, 'index'])->name('specifications.index');
-            Route::post('/specifications/store', [SpecificationController::class, 'store'])->name('specifications.store');
-            Route::put('/specifications/{id}/update', [SpecificationController::class, 'update'])->name('specifications.update');
-            Route::delete('/specifications/{id}/delete', [SpecificationController::class, 'destroy'])->name('specifications.delete');
+            Route::view('/employees', 'admin.employees.index')->name('employees.index');
         });
     });
 });
