@@ -37,6 +37,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Employee\Repositories\EmployeeRepository::class,
             \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEmployeeRepository::class,
         );
+        
+        $this->app->bind(
+            \App\Domain\Department\Repositories\DepartmentRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentDepartmentRepository::class,
+        );
     }
 
     /**

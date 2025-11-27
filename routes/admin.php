@@ -19,11 +19,12 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/access-overview', fn() => view('admin.access-overview'))->name('access-overview.index');
             Route::view('/users', 'admin.users.index')->name('users.index');
             Route::view('/roles/', 'admin.roles.index')->name('roles.index');
+            Route::view('/departments', 'admin.departments.index')->name('departments.index');
 
-            Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
-            Route::post('/departments/store', [DepartmentController::class, 'store'])->name('departments.store');
-            Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
-            Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
+            // Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
+            // Route::post('/departments/store', [DepartmentController::class, 'store'])->name('departments.store');
+            // Route::put('/departments/update/{id}', [DepartmentController::class, 'update'])->name('departments.update');
+            // Route::delete('/departments/delete/{id}', [DepartmentController::class, 'destroy'])->name('departments.delete');
 
             Route::get('/specifications', [SpecificationController::class, 'index'])->name('specifications.index');
             Route::post('/specifications/store', [SpecificationController::class, 'store'])->name('specifications.store');
