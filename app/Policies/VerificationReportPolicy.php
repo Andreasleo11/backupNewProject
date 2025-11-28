@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 
 class VerificationReportPolicy
 {
