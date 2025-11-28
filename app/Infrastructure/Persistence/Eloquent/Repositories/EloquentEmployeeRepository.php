@@ -29,7 +29,7 @@ class EloquentEmployeeRepository implements EmployeeRepository
 
         $query->where(function ($q) use ($term) {
             $q->where('nik', 'like', "%{$term}%")
-              ->orWhere('name', 'like', "%{$term}%");
+                ->orWhere('name', 'like', "%{$term}%");
         });
 
         $models = $query
@@ -47,11 +47,12 @@ class EloquentEmployeeRepository implements EmployeeRepository
      */
     public function findByIds(array $ids): array
     {
-        if(empty($ids)) {
+        if (empty($ids)) {
             return [];
         }
 
         $models = EmployeeModel::whereIn('id', $ids)->get();
+
         return $models
             ->map(fn (EmployeeModel $model) => $this->toEntity($model))
             ->all();
@@ -60,14 +61,24 @@ class EloquentEmployeeRepository implements EmployeeRepository
     public function paginate(
         ?string $search,
         int $perPage = 10,
-    ):LengthAwarePaginator {
+        ?string $sortBy = null,
+        string $sortDirection = 'asc'
+    ): LengthAwarePaginator {
         $query = EmployeeModel::query();
 
-        if($search) {
-            $query->where(function($q) use ($search) {
+        if ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nik', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%");
             });
+        }
+
+        // Sorting (with whitelist)
+        $sortable = ['nik', 'name', 'start_date', 'jatah_cuti_tahun', 'end_date']; // add allowed columns here
+
+        if ($sortBy && in_array($sortBy, $sortable)) {
+            $sortDirection = strtolower($sortDirection) === 'desc' ? 'desc' : 'asc';
+            $query->orderBy($sortBy, $sortDirection);
         }
 
         return $query->paginate($perPage);

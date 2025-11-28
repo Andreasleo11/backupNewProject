@@ -17,6 +17,8 @@ class ListEmployees
         return $this->employees->paginate(
             search: $filter->search,
             perPage: $filter->perPage,
+            sortBy: $filter->sortBy,
+            sortDirection: $filter->sortDirection,
         );
     }
 }
