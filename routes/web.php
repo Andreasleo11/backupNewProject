@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\AdjustFormQcController;
-use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\BarcodeController;
 use App\Http\Controllers\CapacityByForecastController;
 use App\Http\Controllers\DefectCategoryController;
@@ -134,7 +133,7 @@ Auth::routes();
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/account/security', ChangePasswordPage::class)->name('account.security');
-    
+
     Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
     Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('reports.depthead.show');
 
@@ -161,12 +160,10 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINES
     Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
     Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
-    // adding new defect category
     Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
     Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
     Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
     Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
-    // adding new defect category
 
     Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)->name('price-log.import')->middleware(['auth']);
 
@@ -378,103 +375,55 @@ Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
     Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name('finalresultassembly');
 });
 
-Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
-    Route::middleware([
-        'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS',
-        'checkSessionId',
-    ])->group(function () {
-        Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc.home');
+Route::middleware(['auth'])->prefix('verification-reports')->name('verification.')->group(function () {
+    Route::get('/', VerificationIndex::class)->name('index');
+    Route::get('/create', Wizard::class)->name('create');
+    // Route::get('/create2', VerificationEdit::class)->name('create2');
+    Route::get('/{report}/edit', Wizard::class)->name('edit');
+    // Route::get('/{report}/edit2', VerificationEdit::class)->name('edit2');
+    Route::get('/{report}', VerificationShow::class)->name('show');
+});
 
-        Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
-        Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
-        Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
-
-        Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index')->middleware('permission:get-vqc-reports');
-        Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail')->middleware('permission:detail-vqc-reports');
-        Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit')->middleware('permission:edit-vqc-report');
-        Route::get('/qaqc/reports/create', ReportWizard::class)->name('qaqc.report.create')->middleware('permission:create-vqc-report');
-        Route::get('qaqc/report/{id}/rejectAuto', [QaqcReportController::class, 'rejectAuto'])->name('qaqc.report.rejectAuto');
-        Route::get('qaqc/report/{id}/savePdf', [QaqcReportController::class, 'savePdf'])->name('qaqc.report.savePdf');
-        Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
-        Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete')->middleware('permission:delete-vqc-report');
-
-        // adding new defect category
-        Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory')->middleware('permission:get-defect-categories');
-        Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store')->middleware('permission:store-defect-category');
-        Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update')->middleware('permission:update-defect-category');
-        Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete')->middleware('permission:delete-defect-category');
-        // adding new defect category
-
-        Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)->name('price-log.import')->middleware(['auth']);
-
-        Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
-
-        Route::get('/items', [QaqcReportController::class, 'getItems'])->name('items');
-        Route::get('/customers', [QaqcReportController::class, 'getCustomers'])->name('Customers');
-        Route::get('/item/price', [QaqcReportController::class, 'getItemPrice']);
-
-        Route::get('/qaqc/reports/{id}/download', [QaqcReportController::class, 'exportToPdf'])->name('qaqc.report.download')->middleware('permission:download-vqc-report');
-        Route::get('/qaqc/reports/{id}/preview', [QaqcReportController::class, 'previewPdf'])->name('qaqc.report.preview');
-        Route::get('qaqc/report/{id}/lock', [QaqcReportController::class, 'lock'])->name('qaqc.report.lock')->middleware('permission:lock-vqc-report');
-        Route::get('/qaqc/export-reports', [QaqcReportController::class, 'exportToExcel'])->name('export.reports')->middleware('permission:export-to-excel-vqc-report');
-        Route::get('/qaqc/FormAdjust', [QaqcReportController::class, 'exportFormAdjustToExcel'])->name('export.formadjusts')->middleware();
-
-        Route::put('/qaqc/reports/{id}/updateDoNumber', [QaQcReportController::class, 'updateDoNumber'])->name('update.do.number');
-
-        Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
-        Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
-        Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
+Route::middleware(['auth', 'can:manage-approvals'])
+    ->prefix('admin/approvals')
+    ->name('admin.approvals.')
+    ->group(function () {
+        Route::get('/rules', RuleTemplatesIndex::class)->name('rules.index');
+        Route::get('/rules/create', RuleTemplatesEdit::class)->name('rules.create');
+        Route::get('/rules/{templateId}/edit', RuleTemplatesEdit::class)->name('rules.edit');
     });
 
-    Route::middleware(['auth'])->prefix('verification-reports')->name('verification.')->group(function () {
-        Route::get('/', VerificationIndex::class)->name('index');
-        Route::get('/create', Wizard::class)->name('create');
-        // Route::get('/create2', VerificationEdit::class)->name('create2');
-        Route::get('/{report}/edit', Wizard::class)->name('edit');
-        // Route::get('/{report}/edit2', VerificationEdit::class)->name('edit2');
-        Route::get('/{report}', VerificationShow::class)->name('show');
-    });
+Route::middleware([
+    'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION',
+    'checkSessionId',
+])->group(function () {
+    // FORM ADJUST SECITON
+    Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name(
+        'adjust.index',
+    );
+    Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name(
+        'save.rawmaterial',
+    );
+    Route::post('/fgwarehouse/save/adjust', [
+        AdjustFormQcController::class,
+        'savewarehouse',
+    ])->name('fgwarehousesave');
+    Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name(
+        'adjustview',
+    );
+    Route::post('/remark/detail/adjust', [
+        AdjustFormQcController::class,
+        'addremarkadjust',
+    ])->name('addremarkadjust');
+    Route::post('/save-autograph-path/{reportId}/{section}', [
+        AdjustFormQcController::class,
+        'saveAutographPath',
+    ]);
 
-    Route::middleware(['auth', 'can:manage-approvals'])
-        ->prefix('admin/approvals')
-        ->name('admin.approvals.')
-        ->group(function () {
-            Route::get('/rules', RuleTemplatesIndex::class)->name('rules.index');
-            Route::get('/rules/create', RuleTemplatesEdit::class)->name('rules.create');
-            Route::get('/rules/{templateId}/edit', RuleTemplatesEdit::class)->name('rules.edit');
-        });
-
-    Route::middleware([
-        'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION',
-        'checkSessionId',
-    ])->group(function () {
-        // FORM ADJUST SECITON
-        Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name(
-            'adjust.index',
-        );
-        Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name(
-            'save.rawmaterial',
-        );
-        Route::post('/fgwarehouse/save/adjust', [
-            AdjustFormQcController::class,
-            'savewarehouse',
-        ])->name('fgwarehousesave');
-        Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name(
-            'adjustview',
-        );
-        Route::post('/remark/detail/adjust', [
-            AdjustFormQcController::class,
-            'addremarkadjust',
-        ])->name('addremarkadjust');
-        Route::post('/save-autograph-path/{reportId}/{section}', [
-            AdjustFormQcController::class,
-            'saveAutographPath',
-        ]);
-
-        Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name(
-            'listformadjust',
-        );
-    });
+    Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name(
+        'listformadjust',
+    );
+});
 Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
 
     Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])->name('moulddown.index');
