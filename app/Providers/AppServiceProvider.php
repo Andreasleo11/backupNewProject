@@ -36,6 +36,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(\App\Domain\Approval\Contracts\RuleResolver::class, \App\Infrastructure\Approval\Services\DefaultRuleResolver::class);
         $this->app->bind(\App\Domain\Approval\Contracts\Approvals::class, \App\Infrastructure\Approval\Services\ApprovalEngine::class);
 
+            \App\Domain\User\Repositories\UserRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentUserRepository::class,
+        );
+        
+        $this->app->bind(
+            \App\Domain\Employee\Repositories\EmployeeRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEmployeeRepository::class,
+        );
+        
+        $this->app->bind(
+            \App\Domain\Department\Repositories\DepartmentRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentDepartmentRepository::class,
+        );
     }
 
     /**

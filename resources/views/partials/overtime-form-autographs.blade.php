@@ -56,7 +56,13 @@
                                     if (
                                         $user->is_head &&
                                         $user->department->name === 'LOGISTIC' &&
-                                        $approval->form->department->name
+                                        $approval->form->department->name === 'STORE'
+                                    ) {
+                                        $allowedByRole = true;
+                                    } elseif (
+                                        $user->is_head &&
+                                        $user->department->name === 'QC' && 
+                                        $approval->form->department->name === 'QA'
                                     ) {
                                         $allowedByRole = true;
                                     }

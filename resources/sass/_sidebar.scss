@@ -5,7 +5,7 @@
   padding-top: 12px;
   width: var(--sidebar-collapsed);
   min-width: var(--sidebar-collapsed);
-  z-index: 1000;
+  z-index: 9999;
   background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;

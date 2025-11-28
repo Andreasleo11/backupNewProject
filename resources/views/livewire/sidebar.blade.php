@@ -51,23 +51,15 @@
         @if ($isSuper)
             <x-sidebar.group id="adminGroup" icon="bx bx-bug" title="Admin" :open="$groupOpen['adminGroup'] ?? false">
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.users')" icon="bx bx-user" :active="request()->routeIs('superadmin.users*')">Users</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.access-overview.index')" icon="bx bx-user" :active="request()->routeIs('admin.access-overview.index')">Access Control</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.departments')" icon="bx bx-building-house"
-                        :active="request()->routeIs('superadmin.departments*')">Departments</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.departments.index')" icon="bx bx-building-house"
+                        :active="request()->routeIs('admin.departments*')">Departments</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.specifications')" icon="bx bx-task"
-                        :active="request()->routeIs('superadmin.specifications*')">Specifications</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.users.permissions.index')" icon="bx bx-lock-alt" :active="request()->routeIs('superadmin.users.permissions*')">Users
-                        Permissions</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.permissions.index')" icon="bx bx-lock-alt"
-                        :active="request()->routeIs('superadmin.permissions*')">Permissions</x-sidebar.link>
+                    <x-sidebar.link :href="route('admin.specifications.index')" icon="bx bx-task"
+                        :active="request()->routeIs('admin.specifications*')">Specifications</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
                     <x-sidebar.link :href="route('changeemail.page')" icon="bx bx-file" :active="request()->routeIs('changeemail.page')">Change Default
@@ -345,7 +337,7 @@
         {{-- Other --}}
         <x-sidebar.group id="otherGroup" icon="bx bx-dots-horizontal-rounded" title="Other" :open="$groupOpen['otherGroup'] ?? false">
             <li class="sidebar-item">
-                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest.home')">
+                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest')">
                     Purchase Request
                 </x-sidebar.link>
             </li>
@@ -368,11 +360,11 @@
                     Overtime</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formcuti.home')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form
+                <x-sidebar.link :href="route('formcuti')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form
                     Cuti</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formkeluar.home')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
+                <x-sidebar.link :href="route('formkeluar')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
                     Keluar</x-sidebar.link>
             </li>
 

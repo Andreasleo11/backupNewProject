@@ -1,7 +1,7 @@
 <div class="modal fade" tabindex="-1" id="add-department-modal" aria-labelledby="addDepartmentModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('superadmin.departments.store') }}">
+            <form method="POST" action="{{ route('admin.departments.store') }}">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Add Department</h5>

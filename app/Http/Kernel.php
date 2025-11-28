@@ -71,7 +71,9 @@ class Kernel extends HttpKernel
         'checkSession' => \App\Http\Middleware\CheckSessionId::class,
         'checkDepartment' => \App\Http\Middleware\CheckDepartment::class,
         'cors' => \App\Http\Middleware\CorsMiddleware::class,
-        'permission' => \App\Http\Middleware\CheckPermission::class,
         'is.head.or.management' => \App\Http\Middleware\IsHeadOrManagement::class,
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
     ];
 }

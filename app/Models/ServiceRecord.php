@@ -2,19 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class ServiceRecord extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'vehicle_id', 'service_date', 'odometer', 'workshop', 'total_cost', 'notes', 'created_by',
+        'vehicle_id', 'service_date', 'odometer', 'workshop', 'total_cost', 'notes', 'created_by', 'global_tax_rate',
     ];
 
     protected $casts = [
         'service_date' => 'date',
+        'global_tax_rate' => 'decimal:2',
+        'total_cost' => 'decimal:2',
     ];
 
     public function vehicle()

@@ -25,11 +25,9 @@ class Sidebar extends Component
 
     // Route pattern maps
     public array $adminPatterns = [
-        'superadmin.users*',
-        'superadmin.departments*',
-        'superadmin.specifications*',
-        'superadmin.users.permissions*',
-        'superadmin.permissions*',
+        'admin.access-overview',
+        'admin.departments*',
+        'admin.specifications*',
         'changeemail.page',
         'pt.*',
         'md.parts.import',
@@ -89,7 +87,7 @@ class Sidebar extends Component
 
     public array $otherPatterns = [
         'director.pr.index',
-        'purchaserequest.home',
+        'purchaserequest',
         'daily-reports.*',
         'overtime.*',
         'actual.import.form',
@@ -133,7 +131,7 @@ class Sidebar extends Component
         $this->user = Auth::user();
         $this->department = optional($this->user->department)->name ?? '';
         $this->specification = optional($this->user->specification)->name ?? '';
-        $this->isSuper = optional($this->user->role)->name === 'SUPERADMIN';
+        $this->isSuper = true;
         $this->deptHead = (bool) $this->user->is_head;
 
         // Default open state per group based on current route
