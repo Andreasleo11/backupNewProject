@@ -1,8 +1,8 @@
 @section('title', 'Form Overtime List - ' . env('APP_NAME'))
 
-<div x-data x-init="$nextTick(() => {
+<div class="m-5" x-data x-init="$nextTick(() => {
     [...document.querySelectorAll('[data-bs-toggle=tooltip]')].forEach(el => new bootstrap.Tooltip(el));
-})">
+})" >
 
     @include('partials.alert-success-error')
 
@@ -596,7 +596,6 @@
         {{ $dataheader->links() }}
     </div>
 
-    {{-- Delete Confirmation Modal (no <script> tag) --}}
     <div x-data="{
         m: null,
         init() {
@@ -635,5 +634,4 @@
             </div>
         </div>
     </div>
-
 </div>

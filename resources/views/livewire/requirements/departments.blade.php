@@ -154,7 +154,6 @@
     {{-- Footer / Pagination --}}
     <div class="mt-2">
         {{ $items->links() }}
-        
     </div>
 
     {{-- Single uploader instance (outside table for stability) --}}
@@ -175,4 +174,12 @@
             padding-bottom: .65rem;
         }
     </style>
+@endPushOnce
+
+@pushOnce('extraJs')
+    <script>
+        Livewire.on('upload:done', () => {
+            location.reload(); // Reloads the entire page
+        });
+    </script>
 @endPushOnce

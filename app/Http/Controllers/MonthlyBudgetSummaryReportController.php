@@ -105,6 +105,11 @@ class MonthlyBudgetSummaryReportController extends Controller
         // dd($report->details->where('name', 'SELANG PU TRANSPARANT'));
         $this->updateStatus($report);
 
+        // Extract month and year from report_date
+        $reportDate = Carbon::parse($report->report_date);
+        $month = $reportDate->month;
+        $year = $reportDate->year;
+
         // Prepare an array to hold grouped details
         $groupedDetails = [];
         $detailsToDelete = [];
@@ -242,5 +247,66 @@ class MonthlyBudgetSummaryReportController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Monthly Budget Report successfully cancelled!');
+    }
+
+    public function refresh($id)
+    {
+        $report = Report::with('details')->findOrFail($id);
+
+        $reportDate = Carbon::parse($report->report_date);
+        $month = $reportDate->month;
+        $year = $reportDate->year;
+
+        // Base query for approved MonthlyBudgetReports
+        $approvedReportsQuery = MonthlyBudgetReport::with('details')
+            ->whereYear('report_date', $year)
+            ->whereMonth('report_date', $month)
+            ->where('status', 6);
+
+        // 🧠 Apply dept filter based on is_moulding
+        if ($report->is_moulding) {
+            $approvedReportsQuery->where('dept_no', 363);
+        } else {
+            $approvedReportsQuery->where('dept_no', '!=', 363);
+        }
+
+        $approvedReports = $approvedReportsQuery->get();
+
+        $existingDeptNos = $report->details->pluck('dept_no')->unique();
+
+        $newDetails = [];
+
+        foreach ($approvedReports as $mbr) {
+            if (!$existingDeptNos->contains($mbr->dept_no)) {
+                foreach ($mbr->details as $detail) {
+                    $newDetails[] = [
+                        'header_id' => $report->id,
+                        'name' => $detail->name,
+                        'dept_no' => $mbr->dept_no,
+                        'quantity' => $detail->quantity,
+                        'spec' => $detail->spec,
+                        'last_recorded_stock' => $detail->last_recorded_stock,
+                        'usage_per_month' => $detail->usage_per_month,
+                        'uom' => $detail->uom,
+                        'supplier' => $detail->supplier,
+                        'cost_per_unit' => $detail->cost_per_unit,
+                        'remark' => $detail->remark,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+            }
+        }
+
+        if (!empty($newDetails)) {
+            Detail::insert($newDetails);
+            $message = 'Newly approved department reports were successfully added.';
+        } else {
+            $message = 'No new approved department reports found to add.';
+        }
+
+        return redirect()
+            ->route('monthly.budget.summary.report.show', $report->id)
+            ->with('status', $message);
     }
 }

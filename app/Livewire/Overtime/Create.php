@@ -5,8 +5,8 @@ namespace App\Livewire\Overtime;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Services\OvertimeFormService;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Throwable;
@@ -29,14 +29,30 @@ class Create extends Component
 
     public $is_after_hour = 1;
 
+    public $validationErrors = [];
+
     protected $casts = [
         'isExcelMode' => 'boolean',
     ];
 
+    public $employees;
+
     public function mount()
     {
         $this->dept_id = auth()->user()->department_id;
-        $this->items[] = $this->emptyItem();
+        $this->employees = $this->fetchEmployees();
+        $this->items[] = [
+            'nik' => '',
+            'name' => '',
+            'overtime_date' => '',
+            'job_desc' => '',
+            'start_date' => '',
+            'start_time' => '',
+            'end_date' => '',
+            'end_time' => '',
+            'break' => '',
+            'remarks' => '',
+        ];
     }
 
     public function rules()
@@ -55,11 +71,7 @@ class Create extends Component
             $rules['items'] = 'required|array|min:1';
 
             foreach ($this->items as $index => $item) {
-                $rules["items.$index.nik"] = [
-                    'required',
-                    'string',
-                    Rule::exists('employees', 'NIK'),
-                ];
+                $rules["items.$index.nik"] = ['required', 'string', Rule::exists('employees', 'NIK')];
                 $rules["items.$index.name"] = 'required|string';
                 $rules["items.$index.overtime_date"] = 'required|date';
                 $rules["items.$index.job_desc"] = 'required|string';
@@ -99,46 +111,26 @@ class Create extends Component
             $messages["items.$index.name.required"] = "Row $humanIndex: Name is required.";
             $messages["items.$index.name.string"] = "Row $humanIndex: Name must be a string.";
 
-            $messages[
-                "items.$index.overtime_date.required"
-            ] = "Row $humanIndex: Overtime date is required.";
-            $messages[
-                "items.$index.overtime_date.date"
-            ] = "Row $humanIndex: Overtime date must be a valid date.";
+            $messages["items.$index.overtime_date.required"] = "Row $humanIndex: Overtime date is required.";
+            $messages["items.$index.overtime_date.date"] = "Row $humanIndex: Overtime date must be a valid date.";
 
-            $messages[
-                "items.$index.job_desc.required"
-            ] = "Row $humanIndex: Job description is required.";
-            $messages[
-                "items.$index.job_desc.string"
-            ] = "Row $humanIndex: Job description must be a string.";
+            $messages["items.$index.job_desc.required"] = "Row $humanIndex: Job description is required.";
+            $messages["items.$index.job_desc.string"] = "Row $humanIndex: Job description must be a string.";
 
-            $messages[
-                "items.$index.start_date.required"
-            ] = "Row $humanIndex: Start date is required.";
-            $messages[
-                "items.$index.start_date.date"
-            ] = "Row $humanIndex: Start date must be a valid date.";
+            $messages["items.$index.start_date.required"] = "Row $humanIndex: Start date is required.";
+            $messages["items.$index.start_date.date"] = "Row $humanIndex: Start date must be a valid date.";
 
-            $messages[
-                "items.$index.start_time.required"
-            ] = "Row $humanIndex: Start time is required.";
+            $messages["items.$index.start_time.required"] = "Row $humanIndex: Start time is required.";
 
             $messages["items.$index.end_date.required"] = "Row $humanIndex: End date is required.";
-            $messages[
-                "items.$index.end_date.date"
-            ] = "Row $humanIndex: End date must be a valid date.";
+            $messages["items.$index.end_date.date"] = "Row $humanIndex: End date must be a valid date.";
 
             $messages["items.$index.end_time.required"] = "Row $humanIndex: End time is required.";
 
             $messages["items.$index.break.required"] = "Row $humanIndex: Break is required.";
             $messages["items.$index.break.numeric"] = "Row $humanIndex: Break must be a number.";
-            $messages[
-                "items.$index.break.min"
-            ] = "Row $humanIndex: Break must be at least 0 minutes.";
-            $messages[
-                "items.$index.break.max"
-            ] = "Row $humanIndex: Break cannot exceed 180 minutes.";
+            $messages["items.$index.break.min"] = "Row $humanIndex: Break must be at least 0 minutes.";
+            $messages["items.$index.break.max"] = "Row $humanIndex: Break cannot exceed 180 minutes.";
 
             $messages["items.$index.remarks.required"] = "Row $humanIndex: Remarks are required.";
             $messages["items.$index.remarks.string"] = "Row $humanIndex: Remarks must be a string.";
@@ -147,61 +139,25 @@ class Create extends Component
         return $messages;
     }
 
-    public function emptyItem()
+    public function updated($field)
     {
-        return [
-            'nik' => '',
-            'name' => '',
-            'overtime_date' => '',
-            'job_desc' => '',
-            'start_date' => '',
-            'start_time' => '',
-            'end_date' => '',
-            'end_time' => '',
-            'break' => '',
-            'remarks' => '',
-        ];
-    }
-
-    public function addItem()
-    {
-        $this->items[] = $this->emptyItem();
-    }
-
-    public function removeItem($index)
-    {
-        unset($this->items[$index]);
-        $this->items = array_values($this->items);
-    }
-
-    public function updatedItems($value, $name)
-    {
-        $parts = explode('.', $name);
-        if (count($parts) === 2) {
-            $index = $parts[0];
-            $field = $parts[1];
-
-            if ($field === 'nik') {
-                $emp = Employee::where('NIK', $value)->first();
-                if ($emp) {
-                    $this->items[$index]['name'] = (string) $emp->Nama;
-                }
-            } elseif ($field === 'name') {
-                $emp = Employee::where('Nama', $value)->first();
-                if ($emp) {
-                    $this->items[$index]['nik'] = (string) $emp->NIK;
-                }
-            }
-        }
+        $this->resetErrorBag($field);
     }
 
     public function updatedDeptId($value)
     {
         $this->design = null;
+
+        // dd($this->items);
+
         foreach ($this->items as $index => $item) {
             $this->items[$index]['nik'] = '';
             $this->items[$index]['name'] = '';
         }
+
+        // dd($this->items);
+
+        $this->employees = $this->fetchEmployees();
     }
 
     public function updatedExcelFile()
@@ -209,20 +165,23 @@ class Create extends Component
         $this->validateOnly('excel_file');
     }
 
+    protected function fetchEmployees(): Collection
+    {
+        return $this->dept_id
+            ? Employee::whereHas('department', fn($q) => $q->where('id', $this->dept_id))
+                ->orderBy('Nama')
+                ->get(['NIK', 'Nama'])
+                ->map(fn($employee) => ['nik' => $employee->NIK, 'name' => $employee->Nama])
+            : collect();
+    }
+
     public function submit()
     {
+        $validated = $this->validate();
         try {
-            $validated = $this->validate();
             $header = OvertimeFormService::create(collect($validated));
 
-            return redirect()
-                ->route('formovertime.detail', $header->id)
-                ->with('success', 'Overtime created succesfully');
-        } catch (ValidationException $e) {
-            return redirect()
-                ->back()
-                ->withErrors($e->errors())
-                ->with('error', 'Tidak ada data valid yang dimasukkan, header dibatalkan.');
+            return redirect()->route('formovertime.detail', $header->id)->with('success', 'Overtime created succesfully');
         } catch (Throwable $e) {
             report($e);
 
@@ -232,14 +191,9 @@ class Create extends Component
 
     public function render()
     {
+        $this->validationErrors = $this->getErrorBag()->toArray();
         return view('livewire.overtime.create', [
-            'departements' => Department::orderBy('name')->get(),
-            'employees' => $this->dept_id
-                ? Employee::whereHas('department', fn ($q) => $q->where('id', $this->dept_id))
-                    ->select('NIK', 'Nama')
-                    ->orderBy('Nama')
-                    ->get()
-                : collect(),
+            'departments' => Department::orderBy('name')->get()
         ]);
     }
 }

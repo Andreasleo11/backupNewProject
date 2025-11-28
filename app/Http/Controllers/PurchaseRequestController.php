@@ -118,7 +118,7 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('branch');
 
             // Redirect without any filters
-            return redirect()->route('purchaserequest.home');
+            return redirect()->route('purchaserequest');
         }
 
         // Apply filters from request or session
@@ -259,7 +259,7 @@ class PurchaseRequestController extends Controller
         // $this->executeSendPRNotificationCommand();
 
         return redirect()
-            ->route('purchaserequest.home')
+            ->route('purchaserequest')
             ->with('success', 'Purchase request created successfully');
     }
 
