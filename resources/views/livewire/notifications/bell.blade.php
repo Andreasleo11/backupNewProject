@@ -22,7 +22,7 @@
         x-show="open"
         x-transition
         x-cloak
-        class="absolute right-0 mt-2 w-72 rounded-lg border border-slate-200 bg-white py-1 text-xs shadow-lg"
+        class="absolute right-0 mt-2 w-72 rounded-lg border border-slate-200 bg-white py-1 text-xs shadow-lg z-10"
     >
         <div class="flex items-center justify-between px-3 py-2 border-b border-slate-100">
             <span class="font-semibold text-slate-800">Notifications</span>
