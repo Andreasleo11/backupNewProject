@@ -36,12 +36,30 @@ final class UpdateReport
 
             // simple replace strategy; switch to diff/patch if needed
             $report->items()->delete();
+
             foreach ($items as $item) {
-                $report->items()->create([
-                    'name' => $item->name,
-                    'notes' => $item->notes,
-                    'amount' => $item->amount,
+                $itemModel = $report->items()->create([
+                    'part_name' => $item->part_name,
+                    'rec_quantity' => $item->rec_quantity,
+                    'verify_quantity' => $item->verify_quantity,
+                    'can_use' => $item->can_use,
+                    'cant_use' => $item->cant_use,
+                    'price' => $item->price,
+                    'currency' => $item->currency,
                 ]);
+
+                $itemModel->defects()->delete();
+
+                foreach ($item->defects as $defect) {
+                    $itemModel->defects()->create([
+                        'code' => $defect->code,
+                        'name' => $defect->name,
+                        'severity' => $defect->severity,
+                        'source' => $defect->source,
+                        'quantity' => $defect->quantity,
+                        'notes' => $defect->notes,
+                    ]);
+                }
             }
 
             return $report->fresh(['items']);

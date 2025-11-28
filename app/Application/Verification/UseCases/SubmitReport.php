@@ -27,10 +27,14 @@ final class SubmitReport
             throw new \DomainException('Only the creator can submit this report.');
         }
 
+        $monetary = (float) $report->items()
+            ->selectRaw('SUM(verify_quantity * price) as total')
+            ->value('total');
+
         $context = [
             'department' => data_get($report->meta, 'department'),
-            'amount' => (float) $report->items()->sum('amount'),
-            'tags' => ['verification'],
+            'amount' => $monetary,
+            'currency' => data_get($report->items()->first(), 'currency', 'IDR'),
         ];
 
         // submit to generic approval engine

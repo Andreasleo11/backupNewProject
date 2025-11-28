@@ -12,9 +12,16 @@ class VerificationReport extends Model
 
     protected $table = 'verification_reports';
 
-    protected $fillable = ['document_number', 'creator_id', 'title', 'description', 'status', 'meta'];
+    protected $fillable = [
+        'document_number', 'creator_id', 'status', 'meta',
+        'rec_date', 'verify_date', 'customer', 'invoice_number',
+    ];
 
-    protected $casts = ['meta' => 'array'];
+    protected $casts = [
+        'meta' => 'array',
+        'rec_date' => 'date',
+        'verify_date' => 'date',
+    ];
 
     public function items(): HasMany
     {

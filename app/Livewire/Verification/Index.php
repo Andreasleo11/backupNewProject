@@ -5,6 +5,8 @@
 namespace App\Livewire\Verification;
 
 use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,11 +23,17 @@ class Index extends Component
     public function render()
     {
         $q = VerificationReport::query()
-            ->when($this->status !== 'all', fn ($qq) => $qq->where('status', $this->status))
-            ->when($this->search, fn ($qq) => $qq->where(function ($w) {
-                $w->where('title', 'like', "%{$this->search}%")
-                    ->orWhere('document_number', 'like', "%{$this->search}%");
-            }))
+            ->when($this->status !== 'all', fn (Builder $query) => $query->where('status', $this->status)
+            )
+            ->when($this->search, function (Builder $query) {
+                $s = "%{$this->search}%";
+                $query->where(function ($q) use ($s) {
+                    $q->where('document_number', 'like', $s)
+                        ->orWhere('customer', 'like', $s)
+                        ->orWhere('invoice_number', 'like', $s);
+                });
+            })
+            ->withSum('items as total_value', DB::raw('verify_quantity * price')) // 👈 compute monetary
             ->latest();
 
         return view('livewire.verification.index', [

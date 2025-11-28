@@ -74,6 +74,8 @@ use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Livewire\Admin\Approvals\RuleTemplates\Edit as RuleTemplatesEdit;
 use App\Livewire\Admin\Approvals\RuleTemplates\Index as RuleTemplatesIndex;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
+use App\Livewire\Admin\Verification\Defects\CatalogEdit;
+use App\Livewire\Admin\Verification\Defects\CatalogIndex;
 use App\Livewire\Auth\ChangePasswordPage;
 use App\Livewire\Compliance\Dashboard as ComplianceDashboard;
 use App\Livewire\DailyReportIndex;
@@ -108,6 +110,7 @@ use App\Livewire\Vehicles\Show as VehiclesShow;
 use App\Livewire\Verification\Edit as VerificationEdit;
 use App\Livewire\Verification\Index as VerificationIndex;
 use App\Livewire\Verification\Show as VerificationShow;
+use App\Livewire\Verification\Wizard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -425,8 +428,10 @@ Route::middleware(['checkUserRole:2,1', 'checkSessionId'])->group(function () {
 
     Route::middleware(['auth'])->prefix('verification-reports')->name('verification.')->group(function () {
         Route::get('/', VerificationIndex::class)->name('index');
-        Route::get('/create', VerificationEdit::class)->name('create');
-        Route::get('/{report}/edit', VerificationEdit::class)->name('edit');
+        Route::get('/create', Wizard::class)->name('create');
+        // Route::get('/create2', VerificationEdit::class)->name('create2');
+        Route::get('/{report}/edit', Wizard::class)->name('edit');
+        // Route::get('/{report}/edit2', VerificationEdit::class)->name('edit2');
         Route::get('/{report}', VerificationShow::class)->name('show');
     });
 
@@ -956,3 +961,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
     Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });
+
+Route::middleware(['auth', 'can:manage-defects'])
+    ->prefix('admin/verification/defects')
+    ->name('admin.verification.defects.')
+    ->group(function () {
+        Route::get('/', CatalogIndex::class)->name('index');
+        Route::get('/create', CatalogEdit::class)->name('create');
+        Route::get('/{id}/edit', CatalogEdit::class)->name('edit');
+    });
