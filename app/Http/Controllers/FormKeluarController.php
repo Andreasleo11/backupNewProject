@@ -50,7 +50,7 @@ class FormKeluarController extends Controller
         ]);
 
         return redirect()
-            ->route('formkeluar.home')
+            ->route('formkeluar')
             ->with('success', 'form keluar created successfully');
     }
 

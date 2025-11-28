@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<div class="m-4">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <div class="row d-flex">
@@ -28,6 +29,7 @@
     <!-- Search Panes JS -->
     <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/dataTables.searchPanes.min.js"></script>
     <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/searchPanes.bootstrap5.min.js"></script>
+</div>
 @endsection
 @push('extraJs')
     {{ $dataTable->scripts() }}

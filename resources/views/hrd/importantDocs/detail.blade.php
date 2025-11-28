@@ -10,7 +10,7 @@
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('hrd.home') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('hrd') }}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('hrd.importantDocs.index') }}">Important
                         Documents</a></li>
                 <li class="breadcrumb-item active">Detail</li>

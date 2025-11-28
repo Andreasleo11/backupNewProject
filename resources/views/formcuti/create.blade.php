@@ -5,7 +5,7 @@
     <section class="breadcrumb">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('formcuti.home') }}">Form Cuti</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('formcuti') }}">Form Cuti</a></li>
                 <li class="breadcrumb-item active">Create</li>
             </ol>
         </nav>

@@ -22,7 +22,7 @@
                     </div>
                 </div>
                 <div class="mb-4">
-                    <a href="{{ route('superadmin.qaqc.header.create') }}" class="btn btn-primary">
+                    <a href="{{ route('admin.qaqc.header.create') }}" class="btn btn-primary">
                         <i class="lni lni-plus"></i>
                         Add Report
                     </a>
@@ -56,7 +56,7 @@
                                         <td>{{ $report->rec_date }}</td>
                                         <td>{{ $report->verify_date }}</td>
                                         <td>
-                                            <a href="{{ route('superadmin.qaqc.report.detail', ['id' => $report->id]) }}"
+                                            <a href="{{ route('admin.qaqc.report.detail', ['id' => $report->id]) }}"
                                                 class="btn btn-info btn-sm">View Details</a>
                                         </td>
                                         <td>
