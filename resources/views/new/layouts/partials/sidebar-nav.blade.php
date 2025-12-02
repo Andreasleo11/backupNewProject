@@ -45,6 +45,12 @@
                     'icon' => 'key',
                     'active' => request()->routeIs('admin.roles.index'),
                 ],
+                [
+                    'label' => 'Approval Rules',
+                    'route' => 'admin.approval-rules.index',
+                    'icon' => 'key',
+                    'active' => request()->routeIs('admin.approval-rules.index'),
+                ],
             ],
         ],
         [
@@ -71,7 +77,7 @@
             'label' => 'Purchase Requests',
             'route' => 'home',
             'icon' => 'document-currency-dollar',
-            'active' => request()->routeIs('purchase-requests'),
+            'active' => request()->routeIs('home'),
         ],
     ];
 @endphp
