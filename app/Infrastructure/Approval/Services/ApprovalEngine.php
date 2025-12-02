@@ -2,25 +2,46 @@
 
 namespace App\Infrastructure\Approval\Services;
 
-use App\Domain\Approval\Contracts\Approvals;
+use App\Application\Approval\Contracts\Approvals;
+use App\Application\Approval\DTOs\ApprovalInfo;
+use App\Application\Auth\UserRoles;
+use App\Domain\Approval\Contracts\Approvable;
 use App\Domain\Approval\Contracts\RuleResolver;
-use App\Infrastructure\Approval\Models\ApprovalRequest;
-use App\Infrastructure\Approval\Models\ApprovalStep;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
 final class ApprovalEngine implements Approvals
 {
-    public function __construct(private RuleResolver $resolver) {}
+    public function __construct(
+        private RuleResolver $resolver,
+        private UserRoles $userRoles,
+    ) {}
 
-    public function currentRequest(object $approvable): ?ApprovalRequest
+    private function toInfo(?ApprovalRequest $req): ?ApprovalInfo
     {
-        return $approvable->approvalRequest()->with('steps')->first();
+        if (! $req) {
+            return null;
+        }
+
+        return new ApprovalInfo(
+            id: $req->id,
+            status: $req->status,
+            currentStep: $req->current_step,
+        );
     }
 
-    public function submit(object $approvable, int $by, array $ctx = []): ApprovalRequest
+    public function currentRequest(Approvable $approvable): ?ApprovalInfo
     {
-        return DB::transaction(function () use ($approvable, $by, $ctx) {
+        $req = $approvable->approvalRequest()->with('steps')->first();
+
+        return $this->toInfo($req);
+    }
+
+    public function submit(Approvable $approvable, int $by, array $ctx = []): ApprovalInfo
+    {
+        $req = DB::transaction(function () use ($approvable, $by, $ctx) {
             /** @var ApprovalRequest $req */
             $req = $approvable->approvalRequest()->firstOrNew([]);
             if ($req->exists && $req->status !== 'DRAFT') {
@@ -57,9 +78,11 @@ final class ApprovalEngine implements Approvals
 
             return $req->fresh('steps');
         });
+
+        return $this->toInfo($req);
     }
 
-    public function approve(object $approvable, int $by, ?string $remarks = null): void
+    public function approve(Approvable $approvable, int $by, ?string $remarks = null): void
     {
         $req = $this->mustGetInReview($approvable);
 
@@ -84,7 +107,7 @@ final class ApprovalEngine implements Approvals
         });
     }
 
-    public function reject(object $approvable, int $by, ?string $remarks = null): void
+    public function reject(Approvable $approvable, int $by, ?string $remarks = null): void
     {
         $req = $this->mustGetInReview($approvable);
 
@@ -100,10 +123,11 @@ final class ApprovalEngine implements Approvals
         });
     }
 
-    private function mustGetInReview(object $approvable): ApprovalRequest
+    private function mustGetInReview(Approvable $approvable): ApprovalRequest
     {
         /** @var ApprovalRequest|null $req */
-        $req = $this->currentRequest($approvable);
+        $req = $approvable->approvalRequest()->with('steps')->first();
+
         if (! $req) {
             throw new \DomainException('No approval request.');
         }
@@ -126,8 +150,7 @@ final class ApprovalEngine implements Approvals
                 throw new AuthorizationException('Not the assigned approver.');
             }
         } else { // role-based
-            $user = auth()->user();
-            if (! $user || ! $user->roles()->whereKey($step->approver_id)->exists()) {
+            if (! $this->userRoles->userHasRoleId($userId, (int) $step->approver_id)) {
                 throw new AuthorizationException('Your role is not permitted to approve this step.');
             }
         }

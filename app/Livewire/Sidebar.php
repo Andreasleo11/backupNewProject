@@ -27,7 +27,7 @@ class Sidebar extends Component
     public array $adminPatterns = [
         'admin.access-overview',
         'admin.departments*',
-        'admin.specifications*',
+        // 'admin.specifications*',
         'changeemail.page',
         'pt.*',
         'md.parts.import',

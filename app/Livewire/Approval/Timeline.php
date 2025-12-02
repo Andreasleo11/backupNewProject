@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Approval;
 
-use App\Infrastructure\Approval\Models\ApprovalRequest;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use Livewire\Component;
 
 class Timeline extends Component
@@ -31,3 +31,4 @@ class Timeline extends Component
         return view('livewire.approval.timeline');
     }
 }
+ 

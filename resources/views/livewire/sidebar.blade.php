@@ -57,10 +57,12 @@
                     <x-sidebar.link :href="route('admin.departments.index')" icon="bx bx-building-house"
                         :active="request()->routeIs('admin.departments*')">Departments</x-sidebar.link>
                 </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('admin.specifications.index')" icon="bx bx-task"
-                        :active="request()->routeIs('admin.specifications*')">Specifications</x-sidebar.link>
-                </li>
+                {{-- 
+                    <li class="sidebar-item">
+                        <x-sidebar.link :href="route('admin.specifications.index')" icon="bx bx-task"
+                            :active="request()->routeIs('admin.specifications*')">Specifications</x-sidebar.link>
+                    </li>
+                    --}}
                 <li class="sidebar-item">
                     <x-sidebar.link :href="route('changeemail.page')" icon="bx bx-file" :active="request()->routeIs('changeemail.page')">Change Default
                         Email QC</x-sidebar.link>

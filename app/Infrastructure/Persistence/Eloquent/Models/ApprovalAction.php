@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Approval\Models;
+namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

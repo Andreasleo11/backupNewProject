@@ -66,6 +66,13 @@
                 ],
             ],
         ],
+        [
+            'type' => 'single',
+            'label' => 'Purchase Requests',
+            'route' => 'home',
+            'icon' => 'document-currency-dollar',
+            'active' => request()->routeIs('purchase-requests'),
+        ],
     ];
 @endphp
 

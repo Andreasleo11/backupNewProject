@@ -2,11 +2,12 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
+use App\Domain\Approval\Contracts\Approvable;
 use App\Infrastructure\Approval\Concerns\HasApproval;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class VerificationReport extends Model
+class VerificationReport extends Model implements Approvable
 {
     use HasApproval;
 

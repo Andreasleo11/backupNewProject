@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -30,10 +30,10 @@ class User extends Authenticatable implements FilamentUser
 
     protected $hidden = ['password', 'remember_token'];
 
-    // public function employee(): BelongsTo
-    // {
-    //     return $this->belongsTo(Employee::class);
-    // }
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {

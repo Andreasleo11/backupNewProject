@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Approval\Concerns;
 
-use App\Infrastructure\Approval\Models\ApprovalRequest;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 
 trait HasApproval
 {

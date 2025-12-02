@@ -3,7 +3,7 @@
 namespace App\Infrastructure\Approval\Services;
 
 use App\Domain\Approval\Contracts\RuleResolver;
-use App\Infrastructure\Approval\Models\RuleTemplate;
+use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
 
 final class DefaultRuleResolver implements RuleResolver
 {
