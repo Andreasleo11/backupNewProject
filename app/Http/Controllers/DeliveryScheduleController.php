@@ -33,7 +33,7 @@ class DeliveryScheduleController extends Controller
         //     dd($data);
         // }
 
-        return $dataTable->render('business.dsnewindex');
+        return $dataTable->render('delivery-schedule.dsnewindex');
     }
 
     public function indexfinal(WipFinalDsDataTable $dataTable)
@@ -45,7 +45,7 @@ class DeliveryScheduleController extends Controller
         //     dd($data);
         // }
 
-        return $dataTable->render('business.dsnewindexwip');
+        return $dataTable->render('delivery-schedule.dsnewindexwip');
     }
 
     public function indexraw(SapDelschedDataTable $dataTable)
@@ -57,7 +57,7 @@ class DeliveryScheduleController extends Controller
         //     dd($data);
         // }
 
-        return $dataTable->render('business.rawdelsched');
+        return $dataTable->render('delivery-schedule.rawdelsched');
     }
 
     public function averageschedule()
@@ -137,7 +137,7 @@ class DeliveryScheduleController extends Controller
         // dd($totalQuantities);
 
         return view(
-            'business.averageschedule',
+            'delivery-schedule.averageschedule',
             compact('data', 'itemCounts', 'totalQuantities', 'result'),
         );
     }

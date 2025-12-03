@@ -155,19 +155,6 @@
         ],
         [
             'type' => 'group',
-            'label' => 'Business',
-            'icon' => 'document-text',
-            'children' => [
-                [
-                    'label' => 'Delivery Schedule',
-                    'route' => 'indexds',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('indexds'),
-                ],
-            ],
-        ],
-        [
-            'type' => 'group',
             'label' => 'Maintenance',
             'icon' => 'document-text',
             'children' => [
@@ -466,12 +453,6 @@
                     'route' => 'formkeluar',
                     'icon' => 'document-text',
                     'active' => request()->routeIs('formkeluar.*'),
-                ],
-                [
-                    'label' => 'Delivery Schedule',
-                    'route' => 'indexds',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('indexds'),
                 ],
                 [
                     'label' => 'Monthly PR',

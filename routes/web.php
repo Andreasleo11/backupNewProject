@@ -180,7 +180,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/import-annual-leave-quota', [EmployeeMasterController::class, 'importAnnualLeaveQuota'])->name('import.annual-leave-quota');
 
     Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
-    
+
     Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
     Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
     Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit');
@@ -294,6 +294,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/production/capacity-forecast/step3', [CapacityByForecastController::class, 'step3'])->name('step3');
     Route::get('/production/capacity-forecast/step3logic', [CapacityByForecastController::class, 'step3logic'])->name('step3logic');
     Route::get('/production/capacity-forecast/step3last', [CapacityByForecastController::class, 'step3logiclast'])->name('step3logiclast');
+
+    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
+    Route::get('deliveryschedule/raw', [DeliveryScheduleController::class, 'indexraw'])->name('rawdelsched');
+    Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
+    Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
+
+    Route::get('delsched/start1', [DeliveryScheduleController::class, 'step1'])->name('deslsched.step1');
+    Route::get('delsched/start2', [DeliveryScheduleController::class, 'step2'])->name('deslsched.step2');
+    Route::get('delsched/start3', [DeliveryScheduleController::class, 'step3'])->name('deslsched.step3');
+    Route::get('delsched/start4', [DeliveryScheduleController::class, 'step4'])->name('deslsched.step4');
+
+    Route::get('delsched/wip/step1', [DeliveryScheduleController::class, 'step1wip'])->name('delschedwip.step1');
+    Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name('delschedwip.step2');
+    Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
 });
 
 require __DIR__.'/admin.php';
@@ -304,7 +318,6 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINES
     Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
     Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
     Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
-
 
     Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
         ->name('price-log.import')
@@ -392,21 +405,6 @@ Route::middleware(['checkDepartment:PURCHASING'])->group(function () {
 
     Route::get('purchasing/requirement', [PurchasingRequirementController::class, 'index'])->name('purchasingrequirement.index');
     Route::get('purchasing/requirement/detail', [PurchasingRequirementController::class, 'detail'])->name('purchasingrequirement.detail');
-});
-
-Route::middleware(['checkDepartment:BUSINESS,PPIC,PURCHASING'])->group(function () {
-    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
-
-    Route::get('deliveryschedule/raw', [DeliveryScheduleController::class, 'indexraw'])->name('rawdelsched');
-    Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
-
-    Route::get('delsched/start1', [DeliveryScheduleController::class, 'step1'])->name('deslsched.step1');
-    Route::get('delsched/start2', [DeliveryScheduleController::class, 'step2'])->name('deslsched.step2');
-    Route::get('delsched/start3', [DeliveryScheduleController::class, 'step3'])->name('deslsched.step3');
-    Route::get('delsched/start4', [DeliveryScheduleController::class, 'step4'])->name('deslsched.step4');
-
-    Route::get('delsched/wip/step1', [DeliveryScheduleController::class, 'step1wip'])->name('delschedwip.step1');
-    Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name('delschedwip.step2');
 });
 
 Route::middleware(['checkDepartment:ACCOUNTING'])->group(function () {
@@ -637,8 +635,6 @@ Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pu
 
 Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 
-Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
-
 Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']);
 
 Route::prefix('monthly-budget-summaries')->group(function () {
@@ -702,9 +698,6 @@ Route::get('/spk/report/monthly', [SuratPerintahKerjaController::class, 'monthly
 Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
 Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
 Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
-
-Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
-Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
 
 Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
 Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
