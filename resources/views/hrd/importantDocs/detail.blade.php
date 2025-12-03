@@ -1,112 +1,198 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
-    {{-- @dd($importantDoc) --}}
+    @php
+        use Carbon\Carbon;
 
-    <section class="header">
-        <h2 class="">Detail Important Document</h2>
-    </section>
+        $expiredDate = Carbon::parse($importantDoc->expired_date);
+        $isExpired = $expiredDate->isPast();
+    @endphp
 
-    <section class="breadcrumb">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('hrd') }}">Home</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('hrd.importantDocs.index') }}">Important
-                        Documents</a></li>
-                <li class="breadcrumb-item active">Detail</li>
-            </ol>
-        </nav>
-    </section>
-
-    <section aria-label="content">
-        <div class="container mt-5">
-            <div class="card">
-                <div class="mx-3 mt-4 mb-5 text-center">
-                    <span class="h1">{{ $importantDoc->name }}</span>
-                    <div class="mt-3">
-                        <span class="text-secondary h5">Type</span>
-                        <span class="h5">: {{ $importantDoc->type->name }}</span>
-                    </div>
-                    <div>
-                        <span class="text-secondary h5">Date Expired</span>
-                        <span class="h5">:
-                            {{ \Carbon\Carbon::parse($importantDoc->expired_date)->format('d-m-Y') }}</span>
-                    </div>
+    <div class="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        {{-- Header + Breadcrumb --}}
+        <section class="flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <h1 class="text-xl font-semibold text-slate-900">
+                        Detail Important Document
+                    </h1>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Lihat informasi lengkap dan lampiran untuk dokumen ini.
+                    </p>
                 </div>
 
-                {{-- <div class="container text-center">
-                @if ($importantDoc->files->first() !== null)
-                    <div id="pdfViewer" style="width: auto; height: auto" class="py-5 mb-3"></div>
-                @else
-                    <h6 class="mb-3">No Document</h6>
-                @endif
-            </div> --}}
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('hrd.importantDocs.index') }}"
+                        class="inline-flex items-center rounded-md border border-slate-200 bg-white
+                              px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50
+                              focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                        Back
+                    </a>
+
+                    <a href="{{ route('hrd.importantDocs.edit', $importantDoc->id) }}"
+                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5
+                              text-xs font-semibold text-white shadow-sm hover:bg-indigo-700
+                              focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                        Edit
+                    </a>
+                </div>
             </div>
-            <section aria-label="attachment">
-                <div class="container mt-5">
-                    <h4 class="mb-3">Attachments</h4>
-                    @if ($importantDoc->files->isNotEmpty())
-                        @foreach ($importantDoc->files as $file)
-                            <div class="mb-3">
-                                <div class="col d-flex">
-                                    <div class="btn btn-outline-success me-2 d-flex">
-                                        {{ $file->name }}
-                                    </div>
-                                    <a href="{{ asset('storage/importantDocuments/' . $file->name) }}"
-                                        download="{{ $file->name }}" class="pt-1 pb-0 btn btn-success">
-                                        <i class='bx bxs-download bx-sm'></i>
-                                    </a>
+
+            <nav class="text-xs text-slate-500" aria-label="Breadcrumb">
+                <ol class="flex flex-wrap items-center gap-1">
+                    <li>
+                        <a href="{{ route('hrd') }}" class="hover:text-slate-700 hover:underline">
+                            Home
+                        </a>
+                    </li>
+                    <li class="text-slate-400">/</li>
+                    <li>
+                        <a href="{{ route('hrd.importantDocs.index') }}" class="hover:text-slate-700 hover:underline">
+                            Important Documents
+                        </a>
+                    </li>
+                    <li class="text-slate-400">/</li>
+                    <li class="font-medium text-slate-700">
+                        Detail
+                    </li>
+                </ol>
+            </nav>
+        </section>
+
+        {{-- Detail Card --}}
+        <section>
+            <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-5">
+                <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div class="space-y-2">
+                        <h2 class="text-lg font-semibold text-slate-900 break-words">
+                            {{ $importantDoc->name }}
+                        </h2>
+
+                        @if ($importantDoc->document_id)
+                            <p class="text-xs font-mono text-slate-500">
+                                ID: {{ $importantDoc->document_id }}
+                            </p>
+                        @endif
+
+                        @if ($importantDoc->description)
+                            <p class="mt-2 text-sm text-slate-600 whitespace-pre-line">
+                                {{ $importantDoc->description }}
+                            </p>
+                        @endif
+                    </div>
+
+                    <div class="space-y-2 text-sm text-right md:text-left">
+                        {{-- Type --}}
+                        <div class="flex items-center justify-end gap-2 md:justify-start">
+                            <span class="text-slate-500">Type</span>
+                            <span
+                                class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                                {{ $importantDoc->type->name }}
+                            </span>
+                        </div>
+
+                        {{-- Expired Date --}}
+                        <div class="flex items-center justify-end gap-2 md:justify-start">
+                            <span class="text-slate-500">Expired</span>
+                            <span class="text-sm font-medium text-slate-800">
+                                {{ $expiredDate->format('d-m-Y') }}
+                            </span>
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="flex items-center justify-end gap-2 md:justify-start">
+                            <span class="text-slate-500">Status</span>
+                            @if ($isExpired)
+                                <span
+                                    class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                                    Expired
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                    Active
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- Attachments --}}
+        <section aria-label="attachment" class="space-y-3">
+            <div class="flex items-center justify-between gap-2">
+                <h3 class="text-sm font-semibold text-slate-800">
+                    Attachments
+                </h3>
+                @if ($importantDoc->files->isNotEmpty())
+                    <p class="text-xs text-slate-500">
+                        {{ $importantDoc->files->count() }} file attached
+                    </p>
+                @endif
+            </div>
+
+            @if ($importantDoc->files->isNotEmpty())
+                <div class="space-y-2">
+                    @foreach ($importantDoc->files as $file)
+                        @php
+                            $filename = $file->name;
+                            $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                            $url = asset('storage/importantDocuments/' . $filename);
+
+                            if (in_array($extension, ['pdf'])) {
+                                $label = 'PDF';
+                            } elseif (in_array($extension, ['xls', 'xlsx', 'csv'])) {
+                                $label = 'Spreadsheet';
+                            } elseif (in_array($extension, ['png', 'jpg', 'jpeg'])) {
+                                $label = 'Image';
+                            } elseif (in_array($extension, ['doc', 'docx'])) {
+                                $label = 'Document';
+                            } else {
+                                $label = strtoupper($extension ?: 'FILE');
+                            }
+                        @endphp
+
+                        <div
+                            class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div
+                                    class="flex h-9 w-9 items-center justify-center rounded-md bg-slate-100 text-xs font-semibold text-slate-700">
+                                    {{ $label }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-medium text-slate-800" title="{{ $filename }}">
+                                        {{ $filename }}
+                                    </p>
+                                    <p class="text-xs text-slate-500">
+                                        Click download to save this file.
+                                    </p>
                                 </div>
                             </div>
-                        @endforeach
 
-                        @if ($importantDoc->files->count() < 1)
-                            <!-- OPTIONAL: If want to preview this when the single file stored -->
-                        @endif
-                    @else
-                        <p class="text-secondary">No Attachment were uploaded</p>
-                        <div class="container"></div>
-                    @endif
+                            <div class="flex items-center gap-2 shrink-0">
+                                <a href="{{ $url }}" target="_blank"
+                                    class="hidden sm:inline-flex items-center rounded-md border border-slate-200
+                                          bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50
+                                          focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1">
+                                    Open
+                                </a>
+                                <a href="{{ $url }}" download="{{ $filename }}"
+                                    class="inline-flex items-center rounded-md bg-emerald-600 px-2.5 py-1.5
+                                          text-xs font-semibold text-white shadow-sm hover:bg-emerald-700
+                                          focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
+                                    Download
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            </section>
-        </div>
-    </section>
-
-    <!-- PDF.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-
+            @else
+                <div
+                    class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                    No attachment were uploaded for this document.
+                </div>
+            @endif
+        </section>
+    </div>
 @endsection
-
-@push('extraJs')
-    {{-- <script>
-    // PDF.js worker from the 'pdfjs-dist' package
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-
-    // Fetch PDF document (replace 'pdfUrl' with the URL of your PDF file)
-    const pdfUrl = '{{ asset('storage/importantDocuments') }}/{{ $importantDoc->files->first()->name }}';
-    console.log("url: " + pdfUrl);
-    fetch(pdfUrl)
-        .then(response => response.arrayBuffer())
-        .then(data => {
-            // Render PDF document
-            pdfjsLib.getDocument({ data: data }).promise.then(pdfDoc => {
-                // Display the first page of the PDF
-                pdfDoc.getPage(1).then(page => {
-                    const canvas = document.getElementById('pdfViewerCanvas_' + {{$importantDoc->id}});
-                    const context = canvas.getContext('2d');
-                    const viewport = page.getViewport({ scale: 1 });
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    const renderContext = {
-                        canvasContext: context,
-                        viewport: viewport
-                    };
-                    page.render(renderContext);
-                });
-            });
-        })
-        .catch(error => {
-            console.error('Error loading PDF:', error);
-        });
-</script> --}}
-@endpush
