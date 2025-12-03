@@ -162,7 +162,7 @@
                     'label' => 'Mould Repair',
                     'route' => 'moulddown.index',
                     'icon' => 'document-text',
-                    'active' => request()->routeIs('mouldown.*'),
+                    'active' => request()->routeIs('moulddown.*'),
                 ],
                 [
                     'label' => 'Line Repair',

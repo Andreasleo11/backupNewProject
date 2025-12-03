@@ -308,6 +308,11 @@ Route::middleware('auth')->group(function () {
     Route::get('delsched/wip/step1', [DeliveryScheduleController::class, 'step1wip'])->name('delschedwip.step1');
     Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name('delschedwip.step2');
     Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
+
+    Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])->name('moulddown.index');
+    Route::post('/add/mould', [MouldDownController::class, 'addmould'])->name('addmould');
+    Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
+    Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name('addlinedown');
 });
 
 require __DIR__.'/admin.php';
@@ -440,13 +445,6 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTO
     Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
     Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
     Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class, 'saveAutographPath']);
-});
-
-Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
-    Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])->name('moulddown.index');
-    Route::post('/add/mould', [MouldDownController::class, 'addmould'])->name('addmould');
-    Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
-    Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name('addlinedown');
 });
 
 Route::get('/user/home', [UserHomeController::class, 'index'])->name('user');
