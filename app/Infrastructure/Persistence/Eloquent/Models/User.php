@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
+use App\Models\Specification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -38,6 +39,16 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return User::where('email', $this->email)->first()->role->name === 'SUPERADMIN';
+    }
+    
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function specification()
+    {
+        return $this->belongsTo(Specification::class);
     }
 }
   

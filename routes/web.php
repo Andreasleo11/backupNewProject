@@ -140,17 +140,47 @@ Route::middleware('auth')->group(function () {
     Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
     Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
     Route::post('/upload-daily-report', [EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
-});
 
-require __DIR__.'/admin.php';
+    // Computer Group
+    Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
+    Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
+    Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
+    Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
+    Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
+    Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
+    Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
+    Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
 
-Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
-    Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
+    Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
+    Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
+    Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
+    Route::get('masterinventory/detail/{id}', [MasterInventoryController::class, 'detail'])->name('masterinventory.detail');
+    Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
+    Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name('masterinventory.delete');
+    Route::post('masterinventory/generate/qr/{id}', [MasterInventoryController::class, 'generateQr'])->name('generate.hardware.qrcode');
+    Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
+    Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');
+    Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name('delete.type');
+    Route::get('/export-inventory', [MasterInventoryController::class, 'export'])->name('export.inventory');
+    Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
+    Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
+    Route::put('masterinventory/update/repairhistory/{id}', [MasterInventoryController::class, 'updateHistory'])->name('inventory.update');
+    Route::post('masterinventory/repairs', [MasterInventoryController::class, 'CreateRepair'])->name('repair.store');
+    Route::get('/items/types/{type}', [MasterInventoryController::class, 'getItems'])->name('items.get');
+    Route::get('/items/available', [MasterInventoryController::class, 'getAvailableItems']);
 
-    Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
-    Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
-    Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+    Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
+    Route::get('maintenanceInventoryReports/create/{id?}', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
+    Route::get('maintenanceInventoryReports/edit/{id}', [MaintenanceInventoryController::class, 'edit'])->name('maintenance.inventory.edit');
+    Route::put('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'update'])->name('maintenance.inventory.update');
+    Route::post('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'store'])->name('maintenance.inventory.store');
+    Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 
+    Route::get('/import-annual-leave-quota', [EmployeeMasterController::class, 'showImportForm'])->name('import.annual-leave-quota.form');
+    Route::post('/import-annual-leave-quota', [EmployeeMasterController::class, 'importAnnualLeaveQuota'])->name('import.annual-leave-quota');
+
+    Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
+    
     Route::get('/qaqc/reports', [QaqcReportController::class, 'index'])->name('qaqc.report.index');
     Route::get('/qaqc/report/{id}', [QaqcReportController::class, 'detail'])->name('qaqc.report.detail');
     Route::get('/qaqc/report/{reportId}/edit', ReportWizard::class)->name('qaqc.report.edit');
@@ -164,8 +194,21 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINES
     Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
     Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
     Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
+});
 
-    Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)->name('price-log.import')->middleware(['auth']);
+require __DIR__.'/admin.php';
+
+Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
+    Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
+
+    Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
+    Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
+    Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
+
+
+    Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
+        ->name('price-log.import')
+        ->middleware(['auth']);
 
     Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
@@ -194,8 +237,6 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTO
     Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
     Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
     Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class, 'saveAutographPath']);
-
-    Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name('listformadjust');
 });
 
 Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
@@ -273,7 +314,6 @@ Route::middleware(['checkDepartment:ACCOUNTING'])->group(function () {
 });
 
 Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
-
     Route::get('/production/capacity-forecast', [CapacityByForecastController::class, 'index'])->name('capacityforecastindex');
     Route::get('/production/capacity-line', [CapacityByForecastController::class, 'line'])->name('capacityforecastline');
     Route::get('/production/capacity-distribution', [CapacityByForecastController::class, 'distribution'])->name('capacityforecastdistribution');
@@ -375,14 +415,17 @@ Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
     Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name('finalresultassembly');
 });
 
-Route::middleware(['auth'])->prefix('verification-reports')->name('verification.')->group(function () {
-    Route::get('/', VerificationIndex::class)->name('index');
-    Route::get('/create', Wizard::class)->name('create');
-    // Route::get('/create2', VerificationEdit::class)->name('create2');
-    Route::get('/{report}/edit', Wizard::class)->name('edit');
-    // Route::get('/{report}/edit2', VerificationEdit::class)->name('edit2');
-    Route::get('/{report}', VerificationShow::class)->name('show');
-});
+Route::middleware(['auth'])
+    ->prefix('verification-reports')
+    ->name('verification.')
+    ->group(function () {
+        Route::get('/', VerificationIndex::class)->name('index');
+        Route::get('/create', Wizard::class)->name('create');
+        // Route::get('/create2', VerificationEdit::class)->name('create2');
+        Route::get('/{report}/edit', Wizard::class)->name('edit');
+        // Route::get('/{report}/edit2', VerificationEdit::class)->name('edit2');
+        Route::get('/{report}', VerificationShow::class)->name('show');
+    });
 
 Route::middleware(['auth', 'can:manage-approvals'])
     ->prefix('admin/approvals')
@@ -393,39 +436,17 @@ Route::middleware(['auth', 'can:manage-approvals'])
         Route::get('/rules/{templateId}/edit', RuleTemplatesEdit::class)->name('rules.edit');
     });
 
-Route::middleware([
-    'checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION',
-    'checkSessionId',
-])->group(function () {
+Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
     // FORM ADJUST SECITON
-    Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name(
-        'adjust.index',
-    );
-    Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name(
-        'save.rawmaterial',
-    );
-    Route::post('/fgwarehouse/save/adjust', [
-        AdjustFormQcController::class,
-        'savewarehouse',
-    ])->name('fgwarehousesave');
-    Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name(
-        'adjustview',
-    );
-    Route::post('/remark/detail/adjust', [
-        AdjustFormQcController::class,
-        'addremarkadjust',
-    ])->name('addremarkadjust');
-    Route::post('/save-autograph-path/{reportId}/{section}', [
-        AdjustFormQcController::class,
-        'saveAutographPath',
-    ]);
-
-    Route::get('listformadjust/all', [AdjustFormQcController::class, 'listformadjust'])->name(
-        'listformadjust',
-    );
+    Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
+    Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
+    Route::post('/fgwarehouse/save/adjust', [AdjustFormQcController::class, 'savewarehouse'])->name('fgwarehousesave');
+    Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
+    Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
+    Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class, 'saveAutographPath']);
 });
-Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
 
+Route::middleware(['checkDepartment:MAINTENANCE,PPIC'])->group(function () {
     Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])->name('moulddown.index');
     Route::post('/add/mould', [MouldDownController::class, 'addmould'])->name('addmould');
     Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
@@ -516,13 +537,6 @@ Route::put('projecttracker/{id}/accept', [ProjectTrackerController::class, 'upda
 
 Route::get('updatepage/index', [UpdateDailyController::class, 'index'])->name('indexupdatepage');
 Route::post('/processdailydata', [UpdateDailyController::class, 'update'])->name('updatedata');
-
-Route::get('/employeemaster/index', [EmployeeMasterController::class, 'index'])->name('index.employeesmaster');
-Route::post('/employeemaster/add', [EmployeeMasterController::class, 'addemployee'])->name('addemployee');
-Route::put('/edit/employee/{id}', [EmployeeMasterController::class, 'editemployee'])->name('editemployee');
-Route::delete('/delete/employee/{linecode}', [EmployeeMasterController::class, 'deleteemployee'])->name('deleteemployee');
-Route::get('/import-annual-leave-quota', [EmployeeMasterController::class, 'showImportForm'])->name('import.annual-leave-quota.form');
-Route::post('/import-annual-leave-quota', [EmployeeMasterController::class, 'importAnnualLeaveQuota'])->name('import.annual-leave-quota');
 
 Route::get('/evaluation/index', [EvaluationDataController::class, 'index'])->name('evaluation.index');
 Route::post('/processevaluationdata', [EvaluationDataController::class, 'update'])->name('UpdateEvaluation');
@@ -676,20 +690,6 @@ Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'
 
 Route::get('barcode/historytable', [BarcodeController::class, 'historybarcodelist'])->name('barcode.historytable');
 
-Route::get('mastertinta/index', [MasterTintaController::class, 'index'])->name('mastertinta.index');
-
-Route::get('request/index', [MasterTintaController::class, 'requestpageindex'])->name('testing.request');
-
-Route::get('mastertinta/transaction/list', [MasterTintaController::class, 'listtransaction'])->name('transaction.list');
-
-Route::post('/mastertinta/request/process', [MasterTintaController::class, 'requeststore'])->name('stockrequest.store');
-
-Route::get('mastertinta/transaction/index', [MasterTintaController::class, 'transactiontintaview'])->name('mastertinta.transaction.index');
-Route::post('mastertinta/transaction/process', [MasterTintaController::class, 'storetransaction'])->name('mastertinta.process');
-Route::get('/masterstock/get-items/{masterStockId}', [MasterTintaController::class, 'getItems']);
-
-Route::get('/stock/get-available-quantity/{stock_id}/{department_id}', [MasterTintaController::class, 'getAvailableQuantity']);
-
 Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
 Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
 Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
@@ -707,35 +707,6 @@ Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])-
 
 Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
 Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
-
-Route::get('masterinventory/index', [MasterInventoryController::class, 'index'])->name('masterinventory.index');
-Route::get('masterinventory/create', [MasterInventoryController::class, 'createpage'])->name('masterinventory.createpage');
-Route::post('masterinventory/store', [MasterInventoryController::class, 'store'])->name('masterinventory.store');
-Route::get('masterinventory/detail/{id}', [MasterInventoryController::class, 'detail'])->name('masterinventory.detail');
-Route::get('masterinventory/type', [MasterInventoryController::class, 'typeAdder'])->name('masterinventory.typeindex');
-Route::delete('/masterinventory/{id}', [MasterInventoryController::class, 'destroy'])->name('masterinventory.delete');
-
-Route::post('masterinventory/generate/qr/{id}', [MasterInventoryController::class, 'generateQr'])->name('generate.hardware.qrcode');
-
-// Route to handle adding new types
-Route::post('/add/hardware/type', [MasterInventoryController::class, 'addHardwareType'])->name('add.hardware.type');
-Route::post('/add/software/type', [MasterInventoryController::class, 'addSoftwareType'])->name('add.software.type');
-Route::delete('/delete/type', [MasterInventoryController::class, 'deleteType'])->name('delete.type');
-Route::get('/export-inventory', [MasterInventoryController::class, 'export'])->name('export.inventory');
-
-Route::get('masterinventory/{id}/edit', [MasterInventoryController::class, 'editpage'])->name('masterinventory.editpage');
-Route::put('masterinventory/{id}', [MasterInventoryController::class, 'update'])->name('masterinventory.update');
-Route::put('masterinventory/update/repairhistory/{id}', [MasterInventoryController::class, 'updateHistory'])->name('inventory.update');
-Route::post('masterinventory/repairs', [MasterInventoryController::class, 'CreateRepair'])->name('repair.store');
-Route::get('/items/types/{type}', [MasterInventoryController::class, 'getItems'])->name('items.get');
-Route::get('/items/available', [MasterInventoryController::class, 'getAvailableItems']);
-
-Route::get('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'index'])->name('maintenance.inventory.index');
-Route::get('maintenanceInventoryReports/create/{id?}', [MaintenanceInventoryController::class, 'create'])->name('maintenance.inventory.create');
-Route::get('maintenanceInventoryReports/edit/{id}', [MaintenanceInventoryController::class, 'edit'])->name('maintenance.inventory.edit');
-Route::put('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'update'])->name('maintenance.inventory.update');
-Route::post('maintenanceInventoryReports', [MaintenanceInventoryController::class, 'store'])->name('maintenance.inventory.store');
-Route::get('maintenanceInventoryReports/{id}', [MaintenanceInventoryController::class, 'show'])->name('maintenance.inventory.show');
 
 Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
 Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');

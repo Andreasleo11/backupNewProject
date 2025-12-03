@@ -23,20 +23,9 @@ class Sidebar extends Component
 
     public bool $deptHead = false;
 
-    // Route pattern maps
-    public array $adminPatterns = [
-        'admin.access-overview',
-        'admin.departments*',
-        // 'admin.specifications*',
-        'changeemail.page',
-        'pt.*',
-        'md.parts.import',
-    ];
-
     public array $computerPatterns = [
         'mastertinta.*',
         'masterinventory.*',
-        'index.employeesmaster',
         'maintenance.inventory.*',
         'masterinventory.typeindex',
     ];
@@ -82,8 +71,6 @@ class Sidebar extends Component
         'destination.*',
         'vehicles.*',
     ];
-
-    public array $stockMgmtPatterns = ['mastertinta.*'];
 
     public array $otherPatterns = [
         'director.pr.index',
@@ -136,7 +123,6 @@ class Sidebar extends Component
 
         // Default open state per group based on current route
         $this->groupOpen = [
-            'adminGroup' => request()->routeIs($this->adminPatterns),
             'computerGroup' => request()->routeIs($this->computerPatterns),
             'qualityGroup' => request()->routeIs($this->qualityPatterns),
             'productionGroup' => request()->routeIs($this->productionPatterns),
@@ -147,7 +133,6 @@ class Sidebar extends Component
             'accountingGroup' => request()->routeIs($this->accountingPatterns),
             'inventoryGroup' => request()->routeIs($this->inventoryPatterns),
             'storeGroup' => request()->routeIs($this->storePatterns),
-            'stockManagementGroup' => request()->routeIs($this->stockMgmtPatterns),
             'otherGroup' => request()->routeIs($this->otherPatterns),
             'employeeEvaluationGroup' => request()->routeIs($this->employeeEvalSubPatterns),
             'monthlyBudgetGroup' => request()->routeIs($this->monthlyBudgetSubPatterns),

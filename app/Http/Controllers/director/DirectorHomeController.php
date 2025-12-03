@@ -47,7 +47,7 @@ class DirectorHomeController extends Controller
         ];
 
         return $dataTable->render(
-            'director',
+            'director.home',
             compact(
                 'reportCounts',
                 'purchaseRequestCounts',

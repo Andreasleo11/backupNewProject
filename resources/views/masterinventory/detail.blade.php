@@ -1,391 +1,595 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
-
-    <div class="container">
-        <h1>Detail for Master Inventory</h1>
-
-        <div class="card mb-4">
-            <a href="{{ route('masterinventory.editpage', $data->id) }}" class="btn btn-warning">Edit</a>
-            <div class="card-header">
-                <h5>Master Inventory Details</h5>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
+         x-data="{ tab: 'hardware', repairModal: false }">
+        {{-- Header + actions --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">Master Inventory Detail</h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Ringkasan aset, hardware, software, dan riwayat perbaikan & maintenance.
+                </p>
             </div>
-            <div class="card-body">
-                <table class="table table-bordered">
-                    <tbody>
-                        <tr>
-                            <th>No Asset</th>
-                            <td>{{ $data->ip_address }}</td>
-                        </tr>
-                        <tr>
-                            <th>Username</th>
-                            <td>{{ $data->username }}</td>
-                        </tr>
-                        <tr>
-                            <th>Position Image</th>
-                            <td>
-                                @if ($data->position_image)
-                                    <a href="{{ asset('storage/' . $data->position_image) }}" data-fancybox="gallery"
-                                        data-caption="Position Image">
-                                        <img src="{{ asset('storage/' . $data->position_image) }}" alt="Position Image"
-                                            style="max-width: 200px; max-height: 100px;">
-                                    </a>
-                                @else
+
+            <div class="flex items-center gap-2">
+                <a href="{{ route('masterinventory.editpage', $data->id) }}"
+                   class="inline-flex items-center rounded-md bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1">
+                    Edit
+                </a>
+                <a href="{{ route('masterinventory.index') }}"
+                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    Back to list
+                </a>
+            </div>
+        </div>
+
+        {{-- Master inventory summary --}}
+        <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200 mb-6">
+            <div class="px-4 py-4 sm:px-6 sm:py-5">
+                <h2 class="text-sm font-semibold text-gray-900 mb-4">
+                    Master Inventory Details
+                </h2>
+
+                <div class="flex flex-col md:flex-row gap-6">
+                    {{-- Text info --}}
+                    <div class="flex-1">
+                        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                            <div>
+                                <dt class="font-medium text-gray-600">No Asset</dt>
+                                <dd class="mt-0.5 text-gray-900">{{ $data->ip_address }}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-medium text-gray-600">Username</dt>
+                                <dd class="mt-0.5 text-gray-900">{{ $data->username }}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-medium text-gray-600">Department</dt>
+                                <dd class="mt-0.5 text-gray-900">{{ $data->dept }}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-medium text-gray-600">Type</dt>
+                                <dd class="mt-0.5 text-gray-900">{{ $data->type }}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-medium text-gray-600">Tanggal Pembelian</dt>
+                                <dd class="mt-0.5 text-gray-900">{{ $data->purpose }}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-medium text-gray-600">Status</dt>
+                                <dd class="mt-0.5">
+                                    <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-800">
+                                        {{ $data->brand }}
+                                    </span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="font-medium text-gray-600">OS</dt>
+                                <dd class="mt-0.5 text-gray-900">{{ $data->os }}</dd>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <dt class="font-medium text-gray-600">Description</dt>
+                                <dd class="mt-0.5 text-gray-900">
+                                    {{ $data->description }}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    {{-- Position image --}}
+                    <div class="md:w-64">
+                        <div class="text-sm font-medium text-gray-600 mb-1">
+                            Position Image
+                        </div>
+                        <div class="border border-dashed border-gray-200 rounded-md p-2 flex items-center justify-center bg-slate-50">
+                            @if ($data->position_image)
+                                <a href="{{ asset('storage/' . $data->position_image) }}"
+                                   data-fancybox="gallery"
+                                   data-caption="Position Image"
+                                   class="block">
+                                    <img src="{{ asset('storage/' . $data->position_image) }}"
+                                         alt="Position Image"
+                                         class="max-h-40 w-auto rounded-md object-contain">
+                                </a>
+                            @else
+                                <p class="text-xs text-gray-400 text-center py-4">
                                     No image available
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Department</th>
-                            <td>{{ $data->dept }}</td>
-                        </tr>
-                        <tr>
-                            <th>Type</th>
-                            <td>{{ $data->type }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Pembelian</th>
-                            <td>{{ $data->purpose }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>{{ $data->brand }}</td>
-                        </tr>
-                        <tr>
-                            <th>OS</th>
-                            <td>{{ $data->os }}</td>
-                        </tr>
-                        <tr>
-                            <th>Description</th>
-                            <td>{{ $data->description }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
-        <ul class="nav nav-tabs" id="inventoryTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="hardware-tab" data-toggle="tab" href="#hardware" role="tab"
-                    aria-controls="hardware" aria-selected="true">Hardware</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="software-tab" data-toggle="tab" href="#software" role="tab"
-                    aria-controls="software" aria-selected="false">Software</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="repair-tab" data-toggle="tab" href="#repair" role="tab"
-                    aria-controls="repair-history" aria-selected="false">Repair History</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="maint-tab" data-toggle="tab" href="#maint" role="tab" aria-controls="maint"
-                    aria-selected="false">Maintenance History</a>
-            </li>
-        </ul>
-
-        <!-- Tab Contents -->
-        <div class="tab-content" id="inventoryTabsContent">
-            <!-- Hardware Tab -->
-            <div class="tab-pane fade show active" id="hardware" role="tabpanel" aria-labelledby="hardware-tab">
-                <h2>Hardware Details</h2>
-                @if ($data->hardwares->isEmpty())
-                    <p>No hardware details available.</p>
-                @else
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Nomor Inventaris</th>
-                                <th>Hardware Name</th>
-                                <th>Tanggal Pembelian</th>
-                                <th>Last Update</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($data->hardwares as $hardware)
-                                <tr>
-                                    <td>{{ $hardware->hardwareType->name ?? 'Unknown Type' }}</td>
-                                    <td>{{ $hardware->brand }}</td>
-                                    <td>{{ $hardware->hardware_name }}</td>
-                                    <td>{{ $hardware->remark }}</td>
-                                    <td>{{ $hardware->updated_at->format('Y-m-d') }}</td>
-                                    <td>
-                                        <!-- Button to generate QR Code -->
-                                        <form action="{{ route('generate.hardware.qrcode', $hardware->id) }}"
-                                            method="POST">
-                                            @csrf
-                                            <button type="submit" class="btn btn-primary">
-                                                Generate QR Code
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
+        {{-- Tabs --}}
+        <div>
+            <div class="border-b border-gray-200 mb-3">
+                <nav class="-mb-px flex flex-wrap gap-2" aria-label="Tabs">
+                    <button type="button"
+                            @click="tab = 'hardware'"
+                            :class="tab === 'hardware'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium">
+                        Hardware
+                    </button>
+                    <button type="button"
+                            @click="tab = 'software'"
+                            :class="tab === 'software'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium">
+                        Software
+                    </button>
+                    <button type="button"
+                            @click="tab = 'repair'"
+                            :class="tab === 'repair'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium">
+                        Repair History
+                    </button>
+                    <button type="button"
+                            @click="tab = 'maint'"
+                            :class="tab === 'maint'
+                                ? 'border-indigo-500 text-indigo-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium">
+                        Maintenance History
+                    </button>
+                </nav>
             </div>
 
-            <!-- Software Tab -->
-            <div class="tab-pane fade" id="software" role="tabpanel" aria-labelledby="software-tab">
-                <h2>Software Details</h2>
-                @if ($data->softwares->isEmpty())
-                    <p>No software details available.</p>
-                @else
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Software Brand</th>
-                                <th>Software Name</th>
-                                <th>License</th>
-                                <th>Tanggal Pembelian</th>
-                                <th>Last Update</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($data->softwares as $software)
-                                <tr>
-                                    <td>{{ $software->softwareType->name ?? 'Unknown Type' }}</td>
-                                    <td>{{ $software->software_brand }}</td>
-                                    <td>{{ $software->software_name }}</td>
-                                    <td>{{ $software->license }}</td>
-                                    <td>{{ $software->remark }}</td>
-                                    <td>{{ $software->updated_at->format('Y-m-d') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
+            {{-- Hardware Tab --}}
+            <div x-show="tab === 'hardware'" x-cloak>
+                <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200">
+                    <div class="px-4 py-4 sm:px-6 sm:py-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Hardware Details</h2>
+                        </div>
+
+                        @if ($data->hardwares->isEmpty())
+                            <p class="text-sm text-gray-500">No hardware details available.</p>
+                        @else
+                            <div class="overflow-x-auto mt-2">
+                                <table class="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Type</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Nomor Inventaris</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Hardware Name</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Tanggal Pembelian</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Last Update</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @foreach ($data->hardwares as $hardware)
+                                            <tr>
+                                                <td class="px-3 py-2 text-gray-900">
+                                                    {{ $hardware->hardwareType->name ?? 'Unknown Type' }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $hardware->brand }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $hardware->hardware_name }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $hardware->remark }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-500">
+                                                    {{ $hardware->updated_at->format('Y-m-d') }}
+                                                </td>
+                                                <td class="px-3 py-2">
+                                                    <form action="{{ route('generate.hardware.qrcode', $hardware->id) }}"
+                                                          method="POST">
+                                                        @csrf
+                                                        <button type="submit"
+                                                                class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                                            Generate QR Code
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
 
-            <div class="tab-pane fade" id="repair" role="tabpanel" aria-labelledby="repair-tab">
-                <h2>Repair History</h2>
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#repairHistoryModal">
-                    Create Repair History
-                </button>
+            {{-- Software Tab --}}
+            <div x-show="tab === 'software'" x-cloak>
+                <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200">
+                    <div class="px-4 py-4 sm:px-6 sm:py-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Software Details</h2>
+                        </div>
 
-                <!-- Repair History Table -->
-                <!-- Replace this comment with your table or message for repair history -->
-                <table class="table table-striped mt-3">
-                    <thead>
-                        <tr>
-                            <th>Master ID</th>
-                            <th>Request Name</th>
-                            <th>Action</th>
-                            <th>Type</th>
-                            <th>Old Part</th>
-                            <th>Item Type</th>
-                            <th>Item Brand</th>
-                            <th>Item Name</th>
-                            <th>Action Date</th>
-                            <th>Tanggal Pembelian</th>
-                            <!-- <th>Created At</th>
-                                                                        <th>Updated At</th> -->
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($processedHistories as $history)
-                            <tr>
-                                <td>{{ $history->master_id }}</td>
-                                <td>{{ $history->request_name }}</td>
-                                <td>{{ $history->action }}</td>
-                                <td>{{ $history->type }}</td>
-                                <td>{{ $history->old_part }}</td>
-                                <td>
-                                    @if ($history->type === 'hardware')
-                                        {{ $history->hardwareType->name ?? 'N/A' }}
-                                    @elseif ($history->type === 'software')
-                                        {{ $history->softwareType->name ?? 'N/A' }}
-                                    @else
-                                        N/A
-                                    @endif
-                                </td>
-                                <td>{{ $history->item_brand }}</td>
-                                <td>{{ $history->item_name }}</td>
-                                <td>{{ $history->action_date }}</td>
-                                <td>{{ $history->remark }}</td>
-                                <!-- <td>{{ $history->created_at ? $history->created_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
-                                                                            <td>{{ $history->updated_at ? $history->updated_at->format('Y-m-d H:i:s') : 'N/A' }}</td> -->
-                                <td>
-                                    @if ($history->action_date)
-                                        <!-- Show text with styling if action_date is filled -->
-                                        <span class="text-success">Finished</span>
-                                    @else
-                                        <!-- Show button if action_date is not filled -->
-                                        <form action="{{ route('inventory.update', $history->id) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <button type="submit" class="btn btn-warning">Update/Sync</button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="13" class="text-center">No data available</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        @if ($data->softwares->isEmpty())
+                            <p class="text-sm text-gray-500">No software details available.</p>
+                        @else
+                            <div class="overflow-x-auto mt-2">
+                                <table class="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Type</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Software Brand</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Software Name</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">License</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Tanggal Pembelian</th>
+                                            <th class="px-3 py-2 text-left font-semibold text-gray-600">Last Update</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-100">
+                                        @foreach ($data->softwares as $software)
+                                            <tr>
+                                                <td class="px-3 py-2 text-gray-900">
+                                                    {{ $software->softwareType->name ?? 'Unknown Type' }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $software->software_brand }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $software->software_name }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $software->license }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-700">
+                                                    {{ $software->remark }}
+                                                </td>
+                                                <td class="px-3 py-2 text-gray-500">
+                                                    {{ $software->updated_at->format('Y-m-d') }}
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
 
-            <div class="tab-pane fade" id="maint" role="tabpanel" aria-labelledby="maint-tab">
-                <h2>Maintenance History</h2>
+            {{-- Repair History Tab --}}
+            <div x-show="tab === 'repair'" x-cloak>
+                <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200">
+                    <div class="px-4 py-4 sm:px-6 sm:py-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Repair History</h2>
+                            <button type="button"
+                                    @click="repairModal = true"
+                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                Create Repair History
+                            </button>
+                        </div>
 
-                <!-- Repair History Table -->
-                <!-- Replace this comment with your table or message for repair history -->
-                <table class="table table-striped mt-3">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nomor Dokumen</th>
-                            <th>Username</th>
-                            <th>Periode</th>
-                            <th>Created Date</th>
-                            <th>Revision Date</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                        <div class="overflow-x-auto mt-2">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Master ID</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Request Name</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Action</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Type</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Old Part</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Item Type</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Item Brand</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Item Name</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Action Date</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Tanggal Pembelian</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @forelse ($processedHistories as $history)
+                                        <tr>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->master_id }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->request_name }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->action }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->type }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->old_part }}</td>
+                                            <td class="px-3 py-2 text-gray-700">
+                                                @if ($history->type === 'hardware')
+                                                    {{ $history->hardwareType->name ?? 'N/A' }}
+                                                @elseif ($history->type === 'software')
+                                                    {{ $history->softwareType->name ?? 'N/A' }}
+                                                @else
+                                                    N/A
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->item_brand }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->item_name }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->action_date }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->remark }}</td>
+                                            <td class="px-3 py-2">
+                                                @if ($history->action_date)
+                                                    <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                                                        Finished
+                                                    </span>
+                                                @else
+                                                    <form action="{{ route('inventory.update', $history->id) }}"
+                                                          method="POST">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="submit"
+                                                                class="inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                                                            Update / Sync
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="11"
+                                                class="px-3 py-4 text-center text-xs text-gray-500">
+                                                No data available
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        @forelse ($inventoryHistories as $data)
-                            <tr>
-                                <td>{{ $data->id }}</td>
-                                <td>{{ $data->no_dokumen }}</td>
-                                <td>{{ $data->master->username }}</td>
-                                <td>{{ $data->periode_caturwulan }}</td>
-                                <td>{{ $data->created_at }}</td>
-                                <td>{{ $data->revision_date }}</td>
-                                <td>
-                                    <a href="{{ route('maintenance.inventory.show', $data->id) }}"
-                                        class="btn btn-secondary">Detail</a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="13" class="text-center">No data available</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            {{-- Maintenance History Tab --}}
+            <div x-show="tab === 'maint'" x-cloak>
+                <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200">
+                    <div class="px-4 py-4 sm:px-6 sm:py-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Maintenance History</h2>
+                        </div>
+
+                        <div class="overflow-x-auto mt-2">
+                            <table class="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">ID</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Nomor Dokumen</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Username</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Periode</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Created Date</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Revision Date</th>
+                                        <th class="px-3 py-2 text-left font-semibold text-gray-600">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @forelse ($inventoryHistories as $history)
+                                        <tr>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->id }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->no_dokumen }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->master->username }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->periode_caturwulan }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->created_at }}</td>
+                                            <td class="px-3 py-2 text-gray-700">{{ $history->revision_date }}</td>
+                                            <td class="px-3 py-2">
+                                                <a href="{{ route('maintenance.inventory.show', $history->id) }}"
+                                                   class="inline-flex items-center rounded-md bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-600">
+                                                    Detail
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="7"
+                                                class="px-3 py-4 text-center text-xs text-gray-500">
+                                                No data available
+                                            </td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="modal fade" id="repairHistoryModal" tabindex="-1" role="dialog" aria-labelledby="repairHistoryModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="repairHistoryModalLabel">Create Repair History</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+        {{-- Repair History Modal (Tailwind) --}}
+        <div x-show="repairModal"
+             x-cloak
+             class="fixed inset-0 z-40 flex items-center justify-center px-4 py-6 bg-slate-900/40">
+            <div class="relative w-full max-w-lg rounded-lg bg-white shadow-lg ring-1 ring-gray-200">
+                <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3 sm:px-6">
+                    <h3 class="text-sm font-semibold text-gray-900">
+                        Create Repair History
+                    </h3>
+                    <button type="button"
+                            @click="repairModal = false"
+                            class="inline-flex items-center rounded-md p-1 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <span class="sr-only">Close</span>
+                        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 
+                                  1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 
+                                  1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 
+                                  10 4.293 5.707a1 1 0 010-1.414z"
+                                  clip-rule="evenodd" />
+                        </svg>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <form action="{{ route('repair.store') }}" method="POST">
+
+                <div class="px-4 py-4 sm:px-6 sm:py-5 max-h-[70vh] overflow-y-auto">
+                    <form action="{{ route('repair.store') }}" method="POST" class="space-y-4">
                         @csrf
                         <input type="hidden" name="master_id" value="{{ $data->id }}">
 
-                        <!-- Request Name -->
-                        <div class="form-group">
-                            <label for="requestName">Request Name</label>
-                            <input type="text" class="form-control" id="requestName" name="requestName" required>
+                        {{-- Request Name --}}
+                        <div>
+                            <label for="requestName" class="block text-sm font-medium text-gray-700">
+                                Request Name
+                            </label>
+                            <input type="text"
+                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                          focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                   id="requestName"
+                                   name="requestName"
+                                   required>
                         </div>
 
-                        <!-- Type -->
-                        <div class="form-group">
-                            <label for="type">Type</label>
-                            <select class="form-control" id="type" name="type">
-                                <option value="">Select Type</option>
-                                <option value="hardware">Hardware</option>
-                                <option value="software">Software</option>
-                            </select>
+                        {{-- Type --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="type" class="block text-sm font-medium text-gray-700">
+                                    Type
+                                </label>
+                                <select class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                               focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                        id="type"
+                                        name="type">
+                                    <option value="">Select Type</option>
+                                    <option value="hardware">Hardware</option>
+                                    <option value="software">Software</option>
+                                </select>
+                            </div>
+
+                            {{-- Action --}}
+                            <div>
+                                <label for="action" class="block text-sm font-medium text-gray-700">
+                                    Action
+                                </label>
+                                <select class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                               focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                        id="action"
+                                        name="action"
+                                        required>
+                                    <option value="">Select Action</option>
+                                    <option value="replacement">Replacement</option>
+                                    <option value="installation">Installation</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Action -->
-                        <div class="form-group">
-                            <label for="action">Action</label>
-                            <select class="form-control" id="action" name="action" required>
-                                <option value="">Select Action</option>
-                                <option value="replacement">Replacement</option>
-                                <option value="installation">Installation</option>
-                            </select>
-                        </div>
-
-                        <!-- Replacement Fields -->
+                        {{-- Replacement Fields --}}
                         <div id="replacementFields" style="display: none;">
-                            <div class="form-group">
-                                <label for="oldPart">Old Part</label>
-                                <select class="form-control" id="oldPart" name="oldPart">
-                                    <option value="">Select Item</option>
-                                </select>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="oldPart" class="block text-sm font-medium text-gray-700">
+                                        Old Part
+                                    </label>
+                                    <select class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                                   focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                            id="oldPart"
+                                            name="oldPart">
+                                        <option value="">Select Item</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="itemType" class="block text-sm font-medium text-gray-700">
+                                        Item Type
+                                    </label>
+                                    <select class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                                   focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                            id="itemType"
+                                            name="itemType">
+                                        <option value="">Select Item Type</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="itemType">Item Type</label>
-                                <select class="form-control" id="itemType" name="itemType">
-                                    <option value="">Select Item Type</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="itemBrand">Item Brand</label>
-                                <input type="text" class="form-control" id="itemBrand" name="itemBrand">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="itemName">Item Name</label>
-                                <input type="text" class="form-control" id="itemName" name="itemName">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label for="itemBrand" class="block text-sm font-medium text-gray-700">
+                                        Item Brand
+                                    </label>
+                                    <input type="text"
+                                           class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                                  focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                           id="itemBrand"
+                                           name="itemBrand">
+                                </div>
+                                <div>
+                                    <label for="itemName" class="block text-sm font-medium text-gray-700">
+                                        Item Name
+                                    </label>
+                                    <input type="text"
+                                           class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                                  focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                           id="itemName"
+                                           name="itemName">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Installation Fields -->
+                        {{-- Installation Fields --}}
                         <div id="installationFields" style="display: none;">
-                            <div class="form-group">
-                                <label for="itemTypeInstallation">Item Type</label>
-                                <select class="form-control" id="itemTypeInstallation" name="itemTypeInstallation">
-                                    <option value="">Select Item Type</option>
-                                </select>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="itemTypeInstallation" class="block text-sm font-medium text-gray-700">
+                                        Item Type
+                                    </label>
+                                    <select class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                                   focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                            id="itemTypeInstallation"
+                                            name="itemTypeInstallation">
+                                        <option value="">Select Item Type</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="itemBrandInstallation" class="block text-sm font-medium text-gray-700">
+                                        Item Brand
+                                    </label>
+                                    <input type="text"
+                                           class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                                  focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                           id="itemBrandInstallation"
+                                           name="itemBrandInstallation">
+                                </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="itemBrandInstallation">Item Brand</label>
-                                <input type="text" class="form-control" id="itemBrandInstallation"
-                                    name="itemBrandInstallation">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="itemNameInstallation">Item Name</label>
-                                <input type="text" class="form-control" id="itemNameInstallation"
-                                    name="itemNameInstallation">
+                            <div class="mt-3">
+                                <label for="itemNameInstallation" class="block text-sm font-medium text-gray-700">
+                                    Item Name
+                                </label>
+                                <input type="text"
+                                       class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                              focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                       id="itemNameInstallation"
+                                       name="itemNameInstallation">
                             </div>
                         </div>
 
-                        <!-- Remark -->
-                        <div class="form-group">
-                            <label for="remark">Tanggal Pembelian (YYYY-MM-DD) </label>
-                            <input type="text" class="form-control" id="remark" name="remark">
+                        {{-- Remark --}}
+                        <div>
+                            <label for="remark" class="block text-sm font-medium text-gray-700">
+                                Tanggal Pembelian (YYYY-MM-DD)
+                            </label>
+                            <input type="text"
+                                   class="mt-1 block w-full rounded-md border-gray-300 bg-slate-50 px-3 py-2 text-sm shadow-sm
+                                          focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                   id="remark"
+                                   name="remark">
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Save Repair History</button>
+                        <div class="flex justify-end gap-2 pt-1">
+                            <button type="button"
+                                    @click="repairModal = false"
+                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                Save Repair History
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+@endsection
 
-    <!-- Include jQuery (Bootstrap requires it) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-
-    <!-- Include Bootstrap JavaScript -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
-    <script type="module">
+@push('scripts')
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const actionSelect = document.getElementById('action');
             const replacementFields = document.getElementById('replacementFields');
@@ -393,19 +597,23 @@
             const oldPartSelect = document.getElementById('oldPart');
             const itemTypeSelect = document.getElementById('itemType');
             const itemTypeInstallationSelect = document.getElementById('itemTypeInstallation');
-            const masterId = document.querySelector('input[name="master_id"]').value;
+            const masterIdInput = document.querySelector('input[name="master_id"]');
+            const masterId = masterIdInput ? masterIdInput.value : null;
+
+            if (!actionSelect || !masterId) return;
 
             actionSelect.addEventListener('change', function() {
                 const action = this.value;
+
                 if (action === 'replacement') {
                     replacementFields.style.display = 'block';
                     installationFields.style.display = 'none';
                     loadOldParts();
-                    loadItemTypes(); // Load old parts for replacement
+                    loadItemTypes();
                 } else if (action === 'installation') {
                     replacementFields.style.display = 'none';
                     installationFields.style.display = 'block';
-                    loadItemTypesInstallation(); // Load item types for installation
+                    loadItemTypesInstallation();
                 } else {
                     replacementFields.style.display = 'none';
                     installationFields.style.display = 'none';
@@ -414,14 +622,13 @@
 
             function loadOldParts() {
                 const type = document.getElementById('type').value;
-                if (type) {
-                    fetch(`/items/available?type=${type}&master_id=${masterId}`)
+                if (type && masterId) {
+                    fetch(`/items/available?type=${encodeURIComponent(type)}&master_id=${encodeURIComponent(masterId)}`)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data);
-                            oldPartSelect.innerHTML = `<option value="">Select Item</option>` + data.map(
-                                item =>
-                                `<option value="${item.name}">${item.name}</option>`).join('');
+                            oldPartSelect.innerHTML =
+                                `<option value="">Select Item</option>` +
+                                data.map(item => `<option value="${item.name}">${item.name}</option>`).join('');
                         })
                         .catch(error => console.error('Error fetching old parts:', error));
                 }
@@ -430,13 +637,12 @@
             function loadItemTypes() {
                 const type = document.getElementById('type').value;
                 if (type) {
-                    fetch(`/items/types/${type}`)
+                    fetch(`/items/types/${encodeURIComponent(type)}`)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data);
-                            itemTypeSelect.innerHTML = `<option value="">Select Item Type</option>` + data
-                                .map(
-                                    item => `<option value="${item.id}">${item.name}</option>`).join('');
+                            itemTypeSelect.innerHTML =
+                                `<option value="">Select Item Type</option>` +
+                                data.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
                         })
                         .catch(error => console.error('Error fetching item types:', error));
                 }
@@ -445,13 +651,12 @@
             function loadItemTypesInstallation() {
                 const type = document.getElementById('type').value;
                 if (type) {
-                    fetch(`/items/types/${type}`)
+                    fetch(`/items/types/${encodeURIComponent(type)}`)
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data);
                             itemTypeInstallationSelect.innerHTML =
-                                `<option value="">Select Item Type</option>` + data.map(item =>
-                                    `<option value="${item.id}">${item.name}</option>`).join('');
+                                `<option value="">Select Item Type</option>` +
+                                data.map(item => `<option value="${item.id}">${item.name}</option>`).join('');
                         })
                         .catch(error => console.error('Error fetching item types for installation:', error));
                 }
@@ -467,10 +672,10 @@
                 }
             });
 
-            Fancybox.bind("[data-fancybox]", {
-                // Your options here
-            });
+            // Fancybox (kalau sudah include di layout)
+            if (window.Fancybox) {
+                Fancybox.bind("[data-fancybox]", {});
+            }
         });
     </script>
-
-@endsection
+@endpush

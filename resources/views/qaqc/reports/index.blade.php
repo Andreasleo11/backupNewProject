@@ -1,117 +1,167 @@
-@extends('layouts.app')
-{{-- @push('extraCss')
-    <link rel="stylesheet" href="{{ asset('css/toast.css') }} ">
-@endpush --}}
+@extends('new.layouts.app')
+
 @section('content')
-    {{-- <button onclick="showToast(successMsg)">Success</button>
-    <button onclick="showToast(errorMsg)">Error</button>
-    <button onclick="showToast(invalidMsg)">Invalid</button>
-    <div id="toastBox"></div> --}}
+    @php
+        $currentUser = auth()->user();
+    @endphp
 
-    <section class="header">
-        <div class="row">
-            <div class="col">
-                <h1 class="h1">Verification Reports</h1>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6" x-data="{ openDeleteId: null, openLockId: null }">
+        {{-- Header + actions --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+                <h1 class="text-2xl font-semibold text-gray-900">Verification Reports</h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Daftar laporan QA/QC harian. Gunakan filter bulan dan ekspor ke Excel bila diperlukan.
+                </p>
             </div>
-            <div class="col-auto">
-                <div class="row">
-                    <div class="col-auto mb-2">
-                        <a href="{{ route('qaqc.summarymonth') }}" class="btn btn-outline-primary">
-                            Summary Per Month
-                        </a>
-                    </div>
-                    <div class="col-auto mb-2">
-                        <a href="{{ route('export.formadjusts') }}" class="btn btn-outline-primary">
-                            Export all Form Adjust To Excel
-                        </a>
-                    </div>
-                    <div class="col-auto mb-2">
-                        <a href="{{ route('export.reports') }}" class="btn btn-outline-primary">
-                            Export All To Excel
-                        </a>
 
-                    </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('qaqc.summarymonth') }}"
+                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    Summary Per Month
+                </a>
 
-                    @php
-                        $currentUser = Auth::user();
-                    @endphp
-                    @if ($currentUser->department->name == 'QC' && $currentUser->specification->name == 'INSPECTOR')
-                        <div class="col-auto mb-2">
-                            <a href="{{ route('qaqc.report.create') }}" class="btn btn-primary">
-                                <i class='bx bx-plus'></i> Add <span class="d-none d-sm-inline">Report</span>
-                            </a>
-                        </div>
-                    @endif
-                </div>
+                <a href="{{ route('export.formadjusts') }}"
+                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    Export Form Adjust
+                </a>
+
+                <a href="{{ route('export.reports') }}"
+                   class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                    Export All
+                </a>
+
+                @if ($currentUser->department->name === 'QC' && $currentUser->specification->name === 'INSPECTOR')
+                    <a href="{{ route('qaqc.report.create') }}"
+                       class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                        <i class='bx bx-plus mr-1 text-base'></i>
+                        <span>Add Report</span>
+                    </a>
+                @endif
             </div>
         </div>
-    </section>
 
-    <section>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('qaqc') }}">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Reports</li>
+        {{-- Breadcrumb --}}
+        <nav class="mb-4" aria-label="breadcrumb">
+            <ol class="flex items-center gap-1 text-sm text-gray-500">
+                <li>
+                    <a href="{{ route('qaqc') }}"
+                       class="font-medium text-gray-600 hover:text-indigo-600">
+                        Home
+                    </a>
+                </li>
+                <li>
+                    <svg class="w-4 h-4 mx-1 text-gray-400" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                </li>
+                <li class="font-medium text-gray-900">
+                    Reports
+                </li>
             </ol>
         </nav>
-    </section>
 
-    @if ($message = Session::get('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ $message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
+        {{-- Main card --}}
+        <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-200">
+            <div class="px-4 py-4 sm:px-6 sm:py-5">
+                {{-- Filter bar --}}
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-2 text-sm text-gray-700">
+                        <span class="font-medium">Filter by month</span>
+                        <span class="hidden sm:inline text-gray-400">|</span>
+                        <span class="text-xs sm:text-sm text-gray-400">
+                            Format: <span class="font-mono">mm-yyyy</span>
+                        </span>
+                    </div>
 
-    <div class="row">
-        <div class="col-md-3">
-
-        </div>
-    </div>
-    <div class="card mt-3">
-        <div class="card-body">
-            <div class="row d-flex mb-3 align-items-center justify-content-end">
-                Filter by month
-                <div class="col-auto">
-                    <input type="text" id="monthPicker" class="form-control" placeholder="Select Month">
+                    <div class="flex items-center gap-2">
+                        <div class="relative">
+                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 
+                                             2v9a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 
+                                             00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 
+                                             00-1-1zM4 8h12v7H4V8z" />
+                                </svg>
+                            </div>
+                            <input type="text"
+                                   id="monthPicker"
+                                   class="block w-40 sm:w-48 rounded-md border-gray-300 bg-slate-50 pl-9 pr-3 py-2 text-xs sm:text-sm shadow-sm
+                                          focus:bg-white focus:border-indigo-500 focus:ring-indigo-500"
+                                   placeholder="Select month">
+                        </div>
+                        <button type="button"
+                                id="clearMonth"
+                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-300">
+                            Reset
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="table-responsive">
-                {{ $dataTable->table() }}
+
+                {{-- Table --}}
+                <div class="overflow-x-auto">
+                    {{ $dataTable->table(['class' => 'table table-striped table-bordered w-full text-sm align-middle']) }}
+                </div>
             </div>
         </div>
     </div>
 @endsection
 
-@push('extraJs')
+@push('scripts')
     {{ $dataTable->scripts() }}
 
     <script type="module">
-        // Initialize the month picker
-        $('#monthPicker').datepicker({
-            format: "mm-yyyy",
-            startView: "months",
-            minViewMode: "months",
-            autoclose: true
-        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const $monthPicker = $('#monthPicker');
+            const tableId = 'vqcreports-table';
 
-        // Reload DataTable on month change
-        $('#monthPicker').on('change', function() {
-            window.LaravelDataTables["vqcreports-table"].draw();
-        });
+            if ($monthPicker.length) {
+                // Bootstrap Datepicker month picker
+                $monthPicker.datepicker({
+                    format: 'mm-yyyy',
+                    startView: 'months',
+                    minViewMode: 'months',
+                    autoclose: true
+                });
 
-        // Extend DataTable with month filter
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var selectedMonth = $('#monthPicker').val();
-                if (!selectedMonth) return true; // Skip filter if no month is selected
+                // Trigger reload on change
+                $monthPicker.on('change', function() {
+                    if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                        window.LaravelDataTables[tableId].draw();
+                    }
+                });
+            }
 
-                var recDate = data[3]; // Ensure this matches the 'rec_date' column index
-                var date = new Date(recDate);
-                var month = ('0' + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear();
+            // Clear month filter
+            $('#clearMonth').on('click', function() {
+                $monthPicker.val('');
+                if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                    window.LaravelDataTables[tableId].draw();
+                }
+            });
+
+            // DataTables custom month filter
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                // Pastikan hanya apply ke table ini
+                if (settings.sTableId !== tableId) {
+                    return true;
+                }
+
+                const selectedMonth = $monthPicker.val();
+                if (!selectedMonth) return true; // jika kosong, skip filter
+
+                // Sesuaikan index ini dengan kolom rec_date di DataTable-mu
+                const recDate = data[3]; // example: "2025-11-29"
+                if (!recDate) return true;
+
+                const d = new Date(recDate);
+                if (isNaN(d.getTime())) return true; // kalau parse gagal, jangan di-drop
+
+                const month = ('0' + (d.getMonth() + 1)).slice(-2) + '-' + d.getFullYear();
 
                 return month === selectedMonth;
-            }
-        );
+            });
+        });
     </script>
 @endpush

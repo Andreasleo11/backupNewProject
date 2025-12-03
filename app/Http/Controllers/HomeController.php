@@ -22,14 +22,13 @@ class HomeController extends Controller
     public function index()
     {
         $user = auth()->user();
+        // return view('admin.home');
 
-        return view('admin.home');
-
-        if ($user->role_id == 1) {
+        if ($user->hasRole('admin')) {
             return view('admin.home');
-        } elseif ($user->specification->name === 'DIRECTOR') {
-            return redirect()->intended(route('director'));
-        } elseif ($user->role_id == 2) {
+        } elseif ($user->hasRole('director')) {
+            return redirect()->intended(route('director'));            
+        } else {
             $department = $user->department->name;
 
             if ($department === 'QC' || $department === 'QA') {
@@ -41,10 +40,7 @@ class HomeController extends Controller
             } elseif($department === 'PE') {
                 return redirect()->route('pe');
             }
-
             return view('home');
-        } else {
-            return view('welcome');
         }
     }
 }

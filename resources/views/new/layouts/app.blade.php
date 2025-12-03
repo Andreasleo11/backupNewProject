@@ -17,6 +17,8 @@
     {{-- Tailwind CDN --}}
     <script src="https://cdn.tailwindcss.com"></script>
 
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+
     {{-- Livewire styles --}}
     @livewireStyles
 

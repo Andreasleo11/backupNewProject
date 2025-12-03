@@ -1,33 +1,70 @@
 @php
-    $hoursDifference = Date::now()->diffInHours($report->rejected_at);
+    use Illuminate\Support\Facades\Date;
+
+    $hoursDifference = $report->rejected_at
+        ? Date::now()->diffInHours($report->rejected_at)
+        : null;
 @endphp
+
 @if ($report->is_approve === 1)
-    <span class="badge text-bg-success px-3 py-2 fs-6">APPROVED</span>
+    {{-- APPROVED --}}
+    <x-status-pill variant="success">
+        APPROVED
+    </x-status-pill>
+
 @elseif($report->is_approve === 0)
-    <span class="badge text-bg-danger px-3 py-2 fs-6">REJECTED</span>
+    {{-- REJECTED --}}
+    <x-status-pill variant="danger">
+        REJECTED
+    </x-status-pill>
+
     @if ($report->is_locked)
-        <span class="badge text-bg-dark py-2 fs-6">
-            <i class='bx bxs-lock-alt'></i>
+        {{-- Lock icon kecil di samping --}}
+        <span
+            class="ml-1 inline-flex h-7 w-7 items-center justify-center 
+                   rounded-full bg-slate-800 text-slate-50 text-xs">
+            <i class='bx bxs-lock-alt text-[0.8rem]'></i>
         </span>
     @endif
-@elseif($report->rejected_at != null && $hoursDifference < 24)
+
+@elseif($report->rejected_at && $hoursDifference !== null && $hoursDifference < 24)
     @if ($report->autograph_3 != null)
-        <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
+        {{-- Revisi sudah di-approve atasan, tunggu final approval --}}
+        <x-status-pill variant="warning">
+            WAITING ON APPROVAL
+        </x-status-pill>
     @else
-        <span class="badge text-bg-secondary px-3 py-2 fs-6">REVISION</span>
+        {{-- Status revisi --}}
+        <x-status-pill variant="neutral">
+            REVISION
+        </x-status-pill>
+
         @if ($report->has_been_emailed)
-            <span class="badge text-bg-secondary py-2 fs-6">
-                <i class='bx bx-mail-send'></i>
+            <span
+                class="ml-1 inline-flex h-7 w-7 items-center justify-center 
+                       rounded-full bg-slate-100 text-slate-500">
+                <i class='bx bx-mail-send text-[0.9rem]'></i>
             </span>
         @endif
     @endif
+
 @elseif(($report->autograph_1 || $report->autograph_2) && $report->autograph_3)
-    <span class="badge text-bg-warning px-3 py-2 fs-6">WAITING ON APPROVAL</span>
+    {{-- Sudah ada tanda tangan, menunggu approve final --}}
+    <x-status-pill variant="warning">
+        WAITING ON APPROVAL
+    </x-status-pill>
+
 @else
-    <span class="badge text-bg-secondary px-3 py-2 fs-6">WAITING SIGNATURE</span>
+    {{-- Menunggu tanda tangan awal --}}
+    <x-status-pill variant="neutral">
+        WAITING SIGNATURE
+    </x-status-pill>
+
     @if ($report->has_been_emailed)
-        <span class="badge text-bg-secondary py-2 fs-6">
-            <i class='bx bx-mail-send'></i>
+        <span
+            class="ml-1 inline-flex h-7 w-7 items-center justify-center 
+                   rounded-full bg-slate-100 text-slate-500">
+            <i class='bx bx-mail-send text-[0.9rem]'></i>
         </span>
     @endif
 @endif
