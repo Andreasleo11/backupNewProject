@@ -194,6 +194,90 @@ Route::middleware('auth')->group(function () {
     Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
     Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
     Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
+
+    Route::get('/pps/index', [PPSGeneralController::class, 'index'])->name('indexpps');
+    Route::get('/pps/menu', [PPSGeneralController::class, 'menu'])->name('menupps');
+    Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
+
+    // KarawangRoute
+    Route::get('/pps/karawang', [PPSKarawangController::class, 'index'])->name('indexkarawang');
+    Route::post('/pps/process-karawang-form', [PPSKarawangController::class, 'processKarawangForm'])->name('processKarawangForm');
+    Route::get('pps/karawang/process1', [PPSKarawangController::class, 'process1'])->name('karawangprocess1');
+    Route::get('pps/karawang/process2', [PPSKarawangController::class, 'process2'])->name('karawangprocess2');
+    Route::get('pps/karawang/process3', [PPSKarawangController::class, 'process3'])->name('karawangprocess3');
+
+    Route::get('/pps/karawang/delivery', [PPSKarawangController::class, 'karawanginjection'])->name('karawanginjection');
+    Route::get('pps/karawang/process4', [PPSKarawangController::class, 'process4'])->name('karawangprocess4');
+    Route::get('pps/karawang/process5', [PPSKarawangController::class, 'process5'])->name('karawangprocess5');
+    Route::get('pps/karawang/process6', [PPSKarawangController::class, 'process6'])->name('karawangprocess6');
+
+    Route::get('/pps/karawang/items', [PPSKarawangController::class, 'itemkarawang'])->name('itemkarawang');
+
+    Route::get('/pps/karawang/line', [PPSKarawangController::class, 'linekarawang'])->name('linekarawang');
+
+    Route::get('pps/karawanginjectionfinal', [PPSKarawangController::class, 'finalresultkarawanginjection'])->name('finalkarawanginjectionpps');
+
+    Route::get('/pps/injection/start', [PPSInjectionController::class, 'indexscenario'])->name('indexinjection');
+    Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
+    Route::get('pps/injection/process1', [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
+    Route::get('pps/injection/process2', [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
+    Route::get('pps/injection/process3', [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
+
+    Route::get('/pps/injection/delivery', [PPSInjectionController::class, 'deliveryinjection'])->name('deliveryinjection');
+    Route::get('pps/injection/process4', [PPSInjectionController::class, 'process4'])->name('injectionprocess4');
+    Route::get('pps/injection/process5', [PPSInjectionController::class, 'process5'])->name('injectionprocess5');
+    Route::get('pps/injection/process6', [PPSInjectionController::class, 'process6'])->name('injectionprocess6');
+    // jika ada post untuk delivery
+
+    Route::get('/pps/injection/items', [PPSInjectionController::class, 'iteminjection'])->name('iteminjection');
+    // jika ada post untuk items
+
+    Route::get('/pps/injection/line', [PPSInjectionController::class, 'lineinjection'])->name('lineinjection');
+    // jika ada post untuk line
+
+    Route::get('pps/injectionfinal', [PPSInjectionController::class, 'finalresultinjection'])->name('finalinjectionpps');
+
+    Route::get('/pps/second/start', [PPSSecondController::class, 'indexscenario'])->name('indexsecond');
+    Route::post('/pps/second-process-form', [PPSSecondController::class, 'processSecondForm'])->name('processSecondForm');
+    Route::get('pps/second/process1', [PPSSecondController::class, 'process1'])->name('secondprocess1');
+    Route::get('pps/second/process2', [PPSSecondController::class, 'process2'])->name('secondprocess2');
+    Route::get('pps/second/process3', [PPSSecondController::class, 'process3'])->name('secondprocess3');
+    // jika ada post untuk start
+
+    Route::get('/pps/second/delivery', [PPSSecondController::class, 'deliverysecond'])->name('deliverysecond');
+    Route::get('pps/second/process4', [PPSSecondController::class, 'process4'])->name('secondprocess4');
+    Route::get('pps/second/process5', [PPSSecondController::class, 'process5'])->name('secondprocess5');
+    Route::get('pps/second/process6', [PPSSecondController::class, 'process6'])->name('secondprocess6');
+    // jika ada post untuk delivery
+
+    Route::get('/pps/second/items', [PPSSecondController::class, 'itemsecond'])->name('itemsecond');
+    // jika ada post untuk items
+
+    Route::get('/pps/second/line', [PPSSecondController::class, 'linesecond'])->name('linesecond');
+    // jika ada post untuk line
+
+    Route::get('pps/secondfinal', [PPSSecondController::class, 'finalresultsecond'])->name('finalsecondpps');
+
+    Route::get('/pps/assembly/start', [PPSAssemblyController::class, 'indexscenario'])->name('indexassembly');
+    Route::post('/pps/assembly-process-form', [PPSAssemblyController::class, 'processAssemblyForm'])->name('processAssemblyForm');
+    Route::get('pps/assembly/process1', [PPSAssemblyController::class, 'process1'])->name('assemblyprocess1');
+    Route::get('pps/assembly/process2', [PPSAssemblyController::class, 'process2'])->name('assemblyprocess2');
+    Route::get('pps/assembly/process3', [PPSAssemblyController::class, 'process3'])->name('assemblyprocess3');
+    // jika ada post untuk start
+
+    Route::get('/pps/assembly/delivery', [PPSAssemblyController::class, 'deliveryassembly'])->name('deliveryassembly');
+    Route::get('pps/assembly/process4', [PPSAssemblyController::class, 'process4'])->name('assemblyprocess4');
+    Route::get('pps/assembly/process5', [PPSAssemblyController::class, 'process5'])->name('assemblyprocess5');
+    Route::get('pps/assembly/process6', [PPSAssemblyController::class, 'process6'])->name('assemblyprocess6');
+    // jika ada post untuk delivery
+
+    Route::get('/pps/assembly/items', [PPSAssemblyController::class, 'itemassembly'])->name('itemassembly');
+    // jika ada post untuk items
+
+    Route::get('/pps/assembly/line', [PPSAssemblyController::class, 'lineassembly'])->name('lineassembly');
+    // jika ada post untuk line
+
+    Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name('finalresultassembly');
 });
 
 require __DIR__.'/admin.php';
@@ -329,90 +413,6 @@ Route::middleware(['checkDepartment:PRODUCTION,PPIC'])->group(function () {
     Route::get('/production/capacity-forecast/step3', [CapacityByForecastController::class, 'step3'])->name('step3');
     Route::get('/production/capacity-forecast/step3logic', [CapacityByForecastController::class, 'step3logic'])->name('step3logic');
     Route::get('/production/capacity-forecast/step3last', [CapacityByForecastController::class, 'step3logiclast'])->name('step3logiclast');
-
-    Route::get('/pps/index', [PPSGeneralController::class, 'index'])->name('indexpps');
-    Route::get('/pps/menu', [PPSGeneralController::class, 'menu'])->name('menupps');
-    Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
-
-    // KarawangRoute
-    Route::get('/pps/karawang', [PPSKarawangController::class, 'index'])->name('indexkarawang');
-    Route::post('/pps/process-karawang-form', [PPSKarawangController::class, 'processKarawangForm'])->name('processKarawangForm');
-    Route::get('pps/karawang/process1', [PPSKarawangController::class, 'process1'])->name('karawangprocess1');
-    Route::get('pps/karawang/process2', [PPSKarawangController::class, 'process2'])->name('karawangprocess2');
-    Route::get('pps/karawang/process3', [PPSKarawangController::class, 'process3'])->name('karawangprocess3');
-
-    Route::get('/pps/karawang/delivery', [PPSKarawangController::class, 'karawanginjection'])->name('karawanginjection');
-    Route::get('pps/karawang/process4', [PPSKarawangController::class, 'process4'])->name('karawangprocess4');
-    Route::get('pps/karawang/process5', [PPSKarawangController::class, 'process5'])->name('karawangprocess5');
-    Route::get('pps/karawang/process6', [PPSKarawangController::class, 'process6'])->name('karawangprocess6');
-
-    Route::get('/pps/karawang/items', [PPSKarawangController::class, 'itemkarawang'])->name('itemkarawang');
-
-    Route::get('/pps/karawang/line', [PPSKarawangController::class, 'linekarawang'])->name('linekarawang');
-
-    Route::get('pps/karawanginjectionfinal', [PPSKarawangController::class, 'finalresultkarawanginjection'])->name('finalkarawanginjectionpps');
-
-    Route::get('/pps/injection/start', [PPSInjectionController::class, 'indexscenario'])->name('indexinjection');
-    Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
-    Route::get('pps/injection/process1', [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
-    Route::get('pps/injection/process2', [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
-    Route::get('pps/injection/process3', [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
-
-    Route::get('/pps/injection/delivery', [PPSInjectionController::class, 'deliveryinjection'])->name('deliveryinjection');
-    Route::get('pps/injection/process4', [PPSInjectionController::class, 'process4'])->name('injectionprocess4');
-    Route::get('pps/injection/process5', [PPSInjectionController::class, 'process5'])->name('injectionprocess5');
-    Route::get('pps/injection/process6', [PPSInjectionController::class, 'process6'])->name('injectionprocess6');
-    // jika ada post untuk delivery
-
-    Route::get('/pps/injection/items', [PPSInjectionController::class, 'iteminjection'])->name('iteminjection');
-    // jika ada post untuk items
-
-    Route::get('/pps/injection/line', [PPSInjectionController::class, 'lineinjection'])->name('lineinjection');
-    // jika ada post untuk line
-
-    Route::get('pps/injectionfinal', [PPSInjectionController::class, 'finalresultinjection'])->name('finalinjectionpps');
-
-    Route::get('/pps/second/start', [PPSSecondController::class, 'indexscenario'])->name('indexsecond');
-    Route::post('/pps/second-process-form', [PPSSecondController::class, 'processSecondForm'])->name('processSecondForm');
-    Route::get('pps/second/process1', [PPSSecondController::class, 'process1'])->name('secondprocess1');
-    Route::get('pps/second/process2', [PPSSecondController::class, 'process2'])->name('secondprocess2');
-    Route::get('pps/second/process3', [PPSSecondController::class, 'process3'])->name('secondprocess3');
-    // jika ada post untuk start
-
-    Route::get('/pps/second/delivery', [PPSSecondController::class, 'deliverysecond'])->name('deliverysecond');
-    Route::get('pps/second/process4', [PPSSecondController::class, 'process4'])->name('secondprocess4');
-    Route::get('pps/second/process5', [PPSSecondController::class, 'process5'])->name('secondprocess5');
-    Route::get('pps/second/process6', [PPSSecondController::class, 'process6'])->name('secondprocess6');
-    // jika ada post untuk delivery
-
-    Route::get('/pps/second/items', [PPSSecondController::class, 'itemsecond'])->name('itemsecond');
-    // jika ada post untuk items
-
-    Route::get('/pps/second/line', [PPSSecondController::class, 'linesecond'])->name('linesecond');
-    // jika ada post untuk line
-
-    Route::get('pps/secondfinal', [PPSSecondController::class, 'finalresultsecond'])->name('finalsecondpps');
-
-    Route::get('/pps/assembly/start', [PPSAssemblyController::class, 'indexscenario'])->name('indexassembly');
-    Route::post('/pps/assembly-process-form', [PPSAssemblyController::class, 'processAssemblyForm'])->name('processAssemblyForm');
-    Route::get('pps/assembly/process1', [PPSAssemblyController::class, 'process1'])->name('assemblyprocess1');
-    Route::get('pps/assembly/process2', [PPSAssemblyController::class, 'process2'])->name('assemblyprocess2');
-    Route::get('pps/assembly/process3', [PPSAssemblyController::class, 'process3'])->name('assemblyprocess3');
-    // jika ada post untuk start
-
-    Route::get('/pps/assembly/delivery', [PPSAssemblyController::class, 'deliveryassembly'])->name('deliveryassembly');
-    Route::get('pps/assembly/process4', [PPSAssemblyController::class, 'process4'])->name('assemblyprocess4');
-    Route::get('pps/assembly/process5', [PPSAssemblyController::class, 'process5'])->name('assemblyprocess5');
-    Route::get('pps/assembly/process6', [PPSAssemblyController::class, 'process6'])->name('assemblyprocess6');
-    // jika ada post untuk delivery
-
-    Route::get('/pps/assembly/items', [PPSAssemblyController::class, 'itemassembly'])->name('itemassembly');
-    // jika ada post untuk items
-
-    Route::get('/pps/assembly/line', [PPSAssemblyController::class, 'lineassembly'])->name('lineassembly');
-    // jika ada post untuk line
-
-    Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name('finalresultassembly');
 });
 
 Route::middleware(['auth'])

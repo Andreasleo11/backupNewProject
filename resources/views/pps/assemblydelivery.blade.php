@@ -1,31 +1,53 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
-    <div class="container mt-3">
-        <div class="row justify-content-center">
-            <div class="col">
-                <div class="card">
-                    <div class="card-body p-0">
-                        <h1>Delivery Menu for assembly
+    <div class="min-h-[60vh] bg-slate-50/60 py-8">
+        <div class="max-w-6xl mx-auto px-4">
+            {{-- Card utama --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+                {{-- Header --}}
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                        <h1 class="text-lg font-semibold text-slate-900">
+                            Delivery Menu — Assembly
                         </h1>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Daftar delivery schedule untuk proses Assembly yang ditarik dari SAP.
+                        </p>
+                    </div>
 
-                        <section class="content">
-                            <div class="card mt-5">
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        {{ $dataTable->table() }}
-                                    </div>
-                                </div>
-                            </div>
+                    <a href="{{ route('assemblyprocess4') }}"
+                       class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm
+                              hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                        Lanjut
+                    </a>
+                </div>
 
-                        </section>
-
-                        {{ $dataTable->scripts() }}
-
-                        <a href="{{ route('assemblyprocess4') }}" class="btn btn-secondary float-right"> Lanjut</a>
+                {{-- Tabel --}}
+                <div class="px-4 pb-5 pt-4">
+                    <div class="border border-slate-200 rounded-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            {{-- Biarkan DataTables generate tabel, tapi kalau mau bisa override class via parameter --}}
+                            {{ $dataTable->table([
+                                'class' => 'min-w-full text-sm text-slate-700',
+                            ]) }}
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            {{-- Button lanjut untuk layar kecil (opsional, kalau mau double) --}}
+            <div class="mt-4 flex justify-end md:hidden">
+                <a href="{{ route('assemblyprocess4') }}"
+                   class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm
+                          hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    Lanjut
+                </a>
             </div>
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    {{ $dataTable->scripts() }}
+@endpush
