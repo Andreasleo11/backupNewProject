@@ -146,10 +146,10 @@
                     'active' => request()->routeIs('capacityforecastindex'),
                 ],
                 [
-                    'label' => 'Form Request Trail',
+                    'label' => 'Form Request Trial',
                     'route' => 'pe.formlist',
                     'icon' => 'document-text',
-                    'active' => request()->routeIs('pe.formlist'),
+                    'active' => request()->routeIs('pe.*'),
                 ],
             ],
         ],
