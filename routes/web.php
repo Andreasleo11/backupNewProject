@@ -259,6 +259,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}', DeliveryNoteShow::class)->name('show');
             Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
         });
+
+    Route::get('/destinations', DestinationIndex::class)->name('destination.index');
+    Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
+    Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
 });
 
 require __DIR__.'/admin.php';
@@ -607,14 +611,6 @@ Route::get('/dashboard-employee-login', function () {
 Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
 Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
 Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/destinations', DestinationIndex::class)->name('destination.index');
-    Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
-    Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
-});
-
-
 
 Route::middleware('auth')->group(function () {
     Route::get('/master-data/parts/import', fn () => view('master-data-part.import-dashboard'))->name('md.parts.import');
