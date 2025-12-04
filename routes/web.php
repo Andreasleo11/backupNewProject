@@ -2,10 +2,7 @@
 
 use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\AdjustFormQcController;
-use App\Http\Controllers\BarcodeController;
-use App\Http\Controllers\CapacityByForecastController;
 use App\Http\Controllers\DefectCategoryController;
-use App\Http\Controllers\DeliveryScheduleController;
 use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\director\DirectorHomeController;
 use App\Http\Controllers\director\ReportController;
@@ -24,15 +21,10 @@ use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\FormOvertimeController;
-use App\Http\Controllers\HolidayListController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\hrd\HrdHomeController;
 use App\Http\Controllers\hrd\ImportantDocController;
 use App\Http\Controllers\ImportJobController;
-use App\Http\Controllers\InventoryFgController;
-use App\Http\Controllers\InventoryMtrController;
-use App\Http\Controllers\InvLineListController;
-use App\Http\Controllers\LineDownController;
 use App\Http\Controllers\MaintenanceInventoryController;
 use App\Http\Controllers\MasterInventoryController;
 use App\Http\Controllers\MasterTintaController;
@@ -41,15 +33,9 @@ use App\Http\Controllers\MonthlyBudgetReportController;
 use App\Http\Controllers\MonthlyBudgetReportDetailController;
 use App\Http\Controllers\MonthlyBudgetReportSummaryDetailController;
 use App\Http\Controllers\MonthlyBudgetSummaryReportController;
-use App\Http\Controllers\MouldDownController;
 use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\PEController;
 use App\Http\Controllers\PEHomeController;
-use App\Http\Controllers\pps\PPSAssemblyController;
-use App\Http\Controllers\pps\PPSGeneralController;
-use App\Http\Controllers\pps\PPSInjectionController;
-use App\Http\Controllers\pps\PPSKarawangController;
-use App\Http\Controllers\pps\PPSSecondController;
 use App\Http\Controllers\PreviewUploadController;
 use App\Http\Controllers\ProjectTrackerController;
 use App\Http\Controllers\PurchaseOrderController;
@@ -57,8 +43,6 @@ use App\Http\Controllers\PurchaseRequestController;
 use App\Http\Controllers\PurchasingController;
 use App\Http\Controllers\PurchasingDetailController;
 use App\Http\Controllers\PurchasingMaterialController;
-use App\Http\Controllers\PurchasingReminderController;
-use App\Http\Controllers\PurchasingRequirementController;
 use App\Http\Controllers\PurchasingSupplierEvaluationController;
 use App\Http\Controllers\qaqc\QaqcHomeController;
 use App\Http\Controllers\qaqc\QaqcReportController;
@@ -190,151 +174,11 @@ Route::middleware('auth')->group(function () {
     Route::post('qaqc/report/{id}/sendEmail', [QaqcReportController::class, 'sendEmail'])->name('qaqc.report.sendEmail');
     Route::delete('/qaqc/report/{id}', [QaqcReportController::class, 'destroy'])->name('qaqc.report.delete');
 
-    Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
-    Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
-    Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
-    Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
-
-    Route::get('/pps/index', [PPSGeneralController::class, 'index'])->name('indexpps');
-    Route::get('/pps/menu', [PPSGeneralController::class, 'menu'])->name('menupps');
-    Route::post('/pps/portal', [PPSGeneralController::class, 'portal'])->name('portal');
-
-    // KarawangRoute
-    Route::get('/pps/karawang', [PPSKarawangController::class, 'index'])->name('indexkarawang');
-    Route::post('/pps/process-karawang-form', [PPSKarawangController::class, 'processKarawangForm'])->name('processKarawangForm');
-    Route::get('pps/karawang/process1', [PPSKarawangController::class, 'process1'])->name('karawangprocess1');
-    Route::get('pps/karawang/process2', [PPSKarawangController::class, 'process2'])->name('karawangprocess2');
-    Route::get('pps/karawang/process3', [PPSKarawangController::class, 'process3'])->name('karawangprocess3');
-
-    Route::get('/pps/karawang/delivery', [PPSKarawangController::class, 'karawanginjection'])->name('karawanginjection');
-    Route::get('pps/karawang/process4', [PPSKarawangController::class, 'process4'])->name('karawangprocess4');
-    Route::get('pps/karawang/process5', [PPSKarawangController::class, 'process5'])->name('karawangprocess5');
-    Route::get('pps/karawang/process6', [PPSKarawangController::class, 'process6'])->name('karawangprocess6');
-
-    Route::get('/pps/karawang/items', [PPSKarawangController::class, 'itemkarawang'])->name('itemkarawang');
-
-    Route::get('/pps/karawang/line', [PPSKarawangController::class, 'linekarawang'])->name('linekarawang');
-
-    Route::get('pps/karawanginjectionfinal', [PPSKarawangController::class, 'finalresultkarawanginjection'])->name('finalkarawanginjectionpps');
-
-    Route::get('/pps/injection/start', [PPSInjectionController::class, 'indexscenario'])->name('indexinjection');
-    Route::post('/pps/process-injection-form', [PPSInjectionController::class, 'processInjectionForm'])->name('processInjectionForm');
-    Route::get('pps/injection/process1', [PPSInjectionController::class, 'process1'])->name('injectionprocess1');
-    Route::get('pps/injection/process2', [PPSInjectionController::class, 'process2'])->name('injectionprocess2');
-    Route::get('pps/injection/process3', [PPSInjectionController::class, 'process3'])->name('injectionprocess3');
-
-    Route::get('/pps/injection/delivery', [PPSInjectionController::class, 'deliveryinjection'])->name('deliveryinjection');
-    Route::get('pps/injection/process4', [PPSInjectionController::class, 'process4'])->name('injectionprocess4');
-    Route::get('pps/injection/process5', [PPSInjectionController::class, 'process5'])->name('injectionprocess5');
-    Route::get('pps/injection/process6', [PPSInjectionController::class, 'process6'])->name('injectionprocess6');
-    // jika ada post untuk delivery
-
-    Route::get('/pps/injection/items', [PPSInjectionController::class, 'iteminjection'])->name('iteminjection');
-    // jika ada post untuk items
-
-    Route::get('/pps/injection/line', [PPSInjectionController::class, 'lineinjection'])->name('lineinjection');
-    // jika ada post untuk line
-
-    Route::get('pps/injectionfinal', [PPSInjectionController::class, 'finalresultinjection'])->name('finalinjectionpps');
-
-    Route::get('/pps/second/start', [PPSSecondController::class, 'indexscenario'])->name('indexsecond');
-    Route::post('/pps/second-process-form', [PPSSecondController::class, 'processSecondForm'])->name('processSecondForm');
-    Route::get('pps/second/process1', [PPSSecondController::class, 'process1'])->name('secondprocess1');
-    Route::get('pps/second/process2', [PPSSecondController::class, 'process2'])->name('secondprocess2');
-    Route::get('pps/second/process3', [PPSSecondController::class, 'process3'])->name('secondprocess3');
-    // jika ada post untuk start
-
-    Route::get('/pps/second/delivery', [PPSSecondController::class, 'deliverysecond'])->name('deliverysecond');
-    Route::get('pps/second/process4', [PPSSecondController::class, 'process4'])->name('secondprocess4');
-    Route::get('pps/second/process5', [PPSSecondController::class, 'process5'])->name('secondprocess5');
-    Route::get('pps/second/process6', [PPSSecondController::class, 'process6'])->name('secondprocess6');
-    // jika ada post untuk delivery
-
-    Route::get('/pps/second/items', [PPSSecondController::class, 'itemsecond'])->name('itemsecond');
-    // jika ada post untuk items
-
-    Route::get('/pps/second/line', [PPSSecondController::class, 'linesecond'])->name('linesecond');
-    // jika ada post untuk line
-
-    Route::get('pps/secondfinal', [PPSSecondController::class, 'finalresultsecond'])->name('finalsecondpps');
-
-    Route::get('/pps/assembly/start', [PPSAssemblyController::class, 'indexscenario'])->name('indexassembly');
-    Route::post('/pps/assembly-process-form', [PPSAssemblyController::class, 'processAssemblyForm'])->name('processAssemblyForm');
-    Route::get('pps/assembly/process1', [PPSAssemblyController::class, 'process1'])->name('assemblyprocess1');
-    Route::get('pps/assembly/process2', [PPSAssemblyController::class, 'process2'])->name('assemblyprocess2');
-    Route::get('pps/assembly/process3', [PPSAssemblyController::class, 'process3'])->name('assemblyprocess3');
-    // jika ada post untuk start
-
-    Route::get('/pps/assembly/delivery', [PPSAssemblyController::class, 'deliveryassembly'])->name('deliveryassembly');
-    Route::get('pps/assembly/process4', [PPSAssemblyController::class, 'process4'])->name('assemblyprocess4');
-    Route::get('pps/assembly/process5', [PPSAssemblyController::class, 'process5'])->name('assemblyprocess5');
-    Route::get('pps/assembly/process6', [PPSAssemblyController::class, 'process6'])->name('assemblyprocess6');
-    // jika ada post untuk delivery
-
-    Route::get('/pps/assembly/items', [PPSAssemblyController::class, 'itemassembly'])->name('itemassembly');
-    // jika ada post untuk items
-
-    Route::get('/pps/assembly/line', [PPSAssemblyController::class, 'lineassembly'])->name('lineassembly');
-    // jika ada post untuk line
-
-    Route::get('pps/assembly', [PPSAssemblyController::class, 'finalresultassembly'])->name('finalresultassembly');
-
-    Route::get('/production/capacity-forecast', [CapacityByForecastController::class, 'index'])->name('capacityforecastindex');
-    Route::get('/production/capacity-line', [CapacityByForecastController::class, 'line'])->name('capacityforecastline');
-    Route::get('/production/capacity-distribution', [CapacityByForecastController::class, 'distribution'])->name('capacityforecastdistribution');
-    Route::get('/production/capacity-detail', [CapacityByForecastController::class, 'detail'])->name('capacityforecastdetail');
-
-    Route::get('/production/capacity-forecast/view-step', [CapacityByForecastController::class, 'viewstep1'])->name('viewstep1');
-    Route::get('/production/capacity-forecast/step1', [CapacityByForecastController::class, 'step1'])->name('step1');
-    Route::get('/production/capacity-forecast/step1second', [CapacityByForecastController::class, 'step1_second'])->name('step1second');
-
-    Route::get('/production/capacity-forecast/step2', [CapacityByForecastController::class, 'step2'])->name('step2');
-    Route::get('/production/capacity-forecast/step2logic', [CapacityByForecastController::class, 'step2logic'])->name('step2logic');
-
-    Route::get('/production/capacity-forecast/step3', [CapacityByForecastController::class, 'step3'])->name('step3');
-    Route::get('/production/capacity-forecast/step3logic', [CapacityByForecastController::class, 'step3logic'])->name('step3logic');
-    Route::get('/production/capacity-forecast/step3last', [CapacityByForecastController::class, 'step3logiclast'])->name('step3logiclast');
-
-    Route::get('deliveryschedule/index', [DeliveryScheduleController::class, 'index'])->name('indexds');
-    Route::get('deliveryschedule/raw', [DeliveryScheduleController::class, 'indexraw'])->name('rawdelsched');
-    Route::get('deliveryschedule/wip', [DeliveryScheduleController::class, 'indexfinal'])->name('indexfinalwip');
-    Route::get('deliveryschedule/averagemonth', [DeliveryScheduleController::class, 'averageschedule'])->name('delsched.averagemonth');
-
-    Route::get('delsched/start1', [DeliveryScheduleController::class, 'step1'])->name('deslsched.step1');
-    Route::get('delsched/start2', [DeliveryScheduleController::class, 'step2'])->name('deslsched.step2');
-    Route::get('delsched/start3', [DeliveryScheduleController::class, 'step3'])->name('deslsched.step3');
-    Route::get('delsched/start4', [DeliveryScheduleController::class, 'step4'])->name('deslsched.step4');
-
-    Route::get('delsched/wip/step1', [DeliveryScheduleController::class, 'step1wip'])->name('delschedwip.step1');
-    Route::get('delsched/wip/step2', [DeliveryScheduleController::class, 'step2wip'])->name('delschedwip.step2');
-    Route::get('/statusfinish', [DeliveryScheduleController::class, 'statusFinish']);
-
-    Route::get('maintenance/mould-repair', [MouldDownController::class, 'index'])->name('moulddown.index');
-    Route::post('/add/mould', [MouldDownController::class, 'addmould'])->name('addmould');
-    Route::get('maintenance/line-repair', [LineDownController::class, 'index'])->name('linedown.index');
-    Route::post('/add/line/down', [LineDownController::class, 'addlinedown'])->name('addlinedown');
-
-    Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
-    Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
-    Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
-    Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
-    Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
-    Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
-    Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
-});
-
-require __DIR__.'/admin.php';
-
-Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
-    Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
-
     Route::post('/save-image-path/{reportId}/{section}', [QaqcReportController::class, 'saveImagePath']);
     Route::post('/qaqc/{id}/upload-attachment', [QaqcReportController::class, 'uploadAttachment'])->name('uploadAttachment');
     Route::post('/qaqc/report/{reportId}/autograph/{section}', [QaqcReportController::class, 'storeSignature'])->name('qaqc.report.autograph.store');
 
-    Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)
-        ->name('price-log.import')
-        ->middleware(['auth']);
+    Route::get('/admin/price-log/import', \App\Livewire\PartPriceLogImport::class)->name('price-log.import');
 
     Route::get('/qaqc/reports/redirectToIndex', [QaqcReportController::class, 'redirectToIndex'])->name('qaqc.report.redirect.to.index');
 
@@ -353,9 +197,12 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINES
     Route::get('/qaqc/monthlyreport', [QaqcReportController::class, 'monthlyreport'])->name('qaqc.summarymonth');
     Route::post('/monthlyreport', [QaqcReportController::class, 'showDetails'])->name('monthlyreport.details');
     Route::post('/monthlyreport/export', [QaqcReportController::class, 'export'])->name('monthlyreport.export');
-});
 
-Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTOR,PLASTIC INJECTION', 'checkSessionId'])->group(function () {
+    Route::get('/qaqc/defectcategory', [DefectCategoryController::class, 'index'])->name('qaqc.defectcategory');
+    Route::post('/qaqc/defectcategory/store', [DefectCategoryController::class, 'store'])->name('qaqc.defectcategory.store');
+    Route::put('/qaqc/defectcategory/{id}/update', [DefectCategoryController::class, 'update'])->name('qaqc.defectcategory.update');
+    Route::delete('/qaqc/defectcategory/{id}/delete', [DefectCategoryController::class, 'destroy'])->name('qaqc.defectcategory.delete');
+
     // FORM ADJUST SECITON
     Route::get('/qaqc/adjustform', [AdjustFormQcController::class, 'index'])->name('adjust.index');
     Route::post('/qaqc/save/formadjust', [AdjustFormQcController::class, 'save'])->name('save.rawmaterial');
@@ -363,6 +210,50 @@ Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,DIRECTO
     Route::get('/view/adjustform', [AdjustFormQcController::class, 'adjustformview'])->name('adjustview');
     Route::post('/remark/detail/adjust', [AdjustFormQcController::class, 'addremarkadjust'])->name('addremarkadjust');
     Route::post('/save-autograph-path/{reportId}/{section}', [AdjustFormQcController::class, 'saveAutographPath']);
+
+    Route::get('/hrd/importantdocs/', [ImportantDocController::class, 'index'])->name('hrd.importantDocs.index');
+    Route::get('/hrd/importantdocs/create', [ImportantDocController::class, 'create'])->name('hrd.importantDocs.create');
+    Route::post('/hrd/importantdocs/store', [ImportantDocController::class, 'store'])->name('hrd.importantDocs.store');
+    Route::get('/hrd/importantdocs/{id}', [ImportantDocController::class, 'detail'])->name('hrd.importantDocs.detail');
+    Route::get('/hrd/importantdocs/{id}/edit', [ImportantDocController::class, 'edit'])->name('hrd.importantDocs.edit');
+    Route::put('/hrd/importantdocs/{id}', [ImportantDocController::class, 'update'])->name('hrd.importantDocs.update');
+    Route::delete('/hrd/importantdocs/{id}', [ImportantDocController::class, 'destroy'])->name('hrd.importantDocs.delete');
+
+    Route::get('/forecastcustomermaster', [ForecastCustomerController::class, 'index'])->name('fc.index');
+    Route::post('/add/forecastmaster', [ForecastCustomerController::class, 'addnewmaster'])->name('addnewforecastmaster');
+
+    Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
+    Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
+    Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
+    Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
+    Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
+
+    Route::get('purc/evaluationsupplier/index', [PurchasingSupplierEvaluationController::class, 'index'])->name('purchasing.evaluationsupplier.index');
+    Route::post('purc/evaluationsupplier/generate', [PurchasingSupplierEvaluationController::class, 'calculate'])->name('purchasing.evaluationsupplier.calculate');
+    Route::get('purc/evaluationsupplier/details/{id}', [PurchasingSupplierEvaluationController::class, 'details'])->name('purchasing.evaluationsupplier.details');
+    Route::get('purc/vendorclaim', [PurchasingSupplierEvaluationController::class, 'kriteria1'])->name('kriteria1');
+    Route::get('purc/vendoraccuracygood', [PurchasingSupplierEvaluationController::class, 'kriteria2'])->name('kriteria2');
+    Route::get('purc/vendorontimedelivery', [PurchasingSupplierEvaluationController::class, 'kriteria3'])->name('kriteria3');
+    Route::get('purc/vendorurgentrequest', [PurchasingSupplierEvaluationController::class, 'kriteria4'])->name('kriteria4');
+    Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
+    Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
+
+    Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
+
+    Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
+    Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
+    Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class, 'indexcustomer']);
+    Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
+    Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
+
+    Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
+    Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
+});
+
+require __DIR__.'/admin.php';
+
+Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
+    Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
 });
 
 Route::middleware(['checkDepartment:PERSONALIA'])->group(function () {
@@ -385,35 +276,10 @@ Route::middleware(['checkDepartment:MANAGEMENT'])->group(function () {
 
 Route::middleware(['checkDepartment:PE,PPIC'])->group(function () {
     Route::get('pe/home', [PEHomeController::class, 'index'])->name('pe');
-
-    Route::get('/pe/trialinput', [PEController::class, 'trialinput'])->name('pe.trial');
-    Route::post('/pe/trialfinish', [PEController::class, 'input'])->name('pe.input');
-    Route::get('/pe/listformrequest', [PEController::class, 'view'])->name('pe.formlist');
-    Route::get('/pe/listformrequest/detail/{id}', [PEController::class, 'detail'])->name('trial.detail');
-    Route::post('/pe/listformrequest/detai/updateTonage/{id}', [PEController::class, 'updateTonage'])->name('update.tonage');
 });
 
 Route::middleware(['checkDepartment:PURCHASING'])->group(function () {
     Route::get('/purchasing', [PurchasingController::class, 'index'])->name('purchasing');
-
-    Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
-    Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
-    Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
-    Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
-    Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class, 'indexcustomer']);
-
-    Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
-    Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
-
-    Route::get('purchasing/reminder', [PurchasingReminderController::class, 'index'])->name('reminderindex');
-    Route::get('purchasing/reminder/detail', [PurchasingReminderController::class, 'detail'])->name('reminderdetail');
-
-    Route::get('purchasing/requirement', [PurchasingRequirementController::class, 'index'])->name('purchasingrequirement.index');
-    Route::get('purchasing/requirement/detail', [PurchasingRequirementController::class, 'detail'])->name('purchasingrequirement.detail');
-});
-
-Route::middleware(['checkDepartment:ACCOUNTING'])->group(function () {
-    Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
 });
 
 Route::middleware(['auth'])
@@ -456,7 +322,6 @@ Route::get('/get-files', [FileController::class, 'getFiles']);
 
 Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 
-// PR
 Route::get('/purchaseRequest', [PurchaseRequestController::class, 'index'])->name('purchaserequest');
 Route::get('/purchaseRequest/create', [PurchaseRequestController::class, 'create'])->name('purchaserequest.create');
 Route::post('/purchaseRequest/insert', [PurchaseRequestController::class, 'insert'])->name('purchaserequest.insert');
@@ -502,23 +367,6 @@ Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])->name
 Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
 Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
 Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
-
-Route::get('/inventory/fg', [InventoryFgController::class, 'index'])->name('inventoryfg');
-Route::get('/inventory/mtr', [InventoryMtrController::class, 'index'])->name('inventorymtr');
-
-Route::get('/inventory/line-list', [InvLineListController::class, 'index'])->name('invlinelist');
-Route::post('/add/line', [InvLineListController::class, 'addline'])->name('addline');
-Route::put('/edit/line/{id}', [InvLineListController::class, 'editline'])->name('editline');
-Route::delete('/delete/line/{linecode}', [InvLineListController::class, 'deleteline'])->name('deleteline');
-
-// Holiday list feature
-Route::get('setting/holiday-list', [HolidayListController::class, 'index'])->name('indexholiday');
-Route::get('setting/holiday-list/create', [HolidayListController::class, 'create'])->name('createholiday');
-Route::post('setting/input/holidays', [HolidayListController::class, 'store'])->name('holidays.store');
-Route::get('/download-holiday-list-template', [HolidayListController::class, 'downloadTemplate'])->name('download.holiday.template');
-Route::post('/upload-holiday-list-template', [HolidayListController::class, 'uploadTemplate'])->name('upload.holiday.template');
-Route::delete('/holiday/{id}/delete', [HolidayListController::class, 'delete'])->name('holiday.delete');
-Route::put('/holiday/{id}/update', [HolidayListController::class, 'update'])->name('holiday.update');
 
 Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])->name('pt.index');
 Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name('pt.create');
@@ -601,9 +449,6 @@ Route::get('/exportyayasandateinput', [DisciplinePageController::class, 'dateExp
 Route::get('/exportyayasansummary', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('exportyayasan.summary');
 Route::get('/export/yayasan/discipline', [DisciplinePageController::class, 'exportYayasanJpayrollFunction'])->name('export.yayasan.jpayroll');
 
-Route::get('/forecastcustomermaster', [ForecastCustomerController::class, 'index'])->name('fc.index');
-Route::post('/add/forecastmaster', [ForecastCustomerController::class, 'addnewmaster'])->name('addnewforecastmaster');
-
 Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
 Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
 Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name('formovertime.insert');
@@ -665,27 +510,6 @@ Route::post('monthlyBudgetReportDetail', [MonthlyBudgetReportDetailController::c
 Route::put('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
 Route::delete('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
 
-Route::get('barcode/index', [BarcodeController::class, 'index'])->name('barcode.base.index');
-Route::get('barcode/inandout/index', [BarcodeController::class, 'inandoutpage'])->name('inandout.index');
-Route::get('barcode/missing/index', [BarcodeController::class, 'missingbarcodeindex'])->name('missingbarcode.index');
-Route::post('barcode/missing/generate', [BarcodeController::class, 'missingbarcodegenerator'])->name('generateBarcodeMissing');
-
-Route::post('barcode/process/save', [BarcodeController::class, 'processInAndOut'])->name('process.in.and.out');
-
-Route::post('process/inandoutbarcode', [BarcodeController::class, 'storeInAndOut'])->name('processbarcodeinandout');
-Route::get('indexbarcode', [BarcodeController::class, 'indexBarcode'])->name('barcodeindex');
-Route::post('/generate-barcode', [BarcodeController::class, 'generateBarcode'])->name('generateBarcode');
-
-Route::get('barcode/list', [BarcodeController::class, 'barcodelist'])->name('list.barcode');
-
-Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
-
-Route::get('barcode/historytable', [BarcodeController::class, 'historybarcodelist'])->name('barcode.historytable');
-
-Route::get('/barcode/filter', [BarcodeController::class, 'filter'])->name('barcode.filter');
-Route::get('barcode/latest/item', [BarcodeController::class, 'latestitemdetails'])->name('updated.barcode.item.position');
-Route::get('barcode/stockall/{location?}', [BarcodeController::class, 'stockall'])->name('stockallbarcode');
-
 Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
 Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
 Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
@@ -702,16 +526,6 @@ Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store']
 Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name('laporan-kerusakan.report');
 Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
 Route::delete('laporan-kerusakan-delete/{id}', [FormKerusakanController::class, 'destroy'])->name('laporan-kerusakan.destroy');
-
-Route::get('purc/evaluationsupplier/index', [PurchasingSupplierEvaluationController::class, 'index'])->name('purchasing.evaluationsupplier.index');
-Route::post('purc/evaluationsupplier/generate', [PurchasingSupplierEvaluationController::class, 'calculate'])->name('purchasing.evaluationsupplier.calculate');
-Route::get('purc/evaluationsupplier/details/{id}', [PurchasingSupplierEvaluationController::class, 'details'])->name('purchasing.evaluationsupplier.details');
-Route::get('purc/vendorclaim', [PurchasingSupplierEvaluationController::class, 'kriteria1'])->name('kriteria1');
-Route::get('purc/vendoraccuracygood', [PurchasingSupplierEvaluationController::class, 'kriteria2'])->name('kriteria2');
-Route::get('purc/vendorontimedelivery', [PurchasingSupplierEvaluationController::class, 'kriteria3'])->name('kriteria3');
-Route::get('purc/vendorurgentrequest', [PurchasingSupplierEvaluationController::class, 'kriteria4'])->name('kriteria4');
-Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
-Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
 Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
 Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');

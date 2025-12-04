@@ -134,41 +134,10 @@
             'icon' => 'document-text',
             'children' => [
                 [
-                    'label' => 'PPS Wizard',
-                    'route' => 'indexpps',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('indexpps'),
-                ],
-                [
-                    'label' => 'Capacity By Forecast',
-                    'route' => 'capacityforecastindex',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('capacityforecastindex'),
-                ],
-                [
                     'label' => 'Form Request Trial',
                     'route' => 'pe.formlist',
                     'icon' => 'document-text',
                     'active' => request()->routeIs('pe.*'),
-                ],
-            ],
-        ],
-        [
-            'type' => 'group',
-            'label' => 'Maintenance',
-            'icon' => 'document-text',
-            'children' => [
-                [
-                    'label' => 'Mould Repair',
-                    'route' => 'moulddown.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('moulddown.*'),
-                ],
-                [
-                    'label' => 'Line Repair',
-                    'route' => 'linedown.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('linedown.*'),
                 ],
             ],
         ],
@@ -203,24 +172,6 @@
                     'active' => request()->routeIs('purchasing.evaluationsupplier.*'),
                 ],
                 [
-                    'label' => 'Reminder',
-                    'route' => 'reminderindex',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('reminderindex'),
-                ],
-                [
-                    'label' => 'Purchasing Requirement',
-                    'route' => 'purchasingrequirement.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('purchasingrequirement.index'),
-                ],
-                [
-                    'label' => 'Delivery Schedule',
-                    'route' => 'indexds',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('indexds'),
-                ],
-                [
                     'label' => 'Forecast Customer Master',
                     'route' => 'fc.index',
                     'icon' => 'document-text',
@@ -243,82 +194,9 @@
         ],
         [
             'type' => 'group',
-            'label' => 'Inventory',
-            'icon' => 'document-text',
-            'children' => [
-                [
-                    'label' => 'FG Stock Monitoring',
-                    'route' => 'delsched.averagemonth',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('delsched.averagemonth'),
-                ],
-                [
-                    'label' => 'Inventory FG',
-                    'route' => 'inventoryfg',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('inventoryfg'),
-                ],
-                [
-                    'label' => 'Inventory MTR',
-                    'route' => 'inventorymtr',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('inventorymtr'),
-                ],
-                [
-                    'label' => 'Machine and Line list',
-                    'route' => 'invlinelist',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('invlinelist'),
-                ],
-            ],
-        ],
-        [
-            'type' => 'group',
             'label' => 'Store',
             'icon' => 'document-text',
             'children' => [
-                [
-                    'label' => 'Create Barcode',
-                    'route' => 'barcodeindex',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('barcodeindex'),
-                ],
-                [
-                    'label' => 'Barcode Feature',
-                    'route' => 'barcode.base.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('barcode.base.*'),
-                ],
-                [
-                    'label' => 'Scan Barcode',
-                    'route' => 'inandout.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('inandout.*'),
-                ],
-                [
-                    'label' => 'Missing Barcode Generator',
-                    'route' => 'missingbarcode.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('missingbarcode.*'),
-                ],
-                [
-                    'label' => 'Report History',
-                    'route' => 'barcode.historytable',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('barcode.historytable'),
-                ],
-                [
-                    'label' => 'STOCK Item',
-                    'route' => 'stockallbarcode',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('stockallbarcode'),
-                ],
-                [
-                    'label' => 'List All Item Barcode',
-                    'route' => 'updated.barcode.item.position',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('updated.barcode.item.position'),
-                ],
                 [
                     'label' => 'Delivery Notes',
                     'route' => 'delivery-notes.index',
