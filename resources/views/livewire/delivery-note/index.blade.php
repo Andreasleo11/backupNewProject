@@ -1,41 +1,90 @@
-<div>
-    {{-- Sidebar toggle button for small screens --}}
-    <div class="d-lg-none bg-light border-bottom py-2 px-3">
-        <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse"
-            data-bs-target="#filterSidebar">
-            ☰ Filters
-        </button>
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-4">
+
+    {{-- Flash message --}}
+    @if (session()->has('success'))
+        <div class="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Header --}}
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-lg font-semibold text-slate-900">
+                Delivery Notes
+            </h1>
+            <p class="mt-1 text-sm text-slate-500">
+                Kelola daftar delivery note beserta status, cabang, ritasi, dan kendaraan.
+            </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            {{-- Bisa ditambah filter cepat di sini kalau perlu --}}
+            <a href="{{ route('delivery-notes.create') }}"
+                class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm
+                      hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                Create Delivery Note
+            </a>
+        </div>
     </div>
 
-    <div class="container-fluid">
-        <div class="row">
+    {{-- Layout: Filters + Table --}}
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-4">
 
-            {{-- Sidebar Filters --}}
-            <div class="col-lg-3">
-                <div class="collapse d-lg-block border-end bg-light py-3 px-3" id="filterSidebar">
-                    <h5 class="fw-semibold mb-3">🔎 Filters</h5>
+        {{-- Filter Sidebar --}}
+        <aside class="lg:col-span-1">
+            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="mb-3 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-slate-800">
+                        Filters
+                    </h2>
+                    <button type="button" wire:click="resetFilters"
+                        class="text-xs text-slate-400 hover:text-slate-600">
+                        Reset
+                    </button>
+                </div>
 
-                    <div class="mb-3">
-                        <label>Status</label>
-                        <select class="form-select" wire:model.defer="inputStatus">
+                <div class="space-y-3 text-sm">
+
+                    {{-- Status --}}
+                    <div class="space-y-1">
+                        <label for="filter-status" class="block text-xs font-medium text-slate-600">
+                            Status
+                        </label>
+                        <select id="filter-status" wire:model.defer="inputStatus"
+                            class="block w-full rounded-md border border-slate-300 bg-white
+                               px-3 py-2 text-sm text-slate-700 shadow-sm
+                               focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="all">All</option>
                             <option value="draft">Draft</option>
                             <option value="submitted">Submitted</option>
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Branch</label>
-                        <select class="form-select" wire:model.defer="inputBranch">
+                    {{-- Branch --}}
+                    <div class="space-y-1">
+                        <label for="filter-branch" class="block text-xs font-medium text-slate-600">
+                            Branch
+                        </label>
+                        <select id="filter-branch" wire:model.defer="inputBranch"
+                            class="block w-full rounded-md border border-slate-300 bg-white
+                               px-3 py-2 text-sm text-slate-700 shadow-sm
+                               focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="all">All</option>
                             <option value="JAKARTA">JAKARTA</option>
                             <option value="KARAWANG">KARAWANG</option>
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label>Ritasi</label>
-                        <select class="form-select" wire:model.defer="inputRitasi">
+                    {{-- Ritasi --}}
+                    <div class="space-y-1">
+                        <label for="filter-ritasi" class="block text-xs font-medium text-slate-600">
+                            Ritasi
+                        </label>
+                        <select id="filter-ritasi" wire:model.defer="inputRitasi"
+                            class="block w-full rounded-md border border-slate-300 bg-white
+                               px-3 py-2 text-sm text-slate-700 shadow-sm
+                               focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="all">All</option>
                             <option value="1">1 (Pagi)</option>
                             <option value="2">2 (Siang)</option>
@@ -44,77 +93,133 @@
                         </select>
                     </div>
 
-                    <div class="mb-3">
-                        <label>From Date</label>
-                        <input type="date" class="form-control" wire:model.defer="inputFromDate">
+                    {{-- From Date --}}
+                    <div class="space-y-1">
+                        <label for="from-date" class="block text-xs font-medium text-slate-600">
+                            From date
+                        </label>
+                        <input type="date" id="from-date" wire:model.defer="inputFromDate"
+                            class="block w-full rounded-md border border-slate-300 bg-white
+                              px-3 py-2 text-sm text-slate-700 shadow-sm
+                              focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
-                    <div class="mb-3">
-                        <label>To Date</label>
-                        <input type="date" class="form-control" wire:model.defer="inputToDate">
+                    {{-- To Date --}}
+                    <div class="space-y-1">
+                        <label for="to-date" class="block text-xs font-medium text-slate-600">
+                            To date
+                        </label>
+                        <input type="date" id="to-date" wire:model.defer="inputToDate"
+                            class="block w-full rounded-md border border-slate-300 bg-white
+                              px-3 py-2 text-sm text-slate-700 shadow-sm
+                              focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
-                    <div class="mb-3">
-                        <label>Search</label>
-                        <input type="text" class="form-control" wire:model.live="searchAll" placeholder="Search...">
+                    {{-- Search --}}
+                    <div class="space-y-1">
+                        <label for="search-all" class="block text-xs font-medium text-slate-600">
+                            Search
+                        </label>
+                        <input type="text" id="search-all" wire:model.debounce.400ms="searchAll"
+                            placeholder="Search number, driver, vehicle..."
+                            class="block w-full rounded-md border border-slate-300 bg-white
+                              px-3 py-2 text-sm text-slate-700 shadow-sm
+                              focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
 
-                    <button wire:click="applyFilters" class="btn btn-primary w-100">
-                        🔍 Apply Filters
-                    </button>
+                    <div class="pt-2">
+                        <button type="button" wire:click="applyFilters"
+                            class="inline-flex w-full items-center justify-center rounded-md bg-slate-900
+                           px-3 py-2 text-sm font-medium text-white hover:bg-slate-800
+                           focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-1">
+                            Apply filters
+                        </button>
+                    </div>
                 </div>
             </div>
+        </aside>
 
-            {{-- Main Content --}}
-            <div class="col-lg-9 py-3 px-4">
-                @if (session()->has('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+
+        {{-- Table + Active Filters --}}
+        <section class="lg:col-span-3 space-y-3">
+
+            {{-- Active Filters Summary --}}
+            @if ($filterStatus !== 'all' || $filterBranch !== 'all' || $filterRitasi !== 'all' || $fromDate || $toDate || $searchAll)
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+                    <div class="mb-1 font-medium">
+                        Active filters
                     </div>
-                @endif
+                    <div class="flex flex-wrap gap-2">
+                        @if ($filterStatus !== 'all')
+                            <span
+                                class="inline-flex items-center rounded-full bg-white px-2 py-0.5 border border-slate-200">
+                                <span class="mr-1 text-[11px] text-slate-500">Status</span>
+                                <span class="text-[11px] font-medium text-slate-800">{{ ucfirst($filterStatus) }}</span>
+                            </span>
+                        @endif
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 class="fw-bold mb-0">📋 Delivery Notes</h3>
-                    <a href="{{ route('delivery-notes.create') }}" class="btn btn-primary">
-                        + Create Delivery Note
-                    </a>
+                        @if ($filterBranch !== 'all')
+                            <span
+                                class="inline-flex items-center rounded-full bg-white px-2 py-0.5 border border-slate-200">
+                                <span class="mr-1 text-[11px] text-slate-500">Branch</span>
+                                <span class="text-[11px] font-medium text-slate-800">{{ $filterBranch }}</span>
+                            </span>
+                        @endif
+
+                        @if ($filterRitasi !== 'all')
+                            <span
+                                class="inline-flex items-center rounded-full bg-white px-2 py-0.5 border border-slate-200">
+                                <span class="mr-1 text-[11px] text-slate-500">Ritasi</span>
+                                <span class="text-[11px] font-medium text-slate-800">{{ $filterRitasi }}</span>
+                            </span>
+                        @endif
+
+                        @if ($fromDate)
+                            <span
+                                class="inline-flex items-center rounded-full bg-white px-2 py-0.5 border border-slate-200">
+                                <span class="mr-1 text-[11px] text-slate-500">From</span>
+                                <span class="text-[11px] font-medium text-slate-800">{{ $fromDate }}</span>
+                            </span>
+                        @endif
+
+                        @if ($toDate)
+                            <span
+                                class="inline-flex items-center rounded-full bg-white px-2 py-0.5 border border-slate-200">
+                                <span class="mr-1 text-[11px] text-slate-500">To</span>
+                                <span class="text-[11px] font-medium text-slate-800">{{ $toDate }}</span>
+                            </span>
+                        @endif
+
+                        @if ($searchAll)
+                            <span
+                                class="inline-flex items-center rounded-full bg-white px-2 py-0.5 border border-slate-200">
+                                <span class="mr-1 text-[11px] text-slate-500">Search</span>
+                                <span class="text-[11px] font-medium text-slate-800">{{ $searchAll }}</span>
+                            </span>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
+            {{-- Table card --}}
+            <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 px-4 py-2.5 flex items-center justify-between">
+                    <span class="text-sm font-semibold text-slate-800">
+                        Delivery note list
+                    </span>
+                    <span class="text-xs text-slate-400">
+                        {{ $deliveryNotes->total() }} records
+                    </span>
                 </div>
 
-                {{-- Active Filters Summary --}}
-                @if ($filterStatus !== 'all' || $filterBranch !== 'all' || $filterRitasi !== 'all' || $fromDate || $toDate || $searchAll)
-                    <div class="alert alert-info small">
-                        <strong>Active Filters:</strong>
-                        <ul class="mb-0">
-                            @if ($filterStatus !== 'all')
-                                <li>Status: <strong>{{ ucfirst($filterStatus) }}</strong></li>
-                            @endif
-                            @if ($filterBranch !== 'all')
-                                <li>Branch: <strong>{{ $filterBranch }}</strong></li>
-                            @endif
-                            @if ($filterRitasi !== 'all')
-                                <li>Ritasi: <strong>{{ $filterRitasi }}</strong></li>
-                            @endif
-                            @if ($fromDate)
-                                <li>From: <strong>{{ $fromDate }}</strong></li>
-                            @endif
-                            @if ($toDate)
-                                <li>To: <strong>{{ $toDate }}</strong></li>
-                            @endif
-                            @if ($searchAll)
-                                <li>Search: <strong>{{ $searchAll }}</strong></li>
-                            @endif
-                        </ul>
-                    </div>
-                @endif
-
-                {{-- Table --}}
-                <div class="table-responsive">
+                <div class="overflow-x-auto">
                     @include('livewire.delivery-note._table')
                 </div>
 
-                {{ $deliveryNotes->links() }}
+                <div class="border-t border-slate-100 px-4 py-2.5">
+                    {{ $deliveryNotes->onEachSide(1)->links() }}
+                </div>
             </div>
-        </div>
+        </section>
     </div>
 </div>

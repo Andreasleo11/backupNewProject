@@ -247,8 +247,18 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
     Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
-    
+
     Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
+
+    Route::prefix('delivery-notes')
+        ->name('delivery-notes.')
+        ->group(function () {
+            Route::get('/', DeliveryNoteIndex::class)->name('index');
+            Route::get('/create', DeliveryNoteForm::class)->name('create');
+            Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
+            Route::get('/{id}', DeliveryNoteShow::class)->name('show');
+            Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
+        });
 });
 
 require __DIR__.'/admin.php';
@@ -604,15 +614,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
 });
 
-Route::prefix('delivery-notes')
-    ->name('delivery-notes.')
-    ->group(function () {
-        Route::get('/', DeliveryNoteIndex::class)->name('index');
-        Route::get('/create', DeliveryNoteForm::class)->name('create');
-        Route::get('/{deliveryNote}/edit', DeliveryNoteForm::class)->name('edit');
-        Route::get('/{id}', DeliveryNoteShow::class)->name('show');
-        Route::get('/{deliveryNote}/print', DeliveryNotePrint::class)->name('print');
-    });
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/master-data/parts/import', fn () => view('master-data-part.import-dashboard'))->name('md.parts.import');
