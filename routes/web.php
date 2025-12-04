@@ -238,16 +238,17 @@ Route::middleware('auth')->group(function () {
     Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
-    Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
-
+    
     Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
     Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
     Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class, 'indexcustomer']);
     Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
     Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
-
+    
     Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
     Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
+    
+    Route::get('accounting/purchase-requests/', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
 });
 
 require __DIR__.'/admin.php';

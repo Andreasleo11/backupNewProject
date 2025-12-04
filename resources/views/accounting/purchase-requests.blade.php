@@ -22,6 +22,9 @@
             </div>
         </section>
 
+        {{-- Alert (jika ada) --}}
+        @includeWhen(View::exists('partials.alert-success-error'), 'partials.alert-success-error')
+
         {{-- Content --}}
         <section class="content">
             <div class="card shadow-sm border-0">
