@@ -1,190 +1,217 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
+
+@push('head')
+    <style>
+        .table-container {
+            margin-top: 1rem;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            .print-area,
+            .print-area * {
+                visibility: visible;
+            }
+
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            table th,
+            table td {
+                border: 1px solid #000;
+                padding: 6px;
+                font-size: 11px;
+                text-align: center;
+            }
+
+            @page {
+                margin: 0.7cm;
+            }
+
+            /* Sembunyikan elemen control saat print */
+            .d-print-none {
+                display: none !important;
+            }
+        }
+    </style>
+@endpush
 
 @section('content')
-    <!DOCTYPE html>
-    <html lang="en">
+    <div class="container py-3">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Vendor Claims</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <style>
-            .table-container {
-                margin-top: 20px;
-            }
+        {{-- HEADER --}}
+        <section class="mb-3 d-print-none">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                <div>
+                    <h1 class="h4 mb-1">Vendor Claims</h1>
+                    <p class="text-muted small mb-0">
+                        Data klaim vendor berdasarkan incoming inspection & proses klaim yang tercatat di sistem.
+                    </p>
+                </div>
 
-            .table thead th {
-                background-color: #f2f2f2;
-                text-align: center;
-            }
-
-            .table tbody td {
-                text-align: center;
-            }
-
-            .filter-container {
-                margin-bottom: 20px;
-            }
-
-            /* Print-specific styles */
-            @media print {
-
-                /* Hide all unnecessary elements during print */
-                body * {
-                    visibility: hidden;
-                    /* Hide everything */
-                }
-
-                h1.mb-4,
-                .table-container,
-                .table-container * {
-                    visibility: visible;
-                    /* Show only the table */
-                }
-
-                .table-container {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                    /* Ensure the table takes full width */
-                }
-
-                /* Ensure the table is responsive and fits page when printed */
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-
-                table th,
-                table td {
-                    border: 1px solid #000;
-                    padding: 8px;
-                    text-align: center;
-                    font-size: 12px;
-                    /* Adjust font size for better fit */
-                }
-
-                h1.mb-4 {
-                    position: absolute;
-                    top: 0;
-                    width: auto;
-                    text-align: center;
-                    font-size: 18px;
-                    /* Adjust font size for print */
-                    margin-top: 0;
-                    margin-bottom: 20px;
-                }
-
-                /* Optional: Remove header/footer space in print */
-                @page {
-                    margin: 0.5cm;
-                }
-            }
-        </style>
-    </head>
-
-    <body>
-
-        <div class="container">
-
-            <a href="{{ route('purchasing.evaluationsupplier.index') }}">
-                <button type="button">Back to Supplier Evaluation</button>
-            </a>
-            <h1 class="mb-4">Vendor Claims</h1>
-
-            <div class="filter">
-                <form action="{{ route('kriteria1') }}" method="GET">
-                    @csrf
-                    <label for="vendor_name">Select Vendor:</label>
-                    <select name="vendor_name" id="vendor_name">
-                        <option value="">-- All Vendors --</option>
-                        @foreach ($vendorNames as $vendor)
-                            <option value="{{ $vendor }}" {{ request('vendor_name') == $vendor ? 'selected' : '' }}>
-                                {{ $vendor }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <label for="month">Select Month:</label>
-                    <select name="month" id="month">
-                        <option value="">-- All Months --</option>
-                        @foreach (range(1, 12) as $month)
-                            <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
-                                {{ DateTime::createFromFormat('!m', $month)->format('F') }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <label for="year">Select Year:</label>
-                    <select name="year" id="year">
-                        <option value="">-- All Years --</option>
-                        @foreach (range(2020, 2040) as $year)
-                            <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                                {{ $year }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    <button type="submit">Filter</button>
-                </form>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('purchasing.evaluationsupplier.index') }}" class="btn btn-outline-secondary btn-sm">
+                        ← Back to Supplier Evaluation
+                    </a>
+                    <button type="button" class="btn btn-outline-primary btn-sm d-print-none" onclick="window.print()">
+                        Print
+                    </button>
+                </div>
             </div>
-            <!-- Data Table -->
-            <div class="table-container">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Vendor Code</th>
-                            <th>Vendor Name</th>
-                            <th>Item Code</th>
-                            <th>Description</th>
-                            <th>Delivery No</th>
-                            <th>Incoming Date</th>
-                            <th>Quantity</th>
-                            <th>Claim Start Date</th>
-                            <th>Claim Finish Date</th>
-                            <th>Can Use</th>
-                            <th>Remarks</th>
-                            <th>Reason</th>
-                            <th>Risk</th>
-                            <th>Customer stopline</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($datas as $data)
-                            <tr>
-                                <td>{{ $data->id }}</td>
-                                <td>{{ $data->vendor_code }}</td>
-                                <td>{{ $data->vendor_name }}</td>
-                                <td>{{ $data->item_code }}</td>
-                                <td>{{ $data->description }}</td>
-                                <td>{{ $data->delivery_no }}</td>
-                                <td>{{ $data->incoming_date }}</td>
-                                <td>{{ $data->quantity }}</td>
-                                <td>{{ $data->claim_start_date }}</td>
-                                <td>{{ $data->claim_finish_date }}</td>
-                                <td>{{ $data->can_use }}</td>
-                                <td>{{ $data->remarks }}</td>
-                                <td>{{ $data->reason }}</td>
-                                <td>{{ $data->risk }}</td>
-                                <td>{{ $data->customer_stopline }}</td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="13" class="text-center">No data available</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+        </section>
+
+        {{-- FILTER FORM --}}
+        <section class="mb-4 d-print-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-header">
+                    <span class="fw-semibold">Filter Vendor Claims</span>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('kriteria1') }}" method="GET" class="row g-3 align-items-end">
+                        @csrf
+
+                        {{-- Vendor --}}
+                        <div class="col-12 col-md-4">
+                            <label for="vendor_name" class="form-label fw-semibold">Vendor</label>
+                            <select name="vendor_name" id="vendor_name" class="form-select">
+                                <option value="">-- All Vendors --</option>
+                                @foreach ($vendorNames as $vendor)
+                                    <option value="{{ $vendor }}"
+                                        {{ request('vendor_name') == $vendor ? 'selected' : '' }}>
+                                        {{ $vendor }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Month --}}
+                        <div class="col-12 col-md-4 col-lg-3">
+                            <label for="month" class="form-label fw-semibold">Month</label>
+                            <select name="month" id="month" class="form-select">
+                                <option value="">-- All Months --</option>
+                                @foreach (range(1, 12) as $month)
+                                    <option value="{{ $month }}" {{ request('month') == $month ? 'selected' : '' }}>
+                                        {{ DateTime::createFromFormat('!m', $month)->format('F') }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Year --}}
+                        <div class="col-12 col-md-4 col-lg-3">
+                            <label for="year" class="form-label fw-semibold">Year</label>
+                            <select name="year" id="year" class="form-select">
+                                <option value="">-- All Years --</option>
+                                @foreach (range(2020, 2040) as $year)
+                                    <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Button --}}
+                        <div class="col-12 col-lg-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Apply Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    </body>
+        {{-- TABLE AREA (yang akan diprint) --}}
+        <section class="print-area">
+            <div class="card shadow-sm border-0">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Vendor Claims List</span>
+                    <span class="small text-muted d-none d-print-inline">
+                        Printed at {{ now()->format('d-m-Y H:i') }}
+                    </span>
+                    <span class="small text-muted d-none d-md-inline d-print-none">
+                        Total records: {{ $datas->count() }}
+                    </span>
+                </div>
 
-    </html>
+                <div class="card-body p-0 table-container">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Vendor Code</th>
+                                    <th>Vendor Name</th>
+                                    <th>Item Code</th>
+                                    <th>Description</th>
+                                    <th>Delivery No</th>
+                                    <th>Incoming Date</th>
+                                    <th>Quantity</th>
+                                    <th>Claim Start Date</th>
+                                    <th>Claim Finish Date</th>
+                                    <th>Can Use</th>
+                                    <th>Remarks</th>
+                                    <th>Reason</th>
+                                    <th>Risk</th>
+                                    <th>Customer Stopline</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($datas as $data)
+                                    <tr>
+                                        <td>{{ $data->id }}</td>
+                                        <td>{{ $data->vendor_code }}</td>
+                                        <td>{{ $data->vendor_name }}</td>
+                                        <td>{{ $data->item_code }}</td>
+                                        <td class="text-start">{{ $data->description }}</td>
+                                        <td>{{ $data->delivery_no }}</td>
+                                        <td>{{ $data->incoming_date }}</td>
+                                        <td>{{ $data->quantity }}</td>
+                                        <td>{{ $data->claim_start_date }}</td>
+                                        <td>{{ $data->claim_finish_date }}</td>
+                                        <td>{{ $data->can_use }}</td>
+                                        <td class="text-start">{{ $data->remarks }}</td>
+                                        <td class="text-start">{{ $data->reason }}</td>
+                                        <td>{{ $data->risk }}</td>
+                                        <td>{{ $data->customer_stopline }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="15" class="text-center py-3">
+                                            No data available for current filter.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
 @endsection
