@@ -30,7 +30,7 @@ class Show extends Component
 
         // Mirror your index role logic
         $user = auth()->user();
-        $this->canManage = $user->role->name === 'SUPERADMIN' || ($user->department->name === 'PERSONALIA');
+        $this->canManage = $user->hasRole('super-admin')|| ($user->department->name === 'PERSONALIA');
     }
 
     public function deleteService(int $id): void

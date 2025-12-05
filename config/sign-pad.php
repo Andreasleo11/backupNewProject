@@ -20,7 +20,7 @@ return [
     /**
      * Route name where you want to redirect users after signing.
      */
-    'redirect_route_name' => 'formkeluar.home',
+    'redirect_route_name' => 'formkeluar',
 
     /**
      * Width and height of the signature rectangle.

@@ -40,48 +40,13 @@
 
         {{-- Dashboard Employee (Dept Head) --}}
         @if ($deptHead)
+            {{-- 
             <li class="sidebar-item" id="sidebar-item-dashboard-employee">
                 <x-sidebar.link :href="route('employee.dashboard')" icon="bx bx-line-chart" :active="request()->routeIs('employee.dashboard')">
                     Dashboard Employee
                 </x-sidebar.link>
             </li>
-        @endif
-
-        {{-- Admin --}}
-        @if ($isSuper)
-            <x-sidebar.group id="adminGroup" icon="bx bx-bug" title="Admin" :open="$groupOpen['adminGroup'] ?? false">
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.users')" icon="bx bx-user" :active="request()->routeIs('superadmin.users*')">Users</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.departments')" icon="bx bx-building-house"
-                        :active="request()->routeIs('superadmin.departments*')">Departments</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.specifications')" icon="bx bx-task"
-                        :active="request()->routeIs('superadmin.specifications*')">Specifications</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.users.permissions.index')" icon="bx bx-lock-alt" :active="request()->routeIs('superadmin.users.permissions*')">Users
-                        Permissions</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('superadmin.permissions.index')" icon="bx bx-lock-alt"
-                        :active="request()->routeIs('superadmin.permissions*')">Permissions</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('changeemail.page')" icon="bx bx-file" :active="request()->routeIs('changeemail.page')">Change Default
-                        Email QC</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('pt.index')" icon="bx bx-file" :active="request()->routeIs('pt.*')">Project
-                        Tracker</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('md.parts.import')" icon="bx bx-file" :active="request()->routeIs('md.parts.import')">Master Data
-                        Parts</x-sidebar.link>
-                </li>
-            </x-sidebar.group>
+             --}}
         @endif
 
         {{-- Computer --}}
@@ -95,12 +60,6 @@
                     <x-sidebar.link :href="route('masterinventory.index')" icon="bx bx-file" :active="request()->routeIs('masterinventory.*')">Inventory
                         Master</x-sidebar.link>
                 </li>
-                @if ($deptHead || $isSuper)
-                    <li class="sidebar-item">
-                        <x-sidebar.link :href="route('index.employeesmaster')" icon="bx bx-file" :active="request()->routeIs('index.employeesmaster')">Employee
-                            Master</x-sidebar.link>
-                    </li>
-                @endif
                 <li class="sidebar-item">
                     <x-sidebar.link :href="route('maintenance.inventory.index')" icon="bx bx-file" :active="request()->routeIs('maintenance.inventory.*')">Maintenance
                         Inventory</x-sidebar.link>
@@ -290,15 +249,6 @@
             </li>
         </x-sidebar.group>
 
-        {{-- Stock Management --}}
-        <x-sidebar.group id="stockManagementGroup" icon="bx bxs-component" title="Stock Management"
-            :open="$groupOpen['stockManagementGroup'] ?? false">
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('mastertinta.index')" icon="bx bx-file" :active="request()->routeIs('mastertinta.*')">Master
-                    Stock</x-sidebar.link>
-            </li>
-        </x-sidebar.group>
-
         {{-- Monthly Budget --}}
         <x-sidebar.group id="monthlyBudgetGroup" icon="bx bx-file" title="Monthly Budget" :open="$groupOpen['monthlyBudgetGroup'] ?? false">
             <li class="sidebar-item">
@@ -345,7 +295,7 @@
         {{-- Other --}}
         <x-sidebar.group id="otherGroup" icon="bx bx-dots-horizontal-rounded" title="Other" :open="$groupOpen['otherGroup'] ?? false">
             <li class="sidebar-item">
-                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest.home')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest.home')">
+                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest')">
                     Purchase Request
                 </x-sidebar.link>
             </li>
@@ -368,11 +318,11 @@
                     Overtime</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formcuti.home')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form
+                <x-sidebar.link :href="route('formcuti')" icon="bx bx-file" :active="request()->routeIs('formcuti.*')">Form
                     Cuti</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formkeluar.home')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
+                <x-sidebar.link :href="route('formkeluar')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
                     Keluar</x-sidebar.link>
             </li>
 
@@ -422,22 +372,25 @@
         </x-sidebar.group>
 
         {{-- File Compliance --}}
-        <x-sidebar.group id="fileComplianceGroup" icon="bx bx-file"
-            title="File Compliance" :open="$groupOpen['fileComplianceGroup'] ?? false">
+        <x-sidebar.group id="fileComplianceGroup" icon="bx bx-file" title="File Compliance" :open="$groupOpen['fileComplianceGroup'] ?? false">
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('requirements.index')" icon="bx bx-file" :active="request()->routeIs('requirements.index')">Requirements</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('requirements.assign')" icon="bx bx-file" :active="request()->routeIs('requirements.assign')">Requirements Assign</x-sidebar.link>
+                <x-sidebar.link :href="route('requirements.assign')" icon="bx bx-file" :active="request()->routeIs('requirements.assign')">Requirements
+                    Assign</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('admin.requirement-uploads')" icon="bx bx-file" :active="request()->routeIs('admin.requirement-uploads')">Review Upload</x-sidebar.link>
+                <x-sidebar.link :href="route('admin.requirement-uploads')" icon="bx bx-file" :active="request()->routeIs('admin.requirement-uploads')">Review
+                    Upload</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('departments.overview')" icon="bx bx-file" :active="request()->routeIs('departments.overview')">Departments Overview</x-sidebar.link>
+                <x-sidebar.link :href="route('departments.overview')" icon="bx bx-file" :active="request()->routeIs('departments.overview')">Departments
+                    Overview</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('compliance.dashboard')" icon="bx bx-file" :active="request()->routeIs('compliance.dashboard')">Compliance Dashboard</x-sidebar.link>
+                <x-sidebar.link :href="route('compliance.dashboard')" icon="bx bx-file" :active="request()->routeIs('compliance.dashboard')">Compliance
+                    Dashboard</x-sidebar.link>
             </li>
         </x-sidebar.group>
     </ul>

@@ -10,7 +10,7 @@
                 Are you sure you want to reset <strong>{{ $user->email }}</strong> password?
             </div>
             <div class="modal-footer">
-                <form action="{{ route('superadmin.users.reset.password', $user->id) }}" method="GET"
+                <form action="{{ route('admin.users.reset.password', $user->id) }}" method="GET"
                     style="display: inline;">
                     @csrf
                     <button type="submit" class="btn btn-danger">Reset</button>

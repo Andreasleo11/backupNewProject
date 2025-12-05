@@ -10,8 +10,6 @@ class DeliveryNoteIndex extends Component
 {
     use WithPagination;
 
-    protected $paginationTheme = 'bootstrap';
-
     public $inputStatus = 'all';
 
     public $inputBranch = 'all';
