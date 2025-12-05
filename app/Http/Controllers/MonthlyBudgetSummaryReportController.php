@@ -192,7 +192,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $formattedCreatedAt = $carbonDate->format('d/m/Y (H:i:s)');
 
         return view(
-            'monthly_budget_report.summary.detail',
+            'monthly-budget-reports.summary.detail',
             compact('groupedDetailsForView', 'report', 'monthYear', 'formattedCreatedAt'),
         );
     }

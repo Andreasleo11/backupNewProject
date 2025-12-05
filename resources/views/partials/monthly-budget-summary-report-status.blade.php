@@ -1,27 +1,41 @@
-@if ($status === 7)
-    <span class="badge text-bg-danger px-3 py-2 fs-6">Cancelled</span>
-    <button data-bs-toggle="tooltip" data-bs-title="Reject Reason: {{ $report->cancel_reason ?? '-' }}"
-        class="btn btn-secondary btn-sm align-items-center">
-        <i class='bx bx-info-circle'></i></button>
-@elseif ($status === 6)
-    <span class="badge text-bg-danger px-3 py-2 fs-6">Rejected</span>
-    <button data-bs-toggle="tooltip" data-bs-title="Reject Reason: {{ $report->reject_reason ?? '-' }}"
-        class="btn btn-secondary btn-sm align-items-center">
-        <i class='bx bx-info-circle'></i></button>
-@elseif($status === 5)
-    <span class="badge text-bg-success px-3 py-2 fs-6">Approved</span>
-@elseif($status === 4)
-    <span class="badge text-bg-warning px-3 py-2 fs-6">Waiting for Director</span>
-@elseif($status === 3)
-    <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting for Dept Head</span>
-@elseif($status === 2)
-    <span class="badge text-bg-secondary px-3 py-2 fs-6">Waiting for GM</span>
-@elseif($status === 1)
-    <span class="badge text-black-50 bg-primary-subtle px-3 py-2 fs-6">Waiting Creator</span>
-@endif
+@php
+    use App\Enums\MonthlyBudgetSummaryStatus;
 
-<script type="module">
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(
-        tooltipTriggerEl));
-</script>
+    $statusEnum = $status instanceof MonthlyBudgetSummaryStatus
+        ? $status
+        : MonthlyBudgetSummaryStatus::tryFrom((int) $status);
+
+    $baseBadge = 'inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium';
+@endphp
+
+@if (!$statusEnum)
+    <span class="{{ $baseBadge }} bg-slate-100 text-slate-500 ring-1 ring-slate-200">
+        <i class="bx bx-help-circle mr-1 text-[0.95rem]"></i>
+        Unknown
+    </span>
+@else
+    {{-- Badge status utama --}}
+    <span class="{{ $baseBadge }} {{ $statusEnum->badgeClasses() }}">
+        <i class="{{ $statusEnum->icon() }} mr-1 text-[0.95rem]"></i>
+        {{ $statusEnum->label() }}
+    </span>
+
+    {{-- Tooltip alasan reject / cancel --}}
+    @if ($statusEnum->hasTooltipReason())
+        @php
+            $reason = $statusEnum === MonthlyBudgetSummaryStatus::CANCELLED
+                ? ($report->cancel_reason ?? '-')
+                : ($report->reject_reason ?? '-');
+        @endphp
+
+        <button
+            type="button"
+            data-bs-toggle="tooltip"
+            data-bs-title="{{ $statusEnum->tooltipLabel() }}: {{ $reason }}"
+            class="inline-flex items-center ml-2 rounded-md border border-slate-300 bg-white px-2 py-1
+                   text-[10px] text-slate-600 shadow-sm hover:bg-slate-50"
+        >
+            <i class="bx bx-info-circle text-[0.9rem]"></i>
+        </button>
+    @endif
+@endif
