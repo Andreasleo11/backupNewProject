@@ -110,7 +110,7 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', fn() => view('welcome'))->name('/');
 
-Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
+Route::get('/', fn() => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
 
 Auth::routes();
 
@@ -238,13 +238,12 @@ Route::middleware('auth')->group(function () {
     Route::get('purc/vendorclaimresponse', [PurchasingSupplierEvaluationController::class, 'kriteria5'])->name('kriteria5');
     Route::get('purc/vendorlistcertificate', [PurchasingSupplierEvaluationController::class, 'kriteria6'])->name('kriteria6');
 
-    
     Route::get('/foremind-detail', [PurchasingController::class, 'indexhome'])->name('purchasing_home');
     Route::get('/foremind-detail/print', [PurchasingDetailController::class, 'index']);
     Route::get('/foremind-detail/printCustomer', [PurchasingDetailController::class, 'indexcustomer']);
     Route::get('/foremind-detail/print/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcel']);
     Route::get('/foremind-detail/print/customer/excel/{vendor_code}', [PurchasingDetailController::class, 'exportExcelcustomer']);
-    
+
     Route::get('/store-data', [PurchasingMaterialController::class, 'storeDataInNewTable'])->name('construct_data');
     Route::get('/insert-material_prediction', [materialPredictionController::class, 'processForemindFinalData'])->name('material_prediction');
 
@@ -268,12 +267,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicles/{vehicle}', VehiclesShow::class)->name('vehicles.show');
     Route::get('/vehicle/create', VehiclesForm::class)->name('vehicles.create');
     Route::get('/vehicles/{vehicle}/edit', VehiclesForm::class)->name('vehicles.edit');
-    
+
     Route::get('/services/create/{vehicle}', ServiceForm::class)->name('services.create');
     Route::get('/services/{record}/edit', ServiceForm::class)->name('services.edit');
+
+    Route::get('monthly-budget-reports', [MonthlyBudgetReportController::class, 'index'])->name('monthly-budget-reports.index');
+    Route::get('monthly-budget-reports/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly-budget-reports.create');
+    Route::post('monthly-budget-reports', [MonthlyBudgetReportController::class, 'store'])->name('monthly-budget-reports.store');
+    Route::get('monthly-budget-reports/{id}/edit', [MonthlyBudgetReportController::class, 'edit'])->name('monthly-budget-reports.edit');
+    Route::put('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'update'])->name('monthly-budget-reports.update');
+    Route::get('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly-budget-reports.show');
+    Route::delete('monthly-budget-reports/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly-budget-reports.delete');
+    Route::put('monthly-budget-reports/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly-budget-reports.reject');
+    Route::put('monthly-budget-reports/{id}/cancel', [MonthlyBudgetReportController::class, 'cancel'])->name('monthly-budget-reports.cancel');
+    
+    Route::put('monthly-budget-reports/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
+    Route::post('monthly-budget-reports/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
+
+    Route::post('monthly-budget-report-detail', [MonthlyBudgetReportDetailController::class, 'store'])->name('monthly.budget.report.detail.store');
+    Route::put('monthly-budget-report-detail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
+    Route::delete('monthly-budget-report-detail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
 });
 
-require __DIR__.'/admin.php';
+require __DIR__ . '/admin.php';
 
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
     Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
@@ -517,22 +533,6 @@ Route::prefix('monthly-budget-summaries')->group(function () {
 Route::put('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
 Route::delete('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'destroy'])->name('monthly.budget.report.summary.detail.destroy');
 
-Route::get('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'index'])->name('monthly.budget.report.index');
-Route::get('monthlyBudgetReport/create', [MonthlyBudgetReportController::class, 'create'])->name('monthly.budget.report.create');
-Route::get('monthlyBudgetReport/{id}/edit', [MonthlyBudgetReportController::class, 'edit'])->name('monthly.budget.report.edit');
-Route::put('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'update'])->name('monthly.budget.report.update');
-Route::post('monthlyBudgetReports', [MonthlyBudgetReportController::class, 'store'])->name('monthly.budget.report.store');
-Route::get('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'show'])->name('monthly.budget.report.show');
-Route::delete('monthlyBudgetReport/{id}', [MonthlyBudgetReportController::class, 'destroy'])->name('monthly.budget.report.delete');
-Route::put('monthlyBudgetReport/{id}/reject', [MonthlyBudgetReportController::class, 'reject'])->name('monthly.budget.report.reject');
-Route::put('monthlyBudgetReport/{id}/cancel', [MonthlyBudgetReportController::class, 'cancel'])->name('monthly.budget.report.cancel');
-Route::put('monthlyBudgetReport/save-autograph/{id}', [MonthlyBudgetReportController::class, 'saveAutograph'])->name('monthly.budget.save.autograph');
-Route::post('/download-monthly-excel-template', [MonthlyBudgetReportController::class, 'downloadExcelTemplate'])->name('monthly.budget.download.excel.template');
-
-Route::post('monthlyBudgetReportDetail', [MonthlyBudgetReportDetailController::class, 'store'])->name('monthly.budget.report.detail.store');
-Route::put('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'update'])->name('monthly.budget.report.detail.update');
-Route::delete('monthlyBudgetReportDetail/{id}', [MonthlyBudgetReportDetailController::class, 'destroy'])->name('monthly.budget.report.detail.delete');
-
 Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
 Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
 Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
@@ -597,7 +597,7 @@ Route::middleware(['auth', 'is.head.or.management'])->group(function () {
 
 Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     // dd($request->all());
-    if (! $request->hasValidSignature()) {
+    if (!$request->hasValidSignature()) {
         abort(403, 'Invalid or expired link.');
     }
 
@@ -621,7 +621,7 @@ Route::get('/inspection-report/create', InspectionForm::class)->name('inspection
 Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/master-data/parts/import', fn () => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
     Route::get('/parts/import', ImportParts::class)->name('parts.import');
     Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });

@@ -224,9 +224,9 @@
             'children' => [
                 [
                     'label' => 'Reports',
-                    'route' => 'monthly.budget.report.index',
+                    'route' => 'monthly-budget-reports.index',
                     'icon' => 'document-text',
-                    'active' => request()->routeIs('monthly.budget.report.*'),
+                    'active' => request()->routeIs('monthly-budget-reports.*'),
                 ],
                 [
                     'label' => 'Summary Reports',
