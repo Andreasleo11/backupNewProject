@@ -263,6 +263,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
     Route::get('/destinations/create', DestinationForm::class)->name('destination.create');
     Route::get('/destinations/{id}/edit', DestinationForm::class)->name('destination.edit');
+
+    Route::get('/vehicles', VehiclesIndex::class)->name('vehicles.index');
+    Route::get('/vehicles/{vehicle}', VehiclesShow::class)->name('vehicles.show');
+    Route::get('/vehicle/create', VehiclesForm::class)->name('vehicles.create');
+    Route::get('/vehicles/{vehicle}/edit', VehiclesForm::class)->name('vehicles.edit');
+    
+    Route::get('/services/create/{vehicle}', ServiceForm::class)->name('services.create');
+    Route::get('/services/{record}/edit', ServiceForm::class)->name('services.edit');
 });
 
 require __DIR__.'/admin.php';
@@ -635,15 +643,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notifications/unread-count', [NotificationFeedController::class, 'unreadCount'])->name('notifications.unread-count');
     Route::get('/notifications/feed', [NotificationFeedController::class, 'feed'])->name('notifications.feed');
     Route::post('/notifications/mark-read/{id?}', [NotificationFeedController::class, 'markAsRead'])->name('notifications.mark-read');
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/vehicles', VehiclesIndex::class)->name('vehicles.index');
-    Route::get('/vehicles/{vehicle}', VehiclesShow::class)->name('vehicles.show');
-    Route::get('/vehicle/create', VehiclesForm::class)->name('vehicles.create');
-    Route::get('/vehicles/{vehicle}/edit', VehiclesForm::class)->name('vehicles.edit');
-    Route::get('/services/create/{vehicle}', ServiceForm::class)->name('services.create');
-    Route::get('/services/{record}/edit', ServiceForm::class)->name('services.edit');
 });
 
 Route::middleware(['auth'])->group(function () {

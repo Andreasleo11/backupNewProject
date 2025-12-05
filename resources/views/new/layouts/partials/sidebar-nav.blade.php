@@ -213,7 +213,7 @@
                     'label' => 'Vehicles',
                     'route' => 'vehicles.index',
                     'icon' => 'document-text',
-                    'active' => request()->routeIs('vehicles.*'),
+                    'active' => request()->routeIs('vehicles.*') || request()->routeIs('services.*'),
                 ],
             ],
         ],

@@ -33,7 +33,7 @@ class Index extends Component
 
     public function mount()
     {
-        $this->fullFeature = auth()->user()->role->name === 'SUPERADMIN' || (auth()->user()->department->name === 'PERSONALIA');
+        $this->fullFeature = auth()->user()->hasRole('super-admin') || (auth()->user()->department->name === 'PERSONALIA');
     }
 
     public function sortBy(string $field): void
