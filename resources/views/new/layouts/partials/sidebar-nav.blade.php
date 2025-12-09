@@ -386,12 +386,6 @@
                     'icon' => 'document-text',
                     'active' => request()->routeIs('department-expenses.*'),
                 ],
-                [
-                    'label' => 'Vehicles',
-                    'route' => 'vehicles.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('vehicles.*'),
-                ],
             ],
         ],
         [

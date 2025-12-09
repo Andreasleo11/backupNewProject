@@ -110,7 +110,7 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', fn() => view('welcome'))->name('/');
 
-Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
+Route::get('/', fn() => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
 
 Auth::routes();
 
@@ -299,12 +299,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/refresh', [MonthlyBudgetSummaryReportController::class, 'refresh'])->name('monthly-budget-summary.refresh');
     });
 
+    Route::get('/files', FileLibrary::class)->name('files.index');
+    Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
+    Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
+
     Route::get('/reports/department-expenses', DepartmentExpenses::class)
         ->middleware(['auth'])
         ->name('department-expenses.index');
 });
 
-require __DIR__.'/admin.php';
+require __DIR__ . '/admin.php';
 
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
     Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
@@ -601,7 +605,7 @@ Route::middleware(['auth', 'is.head.or.management'])->group(function () {
 
 Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     // dd($request->all());
-    if (! $request->hasValidSignature()) {
+    if (!$request->hasValidSignature()) {
         abort(403, 'Invalid or expired link.');
     }
 
@@ -625,19 +629,13 @@ Route::get('/inspection-report/create', InspectionForm::class)->name('inspection
 Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/master-data/parts/import', fn () => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
     Route::get('/parts/import', ImportParts::class)->name('parts.import');
     Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });
 
 Route::get('/import-jabatan', [EmployeeController::class, 'showImportForm']);
 Route::post('/import-jabatan', [EmployeeController::class, 'importJabatan']);
-
-Route::middleware('auth')->group(function () {
-    Route::get('/files', FileLibrary::class)->name('files.index');
-    Route::get('/files/{upload}/download', DownloadUploadController::class)->name('files.download');
-    Route::get('/files/{upload}/preview', PreviewUploadController::class)->name('files.preview');
-});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/notifications/unread-count', [NotificationFeedController::class, 'unreadCount'])->name('notifications.unread-count');
