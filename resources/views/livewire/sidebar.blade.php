@@ -89,49 +89,6 @@
             </x-sidebar.group>
         @endif
 
-        {{-- Production --}}
-        @if (in_array($department, ['PRODUCTION', 'PE', 'PPIC']) || $isSuper)
-            <x-sidebar.group id="productionGroup" icon="bx bxs-factory" title="Production" :open="$groupOpen['productionGroup'] ?? false">
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('indexpps')" icon="bx bx-file" :active="request()->routeIs('indexpps')">PPS
-                        Wizard</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('capacityforecastindex')" icon="bx bx-file" :active="request()->routeIs('capacityforecastindex')">Capacity By
-                        Forecast</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('pe.formlist')" icon="bx bx-file" :active="request()->routeIs('pe.formlist')">Form Request
-                        Trial</x-sidebar.link>
-                </li>
-            </x-sidebar.group>
-        @endif
-
-        {{-- Business --}}
-        @if ($department === 'BUSINESS' || $isSuper || $department === 'PPIC')
-            <x-sidebar.group id="businessGroup" icon="bx bx-objects-vertical-bottom" title="Business"
-                :open="$groupOpen['businessGroup'] ?? false">
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('indexds')" icon="bx bx-file" :active="request()->routeIs('indexds')">Delivery
-                        Schedule</x-sidebar.link>
-                </li>
-            </x-sidebar.group>
-        @endif
-
-        {{-- Maintenance --}}
-        @if ($department === 'MAINTENANCE' || $isSuper || $department === 'PPIC')
-            <x-sidebar.group id="maintenanceGroup" icon="bx bxs-wrench" title="Maintenance" :open="$groupOpen['maintenanceGroup'] ?? false">
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('moulddown.index')" icon="bx bx-file" :active="request()->routeIs('moulddown.*')">Mould
-                        Repair</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('linedown.index')" icon="bx bx-file" :active="request()->routeIs('linedown.*')">Line
-                        Repair</x-sidebar.link>
-                </li>
-            </x-sidebar.group>
-        @endif
-
         {{-- Human Resource --}}
         @if (($department === 'PERSONALIA' && $deptHead) || $isSuper)
             <x-sidebar.group id="humanResourceGroup" icon="bx bxs-user" title="Human Resource" :open="$groupOpen['humanResourceGroup'] ?? false">
@@ -154,17 +111,6 @@
                         Supplier</x-sidebar.link>
                 </li>
                 <li class="sidebar-item">
-                    <x-sidebar.link :href="route('reminderindex')" icon="bx bx-file" :active="request()->routeIs('reminderindex')">Reminder</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('purchasingrequirement.index')" icon="bx bx-file" :active="request()->routeIs('purchasingrequirement.*')">Purchasing
-                        Requirement</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('indexds')" icon="bx bx-file" :active="request()->routeIs('indexds')">Delivery
-                        Schedule</x-sidebar.link>
-                </li>
-                <li class="sidebar-item">
                     <x-sidebar.link :href="route('fc.index')" icon="bx bx-file" :active="request()->routeIs('fc.*')">Forecast Customer
                         Master</x-sidebar.link>
                 </li>
@@ -181,62 +127,10 @@
             </x-sidebar.group>
         @endif
 
-        {{-- Inventory --}}
-        <x-sidebar.group id="inventoryGroup" icon="bx bxs-component" title="Inventory" :open="$groupOpen['inventoryGroup'] ?? false">
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('delsched.averagemonth')" icon="bx bx-file" :active="request()->routeIs('delsched.averagemonth')">FG Stock
-                    Monitoring</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('inventoryfg')" icon="bx bx-cube" :active="request()->routeIs('inventoryfg')">Inventory
-                    FG</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('inventorymtr')" icon="bx bx-cube" :active="request()->routeIs('inventorymtr')">Inventory
-                    MTR</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('invlinelist')" icon="bx bx-file" :active="request()->routeIs('invlinelist')">Machine and Line
-                    list</x-sidebar.link>
-            </li>
-        </x-sidebar.group>
-
+        
         {{-- Store --}}
         <x-sidebar.group id="storeGroup" icon="bx bxs-component" title="Store" :open="$groupOpen['storeGroup'] ?? false">
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('barcodeindex')" icon="bx bx-cube" :active="request()->routeIs('barcodeindex')">Create
-                    Barcode</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('barcode.base.index')" icon="bx bx-file" :active="request()->routeIs('barcode.base.*')">Barcode
-                    Feature</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('inandout.index')" icon="bx bx-cube" :active="request()->routeIs('inandout.*')">Scan
-                    Barcode</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('missingbarcode.index')" icon="bx bx-file" :active="request()->routeIs('missingbarcode.*')">Missing Barcode
-                    Generator</x-sidebar.link>
-            </li>
-            @if ($user->name === 'raymond')
-                <li class="sidebar-item">
-                    <x-sidebar.link :href="route('list.barcode')" icon="bx bx-file" :active="request()->routeIs('list.barcode')">Report
-                        History</x-sidebar.link>
-                </li>
-            @endif
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('barcode.historytable')" icon="bx bx-file" :active="request()->routeIs('barcode.historytable')">Report History
-                    Table Style</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('stockallbarcode')" icon="bx bx-file" :active="request()->routeIs('stockallbarcode')">STOCK
-                    Item</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('updated.barcode.item.position')" icon="bx bx-file" :active="request()->routeIs('updated.barcode.item.position')">List All Item
-                    Barcode</x-sidebar.link>
-            </li>
+           
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('delivery-notes.index')" icon="bx bx-file" :active="request()->routeIs('delivery-notes.*')">Delivery
                     Notes</x-sidebar.link>
@@ -246,17 +140,6 @@
             </li>
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('vehicles.index')" icon="bx bx-file" :active="request()->routeIs('vehicles.*')">Vehicles</x-sidebar.link>
-            </li>
-        </x-sidebar.group>
-
-        {{-- Monthly Budget --}}
-        <x-sidebar.group id="monthlyBudgetGroup" icon="bx bx-file" title="Monthly Budget" :open="$groupOpen['monthlyBudgetGroup'] ?? false">
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('monthly.budget.report.index')" icon="bx bx-file" :active="request()->routeIs('monthly.budget.report.*')">Reports</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('monthly-budget-summary-report.index')" icon="bx bx-file" :active="request()->routeIs('monthly-budget-summary-report.*')">Summary
-                    Reports</x-sidebar.link>
             </li>
         </x-sidebar.group>
 
@@ -324,11 +207,6 @@
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('formkeluar')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
                     Keluar</x-sidebar.link>
-            </li>
-
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('indexds')" icon="bx bx-file" :active="request()->routeIs('indexds')">Delivery
-                    Schedule</x-sidebar.link>
             </li>
 
             <li class="sidebar-item">

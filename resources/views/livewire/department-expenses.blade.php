@@ -1,38 +1,63 @@
 @php
-    $monthLabel = \Illuminate\Support\Carbon::parse(($month ?? now()->format('Y-m')) . '-01')->isoFormat('MMMM YYYY');
-    $grandTotal = $totals->sum('total_expense');
+    use Illuminate\Support\Carbon;
+
+    $monthLabel   = Carbon::parse(($month ?? now()->format('Y-m')) . '-01')->isoFormat('MMMM YYYY');
+    $grandTotal   = $totals->sum('total_expense');
     $deptSelected = $deptId ? optional($totals->firstWhere('dept_id', $deptId))->dept_name : null;
 @endphp
 
-<div class="container-fluid px-0">
-    {{-- Top header / toolbar --}}
-    <div class="card border-0 shadow-sm mb-3 design-hero">
-        <div class="card-body p-3 p-md-4">
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="hero-avatar d-none d-sm-flex">
-                        <i class="bi bi-graph-up"></i>
-                    </div>
-                    <div>
-                        <h5 class="mb-1 fw-bold">Department Expenses</h5>
-                        <div class="text-muted small">Unified from Purchase Requests & Monthly Budget summary</div>
-                    </div>
-                </div>
+<div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 space-y-4">
 
-                <div x-data="tomMonthSelect({
+    {{-- Hero / toolbar --}}
+    <section
+        class="design-hero rounded-xl border border-slate-200 bg-white/90 shadow-sm px-4 py-3 sm:px-6 sm:py-4">
+        <div class="flex flex-wrap items-center gap-3">
+            {{-- Left: title --}}
+            <div class="flex items-center gap-3">
+                <div class="hero-avatar hidden sm:inline-flex">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div>
+                    <h2 class="text-base sm:text-lg font-semibold text-slate-900">
+                        Department Expenses
+                    </h2>
+                    <p class="text-xs sm:text-sm text-slate-500">
+                        Unified from Purchase Requests &amp; Monthly Budget summary
+                    </p>
+                </div>
+            </div>
+
+            {{-- Right: filters --}}
+            <div
+                class="ml-auto flex flex-wrap items-center gap-2"
+                x-data="tomMonthSelect({
                     value: @entangle('month').live,
                     options: @js($monthOptions),
                     placeholder: 'Select month…'
-                })" x-init="mount()"
-                    class="ms-auto d-flex flex-wrap align-items-center gap-2">
-                    <div wire:ignore class="input-group input-group-sm" style="width: 220px;">
-                        <span class="input-group-text bg-white"><i class="bi bi-calendar2-month"></i></span>
-                        <select x-ref="select"></select>
+                })"
+                x-init="mount()"
+            >
+                {{-- Month select (TomSelect) --}}
+                <div wire:ignore class="w-56">
+                    <div
+                        class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs sm:text-sm text-slate-700 shadow-sm">
+                        <span class="mr-2 text-slate-400">
+                            <i class="bi bi-calendar2-month"></i>
+                        </span>
+                        <select x-ref="select" class="flex-1 bg-transparent text-xs sm:text-sm"></select>
                     </div>
+                </div>
 
-                    <div class="input-group input-group-sm" style="width: 260px;">
-                        <span class="input-group-text bg-white"><i class="bi bi-person-check"></i></span>
-                        <select class="form-select" wire:model.live="prSigner">
+                {{-- PR signer select --}}
+                <div class="w-64">
+                    <div class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs sm:text-sm text-slate-700 shadow-sm">
+                        <span class="mr-2 text-slate-400">
+                            <i class="bi bi-person-check"></i>
+                        </span>
+                        <select
+                            class="flex-1 bg-transparent text-xs sm:text-sm focus:outline-none"
+                            wire:model.live="prSigner"
+                        >
                             <option value="">All PR approvers</option>
                             @foreach ($prSigners as $signer)
                                 <option value="{{ $signer }}">{{ $signer }}</option>
@@ -41,324 +66,466 @@
                     </div>
                 </div>
             </div>
-
-            {{-- KPI chips --}}
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <span class="badge rounded-pill text-bg-light border fw-normal">
-                    <i class="bi bi-calendar2-week me-1"></i> Period:
-                    <span class="fw-semibold ms-1">{{ $monthLabel }}</span>
-                </span>
-                <span class="badge rounded-pill text-bg-light border fw-normal">
-                    <i class="bi bi-cash-coin me-1"></i> Total:
-                    <span class="fw-semibold ms-1">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
-                </span>
-                <span class="badge rounded-pill text-bg-light border fw-normal">
-                    <i class="bi bi-diagram-3 me-1"></i> Departments:
-                    <span class="fw-semibold ms-1">{{ $totals->count() }}</span>
-                </span>
-                @if ($deptSelected)
-                    <span
-                        class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle fw-normal">
-                        <i class="bi bi-pin-angle me-1"></i> Selected: <span
-                            class="fw-semibold ms-1">{{ $deptSelected }}</span>
-                    </span>
-                @endif
-                @if ($prSigner)
-                    <span class="badge rounded-pill text-bg-light border fw-normal">
-                        <i class="bi bi-person-check me-1"></i> PR Approver:
-                        <span class="fw-semibold ms-1">{{ $prSigner }}</span>
-                    </span>
-                @endif
-            </div>
         </div>
-    </div>
+
+        {{-- KPI chips --}}
+        <div class="mt-3 flex flex-wrap items-center gap-2 text-xs sm:text-[13px]">
+            <span
+                class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
+                <i class="bi bi-calendar2-week mr-1 text-slate-400"></i>
+                Period:
+                <span class="ml-1 font-semibold">{{ $monthLabel }}</span>
+            </span>
+
+            <span
+                class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
+                <i class="bi bi-cash-coin mr-1 text-emerald-500"></i>
+                Total:
+                <span class="ml-1 font-semibold">
+                    Rp {{ number_format($grandTotal, 0, ',', '.') }}
+                </span>
+            </span>
+
+            <span
+                class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
+                <i class="bi bi-diagram-3 mr-1 text-indigo-500"></i>
+                Departments:
+                <span class="ml-1 font-semibold">{{ $totals->count() }}</span>
+            </span>
+
+            @if ($deptSelected)
+                <span
+                    class="inline-flex items-center rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-indigo-700">
+                    <i class="bi bi-pin-angle mr-1"></i>
+                    Selected:
+                    <span class="ml-1 font-semibold">{{ $deptSelected }}</span>
+                </span>
+            @endif
+
+            @if ($prSigner)
+                <span
+                    class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
+                    <i class="bi bi-person-check mr-1 text-slate-400"></i>
+                    PR Approver:
+                    <span class="ml-1 font-semibold">{{ $prSigner }}</span>
+                </span>
+            @endif
+        </div>
+    </section>
 
     {{-- Chart card --}}
-    <div class="card border-0 shadow-sm mb-3" wire:key="dept-expenses-chart" x-data="departmentChart()"
+    <section
+        class="rounded-xl border border-slate-200 bg-white shadow-sm"
+        wire:key="dept-expenses-chart"
+        x-data="departmentChart()"
         x-init="init({
             labels: @js($totals->pluck('dept_name')->values()),
             data: @js($totals->pluck('total_expense')->map(fn($v) => (float) $v)->values()),
             deptIds: @js($totals->pluck('dept_id')->map(fn($v) => (int) $v)->values())
-        })">
-        <div class="card-body p-3 p-md-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">Expenses by Department</h6>
-                <small class="text-muted">
+        })"
+    >
+        <div class="px-4 py-3 sm:px-6 sm:py-4">
+            <div class="mb-2 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-900">
+                    Expenses by Department
+                </h3>
+                <span class="text-xs text-slate-500">
                     {{ \Illuminate\Support\Carbon::parse($month . '-01')->isoFormat('MMMM YYYY') }}
-                </small>
+                </span>
             </div>
 
-            <div class="position-relative chart-shell">
-                {{-- Livewire must ignore ONLY the canvas, not the overlay --}}
-                <div wire:ignore class="h-100">
+            <div class="chart-shell relative">
+                <div wire:ignore class="h-full">
                     <canvas x-ref="canvas" role="img" aria-label="Department expenses bar chart"></canvas>
                 </div>
 
-                {{-- This overlay NOW sits OUTSIDE wire:ignore and only appears while loading --}}
-                <div class="chart-overlay" wire:loading wire:target="month,showDetail,clearDetail"></div>
+                {{-- overlay loading --}}
+                <div
+                    class="chart-overlay pointer-events-none absolute inset-0 bg-white/50 backdrop-blur-sm"
+                    wire:loading
+                    wire:target="month,showDetail,clearDetail"
+                ></div>
             </div>
 
             @if ($deptId)
-                <div class="d-flex justify-content-end mt-2">
-                    <button type="button" class="btn btn-link btn-sm text-decoration-none" wire:click="clearDetail">
-                        <i class="bi bi-x-circle me-1"></i> Clear highlight
+                <div class="mt-2 flex justify-end">
+                    <button
+                        type="button"
+                        class="inline-flex items-center text-xs font-medium text-slate-500 hover:text-slate-700"
+                        wire:click="clearDetail"
+                    >
+                        <i class="bi bi-x-circle mr-1"></i>
+                        Clear highlight
                     </button>
                 </div>
             @endif
         </div>
-    </div>
+    </section>
 
-    {{-- Content area: overview totals vs. details --}}
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white border-0 pb-0">
-            <ul class="nav nav-tabs small" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link @if ($activeTab === 'overview') active @endif" type="button"
-                        role="tab" wire:click="$set('activeTab','overview')"
-                        aria-selected="{{ $activeTab === 'overview' ? 'true' : 'false' }}">
-                        <i class="bi bi-table me-1"></i> Overview
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link @if ($activeTab === 'detail') active @endif" type="button"
-                        role="tab" wire:click="$set('activeTab','detail')"
-                        aria-selected="{{ $activeTab === 'detail' ? 'true' : 'false' }}">
-                        <i class="bi bi-list-ul me-1"></i> Details
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link @if ($activeTab === 'compare') active @endif" type="button"
-                        role="tab" wire:click="$set('activeTab','compare')"
-                        aria-selected="{{ $activeTab === 'compare' ? 'true' : 'false' }}">
-                        <i class="bi bi-arrow-left-right me-1"></i> Compare
-                    </button>
-                </li>
-            </ul>
+    {{-- Content area: tabs + content --}}
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        {{-- Tabs --}}
+        <div class="border-b border-slate-200 px-4 pt-3 sm:px-6">
+            <div class="flex space-x-4 text-xs sm:text-sm">
+                <button
+                    type="button"
+                    wire:click="$set('activeTab','overview')"
+                    @class([
+                        'inline-flex items-center border-b-2 px-2 pb-2',
+                        $activeTab === 'overview'
+                            ? 'border-indigo-500 text-indigo-600 font-semibold'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300',
+                    ])
+                >
+                    <i class="bi bi-table mr-1"></i>
+                    Overview
+                </button>
+
+                <button
+                    type="button"
+                    wire:click="$set('activeTab','detail')"
+                    @class([
+                        'inline-flex items-center border-b-2 px-2 pb-2',
+                        $activeTab === 'detail'
+                            ? 'border-indigo-500 text-indigo-600 font-semibold'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300',
+                    ])
+                >
+                    <i class="bi bi-list-ul mr-1"></i>
+                    Details
+                </button>
+
+                <button
+                    type="button"
+                    wire:click="$set('activeTab','compare')"
+                    @class([
+                        'inline-flex items-center border-b-2 px-2 pb-2',
+                        $activeTab === 'compare'
+                            ? 'border-indigo-500 text-indigo-600 font-semibold'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300',
+                    ])
+                >
+                    <i class="bi bi-arrow-left-right mr-1"></i>
+                    Compare
+                </button>
+            </div>
         </div>
 
-        <div class="card-body pt-3">
-            <div class="tab-content">
-                {{-- OVERVIEW TAB --}}
-                <div class="tab-pane fade @if ($activeTab === 'overview') show active @endif" id="tabOverview"
-                    role="tabpanel">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Department</th>
-                                    <th>Dept No</th>
-                                    <th class="text-end">Total Expense</th>
-                                    <th class="text-end"></th>
+        {{-- Tab panes --}}
+        <div class="px-4 pb-4 pt-3 sm:px-6">
+
+            {{-- OVERVIEW --}}
+            @if ($activeTab === 'overview')
+                <div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-left text-sm text-slate-700">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-xs uppercase text-slate-500">
+                                    <th class="px-3 py-2 font-medium">Department</th>
+                                    <th class="px-3 py-2 font-medium">Dept No</th>
+                                    <th class="px-3 py-2 text-right font-medium">Total Expense</th>
+                                    <th class="px-3 py-2 text-right font-medium"></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody class="divide-y divide-slate-100">
                                 @forelse($totals as $r)
-                                    <tr class="row-hoverable">
-                                        <td class="fw-semibold">{{ $r->dept_name }}</td>
-                                        <td class="text-muted">{{ $r->dept_no }}</td>
-                                        <td class="text-end fw-semibold">Rp
-                                            {{ number_format($r->total_expense, 0, ',', '.') }}</td>
-                                        <td class="text-end">
-                                            <button class="btn btn-outline-primary btn-sm"
-                                                wire:click="showDetail({{ (int) $r->dept_id }})">
+                                    <tr class="hover:bg-indigo-50/40">
+                                        <td class="px-3 py-2 font-medium text-slate-900">
+                                            {{ $r->dept_name }}
+                                        </td>
+                                        <td class="px-3 py-2 text-slate-500">
+                                            {{ $r->dept_no }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right font-semibold">
+                                            Rp {{ number_format($r->total_expense, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-3 py-2 text-right">
+                                            <button
+                                                type="button"
+                                                class="inline-flex items-center rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600"
+                                                wire:click="showDetail({{ (int) $r->dept_id }})"
+                                            >
                                                 View lines
                                             </button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-4">
-                                            <i class="bi bi-inbox me-1"></i> No data for {{ $monthLabel }}
+                                        <td colspan="4" class="px-3 py-6 text-center text-slate-400 text-sm">
+                                            <i class="bi bi-inbox mr-1"></i>
+                                            No data for {{ $monthLabel }}.
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
+
                             @if ($totals->count())
                                 <tfoot>
-                                    <tr class="table-light">
-                                        <th colspan="2" class="text-end">Grand Total</th>
-                                        <th class="text-end">Rp {{ number_format($grandTotal, 0, ',', '.') }}</th>
-                                        <th></th>
+                                    <tr class="border-t border-slate-200 bg-slate-50/80 text-sm">
+                                        <th colspan="2" class="px-3 py-2 text-right font-medium text-slate-700">
+                                            Grand Total
+                                        </th>
+                                        <th class="px-3 py-2 text-right font-semibold text-slate-900">
+                                            Rp {{ number_format($grandTotal, 0, ',', '.') }}
+                                        </th>
+                                        <th class="px-3 py-2"></th>
                                     </tr>
                                 </tfoot>
                             @endif
                         </table>
                     </div>
                 </div>
+            @endif
 
-                {{-- DETAIL TAB --}}
-                <div class="tab-pane fade @if ($activeTab === 'detail') show active @endif" id="tabDetail"
-                    role="tabpanel">
+            {{-- DETAIL --}}
+            @if ($activeTab === 'detail')
+                <div>
                     @if (!$deptId)
-                        <div class="alert alert-info small mb-0">
-                            <i class="bi bi-info-circle me-1"></i>
+                        <div
+                            class="rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-xs text-sky-700">
+                            <i class="bi bi-info-circle mr-1"></i>
                             Click a bar in the chart or the “View lines” button in the table to see details.
                         </div>
                     @else
-                        <livewire:reports.department-expense-detail-table :dept-id="$deptId" :month="$month"
-                            :dept-name="$deptSelected ?? $deptId" :month-label="$monthLabel" :pr-signer="$prSigner" :key="'detail-' . $deptId . '-' . $month . '-' . ($prSigner ?? 'all')" />
+                        <livewire:reports.department-expense-detail-table
+                            :dept-id="$deptId"
+                            :month="$month"
+                            :dept-name="$deptSelected ?? $deptId"
+                            :month-label="$monthLabel"
+                            :pr-signer="$prSigner"
+                            :key="'detail-' . $deptId . '-' . $month . '-' . ($prSigner ?? 'all')"
+                        />
                     @endif
                 </div>
+            @endif
 
-                {{-- COMPARE TAB --}}
-                <div class="tab-pane fade @if ($activeTab === 'compare') show active @endif" id="tabCompare"
-                    role="tabpanel">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-body p-3 p-md-4" x-data="compareChart()" x-init="mount()">
+            {{-- COMPARE --}}
+            @if ($activeTab === 'compare')
+                <div
+                    class="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 sm:px-5 sm:py-4 shadow-sm">
+                    <div class="flex flex-wrap items-center gap-2 mb-3" x-data="compareChart()" x-init="mount()">
+                        <h3 class="text-sm font-semibold text-slate-900 mr-2">
+                            Compare
+                        </h3>
 
-                            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                                <h6 class="mb-0 me-2">Compare</h6>
+                        {{-- Mode toggle --}}
+                        <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs">
+                            <label class="inline-flex items-center rounded-md px-2 py-1 cursor-pointer"
+                                :class="{'bg-indigo-50 text-indigo-700': @js($compareMode) === 'range'}">
+                                <input
+                                    type="radio"
+                                    class="sr-only"
+                                    value="range"
+                                    wire:model.live="compareMode"
+                                >
+                                <i class="bi bi-arrow-left-right mr-1"></i> Range
+                            </label>
+                            <label class="inline-flex items-center rounded-md px-2 py-1 cursor-pointer"
+                                :class="{'bg-indigo-50 text-indigo-700': @js($compareMode) === 'rolling'}">
+                                <input
+                                    type="radio"
+                                    class="sr-only"
+                                    value="rolling"
+                                    wire:model.live="compareMode"
+                                >
+                                <i class="bi bi-graph-up-arrow mr-1"></i> Rolling
+                            </label>
+                        </div>
 
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <input type="radio" class="btn-check" id="cmpRange" value="range"
-                                        wire:model.live="compareMode">
-                                    <label class="btn btn-outline-primary" for="cmpRange">
-                                        <i class="bi bi-arrow-left-right me-1"></i> Range
-                                    </label>
-                                    <input type="radio" class="btn-check" id="cmpRolling" value="rolling"
-                                        wire:model.live="compareMode">
-                                    <label class="btn btn-outline-primary" for="cmpRolling">
-                                        <i class="bi bi-graph-up-arrow me-1"></i> Rolling
-                                    </label>
-                                </div>
+                        <div class="hidden h-5 w-px bg-slate-200 sm:inline-block mx-2"></div>
 
-                                <div class="vr mx-2 d-none d-md-block"></div>
-
-                                {{-- Range controls --}}
-                                @if ($compareMode === 'range')
-                                    <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <div x-data="tomMonthSelect({ value: @entangle('startMonth').live, options: @js($monthOptions), placeholder: 'Start…' })" x-init="mount()"
-                                            wire:key="cmp-range-start">
-                                            <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
-                                                <span class="input-group-text bg-white">Start</span>
-                                                <select x-ref="select"></select>
-                                            </div>
-                                        </div>
-                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
-                                            wire:key="cmp-range-end">
-                                            <div class="input-group input-group-sm" style="width: 180px;" wire:ignore>
-                                                <span class="input-group-text bg-white">End</span>
-                                                <select x-ref="select"></select>
-                                            </div>
+                        {{-- Range controls --}}
+                        @if ($compareMode === 'range')
+                            <div class="flex flex-wrap items-center gap-2">
+                                <div
+                                    x-data="tomMonthSelect({
+                                        value: @entangle('startMonth').live,
+                                        options: @js($monthOptions),
+                                        placeholder: 'Start…'
+                                    })"
+                                    x-init="mount()"
+                                    wire:key="cmp-range-start"
+                                >
+                                    <div wire:ignore class="w-44">
+                                        <div
+                                            class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm">
+                                            <span class="mr-1 text-slate-400">Start</span>
+                                            <select x-ref="select" class="flex-1 bg-transparent"></select>
                                         </div>
                                     </div>
-                                @else
-                                    {{-- Rolling controls --}}
-                                    <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <div x-data="tomMonthSelect({ value: @entangle('endMonth').live, options: @js($monthOptions), placeholder: 'End…' })" x-init="mount()"
-                                            wire:key="cmp-rolling-end">
-                                            <div class="input-group input-group-sm" style="width: 220px;" wire:ignore>
-                                                <span class="input-group-text bg-white"><i
-                                                        class="bi bi-calendar2-month"></i></span>
-                                                <select x-ref="select"></select>
-                                            </div>
+                                </div>
+
+                                <div
+                                    x-data="tomMonthSelect({
+                                        value: @entangle('endMonth').live,
+                                        options: @js($monthOptions),
+                                        placeholder: 'End…'
+                                    })"
+                                    x-init="mount()"
+                                    wire:key="cmp-range-end"
+                                >
+                                    <div wire:ignore class="w-44">
+                                        <div
+                                            class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm">
+                                            <span class="mr-1 text-slate-400">End</span>
+                                            <select x-ref="select" class="flex-1 bg-transparent"></select>
                                         </div>
-                                        <select class="form-select form-select-sm" style="width: 110px;"
-                                            wire:model.live="rollingN">
-                                            <option value="3">Last 3</option>
-                                            <option value="4">Last 4</option>
-                                            <option value="5">Last 5</option>
-                                            <option value="6">Last 6</option>
-                                        </select>
                                     </div>
-                                @endif
-                                <div class="vr mx-2 d-none d-md-block"></div>
-
-                                {{-- View toggles (local to chart via Alpine) --}}
-                                <div class="form-check form-switch form-switch-sm">
-                                    <input class="form-check-input" type="checkbox" id="cmpStacked"
-                                        x-model="stacked" @change="update()">
-                                    <label class="form-check-label small" for="cmpStacked">Stacked</label>
-                                </div>
-                                <div class="form-check form-switch form-switch-sm">
-                                    <input class="form-check-input" type="checkbox" id="cmpNormalized"
-                                        x-model="normalized" @change="update()">
-                                    <label class="form-check-label small" for="cmpNormalized">Normalize (%)</label>
-                                </div>
-
-                                <div class="ms-auto small text-muted d-none d-sm-block">
-                                    Click any bar to open department details.
                                 </div>
                             </div>
-
-                            {{-- Compare chart --}}
-                            <div class="position-relative chart-shell">
-                                <div wire:ignore class="h-100">
-                                    <canvas x-ref="canvas"></canvas>
+                        @else
+                            {{-- Rolling controls --}}
+                            <div class="flex flex-wrap items-center gap-2">
+                                <div
+                                    x-data="tomMonthSelect({
+                                        value: @entangle('endMonth').live,
+                                        options: @js($monthOptions),
+                                        placeholder: 'End…'
+                                    })"
+                                    x-init="mount()"
+                                    wire:key="cmp-rolling-end"
+                                >
+                                    <div wire:ignore class="w-56">
+                                        <div
+                                            class="flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm">
+                                            <span class="mr-2 text-slate-400">
+                                                <i class="bi bi-calendar2-month"></i>
+                                            </span>
+                                            <select x-ref="select" class="flex-1 bg-transparent"></select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="chart-overlay" wire:loading
-                                    wire:target="compareMode,startMonth,endMonth,rollingN,prSigner"></div>
+
+                                <select
+                                    class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                    wire:model.live="rollingN"
+                                >
+                                    <option value="3">Last 3</option>
+                                    <option value="4">Last 4</option>
+                                    <option value="5">Last 5</option>
+                                    <option value="6">Last 6</option>
+                                </select>
                             </div>
+                        @endif
 
-                            {{-- Δ table (only in range & exactly 2 months) --}}
-                            @if (($compareMonths ?? null) && count($compareMonths) === 2 && ($compareDeltas ?? null))
-                                @php
-                                    [$m0, $m1] = $compareMonths;
-                                    $ml0 = \Illuminate\Support\Carbon::parse($m0 . '-01')->isoFormat('MMM YYYY');
-                                    $ml1 = \Illuminate\Support\Carbon::parse($m1 . '-01')->isoFormat('MMM YYYY');
-                                @endphp
-                                <div class="table-responsive mt-3">
-                                    <table class="table table-sm align-middle mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Department</th>
-                                                <th class="text-end" style="min-width:140px;">{{ $ml0 }}
-                                                </th>
-                                                <th class="text-end" style="min-width:140px;">{{ $ml1 }}
-                                                </th>
-                                                <th class="text-end" style="min-width:140px;">Δ</th>
-                                                <th class="text-end" style="min-width:120px;">Δ%</th>
-                                                <th class="text-end" style="width:1%;"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($compareDeltas as $row)
-                                                @php
-                                                    $pos = $row->diff > 0;
-                                                    $badge =
-                                                        $row->diff == 0 ? 'secondary' : ($pos ? 'success' : 'danger');
-                                                @endphp
-                                                <tr>
-                                                    <td>{{ $row->dept_name }}</td>
-                                                    <td class="text-end">Rp {{ number_format($row->a, 0, ',', '.') }}
-                                                    </td>
-                                                    <td class="text-end">Rp {{ number_format($row->b, 0, ',', '.') }}
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <span class="badge text-bg-{{ $badge }}">
-                                                            {{ $pos ? '+' : '' }}Rp
-                                                            {{ number_format($row->diff, 0, ',', '.') }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-end">
-                                                        @if ($row->pct === null)
-                                                            <span class="text-muted">—</span>
-                                                        @else
-                                                            <span
-                                                                class="badge text-bg-{{ $badge }}">{{ ($row->pct > 0 ? '+' : '') . number_format($row->pct, 1, ',', '.') }}%</span>
-                                                        @endif
-                                                    </td>
-                                                    <td class="text-end">
-                                                        <button class="btn btn-outline-primary btn-sm"
-                                                            wire:click="showDetail({{ $row->dept_id }})">
-                                                            View lines
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
+                        <div class="hidden h-5 w-px bg-slate-200 sm:inline-block mx-2"></div>
+
+                        {{-- View toggles --}}
+                        <label class="inline-flex items-center gap-1 text-xs text-slate-600">
+                            <input
+                                type="checkbox"
+                                class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                x-model="stacked"
+                                @change="update()"
+                            >
+                            <span>Stacked</span>
+                        </label>
+
+                        <label class="inline-flex items-center gap-1 text-xs text-slate-600">
+                            <input
+                                type="checkbox"
+                                class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                x-model="normalized"
+                                @change="update()"
+                            >
+                            <span>Normalize (%)</span>
+                        </label>
+
+                        <div class="ml-auto hidden text-xs text-slate-400 sm:inline">
+                            Click any bar to open department details.
                         </div>
                     </div>
+
+                    {{-- Compare chart --}}
+                    <div class="chart-shell relative mt-2">
+                        <div wire:ignore class="h-full">
+                            <canvas x-ref="canvas"></canvas>
+                        </div>
+                        <div
+                            class="chart-overlay pointer-events-none absolute inset-0 bg-white/50 backdrop-blur-sm"
+                            wire:loading
+                            wire:target="compareMode,startMonth,endMonth,rollingN,prSigner"
+                        ></div>
+                    </div>
+
+                    {{-- Δ table (range & 2 months) --}}
+                    @if (($compareMonths ?? null) && count($compareMonths) === 2 && ($compareDeltas ?? null))
+                        @php
+                            [$m0, $m1] = $compareMonths;
+                            $ml0 = Carbon::parse($m0 . '-01')->isoFormat('MMM YYYY');
+                            $ml1 = Carbon::parse($m1 . '-01')->isoFormat('MMM YYYY');
+                        @endphp
+
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="min-w-full text-left text-xs sm:text-sm text-slate-700">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-[11px] uppercase text-slate-500">
+                                        <th class="px-3 py-2 font-medium">Department</th>
+                                        <th class="px-3 py-2 text-right font-medium">{{ $ml0 }}</th>
+                                        <th class="px-3 py-2 text-right font-medium">{{ $ml1 }}</th>
+                                        <th class="px-3 py-2 text-right font-medium">Δ</th>
+                                        <th class="px-3 py-2 text-right font-medium">Δ%</th>
+                                        <th class="px-3 py-2 text-right font-medium"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    @foreach ($compareDeltas as $row)
+                                        @php
+                                            $pos  = $row->diff > 0;
+                                            $zero = $row->diff == 0;
+                                            $badgeClasses = $zero
+                                                ? 'bg-slate-100 text-slate-700'
+                                                : ($pos
+                                                    ? 'bg-emerald-50 text-emerald-700'
+                                                    : 'bg-rose-50 text-rose-700');
+                                        @endphp
+                                        <tr class="hover:bg-indigo-50/40">
+                                            <td class="px-3 py-2">{{ $row->dept_name }}</td>
+                                            <td class="px-3 py-2 text-right">
+                                                Rp {{ number_format($row->a, 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right">
+                                                Rp {{ number_format($row->b, 0, ',', '.') }}
+                                            </td>
+                                            <td class="px-3 py-2 text-right">
+                                                <span
+                                                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $badgeClasses }}">
+                                                    {{ $pos ? '+' : '' }}Rp
+                                                    {{ number_format($row->diff, 0, ',', '.') }}
+                                                </span>
+                                            </td>
+                                            <td class="px-3 py-2 text-right">
+                                                @if ($row->pct === null)
+                                                    <span class="text-slate-400">—</span>
+                                                @else
+                                                    <span
+                                                        class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {{ $badgeClasses }}">
+                                                        {{ ($row->pct > 0 ? '+' : '') . number_format($row->pct, 1, ',', '.') }}%
+                                                    </span>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2 text-right">
+                                                <button
+                                                    type="button"
+                                                    class="inline-flex items-center rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 hover:border-indigo-300 hover:text-indigo-600"
+                                                    wire:click="showDetail({{ $row->dept_id }})"
+                                                >
+                                                    View lines
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
                 </div>
-            </div>
+            @endif
         </div>
-    </div>
+    </section>
 </div>
 
-@pushOnce('extraCss')
+@pushOnce('head')
     <style>
         .design-hero {
             background:
@@ -383,22 +550,22 @@
         .chart-shell {
             height: 380px;
         }
+
+        .chart-overlay {
+            transition: opacity 0.15s ease-out;
+        }
     </style>
 @endPushOnce
 
-@pushOnce('extraJs')
+{{-- TomSelect helper --}}
+@push('scripts')
     <script>
-        function tomMonthSelect({
-            value,
-            options,
-            placeholder = 'Select…'
-        }) {
+        function tomMonthSelect({ value, options, placeholder = 'Select…' }) {
             return {
                 ts: null,
-                value, // entangled with Livewire (e.g. $this->month)
-                options, // [{value, text}, ...]
+                value,
+                options,
                 mount() {
-                    // populate the <select>
                     const sel = this.$refs.select;
                     sel.innerHTML = '';
                     for (const opt of (this.options || [])) {
@@ -408,7 +575,6 @@
                         sel.appendChild(o);
                     }
 
-                    // init Tom Select
                     this.ts = new TomSelect(sel, {
                         maxItems: 1,
                         create: false,
@@ -419,33 +585,24 @@
                         plugins: ['dropdown_input'],
                         render: {
                             option: (data, escape) => `<div>${escape(data.text)}</div>`,
-                            item: (data, escape) => `<div>${escape(data.text)}</div>`
+                            item: (data, escape)   => `<div>${escape(data.text)}</div>`,
                         },
                     });
 
-                    // initial value (if Livewire already has one)
                     if (this.value) {
                         this.ts.setValue(this.value, true);
                     }
 
-                    // when user selects → push to Livewire
                     this.ts.on('change', (v) => {
-                        // prevent feedback loops: only set if changed
-                        if (this.value !== v) this.value = v; // entangle updates $wire.month
+                        if (this.value !== v) this.value = v;
                     });
 
-                    // when Livewire changes (e.g., programmatic updates) → update Tom Select
                     this.$watch('value', (v) => {
                         if (!this.ts) return;
                         const current = this.ts.getValue();
                         if (current !== v) {
-                            // ensure option exists; if months are dynamic, add it on the fly
                             if (v && !this.ts.options[v]) {
-                                const label = v; // or compute a label here if needed
-                                this.ts.addOption({
-                                    value: v,
-                                    text: label
-                                });
+                                this.ts.addOption({ value: v, text: v });
                             }
                             this.ts.setValue(v || '', true);
                         }
@@ -454,13 +611,14 @@
                 destroy() {
                     this.ts?.destroy();
                     this.ts = null;
-                }
+                },
             }
         }
     </script>
-@endPushOnce
+@endpush
 
-@pushOnce('extraJs')
+{{-- Chart.js + Alpine controllers --}}
+@push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
         function departmentChart() {
@@ -833,4 +991,4 @@
             }
         }
     </script>
-@endPushOnce
+@endpush
