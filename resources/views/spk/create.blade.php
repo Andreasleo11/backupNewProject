@@ -1,338 +1,511 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
     @include('partials.alert-success-error')
 
-    {{-- GLOBAL VARIABLE --}}
     @php
         $authUser = auth()->user();
     @endphp
-    {{-- END GLOBAL VARIABLE --}}
 
-    <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('spk.index') }}">SPK List</a></li>
-                <li class="breadcrumb-item active">Create</li>
+    <div
+        class="max-w-5xl mx-auto px-4 py-6 lg:py-8 spk-create"
+        x-data="spkCreate({
+            countToday: {{ \App\Models\SuratPerintahKerja::whereDate('created_at', \Carbon\Carbon::today())->count() + 1 }}
+        })"
+        x-init="init()"
+    >
+        {{-- Breadcrumb --}}
+        <nav aria-label="Breadcrumb" class="mb-4">
+            <ol class="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
+                <li>
+                    <a href="{{ route('spk.index') }}" class="hover:text-slate-700 font-medium">
+                        SPK List
+                    </a>
+                </li>
+                <li class="text-slate-400">/</li>
+                <li class="font-semibold text-slate-800">
+                    Create
+                </li>
             </ol>
         </nav>
 
-        <div class="row">
-            <div class="col">
-                <h2 class="fw-bold">SPK Create</h2>
+        {{-- Page header --}}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-semibold text-slate-900">
+                    Create SPK
+                </h1>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                    Isi detail laporan secara lengkap untuk mempercepat proses tindak lanjut.
+                </p>
             </div>
-            <div class="col text-end">
-                {{-- Upcoming feature? --}}
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col">
-                <form action="{{ route('spk.input') }}" method="post" enctype="multipart/form-data" id="spkForm">
-                    @csrf
-                    <div class="card mt-2">
-                        <div class="card-body">
-                            <div class="form-group row">
-                                <label for="no_dokumen" class="fw-semibold col-form-label col-sm-2">No Dokumen</label>
-                                <div class="col-sm-10">
-                                    <input type="text" name="no_dokumen" id="no_dokumen" readonly
-                                        class="form-control bg-secondary-subtle">
-                                </div>
-                            </div>
-                            <div class="form-group row mt-3">
-                                <label for="pelapor" class="fw-semibold col-form-label col-sm-2">Pelapor</label>
-                                <div class="col-sm-10">
-                                    <input type="text" name="pelapor" id="pelapor" value="{{ $username }}" readonly
-                                        class="form-control bg-secondary-subtle">
-                                </div>
-                            </div>
-                            <div class="form-group row mt-3">
-                                <label for="tanggallapor" class="fw-semibold col-form-label col-sm-2">Tanggal
-                                    Lapor</label>
-                                <div class="col-sm-10">
-                                    <input type="datetime-local" name="tanggallapor" id="tanggallapor" readonly
-                                        class="form-control bg-secondary-subtle">
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="card mt-4">
-                        <div class="card-body">
-                            <h4>Details</h4>
-                            <hr>
-
-                            <div class="row mt-3">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="departmentDropdown" class="fw-semibold col-form-label">From
-                                            Department <span class="text-danger">*</span></label>
-                                        <select class="form-select" name="from_department" id="departmentDropdown" required>
-                                            <option value="" selected disabled>--Select from department--</option>
-                                            @foreach ($departments as $department)
-                                                @if ($department->id === $authUser->department->id)
-                                                    <option value="{{ $department->name }}" selected>{{ $department->name }}
-                                                    </option>
-                                                @elseif ($department->name === 'PERSONALIA' && auth()->user()->is_head === 1)
-                                                @else
-                                                    <option value="{{ $department->name }}">{{ $department->name }}</option>
-                                                @endif
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="toDepartmentDropdown" class="fw-semibold col-form-label">To
-                                            Department <span class="text-danger">*</span></label>
-                                        <select class="form-select" name="to_department" id="toDepartmentDropdown" required>
-                                            <option value="" selected disabled>Select to department..</option>
-                                            <option value="COMPUTER">COMPUTER</option>
-                                            <option value="MAINTENANCE">MAINTENANCE</option>
-                                            <option value="MAINTENANCE MACHINE">MAINTENANCE MACHINE</option>
-                                            <option value="PERSONALIA">PERSONALIA</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="requested_by" class="fw-semibold form-label ">Requested By
-                                            <span class="text-danger">*</span></label>
-                                        <input type="text" name="requested_by" id="requested_by"
-                                            placeholder="e.g. Raymond" required class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col d-none type-field">
-                                    <div class="form-group">
-                                        <div>
-                                            <label for="inlineRadio" class="form-label fw-semibold">Type</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="type"
-                                                id="inlineRadioMade" value="made">
-                                            <label class="form-check-label" for="inlineRadioMade">Made</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="type"
-                                                id="inlineRadioRepair" value="repair">
-                                            <label class="form-check-label" for="inlineRadioRepair">Repair</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="type"
-                                                id="inlineRadioModify" value="modify">
-                                            <label class="form-check-label" for="inlineRadioModify">Modify</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <div>
-                                            <label for="inlineRadio" class="form-label fw-semibold">Is Urgent? <span
-                                                    class="text-danger">*</span></label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="is_urgent"
-                                                id="inlineRadioYes" value="yes">
-                                            <label class="form-check-label" for="inlineRadioYes">Yes</label>
-                                        </div>
-                                        <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="is_urgent"
-                                                id="inlineRadioNo" value="no" checked>
-                                            <label class="form-check-label" for="inlineRadioNo">No</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mt-3 d-none part-fields">
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="part_no" class="fw-semibold col-form-label">Part No
-                                            <span class="text-secondary fw-normal">(Optional)</span></label>
-                                        <input type="text" name="part_no" id="part_no" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="part_name" class="fw-semibold col-form-label">Part
-                                            Name <span class="text-secondary fw-normal">(Optional)</span></label>
-                                        <input type="text" name="part_name" id="part_name" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="form-group">
-                                        <label for="machine" class="fw-semibold col-form-label">Machine <span
-                                                class="text-secondary fw-normal">(Optional)</span></label>
-                                        <input type="text" name="machine" id="machine" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="judul_laporan" class="fw-semibold form-label">Judul Laporan <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" name="judul_laporan" id="judul_laporan" value="" required
-                                    class="form-control"
-                                    placeholder="e.g. Layar monitor komputer (departemen) bermasalah">
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="keterangan_laporan" class="fw-semibold form-label">Keterangan Laporan
-                                    <span class="text-danger">*</span></label>
-                                <textarea name="keterangan_laporan" id="keterangan_laporan" cols="30" rows="10" class="form-control"
-                                    placeholder="e.g. layar hanya berkedip saja tidak mau menyala padahal sudah dicoba restart" required></textarea>
-                            </div>
-                            <div class="form-group mt-3">
-                                <label for="attachments" class="fw-semibold form-label">Attachments</label>
-                                <input type="file" name="attachments[]" id="attachments" class="form-control"
-                                    multiple accept="image/*">
-                                <div id="attachment-previews" class="mt-3 row"></div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+                {{-- Reserved for future actions --}}
             </div>
         </div>
+
+        <form
+            action="{{ route('spk.input') }}"
+            method="post"
+            enctype="multipart/form-data"
+            id="spkForm"
+            class="space-y-5"
+        >
+            @csrf
+
+            {{-- Header info card --}}
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 space-y-4">
+                <h2 class="text-sm font-semibold text-slate-800">
+                    Informasi Laporan
+                </h2>
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="space-y-1.5">
+                        <label for="no_dokumen" class="block text-xs font-medium text-slate-600">
+                            No Dokumen
+                        </label>
+                        <input
+                            type="text"
+                            name="no_dokumen"
+                            id="no_dokumen"
+                            x-model="form.no_dokumen"
+                            readonly
+                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                        <p class="text-[11px] text-slate-400">
+                            Nomor dokumen akan dibuat otomatis berdasarkan departemen tujuan & tanggal hari ini.
+                        </p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="pelapor" class="block text-xs font-medium text-slate-600">
+                            Pelapor
+                        </label>
+                        <input
+                            type="text"
+                            name="pelapor"
+                            id="pelapor"
+                            value="{{ $username }}"
+                            readonly
+                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                    </div>
+
+                    <div class="space-y-1.5 md:col-span-2 md:max-w-xs">
+                        <label for="tanggallapor" class="block text-xs font-medium text-slate-600">
+                            Tanggal Lapor
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="tanggallapor"
+                            id="tanggallapor"
+                            x-model="form.tanggallapor"
+                            readonly
+                            class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            {{-- Details card --}}
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 sm:p-6 space-y-5">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-800">
+                            Detail Permintaan
+                        </h2>
+                        <p class="text-[11px] text-slate-500 mt-1">
+                            Tentukan asal & tujuan departemen, tingkat urgensi, dan ringkasan masalah.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Departments --}}
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="space-y-1.5">
+                        <label for="departmentDropdown" class="block text-xs font-medium text-slate-600">
+                            From Department <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            name="from_department"
+                            id="departmentDropdown"
+                            required
+                        >
+                            <option value="" disabled>--Select from department--</option>
+                            @foreach ($departments as $department)
+                                @if ($department->id === $authUser->department->id)
+                                    <option value="{{ $department->name }}" selected>
+                                        {{ $department->name }}
+                                    </option>
+                                @elseif ($department->name === 'PERSONALIA' && auth()->user()->is_head === 1)
+                                    {{-- Skip --}}
+                                @else
+                                    <option value="{{ $department->name }}">{{ $department->name }}</option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="toDepartmentDropdown" class="block text-xs font-medium text-slate-600">
+                            To Department <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            name="to_department"
+                            id="toDepartmentDropdown"
+                            required
+                            @change="handleToDepartmentChange($event)"
+                        >
+                            <option value="" selected disabled>Select to department..</option>
+                            <option value="COMPUTER">COMPUTER</option>
+                            <option value="MAINTENANCE">MAINTENANCE</option>
+                            <option value="MAINTENANCE MACHINE">MAINTENANCE MACHINE</option>
+                            <option value="PERSONALIA">PERSONALIA</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Requested by + urgent + type --}}
+                <div class="grid gap-4 md:grid-cols-3 items-start">
+                    <div class="space-y-1.5 md:col-span-1">
+                        <label for="requested_by" class="block text-xs font-medium text-slate-600">
+                            Requested By <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="requested_by"
+                            id="requested_by"
+                            placeholder="e.g. Raymond"
+                            required
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                    </div>
+
+                    {{-- Type (only for Maintenance / Maintenance Machine) --}}
+                    <div
+                        class="space-y-1.5 md:col-span-1"
+                        x-show="showTypeFields"
+                        x-cloak
+                    >
+                        <span class="block text-xs font-medium text-slate-600">
+                            Type
+                        </span>
+                        <div class="flex flex-wrap gap-3 pt-1">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-700">
+                                <input
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    type="radio"
+                                    name="type"
+                                    id="inlineRadioMade"
+                                    value="made"
+                                >
+                                <span>Made</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-700">
+                                <input
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    type="radio"
+                                    name="type"
+                                    id="inlineRadioRepair"
+                                    value="repair"
+                                >
+                                <span>Repair</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-700">
+                                <input
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    type="radio"
+                                    name="type"
+                                    id="inlineRadioModify"
+                                    value="modify"
+                                >
+                                <span>Modify</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {{-- Urgent --}}
+                    <div class="space-y-1.5 md:col-span-1">
+                        <span class="block text-xs font-medium text-slate-600">
+                            Is Urgent? <span class="text-red-500">*</span>
+                        </span>
+                        <div class="flex items-center gap-4 pt-1">
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-700">
+                                <input
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    type="radio"
+                                    name="is_urgent"
+                                    id="inlineRadioYes"
+                                    value="yes"
+                                >
+                                <span>Yes</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-xs text-slate-700">
+                                <input
+                                    class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                    type="radio"
+                                    name="is_urgent"
+                                    id="inlineRadioNo"
+                                    value="no"
+                                    checked
+                                >
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Part / Machine info - only for Maintenance Machine --}}
+                <div
+                    class="grid gap-4 md:grid-cols-3 mt-2"
+                    x-show="showPartFields"
+                    x-cloak
+                >
+                    <div class="space-y-1.5">
+                        <label for="part_no" class="block text-xs font-medium text-slate-600">
+                            Part No <span class="font-normal text-slate-400">(Optional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="part_no"
+                            id="part_no"
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="part_name" class="block text-xs font-medium text-slate-600">
+                            Part Name <span class="font-normal text-slate-400">(Optional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="part_name"
+                            id="part_name"
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="machine" class="block text-xs font-medium text-slate-600">
+                            Machine <span class="font-normal text-slate-400">(Optional)</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="machine"
+                            id="machine"
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                    </div>
+                </div>
+
+                {{-- Title & description --}}
+                <div class="space-y-4 pt-2">
+                    <div class="space-y-1.5">
+                        <label for="judul_laporan" class="block text-xs font-medium text-slate-600">
+                            Judul Laporan <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="judul_laporan"
+                            id="judul_laporan"
+                            required
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="e.g. Layar monitor komputer (departemen) bermasalah"
+                        >
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="keterangan_laporan" class="block text-xs font-medium text-slate-600">
+                            Keterangan Laporan <span class="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            name="keterangan_laporan"
+                            id="keterangan_laporan"
+                            rows="6"
+                            required
+                            class="block w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-y"
+                            placeholder="e.g. layar hanya berkedip saja tidak mau menyala padahal sudah dicoba restart"
+                        ></textarea>
+                    </div>
+                </div>
+
+                {{-- Attachments --}}
+                <div class="pt-2 space-y-2">
+                    <label for="attachments" class="block text-xs font-medium text-slate-600">
+                        Attachments
+                    </label>
+
+                    <div
+                        class="border border-dashed border-slate-300 rounded-xl bg-slate-50/60 px-4 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    >
+                        <div class="space-y-1">
+                            <p class="text-xs font-medium text-slate-700">
+                                Unggah foto/gambar pendukung
+                            </p>
+                            <p class="text-[11px] text-slate-500">
+                                Format gambar (JPG, PNG, dll). Anda dapat memilih beberapa file sekaligus.
+                            </p>
+                        </div>
+                        <div>
+                            <label
+                                for="attachments"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 cursor-pointer"
+                            >
+                                Browse files
+                            </label>
+                            <input
+                                type="file"
+                                name="attachments[]"
+                                id="attachments"
+                                multiple
+                                accept="image/*"
+                                class="hidden"
+                                x-ref="attachments"
+                                @change="handleFiles($event)"
+                            >
+                        </div>
+                    </div>
+
+                    <div
+                        id="attachment-previews"
+                        class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-4"
+                    >
+                        <template x-for="(file, index) in files" :key="index">
+                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                                <div class="aspect-video bg-slate-100 overflow-hidden">
+                                    <img
+                                        :src="file.preview"
+                                        alt="Attachment Preview"
+                                        class="h-full w-full object-cover"
+                                    >
+                                </div>
+                                <div class="p-2 flex items-center justify-between gap-1">
+                                    <p class="truncate text-[11px] text-slate-600" x-text="file.name"></p>
+                                    <button
+                                        type="button"
+                                        class="inline-flex items-center rounded-md bg-rose-50 px-2 py-1 text-[10px] font-medium text-rose-600 hover:bg-rose-100"
+                                        @click="removeFile(index)"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Actions --}}
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a
+                    href="{{ route('spk.index') }}"
+                    class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                >
+                    Cancel
+                </a>
+                <button
+                    type="submit"
+                    class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                >
+                    Submit
+                </button>
+            </div>
+        </form>
     </div>
 @endsection
 
-@push('extraJs')
-    <script type="module">
-        // Initialize TomSelect for dropdown
-        new TomSelect('#departmentDropdown', {
-            plugins: ['dropdown_input'],
-            sortField: {
-                field: "text",
-                direction: "asc"
-            }
-        });
+@push('scripts')
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('spkCreate', (config) => ({
+                countToday: config.countToday || 1,
+                form: {
+                    no_dokumen: '',
+                    tanggallapor: '',
+                },
+                showPartFields: false,
+                showTypeFields: false,
+                files: [],
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-            const dd = String(today.getDate()).padStart(2, '0');
-            const hh = String(today.getHours()).padStart(2, '0');
-            const min = String(today.getMinutes()).padStart(2, '0');
-            const ss = String(today.getSeconds()).padStart(2, '0');
-            const formattedToday = `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
-            document.getElementById('tanggallapor').value = formattedToday;
-        });
+                init() {
+                    this.form.tanggallapor = this.currentDateTime();
+                },
 
-        document.getElementById('toDepartmentDropdown').addEventListener('change', function() {
-            const toDepartment = this.value;
-            let toDeptCode = '';
+                currentDateTime() {
+                    const d = new Date();
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+                },
 
-            switch (toDepartment) {
-                case 'COMPUTER':
-                    toDeptCode = 'CP';
-                    break;
-                case 'PERSONALIA':
-                    toDeptCode = 'HRD';
-                    break;
-                case 'MAINTENANCE':
-                    toDeptCode = 'MT';
-                    break;
-                case 'MAINTENANCE MACHINE':
-                    toDeptCode = 'MM';
-                    break;
-                default:
-                    toDeptCode = 'UNKNOWN';
-                    break;
-            }
+                handleToDepartmentChange(event) {
+                    const toDepartment = event.target.value;
+                    let toDeptCode = 'UNKNOWN';
 
-            const type = "SPK";
-            const today = new Date();
-            const date = today.toISOString().slice(2, 10).replace(/-/g, '');
-            const count =
-                {{ \App\Models\SuratPerintahKerja::whereDate('created_at', \Carbon\Carbon::today())->count() + 1 }};
-            const lastNumber = String(count).padStart(3, '0');
-            const noDokumen = `${toDeptCode}/${type}/${date}/${lastNumber}`;
+                    if (toDepartment === 'COMPUTER') toDeptCode = 'CP';
+                    else if (toDepartment === 'PERSONALIA') toDeptCode = 'HRD';
+                    else if (toDepartment === 'MAINTENANCE') toDeptCode = 'MT';
+                    else if (toDepartment === 'MAINTENANCE MACHINE') toDeptCode = 'MM';
 
-            document.getElementById('no_dokumen').value = noDokumen;
+                    const type = 'SPK';
+                    const today = new Date();
+                    const date = today.toISOString().slice(2, 10).replace(/-/g, '');
+                    const lastNumber = String(this.countToday).padStart(3, '0');
 
-            // Toggle part number, part name, and machine fields based on department selection
-            const partFields = document.querySelector('.part-fields');
-            const forFields = document.querySelector('.for-fields');
-            if (toDepartment === 'MAINTENANCE MACHINE') {
-                partFields.classList.remove('d-none');
-            } else {
-                partFields.classList.add('d-none');
-            }
+                    this.form.no_dokumen = `${toDeptCode}/${type}/${date}/${lastNumber}`;
 
-            const typeFields = document.querySelector('.type-field');
-            if (toDepartment === 'MAINTENANCE' || toDepartment === 'MAINTENANCE MACHINE') {
-                typeFields.classList.remove('d-none');
-            } else {
-                typeFields.classList.add('d-none');
-            }
+                    this.showPartFields = toDepartment === 'MAINTENANCE MACHINE';
+                    this.showTypeFields = toDepartment === 'MAINTENANCE' || toDepartment === 'MAINTENANCE MACHINE';
+                },
 
-        });
+                handleFiles(event) {
+                    const inputFiles = Array.from(event.target.files);
+                    this.files = [];
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const attachmentInput = document.getElementById('attachments');
-            const previewContainer = document.getElementById('attachment-previews');
-            let files = [];
-
-            attachmentInput.addEventListener('change', function(event) {
-                files = Array.from(event.target.files);
-                renderPreviews(files);
-            });
-
-            function renderPreviews(files) {
-                previewContainer.innerHTML = ''; // Clear existing previews
-
-                files.forEach((file, i) => {
-                    const reader = new FileReader();
-
-                    reader.onload = function(e) {
-                        const previewDiv = document.createElement('div');
-                        previewDiv.classList.add('col-md-3', 'mb-3');
-                        previewDiv.innerHTML = `
-                    <div class="card">
-                        <img src="${e.target.result}" alt="Attachment Preview" class="card-img-top">
-                        <div class="card-body p-2 text-center">
-                            <button type="button" class="btn btn-danger btn-sm remove-image" data-index="${i}">
-                                Remove
-                            </button>
-                        </div>
-                    </div>
-                `;
-                        previewContainer.appendChild(previewDiv);
-                    };
-
-                    reader.readAsDataURL(file);
-                });
-
-                // Adding a slight delay to ensure DOM updates before adding listeners
-                setTimeout(addRemoveListeners, 30);
-            }
-
-            function addRemoveListeners() {
-                const removeButtons = previewContainer.querySelectorAll('.remove-image');
-                removeButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        const index = parseInt(this.getAttribute('data-index'));
-
-                        files.splice(index, 1); // Remove the selected file
-
-                        updateFileInput(files);
-                        renderPreviews(files); // Re-render previews with updated file list
+                    inputFiles.forEach((file) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.files.push({
+                                file,
+                                name: file.name,
+                                preview: e.target.result,
+                            });
+                            this.syncFileInput();
+                        };
+                        reader.readAsDataURL(file);
                     });
-                });
-            }
 
-            function updateFileInput(files) {
-                const dataTransfer = new DataTransfer();
-                files.forEach(file => {
-                    dataTransfer.items.add(file); // Add remaining files to DataTransfer object
-                });
+                    if (inputFiles.length === 0) {
+                        this.syncFileInput();
+                    }
+                },
 
-                attachmentInput.files = dataTransfer.files; // Update the file input element
+                removeFile(index) {
+                    this.files.splice(index, 1);
+                    this.syncFileInput();
+                },
+
+                syncFileInput() {
+                    const dt = new DataTransfer();
+                    this.files.forEach((f) => dt.items.add(f.file));
+                    if (this.$refs.attachments) {
+                        this.$refs.attachments.files = dt.files;
+                    }
+                },
+            }));
+        });
+
+        // TomSelect init (kept from your original logic)
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.TomSelect) {
+                new TomSelect('#departmentDropdown', {
+                    plugins: ['dropdown_input'],
+                    sortField: {
+                        field: 'text',
+                        direction: 'asc',
+                    },
+                });
             }
         });
     </script>

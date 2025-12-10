@@ -329,6 +329,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
     Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);
     Route::put('/purchase-orders/cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name('po.cancel');
+
+    Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
+    Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
+    Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
+    Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
+    Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
+    Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
+    Route::get('/spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
+    Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
+    Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
+    Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
+    Route::get('/spk/{id}/reject', [SuratPerintahKerjaController::class, 'reject'])->name('spk.reject');
 });
 
 require __DIR__ . '/admin.php';
@@ -563,17 +575,6 @@ Route::get('/update-dept', [DisciplinePageController::class, 'updateDeptColumn']
 
 Route::put('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'update'])->name('monthly.budget.report.summary.detail.update');
 Route::delete('monthlyBudgetReportSummaryDetail/{id}', [MonthlyBudgetReportSummaryDetailController::class, 'destroy'])->name('monthly.budget.report.summary.detail.destroy');
-
-Route::get('/spk', [SuratPerintahKerjaController::class, 'index'])->name('spk.index');
-Route::get('/spk/create', [SuratPerintahKerjaController::class, 'createpage'])->name('spk.create');
-Route::post('/spk/input', [SuratPerintahKerjaController::class, 'inputprocess'])->name('spk.input');
-Route::get('/spk/{id}', [SuratPerintahKerjaController::class, 'detail'])->name('spk.detail');
-Route::put('/spk/{id}', [SuratPerintahKerjaController::class, 'update'])->name('spk.update');
-Route::delete('/spk/{id}', [SuratPerintahKerjaController::class, 'destroy'])->name('spk.delete');
-Route::get('/spk/report/monthly', [SuratPerintahKerjaController::class, 'monthlyreport'])->name('spk.monthlyreport');
-Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'saveAutograph'])->name('spk.save.autograph');
-Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
-Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
 
 Route::middleware(['auth', 'is.head.or.management'])->group(function () {
     Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');

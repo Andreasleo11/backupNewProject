@@ -1,4 +1,3 @@
-{{-- resources/views/partials/reject-confirmation-modal.blade.php --}}
 <div x-data="{ open: false, step: 'confirm' }" x-on:open-reject-confirmation.window="
         open = true;
         step = 'confirm';
