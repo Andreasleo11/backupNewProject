@@ -357,12 +357,6 @@
                     'active' => request()->routeIs('po.dashboard'),
                 ],
                 [
-                    'label' => 'Waiting PO',
-                    'route' => 'waiting_purchase_orders.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('waiting_purchase_orders.*'),
-                ],
-                [
                     'label' => 'Employee Training',
                     'route' => 'employee_trainings.index',
                     'icon' => 'document-text',

@@ -306,6 +306,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/department-expenses', DepartmentExpenses::class)
         ->middleware(['auth'])
         ->name('department-expenses.index');
+
+    Route::resource('employee_trainings', EmployeeTrainingController::class);
+    Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 });
 
 require __DIR__ . '/admin.php';
@@ -577,10 +580,6 @@ Route::get('/purchase-orders/filter', [PurchaseOrderController::class, 'filter']
 Route::get('/purchase-orders/vendor-monthly-totals', [PurchaseOrderController::class, 'vendorMonthlyTotals'])->name('po.vendor-monthly-totals');
 Route::get('/purchase-orders/vendor-details', [PurchaseOrderController::class, 'getVendorDetails']);
 Route::put('/purchase-orders/cancel/{id}', [PurchaseOrderController::class, 'cancel'])->name('po.cancel');
-
-Route::resource('waiting_purchase_orders', WaitingPurchaseOrderController::class);
-Route::resource('employee_trainings', EmployeeTrainingController::class);
-Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 
 Route::middleware(['auth', 'is.head.or.management'])->group(function () {
     Route::get('/employee-dashboard', [EmployeeDashboardController::class, 'index'])->name('employee.dashboard');

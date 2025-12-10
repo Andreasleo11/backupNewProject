@@ -52,9 +52,9 @@ class EmployeeTrainingDataTable extends DataTable
     {
         return $model::select([
                 'employee_trainings.*',
-                'employees.Nama as employee_name',
-                'employees.NIK as employee_nik',
-                'employees.Dept as employee_dept',
+                'employees.name as employee_name',
+                'employees.nik as employee_nik',
+                'employees.dept_code as employee_dept',
             ])
             ->join('employees', 'employees.id', '=', 'employee_trainings.employee_id');
     }

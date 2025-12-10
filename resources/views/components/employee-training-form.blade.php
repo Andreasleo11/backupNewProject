@@ -1,65 +1,127 @@
 <div>
-    <form action="{{ $action }}" method="POST" class="needs-validation" novalidate>
+    <form action="{{ $action }}" method="POST" class="space-y-5">
         @csrf
         @if ($method === 'PUT')
             @method('PUT')
         @endif
 
-        <div class="mb-3">
-            <label for="employee_id" class="form-label">Employee</label>
-            <select name="employee_id" id="employee_id" class="form-select" required>
+        {{-- Employee --}}
+        <div class="space-y-1">
+            <label for="employee_id" class="text-sm font-medium text-slate-700">
+                Employee
+            </label>
+            <select
+                name="employee_id"
+                id="employee_id"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                required
+            >
                 <option value="">Select an employee</option>
                 @foreach ($employees as $employee)
-                    <option value="{{ $employee->id }}" {{ $employeeId == $employee->id ? 'selected' : '' }}>
-                        {{ $employee->Nama }}
+                    <option value="{{ $employee->id }}" {{ (string) $employeeId === (string) $employee->id ? 'selected' : '' }}>
+                        {{ $employee->name }}
                     </option>
                 @endforeach
             </select>
-            <div class="invalid-feedback">Please select an employee.</div>
+            @error('employee_id')
+                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea name="description" id="description" class="form-control" rows="4" required>{{ $description }}</textarea>
-            <div class="invalid-feedback">Please provide a description.</div>
+        {{-- Description --}}
+        <div class="space-y-1">
+            <label for="description" class="text-sm font-medium text-slate-700">
+                Description
+            </label>
+            <textarea
+                name="description"
+                id="description"
+                rows="4"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                required
+            >{{ old('description', $description) }}</textarea>
+            @error('description')
+                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label for="last_training_at" class="form-label">Last Training Date</label>
-            <input type="date" name="last_training_at" id="last_training_at" class="form-control"
-                value="{{ $lastTrainingAt }}" required>
-            <div class="invalid-feedback">Please provide a valid training date.</div>
+        {{-- Last training date --}}
+        <div class="space-y-1">
+            <label for="last_training_at" class="text-sm font-medium text-slate-700">
+                Last Training Date
+            </label>
+            <input
+                type="date"
+                name="last_training_at"
+                id="last_training_at"
+                value="{{ old('last_training_at', $lastTrainingAt) }}"
+                class="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                required
+            >
+            @error('last_training_at')
+                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Evaluated</label>
-            <div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="evaluated" id="evaluated_yes" value="1"
-                        {{ isset($evaluated) && $evaluated == true ? 'checked' : '' }}>
-                    <label class="form-check-label" for="evaluated_yes">Yes</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="evaluated" id="evaluated_no" value="0"
-                        {{ isset($evaluated) && $evaluated == false ? 'checked' : '' }}>
-                    <label class="form-check-label" for="evaluated_no">No</label>
-                </div>
+        {{-- Evaluated --}}
+        <div class="space-y-1">
+            <span class="text-sm font-medium text-slate-700">
+                Evaluated
+            </span>
+            <div class="flex items-center gap-6 mt-1 text-sm">
+                <label class="inline-flex items-center gap-2">
+                    <input
+                        class="w-4 h-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        type="radio"
+                        name="evaluated"
+                        id="evaluated_yes"
+                        value="1"
+                        {{ isset($evaluated) && (int) $evaluated === 1 ? 'checked' : '' }}
+                    >
+                    <span>Yes</span>
+                </label>
+
+                <label class="inline-flex items-center gap-2">
+                    <input
+                        class="w-4 h-4 border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        type="radio"
+                        name="evaluated"
+                        id="evaluated_no"
+                        value="0"
+                        {{ isset($evaluated) && (int) $evaluated === 0 ? 'checked' : '' }}
+                    >
+                    <span>No</span>
+                </label>
             </div>
-            <div class="invalid-feedback">Please specify if the training has been evaluated.</div>
+            @error('evaluated')
+                <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+            @enderror
         </div>
 
-        <div class="d-flex justify-content-end">
-            <a href="{{ route('employee_trainings.index') }}" class="btn btn-secondary me-2">Cancel</a>
-            <button type="submit" class="btn btn-success">{{ $submitLabel }}</button>
+        {{-- Actions --}}
+        <div class="flex items-center justify-end gap-2 pt-2">
+            <a href="{{ route('employee_trainings.index') }}"
+               class="inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                Cancel
+            </a>
+
+            <button type="submit"
+                    class="inline-flex items-center rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                {{ $submitLabel }}
+            </button>
         </div>
     </form>
+
+    {{-- TomSelect init (reuse your existing JS, just without Bootstrap assumptions) --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            new TomSelect('#employee_id', {
-                create: false, // Disable creating new options
-                maxItems: 1, // Limit to a single selection
-                placeholder: 'Select an employee',
-            });
+            if (window.TomSelect) {
+                new TomSelect('#employee_id', {
+                    create: false,
+                    maxItems: 1,
+                    placeholder: 'Select an employee',
+                });
+            }
         });
     </script>
 </div>

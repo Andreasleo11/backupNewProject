@@ -226,10 +226,6 @@
                     Orders</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('waiting_purchase_orders.index')" icon="bx bx-file" :active="request()->routeIs('waiting_purchase_orders.*')">Waiting
-                    PO</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
                 <x-sidebar.link :href="route('employee_trainings.index')" icon="bx bx-file" :active="request()->routeIs('employee_trainings.*')">Employee
                     Training</x-sidebar.link>
             </li>
