@@ -208,12 +208,6 @@
                 <x-sidebar.link :href="route('formkeluar')" icon="bx bx-file" :active="request()->routeIs('formkeluar.*')">Form
                     Keluar</x-sidebar.link>
             </li>
-
-            <li class="sidebar-item">
-                <x-sidebar.link :href="route('purchaserequest.monthlyprlist')" icon="bx bx-file" :active="request()->routeIs('purchaserequest.monthlyprlist')">Monthly
-                    PR</x-sidebar.link>
-            </li>
-
             <li class="sidebar-item">
                 <x-sidebar.link :href="route('spk.index')" icon="bx bx-file" :active="request()->routeIs('spk.*')">SPK</x-sidebar.link>
             </li>

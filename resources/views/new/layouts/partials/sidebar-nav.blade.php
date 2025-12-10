@@ -333,12 +333,6 @@
                     'active' => request()->routeIs('formkeluar.*'),
                 ],
                 [
-                    'label' => 'Monthly PR',
-                    'route' => 'purchaserequest.monthlyprlist',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('purchaserequest.monthlyprlist'),
-                ],
-                [
                     'label' => 'SPK',
                     'route' => 'spk.index',
                     'icon' => 'document-text',

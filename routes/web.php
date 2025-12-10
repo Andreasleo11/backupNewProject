@@ -425,14 +425,7 @@ Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class,
 Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel');
 Route::put('purchaserequest/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
 
-// PR MONTHLY
-Route::get('/purchaserequest/monthly-list', [PurchaseRequestController::class, 'monthlyprlist'])->name('purchaserequest.monthlyprlist');
-Route::get('/purchaserequest/monthly-detail/{id}', [PurchaseRequestController::class, 'monthlydetail'])->name('purchaserequest.monthlydetail');
-Route::post('/save-signature-path-monthlydetail/{monthprId}/{section}', [PurchaseRequestController::class, 'saveImagePathMonthly']);
-Route::get('/purchaserequest/monthlypr', [PurchaseRequestController::class, 'monthlyview'])->name('purchaserequest.monthly');
-Route::get('/purchaserequest/month-selected', [PurchaseRequestController::class, 'monthlyviewmonth'])->name('purchaserequest.monthlyselected');
 Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveImagePath']);
-// Route::get('/purchase-request/chart-data/{year}/{month}', [PurchaseRequestController::class, 'getChartData']);
 Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
 
 Route::get('/purchaserequest/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
