@@ -341,6 +341,13 @@ Route::middleware('auth')->group(function () {
     Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
     Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
     Route::get('/spk/{id}/reject', [SuratPerintahKerjaController::class, 'reject'])->name('spk.reject');
+
+    // FORM KELUAR
+    Route::get('/form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar');
+    Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
+    Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
+    Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
+    Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
 });
 
 require __DIR__ . '/admin.php';
@@ -446,13 +453,6 @@ Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('fo
 Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
 Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
 Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class, 'saveImagePath']);
-
-// FORM KELUAR
-Route::get('/form-keluar', [FormKeluarController::class, 'index'])->name('formkeluar');
-Route::get('/form-keluar/create', [FormKeluarController::class, 'create'])->name('formkeluar.create');
-Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
-Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
-Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
 
 Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])->name('pt.index');
 Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name('pt.create');
