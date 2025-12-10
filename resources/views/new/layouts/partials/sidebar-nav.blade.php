@@ -345,12 +345,6 @@
                     'active' => request()->routeIs('spk.*'),
                 ],
                 [
-                    'label' => 'Form Kerusakan/Perbaikan',
-                    'route' => 'formkerusakan.index',
-                    'icon' => 'document-text',
-                    'active' => request()->routeIs('formkerusakan.*'),
-                ],
-                [
                     'label' => 'Purchase Orders',
                     'route' => 'po.dashboard',
                     'icon' => 'document-text',

@@ -218,10 +218,6 @@
                 <x-sidebar.link :href="route('spk.index')" icon="bx bx-file" :active="request()->routeIs('spk.*')">SPK</x-sidebar.link>
             </li>
             <li class="sidebar-item">
-                <x-sidebar.link :href="route('formkerusakan.index')" icon="bx bx-file" :active="request()->routeIs('formkerusakan.*')">Form
-                    Kerusakan/Perbaikan</x-sidebar.link>
-            </li>
-            <li class="sidebar-item">
                 <x-sidebar.link :href="route('po.dashboard')" icon="bx bx-file" :active="request()->routeIs('po.dashboard')">Purchase
                     Orders</x-sidebar.link>
             </li>

@@ -555,12 +555,6 @@ Route::put('/spk/save-autograph/{id}', [SuratPerintahKerjaController::class, 'sa
 Route::put('/spk/ask-a-revision/{id}', [SuratPerintahKerjaController::class, 'revision'])->name('spk.revision');
 Route::put('/spk/finish/{id}', [SuratPerintahKerjaController::class, 'finish'])->name('spk.finish');
 
-Route::get('formkerusakan/index', [FormKerusakanController::class, 'index'])->name('formkerusakan.index');
-Route::post('laporan-kerusakan/store', [FormKerusakanController::class, 'store'])->name('laporan-kerusakan.store');
-Route::get('laporan-kerusakan/report', [FormKerusakanController::class, 'report'])->name('laporan-kerusakan.report');
-Route::get('laporan-kerusakan/{id}', [FormKerusakanController::class, 'show'])->name('laporan-kerusakan.show');
-Route::delete('laporan-kerusakan-delete/{id}', [FormKerusakanController::class, 'destroy'])->name('laporan-kerusakan.destroy');
-
 Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');
 Route::post('purchaseOrder/create', [PurchaseOrderController::class, 'create'])->name('po.create');
 Route::post('/purchaseOrder/store', [PurchaseOrderController::class, 'store'])->name('po.store');
