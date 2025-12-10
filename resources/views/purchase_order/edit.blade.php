@@ -1,143 +1,273 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
     @include('partials.alert-success-error')
 
-    <div class="container">
-        <h1>Edit Purchase Order</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('po.index') }}">Purchase Orders</a></li>
-                <li class="breadcrumb-item active">Edit</li>
-            </ol>
-        </nav>
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {{-- Header --}}
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <div>
+                <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+                    Edit Purchase Order
+                </h1>
 
-        <div class="card shadow-sm p-4">
-            <form action="{{ route('po.update', $po->id) }}" method="POST" enctype="multipart/form-data">
+                <nav class="mt-2" aria-label="Breadcrumb">
+                    <ol class="flex items-center gap-1 text-sm text-slate-500">
+                        <li>
+                            <a href="{{ route('po.index') }}" class="hover:text-slate-700">
+                                Purchase Orders
+                            </a>
+                        </li>
+                        <li class="px-1 text-slate-400">/</li>
+                        <li class="text-slate-700 font-medium">Edit</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="bg-white shadow-sm ring-1 ring-slate-200 rounded-xl">
+            <form
+                action="{{ route('po.update', $po->id) }}"
+                method="POST"
+                enctype="multipart/form-data"
+                class="p-5 space-y-5"
+            >
                 @csrf
                 @method('PUT')
 
-                <!-- PO Number Input -->
-                <div class="form-group mb-3">
-                    <label for="po_number" class="form-label">PO Number</label>
-                    <input type="number" name="po_number" id="po_number" class="form-control"
-                        value="{{ old('po_number', $po->po_number) }}" required>
+                {{-- PO Number --}}
+                <div>
+                    <label for="po_number" class="block text-sm font-medium text-slate-700 mb-1">
+                        PO Number
+                    </label>
+                    <input
+                        id="po_number"
+                        name="po_number"
+                        type="number"
+                        required
+                        value="{{ old('po_number', $po->po_number) }}"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                    @error('po_number')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Vendor Name Input -->
-                <div class="form-group mb-3">
-                    <label for="vendor_name" class="form-label">Vendor Name</label>
-                    <input type="text" name="vendor_name" id="vendor_name" class="form-control"
-                        value="{{ old('vendor_name', $po->vendor_name) }}" required>
+                {{-- Vendor Name --}}
+                <div>
+                    <label for="vendor_name" class="block text-sm font-medium text-slate-700 mb-1">
+                        Vendor Name
+                    </label>
+                    <input
+                        id="vendor_name"
+                        name="vendor_name"
+                        type="text"
+                        required
+                        value="{{ old('vendor_name', $po->vendor_name) }}"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                    @error('vendor_name')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Invoice Date Input -->
-                <div class="form-group mb-3">
-                    <label for="invoice_date" class="form-label">Invoice Date</label>
-                    <input type="text" name="invoice_date" id="invoice_date" class="form-control"
-                        value="{{ old('invoice_date', $po->invoice_date) }}" required aria-describedby="poDateHelp">
-                    <div id="poDateHelp" class="form-text">Invoice Date must use dd.mm.yy format.</div>
+                {{-- Invoice Date --}}
+                <div>
+                    <label for="invoice_date" class="block text-sm font-medium text-slate-700 mb-1">
+                        Invoice Date
+                    </label>
+                    <input
+                        id="invoice_date"
+                        name="invoice_date"
+                        type="text"
+                        required
+                        value="{{ old('invoice_date', $po->invoice_date) }}"
+                        aria-describedby="poDateHelp"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                    <p id="poDateHelp" class="mt-1 text-xs text-slate-500">
+                        Use <span class="font-mono">dd.mm.yy</span> format.
+                    </p>
+                    @error('invoice_date')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Invoice Number Input -->
-                <div class="form-group mb-3">
-                    <label for="invoice_number" class="form-label">Invoice Number</label>
-                    <input type="text" name="invoice_number" id="invoice_number" class="form-control"
-                        value="{{ old('invoice_number', $po->invoice_number) }}" required>
+                {{-- Invoice Number --}}
+                <div>
+                    <label for="invoice_number" class="block text-sm font-medium text-slate-700 mb-1">
+                        Invoice Number
+                    </label>
+                    <input
+                        id="invoice_number"
+                        name="invoice_number"
+                        type="text"
+                        required
+                        value="{{ old('invoice_number', $po->invoice_number) }}"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                    @error('invoice_number')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Tanggal Pembayaran Input -->
-                <div class="form-group mb-3">
-                    <label for="tanggal_pembayaran" class="form-label">Tanggal Pembayaran</label>
-                    <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran" class="form-control"
-                        value="{{ old('tanggal_pembayaran', $po->tanggal_pembayaran) }}" required>
+                {{-- Payment Date --}}
+                <div>
+                    <label for="tanggal_pembayaran" class="block text-sm font-medium text-slate-700 mb-1">
+                        Payment Date
+                    </label>
+                    <input
+                        id="tanggal_pembayaran"
+                        name="tanggal_pembayaran"
+                        type="date"
+                        required
+                        value="{{ old('tanggal_pembayaran', $po->tanggal_pembayaran) }}"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                    >
+                    @error('tanggal_pembayaran')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Purchase Order Category Input -->
-                <div class="form-group mb-3">
-                    <label for="purchase_order_category_id" class="form-label">Category</label>
-                    <select name="purchase_order_category_id" id="purchase_order_category_id" class="form-select">
+                {{-- Category --}}
+                <div>
+                    <label for="purchase_order_category_id" class="block text-sm font-medium text-slate-700 mb-1">
+                        Category
+                    </label>
+                    <select
+                        id="purchase_order_category_id"
+                        name="purchase_order_category_id"
+                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                    >
                         <option value="" {{ old('purchase_order_category_id') == '' ? 'selected' : '' }}>
-                            --Select
-                            Category--</option>
+                            — Select Category —
+                        </option>
                         @foreach ($categories as $category)
-                            <option value="{{ $category->id }}"
-                                {{ old('purchase_order_category_id', $po->purchase_order_category_id) == $category->id ? 'selected' : '' }}>
+                            <option
+                                value="{{ $category->id }}"
+                                {{ old('purchase_order_category_id', $po->purchase_order_category_id) == $category->id ? 'selected' : '' }}
+                            >
                                 {{ $category->name }}
                             </option>
                         @endforeach
                     </select>
+                    @error('purchase_order_category_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- Total Input -->
-                <div class="form-group mb-4">
-                    <label for="total" class="form-label">Total</label>
-                    <div class="input-group">
-                        <div class="col-auto">
-                            <select name="currency" id="currency" class="form-select" required>
-                                <option value="IDR" {{ old('currency', $po->currency) == 'IDR' ? 'selected' : '' }}>Rp
-                                </option>
-                                <option value="YUAN" {{ old('currency', $po->currency) == 'YUAN' ? 'selected' : '' }}>¥
-                                </option>
-                                <option value="USD" {{ old('currency', $po->currency) == 'USD' ? 'selected' : '' }}>$
-                                </option>
-                            </select>
-                        </div>
-                        <div class="col ms-1">
-                            <input type="text" name="total" id="total" class="form-control"
-                                value="{{ old('total', $po->total) }}" required>
+                {{-- Total + Currency --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">
+                        Total
+                    </label>
+                    <div class="flex gap-2">
+                        <select
+                            id="currency"
+                            name="currency"
+                            required
+                            class="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                        >
+                            <option value="IDR" {{ old('currency', $po->currency) == 'IDR' ? 'selected' : '' }}>IDR</option>
+                            <option value="YUAN" {{ old('currency', $po->currency) == 'YUAN' ? 'selected' : '' }}>CNY</option>
+                            <option value="USD" {{ old('currency', $po->currency) == 'USD' ? 'selected' : '' }}>USD</option>
+                        </select>
+
+                        <div class="flex-1">
+                            <input
+                                id="total"
+                                name="total"
+                                type="text"
+                                required
+                                value="{{ old('total', $po->total) }}"
+                                class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
+                            >
                         </div>
                     </div>
+                    @error('total')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <!-- PDF File Input -->
-                <div class="form-group mb-3">
-                    <!-- Check if there's an existing file -->
+                {{-- PDF Upload --}}
+                <div x-data="{ fileName: '' }">
+                    <label for="pdf_file" class="block text-sm font-medium text-slate-700 mb-1">
+                        Invoice PDF
+                    </label>
+
                     @if ($po->filename)
-                        <div class="mb-2">
-                            <p><strong>Current File:</strong> <a href="{{ asset('storage/pdfs/' . $po->filename) }}"
-                                    target="_blank">{{ basename($po->filename) }}</a></p>
-                        </div>
-                    @else
-                        <label for="pdf_file" class="form-label">Choose PDF File</label>
+                        <p class="mb-2 text-xs text-slate-600">
+                            Current file:
+                            <a
+                                href="{{ asset('storage/pdfs/' . $po->filename) }}"
+                                target="_blank"
+                                class="font-medium text-indigo-600 hover:text-indigo-700"
+                            >
+                                {{ basename($po->filename) }}
+                            </a>
+                        </p>
                     @endif
-                    <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" class="form-control"
-                        aria-describedby="pdfFileHelp">
-                    <div id="pdfFileHelp" class="form-text">Maximum file size is 2 MB. Leave blank if no
-                        changes.</div>
+
+                    <input
+                        id="pdf_file"
+                        name="pdf_file"
+                        type="file"
+                        accept="application/pdf"
+                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                        aria-describedby="pdfFileHelp"
+                        @change="fileName = $event.target.files[0]?.name || ''"
+                    >
+                    <p id="pdfFileHelp" class="mt-1 text-xs text-slate-500">
+                        Maximum file size 2 MB. Leave empty to keep the current file.
+                    </p>
+                    <p x-show="fileName" class="mt-1 text-xs text-slate-600">
+                        Selected file:
+                        <span class="font-medium" x-text="fileName"></span>
+                    </p>
+                    @error('pdf_file')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Update</button>
+                {{-- Actions --}}
+                <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                    <a
+                        href="{{ route('po.index') }}"
+                        class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    >
+                        Cancel
+                    </a>
+                    <button
+                        type="submit"
+                        class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                    >
+                        Update Purchase Order
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Function to format the total input value
         function formatTotalInput(value) {
-            // Remove all commas
             value = value.replace(/,/g, '');
-            // Split into integer and decimal parts
             const parts = value.split('.');
             if (parts.length > 2) {
                 parts.splice(2);
             }
-            // Format integer part with commas as thousand separators
-            parts[0] = parts[0].replace(/\D/g, ''); // Remove non-numeric characters
+            parts[0] = parts[0].replace(/\D/g, '');
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             return parts.join('.');
         }
 
-        // Format the total input on page load
-        window.addEventListener('load', function() {
+        window.addEventListener('load', function () {
             const totalInput = document.getElementById('total');
             if (totalInput.value) {
                 totalInput.value = formatTotalInput(totalInput.value);
             }
         });
 
-        // Add event listener to format total input dynamically
-        document.getElementById('total').addEventListener('input', function(e) {
+        document.getElementById('total').addEventListener('input', function (e) {
             e.target.value = formatTotalInput(e.target.value);
         });
     </script>
