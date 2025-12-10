@@ -19,7 +19,6 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\ForecastCustomerController;
 use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
-use App\Http\Controllers\FormKerusakanController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\hrd\HrdHomeController;
@@ -53,7 +52,6 @@ use App\Http\Controllers\SuratPerintahKerjaController;
 use App\Http\Controllers\SyncProgressController;
 use App\Http\Controllers\UpdateDailyController;
 use App\Http\Controllers\UserHomeController;
-use App\Http\Controllers\WaitingPurchaseOrderController;
 use App\Livewire\Admin\Approvals\RuleTemplates\Edit as RuleTemplatesEdit;
 use App\Livewire\Admin\Approvals\RuleTemplates\Index as RuleTemplatesIndex;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
@@ -110,7 +108,7 @@ use Illuminate\Support\Facades\Route;
 
 // Route::get('/', fn() => view('welcome'))->name('/');
 
-Route::get('/', fn() => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
+Route::get('/', fn () => Auth::check() ? redirect()->intended('/home') : redirect()->intended(route('login')))->name('/');
 
 Auth::routes();
 
@@ -348,9 +346,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/form-keluar/insert', [FormKeluarController::class, 'store'])->name('formkeluar.insert');
     Route::get('/form-keluar/detail/{id}', [FormKeluarController::class, 'detail'])->name('formkeluar.detail');
     Route::post('/save-autosignature-path/{formId}/{section}', [FormKeluarController::class, 'saveImagePath']);
+
+    // FORM CUTI
+    Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti');
+    Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
+    Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
+    Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
+    Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class, 'saveImagePath']);
+
+    Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
+    Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
 });
 
-require __DIR__ . '/admin.php';
+require __DIR__.'/admin.php';
 
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
     Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');
@@ -446,13 +454,6 @@ Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [DetailPurc
 
 Route::get('/purchaseRequest/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
 Route::get('/purchaseRequest/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
-
-// FORM CUTI
-Route::get('/form-cuti', [FormCutiController::class, 'index'])->name('formcuti');
-Route::get('/form-cuti/create', [FormCutiController::class, 'create'])->name('formcuti.create');
-Route::post('/form-cuti/insert', [FormCutiController::class, 'store'])->name('formcuti.insert');
-Route::get('/form-cuti/detail/{id}', [FormCutiController::class, 'detail'])->name('formcuti.detail');
-Route::post('/form-cuti/save-autograph-path/{formId}/{section}', [FormCutiController::class, 'saveImagePath']);
 
 Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])->name('pt.index');
 Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name('pt.create');
@@ -551,9 +552,6 @@ Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->nam
 
 Route::delete('/overtime-detail/{id}/reject-server-side', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime-detail.reject-server-side');
 
-Route::get('/overtime/summary', [FormOvertimeController::class, 'summaryView'])->name('overtime.summary');
-Route::get('/overtime/summary/export', [FormOvertimeController::class, 'exportSummaryExcel'])->name('overtime.summary.export');
-
 Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
 Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
@@ -592,7 +590,7 @@ Route::middleware(['auth', 'is.head.or.management'])->group(function () {
 
 Route::get('/autologin', function (\Illuminate\Http\Request $request) {
     // dd($request->all());
-    if (!$request->hasValidSignature()) {
+    if (! $request->hasValidSignature()) {
         abort(403, 'Invalid or expired link.');
     }
 
@@ -616,7 +614,7 @@ Route::get('/inspection-report/create', InspectionForm::class)->name('inspection
 Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/master-data/parts/import', fn() => view('master-data-part.import-dashboard'))->name('md.parts.import');
+    Route::get('/master-data/parts/import', fn () => view('master-data-part.import-dashboard'))->name('md.parts.import');
     Route::get('/parts/import', ImportParts::class)->name('parts.import');
     Route::get('/import-jobs/{job}/log', [ImportJobController::class, 'downloadLog'])->name('import-jobs.log');
 });
