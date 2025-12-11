@@ -359,6 +359,23 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
     Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
+
+    Route::get('overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
+    Route::get('overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
+    Route::get('overtime-forms/detail/{id}', [FormOvertimeController::class, 'detail'])->name('overtime.detail');
+    Route::delete('overtime-forms/{id}', [FormOvertimeController::class, 'destroy'])->name('formovertime.delete');
+    Route::post('save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
+    Route::get('overtime-forms/edit', [FormOvertimeController::class, 'edit'])->name('formovertime.edit');
+    Route::put('overtime-forms/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
+    Route::delete('overtime-forms/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
+    Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
+    Route::get('overtime-forms/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
+    Route::put('overtime-forms/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
+    Route::post('overtime-forms/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
+    Route::delete('overtime-forms/detail/{id}/reject-server-side', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime-detail.reject-server-side');
+    Route::get('overtime-forms/get-employees', [FormOvertimeController::class, 'getEmployees']);
+    Route::get('overtime-forms/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
+    Route::post('overtime-forms/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 });
 
 require __DIR__.'/admin.php';
@@ -538,27 +555,6 @@ Route::get('/magang/disciplineindex', [DisciplinePageController::class, 'indexma
 Route::get('/exportyayasandateinput', [DisciplinePageController::class, 'dateExport'])->name('exportyayasan.dateinput');
 Route::get('/exportyayasansummary', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('exportyayasan.summary');
 Route::get('/export/yayasan/discipline', [DisciplinePageController::class, 'exportYayasanJpayrollFunction'])->name('export.yayasan.jpayroll');
-
-Route::get('/overtime-forms', FormOvertimeIndex::class)->name('overtime.index');
-Route::get('/overtime-forms/create', FormOvertimeCreate::class)->name('overtime.create');
-Route::post('/formovertime/insert', [FormOvertimeController::class, 'insert'])->name('formovertime.insert');
-Route::get('/formovertime/detail/{id}', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
-Route::delete('formovertime/{id}', [FormOvertimeController::class, 'destroy'])->name('formovertime.delete');
-Route::post('/save-autographot-path/{reportId}/{section}', [FormOvertimeController::class, 'saveAutographOtPath']);
-Route::get('/formovertime/edit', [FormOvertimeController::class, 'edit'])->name('formovertime.edit');
-Route::put('/formovertime/{id}/update', [FormOvertimeController::class, 'update'])->name('formovertime.update');
-Route::delete('/formovertime/{id}/delete', [FormOvertimeController::class, 'destroyDetail'])->name('formovertime.destroyDetail');
-Route::get('export-overtime/{headerId}', [FormOvertimeController::class, 'exportOvertime'])->name('export.overtime');
-Route::get('/formovertime/template/download', [FormOvertimeController::class, 'downloadTemplate'])->name('formovertime.template.download');
-Route::put('/overtime/reject/{id}', [FormOvertimeController::class, 'reject'])->name('overtime.reject');
-Route::post('/overtime/sign/{id}', [FormOvertimeController::class, 'sign'])->name('overtime.sign');
-
-Route::delete('/overtime-detail/{id}/reject-server-side', [FormOvertimeController::class, 'rejectDetailServerSide'])->name('overtime-detail.reject-server-side');
-
-Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
-
-Route::get('/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
-Route::post('/overtime/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 
 Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
 

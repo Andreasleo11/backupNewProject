@@ -306,7 +306,7 @@
                     'label' => 'Form Overtime',
                     'route' => 'overtime.index',
                     'icon' => 'document-text',
-                    'active' => request()->routeIs('overtime.index'),
+                    'active' => request()->routeIs('overtime.*'),
                 ],
                 [
                     'label' => 'Import Actual Overtime',

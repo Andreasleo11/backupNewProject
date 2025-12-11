@@ -1,3 +1,7 @@
-<span class="badge px-3 py-2 fs-6 bg-{{ $bg }} text-{{ $text }}">
+@props(['label', 'color'])
+
+<span
+    class="inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold
+           bg-{{ $color }}-100 text-{{ $color }}-800 border-{{ $color }}-200">
     {{ $label }}
 </span>

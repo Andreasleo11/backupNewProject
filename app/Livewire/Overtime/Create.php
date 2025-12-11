@@ -169,9 +169,9 @@ class Create extends Component
     {
         return $this->dept_id
             ? Employee::whereHas('department', fn($q) => $q->where('id', $this->dept_id))
-                ->orderBy('Nama')
-                ->get(['NIK', 'Nama'])
-                ->map(fn($employee) => ['nik' => $employee->NIK, 'name' => $employee->Nama])
+                ->orderBy('name')
+                ->get(['nik', 'name'])
+                ->map(fn($employee) => ['nik' => $employee->nik, 'name' => $employee->name])
             : collect();
     }
 
@@ -181,7 +181,7 @@ class Create extends Component
         try {
             $header = OvertimeFormService::create(collect($validated));
 
-            return redirect()->route('formovertime.detail', $header->id)->with('success', 'Overtime created succesfully');
+            return redirect()->route('overtime.detail', $header->id)->with('success', 'Overtime created succesfully');
         } catch (Throwable $e) {
             report($e);
 

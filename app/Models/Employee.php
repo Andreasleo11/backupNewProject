@@ -44,6 +44,6 @@ class Employee extends Authenticatable
 
     public function department()
     {
-        return $this->belongsTo(Department::class, 'Dept', 'dept_no');
+        return $this->belongsTo(Department::class, 'dept_code', 'dept_no');
     }
 }

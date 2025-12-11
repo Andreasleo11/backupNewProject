@@ -1,549 +1,412 @@
-<style>
-    /* Style for displaying added items */
-    .added-item {
-        margin-bottom: 10px;
-    }
+@php
+    // Siapkan data department untuk Alpine (id + name saja)
+    $departmentsForJs = $departements
+        ->map(
+            fn($d) => [
+                'id' => $d->id,
+                'name' => $d->name,
+            ],
+        )
+        ->values();
+@endphp
 
-    #itemDropdown {
-        max-height: 200px;
-        /* Set maximum height for the dropdown */
-        overflow-y: auto;
-        /* Enable vertical scrolling */
-        border: 1px solid #ccc;
-        /* Optional: Add border for visual clarity */
-        position: absolute;
-        /* Position the dropdown absolutely */
-        z-index: 999;
-        /* Ensure dropdown is above other elements */
-        background-color: #fff;
-        /* Set background color to white */
-        opacity: 1;
-        /* Adjust opacity to ensure dropdown is not transparent */
-    }
+<div x-data="editOvertimeModal(@js($header), @js($datas), @js($departmentsForJs))" x-init="// Buka modal ketika tombol di detail.blade mem-broadcast event ini
+window.addEventListener('open-overtime-edit-modal-{{ $header->id }}', () => { open = true })" x-cloak>
+    {{-- BACKDROP --}}
+    <div x-show="open" x-transition.opacity class="fixed inset-0 z-40 bg-slate-900/60"></div>
 
-    .dropdown-item {
-        padding: 5px;
-        cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-        background-color: #f0f0f0;
-    }
-</style>
-
-<div class="modal fade" id="edit-form-overtime-modal-{{ $header->id }}" tabindex="-1">
-    <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="text-end">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    {{-- MODAL WRAPPER --}}
+    <div x-show="open" x-transition class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6" role="dialog"
+        aria-modal="true">
+        <div class="flex h-full max-h-[90vh] w-full max-w-6xl flex-col rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200"
+            @click.outside="close()">
+            {{-- HEADER --}}
+            <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-6">
+                <div>
+                    <h2 class="text-base font-semibold text-slate-800 sm:text-lg">
+                        Edit Form Overtime
+                    </h2>
+                    <p class="mt-0.5 text-xs text-slate-500">
+                        Update header dan detail lembur untuk form ini.
+                    </p>
                 </div>
-                <div class="  px-2 py-5">
-                    <div class="h2 text-center fw-semibold">Edit Form Overtime</div>
-                    <form action="{{ route('formovertime.update', $header->id) }}" method="POST" class="row "
-                        id="form-overtime-edit">
-                        @method('PUT')
-                        @csrf
 
-                        <div class="form-group mt-3 col">
-                            <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
-                            <select class="form-select" name="from_department" id="fromDepartmentDropdown" required>
-                                <option value="" selected>Select from department..</option>
+                <button type="button" @click="close()"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                    <span class="sr-only">Close</span>
+                    ✕
+                </button>
+            </div>
+
+            {{-- BODY --}}
+            <div class="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+                <form id="form-overtime-edit" action="{{ route('formovertime.update', $header->id) }}" method="POST"
+                    class="space-y-6">
+                    @csrf
+                    @method('PUT')
+
+                    {{-- HEADER FIELDS --}}
+                    <div class="grid gap-4 md:grid-cols-2">
+                        {{-- Department --}}
+                        <div class="space-y-1.5">
+                            <label for="from_department" class="text-xs font-medium text-slate-700">
+                                From Department <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="from_department" name="from_department" x-model="deptId"
+                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                required>
+                                <option value="">Select department…</option>
                                 @foreach ($departements as $department)
-                                    @if ($department->id === $header->dept_id)
-                                        <option value="{{ $department->id }}" selected>{{ $department->name }}
-                                        </option>
-                                    @else
-                                        <option value="{{ $department->id }}">{{ $department->name }}
-                                        </option>
-                                    @endif
+                                    <option value="{{ $department->id }}" @selected($department->id === $header->dept_id)>
+                                        {{ $department->name }}
+                                    </option>
                                 @endforeach
                             </select>
+                            <p class="text-[11px] text-slate-400">
+                                Pilih department asal form lembur ini.
+                            </p>
                         </div>
 
-                        <div id="designFieldContainer"></div>
-
-                        <div class="form-group mt-3 col-md-6">
-                            <label class="form-label fs-5 fw-bold" for="date_form_overtime">Date of Form Overtime
-                                Create</label>
-                            <input class="form-control" type="date" id="date_form_overtime" name="date_form_overtime"
-                                required value="{{ $header->create_date }}">
+                        {{-- Date of Form Overtime --}}
+                        <div class="space-y-1.5">
+                            <label for="date_form_overtime" class="text-xs font-medium text-slate-700">
+                                Date of Form Overtime Create <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="date" id="date_form_overtime" name="date_form_overtime" x-model="createDate"
+                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                required>
                         </div>
+                    </div>
 
-                        <div class="form-group mt-3">
-                            <div id="itemsContainer">
-                                <label class="form-label fs-5 fw-bold">List of Items</label>
-                                <div id="items" class="border rounded-1 py-2 my-2 px-1 pe-2 mb-3"></div>
-                                <button class="btn btn-secondary btn-sm" type="button" onclick="addNewItem()">Add
-                                    Employee</button>
+                    {{-- DESIGN FIELD (ONLY FOR MOULDING) --}}
+                    <div x-show="deptIsMoulding" x-transition class="space-y-1.5">
+                        <label for="design" class="text-xs font-medium text-slate-700">
+                            Design <span class="text-rose-500">*</span>
+                        </label>
+                        <select id="design" name="design" x-model="isDesign"
+                            class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            :required="deptIsMoulding">
+                            <option value="">Select…</option>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                        <p class="text-[11px] text-slate-400">
+                            Hanya muncul jika department = MOULDING.
+                        </p>
+                    </div>
+
+                    {{-- ITEMS / EMPLOYEES LIST --}}
+                    <div class="space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <p class="text-sm font-semibold text-slate-800">
+                                    List of Employees
+                                </p>
+                                <p class="text-[11px] text-slate-500">
+                                    Edit detail lembur per karyawan. Bisa tambah/hapus baris.
+                                </p>
                             </div>
+                            <button type="button" @click="addItem()"
+                                class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
+                                <span class="text-sm">＋</span>
+                                <span>Add Employee</span>
+                            </button>
                         </div>
 
-                    </form>
-                </div>
-                </body>
+                        {{-- Kalau kosong --}}
+                        <template x-if="items.length === 0">
+                            <p
+                                class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+                                Belum ada detail lembur. Klik <span class="font-semibold">Add Employee</span> untuk
+                                menambah baris.
+                            </p>
+                        </template>
+
+                        {{-- Item cards --}}
+                        <div class="space-y-3">
+                            <template x-for="(item, index) in items" :key="index">
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-3 sm:p-4"
+                                    x-on:click.outside="closeSearch(index)">
+                                    <div class="mb-2 flex items-center justify-between gap-2">
+                                        <p class="text-xs font-semibold text-slate-600">
+                                            Employee #<span x-text="index + 1"></span>
+                                        </p>
+                                        <button type="button" @click="removeItem(index)"
+                                            class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-100">
+                                            ✕ Remove
+                                        </button>
+                                    </div>
+
+                                    <div class="grid gap-3 md:grid-cols-2">
+                                        {{-- NIK with search --}}
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                NIK <span class="text-rose-500">*</span>
+                                            </label>
+                                            <div class="relative">
+                                                <input type="text"
+                                                    class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                    placeholder="Search or type NIK…" x-model="item.nik"
+                                                    @focus="startSearch(index, 'nik')"
+                                                    @input="onSearchInput('nik', $event.target.value, index)" required>
+
+                                                {{-- Dropdown hasil search NIK --}}
+                                                <div x-show="searchOpenFor === 'nik' && searchIndex === index && searchResults.length"
+                                                    x-transition
+                                                    class="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-slate-200 bg-white text-xs shadow-lg">
+                                                    <template x-for="emp in searchResults" :key="emp.NIK">
+                                                        <button type="button" @click="pickEmployee(emp)"
+                                                            class="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100">
+                                                            <span class="font-medium text-slate-700"
+                                                                x-text="emp.NIK + ' - ' + emp.nama"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Name with search --}}
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                Name <span class="text-rose-500">*</span>
+                                            </label>
+                                            <div class="relative">
+                                                <input type="text"
+                                                    class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                    placeholder="Search or type name…" x-model="item.nama"
+                                                    @focus="startSearch(index, 'nama')"
+                                                    @input="onSearchInput('nama', $event.target.value, index)"
+                                                    required>
+
+                                                {{-- Dropdown hasil search Nama --}}
+                                                <div x-show="searchOpenFor === 'nama' && searchIndex === index && searchResults.length"
+                                                    x-transition
+                                                    class="absolute z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border border-slate-200 bg-white text-xs shadow-lg">
+                                                    <template x-for="emp in searchResults" :key="emp.NIK">
+                                                        <button type="button" @click="pickEmployee(emp)"
+                                                            class="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-slate-100">
+                                                            <span class="font-medium text-slate-700"
+                                                                x-text="emp.nama + ' (' + emp.NIK + ')'"></span>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Job desc --}}
+                                        <div class="space-y-1.5 md:col-span-2">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                Job Description <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="text" x-model="item.jobdesc" name=""
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                placeholder="Describe the overtime job…" required>
+                                        </div>
+
+                                        {{-- Start date & time --}}
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                Start Date <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="date" x-model="item.startdate"
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                required>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                Start Time <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="time" x-model="item.starttime"
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                required>
+                                        </div>
+
+                                        {{-- End date & time --}}
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                End Date <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="date" x-model="item.enddate"
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                required>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                End Time <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="time" x-model="item.endtime"
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                required>
+                                        </div>
+
+                                        {{-- Break --}}
+                                        <div class="space-y-1.5">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                Break (minutes) <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="number" min="0" x-model="item.break"
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                placeholder="e.g. 45" required>
+                                        </div>
+
+                                        {{-- Remark --}}
+                                        <div class="space-y-1.5 md:col-span-1">
+                                            <label class="text-[11px] font-medium text-slate-600">
+                                                Remark <span class="text-rose-500">*</span>
+                                            </label>
+                                            <input type="text" x-model="item.remark"
+                                                class="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                placeholder="Keterangan singkat" required>
+                                        </div>
+                                    </div>
+
+                                    {{-- Hidden inputs supaya format request sama seperti sebelumnya --}}
+                                    <template x-for="(itemHidden, iHidden) in [item]" :key="'hidden-' + index">
+                                        <div class="hidden">
+                                            <input type="hidden" :name="`items[${index}][NIK]`" x-model="item.nik">
+                                            <input type="hidden" :name="`items[${index}][nama]`" x-model="item.nama">
+                                            <input type="hidden" :name="`items[${index}][jobdesc]`"
+                                                x-model="item.jobdesc">
+                                            <input type="hidden" :name="`items[${index}][startdate]`"
+                                                x-model="item.startdate">
+                                            <input type="hidden" :name="`items[${index}][starttime]`"
+                                                x-model="item.starttime">
+                                            <input type="hidden" :name="`items[${index}][enddate]`"
+                                                x-model="item.enddate">
+                                            <input type="hidden" :name="`items[${index}][endtime]`"
+                                                x-model="item.endtime">
+                                            <input type="hidden" :name="`items[${index}][break]`"
+                                                x-model="item.break">
+                                            <input type="hidden" :name="`items[${index}][remark]`"
+                                                x-model="item.remark">
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary"
-                    onclick="document.getElementById('form-overtime-edit').submit()">Save changes</button>
+
+            {{-- FOOTER --}}
+            <div class="flex items-center justify-end gap-2 border-t border-slate-100 px-4 py-3 sm:px-6">
+                <button type="button" @click="close()"
+                    class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
+                    Close
+                </button>
+                <button type="submit" form="form-overtime-edit"
+                    class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
+                    Save changes
+                </button>
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const departmentDropdown = document.getElementById('fromDepartmentDropdown');
-            const designFieldContainer = document.getElementById('designFieldContainer');
-
-
-            let header = {!! json_encode($header) !!};
-            let datas = {!! json_encode($datas) !!};
-
-            console.log(header.is_design);
-
-            const selectedDepartment = departmentDropdown.options[departmentDropdown.selectedIndex]
-                .text;
-            if (selectedDepartment === 'MOULDING') {
-                // Create the Design field
-                const designFormGroup = document.createElement('div');
-                designFormGroup.classList.add('form-group', 'mt-3', 'col');
-
-                const designLabel = document.createElement('label');
-                designLabel.classList.add('form-label', 'fs-5', 'fw-bold');
-                designLabel.setAttribute('for', 'design');
-                designLabel.textContent = 'Design';
-
-                const designSelect = document.createElement('select');
-                designSelect.classList.add('form-select');
-                designSelect.setAttribute('name', 'design');
-                designSelect.setAttribute('id', 'design');
-                designSelect.value = header?.is_design ?? "";
-                designSelect.required = true;
-
-                const yesOption = document.createElement('option');
-                yesOption.value = '1';
-                yesOption.textContent = 'Yes';
-
-                const noOption = document.createElement('option');
-                noOption.value = '0';
-                noOption.textContent = 'No';
-
-
-                // Set the selected value based on header.is_design
-                if (header?.is_design !== undefined) {
-                    designSelect.value = header.is_design;
-
-                    if (header.is_design === 1) {
-                        yesOption.selected = true;
-                    } else if (header.is_design === 0) {
-                        noOption.selected = true;
-                    }
-                }
-
-                designSelect.appendChild(yesOption);
-                designSelect.appendChild(noOption);
-
-                designFormGroup.appendChild(designLabel);
-                designFormGroup.appendChild(designSelect);
-
-                // Append the Design field to the container
-                designFieldContainer.appendChild(designFormGroup);
-            }
-
-            departmentDropdown.addEventListener('change', function() {
-                // Clear the design field container
-                designFieldContainer.innerHTML = '';
-
-
-
-                // Check if the selected department is Moulding
-                const selectedDepartment = departmentDropdown.options[departmentDropdown
-                        .selectedIndex]
-                    .text;
-                console.log("test : ", selectedDepartment);
-                if (selectedDepartment === 'MOULDING') {
-                    // Create the Design field
-                    const designFormGroup = document.createElement('div');
-                    designFormGroup.classList.add('form-group', 'mt-3', 'col');
-
-                    const designLabel = document.createElement('label');
-                    designLabel.classList.add('form-label', 'fs-5', 'fw-bold');
-                    designLabel.setAttribute('for', 'design');
-                    designLabel.textContent = 'Design';
-
-                    const designSelect = document.createElement('select');
-                    designSelect.classList.add('form-select');
-                    designSelect.setAttribute('name', 'design');
-                    designSelect.setAttribute('id', 'design');
-                    designSelect.required = true;
-
-
-
-                    const yesOption = document.createElement('option');
-                    yesOption.value = '1';
-                    yesOption.textContent = 'Yes';
-
-                    const noOption = document.createElement('option');
-                    noOption.value = '0';
-                    noOption.textContent = 'No';
-
-
-                    designSelect.value = header?.is_design ?? "";
-
-                    if (header?.is_design !== undefined) {
-                        designSelect.value = header.is_design;
-
-                        if (header.is_design === 1) {
-                            yesOption.selected = true;
-                        } else if (header.is_design === 0) {
-                            noOption.selected = true;
-                        }
-                    }
-                    designSelect.appendChild(yesOption);
-                    designSelect.appendChild(noOption);
-
-                    designFormGroup.appendChild(designLabel);
-                    designFormGroup.appendChild(designSelect);
-
-                    // Append the Design field to the container
-                    designFieldContainer.appendChild(designFormGroup);
-                }
-            });
-        });
-
-        let header = {!! json_encode($header) !!};
-        let datas = {!! json_encode($datas) !!};
-
-
-        console.log("ini data :", datas);
-
-        // Counter for creating unique IDs for items
-        let itemIdCounter = 0;
-        let isFirstCall = true; // Flag to track the first call
-
-        datas.forEach(datas => {
-            addNewItem(datas)
-        });
-
-        function addNewItem($datas = null) {
-            // Create a new item container
-            const newItemContainer = document.createElement('div');
-            newItemContainer.classList.add('added-item', 'row', 'gy-2', 'gx-2', 'align-items-center');
-
-            if (isFirstCall) {
-                // Define header labels and their corresponding column sizes
-                const headerLabels = ['Count', 'NIK ', 'Name ', 'Job desc', 'Start Date', 'Start Time',
-                    'End Date',
-                    'End Time', 'Break (Minute)', 'Remarks',
-                    'Action'
-                ];
-                const columnSizes = ['col-md-1', 'col-md-1', 'col-md-1', 'col-md-2', 'col-md-1', 'col-md-1',
-                    'col-md-1',
-                    'col-md-1', 'col-md-1', 'col-md-1', 'col-md-1'
-                ];
-
-                // Create header row and add header labels with specified column sizes
-                const headerRow = document.createElement('div');
-                headerRow.classList.add('row', 'gy-2', 'gx-2', 'align-items-center', 'header-row');
-
-                headerLabels.forEach((label, index) => {
-                    const headerLabel = document.createElement('div');
-                    headerLabel.classList.add(columnSizes[index], 'text-center', 'header-label',
-                        'fw-semibold');
-                    headerLabel.textContent = label;
-                    headerRow.appendChild(headerLabel);
-                });
-
-                document.getElementById('items').appendChild(headerRow);
-
-                isFirstCall = false; // Update the flag to indicate that headers are added
-            }
-
-            const countGroup = document.createElement('div')
-            countGroup.classList.add('count-group', 'col-md-1', 'text-center');
-            countGroup.textContent = itemIdCounter + 1;
-
-            // Create input fields for item details
-            const formGroupName = document.createElement('div');
-            formGroupName.classList.add('col-md-1');
-
-            const itemNameInput = document.createElement('input');
-            itemNameInput.classList.add('form-control');
-            itemNameInput.setAttribute('required', 'required');
-            itemNameInput.type = 'text';
-            itemNameInput.value = $datas?.NIK ?? "";
-
-            itemNameInput.name = `items[${itemIdCounter}][NIK]`;
-
-            itemNameInput.placeholder = 'Item Name';
-
-            const itemNameDropdown = document.createElement('div');
-            itemNameDropdown.id = `itemDropdown`;
-            itemNameDropdown.classList.add('dropdown-content');
-
-            // Add event listener for keyup event
-            itemNameInput.addEventListener('keyup', function() {
-                const departmentDropdown = document.getElementById('fromDepartmentDropdown');
-                const inputValue = itemNameInput.value.trim();
-
-                if (inputValue.length > 0) {
-                    // Fetch item names from server based on user input
-                    fetch(`/get-employees?nik=${inputValue}&deptid=${departmentDropdown.value}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Clear previous dropdown options
-                            itemNameDropdown.innerHTML = '';
-                            // Populate dropdown with fetched item names
-                            if (data.length > 0) {
-                                data.forEach(pegawai => {
-                                    const option = document.createElement('div');
-                                    option.classList.add('dropdown-item');
-                                    option.textContent = `${pegawai.NIK} - ${pegawai.nama}`;
-                                    option.addEventListener('click', function() {
-                                        itemNameInput.value = pegawai.NIK;
-                                        namaInput.value = pegawai.nama;
-
-                                        itemNameDropdown.innerHTML = '';
-                                        itemNameDropdown.style.display = 'none';
-                                    });
-                                    itemNameDropdown.appendChild(option);
-                                });
-                                itemNameDropdown.style.display = 'block';
-                            } else {
-                                itemNameDropdown.style.display = 'none';
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
-                } else {
-                    itemNameDropdown.innerHTML = '';
-                    itemNameDropdown.style.display = 'none';
-                }
-            });
-            //ajax for dropdown item
-
-            formGroupName.appendChild(itemNameInput);
-            formGroupName.appendChild(itemNameDropdown);
-
-            const formGroupNamaInput = document.createElement('div')
-            formGroupNamaInput.classList.add('col-md-1');
-
-            const namaInput = document.createElement('input');
-            namaInput.classList.add('form-control');
-            namaInput.setAttribute('required', 'required');
-            namaInput.type = 'text';
-            namaInput.name = `items[${itemIdCounter}][nama]`;
-            namaInput.value = $datas?.nama ?? "";
-            namaInput.placeholder = 'Nama';
-
-            formGroupNamaInput.appendChild(namaInput);
-
-            // Add event listener for keyup event
-            namaInput.addEventListener('keyup', function() {
-
-                const departmentDropdown = document.getElementById('fromDepartmentDropdown');
-                const inputValue = namaInput.value.trim();
-
-                if (inputValue.length > 0) {
-                    // Fetch item names from server based on user input
-                    fetch(`/get-employees?name=${inputValue}&deptid=${departmentDropdown.value}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Clear previous dropdown options
-                            itemNameDropdown.innerHTML = '';
-                            // Populate dropdown with fetched item names
-                            if (data.length > 0) {
-                                data.forEach(pegawai => {
-                                    const option = document.createElement('div');
-                                    option.classList.add('dropdown-item');
-                                    option.textContent = `${pegawai.NIK} - ${pegawai.nama}`;
-                                    option.addEventListener('click', function() {
-                                        itemNameInput.value = pegawai.NIK;
-                                        namaInput.value = pegawai.nama;
-
-                                        itemNameDropdown.innerHTML = '';
-                                        itemNameDropdown.style.display = 'none';
-                                    });
-                                    itemNameDropdown.appendChild(option);
-                                });
-                                itemNameDropdown.style.display = 'block';
-                            } else {
-                                itemNameDropdown.style.display = 'none';
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
-                } else {
-                    itemNameDropdown.innerHTML = '';
-                    itemNameDropdown.style.display = 'none';
-                }
-            });
-            //ajax for dropdown item
-
-            document.addEventListener('click', function(event) {
-                if (!itemNameInput.contains(event.target) && !itemNameDropdown.contains(event.target)) {
-                    itemNameDropdown.style.display = 'none';
-                    // console.log(itemNameInput.value);
-                }
-            });
-
-
-
-
-            const formGroupJobdescInput = document.createElement('div')
-            formGroupJobdescInput.classList.add('col-md-2');
-
-            const jobdescInput = document.createElement('input');
-            jobdescInput.classList.add('form-control');
-            jobdescInput.setAttribute('required', 'required');
-            jobdescInput.type = 'text';
-            jobdescInput.name = `items[${itemIdCounter}][jobdesc]`;
-            jobdescInput.value = $datas?.job_desc ?? "";
-            jobdescInput.placeholder = 'jobdesc';
-
-            formGroupJobdescInput.appendChild(jobdescInput);
-
-            const formGroupStartDateInput = document.createElement('div')
-            formGroupStartDateInput.classList.add('col-md-1');
-
-            const startdateInput = document.createElement('input');
-            startdateInput.classList.add('form-control');
-            startdateInput.setAttribute('required', 'required');
-            startdateInput.type = 'date';
-            startdateInput.name = `items[${itemIdCounter}][startdate]`;
-            startdateInput.value = $datas?.start_date ?? "";
-
-            formGroupStartDateInput.appendChild(startdateInput);
-
-            const formGroupStartTimeInput = document.createElement('div')
-            formGroupStartTimeInput.classList.add('col-md-1');
-
-            const starttimeInput = document.createElement('input');
-            starttimeInput.classList.add('form-control');
-            starttimeInput.setAttribute('required', 'required');
-            starttimeInput.type = 'time';
-            starttimeInput.name = `items[${itemIdCounter}][starttime]`;
-            starttimeInput.placeholder = 'Unit Price';
-            starttimeInput.value = $datas?.start_time ?? "";
-
-            formGroupStartTimeInput.appendChild(starttimeInput);
-
-            const formGroupEndDateInput = document.createElement('div')
-            formGroupEndDateInput.classList.add('col-md-1');
-
-            const enddateInput = document.createElement('input');
-            enddateInput.classList.add('form-control');
-            enddateInput.setAttribute('required', 'required');
-            enddateInput.type = 'date';
-            enddateInput.name = `items[${itemIdCounter}][enddate]`;
-            enddateInput.value = $datas?.end_date ?? "";
-
-            formGroupEndDateInput.appendChild(enddateInput);
-
-            const formGroupEndTimeInput = document.createElement('div')
-            formGroupEndTimeInput.classList.add('col-md-1');
-
-            const endtimeInput = document.createElement('input');
-            endtimeInput.classList.add('form-control');
-            endtimeInput.setAttribute('required', 'required');
-            endtimeInput.type = 'time';
-            endtimeInput.name = `items[${itemIdCounter}][endtime]`;
-            endtimeInput.placeholder = 'Unit Price';
-            endtimeInput.value = $datas?.end_time ?? "";
-
-            formGroupEndTimeInput.appendChild(endtimeInput);
-
-
-            const formGroupBreakInput = document.createElement('div')
-            formGroupBreakInput.classList.add('col-md-1');
-
-            const breakInput = document.createElement('input');
-            breakInput.classList.add('form-control');
-            breakInput.setAttribute('required', 'required');
-            breakInput.type = 'text';
-            breakInput.name = `items[${itemIdCounter}][break]`;
-            breakInput.placeholder = '45';
-            breakInput.value = $datas?.break ?? "";
-
-            formGroupBreakInput.appendChild(breakInput);
-
-
-            const formGroupRemarkInput = document.createElement('div')
-            formGroupRemarkInput.classList.add('col-md-1');
-
-            const remarkInput = document.createElement('input');
-            remarkInput.classList.add('form-control');
-            remarkInput.setAttribute('required', 'required');
-            remarkInput.type = 'text';
-            remarkInput.name = `items[${itemIdCounter}][remark]`;
-            remarkInput.value = $datas?.remark ?? "";
-            remarkInput.placeholder = 'Keterangan';
-
-            formGroupRemarkInput.appendChild(remarkInput);
-
-
-            const actionGroup = document.createElement('div');
-            actionGroup.classList.add('col-md-1', 'text-center');
-
-            const removeButton = document.createElement('a');
-            removeButton.classList.add('btn', 'btn-danger');
-            removeButton.textContent = "Remove";
-            removeButton.addEventListener('click', removeItem);
-
-            actionGroup.appendChild(removeButton);
-
-            // Append input fields to the item container
-            newItemContainer.appendChild(countGroup);
-            newItemContainer.appendChild(formGroupName);
-            newItemContainer.appendChild(formGroupNamaInput);
-            newItemContainer.appendChild(formGroupJobdescInput);
-            newItemContainer.appendChild(formGroupStartDateInput);
-            newItemContainer.appendChild(formGroupStartTimeInput);
-            newItemContainer.appendChild(formGroupEndDateInput);
-            newItemContainer.appendChild(formGroupEndTimeInput);
-            newItemContainer.appendChild(formGroupBreakInput);
-            newItemContainer.appendChild(formGroupRemarkInput);
-            newItemContainer.appendChild(actionGroup);
-
-            // Append the new item container to the items container
-            document.getElementById('items').appendChild(newItemContainer);
-
-            // Increment the item ID counter
-            itemIdCounter++;
-
-            updateItemCount();
-        }
-
-        function removeItem() {
-            // Get the parent container of the remove button (which is the item container)
-            const itemContainer = event.target.closest('.added-item');
-
-            // Remove the item container from the DOM
-            itemContainer.remove();
-
-            // Decrement the item ID counter
-            itemIdCounter--;
-
-            // Update the item count
-            updateItemCount();
-        }
-
-
-        function updateItemCount() {
-            // Get all elements with the added-item class
-            const addedItems = document.querySelectorAll('.added-item');
-            console.log(addedItems);
-
-            // Loop through each added item and update the count
-            addedItems.forEach((item, index) => {
-                // Find the countGroup element in the current added item
-                const countGroup = item.querySelector('.count-group');
-                console.log(countGroup);
-
-                // Update the text content of the countGroup element
-                countGroup.textContent = index + 1; // Add 1 because item ID starts from 0
-            });
-        }
-    </script>
-
 </div>
+
+{{-- Alpine helper --}}
+<script>
+    function editOvertimeModal(header, datas, departments) {
+        return {
+            open: false,
+            deptId: header.dept_id ?? '',
+            isDesign: header.is_design ?? '',
+            createDate: header.create_date ?? '',
+            departments: departments ?? [],
+            items: (datas ?? []).map(d => ({
+                nik: d.NIK ?? '',
+                nama: d.nama ?? d.name ?? '',
+                jobdesc: d.job_desc ?? '',
+                startdate: d.start_date ?? '',
+                starttime: d.start_time ?? '',
+                enddate: d.end_date ?? '',
+                endtime: d.end_time ?? '',
+                break: d.break ?? '',
+                remark: d.remark ?? '',
+            })),
+
+            // Search state
+            searchResults: [],
+            searchIndex: null,
+            searchOpenFor: null,
+
+            get deptIsMoulding() {
+                const dep = this.departments.find(d => String(d.id) === String(this.deptId));
+                return dep && dep.name === 'MOULDING';
+            },
+
+            addItem() {
+                this.items.push({
+                    nik: '',
+                    nama: '',
+                    jobdesc: '',
+                    startdate: '',
+                    starttime: '',
+                    enddate: '',
+                    endtime: '',
+                    break: '',
+                    remark: '',
+                });
+            },
+
+            removeItem(index) {
+                this.items.splice(index, 1);
+                // close dropdown kalau index yang dihapus sedang aktif
+                if (this.searchIndex === index) {
+                    this.closeSearch(index);
+                }
+            },
+
+            startSearch(index, field) {
+                this.searchIndex = index;
+                this.searchOpenFor = field; // 'nik' atau 'nama'
+                this.searchResults = [];
+            },
+
+            async onSearchInput(field, value, index) {
+                this.searchIndex = index;
+                this.searchOpenFor = field;
+
+                if (!value) {
+                    this.searchResults = [];
+                    return;
+                }
+
+                try {
+                    const param = field === 'nik' ? 'nik' : 'name';
+                    const url = `/get-employees?${param}=${encodeURIComponent(value)}&deptid=${this.deptId || ''}`;
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    this.searchResults = Array.isArray(data) ? data : [];
+                } catch (e) {
+                    console.error('Error fetching employees:', e);
+                    this.searchResults = [];
+                }
+            },
+
+            pickEmployee(emp) {
+                if (this.searchIndex === null) return;
+                const item = this.items[this.searchIndex];
+                item.nik = emp.NIK;
+                item.nama = emp.nama;
+                this.searchResults = [];
+                this.searchIndex = null;
+                this.searchOpenFor = null;
+            },
+
+            closeSearch(index) {
+                if (this.searchIndex === index) {
+                    this.searchIndex = null;
+                    this.searchOpenFor = null;
+                    this.searchResults = [];
+                }
+            },
+
+            close() {
+                this.open = false;
+                this.searchIndex = null;
+                this.searchOpenFor = null;
+                this.searchResults = [];
+            },
+        }
+    }
+</script>

@@ -51,7 +51,6 @@ class FormOvertimeController extends Controller
         $employees = Employee::get();
         $departements = Department::get();
 
-        // dd($header);
         return view('formovertime.detail', compact('header', 'datas', 'employees', 'departements'));
     }
 
@@ -62,7 +61,7 @@ class FormOvertimeController extends Controller
 
         $form = HeaderFormOvertime::find($id);
         $approval = $form->approvals()->where('flow_step_id', $request->step_id)->firstOrFail();
-        // dd($form->currentStep());
+
         $approval->update([
             'status' => 'approved',
             'signed_at' => now(),
@@ -162,7 +161,7 @@ class FormOvertimeController extends Controller
         }
 
         return redirect()
-            ->route('formovertime.detail', ['id' => $id])
+            ->route('overtime.detail', ['id' => $id])
             ->with('success', 'Form Overtime updated successfully.');
     }
 
