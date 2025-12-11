@@ -142,7 +142,7 @@ class PurchaseOrderController extends Controller
         $filename = $purchaseOrder->filename;
         // Check if the PDF exists in storage
         if (! Storage::exists('public/pdfs/'.$purchaseOrder->filename)) {
-            abort(500, 'PDF file not found.');
+            // abort(500, 'PDF file not found.');
         }
 
         return view(

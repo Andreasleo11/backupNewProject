@@ -136,7 +136,7 @@ class SendPREmailNotification extends Command
         }
         $status = $this->checkStatus($newPr->status);
         $from = 'pt.daijoindustrial@daijo.co.id';
-        $url = 'http://116.254.114.93:2420/'.'purchaserequest/detail/'.$newPr->id;
+        $url = 'http://116.254.114.93:2420/'.'purchase-requests/' . $newPr->id;
 
         $mailData = [
             'title' => $title,

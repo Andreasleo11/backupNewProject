@@ -406,4 +406,9 @@ class SuratPerintahKerjaController extends Controller
 
         return redirect()->back()->with('success', 'Spk finished!');
     }
+
+    public function reject($id)
+    {
+        return 'Not implemented';
+    }
 }

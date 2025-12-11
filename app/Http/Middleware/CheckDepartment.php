@@ -18,8 +18,7 @@ class CheckDepartment
     {
         $user = Auth::user();
         if (
-            ($user->department->name && in_array($user->department->name, $departments)) ||
-            $user->role_id == 1
+            ($user->department->name && in_array($user->department->name, $departments)) || $user
         ) {
             return $next($request);
         }

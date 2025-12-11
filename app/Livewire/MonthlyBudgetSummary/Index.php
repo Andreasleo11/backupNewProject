@@ -4,17 +4,13 @@ namespace App\Livewire\MonthlyBudgetSummary;
 
 use App\Models\MonthlyBudgetSummaryReport as Report;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Layout('layouts.app')]
 class Index extends Component
 {
     use WithPagination;
-
-    protected $paginationTheme = 'bootstrap';
 
     // URL-synced filters (back-button friendly & shareable)
     #[Url(as: 'q', keep: true)]
@@ -90,6 +86,27 @@ class Index extends Component
         $this->resetPage();
     }
 
+    private function normalizeMonth(?string $mmYYYY): ?string
+    {
+        if (! $mmYYYY) {
+            return null;
+        }
+        // Accept both "mm-yyyy" and "yyyy-mm"
+        $mmYYYY = trim($mmYYYY);
+        if (preg_match('/^\d{2}-\d{4}$/', $mmYYYY)) {
+            [$m, $y] = explode('-', $mmYYYY);
+
+            return sprintf('%04d-%02d-01', (int) $y, (int) $m);
+        }
+        if (preg_match('/^\d{4}-\d{2}$/', $mmYYYY)) {
+            [$y, $m] = explode('-', $mmYYYY);
+
+            return sprintf('%04d-%02d-01', (int) $y, (int) $m);
+        }
+
+        return null;
+    }
+
     public function render()
     {
         $user = auth()->user();
@@ -151,26 +168,5 @@ class Index extends Component
             'authUser' => $user,
             'showGenerateButton' => $this->showGenerateButton,
         ]);
-    }
-
-    private function normalizeMonth(?string $mmYYYY): ?string
-    {
-        if (! $mmYYYY) {
-            return null;
-        }
-        // Accept both "mm-yyyy" and "yyyy-mm"
-        $mmYYYY = trim($mmYYYY);
-        if (preg_match('/^\d{2}-\d{4}$/', $mmYYYY)) {
-            [$m, $y] = explode('-', $mmYYYY);
-
-            return sprintf('%04d-%02d-01', (int) $y, (int) $m);
-        }
-        if (preg_match('/^\d{4}-\d{2}$/', $mmYYYY)) {
-            [$y, $m] = explode('-', $mmYYYY);
-
-            return sprintf('%04d-%02d-01', (int) $y, (int) $m);
-        }
-
-        return null;
     }
 }

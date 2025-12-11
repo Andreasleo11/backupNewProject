@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Domain\Signature\Entities\UserSignature; // adapt if your User model lives elsewhere
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 
 class SignaturePolicy
 {

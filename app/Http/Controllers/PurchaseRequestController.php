@@ -118,7 +118,7 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('branch');
 
             // Redirect without any filters
-            return redirect()->route('purchaserequest.home');
+            return redirect()->route('purchase-requests.index');
         }
 
         // Apply filters from request or session
@@ -160,22 +160,8 @@ class PurchaseRequestController extends Controller
             'branch' => $branch,
         ]);
 
-        // return view('purchaseRequest.index', compact('purchaseRequests'));
-        return $dataTable->render('purchaseRequest.index');
-    }
-
-    public function getChartData(Request $request, $year, $month)
-    {
-        $purchaseRequests = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->groupBy('to_department')
-            ->get();
-
-        $labels = $purchaseRequests->pluck('to_department');
-        $counts = $purchaseRequests->pluck('count');
-
-        return response()->json(['labels' => $labels, 'counts' => $counts]);
+        // return view('purchase-requests.index', compact('purchaseRequests'));
+        return $dataTable->render('purchase-requests.index');
     }
 
     public function create()
@@ -183,10 +169,10 @@ class PurchaseRequestController extends Controller
         $items = MasterDataPr::get();
         $departments = Department::all();
 
-        return view('purchaseRequest.create', compact('items', 'departments'));
+        return view('purchase-requests.create', compact('items', 'departments'));
     }
 
-    public function insert(StorePurchaseRequest $request)
+    public function store(StorePurchaseRequest $request)
     {
         $items = $request->input('items', []);
         $isDraft = $request->is_draft;
@@ -259,7 +245,7 @@ class PurchaseRequestController extends Controller
         // $this->executeSendPRNotificationCommand();
 
         return redirect()
-            ->route('purchaserequest.home')
+            ->route('purchase-requests.index')
             ->with('success', 'Purchase request created successfully');
     }
 
@@ -309,7 +295,7 @@ class PurchaseRequestController extends Controller
         return $input;
     }
 
-    public function detail($id)
+    public function show($id)
     {
         $departments = Department::all();
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
@@ -376,7 +362,7 @@ class PurchaseRequestController extends Controller
         }
 
         return view(
-            'purchaseRequest.detail',
+            'purchase-requests.show',
             compact(
                 'purchaseRequest',
                 'user',
@@ -529,97 +515,6 @@ class PurchaseRequestController extends Controller
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
-    public function monthlyview()
-    {
-        $purchaseRequests = PurchaseRequest::with('itemDetail')->get();
-
-        return view('purchaseRequest.monthly', compact('purchaseRequests'));
-    }
-
-    public function monthlyviewmonth(Request $request)
-    {
-        // Get the month inputted by the user
-        $selectedMonth = $request->input('month');
-
-        // Extract year and month from the selected month input
-        $year = date('Y', strtotime($selectedMonth));
-        $month = date('m', strtotime($selectedMonth));
-
-        // Save the year and month to the MonhtlyPR model
-        MonhtlyPR::create([
-            'month' => $month,
-            'year' => $year,
-            // Add other fields as needed
-        ]);
-
-        // Fetch purchase requests for the selected month
-        $purchaseRequests = PurchaseRequest::with('itemDetail')
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->where('from_department', auth()->user()->department->name)
-            ->get();
-
-        // Pass the filtered data to the view
-
-        return view('purchaseRequest.monthly', compact('purchaseRequests'));
-    }
-
-    public function monthlyprlist()
-    {
-        $monthlist = MonhtlyPR::get();
-
-        return view('purchaseRequest.monthlylist', compact('monthlist'));
-
-        return view('purchaseRequest.monthlylist', compact('monthlist'));
-    }
-
-    public function monthlydetail($id)
-    {
-        $monthdetail = MonhtlyPR::find($id);
-
-        // Extract year and month from the selected month input
-        // Extract year and month from the selected month input
-        // $year = date('Y', strtotime($monthdetail->year));
-        // $month = date('m', strtotime($monthdetail->month));
-
-        $year = $monthdetail->year;
-        $month = $monthdetail->month;
-
-        $purchaseRequests = PurchaseRequest::with('itemDetail')
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->get();
-
-        // dd($monthdetail);
-        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
-
-        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
-    }
-
-    public function saveImagePathMonthly(Request $request, $monthprId, $section)
-    {
-        $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
-
-        // Save $imagePath to the database for the specified $reportId and $section
-        $monthpr = MonhtlyPR::find($monthprId);
-        $monthpr->update([
-            "autograph_{$section}" => $imagePath,
-        ]);
-        $monthpr->update([
-            "autograph_user_{$section}" => $username,
-        ]);
-        $monthpr->update([
-            "autograph_{$section}" => $imagePath,
-        ]);
-        $monthpr->update([
-            "autograph_user_{$section}" => $username,
-        ]);
-
-        return response()->json(['success' => 'Autograph saved successfully!']);
-    }
-
-    // REVISI PR DROPDOWN ITEM + PRICE
     // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {

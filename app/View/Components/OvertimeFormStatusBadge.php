@@ -10,16 +10,16 @@ class OvertimeFormStatusBadge extends Component
 {
     public string $status;
 
-    // Centralised definition
+    // status => [label, tailwindColorName]
     public const MAP = [
-        'waiting-creator' => ['Waiting Creator', 'primary-subtle', 'primary'],
-        'waiting-dept-head' => ['Waiting Dept Head', 'warning', 'dark'],
-        'waiting-verificator' => ['Waiting Verificator', 'warning', 'dark'],
-        'waiting-gm' => ['Waiting GM', 'warning', 'dark'],
-        'waiting-director' => ['Waiting Director', 'warning', 'dark'],
-        'waiting-supervisor' => ['Waiting Supervisor', 'info', 'dark'],
-        'approved' => ['Approved', 'success', 'white'],
-        'rejected' => ['Rejected', 'danger', 'white'],
+        'waiting-creator'     => ['Waiting Creator', 'sky'],
+        'waiting-dept-head'   => ['Waiting Dept Head', 'amber'],
+        'waiting-verificator' => ['Waiting Verificator', 'amber'],
+        'waiting-gm'          => ['Waiting GM', 'amber'],
+        'waiting-director'    => ['Waiting Director', 'amber'],
+        'waiting-supervisor'  => ['Waiting Supervisor', 'indigo'],
+        'approved'            => ['Approved', 'emerald'],
+        'rejected'            => ['Rejected', 'rose'],
     ];
 
     public function __construct(string $status)
@@ -27,13 +27,10 @@ class OvertimeFormStatusBadge extends Component
         $this->status = $status;
     }
 
-    /**
-     * Get the view / contents that represent the component.
-     */
     public function render(): View|Closure|string
     {
-        [$label, $bg, $text] = self::MAP[$this->status] ?? ['Unknown', 'secondary', 'light'];
+        [$label, $color] = self::MAP[$this->status] ?? ['Unknown', 'slate'];
 
-        return view('components.overtime-form-status-badge', compact('label', 'bg', 'text'));
+        return view('components.overtime-form-status-badge', compact('label', 'color'));
     }
 }

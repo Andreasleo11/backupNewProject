@@ -1,198 +1,249 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
+
 @push('extraCss')
     <style>
         .autograph-box {
             width: 200px;
-            /* Adjust the width as needed */
             height: 100px;
-            /* Adjust the height as needed */
             background-size: contain;
             background-repeat: no-repeat;
-            border: 1px solid #ccc;
-            /* Add border for better visibility */
+            background-position: center;
         }
     </style>
 @endpush
 
 @section('content')
 
-    <section aria-label="header" class="container">
-        <div class="row text-center">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {{-- Breadcrumb + Header --}}
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+                <nav class="mb-1" aria-label="Breadcrumb">
+                    <ol class="flex items-center gap-1 text-xs text-slate-500">
+                        <li>
+                            <a href="{{ route('formkeluar') }}" class="hover:text-slate-700">Form Keluar</a>
+                        </li>
+                        <li class="text-slate-400">/</li>
+                        <li class="font-medium text-slate-700">
+                            Detail
+                        </li>
+                    </ol>
+                </nav>
+                <h1 class="text-lg sm:text-xl font-semibold text-slate-900">
+                    Detail Form Keluar
+                </h1>
+                <p class="mt-1 text-xs sm:text-sm text-slate-500">
+                    Doc No: <span class="font-medium text-slate-700">{{ $formkeluar->doc_num }}</span>
+                </p>
+            </div>
+        </div>
 
-            <div class="col">
-                <h2>Dept Head</h2>
-                <div class="autograph-box container" id="autographBox1"></div>
-                <div class="container mt-2 border-1" id="autographuser1"></div>
-                @if (Auth::check() &&
-                        Auth::user()->department &&
-                        Auth::user()->is_head == 1 &&
-                        Auth::user()->department == $formkeluar->department)
-                    <button id="btn2" class="btn btn-primary" onclick="addAutograph(1, {{ $formkeluar->id }})">Acc Dept
-                        Head</button>
-                @endif
+        {{-- Signatures Section --}}
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {{-- Dept Head --}}
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
+                <h2 class="text-sm font-semibold text-slate-800 mb-2 text-center md:text-left">
+                    Dept Head
+                </h2>
+
+                <div class="flex flex-col items-center">
+                    <div class="autograph-box border border-slate-300 rounded-lg bg-slate-50" id="autographBox1"></div>
+                    <div class="mt-2 text-xs text-slate-700" id="autographuser1"></div>
+
+                    @if (Auth::check() &&
+                            Auth::user()->department &&
+                            Auth::user()->is_head == 1 &&
+                            Auth::user()->department == $formkeluar->department)
+                        <button id="btn1" type="button" onclick="addAutograph(1, {{ $formkeluar->id }})"
+                            class="mt-3 inline-flex items-center rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
+                            Acc Dept Head
+                        </button>
+                    @endif
+                </div>
             </div>
 
-            <div class="col">
+            {{-- Yang Bersangkutan --}}
+            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
                 @php
-                    $path2 = 'default_image_path.jpg'; // Set a default image path
-
+                    $path2 = null;
                     if ($formkeluar->signature) {
                         $path = $formkeluar->signature->getSignatureImagePath();
                         $path2 = str_replace('public/', 'storage/', $path);
                     }
                 @endphp
 
-                <h2>Yang Bersangkutan</h2>
+                <h2 class="text-sm font-semibold text-slate-800 mb-2 text-center md:text-left">
+                    Yang Bersangkutan
+                </h2>
+
                 @if (!$formkeluar->hasBeenSigned())
-                    <form action="{{ $formkeluar->getSignatureRoute() }}" method="POST">
-                        @csrf
-                        <div style="text-align: center">
-                            <x-creagia-signature-pad />
-                        </div>
-                    </form>
-                @else
-                    <div class=" autograph-box container" id="specialbox">
-                        @if ($formkeluar->signature)
-                            <img src="{{ asset($path2) }}" style="width:200px; " alt="Signature Image">
-                        @endif
+                    <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-4">
+                        <p class="mb-2 text-xs text-slate-600 text-center">
+                            Silakan tanda tangan di bawah ini untuk mengesahkan Form Keluar.
+                        </p>
+                        <form action="{{ $formkeluar->getSignatureRoute() }}" method="POST"
+                            class="flex flex-col items-center">
+                            @csrf
+                            <div class="w-full max-w-xs">
+                                <x-creagia-signature-pad />
+                            </div>
+                        </form>
                     </div>
-                    {{ $formkeluar->name }}
+                @else
+                    <div class="flex flex-col items-center">
+                        <div class="autograph-box border border-slate-300 rounded-lg bg-white flex items-center justify-center"
+                            id="specialbox">
+                            @if ($path2)
+                                <img src="{{ asset($path2) }}" alt="Signature Image"
+                                    class="max-h-24 max-w-full object-contain">
+                            @endif
+                        </div>
+                        <p class="mt-2 text-xs font-medium text-slate-800">
+                            {{ $formkeluar->name }}
+                        </p>
+                    </div>
                 @endif
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section aria-label="table-report" class="container mt-5">
-        <div class="card">
-            <div class="card-body">
-                <div class="mt-2 text-center">
-                    <span class="h1 fw-semibold">FORM KELUAR</span>
-                    <div class="fs-6 col mt-2">
-                        <span class="text-secondary">Doc No :</span> {{ $formkeluar->doc_num }} <br>
-                        <span class="text-secondary">No Karyawan :</span> {{ $formkeluar->no_karyawan }} <br>
-                        <span class="text-secondary">Dibuat oleh :</span> {{ $formkeluar->name }} <br>
+        {{-- Main Detail Card --}}
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="p-4 sm:p-6">
+                <div class="text-center mb-4">
+                    <h2 class="text-base sm:text-lg font-semibold text-slate-900 tracking-wide">
+                        FORM KELUAR
+                    </h2>
+                    <div class="mt-2 text-xs sm:text-sm text-slate-600 space-y-0.5">
+                        <p>
+                            <span class="text-slate-500">Doc No:</span>
+                            <span class="font-medium text-slate-800">{{ $formkeluar->doc_num }}</span>
+                        </p>
+                        <p>
+                            <span class="text-slate-500">No Karyawan:</span>
+                            <span class="font-medium text-slate-800">{{ $formkeluar->no_karyawan }}</span>
+                        </p>
+                        <p>
+                            <span class="text-slate-500">Dibuat oleh:</span>
+                            <span class="font-medium text-slate-800">{{ $formkeluar->name }}</span>
+                        </p>
                     </div>
                 </div>
-                <div class="table-responsive mt-4">
-                    <table class="table table-bordered table-hover text-center table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th class="align-middle">Name</th>
-                                <th class="align-middle">Jabatan</th>
-                                <th class="align-middle">Departement</th>
-                                <th class="align-middle">Pengganti</th>
-                                <th class="align-middle">Keperluan</th>
-                                <th class="align-middle">Tanggal Permohonan</th>
-                                <th class="align-middle">Waktu Keluar</th>
-                                <th class="align-middle">Jam Keluar</th>
-                                <th class="align-middle">Jam Kembali</th>
 
+                <div class="overflow-x-auto mt-4">
+                    <table class="min-w-full table-auto border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                                <th class="px-3 py-2 border border-slate-200 text-center">Name</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Jabatan</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Departemen</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Pengganti</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Keperluan</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Tanggal Permohonan</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Waktu Keluar</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Jam Keluar</th>
+                                <th class="px-3 py-2 border border-slate-200 text-center">Jam Kembali</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr class="align-middle">
-                                <td>{{ $formkeluar->name }}</td>
-                                <td>{{ $formkeluar->jabatan }}</td>
-                                <td>{{ $formkeluar->department }}</td>
-                                <td>{{ $formkeluar->pengganti }}</td>
-                                <td>{{ $formkeluar->keperluan }}</td>
-                                <td>{{ $formkeluar->tanggal_permohonan }}</td>
-                                <td>{{ $formkeluar->waktu_keluar }}</td>
-                                <td>{{ $formkeluar->jam_keluar }}</td>
-                                <td>{{ $formkeluar->jam_kembali }}</td>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->name }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->jabatan }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->department }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->pengganti }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-left">
+                                    {{ $formkeluar->keperluan }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->tanggal_permohonan }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->waktu_keluar }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->jam_keluar }}
+                                </td>
+                                <td class="px-3 py-2 border border-slate-200 text-center">
+                                    {{ $formkeluar->jam_kembali }}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </div>
 
     <script src="{{ asset('vendor/sign-pad/sign-pad.min.js') }}"></script>
-
 @endsection
+@push('scripts')
+    <script>
+        function addAutograph(section, formId) {
+            const autographBox = document.getElementById('autographBox' + section);
+            const username = '{{ Auth::check() ? Auth::user()->name : '' }}';
+            const imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
 
-<script>
-    // Function to add autograph to the specified box
-    function addAutograph(section, formId) {
-        // Get the div element
-        var autographBox = document.getElementById('autographBox' + section);
+            autographBox.style.backgroundImage = "url('" + imageUrl + "')";
 
-        console.log('Section:', section);
-        console.log('Report ID:', formId);
-        var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
-        console.log('username :', username);
-        var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
-        console.log('image path :', imageUrl);
+            fetch('/save-autosignature-path/' + formId + '/' + section, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        imagePath: imageUrl,
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
 
-        autographBox.style.backgroundImage = "url('" + imageUrl + "')";
-
-        // Make an AJAX request to save the image path
-        fetch('/save-autosignature-path/' + formId + '/' + section, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({
-                    imagePath: imageUrl,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-
-        checkAutographStatus(formId);
-    }
-
-
-    function checkAutographStatus(formId) {
-        // Assume you have a variable from the server side indicating the autograph status
-        var autographs = {
-            autograph_1: '{{ $formkeluar->autograph_1 ?? null }}',
-        };
-
-        var autographNames = {
-            autograph_name_1: '{{ $formkeluar->autograph_user_1 ?? null }}',
-        };
-
-        // Loop through each autograph status and update the UI accordingly
-        i = 1;
-        var autographBox = document.getElementById('autographBox' + i);
-        var autographInput = document.getElementById('autographInput' + i);
-        var autographNameBox = document.getElementById('autographuser' + i);
-        var btnId = document.getElementById('btn' + i);
-
-
-
-        // Check if autograph status is present in the database
-        if (autographs['autograph_' + i]) {
-
-            if (btnId) {
-                // console.log(btnId);
-                btnId.style.display = 'none';
-            }
-
-            // Construct URL based on the current location
-            var url = '/autographs/' + autographs['autograph_' + i];
-
-            // Update the background image using the URL
-            autographBox.style.backgroundImage = "url('" + url + "')";
-
-            var autographName = autographNames['autograph_name_' + i];
-            autographNameBox.textContent = autographName;
-            autographNameBox.style.display = 'block';
+            checkAutographStatus(formId);
         }
-    }
 
+        function checkAutographStatus(formId) {
+            const autographs = {
+                autograph_1: '{{ $formkeluar->autograph_1 ?? null }}',
+            };
 
-    // Call the function to check autograph status on page load
-    window.onload = function() {
-        checkAutographStatus({{ $formkeluar->id }});
-    };
-</script>
+            const autographNames = {
+                autograph_name_1: '{{ $formkeluar->autograph_user_1 ?? null }}',
+            };
+
+            const i = 1;
+            const autographBox = document.getElementById('autographBox' + i);
+            const autographNameBox = document.getElementById('autographuser' + i);
+            const btnId = document.getElementById('btn' + i);
+
+            if (autographs['autograph_' + i]) {
+                if (btnId) {
+                    btnId.style.display = 'none';
+                }
+
+                const url = '/autographs/' + autographs['autograph_' + i];
+                autographBox.style.backgroundImage = "url('" + url + "')";
+
+                const autographName = autographNames['autograph_name_' + i];
+                autographNameBox.textContent = autographName;
+                autographNameBox.style.display = 'block';
+            }
+        }
+
+        window.onload = function() {
+            checkAutographStatus({{ $formkeluar->id }});
+        };
+    </script>
+@endpush

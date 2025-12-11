@@ -1,5 +1,5 @@
 @if ($pr->is_cancel)
-    <a href="{{ route('purchaserequest.detail', ['id' => $pr->id]) }}" class="my-1 btn btn-secondary">
+    <a href="{{ route('purchase-requests.show', ['id' => $pr->id]) }}" class="my-1 btn btn-secondary">
         <i class='bx bx-info-circle'></i> Detail
     </a>
     <a href="{{ route('purchaserequest.exportToPdf', $pr->id) }}" class="my-1 btn btn-outline-success my-1 ">
@@ -7,7 +7,7 @@
             PDF</span>
     </a>
 @else
-    <a href="{{ route('purchaserequest.detail', ['id' => $pr->id]) }}" class="my-1 btn btn-secondary">
+    <a href="{{ route('purchase-requests.show', ['id' => $pr->id]) }}" class="my-1 btn btn-secondary">
         <i class='bx bx-info-circle'></i> Detail
     </a>
 
@@ -19,7 +19,7 @@
     @endif --}}
 
     {{-- Delete Feature --}}
-    @if (auth()->user()->role->name === 'SUPERADMIN')
+    @if (auth()->user()->hasRole('super-admin'))
         @include('partials.delete-pr-modal', [
             'id' => $pr->id,
             'doc_num' => $pr->doc_num,
@@ -33,7 +33,7 @@
     @if (
         ($user->id === $pr->user_id_create && $pr->status === 1) ||
             ($user->department->name === 'COMPUTER' && $user->is_head && $pr->status === 4) ||
-            auth()->user()->role->name === 'SUPERADMIN')
+            auth()->user()->hasRole('super-admin'))
         <button data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}" data-bs-toggle="modal"
             class="my-1 btn btn-danger my-1"><i class='bx bx-x-circle'></i> <span
                 class="d-none d-sm-inline">Cancel</span></button>

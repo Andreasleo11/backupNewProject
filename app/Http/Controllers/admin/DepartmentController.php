@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\admin;
+namespace App\Http\Controllers\Admin;
 
 use App\DataTables\DepartmentsDataTable;
 use App\Http\Controllers\Controller;
@@ -32,7 +32,7 @@ class DepartmentController extends Controller
         ]);
 
         return redirect()
-            ->route('superadmin.departments')
+            ->route('admin.departments')
             ->with(['success' => 'Department added successfully!']);
     }
 
@@ -48,7 +48,7 @@ class DepartmentController extends Controller
         $department->update($request->all());
 
         return redirect()
-            ->route('superadmin.departments')
+            ->route('admin.departments')
             ->with(['success' => 'Department updated successfully!']);
     }
 
@@ -57,7 +57,7 @@ class DepartmentController extends Controller
         Department::find($id)->delete();
 
         return redirect()
-            ->route('superadmin.departments')
+            ->route('admin.departments')
             ->with(['success' => 'Departments deleted successfully!']);
     }
 }
