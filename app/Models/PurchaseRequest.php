@@ -157,7 +157,7 @@ class PurchaseRequest extends Model
         $commonDetails = [
             'greeting' => 'Purchase Request Notification',
             'actionText' => 'Check Now',
-            'actionURL' => route('purchaserequest.detail', $this->id),
+            'actionURL' => route('purchase-requests.show', $this->id),
         ];
 
         if ($event == 'created' || $event == 'updated') {

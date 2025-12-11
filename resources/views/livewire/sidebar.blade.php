@@ -178,7 +178,7 @@
         {{-- Other --}}
         <x-sidebar.group id="otherGroup" icon="bx bx-dots-horizontal-rounded" title="Other" :open="$groupOpen['otherGroup'] ?? false">
             <li class="sidebar-item">
-                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchaserequest')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest')">
+                <x-sidebar.link :href="$specification === 'DIRECTOR' ? route('director.pr.index') : route('purchase-requests.index')" icon="bx bx-file" :active="request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest')">
                     Purchase Request
                 </x-sidebar.link>
             </li>

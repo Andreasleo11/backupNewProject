@@ -145,9 +145,9 @@
                             : 'bg-emerald-50 text-emerald-700 ring-emerald-100';
 
                         if ($isPR) {
-                            $url = \Illuminate\Support\Facades\Route::has('purchaseRequest.detail')
-                                ? route('purchaseRequest.detail', $l->doc_id)
-                                : url('/purchaserequest/detail/' . $l->doc_id);
+                            $url = \Illuminate\Support\Facades\Route::has('purchase-requests.show')
+                                ? route('purchase-requests.show', $l->doc_id)
+                                : url('/purchase-requests/' . $l->doc_id);
                         } else {
                             $url = \Illuminate\Support\Facades\Route::has('monthly.budget.summary.report.show')
                                 ? route('monthly.budget.summary.report.show', $l->doc_id)

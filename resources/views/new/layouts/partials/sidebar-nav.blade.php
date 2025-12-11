@@ -292,9 +292,9 @@
             'children' => [
                 [
                     'label' => 'Purchase Request',
-                    'route' => auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchaserequest',
+                    'route' => auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
                     'icon' => 'document-text',
-                    'active' => request()->routeIs('director.pr.index') || request()->routeIs('purchaserequest'),
+                    'active' => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
                 ],
                 [
                     'label' => 'Job Report',

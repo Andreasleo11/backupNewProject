@@ -376,6 +376,32 @@ Route::middleware('auth')->group(function () {
     Route::get('overtime-forms/get-employees', [FormOvertimeController::class, 'getEmployees']);
     Route::get('overtime-forms/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
     Route::post('overtime-forms/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
+
+    Route::get('purchase-requests', [PurchaseRequestController::class, 'index'])->name('purchase-requests.index');
+    Route::get('purchase-requests/create', [PurchaseRequestController::class, 'create'])->name('purchase-requests.create');
+    Route::post('purchase-requests/store', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
+    Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
+
+    Route::get('purchase-requests/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject');
+    Route::put('purchase-requests/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update');
+    Route::delete('purchase-requests/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete');
+    Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel');
+    Route::put('purchase-requests/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
+
+    Route::post('save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveImagePath']);
+    Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
+
+    Route::get('purchase-requests/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
+    Route::get('purchase-requests/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
+    Route::post('purchase-requests/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
+    
+    Route::get('purchase-requests/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
+
+    Route::post('purchase-requests/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
+    Route::get('purchase-requests/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
+
+    Route::get('purchase-requests/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
+    Route::get('purchase-requests/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
 });
 
 require __DIR__.'/admin.php';
@@ -449,31 +475,6 @@ Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation']
 Route::get('/get-files', [FileController::class, 'getFiles']);
 
 Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
-
-Route::get('/purchaseRequest', [PurchaseRequestController::class, 'index'])->name('purchaserequest');
-Route::get('/purchaseRequest/create', [PurchaseRequestController::class, 'create'])->name('purchaserequest.create');
-Route::post('/purchaseRequest/insert', [PurchaseRequestController::class, 'insert'])->name('purchaserequest.insert');
-Route::get('/purchaserequest/detail/{id}', [PurchaseRequestController::class, 'detail'])->name('purchaserequest.detail');
-Route::get('/purchaserequest/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject');
-Route::put('/purchaserequest/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update');
-Route::delete('/purchaserequest/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete');
-Route::put('purchaserequest/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel');
-Route::put('purchaserequest/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
-
-Route::post('/save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveImagePath']);
-Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
-
-Route::get('/purchaserequest/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
-Route::get('/purchaserequest/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
-Route::post('/purchaserequest/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
-// REVISI PR PENAMBAHAN DROPDOWN ITEM & PRICE
-Route::get('/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
-
-Route::post('/purchaseRequest/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
-Route::get('/purchaseRequest/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
-
-Route::get('/purchaseRequest/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
-Route::get('/purchaseRequest/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
 
 Route::get('projecttracker/index', [ProjectTrackerController::class, 'index'])->name('pt.index');
 Route::get('projecttracker/create', [ProjectTrackerController::class, 'create'])->name('pt.create');

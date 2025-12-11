@@ -118,7 +118,7 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('branch');
 
             // Redirect without any filters
-            return redirect()->route('purchaserequest');
+            return redirect()->route('purchase-requests.index');
         }
 
         // Apply filters from request or session
@@ -160,8 +160,8 @@ class PurchaseRequestController extends Controller
             'branch' => $branch,
         ]);
 
-        // return view('purchaseRequest.index', compact('purchaseRequests'));
-        return $dataTable->render('purchaseRequest.index');
+        // return view('purchase-requests.index', compact('purchaseRequests'));
+        return $dataTable->render('purchase-requests.index');
     }
 
     public function create()
@@ -169,10 +169,10 @@ class PurchaseRequestController extends Controller
         $items = MasterDataPr::get();
         $departments = Department::all();
 
-        return view('purchaseRequest.create', compact('items', 'departments'));
+        return view('purchase-requests.create', compact('items', 'departments'));
     }
 
-    public function insert(StorePurchaseRequest $request)
+    public function store(StorePurchaseRequest $request)
     {
         $items = $request->input('items', []);
         $isDraft = $request->is_draft;
@@ -245,7 +245,7 @@ class PurchaseRequestController extends Controller
         // $this->executeSendPRNotificationCommand();
 
         return redirect()
-            ->route('purchaserequest')
+            ->route('purchase-requests.index')
             ->with('success', 'Purchase request created successfully');
     }
 
@@ -295,7 +295,7 @@ class PurchaseRequestController extends Controller
         return $input;
     }
 
-    public function detail($id)
+    public function show($id)
     {
         $departments = Department::all();
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
@@ -362,7 +362,7 @@ class PurchaseRequestController extends Controller
         }
 
         return view(
-            'purchaseRequest.detail',
+            'purchase-requests.show',
             compact(
                 'purchaseRequest',
                 'user',
