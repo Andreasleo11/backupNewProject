@@ -117,7 +117,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/security', ChangePasswordPage::class)->name('account.security');
 
     Route::get('/daily-reports', DailyReportIndex::class)->name('daily-reports.index');
-    Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('reports.depthead.show');
+    Route::get('/daily-reports/{employee_id}', [EmployeeDailyReportController::class, 'show'])->name('daily-reports.depthead.show');
 
     Route::get('/upload-daily-report', [EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
     Route::post('/daily-report/confirm-upload', [EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
