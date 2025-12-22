@@ -52,6 +52,15 @@
         @else
             @php
                 $steps = $approval->steps->sortBy('sequence');
+
+                // current step instance
+                $currentStep = $steps->firstWhere('sequence', (int) $approval->current_step);
+
+                $showActionBox =
+                    $canApprove &&
+                    $approval->status === 'IN_REVIEW' &&
+                    $currentStep &&
+                    ($currentStep->status ?? 'PENDING') === 'PENDING';
             @endphp
 
             <ol class="space-y-3">
@@ -83,6 +92,19 @@
                             $userAct = \App\Infrastructure\Persistence\Eloquent\Models\User::find($step->acted_by);
                             $actedByName = $userAct?->name ?? 'User #' . $step->acted_by;
                         }
+
+                        // signature snapshot
+                        $sigPath = $step->signature_image_path ?? null;
+                        $sigHash = $step->signature_sha256 ?? null;
+
+                        // If sigPath is relative, use asset()
+                        $sigUrl = null;
+                        if ($sigPath) {
+                            $sigUrl =
+                                str_starts_with($sigPath, 'http://') || str_starts_with($sigPath, 'https://')
+                                    ? $sigPath
+                                    : asset($sigPath);
+                        }
                     @endphp
 
                     <li class="flex gap-3">
@@ -107,7 +129,6 @@
                                 <div>
                                     <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
                                         @php
-                                            // Sedikit "pretty name" untuk role utama
                                             $pretty = $actorLabel;
                                             $map = [
                                                 'pr-dept-head-office' => 'Dept Head (Office)',
@@ -159,11 +180,57 @@
                                     “{{ $step->remarks }}”
                                 </p>
                             @endif
+
+                            {{-- Signature snapshot --}}
+                            @if ($status === 'APPROVED')
+                                <div class="mt-3 rounded-lg border border-slate-200 bg-white p-2">
+                                    <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                                        Signature
+                                    </p>
+
+                                    @if ($sigUrl)
+                                        <div class="mt-2 flex items-center gap-3">
+                                            <div
+                                                class="flex h-12 w-36 items-center justify-center overflow-hidden rounded-md border border-dashed border-slate-300 bg-slate-50">
+                                                @if ($step->user_signature_id)
+                                                    <img src="{{ route('approval-steps.signature', $step) }}"
+                                                        alt="Signature"
+                                                        class="h-10 w-auto rounded border border-slate-200 bg-white px-2 py-1" />
+                                                @endif
+                                            </div>
+
+                                            <div class="min-w-0">
+                                                @if ($sigHash)
+                                                    <p class="text-[11px] text-slate-500">
+                                                        Hash:
+                                                        <span class="font-mono text-slate-700">
+                                                            {{ \Illuminate\Support\Str::limit($sigHash, 18) }}
+                                                        </span>
+                                                    </p>
+                                                @endif
+
+                                                @if ($step->user_signature_id)
+                                                    <p class="text-[11px] text-slate-400">
+                                                        Signature ID: {{ $step->user_signature_id }}
+                                                    </p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span
+                                            class="mt-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                            Approved but no signature snapshot
+                                        </span>
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </li>
                 @endforeach
             </ol>
-            @if ($approval && $canApprove && $approval->status === 'IN_REVIEW')
+
+            {{-- ✅ Action panel: only when current step is pending & user can approve --}}
+            @if ($showActionBox)
                 <div class="mt-5 rounded-xl border border-slate-200 bg-white p-4">
                     <div class="flex items-start gap-3">
                         <div
@@ -184,7 +251,8 @@
 
                             <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 {{-- APPROVE --}}
-                                <form method="POST" action="{{ route('purchase-requests.approve', $purchaseRequest) }}"
+                                <form method="POST"
+                                    action="{{ route('purchase-requests.approve', $purchaseRequest) }}"
                                     class="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
                                     @csrf
 
@@ -232,7 +300,6 @@
                     </div>
                 </div>
             @endif
-
         @endif
     </div>
 </div>

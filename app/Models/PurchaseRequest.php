@@ -3,8 +3,12 @@
 namespace App\Models;
 
 use App\Domain\Approval\Contracts\Approvable;
+use App\Domain\Signature\Contracts\SignatureStampsApproval;
+use App\Domain\Signature\Entities\UserSignature;
 use App\Enums\ToDepartment;
 use App\Infrastructure\Approval\Concerns\HasApproval;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use App\Notifications\PurchaseRequestCreated;
 use App\Notifications\PurchaseRequestUpdated;
 use App\Traits\LogsActivity;
@@ -89,6 +93,11 @@ class PurchaseRequest extends Model implements Approvable
         ];
     }
 
+    public function signatures()
+    {
+        return $this->hasMany(PurchaseRequestSignature::class);
+    }
+
     public function itemDetail()
     {
         return $this->hasMany(DetailPurchaseRequest::class);
@@ -102,11 +111,6 @@ class PurchaseRequest extends Model implements Approvable
     public function files()
     {
         return $this->hasMany(File::class, 'doc_id', 'doc_num');
-    }
-
-    public function signatures()
-    {
-        return $this->hasMany(PurchaseRequestSignature::class);
     }
 
     public function scopeApproved($query)

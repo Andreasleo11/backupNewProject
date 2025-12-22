@@ -409,6 +409,10 @@ Route::middleware('auth')->group(function () {
     Route::get('signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
     Route::get('settings/signatures', ManageSignatures::class)->name('signatures.manage');
     Route::get('settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
+
+    Route::get('/approval-steps/{step}/signature', [\App\Http\Controllers\ApprovalStepSignatureController::class, 'show'])
+    ->name('approval-steps.signature');
+
 });
 
 require __DIR__.'/admin.php';

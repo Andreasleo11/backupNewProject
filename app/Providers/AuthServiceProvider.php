@@ -5,7 +5,7 @@ namespace App\Providers;
 // use Illuminate\Support\Facades\Gate;
 
 use App\Domain\Signature\Entities\UserSignature as DomainUserSignature;
-use App\Policies\SignaturePolicy;
+use App\Policies\UserSignaturePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -17,7 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        DomainUserSignature::class => SignaturePolicy::class,
+        DomainUserSignature::class => UserSignaturePolicy::class,
     ];
 
     /**

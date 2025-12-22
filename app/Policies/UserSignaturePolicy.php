@@ -7,7 +7,7 @@ namespace App\Policies;
 use App\Domain\Signature\Entities\UserSignature; // adapt if your User model lives elsewhere
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 
-class SignaturePolicy
+class UserSignaturePolicy
 {
     public function view(User $user, UserSignature $signature): bool
     {
