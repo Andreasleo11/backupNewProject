@@ -15,6 +15,11 @@ final class SpatieUserRoles implements UserRoles
             return false;
         }
 
-        return $user->roles()->where($roleId)->exists();
+        // bypass (sesuaikan nama role kamu)
+        if ($user->hasAnyRole(['super-admin'])) {
+            return true;
+        }
+
+        return $user->roles()->where('id', $roleId)->exists();
     }
 }

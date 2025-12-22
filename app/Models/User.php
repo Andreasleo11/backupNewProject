@@ -16,6 +16,9 @@ class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
+    // 👇 Add this line if it's missing
+    protected string $guard_name = 'web';
+
     /**
      * The attributes that are mass assignable.
      *

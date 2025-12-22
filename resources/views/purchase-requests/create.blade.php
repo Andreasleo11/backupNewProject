@@ -145,14 +145,9 @@
                                     class="block w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                     name="to_department" x-model="to_department" x-init="initSimpleTomSelect($el, 'to')" required>
                                     <option value="" disabled>Select to department…</option>
-                                    <option value="Maintenance"
-                                        {{ old('to_department') == 'Maintenance' ? 'selected' : '' }}>Maintenance</option>
-                                    <option value="Purchasing"
-                                        {{ old('to_department') == 'Purchasing' ? 'selected' : '' }}>Purchasing</option>
-                                    <option value="Personnel" {{ old('to_department') == 'Personnel' ? 'selected' : '' }}>
-                                        Personnel</option>
-                                    <option value="Computer" {{ old('to_department') == 'Computer' ? 'selected' : '' }}>
-                                        Computer</option>
+                                    @foreach (\App\Enums\ToDepartment::cases() as $dept)
+                                        <option value="{{ $dept->value }}">{{ $dept->label() }}</option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -508,8 +503,7 @@
                 },
 
                 get showLocalImport() {
-                    return this.from_department === 'MOULDING' && this.to_department ===
-                        'Purchasing';
+                    return this.from_department === 'MOULDING' && this.to_department === 'PURCHASING';
                 },
 
                 addItem() {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ToDepartment;
 use App\Rules\SanitizedNumeric;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,7 +31,7 @@ class StorePurchaseRequest extends FormRequest
                 'max:255',
                 Rule::exists('departments', 'name'),
             ],
-            'to_department' => 'required|string|max:255',
+            'to_department' => ['required', Rule::in(ToDepartment::values())],
             'date_of_pr' => 'required|date',
             'date_of_required' => 'required|date',
             'remark' => 'nullable|string',

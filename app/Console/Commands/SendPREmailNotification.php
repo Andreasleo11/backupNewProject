@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ToDepartment;
 use App\Mail\PRMail;
 use App\Models\PurchaseRequest;
 use App\Models\User;
@@ -79,13 +80,13 @@ class SendPREmailNotification extends Command
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 6:
-                if ($newPr->to_department === 'Computer') {
+                if ($newPr->to_department->value === ToDepartment::COMPUTER->value) {
                     $purchaser = 'vicky@daijo.co.id';
-                } elseif ($newPr->to_department === 'Purchasing') {
+                } elseif ($newPr->to_department->value === ToDepartment::PURCHASING->value) {
                     $purchaser = 'dian@daijo.co.id';
-                } elseif ($newPr->to_department === 'Maintenance') {
+                } elseif ($newPr->to_department->value === ToDepartment::MAINTENANCE->value) {
                     $purchaser = 'nur@daijo.co.id';
-                } elseif ($newPr->to_department === 'Personnel') {
+                } elseif ($newPr->to_department->value === ToDepartment::PERSONALIA->value) {
                     $purchaser = 'ani_apriani@daijo.co.id';
                 } else {
                     $purchaser = $newPr->createBy->email;
@@ -123,9 +124,9 @@ class SendPREmailNotification extends Command
 
         $newPr->status !== 1 ? ($title = "There's PR Changed!") : ($title = "There's a New PR!");
         $cc = [$newPr->createdBy->email];
-        if ($newPr->to_department === 'Maintenance') {
+        if ($newPr->to_department->value === ToDepartment::MAINTENANCE->value) {
             array_push($cc, 'nur@daijo.co.id');
-        } elseif ($newPr->status === 4 && $newPr->to_department === 'Purchasing') {
+        } elseif ($newPr->status === 4 && $newPr->to_department === ToDepartment::PURCHASING->value) {
             $purchasingUsers = User::with('department')
                 ->whereHas('department', function ($query) {
                     $query->where('name', 'PURCHASING');

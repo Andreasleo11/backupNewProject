@@ -30,7 +30,7 @@
     @if (
         $purchaseRequest->from_department === 'MOULDING' &&
             !$purchaseRequest->is_import &&
-            $purchaseRequest->to_department === 'Maintenance')
+            $purchaseRequest->to_department->value === \App\Enums\ToDepartment::MAINTENANCE->value)
         <div class="col my-2">
             <h2>Dept Head</h2>
             <div class="autograph-box container" id="autographBox7"></div>
@@ -98,7 +98,7 @@
     <div
         class="col my-2 {{ $purchaseRequest->from_department === 'PERSONALIA' || $purchaseRequest->from_department === 'PLASTIC INJECTION' || ($purchaseRequest->from_department === 'MAINTENANCE MACHINE' && $purchaseRequest->branch === 'KARAWANG') ? 'd-none' : '' }}">
         <h2>
-            {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department === 'Maintenance' ? 'Head Design' : 'Dept Head' }}
+            {{ $purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department->value === \App\Enums\ToDepartment::MAINTENANCE->value ? 'Head Design' : 'Dept Head' }}
         </h2>
         <div class="autograph-box container" id="autographBox2"></div>
         <div class="container mt-2 border-1" id="autographuser2"></div>
@@ -142,7 +142,7 @@
                 } elseif ($user->department->name === 'LOGISTIC' && $purchaseRequest->from_department === 'STORE') {
                     $showDeptHeadApprovalButtons = true;
                 } elseif ($purchaseRequest->from_department === 'MOULDING') {
-                    if ($purchaseRequest->to_department === 'Maintenance') {
+                    if ($purchaseRequest->to_department->value === \App\Enums\ToDepartment::MAINTENANCE->value) {
                         if ($user->specification->name === 'DESIGN') {
                             $showDeptHeadApprovalButtons = false;
                         }
@@ -253,9 +253,9 @@
         <div class="container mt-2" id="autographuser5"></div>
         @php
             $showApprovalButtons = false;
-            if ($purchaseRequest->to_department === 'Computer') {
+            if ($purchaseRequest->to_department->value === \App\Enums\ToDepartment::COMPUTER->value) {
                 $user->email === 'vicky@daijo.co.id' ? ($showApprovalButtons = true) : ($showApprovalButtons = false);
-            } elseif ($purchaseRequest->to_department === 'Purchasing') {
+            } elseif ($purchaseRequest->to_department->value === \App\Enums\ToDepartment::PURCHASING->value) {
                 $user->department->name === 'PURCHASING'
                     ? ($showApprovalButtons = true)
                     : ($showApprovalButtons = false);
@@ -293,10 +293,10 @@
 
     {{-- VERIFICATOR AUTOGRAPH --}}
     <div
-        class="col my-2 {{ $purchaseRequest->to_department === 'Computer' ||
-        $purchaseRequest->to_department === 'Personnel' ||
-        ($purchaseRequest->from_department === 'COMPUTER' && $purchaseRequest->to_department === 'Maintenance') ||
-        ($purchaseRequest->from_department === 'PERSONALIA' && $purchaseRequest->to_department === 'Maintenance')
+        class="col my-2 {{ $purchaseRequest->to_department->value === \App\Enums\ToDepartment::COMPUTER->value ||
+        $purchaseRequest->to_department->value === \App\Enums\ToDepartment::PERSONALIA->value ||
+        ($purchaseRequest->from_department === 'COMPUTER' && $purchaseRequest->to_department->value === \App\Enums\ToDepartment::MAINTENANCE->value) ||
+        ($purchaseRequest->from_department === 'PERSONALIA' && $purchaseRequest->to_department->value === \App\Enums\ToDepartment::MAINTENANCE->value)
             ? ''
             : 'd-none' }}">
         <h2>Verificator</h2>

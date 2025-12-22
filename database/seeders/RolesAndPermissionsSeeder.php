@@ -27,10 +27,6 @@ class RolesAndPermissionsSeeder extends Seeder
          |--------------------------------------------------------------
          | 1. Define permissions
          |--------------------------------------------------------------
-         |
-         | Keep names consistent and future-proof. You can always add
-         | more as modules grow.
-         |
          */
 
         $permissions = [
@@ -88,7 +84,6 @@ class RolesAndPermissionsSeeder extends Seeder
          |--------------------------------------------------------------
          |
          | '*' means "all permissions in the system".
-         | You can tune each role's list later.
          |
          */
 
@@ -137,6 +132,70 @@ class RolesAndPermissionsSeeder extends Seeder
                 'employee.view',
 
                 'pr.view-any',
+                'approval.view-log',
+            ],
+
+            // === Generic PR approval roles (used by approval engine) ===
+
+            // Everyone who can create a PR
+            'pr-maker' => [
+                'pr.view-own',
+                'pr.create',
+                'pr.update',
+                'pr.submit',
+                'pr.cancel',
+            ],
+
+            // Department heads who approve PR from their department
+            'pr-dept-head' => [
+                'pr.view-dept',
+                'pr.view-own',
+                'pr.approve',
+            ],
+
+            // Special head for MOULDING design PRs
+            'pr-head-design' => [
+                'pr.view-dept',
+                'pr.view-any',
+                'pr.approve',
+            ],
+
+            // GM approvers for factory (non-office) departments
+            'pr-gm' => [
+                'pr.view-dept',
+                'pr.view-any',
+                'pr.approve',
+            ],
+
+            // Purchasers who handle PR after dept head / GM
+            'pr-purchaser' => [
+                'pr.view-dept',
+                'pr.view-any',
+                'pr.create',   // can create/modify PRs for purchasing if needed
+                'pr.update',
+                'pr.submit',
+                'pr.cancel',
+                'pr.approve',
+            ],
+
+            // Personalia / verificator step for COMPUTER & PERSONALIA PRs
+            'pr-verificator' => [
+                'pr.view-dept',
+                'pr.view-any',
+                'pr.approve',
+            ],
+
+            // Director signers for PR
+            'pr-director' => [
+                'pr.view-any',
+                'pr.approve',
+                'approval.view-log',
+            ],
+
+            // Admins for approval engine (could be same as it-admin, but separated semantically)
+            'pr-admin' => [
+                'pr.view-any',
+                'approval.manage-rules',
                 'approval.view-log',
             ],
 
@@ -240,7 +299,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'pr.view-own',
             ],
 
-            // === Workflow-specific PR approvers ===
+            // === Old workflow-specific PR approvers (can keep for now) ===
             'pr-approver-level-1' => [
                 'pr.view-dept',
                 'pr.view-any',

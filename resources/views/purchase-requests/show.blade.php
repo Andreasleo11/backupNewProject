@@ -188,14 +188,21 @@
                                     </dt>
                                     <dd>
                                         <div
-                                            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 text-xs sm:text-sm whitespace-pre-wrap">{{ $purchaseRequest->remark }}
-                                        </div>
+                                            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 text-xs sm:text-sm whitespace-pre-wrap">{{ $purchaseRequest->remark }}</div>
                                     </dd>
                                 </div>
                             </dl>
                         </div>
                     </div>
                 </section>
+                <div class="mt-4">
+                    @include('approval._pr-approval-panel', [
+                        'approval' => $approval,
+                        'purchaseRequest' => $purchaseRequest,
+                        'canApprove' => $canApprove ?? false,
+                    ])
+
+                </div>
 
                 {{-- ITEMS TABLE CARD --}}
                 <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -282,10 +289,14 @@
                                                     (!$purchaseRequest->is_import &&
                                                         $user->specification->name === 'DESIGN');
 
-                                                if ($purchaseRequest->to_department === 'Maintenance') {
+                                                if (
+                                                    $purchaseRequest->to_department ===
+                                                    \App\Enums\ToDepartment::MAINTENANCE->value
+                                                ) {
                                                     $mouldingApprovalCase =
                                                         $mouldingApprovalCase &&
-                                                        $purchaseRequest->to_department === 'Maintenance';
+                                                        $purchaseRequest->to_department ===
+                                                            \App\Enums\ToDepartment::MAINTENANCE->value;
                                                 }
                                             @endphp
                                             <th rowspan="2"
@@ -384,7 +395,7 @@
                                             } else {
                                                 if (
                                                     $purchaseRequest->type === 'office' ||
-                                                    ($purchaseRequest->to_department === 'Computer' &&
+                                                    ($purchaseRequest->to_department->value === 'COMPUTER' &&
                                                         $purchaseRequest->type === 'factory')
                                                 ) {
                                                     if ($detail->is_approve_by_verificator) {

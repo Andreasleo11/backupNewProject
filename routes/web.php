@@ -388,13 +388,13 @@ Route::middleware('auth')->group(function () {
     Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel');
     Route::put('purchase-requests/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
 
-    Route::post('save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveImagePath']);
+    Route::post('save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveSignaturePath']);
     Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
 
     Route::get('purchase-requests/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
     Route::get('purchase-requests/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
     Route::post('purchase-requests/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
-    
+
     Route::get('purchase-requests/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
 
     Route::post('purchase-requests/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
@@ -402,6 +402,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('purchase-requests/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
     Route::get('purchase-requests/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
+
+    Route::post('/purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
+    Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'rejectApproval'])->name('purchase-requests.reject');
+
 });
 
 require __DIR__.'/admin.php';
