@@ -2,6 +2,13 @@
 
 namespace App\Models;
 
+use App\Domain\Approval\Contracts\Approvable;
+use App\Domain\Signature\Contracts\SignatureStampsApproval;
+use App\Domain\Signature\Entities\UserSignature;
+use App\Enums\ToDepartment;
+use App\Infrastructure\Approval\Concerns\HasApproval;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
+use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use App\Notifications\PurchaseRequestCreated;
 use App\Notifications\PurchaseRequestUpdated;
 use App\Traits\LogsActivity;
@@ -10,9 +17,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Notification;
 
-class PurchaseRequest extends Model
+class PurchaseRequest extends Model implements Approvable
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasApproval, HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'user_id_create',
@@ -51,6 +58,46 @@ class PurchaseRequest extends Model
         'branch',
     ];
 
+    protected $casts = [
+        'to_department' => ToDepartment::class,
+    ];
+
+    public function items()
+    {
+        // sesuaikan, kalau sudah pakai PurchaseRequestItem ganti di sini
+        return $this->hasMany(DetailPurchaseRequest::class);
+    }
+
+    public function fromDepartment()
+    {
+        return $this->belongsTo(Department::class, 'from_department', 'name');
+        // atau 'from_department_id' kalau sudah dinormalisasi
+    }
+
+    /**
+     * Context yang dipakai RuleResolver untuk milih rule template.
+     */
+    public function buildApprovalContext(): array
+    {
+        $total = $this->items->sum(function ($item) {
+            return (float) $item->quantity * (float) $item->price;
+        });
+
+        return [
+            'from_department' => $this->from_department,                 // string nama dept
+            'to_department' => $this->to_department->value,                   // COMPUTER / MAINTENANCE / ...
+            'branch' => $this->branch,                          // JAKARTA / KARAWANG
+            'at_office' => (bool) optional($this->fromDepartment)->is_office,
+            'is_design' => (bool) $this->is_design,                // flag moulding design
+            'amount' => $total,                                 // buat threshold nominal kalau perlu
+        ];
+    }
+
+    public function signatures()
+    {
+        return $this->hasMany(PurchaseRequestSignature::class);
+    }
+
     public function itemDetail()
     {
         return $this->hasMany(DetailPurchaseRequest::class);
@@ -88,10 +135,10 @@ class PurchaseRequest extends Model
         static::created(function ($pr) {
             // Map department names to codes
             $toDepartmentCodes = [
-                'Computer' => 'CP',
-                'Personnel' => 'HRD',
-                'Maintenance' => 'MT',
-                'Purchasing' => 'PUR',
+                'COMPUTER' => 'CP',
+                'PERSONALIA' => 'HRD',
+                'MAINTENANCE' => 'MT',
+                'PURCHASING' => 'PUR',
             ];
 
             // Map branches to area codes
@@ -104,7 +151,7 @@ class PurchaseRequest extends Model
             $date = $pr->created_at->format('ymd'); // Day-Month-Year format (e.g., '240819' for August 24, 2019)
 
             // Get the department code
-            $toDepartment = $pr->to_department;
+            $toDepartment = $pr->to_department->value;
             $toDepartmentCode = $toDepartmentCodes[$toDepartment] ?? 'UNK'; // Use 'UNK' for unknown departments
 
             // Get the area code from the branch
@@ -157,7 +204,7 @@ class PurchaseRequest extends Model
         $commonDetails = [
             'greeting' => 'Purchase Request Notification',
             'actionText' => 'Check Now',
-            'actionURL' => route('purchaserequest.detail', $this->id),
+            'actionURL' => route('purchase-requests.show', $this->id),
         ];
 
         if ($event == 'created' || $event == 'updated') {
@@ -169,7 +216,7 @@ class PurchaseRequest extends Model
                 - Date Required : $this->date_required <br>
                 - PIC : $this->pic <br>
                 - Remark : $this->remark <br>
-                - To Department : $this->to_department <br>
+                - To Department : {$this->to_department->value} <br>
                 - Status : $status";
         }
 
@@ -203,7 +250,7 @@ class PurchaseRequest extends Model
         $users = [$this->createdBy];
 
         if ($event == 'created') {
-            if ($this->to_department === 'Maintenance') {
+            if ($this->to_department->value === ToDepartment::MAINTENANCE->value) {
                 if (
                     $this->from_department === 'PLASTIC INJECTION' &&
                     $this->branch === 'KARAWANG'
@@ -274,13 +321,13 @@ class PurchaseRequest extends Model
                     $user = $gm ?: $this->createdBy;
                     break;
                 case 6:
-                    if ($this->to_department === 'Computer') {
+                    if ($this->to_department->value === ToDepartment::COMPUTER->value) {
                         $purchaser = User::where('email', 'vicky@daijo.co.id')->first();
-                    } elseif ($this->to_department === 'Purchasing') {
+                    } elseif ($this->to_department->value === ToDepartment::PURCHASING->value) {
                         $purchaser = User::where('email', 'dian@daijo.co.id')->first();
-                    } elseif ($this->to_department === 'Maintenance') {
+                    } elseif ($this->to_department->value === ToDepartment::MAINTENANCE->value) {
                         $purchaser = User::where('email', 'nur@daijo.co.id')->first();
-                    } elseif ($this->to_department === 'Personnel') {
+                    } elseif ($this->to_department->value === ToDepartment::PERSONALIA->value) {
                         $purchaser = User::where('email', 'ani_apriani@daijo.co.id')->first();
                     } else {
                         $purchaser = $this->createdBy;
@@ -316,12 +363,12 @@ class PurchaseRequest extends Model
                     break;
             }
 
-            if ($this->to_department === 'Purchasing' && $this->status === 4) {
+            if ($this->to_department->value === ToDepartment::PURCHASING->value && $this->status === 4) {
                 $purchasingUsers = User::whereHas('department', function ($query) {
                     $query->where('name', 'PURCHASING');
                 })->get();
                 $users = array_merge($users, $purchasingUsers->all());
-            } elseif ($this->to_department === 'Maintenance') {
+            } elseif ($this->to_department->value === ToDepartment::MAINTENANCE->value) {
                 $ccUser = User::where('email', 'nur@daijo.co.id')->first();
                 if ($ccUser) {
                     $users = array_merge($users, [$ccUser]);

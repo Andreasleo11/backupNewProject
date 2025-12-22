@@ -1,209 +1,228 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
-@section('content')
-    <!DOCTYPE html>
-    <html lang="en">
+@push('head')
+    <style>
+        .table-container {
+            margin-top: 1rem;
+        }
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Vendor List Certificate</title>
-        <style>
-            h1 {
-                font-size: 24px;
-                margin-bottom: 20px;
-                color: #333;
+        .table thead th {
+            background-color: #f8f9fa;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* PRINT STYLES */
+        @media print {
+            /* Sembunyikan semua dulu */
+            body * {
+                visibility: hidden;
             }
 
-            .filter {
-                margin-bottom: 20px;
+            /* Tampilkan area print saja */
+            .print-area,
+            .print-area * {
+                visibility: visible;
             }
 
-            .filter form {
-                display: flex;
-                align-items: center;
+            .print-area {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
             }
 
-            .filter label {
-                margin-right: 10px;
+            h1.print-title {
+                text-align: center;
+                font-size: 18px;
+                margin: 0 0 10px 0;
             }
 
-            .filter select {
-                padding: 5px;
-                margin-right: 10px;
-            }
-
-            button {
-                padding: 5px 10px;
-                background-color: #007bff;
-                color: white;
-                border: none;
-                cursor: pointer;
-            }
-
-            button:hover {
-                background-color: #0056b3;
-            }
-
-            table.printable-table {
+            table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-bottom: 20px;
-                background-color: #fff;
-                border-radius: 5px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                font-size: 11px;
             }
 
-            table,
-            th,
-            td {
-                border: 1px solid #ddd;
+            table th,
+            table td {
+                border: 1px solid #000;
+                padding: 6px;
+                word-wrap: break-word;
+                max-width: 110px;
             }
 
-            th,
-            td {
-                padding: 10px;
-                text-align: center;
+            @page {
+                margin: 10px;
             }
 
-            th {
-                background-color: #f8f9fa;
+            .print-area tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
             }
 
-            td {
-                background-color: #ffffff;
+            .d-print-none {
+                display: none !important;
             }
+        }
+    </style>
+@endpush
 
-            /* PRINT STYLES */
-            @media print {
+@section('content')
+    <div class="container py-3">
 
-                /* Hide everything except the title and table */
-                body * {
-                    visibility: hidden;
-                }
+        {{-- HEADER --}}
+        <section class="mb-3 d-print-none">
+            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+                <div>
+                    <h1 class="h4 mb-1">Vendor List Certificate</h1>
+                    <p class="text-muted small mb-0">
+                        Daftar sertifikat vendor (ISO 9001, ISO 14001, IATF 16949) beserta masa berlakunya.
+                    </p>
+                </div>
 
-                h1,
-                .printable-table,
-                .printable-table * {
-                    visibility: visible;
-                }
+                <div class="d-flex gap-2">
+                    <a href="{{ route('purchasing.evaluationsupplier.index') }}"
+                       class="btn btn-outline-secondary btn-sm">
+                        ← Back to Supplier Evaluation
+                    </a>
+                    <button type="button"
+                            class="btn btn-outline-primary btn-sm"
+                            onclick="window.print()">
+                        Print
+                    </button>
+                </div>
+            </div>
+        </section>
 
-                /* Position title and table */
-                h1 {
-                    position: absolute;
-                    top: 10px;
-                    width: 100%;
-                    text-align: center;
-                    font-size: 18px;
-                    margin: 0;
-                    padding-bottom: 10px;
-                }
+        {{-- FILTER FORM --}}
+        <section class="mb-4 d-print-none">
+            <div class="card shadow-sm border-0">
+                <div class="card-header">
+                    <span class="fw-semibold">Filter Vendor</span>
+                </div>
+                <div class="card-body">
+                    <form action="{{ route('kriteria6') }}" method="GET" class="row g-3 align-items-end">
+                        @csrf
 
-                .printable-table {
-                    position: absolute;
-                    top: 50px;
-                    left: 0;
-                    width: 100%;
-                    font-size: 12px;
-                    border-collapse: collapse;
-                    page-break-inside: auto;
-                }
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <label for="vendor_name" class="form-label fw-semibold">Vendor</label>
+                            <select name="vendor_name" id="vendor_name" class="form-select">
+                                <option value="">-- All Vendors --</option>
+                                @foreach ($vendorNames as $vendor)
+                                    <option value="{{ $vendor }}" {{ request('vendor_name') == $vendor ? 'selected' : '' }}>
+                                        {{ $vendor }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                /* Prevent table cells from overflowing */
-                .printable-table td,
-                .printable-table th {
-                    word-wrap: break-word;
-                    max-width: 100px;
-                }
+                        <div class="col-12 col-md-3 col-lg-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                Apply Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
 
-                /* Set minimal page margins for print */
-                @page {
-                    margin: 10px;
-                }
+        {{-- PRINT AREA (TITLE + TABLE) --}}
+        <section class="print-area">
+            <div class="card shadow-sm border-0">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h1 class="h6 mb-0 print-title">Vendor List Certificate</h1>
+                    <span class="small text-muted d-none d-print-inline">
+                        Printed at {{ now()->format('d-m-Y H:i') }}
+                    </span>
+                    <span class="small text-muted d-none d-md-inline d-print-none">
+                        Total records: {{ $datas->count() }}
+                    </span>
+                </div>
 
-                /* Avoid breaking rows across pages */
-                .printable-table tr {
-                    page-break-inside: avoid;
-                    page-break-after: auto;
-                }
-            }
-        </style>
-    </head>
+                <div class="card-body p-0 table-container">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Vendor Code</th>
+                                    <th>Vendor Name</th>
+                                    <th>ISO 9001 Document</th>
+                                    <th>ISO 9001 Start Date</th>
+                                    <th>ISO 9001 End Date</th>
+                                    <th>ISO 14001 Document</th>
+                                    <th>ISO 14001 Start Date</th>
+                                    <th>ISO 14001 End Date</th>
+                                    <th>IATF 16949 Document</th>
+                                    <th>IATF 16949 Start Date</th>
+                                    <th>IATF 16949 End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($datas as $data)
+                                    <tr>
+                                        <td>{{ $data->id }}</td>
+                                        <td>{{ $data->vendor_code }}</td>
+                                        <td>{{ $data->vendor_name }}</td>
 
-    <body>
-        <a href="{{ route('purchasing.evaluationsupplier.index') }}">
-            <button type="button">Back to Supplier Evaluation</button>
-        </a>
-        <h1>Vendor List Certificate</h1>
+                                        {{-- ISO 9001 --}}
+                                        <td class="text-start">{{ $data->iso_9001_doc }}</td>
+                                        <td>
+                                            {{ $data->iso_9001_start_date == '0000-00-00' || !$data->iso_9001_start_date
+                                                ? '-'
+                                                : \Carbon\Carbon::parse($data->iso_9001_start_date)->format('d-m-Y') }}
+                                        </td>
+                                        <td>
+                                            {{ $data->iso_9001_end_date == '0000-00-00' || !$data->iso_9001_end_date
+                                                ? '-'
+                                                : \Carbon\Carbon::parse($data->iso_9001_end_date)->format('d-m-Y') }}
+                                        </td>
 
-        <!-- Filter Form -->
-        <div class="filter">
-            <form action="{{ route('kriteria6') }}" method="GET">
-                @csrf
-                <label for="vendor_name">Select Vendor:</label>
-                <select name="vendor_name" id="vendor_name">
-                    <option value="">-- All Vendors --</option>
-                    @foreach ($vendorNames as $vendor)
-                        <option value="{{ $vendor }}" {{ request('vendor_name') == $vendor ? 'selected' : '' }}>
-                            {{ $vendor }}
-                        </option>
-                    @endforeach
-                </select>
+                                        {{-- ISO 14001 --}}
+                                        <td class="text-start">{{ $data->iso_14001_doc }}</td>
+                                        <td>
+                                            {{ $data->iso_14001_start_date == '0000-00-00' || !$data->iso_14001_start_date
+                                                ? '-'
+                                                : \Carbon\Carbon::parse($data->iso_14001_start_date)->format('d-m-Y') }}
+                                        </td>
+                                        <td>
+                                            {{ $data->iso_14001_end_date == '0000-00-00' || !$data->iso_14001_end_date
+                                                ? '-'
+                                                : \Carbon\Carbon::parse($data->iso_14001_end_date)->format('d-m-Y') }}
+                                        </td>
 
-                <button type="submit">Filter</button>
-            </form>
-        </div>
+                                        {{-- IATF 16949 --}}
+                                        <td class="text-start">{{ $data->iatf_16949_doc }}</td>
+                                        <td>
+                                            {{ $data->iatf_16949_start_date == '0000-00-00' || !$data->iatf_16949_start_date
+                                                ? '-'
+                                                : \Carbon\Carbon::parse($data->iatf_16949_start_date)->format('d-m-Y') }}
+                                        </td>
+                                        <td>
+                                            {{ $data->iatf_16949_end_date == '0000-00-00' || !$data->iatf_16949_end_date
+                                                ? '-'
+                                                : \Carbon\Carbon::parse($data->iatf_16949_end_date)->format('d-m-Y') }}
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="12" class="text-center py-3">
+                                            No data available for current filter.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <!-- Data Table -->
-        <table class="printable-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Vendor Code</th>
-                    <th>Vendor Name</th>
-                    <th>ISO 9001 Document</th>
-                    <th>ISO 9001 Start Date</th>
-                    <th>ISO 9001 End Date</th>
-                    <th>ISO 14001 Document</th>
-                    <th>ISO 14001 Start Date</th>
-                    <th>ISO 14001 End Date</th>
-                    <th>IATF 16949 Document</th>
-                    <th>IATF 16949 Start Date</th>
-                    <th>IATF 16949 End Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($datas as $data)
-                    <tr>
-                        <td>{{ $data->id }}</td>
-                        <td>{{ $data->vendor_code }}</td>
-                        <td>{{ $data->vendor_name }}</td>
-                        <td>{{ $data->iso_9001_doc }}</td>
-                        <td>
-                            {{ $data->iso_9001_start_date == '0000-00-00' || !$data->iso_9001_start_date ? '-' : \Carbon\Carbon::parse($data->iso_9001_start_date)->format('d-m-Y') }}
-                        </td>
-                        <td>
-                            {{ $data->iso_9001_end_date == '0000-00-00' || !$data->iso_9001_end_date ? '-' : \Carbon\Carbon::parse($data->iso_9001_end_date)->format('d-m-Y') }}
-                        </td>
-                        <td>{{ $data->iso_14001_doc }}</td>
-                        <td>
-                            {{ $data->iso_14001_start_date == '0000-00-00' || !$data->iso_14001_start_date ? '-' : \Carbon\Carbon::parse($data->iso_14001_start_date)->format('d-m-Y') }}
-                        </td>
-                        <td>
-                            {{ $data->iso_14001_end_date == '0000-00-00' || !$data->iso_14001_end_date ? '-' : \Carbon\Carbon::parse($data->iso_14001_end_date)->format('d-m-Y') }}
-                        </td>
-                        <td>{{ $data->iatf_16949_doc }}</td>
-                        <td>
-                            {{ $data->iatf_16949_start_date == '0000-00-00' || !$data->iatf_16949_start_date ? '-' : \Carbon\Carbon::parse($data->iatf_16949_start_date)->format('d-m-Y') }}
-                        </td>
-                        <td>
-                            {{ $data->iatf_16949_end_date == '0000-00-00' || !$data->iatf_16949_end_date ? '-' : \Carbon\Carbon::parse($data->iatf_16949_end_date)->format('d-m-Y') }}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </body>
-
-    </html>
+    </div>
 @endsection

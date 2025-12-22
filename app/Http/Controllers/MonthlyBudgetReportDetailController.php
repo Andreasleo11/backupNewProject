@@ -7,11 +7,6 @@ use Illuminate\Http\Request;
 
 class MonthlyBudgetReportDetailController extends Controller
 {
-    public function index()
-    {
-        return view('monthly_budget_report.detail');
-    }
-
     public function store(Request $request)
     {
         $validatedData = $request->validate([

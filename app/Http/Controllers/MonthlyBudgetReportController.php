@@ -22,7 +22,7 @@ class MonthlyBudgetReportController extends Controller
         $authUser = auth()->user();
         $isHead = $authUser->is_head === 1;
         $isGm = $authUser->is_gm === 1;
-        $isDirector = $authUser->specification->name === 'DIRECTOR';
+        $isDirector = $authUser->hasRole('head-management');
 
         $reportsQuery = Report::with('department', 'details');
 
@@ -55,7 +55,7 @@ class MonthlyBudgetReportController extends Controller
                 $isDirector ||
                 $isGm ||
                 $authUser->email === 'nur@daijo.co.id' ||
-                $authUser->role->name === 'SUPERADMIN'
+                $authUser->hasRole('super-admin')
             )
         ) {
             $reportsQuery->whereHas('department', function ($query) use ($authUser) {
@@ -80,14 +80,14 @@ class MonthlyBudgetReportController extends Controller
 
         $reports = $reportsQuery->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('monthly_budget_report.index', compact('reports'));
+        return view('monthly-budget-reports.index', compact('reports'));
     }
 
     public function create()
     {
         $departments = Department::all();
 
-        return view('monthly_budget_report.create', compact('departments'));
+        return view('monthly-budget-reports.create', compact('departments'));
     }
 
     public function store(Request $request)
@@ -203,7 +203,7 @@ class MonthlyBudgetReportController extends Controller
         $report = MonthlyBudgetReport::find($id);
         $details = $report->details;
 
-        return view('monthly_budget_report.edit', compact('departments', 'report', 'details'));
+        return view('monthly-budget-reports.edit', compact('departments', 'report', 'details'));
     }
 
     public function show($id)
@@ -218,7 +218,7 @@ class MonthlyBudgetReportController extends Controller
 
         $this->updateStatus($report);
 
-        return view('monthly_budget_report.detail', compact('report'));
+        return view('monthly-budget-reports.detail', compact('report'));
     }
 
     public function update(UpdateMonthlyBudgetReportRequest $request, $id)

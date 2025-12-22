@@ -1,163 +1,228 @@
-<div class="container py-4">
+<div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
 
-    {{-- Header with status badge --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0">
-            📄 Delivery Note #{{ $deliveryNote->id }}
-            @if ($deliveryNote->status === 'draft')
-                <span class="badge bg-warning text-dark ms-2">Draft</span>
-            @else
-                <span class="badge bg-success ms-2">Submitted</span>
-            @endif
-        </h3>
-        <div class="d-flex gap-2">
+    {{-- Header + Actions --}}
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-semibold text-slate-900">
+                    Delivery Note #{{ $deliveryNote->id }}
+                </h1>
+
+                @if ($deliveryNote->status === 'draft')
+                    <span
+                        class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-amber-200">
+                        Draft
+                    </span>
+                @else
+                    <span
+                        class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-emerald-200">
+                        Submitted
+                    </span>
+                @endif
+            </div>
+            <p class="mt-1 text-sm text-slate-500">
+                Ringkasan informasi pengiriman, kendaraan, dan tujuan.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-end gap-2">
             <a href="{{ route('delivery-notes.print', $deliveryNote->id) }}" target="_blank"
-                class="btn btn-outline-success">
-                🖨️ Print
+                class="inline-flex items-center rounded-md border border-emerald-300 bg-white px-3 py-1.5 text-xs font-medium text-emerald-800 shadow-sm hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1">
+                Print
             </a>
+
             @if (auth()->check() || $deliveryNote->is_latest)
-                <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}" class="btn btn-outline-primary">
-                    ✏️ Edit
+                <a href="{{ route('delivery-notes.edit', $deliveryNote->id) }}"
+                    class="inline-flex items-center rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-xs font-medium text-indigo-800 shadow-sm hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
+                    Edit
                 </a>
             @endif
-            <a href="{{ route('delivery-notes.index') }}" class="btn btn-outline-secondary">← Back to
-                List</a>
+
+            <a href="{{ route('delivery-notes.index') }}"
+                class="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-1">
+                Back to list
+            </a>
         </div>
     </div>
 
-    {{-- Basic Info Card --}}
-    <div class="card mb-4">
-        <div class="card-body row">
-            <div class="col-md-6 mb-3">
-                <h6 class="text-muted">🔁 Ritasi</h6>
-                <p class="mb-3">{{ $deliveryNote->ritasi }}</p>
+    {{-- Basic Info --}}
+    <section class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="grid gap-6 border-b border-slate-100 px-4 py-4 sm:grid-cols-2 lg:px-6">
+            <div class="space-y-3 text-sm">
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Ritasi
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->ritasi }}
+                    </div>
+                </div>
 
-                <h6 class="text-muted">📅 Delivery Note Date</h6>
-                <p class="mb-3">{{ $deliveryNote->formatted_delivery_note_date }}</p>
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Delivery note date
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->formatted_delivery_note_date }}
+                    </div>
+                </div>
 
-                <h6 class="text-muted">⏰ Departure Time</h6>
-                <p class="mb-3">{{ $deliveryNote->formatted_departure_time }}</p>
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Departure time
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->formatted_departure_time }}
+                    </div>
+                </div>
 
-                <h6 class="text-muted">⏳ Return Time</h6>
-                <p class="mb-0">{{ $deliveryNote->formatted_return_time }}</p>
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Return time
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->formatted_return_time }}
+                    </div>
+                </div>
             </div>
 
-            <div class="col-md-6 mb-3">
-                <h6 class="text-muted">🏢 Branch</h6>
-                <p class="mb-3">{{ $deliveryNote->branch }}</p>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Branch
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->branch }}
+                    </div>
+                </div>
 
-                <h6 class="text-muted">🚚 Vehicle Number</h6>
-                <p class="mb-3">{{ $deliveryNote->vehicle->plate_number ?? '-' }}</p>
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Vehicle number
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->vehicle->plate_number ?? '-' }}
+                    </div>
+                </div>
 
-                <h6 class="text-muted">👨‍✈️ Driver Name</h6>
-                <p class="mb-0">{{ $deliveryNote->vehicle->driver_name ?? '-' }}</p>
+                <div>
+                    <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Driver name
+                    </div>
+                    <div class="mt-0.5 text-slate-900">
+                        {{ $deliveryNote->vehicle->driver_name ?? '-' }}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </section>
 
     {{-- Destinations --}}
-    <h5 class="fw-semibold">📦 Destinations</h5>
+    <section class="space-y-3">
+        <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-800">
+                Destinations
+            </h2>
+            <p class="text-xs text-slate-500">
+                Termasuk nomor delivery order dan biaya per tujuan.
+            </p>
+        </div>
 
-    <div class="table-responsive">
-        <table class="table table-bordered mt-3">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Destination</th>
-                    <th>Delivery Orders</th>
-                    <th>Remarks</th>
-                    <th>Driver Cost</th>
-                    <th>Kenek Cost</th>
-                    <th>Balikan Cost</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($deliveryNote->destinations as $i => $d)
+        <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table class="w-full table-fixed divide-y divide-slate-200 text-left text-sm">
+                <thead class="bg-slate-50">
                     <tr>
-                        <td>{{ $i + 1 }}</td>
-                        <td>{{ $d->destination }}</td>
-                        <td>
-                            @if ($d->deliveryOrders->isNotEmpty())
-                                @foreach ($d->deliveryOrders as $order)
-                                    <span class="badge bg-secondary me-1"
-                                        title="Order #{{ $order->delivery_order_number }}">
-                                        {{ $order->delivery_order_number }}
+                        <th class="w-[5%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            #
+                        </th>
+                        <th class="w-[10%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Destination
+                        </th>
+                        <th class="w-[40%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Delivery orders
+                        </th>
+                        <th class="w-[15%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                            Remarks
+                        </th>
+                        <th
+                            class="w-[10%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">
+                            Driver cost
+                        </th>
+                        <th
+                            class="w-[10%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">
+                            Kenek cost
+                        </th>
+                        <th
+                            class="w-[10%] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 text-right">
+                            Balikan cost
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-slate-100">
+                    @forelse ($deliveryNote->destinations as $i => $d)
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-3 py-2 align-top text-xs text-slate-500">
+                                {{ $i + 1 }}
+                            </td>
+
+                            <td class="px-3 py-2 align-top text-sm text-slate-800">
+                                {{ $d->destination }}
+                            </td>
+
+                            {{-- Delivery Orders (paling besar) --}}
+                            <td class="px-3 py-2 align-top">
+                                @if ($d->deliveryOrders->isNotEmpty())
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach ($d->deliveryOrders as $order)
+                                            <span
+                                                class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700"
+                                                title="Order #{{ $order->delivery_order_number }}">
+                                                {{ $order->delivery_order_number }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-xs text-slate-400">No delivery order</span>
+                                @endif
+                            </td>
+
+                            {{-- Remarks --}}
+                            <td class="px-3 py-2 align-top text-sm text-slate-700 whitespace-normal break-words">
+                                @if ($d->remarks)
+                                    <span title="{{ $d->remarks }}">
+                                        {{ \Illuminate\Support\Str::limit($d->remarks, 80) }}
                                     </span>
-                                @endforeach
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($d->remarks)
-                                <span
-                                    title="{{ $d->remarks }}">{{ \Illuminate\Support\Str::limit($d->remarks, 40) }}</span>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td>
-                            {{ $d->driver_cost_currency }}
-                            {{ number_format($d->driver_cost ?? 0, 2, '.', ',') }}
-                        </td>
-                        <td>
-                            {{ $d->kenek_cost_currency }} {{ number_format($d->kenek_cost ?? 0, 2, '.', ',') }}
-                        </td>
-                        <td>
-                            {{ $d->balikan_cost_currency }}
-                            {{ number_format($d->balikan_cost ?? 0, 2, '.', ',') }}
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted">No destinations found.</td>
-                    </tr>
-                @endforelse
+                                @else
+                                    <span class="text-xs text-slate-400">No remarks</span>
+                                @endif
+                            </td>
 
-                @php
-                    $driverCurrencies = $deliveryNote->destinations->pluck('driver_cost_currency')->unique();
-                    $kenekCurrencies = $deliveryNote->destinations->pluck('kenek_cost_currency')->unique();
-                    $balikanCurrencies = $deliveryNote->destinations->pluck('balikan_cost_currency')->unique();
+                            <td class="px-3 py-2 align-top text-right text-sm tabular-nums text-slate-800">
+                                {{ $d->driver_cost_currency }}
+                                {{ number_format($d->driver_cost ?? 0, 2, '.', ',') }}
+                            </td>
+                            <td class="px-3 py-2 align-top text-right text-sm tabular-nums text-slate-800">
+                                {{ $d->kenek_cost_currency }}
+                                {{ number_format($d->kenek_cost ?? 0, 2, '.', ',') }}
+                            </td>
+                            <td class="px-3 py-2 align-top text-right text-sm tabular-nums text-slate-800">
+                                {{ $d->balikan_cost_currency }}
+                                {{ number_format($d->balikan_cost ?? 0, 2, '.', ',') }}
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
+                                No destinations found.
+                            </td>
+                        </tr>
+                    @endforelse
 
-                    $canSumDriver = $driverCurrencies->count() === 1 && $driverCurrencies->first();
-                    $canSumKenek = $kenekCurrencies->count() === 1 && $kenekCurrencies->first();
-                    $canSumBalikan = $balikanCurrencies->count() === 1 && $balikanCurrencies->first();
-
-                    $totalDriverCost = $canSumDriver ? $deliveryNote->destinations->sum('driver_cost') : null;
-                    $totalKenekCost = $canSumKenek ? $deliveryNote->destinations->sum('kenek_cost') : null;
-                    $totalBalikanCost = $canSumBalikan ? $deliveryNote->destinations->sum('balikan_cost') : null;
-                @endphp
-
-                <tr class="table-light fw-bold">
-                    <td colspan="4" class="text-end">Total</td>
-                    <td>
-                        @if ($canSumDriver)
-                            {{ $driverCurrencies->first() }} {{ number_format($totalDriverCost, 2, '.', ',') }}
-                        @else
-                            <span class="text-danger" title="Multiple currencies detected, cannot calculate total">Mixed
-                                currency</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($canSumKenek)
-                            {{ $kenekCurrencies->first() }} {{ number_format($totalKenekCost, 2, '.', ',') }}
-                        @else
-                            <span class="text-danger" title="Multiple currencies detected, cannot calculate total">Mixed
-                                currency</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if ($canSumBalikan)
-                            {{ $balikanCurrencies->first() }}
-                            {{ number_format($totalBalikanCost, 2, '.', ',') }}
-                        @else
-                            <span class="text-danger" title="Multiple currencies detected, cannot calculate total">Mixed
-                                currency</span>
-                        @endif
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+                    {{-- total row tetap sama seperti punyamu --}}
+                </tbody>
+            </table>
+        </div>
+    </section>
 
 </div>

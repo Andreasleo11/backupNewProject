@@ -236,7 +236,7 @@
                                         } else {
                                             if (
                                                 $purchaseRequest->type === 'office' ||
-                                                ($purchaseRequest->to_department === 'Computer' &&
+                                                ($purchaseRequest->to_department->value === 'COMPUTER' &&
                                                     $purchaseRequest->type === 'factory')
                                             ) {
                                                 if ($detail->is_approve_by_verificator) {

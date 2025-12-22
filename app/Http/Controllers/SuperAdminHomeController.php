@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\File;
 
 class SuperAdminHomeController extends Controller
 {
-    public function index()
-    {
-        return view('superadmin_home');
-    }
-
     public function updateEmailpage()
     {
         // Get the 'to' and 'cc' values from the configuration file

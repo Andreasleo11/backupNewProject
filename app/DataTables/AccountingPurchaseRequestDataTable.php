@@ -23,7 +23,7 @@ class AccountingPurchaseRequestDataTable extends DataTable
             ->addColumn(
                 'action',
                 '
-                                        <a href="{{ route("purchaserequest.detail", ["id" => $id]) }}" class="btn btn-secondary me-2">
+                                        <a href="{{ route("purchase-requests.show", ["id" => $id]) }}" class="btn btn-secondary me-2">
                                             <i class="bx bx-info-circle" ></i> Detail
                                         </a>
                                         <a href="{{ route("purchaserequest.exportToPdf", $id) }}"

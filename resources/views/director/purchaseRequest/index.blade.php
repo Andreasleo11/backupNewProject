@@ -9,7 +9,7 @@
         </div>
         <div class="col-auto">
             @if (Auth::user()->department->name !== 'MANAGEMENT')
-                <a href="{{ route('purchaserequest.create') }}" class="btn btn-primary">Create PR </a>
+                <a href="{{ route('purchase-requests.create') }}" class="btn btn-primary">Create PR </a>
             @endif
         </div>
     </div>

@@ -1,34 +1,38 @@
-<div>
+<div class="space-y-4">
+
     {{-- Page header / view toggle --}}
-    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
-        <h1 class="h4 mb-0">File Library</h1>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 class="text-lg font-semibold text-gray-900">File Library</h1>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="flex items-center gap-2">
             {{-- Grid / List toggle --}}
-            <div class="btn-group" role="group" aria-label="View mode">
-                <input type="radio" class="btn-check" id="viewTable" value="table" autocomplete="off"
-                    wire:model.live="viewMode">
-                <label class="btn btn-outline-secondary" for="viewTable">List</label>
+            <div class="inline-flex rounded-full border border-gray-200 bg-white p-1 text-sm">
+                <label class="inline-flex items-center gap-1 rounded-full px-3 py-1 cursor-pointer"
+                    :class="@js($viewMode === 'table') ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-600'" x-data>
+                    <input type="radio" class="hidden" id="viewTable" value="table" wire:model.live="viewMode">
+                    <span>List</span>
+                </label>
 
-                <input type="radio" class="btn-check" id="viewGrid" value="grid" autocomplete="off"
-                    wire:model.live="viewMode">
-                <label class="btn btn-outline-secondary" for="viewGrid">Grid</label>
+                <label class="inline-flex items-center gap-1 rounded-full px-3 py-1 cursor-pointer"
+                    :class="@js($viewMode === 'grid') ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-600'" x-data>
+                    <input type="radio" class="hidden" id="viewGrid" value="grid" wire:model.live="viewMode">
+                    <span>Grid</span>
+                </label>
             </div>
         </div>
     </div>
 
     {{-- Upload area --}}
-    <div class="card mb-4 shadow-sm">
-        <div class="card-body">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-4 sm:p-5">
             <form wire:submit.prevent="store">
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-8">
-                        <label x-data="{ dragging: false, progress: 0 }" x-on:dragover.prevent="dragging=true"
-                            x-on:dragleave.prevent="dragging=false"
+                <div class="grid gap-4 md:grid-cols-3 md:items-center">
+                    <div class="md:col-span-2">
+                        <label x-data="{ dragging: false, progress: 0 }" x-on:dragover.prevent="dragging = true"
+                            x-on:dragleave.prevent="dragging = false"
                             x-on:drop.prevent="
-                                dragging=false;
+                                dragging = false;
 
-                                // Prefer items (lets us ignore non-file drags cleanly)
                                 let files = [];
                                 if ($event.dataTransfer.items && $event.dataTransfer.items.length) {
                                     for (const item of $event.dataTransfer.items) {
@@ -38,58 +42,75 @@
                                         }
                                     }
                                 } else {
-                                    // Fallback to FileList -> Array
                                     files = Array.from($event.dataTransfer.files || []);
                                 }
 
-                                // Filter to real File objects only
                                 files = files.filter(f => f instanceof File);
 
                                 if (files.length) {
                                     $wire.uploadMultiple(
                                         'newFiles',
                                         files,
-                                        () => { progress = 0; },                // finish
-                                        () => { progress = 0; },                // error
-                                        (e) => { progress = e.detail.progress } // progress
+                                        () => { progress = 0 },
+                                        () => { progress = 0 },
+                                        (e) => { progress = e.detail.progress },
                                     );
                                 }
                             "
-                            class="w-100 text-center border border-2 rounded-3 py-5 bg-light-subtle"
-                            :class="dragging ? 'border-primary bg-primary-subtle' : ''"
-                            style="border-style: dashed; cursor: pointer;" for="fileInput">
-                            <div class="fw-medium mb-1">Drag & drop files here, or click to browse</div>
-                            <small class="text-muted">Up to 20MB per file · Stored on <code>public</code>
-                                disk</small>
+                            for="fileInput"
+                            class="flex flex-col items-center justify-center w-full rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-10 text-center transition
+                                   cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40"
+                            :class="dragging ? 'border-indigo-500 bg-indigo-50/80' : ''">
+                            <div class="flex flex-col items-center gap-1">
+                                <div
+                                    class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 mb-1">
+                                    📁
+                                </div>
+                                <p class="text-sm font-medium text-gray-900">
+                                    Drag &amp; drop files here, or <span class="text-indigo-600 underline">click to
+                                        browse</span>
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    Up to 20MB per file · Stored on <code class="font-mono text-xs">public</code> disk
+                                </p>
+                            </div>
 
-                            <div class="progress mt-3" style="height:6px;" x-show="progress>0 && progress<100">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated"
-                                    :style="`width:${progress}%`"></div>
+                            {{-- progress for manual uploadMultiple --}}
+                            <div class="mt-3 w-full max-w-xs" x-show="progress > 0 && progress < 100">
+                                <div class="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                                    <div class="h-full rounded-full bg-indigo-500 transition-all"
+                                        :style="`width:${progress}%`"></div>
+                                </div>
                             </div>
                         </label>
 
-                        <input id="fileInput" type="file" class="d-none @error('newFiles.*') is-invalid @enderror"
-                            wire:model="newFiles" multiple>
+                        <input id="fileInput" type="file" class="hidden" wire:model="newFiles" multiple>
+
                         @error('newFiles.*')
-                            <div class="invalid-feedback d-block mt-2">{{ $message }}</div>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
 
-                        {{-- Upload progress / selected files preview --}}
-                        <div wire:loading wire:target="newFiles" class="progress mt-3" style="height:6px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%">
+                        {{-- Livewire upload progress --}}
+                        <div wire:loading wire:target="newFiles" class="mt-3 w-full max-w-xs">
+                            <div class="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
+                                <div class="h-full w-full rounded-full bg-indigo-500 animate-pulse"></div>
                             </div>
                         </div>
+
                         @if ($newFiles)
-                            <ul class="list-unstyled small mt-2 mb-0">
+                            <ul class="mt-2 space-y-1 text-xs text-gray-500">
                                 @foreach ($newFiles as $file)
-                                    <li class="text-muted">• {{ $file->getClientOriginalName() }}</li>
+                                    <li>• {{ $file->getClientOriginalName() }}</li>
                                 @endforeach
                             </ul>
                         @endif
                     </div>
-                    <div class="col-md-4 text-md-end">
-                        <button class="btn btn-primary px-4" type="submit" @disabled(!$newFiles)
-                            wire:loading.attr="disabled">
+
+                    <div class="md:col-span-1 flex md:justify-end">
+                        <button type="submit"
+                            class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm
+                                   hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            @disabled(!$newFiles) wire:loading.attr="disabled">
                             Upload
                         </button>
                     </div>
@@ -99,36 +120,64 @@
     </div>
 
     {{-- Filters / actions --}}
-    <div class="card">
-        <div class="card-body">
-            <div class="row g-2 align-items-center mb-3">
-                <div class="col-lg-5">
-                    <div class="input-group">
-                        <input type="search" class="form-control" placeholder="Search file name…"
-                            wire:model.live.debounce.400ms="search">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="p-4 sm:p-5 space-y-4">
+            <div class="grid gap-3 lg:grid-cols-3 lg:items-center">
+                {{-- Search --}}
+                <div class="lg:col-span-1">
+                    <div
+                        class="flex rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 focus-within:ring-1 focus-within:ring-indigo-500">
+                        <input type="search"
+                            class="flex-1 border-0 bg-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-0"
+                            placeholder="Search file name…" wire:model.live.debounce.400ms="search">
                         @if ($search !== '')
-                            <button class="btn btn-outline-secondary" type="button"
-                                wire:click="$set('search','')">Clear</button>
+                            <button type="button"
+                                class="ml-2 inline-flex items-center rounded-md border border-gray-200 bg-white px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-50"
+                                wire:click="$set('search','')">
+                                Clear
+                            </button>
                         @endif
                     </div>
                 </div>
 
-                <div class="col-lg-4">
+                {{-- Types + Tags --}}
+                <div class="lg:col-span-1 space-y-2">
                     {{-- Type pills --}}
-                    <div class="d-flex flex-wrap gap-1">
-                        @php $types = ['all'=>'All','image'=>'Images','pdf'=>'PDF','doc'=>'Docs','sheet'=>'Sheets','audio'=>'Audio','video'=>'Video','archive'=>'Archives','other'=>'Other']; @endphp
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        @php
+                            $types = [
+                                'all' => 'All',
+                                'image' => 'Images',
+                                'pdf' => 'PDF',
+                                'doc' => 'Docs',
+                                'sheet' => 'Sheets',
+                                'audio' => 'Audio',
+                                'video' => 'Video',
+                                'archive' => 'Archives',
+                                'other' => 'Other',
+                            ];
+                        @endphp
+
                         @foreach ($types as $val => $label)
                             <button type="button"
-                                class="btn btn-sm {{ $type === $val ? 'btn-dark' : 'btn-outline-secondary' }}"
+                                class="inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium
+                                      {{ $type === $val
+                                          ? 'border-gray-900 bg-gray-900 text-white'
+                                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50' }}"
                                 wire:click="$set('type','{{ $val }}')">
                                 {{ $label }}
                             </button>
                         @endforeach
+
                         @if ($type !== 'all')
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
-                                wire:click="$set('type','all')">Reset</button>
+                            <button type="button"
+                                class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
+                                wire:click="$set('type','all')">
+                                Reset
+                            </button>
                         @endif
                     </div>
+
                     {{-- Tag Filter --}}
                     @php
                         $visible = $this->topTags;
@@ -136,59 +185,83 @@
                         $rest = max(0, $allCount - $visible->count());
                     @endphp
 
-                    <div class="d-flex flex-wrap gap-1 align-items-center mt-2">
-                        <span class="fw-semibold">Tags :</span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-semibold text-gray-700">Tags:</span>
+
                         {{-- visible/top tags as pills --}}
                         @foreach ($visible as $tag)
                             <button type="button"
-                                class="btn btn-sm {{ in_array($tag->slug, $tagsFilter, true) ? 'btn-dark' : 'btn-outline-secondary' }}"
+                                class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs
+                                      {{ in_array($tag->slug, $tagsFilter, true)
+                                          ? 'border-gray-900 bg-gray-900 text-white'
+                                          : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50' }}"
                                 wire:click="toggleTagFilter('{{ $tag->slug }}')">
                                 {{ $tag->name }}
                             </button>
                         @endforeach
 
-                        <div x-data="{ open: @entangle('tagDropdownOpen').live }" class="dropdown" wire:key="tag-filter-dropdown"
-                            @keydown.escape.window="open=false">
-
-                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        {{-- "More tags" dropdown --}}
+                        <div x-data="{ open: @entangle('tagDropdownOpen').live }" wire:key="tag-filter-dropdown" class="relative"
+                            @keydown.escape.window="open = false">
+                            <button type="button"
+                                class="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
                                 x-on:click="open = !open" :aria-expanded="open.toString()">
                                 More tags{{ $rest > 0 ? " (+{$rest})" : '' }}
+                                <svg class="h-3 w-3" viewBox="0 0 20 20" fill="none">
+                                    <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
                             </button>
 
-                            <div class="dropdown-menu p-2 mt-2" x-show="open" x-transition :class="open ? 'show' : ''"
-                                @click.outside="open = false" style="width:280px; display:block;">
-                                <input type="search" class="form-control form-control-sm mb-2"
-                                    placeholder="Search tags…" wire:model.live.debounce.300ms="tagSearch"
-                                    x-on:click.stop>
+                            <div class="absolute z-20 mt-2 w-72 origin-top-left rounded-xl border border-gray-200 bg-white shadow-lg"
+                                x-show="open" x-transition @click.outside="open = false">
+                                <div class="p-2 border-b border-gray-100">
+                                    <input type="search"
+                                        class="w-full rounded-md border border-gray-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus:ring-indigo-500"
+                                        placeholder="Search tags…" wire:model.live.debounce.300ms="tagSearch"
+                                        x-on:click.stop>
+                                </div>
 
-                                <div class="border rounded p-1" style="max-height:220px; overflow:auto;"
-                                    x-on:click.stop>
+                                <div class="max-h-56 overflow-y-auto p-1 text-xs" x-on:click.stop>
                                     @forelse ($this->allTags as $tag)
-                                        <label class="d-flex align-items-center gap-2 py-1 px-1 rounded"
+                                        <label
+                                            class="flex items-center justify-between gap-2 rounded-md px-2 py-1 hover:bg-gray-50"
                                             wire:key="tag-{{ $tag->id }}">
-                                            <input type="checkbox" class="form-check-input"
-                                                value="{{ $tag->slug }}" wire:model.live="tagsFilter">
-                                            <span class="flex-grow-1">{{ $tag->name }}</span>
+                                            <span class="inline-flex items-center gap-2">
+                                                <input type="checkbox"
+                                                    class="h-3 w-3 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                    value="{{ $tag->slug }}" wire:model.live="tagsFilter">
+                                                <span>{{ $tag->name }}</span>
+                                            </span>
                                             @if (isset($tag->uses))
-                                                <span class="badge text-bg-light">{{ $tag->uses }}</span>
+                                                <span
+                                                    class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-600">
+                                                    {{ $tag->uses }}
+                                                </span>
                                             @endif
                                         </label>
                                     @empty
-                                        <div class="text-muted small px-1 py-2">No matching tags.</div>
+                                        <div class="px-2 py-3 text-xs text-gray-500">No matching tags.</div>
                                     @endforelse
                                 </div>
 
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <button type="button" class="btn btn-sm btn-light"
-                                        wire:click="$set('tagsFilter', [])">Clear</button>
-                                    <button type="button" class="btn btn-sm btn-primary"
-                                        x-on:click="open=false">Apply</button>
+                                <div class="flex items-center justify-between border-t border-gray-100 px-3 py-2">
+                                    <button type="button" class="text-xs text-gray-600 hover:text-gray-800"
+                                        wire:click="$set('tagsFilter', [])">
+                                        Clear
+                                    </button>
+                                    <button type="button"
+                                        class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700"
+                                        x-on:click="open = false">
+                                        Apply
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
                         @if (!empty($tagsFilter))
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                            <button type="button"
+                                class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
                                 wire:click="$set('tagsFilter', [])">
                                 Reset tag filter
                             </button>
@@ -196,66 +269,108 @@
                     </div>
                 </div>
 
-                <div class="col-lg-3 d-flex justify-content-lg-end gap-2">
-                    {{-- Sort --}}
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                            type="button">
+                {{-- Sort + per page --}}
+                <div class="lg:col-span-1 flex justify-start gap-2 lg:justify-end">
+                    {{-- Sort dropdown --}}
+                    <div x-data="{ open: false }" class="relative">
+                        <button type="button"
+                            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                            x-on:click="open = !open">
                             Sort
+                            <svg class="h-3 w-3" viewBox="0 0 20 20" fill="none">
+                                <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><button class="dropdown-item" wire:click="sortBy('created_at')">Uploaded</button>
-                            </li>
-                            <li><button class="dropdown-item" wire:click="sortBy('original_name')">Name</button>
-                            </li>
-                            <li><button class="dropdown-item" wire:click="sortBy('size')">Size</button></li>
-                        </ul>
+
+                        <div class="absolute right-0 z-20 mt-2 w-40 origin-top-right rounded-xl border border-gray-200 bg-white shadow-lg text-xs"
+                            x-show="open" x-transition @click.outside="open = false">
+                            <button type="button" class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                wire:click="sortBy('created_at')" x-on:click="open = false">
+                                Uploaded
+                            </button>
+                            <button type="button" class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                wire:click="sortBy('original_name')" x-on:click="open = false">
+                                Name
+                            </button>
+                            <button type="button" class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                wire:click="sortBy('size')" x-on:click="open = false">
+                                Size
+                            </button>
+                        </div>
                     </div>
 
-                    {{-- Per page --}}
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
-                            type="button">
+                    {{-- Per page dropdown --}}
+                    <div x-data="{ open: false }" class="relative">
+                        <button type="button"
+                            class="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                            x-on:click="open = !open">
                             Show: {{ $perPage }}
+                            <svg class="h-3 w-3" viewBox="0 0 20 20" fill="none">
+                                <path d="M6 8l4 4 4-4" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><button class="dropdown-item" wire:click="$set('perPage',10)">10</button></li>
-                            <li><button class="dropdown-item" wire:click="$set('perPage',25)">25</button></li>
-                            <li><button class="dropdown-item" wire:click="$set('perPage',50)">50</button></li>
-                        </ul>
+                        <div class="absolute right-0 z-20 mt-2 w-32 origin-top-right rounded-xl border border-gray-200 bg-white shadow-lg text-xs"
+                            x-show="open" x-transition @click.outside="open = false">
+                            <button type="button" class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                wire:click="$set('perPage',10)" x-on:click="open = false">
+                                10
+                            </button>
+                            <button type="button" class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                wire:click="$set('perPage',25)" x-on:click="open = false">
+                                25
+                            </button>
+                            <button type="button" class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                wire:click="$set('perPage',50)" x-on:click="open = false">
+                                50
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Bulk actions (top-right in desktop) --}}
-            <div class="d-flex justify-content-end mb-2 gap-2">
-                <button class="btn btn-outline-danger" wire:click="deleteSelected" @disabled(count($checked) === 0)>
+            {{-- Bulk actions --}}
+            <div class="flex justify-end gap-2">
+                <button type="button"
+                    class="inline-flex items-center rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600
+                           hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    wire:click="deleteSelected" @disabled(count($checked) === 0)>
                     Delete selected ({{ count($checked) }})
                 </button>
-                <button class="btn btn-outline-primary" @disabled(!$selectAllResults && count($checked) === 0)
-                    wire:click="$set('showTagModal', true)">
+
+                <button type="button"
+                    class="inline-flex items-center rounded-lg border border-indigo-200 px-3 py-1.5 text-xs font-medium text-indigo-700
+                           hover:bg-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    wire:click="$set('showTagModal', true)" @disabled(!$selectAllResults && count($checked) === 0)>
                     Tag selected
                 </button>
-                <button class="btn btn-outline-warning" wire:click="$set('showRemoveTagModal', true)"
-                    @disabled(!$selectAllResults && count($checked) === 0)>Remove Tags</button>
+
+                <button type="button"
+                    class="inline-flex items-center rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-700
+                           hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    wire:click="$set('showRemoveTagModal', true)" @disabled(!$selectAllResults && count($checked) === 0)>
+                    Remove tags
+                </button>
             </div>
 
             {{-- CONTENT --}}
-            @if ($viewMode === 'grid')
-                {{-- GRID VIEW --}}
-                <div class="row g-3">
-                    @forelse ($items as $it)
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-3" wire:key="card-{{ $it->id }}">
-                            <div class="card h-100 shadow-sm">
-                                <div class="position-relative">
+            <div>
+                @if ($viewMode === 'grid')
+                    {{-- GRID VIEW --}}
+                    <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        @forelse ($items as $it)
+                            <div class="group relative rounded-xl border border-gray-100 bg-white shadow-sm"
+                                wire:key="card-{{ $it->id }}">
+                                <div class="relative">
                                     @if ($it->category === 'image')
                                         <img src="{{ Storage::disk($it->disk)->url($it->path) }}"
-                                            alt="{{ $it->original_name }}" class="card-img-top"
-                                            style="aspect-ratio:4/3; object-fit:cover;">
+                                            alt="{{ $it->original_name }}"
+                                            class="h-40 w-full rounded-t-xl object-cover">
                                     @else
-                                        <div class="d-flex align-items-center justify-content-center bg-body-secondary"
-                                            style="aspect-ratio:4/3;">
-                                            <div class="display-6" aria-hidden="true">
+                                        <div
+                                            class="flex h-40 w-full items-center justify-center rounded-t-xl bg-gray-50">
+                                            <div class="text-4xl" aria-hidden="true">
                                                 @switch($it->category)
                                                     @case('pdf')
                                                         📕
@@ -287,441 +402,545 @@
                                             </div>
                                         </div>
                                     @endif
-                                    <div class="form-check position-absolute top-0 start-0 m-2">
-                                        <input class="form-check-input" type="checkbox"
-                                            value="{{ (string) $it->id }}" wire:model.live="checked">
-                                    </div>
+
+                                    <label
+                                        class="absolute left-2 top-2 inline-flex items-center rounded-md bg-white/80 px-1.5 py-1 shadow-sm">
+                                        <input
+                                            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            type="checkbox" value="{{ (string) $it->id }}"
+                                            wire:model.live="checked">
+                                    </label>
                                 </div>
 
-                                <div class="card-body">
-                                    <div class="fw-semibold text-truncate" title="{{ $it->original_name }}">
-                                        {{ $it->original_name }}</div>
-                                    <div class="text-muted small">{{ strtoupper($it->category) }} ·
-                                        {{ $it->size_for_humans }}</div>
-                                    <div class="text-muted small">Uploaded
-                                        {{ $it->created_at_wib->diffForHumans() }}
+                                <div class="p-3 space-y-1">
+                                    <div class="truncate text-sm font-medium text-gray-900"
+                                        title="{{ $it->original_name }}">
+                                        {{ $it->original_name }}
                                     </div>
+                                    <div class="text-xs text-gray-500">
+                                        {{ strtoupper($it->category) }} · {{ $it->size_for_humans }}
+                                    </div>
+                                    <div class="text-xs text-gray-400">
+                                        Uploaded {{ $it->created_at_wib->diffForHumans() }}
+                                    </div>
+
                                     @if ($it->tags->isNotEmpty())
-                                        <div class="mt-1 d-flex flex-wrap gap-1">
+                                        <div class="mt-1 flex flex-wrap gap-1">
                                             @foreach ($it->tags as $tag)
-                                                <span class="badge text-bg-light border">{{ $tag->name }}</span>
+                                                <span
+                                                    class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-700">
+                                                    {{ $tag->name }}
+                                                </span>
                                             @endforeach
                                         </div>
                                     @endif
                                 </div>
 
-                                <div class="card-footer bg-transparent d-flex gap-2">
-                                    <a class="btn btn-sm btn-outline-secondary flex-fill"
-                                        href="{{ route('files.preview', $it) }}" target="_blank">Preview</a>
-                                    <a class="btn btn-sm btn-outline-primary flex-fill"
-                                        href="{{ route('files.download', $it) }}">Download</a>
-                                    <div class="btn-group">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                            data-bs-toggle="dropdown" type="button">
-                                            More
+                                <div class="flex gap-1 border-t border-gray-100 px-3 py-2 text-xs">
+                                    <a href="{{ route('files.preview', $it) }}" target="_blank"
+                                        class="flex-1 inline-flex items-center justify-center rounded-md border border-gray-200 px-2 py-1 text-gray-700 hover:bg-gray-50">
+                                        Preview
+                                    </a>
+                                    <a href="{{ route('files.download', $it) }}"
+                                        class="flex-1 inline-flex items-center justify-center rounded-md border border-indigo-200 px-2 py-1 text-indigo-700 hover:bg-indigo-50">
+                                        Download
+                                    </a>
+
+                                    <div x-data="{ open: false }" class="relative">
+                                        <button type="button"
+                                            class="inline-flex items-center justify-center rounded-md border border-gray-200 px-2 py-1 text-gray-600 hover:bg-gray-50"
+                                            x-on:click="open = !open">
+                                            ⋯
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><button type="button" class="dropdown-item"
-                                                    wire:click="confirmRename({{ $it->id }})">Rename</button>
-                                            </li>
-                                            <li><button type="button" class="dropdown-item"
-                                                    wire:click="confirmReplace({{ $it->id }})">Replace</button>
-                                            </li>
-                                            <li>
-                                                <hr class="dropdown-divider">
-                                            </li>
-                                            <li><button type="button" class="dropdown-item text-danger"
-                                                    wire:click="deleteOne({{ $it->id }})"
-                                                    onclick="return confirm('Delete this file?')">Delete</button></li>
-                                            <li>
-                                                <button type="button" x-data
-                                                    x-on:click="
-                                                        navigator.clipboard.writeText('{{ Storage::disk($it->disk)->url($it->path) }}');
-                                                        $dispatch('toast', { message: 'Link copied' });
-                                                    "
-                                                    class="dropdown-item">
-                                                    Copy link
-                                                </button>
-                                            </li>
-                                        </ul>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @empty
-                            <div class="col-12">
-                                <div class="text-center text-muted py-5">
-                                    <div class="display-6 mb-2">🗂️</div>
-                                    <div class="mb-2">No files match your filters.</div>
-                                    <button type="button" class="btn btn-light btn-sm"
-                                        wire:click="$set('search',''); $set('type','all')">Clear filters</button>
-                                </div>
-                            </div>
-                        @endforelse
-                    </div>
-                @else
-                    {{-- debug only --}}
-                    {{-- @if (app()->environment('local'))
-                        <pre class="small text-muted">checked: {{ json_encode($checked) }} | allResults: {{ $selectAllResults ? 'yes' : 'no' }}</pre>
-                    @endif --}}
-                    {{-- LIST VIEW (table) --}}
-                    @if ($selectPage && !$selectAllResults)
-                        <div class="alert alert-light border d-flex justify-content-between align-items-center py-2">
-                            <div>You selected {{ count($checked) }} items on this page.</div>
-                            <button type="button" class="btn btn-sm btn-outline-primary"
-                                wire:click="selectAllResultsAction">
-                                Select all {{ $items->total() }} results
-                            </button>
-                        </div>
-                    @elseif($selectAllResults)
-                        <div class="alert alert-light border d-flex justify-content-between align-items-center py-2">
-                            <div>All {{ $items->total() }} results are selected across pages.</div>
-                            <button type="button" class="btn btn-sm btn-outline-secondary"
-                                wire:click="$call('resetSelection')">
-                                Clear selection
-                            </button>
-                        </div>
-                    @endif
-                    <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th style="width:30px">
-                                        <input class="form-check-input" type="checkbox" wire:model.live="selectPage">
-                                    </th>
-                                    <th role="button" wire:click="sortBy('original_name')">
-                                        Name
-                                        @if ($sortField === 'original_name')
-                                            <x-sort :dir="$sortDirection" />
-                                        @endif
-                                    </th>
-                                    <th>Type</th>
-                                    <th role="button" wire:click="sortBy('size')">
-                                        Size
-                                        @if ($sortField === 'size')
-                                            <x-sort :dir="$sortDirection" />
-                                        @endif
-                                    </th>
-                                    <th role="button" wire:click="sortBy('created_at')">
-                                        Uploaded
-                                        @if ($sortField === 'created_at')
-                                            <x-sort :dir="$sortDirection" />
-                                        @endif
-                                    </th>
-                                    <th>Tags</th>
-                                    <th class="text-end">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($items as $it)
-                                    <tr wire:key="row-{{ $it->id }}">
-                                        <td>
-                                            <input class="form-check-input" type="checkbox"
-                                                value="{{ (string) $it->id }}" wire:model.live="checked">
-                                        </td>
-                                        <td class="text-truncate" style="max-width:360px">
-                                            <span class="me-2" aria-hidden="true">
-                                                @switch($it->category)
-                                                    @case('image')
-                                                        🖼️
-                                                    @break
-
-                                                    @case('pdf')
-                                                        📕
-                                                    @break
-
-                                                    @case('doc')
-                                                        📄
-                                                    @break
-
-                                                    @case('sheet')
-                                                        📊
-                                                    @break
-
-                                                    @case('audio')
-                                                        🎵
-                                                    @break
-
-                                                    @case('video')
-                                                        🎞️
-                                                    @break
-
-                                                    @case('archive')
-                                                        🗜️
-                                                    @break
-
-                                                    @default
-                                                        📁
-                                                @endswitch
-                                            </span>
-                                            <span class="fw-semibold">{{ $it->original_name }}</span>
-                                        </td>
-                                        <td><span class="text-muted small">{{ strtoupper($it->category) }}</span></td>
-                                        <td>{{ $it->size_for_humans }}</td>
-                                        <td>
-                                            <div class="small">{{ $it->created_at_wib->format('Y-m-d H:i') }}</div>
-                                            <div class="text-muted small">{{ $it->created_at_wib->diffForHumans() }}</div>
-                                        </td>
-                                        <td>
-                                            @foreach ($it->tags as $tag)
-                                                <span x-data="{
-                                                    holding: false,
-                                                    timer: null,
-                                                    startAt: 0,
-                                                    duration: 2000,
-                                                    progress: 0,
-                                                    start() {
-                                                        if (this.holding) return;
-                                                        this.holding = true;
-                                                        this.startAt = performance.now();
-                                                        this.loop();
-                                                        this.timer = setTimeout(() => {
-                                                            $wire.removeTagFromItem({{ $it->id }}, {{ $tag->id }});
-                                                            this.reset();
-                                                        }, this.duration);
-                                                    },
-                                                    cancel() {
-                                                        if (!this.holding) return;
-                                                        clearTimeout(this.timer);
-                                                        this.reset();
-                                                    },
-                                                    loop() {
-                                                        if (!this.holding) return;
-                                                        const elapsed = performance.now() - this.startAt;
-                                                        this.progress = Math.min(100, Math.round(elapsed / this.duration * 100));
-                                                        requestAnimationFrame(() => this.loop());
-                                                    },
-                                                    reset() {
-                                                        this.holding = false;
-                                                        this.progress = 0;
-                                                    }
-                                                }"
-                                                    class="position-relative d-inline-flex align-items-center me-2 mb-2">
-                                                    <span
-                                                        class="badge text-bg-light border d-inline-flex align-items-center gap-1"
-                                                        :class="holding ? 'opacity-75' : ''"
-                                                        :style="holding
-                                                            ?
-                                                            `transition: transform .2s; transform: scale(.98);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    background: linear-gradient(to right, rgba(220,53,69,.15) 0%, rgba(220,53,69,.15) ${progress}%,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    transparent ${progress}%, transparent 100%);` :
-                                                            ''">
-                                                        {{ $tag->name }}
-
-                                                        <button type="button"
-                                                            class="btn btn-sm btn-link p-0 ms-1 text-danger text-decoration-none"
-                                                            title="Hold to remove" x-on:pointerdown="start"
-                                                            x-on:pointerup="cancel" x-on:pointerleave="cancel"
-                                                            x-on:touchstart.prevent="start"
-                                                            x-on:touchend="cancel">&times;</button>
-                                                    </span>
-
-                                                    <!-- progress bar line -->
-                                                    <span x-show="holding" x-transition class="position-absolute start-0"
-                                                        style="bottom:-2px; height:2px; background:rgba(220,53,69,.65);"
-                                                        :style="`width:${progress}%;`"></span>
-                                                </span>
-                                            @endforeach
-                                        </td>
-                                        <td class="text-end">
-                                            <a class="btn btn-sm btn-outline-secondary"
-                                                href="{{ route('files.preview', $it) }}" target="_blank">Preview</a>
-                                            <a class="btn btn-sm btn-outline-primary"
-                                                href="{{ route('files.download', $it) }}">Download</a>
-                                            <button type="button" class="btn btn-sm btn-outline-warning"
-                                                wire:click="confirmRename({{ $it->id }})">Rename</button>
-                                            <button type="button" class="btn btn-sm btn-outline-info"
-                                                wire:click="confirmReplace({{ $it->id }})">Replace</button>
-                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                        <div x-show="open" x-transition @click.outside="open = false"
+                                            class="absolute right-0 z-20 mt-1 w-40 origin-top-right rounded-xl border border-gray-200 bg-white shadow-lg text-xs">
+                                            <button type="button"
+                                                class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                                wire:click="confirmRename({{ $it->id }})"
+                                                x-on:click="open=false">
+                                                Rename
+                                            </button>
+                                            <button type="button"
+                                                class="block w-full px-3 py-2 text-left hover:bg-gray-50"
+                                                wire:click="confirmReplace({{ $it->id }})"
+                                                x-on:click="open=false">
+                                                Replace
+                                            </button>
+                                            <div class="my-1 border-t border-gray-100"></div>
+                                            <button type="button"
+                                                class="block w-full px-3 py-2 text-left text-red-600 hover:bg-red-50"
                                                 wire:click="deleteOne({{ $it->id }})"
-                                                onclick="return confirm('Delete this file?')">Delete</button>
-                                            <button type="button" x-data
+                                                onclick="return confirm('Delete this file?')" x-on:click="open=false">
+                                                Delete
+                                            </button>
+                                            <button type="button"
+                                                class="block w-full px-3 py-2 text-left hover:bg-gray-50" x-data
                                                 x-on:click="
                                                         navigator.clipboard.writeText('{{ Storage::disk($it->disk)->url($it->path) }}');
                                                         $dispatch('toast', { message: 'Link copied' });
-                                                    "
-                                                class="btn btn-sm btn-outline-secondary">
+                                                        open=false;
+                                                    ">
                                                 Copy link
                                             </button>
-                                        </td>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @empty
+                                <div class="flex flex-col items-center justify-center py-10 text-center text-gray-500">
+                                    <div class="mb-2 text-4xl">🗂️</div>
+                                    <p class="text-sm mb-2">No files match your filters.</p>
+                                    <button type="button"
+                                        class="inline-flex items-center rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                                        wire:click="$set('search',''); $set('type','all')">
+                                        Clear filters
+                                    </button>
+                                </div>
+                            @endforelse
+                        </div>
+                    @else
+                        {{-- LIST VIEW --}}
+                        @if ($selectPage && !$selectAllResults)
+                            <div
+                                class="mb-2 flex items-center justify-between rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                                <div>You selected {{ count($checked) }} items on this page.</div>
+                                <button type="button"
+                                    class="inline-flex items-center rounded-md border border-amber-200 bg-white px-2 py-1 text-[11px] text-amber-700 hover:bg-amber-50"
+                                    wire:click="selectAllResultsAction">
+                                    Select all {{ $items->total() }} results
+                                </button>
+                            </div>
+                        @elseif($selectAllResults)
+                            <div
+                                class="mb-2 flex items-center justify-between rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                                <div>All {{ $items->total() }} results are selected across pages.</div>
+                                <button type="button"
+                                    class="inline-flex items-center rounded-md border border-emerald-200 bg-white px-2 py-1 text-[11px] text-emerald-700 hover:bg-emerald-50"
+                                    wire:click="$call('resetSelection')">
+                                    Clear selection
+                                </button>
+                            </div>
+                        @endif
+
+                        <div class="overflow-x-auto rounded-xl border border-gray-100 bg-white">
+                            <table class="min-w-full divide-y divide-gray-100 text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                        <th class="px-3 py-2">
+                                            <input type="checkbox"
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                wire:model.live="selectPage">
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer select-none"
+                                            wire:click="sortBy('original_name')">
+                                            Name
+                                            @if ($sortField === 'original_name')
+                                                <x-sort :dir="$sortDirection" />
+                                            @endif
+                                        </th>
+                                        <th class="px-3 py-2 text-left">Type</th>
+                                        <th class="px-3 py-2 text-left cursor-pointer select-none"
+                                            wire:click="sortBy('size')">
+                                            Size
+                                            @if ($sortField === 'size')
+                                                <x-sort :dir="$sortDirection" />
+                                            @endif
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer select-none"
+                                            wire:click="sortBy('created_at')">
+                                            Uploaded
+                                            @if ($sortField === 'created_at')
+                                                <x-sort :dir="$sortDirection" />
+                                            @endif
+                                        </th>
+                                        <th class="px-3 py-2 text-left">Tags</th>
+                                        <th class="px-3 py-2 text-right">Actions</th>
                                     </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-5">
-                                                <div class="display-6 mb-2">🗂️</div>
-                                                <div class="mb-2">No files match your filters.</div>
-                                                <button type="button" class="btn btn-light btn-sm"
-                                                    wire:click="$set('search',''); $set('type','all')">Clear filters</button>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @forelse ($items as $it)
+                                        <tr wire:key="row-{{ $it->id }}" class="hover:bg-gray-50/50">
+                                            <td class="px-3 py-2">
+                                                <input type="checkbox"
+                                                    class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                    value="{{ (string) $it->id }}" wire:model.live="checked">
+                                            </td>
+                                            <td class="px-3 py-2 max-w-xs">
+                                                <div class="flex items-center gap-2">
+                                                    <span aria-hidden="true">
+                                                        @switch($it->category)
+                                                            @case('image')
+                                                                🖼️
+                                                            @break
+
+                                                            @case('pdf')
+                                                                📕
+                                                            @break
+
+                                                            @case('doc')
+                                                                📄
+                                                            @break
+
+                                                            @case('sheet')
+                                                                📊
+                                                            @break
+
+                                                            @case('audio')
+                                                                🎵
+                                                            @break
+
+                                                            @case('video')
+                                                                🎞️
+                                                            @break
+
+                                                            @case('archive')
+                                                                🗜️
+                                                            @break
+
+                                                            @default
+                                                                📁
+                                                        @endswitch
+                                                    </span>
+                                                    <span class="truncate font-medium text-gray-900">
+                                                        {{ $it->original_name }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-3 py-2 text-xs text-gray-500">
+                                                {{ strtoupper($it->category) }}
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-700">
+                                                {{ $it->size_for_humans }}
+                                            </td>
+                                            <td class="px-3 py-2 text-xs text-gray-600">
+                                                <div>{{ $it->created_at_wib->format('Y-m-d H:i') }}</div>
+                                                <div class="text-[11px] text-gray-400">
+                                                    {{ $it->created_at_wib->diffForHumans() }}
+                                                </div>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                @foreach ($it->tags as $tag)
+                                                    <span x-data="{
+                                                        holding: false,
+                                                        timer: null,
+                                                        startAt: 0,
+                                                        duration: 2000,
+                                                        progress: 0,
+                                                        start() {
+                                                            if (this.holding) return;
+                                                            this.holding = true;
+                                                            this.startAt = performance.now();
+                                                            this.loop();
+                                                            this.timer = setTimeout(() => {
+                                                                $wire.removeTagFromItem({{ $it->id }}, {{ $tag->id }});
+                                                                this.reset();
+                                                            }, this.duration);
+                                                        },
+                                                        cancel() {
+                                                            if (!this.holding) return;
+                                                            clearTimeout(this.timer);
+                                                            this.reset();
+                                                        },
+                                                        loop() {
+                                                            if (!this.holding) return;
+                                                            const elapsed = performance.now() - this.startAt;
+                                                            this.progress = Math.min(100, Math.round(elapsed / this.duration * 100));
+                                                            requestAnimationFrame(() => this.loop());
+                                                        },
+                                                        reset() {
+                                                            this.holding = false;
+                                                            this.progress = 0;
+                                                        }
+                                                    }"
+                                                        class="relative inline-flex items-center me-1 mb-1">
+                                                        <span
+                                                            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px]
+                                                               border-gray-200 bg-gray-100 text-gray-700"
+                                                            :class="holding ? 'opacity-80' : ''"
+                                                            :style="holding
+                                                                ?
+                                                                `transform: scale(.98);
+                                                                                                                                                                                                                                                                                                                                                                           background: linear-gradient(to right,
+                                                                                                                                                                                                                                                                                                                                                                             rgba(220,38,38,.15) 0%,
+                                                                                                                                                                                                                                                                                                                                                                             rgba(220,38,38,.15) ${progress}%,
+                                                                                                                                                                                                                                                                                                                                                                             transparent ${progress}%,
+                                                                                                                                                                                                                                                                                                                                                                             transparent 100%);` :
+                                                                ''">
+                                                            {{ $tag->name }}
+                                                            <button type="button" class="text-[10px] text-red-500"
+                                                                title="Hold to remove" x-on:pointerdown="start"
+                                                                x-on:pointerup="cancel" x-on:pointerleave="cancel"
+                                                                x-on:touchstart.prevent="start" x-on:touchend="cancel">
+                                                                &times;
+                                                            </button>
+                                                        </span>
+                                                        <span x-show="holding" x-transition
+                                                            class="absolute left-0 h-0.5 bg-red-500/80"
+                                                            :style="`bottom:-2px;width:${progress}%;`"></span>
+                                                    </span>
+                                                @endforeach
+                                            </td>
+                                            <td class="px-3 py-2 text-right text-xs">
+                                                <div class="inline-flex flex-wrap justify-end gap-1">
+                                                    <a href="{{ route('files.preview', $it) }}" target="_blank"
+                                                        class="inline-flex items-center rounded-md border border-gray-200 px-2 py-1 text-gray-700 hover:bg-gray-50">
+                                                        Preview
+                                                    </a>
+                                                    <a href="{{ route('files.download', $it) }}"
+                                                        class="inline-flex items-center rounded-md border border-indigo-200 px-2 py-1 text-indigo-700 hover:bg-indigo-50">
+                                                        Download
+                                                    </a>
+                                                    <button type="button"
+                                                        class="inline-flex items-center rounded-md border border-amber-200 px-2 py-1 text-amber-700 hover:bg-amber-50"
+                                                        wire:click="confirmRename({{ $it->id }})">
+                                                        Rename
+                                                    </button>
+                                                    <button type="button"
+                                                        class="inline-flex items-center rounded-md border border-sky-200 px-2 py-1 text-sky-700 hover:bg-sky-50"
+                                                        wire:click="confirmReplace({{ $it->id }})">
+                                                        Replace
+                                                    </button>
+                                                    <button type="button"
+                                                        class="inline-flex items-center rounded-md border border-red-200 px-2 py-1 text-red-600 hover:bg-red-50"
+                                                        wire:click="deleteOne({{ $it->id }})"
+                                                        onclick="return confirm('Delete this file?')">
+                                                        Delete
+                                                    </button>
+                                                    <button type="button"
+                                                        class="inline-flex items-center rounded-md border border-gray-200 px-2 py-1 text-gray-600 hover:bg-gray-50"
+                                                        x-data
+                                                        x-on:click="
+                                                            navigator.clipboard.writeText('{{ Storage::disk($it->disk)->url($it->path) }}');
+                                                            $dispatch('toast', { message: 'Link copied' });
+                                                        ">
+                                                        Copy link
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="py-10 text-center text-gray-500">
+                                                    <div class="mb-2 text-4xl">🗂️</div>
+                                                    <p class="text-sm mb-2">No files match your filters.</p>
+                                                    <button type="button"
+                                                        class="inline-flex items-center rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                                                        wire:click="$set('search',''); $set('type','all')">
+                                                        Clear filters
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
 
-                    {{-- Pagination --}}
-                    <div class="mt-3">
-                        {{ $items->onEachSide(1)->links() }}
+                        {{-- Pagination --}}
+                        <div class="mt-3">
+                            {{ $items->onEachSide(1)->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {{-- Sticky selection bar --}}
             @if (count($checked) > 0)
-                <div class="position-fixed bottom-0 start-0 end-0 bg-body border-top shadow py-2" style="z-index: 1030;">
-                    <div class="container d-flex align-items-center justify-content-between">
+                <div class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur">
+                    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-sm">
                         <div><strong>{{ count($checked) }}</strong> selected</div>
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-outline-secondary btn-sm"
-                                wire:click="$set('checked', [])">Clear</button>
-                            <button type="button" class="btn btn-danger btn-sm" wire:click="deleteSelected">Delete
-                                selected</button>
+                        <div class="flex gap-2">
+                            <button type="button"
+                                class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                                wire:click="$set('checked', [])">
+                                Clear
+                            </button>
+                            <button type="button"
+                                class="inline-flex items-center rounded-md border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100"
+                                wire:click="deleteSelected">
+                                Delete selected
+                            </button>
                         </div>
                     </div>
                 </div>
             @endif
 
             {{-- Rename Modal --}}
-            <div class="modal @if ($showRename) show d-block @endif" tabindex="-1"
-                @if ($showRename) style="background: rgba(0,0,0,.5);" @endif>
-                <div class="modal-dialog">
-                    <div class="modal-content" wire:ignore.self>
-                        <div class="modal-header">
-                            <h5 class="modal-title">Rename file</h5>
-                            <button type="button" class="btn-close" wire:click="$set('showRename', false)"></button>
+            @if ($showRename)
+                <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
+                        <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Rename file</h2>
+                            <button type="button" class="text-gray-400 hover:text-gray-600"
+                                wire:click="$set('showRename', false)">
+                                ✕
+                            </button>
                         </div>
                         <form wire:submit.prevent="rename">
-                            <div class="modal-body">
+                            <div class="px-4 py-3 space-y-3">
                                 @if ($selected)
-                                    <div class="mb-3">
-                                        <label class="form-label">New name (without extension)</label>
-                                        <input type="text" class="form-control @error('newName') is-invalid @enderror"
+                                    <div class="space-y-1">
+                                        <label class="block text-xs font-medium text-gray-700">
+                                            New name (without extension)
+                                        </label>
+                                        <input type="text"
+                                            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500
+                                           @error('newName') border-red-500 focus:border-red-500 focus:ring-red-500 @enderror"
                                             wire:model.defer="newName">
                                         @error('newName')
-                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                                         @enderror
                                     </div>
-                                    <div class="text-muted small">Current: <code>{{ $selected->original_name }}</code>
+                                    <p class="text-[11px] text-gray-500">
+                                        Current: <code class="text-xs">{{ $selected->original_name }}</code>
+                                    </p>
+                                @endif
+                            </div>
+                            <div class="flex justify-end gap-2 border-t border-gray-100 px-4 py-3">
+                                <button type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                                    wire:click="$set('showRename', false)">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Replace Modal --}}
+            @if ($showReplace)
+                <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
+                        <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Replace file</h2>
+                            <button type="button" class="text-gray-400 hover:text-gray-600"
+                                wire:click="$set('showReplace', false)">
+                                ✕
+                            </button>
+                        </div>
+                        <form wire:submit.prevent="replace">
+                            <div class="px-4 py-3 space-y-3">
+                                @if ($selected)
+                                    <p class="text-[11px] text-gray-500">
+                                        Current: <code class="text-xs">{{ $selected->original_name }}</code>
+                                    </p>
+                                    <input type="file"
+                                        class="w-full text-sm
+                                       @error('replacement') border-red-500 focus:border-red-500 focus:ring-red-500 @enderror"
+                                        wire:model="replacement">
+                                    @error('replacement')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <div wire:loading wire:target="replacement" class="text-[11px] text-gray-500">
+                                        Uploading…
                                     </div>
                                 @endif
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-light"
-                                    wire:click="$set('showRename', false)">Cancel</button>
-                                <button type="submit" class="btn btn-warning">Save</button>
+                            <div class="flex justify-end gap-2 border-t border-gray-100 px-4 py-3">
+                                <button type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                                    wire:click="$set('showReplace', false)">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="inline-flex items-center rounded-md bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-600">
+                                    Replace
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
-            </div>
-
-            {{-- Replace Modal --}}
-            <div class="modal @if ($showReplace) show d-block @endif" tabindex="-1"
-                @if ($showReplace) style="background: rgba(0,0,0,.5);" @endif>
-                <div class="modal-dialog">
-                    <div class="modal-content" wire:ignore.self>
-                        <div class="modal-header">
-                            <h5 class="modal-title">Replace file</h5>
-                            <button type="button" class="btn-close" wire:click="$set('showReplace', false)"></button>
-                        </div>
-                        <form wire:submit.prevent="replace">
-                            <div class="modal-body">
-                                @if ($selected)
-                                    <p class="mb-2 text-muted small">Current:
-                                        <code>{{ $selected->original_name }}</code>
-                                    </p>
-                                    <input type="file" class="form-control @error('replacement') is-invalid @enderror"
-                                        wire:model="replacement">
-                                    @error('replacement')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div wire:loading wire:target="replacement" class="form-text">Uploading…</div>
-                                @endif
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-light"
-                                    wire:click="$set('showReplace', false)">Cancel</button>
-                                <button type="submit" class="btn btn-info">Replace</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
+            @endif
 
             {{-- Add Tag Modal --}}
-            <div class="modal @if ($showTagModal) show d-block @endif" tabindex="-1"
-                @if ($showTagModal) style="background: rgba(0,0,0,.5);" @endif>
-                <div class="modal-dialog">
-                    <div class="modal-content" wire:ignore.self>
-                        <div class="modal-header">
-                            <h5 class="modal-title">Add tags</h5>
-                            <button type="button" class="btn-close" wire:click="$set('showTagModal', false)"></button>
+            @if ($showTagModal)
+                <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
+                        <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Add tags</h2>
+                            <button type="button" class="text-gray-400 hover:text-gray-600"
+                                wire:click="$set('showTagModal', false)">
+                                ✕
+                            </button>
                         </div>
-
                         <form wire:submit.prevent="addTagsToSelection">
-                            <div class="modal-body">
-                                <label class="form-label">Tags (comma or newline)</label>
-                                <textarea rows="2" class="form-control" wire:model.defer="newTags" placeholder="e.g. urgent, invoice, Q3"></textarea>
-                                <div class="form-text">
+                            <div class="px-4 py-3 space-y-2">
+                                <label class="block text-xs font-medium text-gray-700">
+                                    Tags (comma or newline)
+                                </label>
+                                <textarea rows="2"
+                                    class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    placeholder="e.g. urgent, invoice, Q3" wire:model.defer="newTags"></textarea>
+                                <p class="text-[11px] text-gray-500">
                                     {{ $selectAllResults ? 'Will apply to ALL filtered results.' : 'Will apply to selected rows.' }}
-                                </div>
+                                </p>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-light"
-                                    wire:click="$set('showTagModal', false)">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Add tags</button>
+                            <div class="flex justify-end gap-2 border-t border-gray-100 px-4 py-3">
+                                <button type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                                    wire:click="$set('showTagModal', false)">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700">
+                                    Add tags
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
-            </div>
+            @endif
 
             {{-- Remove Tag Modal --}}
-            <div class="modal @if ($showRemoveTagModal) show d-block @endif" tabindex="-1"
-                @if ($showRemoveTagModal) style="background: rgba(0,0,0,.5);" @endif>
-                <div class="modal-dialog">
-                    <div class="modal-content" wire:ignore.self>
-                        <div class="modal-header">
-                            <h5 class="modal-title">Remove tags</h5>
-                            <button type="button" class="btn-close" wire:click="$set('showRemoveTagModal', false)"></button>
+            @if ($showRemoveTagModal)
+                <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div class="w-full max-w-md rounded-2xl bg-white shadow-xl">
+                        <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                            <h2 class="text-sm font-semibold text-gray-900">Remove tags</h2>
+                            <button type="button" class="text-gray-400 hover:text-gray-600"
+                                wire:click="$set('showRemoveTagModal', false)">
+                                ✕
+                            </button>
                         </div>
-
                         <form wire:submit.prevent="removeCheckedTagsFromSelection">
-                            <div class="modal-body">
+                            <div class="px-4 py-3 space-y-2 max-h-72 overflow-y-auto">
                                 @forelse ($this->availableTags as $tag)
-                                    <label class="form-check d-block">
-                                        <input class="form-check-input" type="checkbox" wire:model="removeTagIds"
-                                            value="{{ $tag->id }}">
-                                        <span class="form-check-label">{{ $tag->name }}</span>
+                                    <label class="flex items-center gap-2 text-sm text-gray-700">
+                                        <input class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            type="checkbox" wire:model="removeTagIds" value="{{ $tag->id }}">
+                                        <span>{{ $tag->name }}</span>
                                     </label>
                                 @empty
-                                    <div class="text-muted">No tags in current selection.</div>
+                                    <p class="text-xs text-gray-500">
+                                        No tags in current selection.
+                                    </p>
                                 @endforelse
-                                <div class="form-text">
+                                <p class="text-[11px] text-gray-500">
                                     {{ $selectAllResults ? 'Will remove from ALL filtered results.' : 'Will remove from selected rows.' }}
-                                </div>
+                                </p>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-light"
-                                    wire:click="$set('showRemoveTagModal', false)">Cancel</button>
-                                <button type="submit" class="btn btn-warning" @disabled(!$selectAllResults && count($checked) === 0)>
+                            <div class="flex justify-end gap-2 border-t border-gray-100 px-4 py-3">
+                                <button type="button"
+                                    class="inline-flex items-center rounded-md border border-gray-200 px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50"
+                                    wire:click="$set('showRemoveTagModal', false)">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                    class="inline-flex items-center rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600
+                                       disabled:opacity-50 disabled:cursor-not-allowed"
+                                    @disabled(!$selectAllResults && count($checked) === 0)>
                                     Remove tags
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
-            </div>
-
+            @endif
         </div>
-
-        {{-- tiny blade component for sort chevron (unchanged) --}}
-        @once
-            @push('components')
-                @verbatim
-                    <x-sort :dir="$dir" />
-                @endverbatim
-            @endpush
-        @endonce
+    </div>
+</div>

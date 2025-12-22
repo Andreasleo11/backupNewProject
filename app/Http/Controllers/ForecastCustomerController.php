@@ -23,8 +23,6 @@ class ForecastCustomerController extends Controller
             'customer' => 'required',
         ]);
 
-        // Create a new InvLineList instance with the validated data
-        // Create a new InvLineList instance with the validated data
         $line = ForecastCustomerMaster::create([
             'forecast_code' => $validatedData['forecast_code'],
             'forecast_name' => $validatedData['forecast_name'],

@@ -23,7 +23,6 @@
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
-    @livewireStyles
     @stack('extraCss')
 </head>
 
@@ -31,14 +30,14 @@
     <div class="wrapper">
         <livewire:sidebar />
 
-        <div class="main">
+        <main class="main">
             @include('partials.navbar')
 
-            <main class="content px-4 px-md-5 py-4">
+            <div class="content">
                 {{ $slot ?? '' }}
                 @yield('content')
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
 
     {{-- Toast: always present --}}
@@ -59,7 +58,6 @@
         </div>
     </div>
 
-    @livewireScripts
     @stack('extraJs')
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js" defer></script>
 </body>

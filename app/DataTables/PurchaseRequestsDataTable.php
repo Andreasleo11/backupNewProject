@@ -203,7 +203,7 @@ class PurchaseRequestsDataTable extends DataTable
                 $q->where(function ($query) use ($user){
                     $query->whereNotNull("autograph_1")->orWhere("user_id_create", $user->id);
                 });
-            } elseif ($user->role->name === "SUPERADMIN") {
+            } elseif ($user->hasRole('super-admin')) {
                 $q->whereNot("from_department", "ADMIN");
             } else {
                 $q->where(function ($subQuery) use ($userDepartmentName, $user) {

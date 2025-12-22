@@ -2,7 +2,7 @@
     aria-labelledby="editDepartmentModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('superadmin.departments.update', $department->id) }}">
+            <form method="POST" action="{{ route('admin.departments.update', $department->id) }}">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">

@@ -13,8 +13,6 @@ class DailyReportIndex extends Component
 {
     use WithPagination;
 
-    protected $paginationTheme = 'bootstrap';
-
     // Query-string synced filters
     #[Url(as: 'q')]
     public ?string $search = null;
@@ -55,20 +53,20 @@ class DailyReportIndex extends Component
         // Scope employees to department (unless Bernadett or DIRECTOR)
         $employeeQuery = Employee::query();
         if ($user->name !== 'Bernadett' && $user->specification->name !== 'DIRECTOR') {
-            $employeeQuery->where('Dept', $user->department->dept_no);
+            $employeeQuery->where('dept_code', $user->department->dept_no);
         }
 
-        $validEmployees = $employeeQuery->get(['NIK', 'Nama', 'jabatan', 'Dept']);
-        $this->validNiks = $validEmployees->pluck('NIK')->all();
+        $validEmployees = $employeeQuery->get(['nik', 'name', 'position', 'dept_code']);
+        $this->validNiks = $validEmployees->pluck('nik')->all();
 
         // Dropdowns
         $this->employeesDropdown = $validEmployees
-            ->map(fn ($e) => ['employee_id' => $e->NIK, 'employee_name' => $e->Nama])
+            ->map(fn ($e) => ['employee_id' => $e->nik, 'employee_name' => $e->name])
             ->values()
             ->all();
 
         $this->positions = $validEmployees
-            ->pluck('jabatan')
+            ->pluck('position')
             ->filter()
             ->unique()
             ->sort()
@@ -136,27 +134,27 @@ class DailyReportIndex extends Component
         $base = DB::table('employee_daily_reports as dr')
             ->join('employees as e', function ($join) {
                 $join
-                    ->on('dr.employee_id', '=', 'e.NIK')
-                    ->whereColumn('dr.employee_name', 'e.Nama')
-                    ->whereColumn('dr.departement_id', 'e.Dept');
+                    ->on('dr.employee_id', '=', 'e.nik')
+                    ->whereColumn('dr.employee_name', 'e.name')
+                    ->whereColumn('dr.departement_id', 'e.dept_code');
             })
             ->leftJoinSub(
                 $latestSub,
                 'lr',
                 fn ($join) => $join->on('lr.employee_id', '=', 'dr.employee_id'),
             )
-            ->when(! empty($this->validNiks), fn ($q) => $q->whereIn('e.NIK', $this->validNiks))
+            ->when(! empty($this->validNiks), fn ($q) => $q->whereIn('e.nik', $this->validNiks))
             // Filters
             ->when($this->employeeId, fn ($q) => $q->where('dr.employee_id', $this->employeeId))
             ->when(
                 $this->departmentNo,
                 fn ($q) => $q->where('dr.departement_id', $this->departmentNo),
             )
-            ->when($this->jabatan, fn ($q) => $q->where('e.jabatan', $this->jabatan))
+            ->when($this->jabatan, fn ($q) => $q->where('e.position', $this->jabatan))
             ->when($this->search, function ($q) {
                 $term = '%'.trim($this->search).'%';
                 $q->where(function ($w) use ($term) {
-                    $w->where('dr.employee_id', 'like', $term)->orWhere('e.Nama', 'like', $term);
+                    $w->where('dr.employee_id', 'like', $term)->orWhere('e.name', 'like', $term);
                 });
             })
             ->when($this->dateFrom || $this->dateTo, function ($q) {
@@ -165,13 +163,13 @@ class DailyReportIndex extends Component
                 $q->whereBetween('dr.work_date', [$from, $to]);
             })
             // Group by employee (one row per employee)
-            ->groupBy('dr.employee_id', 'dr.departement_id', 'e.Nama', 'e.jabatan', 'lr.latest_dt')
+            ->groupBy('dr.employee_id', 'dr.departement_id', 'e.name', 'e.position', 'lr.latest_dt')
             ->orderByDesc('lr.latest_dt')
             ->select([
                 'dr.employee_id',
                 'dr.departement_id',
-                'e.jabatan',
-                DB::raw('MIN(e.Nama) as employee_name'),
+                'e.position',
+                DB::raw('MIN(e.name) as employee_name'),
                 DB::raw('MAX(lr.latest_dt) as latest_dt'),
             ]);
 

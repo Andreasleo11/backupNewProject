@@ -27,6 +27,31 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Expenses\Contracts\ExpenseReadRepository::class,
             \App\Infrastructure\Persistence\Laravel\ExpenseReadRepositoryDb::class
         );
+
+        $this->app->bind(
+            \App\Domain\Verification\Repositories\VerificationReportRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentVerificationReportRepository::class
+        );
+
+        $this->app->bind(\App\Domain\Approval\Contracts\RuleResolver::class, \App\Infrastructure\Approval\Services\DefaultRuleResolver::class);
+        $this->app->bind(\App\Application\Approval\Contracts\Approvals::class, \App\Infrastructure\Approval\Services\ApprovalEngine::class);
+
+        $this->app->bind(\App\Application\Auth\UserRoles::class, \App\Infrastructure\Auth\SpatieUserRoles::class);
+
+        $this->app->bind(
+            \App\Domain\User\Repositories\UserRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentUserRepository::class,
+        );
+        
+        $this->app->bind(
+            \App\Domain\Employee\Repositories\EmployeeRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEmployeeRepository::class,
+        );
+        
+        $this->app->bind(
+            \App\Domain\Department\Repositories\DepartmentRepository::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentDepartmentRepository::class,
+        );
     }
 
     /**

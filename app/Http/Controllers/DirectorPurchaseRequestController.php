@@ -34,7 +34,7 @@ class DirectorPurchaseRequestController extends Controller
                         'approved_at' => now(),
                     ]);
 
-                    $computerFactory = $pr->to_department === 'Computer' && $pr->type === 'factory';
+                    $computerFactory = $pr->to_department->value === 'COMPUTER' && $pr->type === 'factory';
                     if ($pr->type === 'factory' && ! $computerFactory) {
                         $details = DetailPurchaseRequest::where('purchase_request_id', $id)
                             ->where('is_approve_by_gm', 1)
@@ -78,7 +78,7 @@ class DirectorPurchaseRequestController extends Controller
                     'description' => $rejectionReason,
                 ]);
 
-                $computerFactory = $pr->to_department === 'Computer' && $pr->type === 'factory';
+                $computerFactory = $pr->to_department->value === 'COMPUTER' && $pr->type === 'factory';
                 if ($pr->type === 'factory' && ! $computerFactory) {
                     $details = DetailPurchaseRequest::where('purchase_request_id', $id)
                         ->where('is_approve_by_gm', 1)

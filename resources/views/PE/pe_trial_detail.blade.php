@@ -1,702 +1,477 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
-    <h1>Trial Details</h1>
-
-    @if (Auth::user()->department->name === 'PI' && !$trial->tonage)
-        <p>Tonage is not provided. Please input tonage:</p>
-        <form method="post" action="{{ route('update.tonage', $trial->id) }}">
-            @csrf
-            <label for="tonage">Tonage:</label>
-            <input type="text" id="tonage" name="tonage" required>
-            <button type="submit">Submit</button>
-        </form>
-    @endif
-
-    @if (Auth::user()->department->name === 'PE')
-        <table class="detail-table">
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-
-            <tr>
-                <td>Customer:</td>
-                <td>{{ $trial->customer }}</td>
-            </tr>
-
-            <tr>
-                <td>Part Name:</td>
-                <td>{{ $trial->part_name }}</td>
-            </tr>
-
-            <tr>
-                <td>Part No:</td>
-                <td>{{ $trial->part_no }}</td>
-            </tr>
-
-            <tr>
-                <td>Model:</td>
-                <td>{{ $trial->model }}</td>
-            </tr>
-
-            <tr>
-                <td>Cavity:</td>
-                <td>{{ $trial->cavity }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Trial:</td>
-                <td>{{ $trial->status_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Material:</td>
-                <td>{{ $trial->material }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Material:</td>
-                <td>{{ $trial->status_material }}</td>
-            </tr>
-
-            <tr>
-                <td>Color:</td>
-                <td>{{ $trial->color }}</td>
-            </tr>
-
-            <tr>
-                <td>Material Consump:</td>
-                <td>{{ $trial->material_consump }}</td>
-            </tr>
-
-            <tr>
-                <td>Dimension Tooling:</td>
-                <td>{{ $trial->dimension_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Member Trial:</td>
-                <td>{{ $trial->member_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Request Trial:</td>
-                <td>{{ $trial->request_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Date:</td>
-                <td>{{ $trial->trial_date }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Up Tooling:</td>
-                <td>{{ $trial->time_set_up_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Setting Tooling:</td>
-                <td>{{ $trial->time_setting_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Finish Inject:</td>
-                <td>{{ $trial->time_finish_inject }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Down Tooling:</td>
-                <td>{{ $trial->time_set_down_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Cost:</td>
-                <td>{{ $trial->trial_cost }}</td>
-            </tr>
-
-            <tr>
-                <td>Tonage:</td>
-                <td>{{ $trial->tonage }}</td>
-            </tr>
-
-            <tr>
-                <td>Qty:</td>
-                <td>{{ $trial->qty }}</td>
-            </tr>
-
-            <tr>
-                <td>Adjuster:</td>
-                <td>{{ $trial->adjuster }}</td>
-            </tr>
-            <!-- Add more rows for other details -->
-        </table>
-    @endif
-
-    @if (Auth::user()->department->name === 'PI')
-        <table class="detail-table">
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-
-            <tr>
-                <td>Customer:</td>
-                <td>{{ $trial->customer }}</td>
-            </tr>
-
-            <tr>
-                <td>Part Name:</td>
-                <td>{{ $trial->part_name }}</td>
-            </tr>
-
-            <tr>
-                <td>Part No:</td>
-                <td>{{ $trial->part_no }}</td>
-            </tr>
-
-            <tr>
-                <td>Model:</td>
-                <td>{{ $trial->model }}</td>
-            </tr>
-
-            <tr>
-                <td>Cavity:</td>
-                <td>{{ $trial->cavity }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Trial:</td>
-                <td>{{ $trial->status_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Material:</td>
-                <td>{{ $trial->material }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Material:</td>
-                <td>{{ $trial->status_material }}</td>
-            </tr>
-
-            <tr>
-                <td>Color:</td>
-                <td>{{ $trial->color }}</td>
-            </tr>
-
-            <tr>
-                <td>Material Consump:</td>
-                <td>{{ $trial->material_consump }}</td>
-            </tr>
-
-            <tr>
-                <td>Dimension Tooling:</td>
-                <td>{{ $trial->dimension_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Member Trial:</td>
-                <td>{{ $trial->member_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Request Trial:</td>
-                <td>{{ $trial->request_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Date:</td>
-                <td>{{ $trial->trial_date }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Up Tooling:</td>
-                <td>{{ $trial->time_set_up_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Setting Tooling:</td>
-                <td>{{ $trial->time_setting_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Finish Inject:</td>
-                <td>{{ $trial->time_finish_inject }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Down Tooling:</td>
-                <td>{{ $trial->time_set_down_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Cost:</td>
-                <td>{{ $trial->trial_cost }}</td>
-            </tr>
-
-            <tr>
-                <td>Tonage:</td>
-                <td>{{ $trial->tonage }}</td>
-            </tr>
-
-            <tr>
-                <td>Qty:</td>
-                <td>{{ $trial->qty }}</td>
-            </tr>
-
-            <tr>
-                <td>Adjuster:</td>
-                <td>{{ $trial->adjuster }}</td>
-            </tr>
-            <!-- Add more rows for other details -->
-        </table>
-    @endif
-
-    @if (Auth::user()->department->name === 'PI' && !$trial->tonage)
-        <table class="detail-table">
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-
-            <tr>
-                <td>Customer:</td>
-                <td>{{ $trial->customer }}</td>
-            </tr>
-
-            <tr>
-                <td>Part Name:</td>
-                <td>{{ $trial->part_name }}</td>
-            </tr>
-
-            <tr>
-                <td>Part No:</td>
-                <td>{{ $trial->part_no }}</td>
-            </tr>
-
-            <tr>
-                <td>Model:</td>
-                <td>{{ $trial->model }}</td>
-            </tr>
-
-            <tr>
-                <td>Cavity:</td>
-                <td>{{ $trial->cavity }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Trial:</td>
-                <td>{{ $trial->status_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Material:</td>
-                <td>{{ $trial->material }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Material:</td>
-                <td>{{ $trial->status_material }}</td>
-            </tr>
-
-            <tr>
-                <td>Color:</td>
-                <td>{{ $trial->color }}</td>
-            </tr>
-
-            <tr>
-                <td>Material Consump:</td>
-                <td>{{ $trial->material_consump }}</td>
-            </tr>
-
-            <tr>
-                <td>Dimension Tooling:</td>
-                <td>{{ $trial->dimension_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Member Trial:</td>
-                <td>{{ $trial->member_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Request Trial:</td>
-                <td>{{ $trial->request_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Date:</td>
-                <td>{{ $trial->trial_date }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Up Tooling:</td>
-                <td>{{ $trial->time_set_up_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Setting Tooling:</td>
-                <td>{{ $trial->time_setting_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Finish Inject:</td>
-                <td>{{ $trial->time_finish_inject }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Down Tooling:</td>
-                <td>{{ $trial->time_set_down_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Cost:</td>
-                <td>{{ $trial->trial_cost }}</td>
-            </tr>
-
-            <tr>
-                <td>Tonage:</td>
-                <td>{{ $trial->tonage }}</td>
-            </tr>
-
-            <tr>
-                <td>Qty:</td>
-                <td>{{ $trial->qty }}</td>
-            </tr>
-
-            <tr>
-                <td>Adjuster:</td>
-                <td>{{ $trial->adjuster }}</td>
-            </tr>
-            <!-- Add more rows for other details -->
-        </table>
-    @endif
-
-    @if (Auth::user()->department->name != 'PE' && Auth::user()->department->name != 'PI')
-        <table class="detail-table">
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-
-            <tr>
-                <td>Customer:</td>
-                <td>{{ $trial->customer }}</td>
-            </tr>
-
-            <tr>
-                <td>Part Name:</td>
-                <td>{{ $trial->part_name }}</td>
-            </tr>
-
-            <tr>
-                <td>Part No:</td>
-                <td>{{ $trial->part_no }}</td>
-            </tr>
-
-            <tr>
-                <td>Model:</td>
-                <td>{{ $trial->model }}</td>
-            </tr>
-
-            <tr>
-                <td>Cavity:</td>
-                <td>{{ $trial->cavity }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Trial:</td>
-                <td>{{ $trial->status_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Material:</td>
-                <td>{{ $trial->material }}</td>
-            </tr>
-
-            <tr>
-                <td>Status Material:</td>
-                <td>{{ $trial->status_material }}</td>
-            </tr>
-
-            <tr>
-                <td>Color:</td>
-                <td>{{ $trial->color }}</td>
-            </tr>
-
-            <tr>
-                <td>Material Consump:</td>
-                <td>{{ $trial->material_consump }}</td>
-            </tr>
-
-            <tr>
-                <td>Dimension Tooling:</td>
-                <td>{{ $trial->dimension_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Member Trial:</td>
-                <td>{{ $trial->member_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Request Trial:</td>
-                <td>{{ $trial->request_trial }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Date:</td>
-                <td>{{ $trial->trial_date }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Up Tooling:</td>
-                <td>{{ $trial->time_set_up_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Setting Tooling:</td>
-                <td>{{ $trial->time_setting_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Finish Inject:</td>
-                <td>{{ $trial->time_finish_inject }}</td>
-            </tr>
-
-            <tr>
-                <td>Time Set Down Tooling:</td>
-                <td>{{ $trial->time_set_down_tooling }}</td>
-            </tr>
-
-            <tr>
-                <td>Trial Cost:</td>
-                <td>{{ $trial->trial_cost }}</td>
-            </tr>
-
-            <tr>
-                <td>Tonage:</td>
-                <td>{{ $trial->tonage }}</td>
-            </tr>
-
-            <tr>
-                <td>Qty:</td>
-                <td>{{ $trial->qty }}</td>
-            </tr>
-
-            <tr>
-                <td>Adjuster:</td>
-                <td>{{ $trial->adjuster }}</td>
-            </tr>
-            <!-- Add more rows for other details -->
-        </table>
-    @endif
-
-    <div class="autograph-container">
-        <!-- Autograph Button 1 -->
-        @if (Auth::check() && Auth::user()->department->name == 'PE')
-            <button onclick="addAutograph(1, {{ $trial->id }})">Requested By </button>
-            <!-- Autograph File Input 1 -->
+    <div class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        {{-- Header --}}
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h1 class="text-xl font-semibold text-slate-900">Trial Details</h1>
+                <p class="mt-1 text-sm text-slate-500">
+                    Detail request trial untuk
+                    <span class="font-medium text-slate-800">{{ $trial->customer }}</span>
+                    — {{ $trial->part_name }} ({{ $trial->part_no }})
+                </p>
+            </div>
+        </div>
+
+        {{-- Tonage form khusus PI ketika tonage belum diisi --}}
+        @if (Auth::user()->department->name === 'PI' && !$trial->tonage)
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-amber-800">
+                            Tonage belum diisi
+                        </p>
+                        <p class="text-xs text-amber-700">
+                            Silakan input tonage agar data trial lengkap.
+                        </p>
+                    </div>
+
+                    <form method="POST" action="{{ route('update.tonage', $trial->id) }}"
+                        class="mt-3 flex items-end gap-2 sm:mt-0">
+                        @csrf
+                        <div>
+                            <label for="tonage" class="block text-xs font-medium text-amber-900">
+                                Tonage
+                            </label>
+                            <input type="text" id="tonage" name="tonage" required
+                                class="mt-1 block w-40 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm
+                                          text-slate-900 shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                        </div>
+                        <button type="submit"
+                            class="inline-flex items-center rounded-md bg-amber-600 px-3 py-1.5 text-xs font-semibold
+                                       text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2
+                                       focus:ring-amber-500 focus:ring-offset-1">
+                            Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
         @endif
-        <h2>Requested By PE</h2>
-        <div class="autograph-box" id="autographBox1"></div>
-        <div class="autograph-textbox" id="autographuser1"></div>
-    </div>
 
-    <div class="autograph-container">
-        <!-- Autograph Button 2 -->
-        @if (Auth::check() && Auth::user()->department->name == 'PE')
-            <button onclick="addAutograph(2, {{ $trial->id }})">Verify By</button>
-        @endif
-        <h2>Verify By PE</h2>
-        <div class="autograph-box" id="autographBox2"></div>
-        <div class="autograph-textbox" id="autographuser2"></div>
-    </div>
+        {{-- Detail Trial (satu tabel untuk semua departemen) --}}
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div class="px-4 py-3 border-b border-slate-200">
+                <h2 class="text-sm font-semibold text-slate-800">Informasi Trial</h2>
+            </div>
 
-    <div class="autograph-container">
-        <!-- Autograph Button 3 -->
-        @if (Auth::check() && Auth::user()->department->name == 'PI')
-            <button onclick="addAutograph(3, {{ $trial->id }})">Confirmed By PI 1 </button>
-        @endif
-        <!-- Autograph Textbox 3 -->
-        <h2>Confirmed By PI 1</h2>
-        <div class="autograph-box" id="autographBox3"></div>
-        <div class="autograph-textbox" id="autographuser3"></div>
-    </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <th
+                                class="w-52 bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Customer
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->customer }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th
+                                class="w-52 bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Part Name
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->part_name }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Part No
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->part_no }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Model
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->model }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Cavity
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->cavity }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Status Trial
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->status_trial }}
+                            </td>
+                        </tr>
 
-    <div class="autograph-container">
-        <!-- Autograph Button 4 -->
-        @if (Auth::check() && Auth::user()->department->name == 'PI')
-            <button onclick="addAutograph(4, {{ $trial->id }})">Confirmed By PI 2</button>
-        @endif
-        <!-- Autograph Textbox 4 -->
-        <h2>Confirmed By PI 2</h2>
-        <div class="autograph-box" id="autographBox4"></div>
-        <div class="autograph-textbox" id="autographuser4"></div>
-    </div>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Material
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->material }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Status Material
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->status_material }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Color
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->color }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Material Consump
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->material_consump }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Dimension Tooling
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->dimension_tooling }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Member Trial
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->member_trial }}
+                            </td>
+                        </tr>
 
-    <div class="autograph-container">
-        <!-- Autograph Button 5 -->
-        @if (Auth::check() && Auth::user()->department->name == 'PI')
-            <button onclick="addAutograph(5, {{ $trial->id }})">Confirmed By PI 3</button>
-        @endif
-        <!-- Autograph Textbox 5 -->
-        <h2>Confirmed By PI 3</h2>
-        <div class="autograph-box" id="autographBox5"></div>
-        <div class="autograph-textbox" id="autographuser5"></div>
-    </div>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Request Trial
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->request_trial }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Trial Date
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->trial_date }}
+                            </td>
+                        </tr>
 
-    <div class="autograph-container">
-        <!-- Autograph Button 6 -->
-        @if (Auth::check() && Auth::user()->department->name == 'PI')
-            <button onclick="addAutograph(6, {{ $trial->id }})">Approve</button>
-        @endif
-        <!-- Autograph Textbox 6 -->
-        <h2>Approved By</h2>
-        <div class="autograph-box" id="autographBox6"></div>
-        <div class="autograph-textbox" id="autographuser6"></div>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Time Set Up Tooling
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->time_set_up_tooling }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Time Setting Tooling
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->time_setting_tooling }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Time Finish Inject
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->time_finish_inject }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Time Set Down Tooling
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->time_set_down_tooling }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Trial Cost
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->trial_cost }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Tonage
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->tonage ?? '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Qty
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->qty }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-slate-50 px-4 py-2.5 text-xs font-medium uppercase tracking-wide text-slate-500">
+                                Adjuster
+                            </th>
+                            <td class="px-4 py-2.5 text-slate-800">
+                                {{ $trial->adjuster }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Autograph / Approval Section --}}
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div class="px-4 py-3 border-b border-slate-200">
+                <h2 class="text-sm font-semibold text-slate-800">Approval Signatures</h2>
+            </div>
+
+            <div class="px-4 py-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {{-- 1. Requested By PE --}}
+                    <div class="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <h3 class="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                            Requested By PE
+                        </h3>
+
+                        @if (Auth::check() && Auth::user()->department->name == 'PE')
+                            <button type="button" onclick="addAutograph(1, {{ $trial->id }})" id="autographBtn1"
+                                class="inline-flex items-center rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold
+                                           text-white shadow-sm hover:bg-slate-900 focus:outline-none focus:ring-2
+                                           focus:ring-slate-500 focus:ring-offset-1">
+                                Add Signature
+                            </button>
+                        @endif
+
+                        <div id="autographBox1"
+                            class="mt-1 h-24 w-52 rounded-lg border border-slate-300 bg-slate-100 bg-center bg-contain bg-no-repeat">
+                        </div>
+                        <div id="autographuser1"
+                            class="mt-1 min-h-[1.25rem] text-xs font-medium text-slate-700 text-center">
+                        </div>
+                    </div>
+
+                    {{-- 2. Verify By PE --}}
+                    <div class="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <h3 class="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                            Verify By PE
+                        </h3>
+
+                        @if (Auth::check() && Auth::user()->department->name == 'PE')
+                            <button type="button" onclick="addAutograph(2, {{ $trial->id }})" id="autographBtn2"
+                                class="inline-flex items-center rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold
+                                           text-white shadow-sm hover:bg-slate-900 focus:outline-none focus:ring-2
+                                           focus:ring-slate-500 focus:ring-offset-1">
+                                Add Signature
+                            </button>
+                        @endif
+
+                        <div id="autographBox2"
+                            class="mt-1 h-24 w-52 rounded-lg border border-slate-300 bg-slate-100 bg-center bg-contain bg-no-repeat">
+                        </div>
+                        <div id="autographuser2"
+                            class="mt-1 min-h-[1.25rem] text-xs font-medium text-slate-700 text-center">
+                        </div>
+                    </div>
+
+                    {{-- 3. Confirmed By PI 1 --}}
+                    <div class="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <h3 class="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                            Confirmed By PI 1
+                        </h3>
+
+                        @if (Auth::check() && Auth::user()->department->name == 'PI')
+                            <button type="button" onclick="addAutograph(3, {{ $trial->id }})" id="autographBtn3"
+                                class="inline-flex items-center rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold
+                                           text-white shadow-sm hover:bg-slate-900 focus:outline-none focus:ring-2
+                                           focus:ring-slate-500 focus:ring-offset-1">
+                                Add Signature
+                            </button>
+                        @endif
+
+                        <div id="autographBox3"
+                            class="mt-1 h-24 w-52 rounded-lg border border-slate-300 bg-slate-100 bg-center bg-contain bg-no-repeat">
+                        </div>
+                        <div id="autographuser3"
+                            class="mt-1 min-h-[1.25rem] text-xs font-medium text-slate-700 text-center">
+                        </div>
+                    </div>
+
+                    {{-- 4. Confirmed By PI 2 --}}
+                    <div class="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <h3 class="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                            Confirmed By PI 2
+                        </h3>
+
+                        @if (Auth::check() && Auth::user()->department->name == 'PI')
+                            <button type="button" onclick="addAutograph(4, {{ $trial->id }})" id="autographBtn4"
+                                class="inline-flex items-center rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold
+                                           text-white shadow-sm hover:bg-slate-900 focus:outline-none focus:ring-2
+                                           focus:ring-slate-500 focus:ring-offset-1">
+                                Add Signature
+                            </button>
+                        @endif
+
+                        <div id="autographBox4"
+                            class="mt-1 h-24 w-52 rounded-lg border border-slate-300 bg-slate-100 bg-center bg-contain bg-no-repeat">
+                        </div>
+                        <div id="autographuser4"
+                            class="mt-1 min-h-[1.25rem] text-xs font-medium text-slate-700 text-center">
+                        </div>
+                    </div>
+
+                    {{-- 5. Confirmed By PI 3 --}}
+                    <div class="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <h3 class="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                            Confirmed By PI 3
+                        </h3>
+
+                        @if (Auth::check() && Auth::user()->department->name == 'PI')
+                            <button type="button" onclick="addAutograph(5, {{ $trial->id }})" id="autographBtn5"
+                                class="inline-flex items-center rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold
+                                           text-white shadow-sm hover:bg-slate-900 focus:outline-none focus:ring-2
+                                           focus:ring-slate-500 focus:ring-offset-1">
+                                Add Signature
+                            </button>
+                        @endif
+
+                        <div id="autographBox5"
+                            class="mt-1 h-24 w-52 rounded-lg border border-slate-300 bg-slate-100 bg-center bg-contain bg-no-repeat">
+                        </div>
+                        <div id="autographuser5"
+                            class="mt-1 min-h-[1.25rem] text-xs font-medium text-slate-700 text-center">
+                        </div>
+                    </div>
+
+                    {{-- 6. Approved By --}}
+                    <div class="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <h3 class="text-xs font-semibold text-slate-800 uppercase tracking-wide">
+                            Approved By
+                        </h3>
+
+                        @if (Auth::check() && Auth::user()->department->name == 'PI')
+                            <button type="button" onclick="addAutograph(6, {{ $trial->id }})" id="autographBtn6"
+                                class="inline-flex items-center rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold
+                                           text-white shadow-sm hover:bg-slate-900 focus:outline-none focus:ring-2
+                                           focus:ring-slate-500 focus:ring-offset-1">
+                                Add Signature
+                            </button>
+                        @endif
+
+                        <div id="autographBox6"
+                            class="mt-1 h-24 w-52 rounded-lg border border-slate-300 bg-slate-100 bg-center bg-contain bg-no-repeat">
+                        </div>
+                        <div id="autographuser6"
+                            class="mt-1 min-h-[1.25rem] text-xs font-medium text-slate-700 text-center">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
-<style>
-    .detail-table {
-        border-collapse: collapse;
-        width: 100%;
-    }
+@push('extraJs')
+    <script>
+        function addAutograph(section, trialId) {
+            const autographBox = document.getElementById('autographBox' + section);
+            const username = @json(Auth::check() ? Auth::user()->name : '');
+            const imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
 
-    .detail-table th,
-    .detail-table td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-    }
+            if (autographBox) {
+                autographBox.style.backgroundImage = "url('" + imageUrl + "')";
+            }
 
-    .detail-table td:nth-child(2) {
-        padding-left: 20px;
-        /* Adjust the padding-left value as needed for indentation */
-    }
+            fetch('/save-signature/' + trialId + '/' + section, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        imagePath: imageUrl
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
 
-    .autograph-container {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
+        function checkAutographStatus(trialId) {
+            const autographs = {
+                autograph_1: @json($trial->autograph_1),
+                autograph_2: @json($trial->autograph_2),
+                autograph_3: @json($trial->autograph_3),
+                autograph_4: @json($trial->autograph_4),
+                autograph_5: @json($trial->autograph_5),
+                autograph_6: @json($trial->autograph_6),
+            };
 
-    .autograph-container button {
-        margin-right: 10px;
-        /* Adjust the spacing between buttons */
-    }
+            const autographNames = {
+                autograph_user_1: @json($trial->autograph_user_1),
+                autograph_user_2: @json($trial->autograph_user_2),
+                autograph_user_3: @json($trial->autograph_user_3),
+                autograph_user_4: @json($trial->autograph_user_4),
+                autograph_user_5: @json($trial->autograph_user_5),
+                autograph_user_6: @json($trial->autograph_user_6),
+            };
 
-    .autograph-box {
-        width: 200px;
-        /* Adjust the width as needed */
-        height: 100px;
-        /* Adjust the height as needed */
-        background-size: contain;
-        background-repeat: no-repeat;
-        border: 1px solid #ccc;
-        /* Add border for better visibility */
-    }
+            for (let i = 1; i <= 6; i++) {
+                const box = document.getElementById('autographBox' + i);
+                const nameBox = document.getElementById('autographuser' + i);
+                const btn = document.getElementById('autographBtn' + i);
 
-    .autograph-textbox {
-        position: relative;
-        width: 200px;
-        /* Set the width based on your preference */
-        margin-top: 10px;
-        /* Adjust the margin based on your layout */
-        text-align: center;
-        border: 1px solid black;
-        /* Hide initially */
-    }
-</style>
+                if (autographs['autograph_' + i]) {
+                    if (box) {
+                        const url = '/' + autographs['autograph_' + i];
+                        box.style.backgroundImage = "url('" + url + "')";
+                    }
 
-<script>
-    // Function to add autograph to the specified box
-    function addAutograph(section, trialId) {
-        // Get the div element
-        var autographBox = document.getElementById('autographBox' + section);
+                    if (nameBox) {
+                        const autographName = autographNames['autograph_user_' + i];
+                        if (autographName) {
+                            nameBox.textContent = autographName;
+                        }
+                    }
 
-        console.log('Section:', section);
-        console.log('Report ID:', trialId);
-        var username = '{{ Auth::check() ? Auth::user()->name : '' }}';
-        console.log('username :', username);
-        var imageUrl = '{{ asset(':path') }}'.replace(':path', username + '.png');
-        console.log('image path :', imageUrl);
-
-        autographBox.style.backgroundImage = "url('" + imageUrl + "')";
-
-        // Make an AJAX request to save the image path
-        fetch('/save-signature/' + trialId + '/' + section, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({
-                    imagePath: imageUrl,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-    }
-
-
-
-
-
-    function checkAutographStatus(trialId) {
-        // Assume you have a variable from the server side indicating the autograph status
-        var autographs = {
-            autograph_1: '{{ $trial->autograph_1 ?? null }}',
-            autograph_2: '{{ $trial->autograph_2 ?? null }}',
-            autograph_3: '{{ $trial->autograph_3 ?? null }}',
-            autograph_4: '{{ $trial->autograph_4 ?? null }}',
-            autograph_5: '{{ $trial->autograph_5 ?? null }}',
-            autograph_6: '{{ $trial->autograph_6 ?? null }}',
-        };
-
-        var autographNames = {
-            autograph_user_1: '{{ $trial->autograph_user_1 ?? null }}',
-            autograph_user_2: '{{ $trial->autograph_user_2 ?? null }}',
-            autograph_user_3: '{{ $trial->autograph_user_3 ?? null }}',
-            autograph_user_4: '{{ $trial->autograph_user_4 ?? null }}',
-            autograph_user_5: '{{ $trial->autograph_user_5 ?? null }}',
-            autograph_user_6: '{{ $trial->autograph_user_6 ?? null }}',
-        };
-
-        // Loop through each autograph status and update the UI accordingly
-        for (var i = 1; i <= 6; i++) {
-            var autographBox = document.getElementById('autographBox' + i);
-            var autographInput = document.getElementById('autographInput' + i);
-            var autographNameBox = document.getElementById('autographuser' + i);
-
-            // Check if autograph status is present in the database
-            if (autographs['autograph_' + i]) {
-                autographBox.style.display = 'block';
-
-                // Construct URL based on the current location
-                var url = '/' + autographs['autograph_' + i];
-
-                // Update the background image using the URL
-                autographBox.style.backgroundImage = "url('" + url + "')";
-
-                var autographName = autographNames['autograph_user_' + i];
-                autographNameBox.textContent = autographName;
-                autographNameBox.style.display = 'block';
-
+                    if (btn) {
+                        btn.classList.add('hidden');
+                    }
+                }
             }
         }
-    }
 
-
-    // Call the function to check autograph status on page load
-    window.onload = function() {
-        checkAutographStatus({{ $trial->id }});
-    };
-</script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAutographStatus({{ $trial->id }});
+        });
+    </script>
+@endpush

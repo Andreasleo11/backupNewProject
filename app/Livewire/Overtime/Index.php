@@ -401,7 +401,7 @@ class Index extends Component
         $user = Auth::user();
 
         $query->where(function ($query) use ($user) {
-            if ($user->role->name === 'SUPERADMIN') {
+            if ($user->hasRole('super-admin')) {
                 $query->whereNotNull('status');
 
                 $overtimeforms = HeaderFormOvertime::whereHas(

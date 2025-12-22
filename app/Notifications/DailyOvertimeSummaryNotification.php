@@ -63,7 +63,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         <tbody>';
 
         foreach ($this->reports as $report) {
-            $url = route('formovertime.detail', $report->id);
+            $url = route('overtime.detail', $report->id);
             $table .= "<tr>
             <td>{$report->id}</td>
             <td>{$report->department->name}</td>

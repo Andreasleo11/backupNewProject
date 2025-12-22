@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ToDepartment;
 use Illuminate\Database\Seeder;
 
 class FixPurchaseRequestSeeder extends Seeder
@@ -73,7 +74,7 @@ class FixPurchaseRequestSeeder extends Seeder
     private function updatePRPE()
     {
         \App\Models\PurchaseRequest::where('from_department', 'PE')
-            ->where('to_department', 'Maintenance')
+            ->where('to_department', ToDepartment::MAINTENANCE->value)
             ->update(['type' => 'factory']);
     }
 

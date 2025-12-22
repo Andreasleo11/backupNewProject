@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\Approval\Contracts\Approvals;
 use App\DataTables\PurchaseRequestsDataTable;
+use App\Enums\ToDepartment;
 use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
@@ -10,7 +12,6 @@ use App\Models\Department;
 use App\Models\DetailPurchaseRequest;
 use App\Models\File;
 use App\Models\MasterDataPr;
-use App\Models\MonhtlyPR;
 use App\Models\PurchaseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -20,6 +21,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
 {
+    public function __construct(
+        private Approvals $approvals,
+    ) {}
+
     public function index(Request $request, PurchaseRequestsDataTable $dataTable)
     {
         // Get user information
@@ -45,9 +50,9 @@ class PurchaseRequestController extends Controller
                             ->orWhereNotNull('autograph_3')
                             ->where(function ($query) {
                                 $query
-                                    ->where('to_department', 'Personnel')
+                                    ->where('to_department', ToDepartment::PERSONALIA->value)
                                     ->where('type', 'office')
-                                    ->orWhere('to_department', 'Computer');
+                                    ->orWhere('to_department', ToDepartment::COMPUTER->value);
                             });
                     })
                     ->orWhere('from_department', 'PERSONALIA');
@@ -73,7 +78,7 @@ class PurchaseRequestController extends Controller
             if ($userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->orWhere(
                     'to_department',
-                    ucwords(strtolower($userDepartmentName)),
+                    ToDepartment::PURCHASING->value,
                 );
             } elseif ($userDepartmentName === 'LOGISTIC') {
                 $purchaseRequestsQuery->orWhere('from_department', 'STORE');
@@ -94,12 +99,12 @@ class PurchaseRequestController extends Controller
             if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
                 $purchaseRequestsQuery->where(
                     'to_department',
-                    ucwords(strtolower($userDepartmentName)),
+                    ToDepartment::COMPUTER->value,
                 );
             } elseif ($user->email === 'nur@daijo.co.id') {
-                $purchaseRequestsQuery->where('to_department', 'Maintenance');
+                $purchaseRequestsQuery->where('to_department', ToDepartment::MAINTENANCE->value);
             } elseif ($userDepartmentName === 'PERSONALIA') {
-                $purchaseRequestsQuery->where('to_department', 'Personnel');
+                $purchaseRequestsQuery->where('to_department', ToDepartment::PERSONALIA->value);
             }
 
             $purchaseRequestsQuery->whereNotNull('autograph_1');
@@ -118,7 +123,7 @@ class PurchaseRequestController extends Controller
             $request->session()->forget('branch');
 
             // Redirect without any filters
-            return redirect()->route('purchaserequest.home');
+            return redirect()->route('purchase-requests.index');
         }
 
         // Apply filters from request or session
@@ -160,22 +165,8 @@ class PurchaseRequestController extends Controller
             'branch' => $branch,
         ]);
 
-        // return view('purchaseRequest.index', compact('purchaseRequests'));
-        return $dataTable->render('purchaseRequest.index');
-    }
-
-    public function getChartData(Request $request, $year, $month)
-    {
-        $purchaseRequests = PurchaseRequest::select('to_department', DB::raw('COUNT(*) as count'))
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->groupBy('to_department')
-            ->get();
-
-        $labels = $purchaseRequests->pluck('to_department');
-        $counts = $purchaseRequests->pluck('count');
-
-        return response()->json(['labels' => $labels, 'counts' => $counts]);
+        // return view('purchase-requests.index', compact('purchaseRequests'));
+        return $dataTable->render('purchase-requests.index');
     }
 
     public function create()
@@ -183,87 +174,110 @@ class PurchaseRequestController extends Controller
         $items = MasterDataPr::get();
         $departments = Department::all();
 
-        return view('purchaseRequest.create', compact('items', 'departments'));
+        return view('purchase-requests.create', compact('items', 'departments'));
     }
 
-    public function insert(StorePurchaseRequest $request)
+    public function store(StorePurchaseRequest $request)
     {
-        $items = $request->input('items', []);
-        $isDraft = $request->is_draft;
+        return DB::transaction(function () use ($request) {
+            $items = $request->input('items', []);
+            $isDraft = (bool) $request->is_draft;
+            $user = Auth::user();
 
-        // Process each item
-        $processedItems = array_map(function ($item) {
-            $item['price'] = $this->sanitizeCurrencyInput($item['price']);
+            // ===== 1. Sanitize items =====
+            $processedItems = array_map(function ($item) {
+                $item['price'] = $this->sanitizeCurrencyInput($item['price']);
 
-            return $item;
-        }, $items);
+                return $item;
+            }, $items);
 
-        $userIdCreate = Auth::id();
-        // Define common data
-        $commonData = [
-            'user_id_create' => $userIdCreate,
-            'from_department' => $request->input('from_department'),
-            'to_department' => $request->input('to_department'),
-            'date_pr' => $request->input('date_of_pr'),
-            'date_required' => $request->input('date_of_required'),
-            'remark' => $request->input('remark'),
-            'supplier' => $request->input('supplier'),
-            'pic' => $request->input('pic'),
-            'type' => $request->input('type'),
-            'autograph_1' => strtoupper(Auth::user()->name).'.png',
-            'autograph_user_1' => Auth::user()->name,
-            'status' => 1,
-            'branch' => $request->branch,
-        ];
+            $userIdCreate = $user->id;
 
-        if (
-            $commonData['from_department'] == 'PLASTIC INJECTION' ||
-            ($commonData['from_department'] === 'MAINTENANCE MACHINE' &&
-                $commonData['branch'] === 'KARAWANG')
-        ) {
-            $commonData['status'] = 7;
-        }
+            // ===== 2. Common header data (legacy logic) =====
+            $commonData = [
+                'user_id_create' => $userIdCreate,
+                'from_department' => $request->input('from_department'),
+                'to_department' => $request->input('to_department'),
+                'date_pr' => $request->input('date_of_pr'),
+                'date_required' => $request->input('date_of_required'),
+                'remark' => $request->input('remark'),
+                'supplier' => $request->input('supplier'),
+                'pic' => $request->input('pic'),
+                'type' => $request->input('type'), // nanti di-override di bawah
+                'autograph_1' => strtoupper($user->name).'.png',
+                'autograph_user_1' => $user->name,
+                'status' => 1,         // WAITING FOR DEPT HEAD
+                'branch' => $request->branch,
+            ];
 
-        if ($isDraft) {
-            $commonData['autograph_1'] = null;
-            $commonData['autograph_user_1'] = null;
-            $commonData['status'] = 8;
-        }
-
-        if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
-            if ($request->is_import === 'true') {
-                $commonData['is_import'] = true;
-            } else {
-                $commonData['is_import'] = false;
+            // plastic injection / maintenance machine karawang → langsung WAITING GM
+            if (
+                $commonData['from_department'] === 'PLASTIC INJECTION' ||
+                ($commonData['from_department'] === 'MAINTENANCE MACHINE'
+                    && $commonData['branch'] === 'KARAWANG')
+            ) {
+                $commonData['status'] = 7;
             }
-        } elseif ($commonData['from_department'] === 'PERSONALIA') {
-            $commonData['autograph_2'] = 'Bernadett.png';
-            $commonData['autograph_user_2'] = 'Bernadett';
-            $commonData['status'] = 6;
-        }
 
-        $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
-        if (in_array($request->from_department, $officeDepartments)) {
-            $commonData['type'] = 'office';
-            if ($request->from_department === 'PE') {
+            // Draft: tidak ada autograph_1 + status draft
+            if ($isDraft) {
+                $commonData['autograph_1'] = null;
+                $commonData['autograph_user_1'] = null;
+                $commonData['status'] = 8; // DRAFT
+            }
+
+            // Moulding import flag
+            if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
+                $commonData['is_import'] = $request->is_import === 'true';
+            }
+            // Personalia: auto Bernadett + status waiting purchaser (legacy)
+            elseif ($commonData['from_department'] === 'PERSONALIA') {
+                $commonData['autograph_2'] = 'Bernadett.png';
+                $commonData['autograph_user_2'] = 'Bernadett';
+                $commonData['status'] = 6;
+            }
+
+            // ===== 3. Office / factory type (legacy logic) =====
+            $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
+
+            if (in_array($commonData['from_department'], $officeDepartments, true)) {
+                $commonData['type'] = 'office';
+                if ($commonData['from_department'] === 'PE') {
+                    $commonData['type'] = 'factory';
+                }
+            } else {
                 $commonData['type'] = 'factory';
             }
-        } else {
-            $commonData['type'] = 'factory';
-        }
 
-        // Create the purchase request
-        $purchaseRequest = PurchaseRequest::create($commonData);
+            // ===== 4. Create PurchaseRequest (header) =====
+            /** @var PurchaseRequest $purchaseRequest */
+            $purchaseRequest = PurchaseRequest::create($commonData);
 
-        $this->verifyAndInsertItems($processedItems, $purchaseRequest);
-        // $this->executeSendPRNotificationCommand();
+            // ===== 5. Insert detail items (legacy logic) =====
+            $this->verifyAndInsertItems($processedItems, $purchaseRequest);
 
-        return redirect()
-            ->route('purchaserequest.home')
-            ->with('success', 'Purchase request created successfully');
+            // ===== 6. Submit ke ApprovalEngine (BARU) =====
+            // Hanya kalau BUKAN draft dan belum punya approvalRequest
+            if (! $isDraft && ! $purchaseRequest->approvalRequest) {
+
+                // Pastikan relasi untuk context sudah tersedia
+                $purchaseRequest->loadMissing(['items', 'fromDepartment']);
+
+                // Build context buat RuleResolver
+                $ctx = $purchaseRequest->buildApprovalContext();
+
+                // Submit ke engine: akan buat approval_requests + approval_steps
+                $this->approvals->submit($purchaseRequest, $user->id, $ctx);
+            }
+
+            // ===== 7. Redirect seperti biasa =====
+            return redirect()
+                ->route('purchase-requests.index')
+                ->with('success', 'Purchase request created successfully');
+        });
     }
 
-    private function verifyAndInsertItems($items, $purchaseRequest)
+    private function verifyAndInsertItems($items, PurchaseRequest $purchaseRequest)
     {
         if (isset($items) && is_array($items)) {
             foreach ($items as $itemData) {
@@ -285,9 +299,9 @@ class PurchaseRequestController extends Controller
                 ];
 
                 if (
-                    $purchaseRequest->from_department == 'PERSONALIA' ||
-                    $purchaseRequest->from_department == 'PLASTIC INJECTION' ||
-                    $purchaseRequest->from_department == 'MAINTENANCE MACHINE'
+                    $purchaseRequest->from_department === 'PERSONALIA' ||
+                    $purchaseRequest->from_department === 'PLASTIC INJECTION' ||
+                    $purchaseRequest->from_department === 'MAINTENANCE MACHINE'
                 ) {
                     $commonData['is_approve_by_head'] = 1;
                 }
@@ -299,20 +313,18 @@ class PurchaseRequestController extends Controller
 
     private function sanitizeCurrencyInput($input)
     {
-        // Remove possible currency prefixes
         $input = preg_replace('/[Rp$¥]\.?\s*/', '', $input);
-
-        // Remove commas
         $input = str_replace(',', '', $input);
 
-        // Return the sanitized input
         return $input;
     }
 
-    public function detail($id)
+    public function show($id)
     {
         $departments = Department::all();
-        $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master')->find($id);
+        $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master', 'approvalRequest.steps')->find($id);
+        $approval = $purchaseRequest->approvalRequest;
+
         if (! $purchaseRequest) {
             // Handle the case where the purchase request is not found
             abort(404, 'Purchase request not found');
@@ -345,7 +357,7 @@ class PurchaseRequestController extends Controller
                 $detail->quantity = $this->formatDecimal($detail->quantity);
                 if ($user->specification->name === 'DIRECTOR') {
                     if ($purchaseRequest->type === 'factory') {
-                        if ($purchaseRequest->to_department === 'Computer') {
+                        if ($purchaseRequest->to_department->value === ToDepartment::COMPUTER->value) {
                             return $detail->is_approve_by_head &&
                                 $detail->is_approve_by_gm &&
                                 $detail->is_approve_by_verificator;
@@ -357,7 +369,7 @@ class PurchaseRequestController extends Controller
                     }
                 } elseif ($user->specification->name === 'VERIFICATOR') {
                     if (
-                        $purchaseRequest->to_department === 'Computer' &&
+                        $purchaseRequest->to_department->value === ToDepartment::COMPUTER->value &&
                         $purchaseRequest->type === 'factory'
                     ) {
                         return $detail->is_approve_by_head && $detail->is_approve_by_gm;
@@ -376,7 +388,7 @@ class PurchaseRequestController extends Controller
         }
 
         return view(
-            'purchaseRequest.detail',
+            'purchase-requests.show',
             compact(
                 'purchaseRequest',
                 'user',
@@ -385,6 +397,7 @@ class PurchaseRequestController extends Controller
                 'filteredItemDetail',
                 'departments',
                 'fromDeptNo',
+                'approval',
             ),
         );
     }
@@ -422,9 +435,9 @@ class PurchaseRequestController extends Controller
             // After Purchaser Autograph
             if ($purchaseRequest->autograph_5 !== null) {
                 if (
-                    ($purchaseRequest->to_department === 'Purchasing' &&
+                    ($purchaseRequest->to_department->value === ToDepartment::PURCHASING->value &&
                         $purchaseRequest->type === 'factory') ||
-                    $purchaseRequest->to_department === 'Maintenance'
+                    $purchaseRequest->to_department->value === ToDepartment::MAINTENANCE->value
                 ) {
                     if (
                         $purchaseRequest->from_department === 'COMPUTER' ||
@@ -437,8 +450,8 @@ class PurchaseRequestController extends Controller
                         $purchaseRequest->status = 3;
                     }
                 } elseif (
-                    $purchaseRequest->to_department === 'Computer' ||
-                    $purchaseRequest->to_department === 'Personnel'
+                    $purchaseRequest->to_department->value === ToDepartment::COMPUTER->value ||
+                    $purchaseRequest->to_department->value === ToDepartment::PERSONALIA->value
                 ) {
                     // When verificator has not signed
                     $purchaseRequest->status = 2;
@@ -503,123 +516,50 @@ class PurchaseRequestController extends Controller
         }
     }
 
-    public function saveImagePath(Request $request, $prId, $section)
+    public function saveSignaturePath(Request $request, $prId, int $section)
     {
-        $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
+        $pr = PurchaseRequest::findOrFail($prId);
 
-        // Save $imagePath to the database for the specified $reportId and $section
-        $pr = PurchaseRequest::find($prId);
+        // Fetching the user from the request
+        $user = $request->user();
+        $imagePath = $request->input('imagePath');
 
-        if (Auth::user()->specification->name === 'DIRECTOR') {
+        // Define the step-to-role mapping
+        $stepMap = [
+            1 => 'MAKER',
+            2 => 'DEPT_HEAD',
+            3 => 'VERIFICATOR',
+            4 => 'DIRECTOR',
+            5 => 'PURCHASER',
+            6 => 'GM',
+            7 => 'HEAD_DESIGN',
+        ];
+
+        $stepCode = $stepMap[$section] ?? null;
+
+        // If stepCode exists, update the signatures table
+        if ($stepCode) {
+            $pr->signatures()->updateOrCreate(
+                ['step_code' => $stepCode],
+                [
+                    'signed_by_user_id' => $user->id,
+                    'image_path' => $imagePath,
+                    'signed_at' => now(),
+                ]
+            );
+        }
+
+        // If the role is DIRECTOR, mark the approval timestamp
+        if ($stepCode === 'DIRECTOR') {
             $pr->update([
-                "autograph_{$section}" => $imagePath,
-                "autograph_user_{$section}" => $username,
                 'approved_at' => now(),
-            ]);
-        } else {
-            $pr->update([
-                "autograph_{$section}" => $imagePath,
-                "autograph_user_{$section}" => $username,
             ]);
         }
 
-        $this->updateStatus($pr);
-
+        // Return success message
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
-    public function monthlyview()
-    {
-        $purchaseRequests = PurchaseRequest::with('itemDetail')->get();
-
-        return view('purchaseRequest.monthly', compact('purchaseRequests'));
-    }
-
-    public function monthlyviewmonth(Request $request)
-    {
-        // Get the month inputted by the user
-        $selectedMonth = $request->input('month');
-
-        // Extract year and month from the selected month input
-        $year = date('Y', strtotime($selectedMonth));
-        $month = date('m', strtotime($selectedMonth));
-
-        // Save the year and month to the MonhtlyPR model
-        MonhtlyPR::create([
-            'month' => $month,
-            'year' => $year,
-            // Add other fields as needed
-        ]);
-
-        // Fetch purchase requests for the selected month
-        $purchaseRequests = PurchaseRequest::with('itemDetail')
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->where('from_department', auth()->user()->department->name)
-            ->get();
-
-        // Pass the filtered data to the view
-
-        return view('purchaseRequest.monthly', compact('purchaseRequests'));
-    }
-
-    public function monthlyprlist()
-    {
-        $monthlist = MonhtlyPR::get();
-
-        return view('purchaseRequest.monthlylist', compact('monthlist'));
-
-        return view('purchaseRequest.monthlylist', compact('monthlist'));
-    }
-
-    public function monthlydetail($id)
-    {
-        $monthdetail = MonhtlyPR::find($id);
-
-        // Extract year and month from the selected month input
-        // Extract year and month from the selected month input
-        // $year = date('Y', strtotime($monthdetail->year));
-        // $month = date('m', strtotime($monthdetail->month));
-
-        $year = $monthdetail->year;
-        $month = $monthdetail->month;
-
-        $purchaseRequests = PurchaseRequest::with('itemDetail')
-            ->whereYear('date_pr', $year)
-            ->whereMonth('date_pr', $month)
-            ->get();
-
-        // dd($monthdetail);
-        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
-
-        return view('purchaseRequest.monthlydetail', compact('purchaseRequests', 'monthdetail'));
-    }
-
-    public function saveImagePathMonthly(Request $request, $monthprId, $section)
-    {
-        $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
-
-        // Save $imagePath to the database for the specified $reportId and $section
-        $monthpr = MonhtlyPR::find($monthprId);
-        $monthpr->update([
-            "autograph_{$section}" => $imagePath,
-        ]);
-        $monthpr->update([
-            "autograph_user_{$section}" => $username,
-        ]);
-        $monthpr->update([
-            "autograph_{$section}" => $imagePath,
-        ]);
-        $monthpr->update([
-            "autograph_user_{$section}" => $username,
-        ]);
-
-        return response()->json(['success' => 'Autograph saved successfully!']);
-    }
-
-    // REVISI PR DROPDOWN ITEM + PRICE
     // REVISI PR DROPDOWN ITEM + PRICE
     public function getItemNames(Request $request)
     {
@@ -793,7 +733,7 @@ class PurchaseRequestController extends Controller
                 $detail->quantity = $this->formatDecimal($detail->quantity);
                 if ($user->specification->name === 'DIRECTOR') {
                     if ($purchaseRequest->type === 'factory') {
-                        if ($purchaseRequest->to_department === 'Computer') {
+                        if ($purchaseRequest->to_department->value === ToDepartment::COMPUTER->value) {
                             return $detail->is_approve_by_head &&
                                 $detail->is_approve_by_gm &&
                                 $detail->is_approve_by_verificator;
@@ -805,7 +745,7 @@ class PurchaseRequestController extends Controller
                     }
                 } elseif ($user->specification->name === 'VERIFICATOR') {
                     if (
-                        $purchaseRequest->to_department === 'Computer' &&
+                        $purchaseRequest->to_department->value === ToDepartment::COMPUTER->value &&
                         $purchaseRequest->type === 'factory'
                     ) {
                         return $detail->is_approve_by_head && $detail->is_approve_by_gm;
@@ -866,5 +806,38 @@ class PurchaseRequestController extends Controller
             new PurchaseRequestWithDetailsExport($purchaseRequestIds),
             "purchase requests for $authDepartment .xlsx",
         );
+    }
+
+    public function approve(Request $request, PurchaseRequest $purchaseRequest)
+    {
+        $user = $request->user();
+
+        // pastikan PR sudah di-submit ke engine
+        if (! $purchaseRequest->approvalRequest) {
+            abort(400, 'Approval request not initialized.');
+        }
+
+        // optional remarks
+        $remarks = $request->input('remarks');
+
+        // core: approve step aktif untuk user ini
+        $this->approvals->approve($purchaseRequest, $user->id, $remarks);
+
+        return back()->with('success', 'Approved.');
+    }
+
+    public function rejectApproval(Request $request, PurchaseRequest $purchaseRequest)
+    {
+        $request->validate(['remarks' => ['nullable', 'string', 'max:255']]);
+
+        $user = $request->user();
+
+        if (! $purchaseRequest->approvalRequest) {
+            abort(400, 'Approval request not initialized.');
+        }
+
+        $this->approvals->reject($purchaseRequest, $user->id, $request->remarks);
+
+        return back()->with('success', 'Rejected.');
     }
 }

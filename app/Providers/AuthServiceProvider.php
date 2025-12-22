@@ -5,7 +5,7 @@ namespace App\Providers;
 // use Illuminate\Support\Facades\Gate;
 
 use App\Domain\Signature\Entities\UserSignature as DomainUserSignature;
-use App\Policies\SignaturePolicy;
+use App\Policies\UserSignaturePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -17,7 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        DomainUserSignature::class => SignaturePolicy::class,
+        DomainUserSignature::class => UserSignaturePolicy::class,
     ];
 
     /**
@@ -31,6 +31,13 @@ class AuthServiceProvider extends ServiceProvider
             //     : in_array($user->email, ['yuli@daijo.co.id', 'raymond@daijo.co.id']);
             return $user->role->name === 'SUPERADMIN' || in_array($user->email, ['yuli@daijo.co.id']);
         });
+
         $this->registerPolicies();
+        Gate::define('manage-approvals', function ($user) {
+            // adjust to your roles/permissions system
+            return $user->role->name === 'SUPERADMIN' || $user->can('manage-approvals');
+        });
+
+        Gate::define('manage-defects', fn ($user) => $user->role->name === 'SUPERADMIN' || $user->can('manage-defects'));
     }
 }

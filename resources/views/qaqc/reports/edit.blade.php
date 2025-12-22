@@ -67,7 +67,7 @@
     {{-- <section>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{route('qaqc.home')}}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{route('qaqc')}}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{route('qaqc.report.index')}}">Reports</a></li>
             <li class="breadcrumb-item active" aria-current="page">Create</li>
         </ol>

@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class Employee extends Model
+class Employee extends Authenticatable
 {
     use HasFactory;
 
@@ -44,6 +44,6 @@ class Employee extends Model
 
     public function department()
     {
-        return $this->belongsTo(Department::class, 'Dept', 'dept_no');
+        return $this->belongsTo(Department::class, 'dept_code', 'dept_no');
     }
 }

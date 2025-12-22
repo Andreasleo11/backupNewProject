@@ -2,7 +2,7 @@
     aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="{{ route('superadmin.users.update', $user->id) }}">
+            <form method="POST" action="{{ route('admin.users.update', $user->id) }}">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">

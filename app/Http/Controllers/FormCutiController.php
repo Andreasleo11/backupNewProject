@@ -51,7 +51,7 @@ class FormCutiController extends Controller
         ]);
 
         return redirect()
-            ->route('formcuti.home')
+            ->route('formcuti')
             ->with('success', 'form cuti created successfully');
     }
 
