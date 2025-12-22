@@ -216,7 +216,11 @@
                                 class="block px-3 py-2 text-slate-600 hover:bg-slate-50">
                                 Account security
                             </a>
-
+                            
+                            <a href="{{ route('signatures.manage') }}"
+                                class="block px-3 py-2 text-slate-600 hover:bg-slate-50">
+                                {{ __('My Signatures') }}
+                            </a>
 
                             {{-- Future: Profile, Settings, etc.
                             <a href="#" class="block px-3 py-2 hover:bg-slate-50 text-slate-600">

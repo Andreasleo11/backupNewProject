@@ -290,7 +290,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', MonthlyBudgetSummaryIndex::class)->name('monthly-budget-summary-report.index');
         Route::get('/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
         Route::post('/', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
-        Route::delete('/id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
+        Route::delete('/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
         Route::put('/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
         Route::put('/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
         Route::put('/{id}/cancel', [MonthlyBudgetSummaryReportController::class, 'cancel'])->name('monthly.budget.summary.report.cancel');
@@ -406,6 +406,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
     Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'rejectApproval'])->name('purchase-requests.reject');
 
+    Route::get('signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
+    Route::get('settings/signatures', ManageSignatures::class)->name('signatures.manage');
+    Route::get('settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });
 
 require __DIR__.'/admin.php';
@@ -656,15 +659,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/uploads/{upload}/download', [RequirementUploadDownloadController::class, 'show'])
         ->name('uploads.download')
         ->middleware('signed');
-});
-
-Route::middleware(['auth'])->group(function () {
-    // Secure stream of a signature image (PNG or SVG) from private disk
-    Route::get('/signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
-
-    // Livewire pages
-    Route::get('/settings/signatures', ManageSignatures::class)->name('signatures.manage');
-    Route::get('/settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 });
 
 Route::middleware(['auth', 'can:manage-defects'])
