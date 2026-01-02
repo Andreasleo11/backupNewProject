@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
+use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
+use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
+use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\DataTables\PurchaseRequestsDataTable;
 use App\Enums\ToDepartment;
 use App\Exports\PurchaseRequestWithDetailsExport;
+use App\Http\Requests\ApprovePurchaseRequest;
+use App\Http\Requests\RejectPurchaseRequest;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Department;
@@ -177,153 +182,55 @@ class PurchaseRequestController extends Controller
         return view('purchase-requests.create', compact('items', 'departments'));
     }
 
-    public function store(StorePurchaseRequest $request)
+    public function store(StorePurchaseRequest $request, \App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest $useCase)
     {
-        return DB::transaction(function () use ($request) {
-            $items = $request->input('items', []);
-            $isDraft = (bool) $request->is_draft;
-            $user = Auth::user();
+        $user = Auth::user();
 
-            // ===== 1. Sanitize items =====
-            $processedItems = array_map(function ($item) {
-                $item['price'] = $this->sanitizeCurrencyInput($item['price']);
+        $items = array_map(function ($item) {
+            $price = preg_replace('/[Rp$¥]\.?\s*/', '', (string) ($item['price'] ?? 0));
+            $price = (float) str_replace(',', '', $price);
 
-                return $item;
-            }, $items);
+            return new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
+                itemName: (string) $item['item_name'],
+                quantity: (float) $item['quantity'],
+                purpose: (string) $item['purpose'],
+                price: $price,
+                uom: (string) $item['uom'],
+                currency: (string) $item['currency'],
+            );
+        }, $request->input('items', []));
 
-            $userIdCreate = $user->id;
+        $dto = new \App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO(
+            requestedByUserId: $user->id,
+            fromDepartment: $request->input('from_department'),
+            toDepartment: $request->input('to_department'), // already normalized
+            branch: $request->branch,
+            datePr: $request->input('date_of_pr'),
+            dateRequired: $request->input('date_of_required'),
+            remark: $request->input('remark'),
+            supplier: $request->input('supplier'),
+            pic: $request->input('pic'),
+            isDraft: (bool) $request->is_draft,
+            isImport: $request->has('is_import') ? $request->is_import === 'true' : null,
+            items: $items
+        );
 
-            // ===== 2. Common header data (legacy logic) =====
-            $commonData = [
-                'user_id_create' => $userIdCreate,
-                'from_department' => $request->input('from_department'),
-                'to_department' => $request->input('to_department'),
-                'date_pr' => $request->input('date_of_pr'),
-                'date_required' => $request->input('date_of_required'),
-                'remark' => $request->input('remark'),
-                'supplier' => $request->input('supplier'),
-                'pic' => $request->input('pic'),
-                'type' => $request->input('type'), // nanti di-override di bawah
-                'autograph_1' => strtoupper($user->name).'.png',
-                'autograph_user_1' => $user->name,
-                'status' => 1,         // WAITING FOR DEPT HEAD
-                'branch' => $request->branch,
-            ];
+        $useCase->handle($dto);
 
-            // plastic injection / maintenance machine karawang → langsung WAITING GM
-            if (
-                $commonData['from_department'] === 'PLASTIC INJECTION' ||
-                ($commonData['from_department'] === 'MAINTENANCE MACHINE'
-                    && $commonData['branch'] === 'KARAWANG')
-            ) {
-                $commonData['status'] = 7;
-            }
-
-            // Draft: tidak ada autograph_1 + status draft
-            if ($isDraft) {
-                $commonData['autograph_1'] = null;
-                $commonData['autograph_user_1'] = null;
-                $commonData['status'] = 8; // DRAFT
-            }
-
-            // Moulding import flag
-            if ($commonData['from_department'] === 'MOULDING' && $request->has('is_import')) {
-                $commonData['is_import'] = $request->is_import === 'true';
-            }
-            // Personalia: auto Bernadett + status waiting purchaser (legacy)
-            elseif ($commonData['from_department'] === 'PERSONALIA') {
-                $commonData['autograph_2'] = 'Bernadett.png';
-                $commonData['autograph_user_2'] = 'Bernadett';
-                $commonData['status'] = 6;
-            }
-
-            // ===== 3. Office / factory type (legacy logic) =====
-            $officeDepartments = Department::where('is_office', true)->pluck('name')->toArray();
-
-            if (in_array($commonData['from_department'], $officeDepartments, true)) {
-                $commonData['type'] = 'office';
-                if ($commonData['from_department'] === 'PE') {
-                    $commonData['type'] = 'factory';
-                }
-            } else {
-                $commonData['type'] = 'factory';
-            }
-
-            // ===== 4. Create PurchaseRequest (header) =====
-            /** @var PurchaseRequest $purchaseRequest */
-            $purchaseRequest = PurchaseRequest::create($commonData);
-
-            // ===== 5. Insert detail items (legacy logic) =====
-            $this->verifyAndInsertItems($processedItems, $purchaseRequest);
-
-            // ===== 6. Submit ke ApprovalEngine (BARU) =====
-            // Hanya kalau BUKAN draft dan belum punya approvalRequest
-            if (! $isDraft && ! $purchaseRequest->approvalRequest) {
-
-                // Pastikan relasi untuk context sudah tersedia
-                $purchaseRequest->loadMissing(['items', 'fromDepartment']);
-
-                // Build context buat RuleResolver
-                $ctx = $purchaseRequest->buildApprovalContext();
-
-                // Submit ke engine: akan buat approval_requests + approval_steps
-                $this->approvals->submit($purchaseRequest, $user->id, $ctx);
-            }
-
-            // ===== 7. Redirect seperti biasa =====
-            return redirect()
-                ->route('purchase-requests.index')
-                ->with('success', 'Purchase request created successfully');
-        });
-    }
-
-    private function verifyAndInsertItems($items, PurchaseRequest $purchaseRequest)
-    {
-        if (isset($items) && is_array($items)) {
-            foreach ($items as $itemData) {
-                $itemName = $itemData['item_name'];
-                $quantity = $itemData['quantity'];
-                $purpose = $itemData['purpose'];
-                $price = $this->sanitizeCurrencyInput($itemData['price']);
-                $uom = strtoupper($itemData['uom']);
-                $currency = $itemData['currency'];
-
-                $commonData = [
-                    'purchase_request_id' => $purchaseRequest->id,
-                    'item_name' => $itemName,
-                    'quantity' => $quantity,
-                    'purpose' => $purpose,
-                    'price' => $price,
-                    'uom' => $uom,
-                    'currency' => $currency,
-                ];
-
-                if (
-                    $purchaseRequest->from_department === 'PERSONALIA' ||
-                    $purchaseRequest->from_department === 'PLASTIC INJECTION' ||
-                    $purchaseRequest->from_department === 'MAINTENANCE MACHINE'
-                ) {
-                    $commonData['is_approve_by_head'] = 1;
-                }
-
-                DetailPurchaseRequest::create($commonData);
-            }
-        }
-    }
-
-    private function sanitizeCurrencyInput($input)
-    {
-        $input = preg_replace('/[Rp$¥]\.?\s*/', '', $input);
-        $input = str_replace(',', '', $input);
-
-        return $input;
+        return redirect()->route('purchase-requests.index')->with('success', 'Purchase request created successfully');
     }
 
     public function show($id)
     {
+        $user = Auth::user();
         $departments = Department::all();
         $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master', 'approvalRequest.steps')->find($id);
         $approval = $purchaseRequest->approvalRequest;
+
+        $canApprove = false;
+        if ($purchaseRequest->approvalRequest) {
+            $canApprove = $this->approvals->canAct($purchaseRequest, (int) $user->id);
+        }
 
         if (! $purchaseRequest) {
             // Handle the case where the purchase request is not found
@@ -340,7 +247,7 @@ class PurchaseRequestController extends Controller
             abort(404, 'Department not found');
         }
         $fromDeptNo = $fromDepartment->dept_no;
-        $user = Auth::user();
+        
         $userCreatedBy = $purchaseRequest->createdBy;
 
         // $this->updateStatus($purchaseRequest);
@@ -398,6 +305,7 @@ class PurchaseRequestController extends Controller
                 'departments',
                 'fromDeptNo',
                 'approval',
+                'canApprove'
             ),
         );
     }
@@ -808,35 +716,24 @@ class PurchaseRequestController extends Controller
         );
     }
 
-    public function approve(Request $request, PurchaseRequest $purchaseRequest)
+    public function approve(ApprovePurchaseRequest $request, PurchaseRequest $purchaseRequest, ApprovePR $useCase)
     {
-        $user = $request->user();
-
-        // pastikan PR sudah di-submit ke engine
-        if (! $purchaseRequest->approvalRequest) {
-            abort(400, 'Approval request not initialized.');
-        }
-
-        // optional remarks
-        $remarks = $request->input('remarks');
-
-        // core: approve step aktif untuk user ini
-        $this->approvals->approve($purchaseRequest, $user->id, $remarks);
+        $useCase->handle(new ApprovalActionDTO(
+            purchaseRequestId: (int) $purchaseRequest->id,
+            actorUserId: (int) auth()->id(),
+            remarks: $request->input('remarks')
+        ));
 
         return back()->with('success', 'Approved.');
     }
 
-    public function rejectApproval(Request $request, PurchaseRequest $purchaseRequest)
+    public function rejectWorkflow(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
     {
-        $request->validate(['remarks' => ['nullable', 'string', 'max:255']]);
-
-        $user = $request->user();
-
-        if (! $purchaseRequest->approvalRequest) {
-            abort(400, 'Approval request not initialized.');
-        }
-
-        $this->approvals->reject($purchaseRequest, $user->id, $request->remarks);
+        $useCase->handle(new ApprovalActionDTO(
+            purchaseRequestId: (int) $purchaseRequest->id,
+            actorUserId: (int) auth()->id(),
+            remarks: $request->input('remarks')
+        ));
 
         return back()->with('success', 'Rejected.');
     }

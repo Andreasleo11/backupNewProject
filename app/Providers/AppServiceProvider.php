@@ -52,6 +52,8 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Department\Repositories\DepartmentRepository::class,
             \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentDepartmentRepository::class,
         );
+
+        $this->app->bind(\App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository::class, \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentPurchaseRequestRepository::class);
     }
 
     /**

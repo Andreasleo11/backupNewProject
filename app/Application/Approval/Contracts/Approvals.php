@@ -26,4 +26,6 @@ interface Approvals
      * Get the current approval info for an approvable, if any.
      */
     public function currentRequest(Approvable $approvable): ?ApprovalInfo;
+
+    public function canAct(Approvable $approvable, int $userId): bool;
 }

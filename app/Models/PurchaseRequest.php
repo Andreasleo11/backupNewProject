@@ -88,7 +88,6 @@ class PurchaseRequest extends Model implements Approvable
             'to_department' => $this->to_department->value,                   // COMPUTER / MAINTENANCE / ...
             'branch' => $this->branch,                          // JAKARTA / KARAWANG
             'at_office' => (bool) optional($this->fromDepartment)->is_office,
-            'is_design' => (bool) $this->is_design,                // flag moulding design
             'amount' => $total,                                 // buat threshold nominal kalau perlu
         ];
     }

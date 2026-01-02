@@ -404,7 +404,7 @@ Route::middleware('auth')->group(function () {
     Route::get('purchase-requests/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
 
     Route::post('/purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
-    Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'rejectApproval'])->name('purchase-requests.reject');
+    Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'rejectWorkflow'])->name('purchase-requests.reject');
 
     Route::get('signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
     Route::get('settings/signatures', ManageSignatures::class)->name('signatures.manage');

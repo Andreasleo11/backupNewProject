@@ -131,11 +131,6 @@
             </div>
         </div>
 
-        {{-- REJECT MODAL (EXISTING PARTIAL) --}}
-        <div class="mb-4">
-            @include('partials.reject-pr-confirmation', $purchaseRequest)
-        </div>
-
         {{-- MAIN GRID LAYOUT --}}
         <div class="grid gap-6 lg:grid-cols-3">
             {{-- LEFT: PR INFO + ITEMS --}}
@@ -199,7 +194,7 @@
                     @include('approval._pr-approval-panel', [
                         'approval' => $approval,
                         'purchaseRequest' => $purchaseRequest,
-                        'canApprove' => $canApprove ?? false,
+                        'canApprove' => $canApprove,
                     ])
 
                 </div>

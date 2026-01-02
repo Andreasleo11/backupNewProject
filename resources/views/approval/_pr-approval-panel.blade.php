@@ -55,7 +55,6 @@
 
                 // current step instance
                 $currentStep = $steps->firstWhere('sequence', (int) $approval->current_step);
-
                 $showActionBox =
                     $canApprove &&
                     $approval->status === 'IN_REVIEW' &&

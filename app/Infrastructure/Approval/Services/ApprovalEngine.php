@@ -143,6 +143,27 @@ final class ApprovalEngine implements Approvals
         return $req;
     }
 
+    public function canAct(Approvable $approvable, int $userId): bool
+    {
+        $req = $approvable->approvalRequest()->with('steps')->first();
+        if (! $req || $req->status !== 'IN_REVIEW') {
+            return false;
+        }
+
+        $step = $req->steps->firstWhere('sequence', (int) $req->current_step);
+        if (! $step) {
+            return false;
+        }
+
+        try {
+            $this->guardActor($step, $userId);
+
+            return true;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
     private function mustGetCurrentStep(ApprovalRequest $req)
     {
         return $req->steps()->where('sequence', $req->current_step)->firstOrFail();
