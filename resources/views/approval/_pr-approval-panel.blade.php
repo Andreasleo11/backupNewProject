@@ -9,16 +9,16 @@
             @if ($approval)
                 <p class="text-xs text-slate-500">
                     Status:
-                    <span
-                        class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold
-                        @class([
-                            'bg-slate-100 text-slate-700' => $approval->status === 'DRAFT',
-                            'bg-amber-100 text-amber-700' => $approval->status === 'IN_REVIEW',
-                            'bg-emerald-100 text-emerald-700' => $approval->status === 'APPROVED',
-                            'bg-rose-100 text-rose-700' => $approval->status === 'REJECTED',
-                        ])">
+                    <span @class([
+                        'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                        'bg-slate-100 text-slate-700' => $approval->status === 'DRAFT',
+                        'bg-amber-100 text-amber-700' => $approval->status === 'IN_REVIEW',
+                        'bg-emerald-100 text-emerald-700' => $approval->status === 'APPROVED',
+                        'bg-rose-100 text-rose-700' => $approval->status === 'REJECTED',
+                    ])>
                         {{ $approval->status }}
                     </span>
+
                 </p>
             @else
                 <p class="text-xs text-slate-400">

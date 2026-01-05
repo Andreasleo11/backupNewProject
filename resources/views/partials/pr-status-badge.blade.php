@@ -1,80 +1,50 @@
-<style>
-    .head-bg-warning {
-        background-color: rgba(255, 193, 7, 0.2);
-        /* Adjust the alpha value (0.7) for opacity */
-        color: #000;
-        /* Set text color */
-    }
+@php
+    $label = null;
+    $cls = 'bg-slate-100 text-slate-700';
+    $tooltip = null;
 
-    .purchaser-bg-warning {
-        background-color: rgba(255, 193, 7, 0.45);
-        color: #000;
+    if ($pr->is_cancel === 1) {
+        $label = 'CANCELED';
+        $cls = 'bg-rose-600 text-white';
+        $tooltip = 'Cancel Reason: ' . ($pr->description ?? '-');
+    } elseif ($pr->status === 5) {
+        $label = 'REJECTED';
+        $cls = 'bg-rose-600 text-white';
+        $tooltip = 'Reject Reason: ' . ($pr->description ?? '-');
+    } elseif ($pr->status === 1) {
+        $label = 'WAITING FOR DEPT HEAD';
+        $cls = 'bg-amber-100 text-amber-900';
+    } elseif ($pr->status === 7) {
+        $label = 'WAITING FOR GM';
+        $cls = 'bg-amber-200 text-amber-900';
+    } elseif ($pr->status === 6) {
+        $label = 'WAITING FOR PURCHASER';
+        $cls = 'bg-amber-200 text-amber-900';
+    } elseif ($pr->status === 2) {
+        $label = 'WAITING FOR VERIFICATOR';
+        $cls = 'bg-amber-200 text-amber-900';
+    } elseif ($pr->status === 3) {
+        $label = 'WAITING FOR DIRECTOR';
+        $cls = 'bg-amber-300 text-amber-950';
+    } elseif ($pr->status === 4) {
+        $label = 'APPROVED';
+        $cls = 'bg-emerald-600 text-white';
+    } elseif ($pr->status === 8) {
+        $label = 'DRAFT';
+        $cls = 'bg-slate-200 text-slate-700';
     }
+@endphp
 
-    .gm-bg-warning {
-        background-color: rgba(255, 193, 7, 0.7);
-        color: #000;
-    }
+@if($label)
+    <span
+        class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold {{ $cls }}"
+        title="{{ $tooltip }}">
+        {{ $label }}
+    </span>
 
-    .verificator-bg-warning {
-        background-color: rgba(255, 193, 7, 0.7);
-        color: #000;
-    }
-
-    .director-bg {
-        background-color: rgb(255, 191, 0);
-        color: #000;
-    }
-
-    .approved-bg {
-        background-color: rgb(20, 128, 72);
-        color: #fff;
-    }
-
-    .rejected-bg {
-        background-color: rgb(221, 47, 47);
-        color: #fff;
-    }
-</style>
-
-@if ($pr->is_cancel === 1)
-    <span class="badge rejected-bg px-3 py-2 fs-6">CANCELED</span>
-    <button data-bs-toggle="tooltip" data-bs-title="Cancel Reason: {{ $pr->description ?? '-' }}"
-        class="btn btn-secondary btn-sm align-items-center">
-        <i class='bx bx-info-circle'></i></button>
-@else
-    @if ($pr->status === 5)
-        <span class="badge rejected-bg px-3 py-2 fs-6">REJECTED</span>
-        <button data-bs-toggle="tooltip" data-bs-title="Reject Reason: {{ $pr->description ?? '-' }}"
-            class="btn btn-secondary btn-sm align-items-center">
-            <i class='bx bx-info-circle'></i></button>
-        {{-- After the maker signed --}}
-    @elseif($pr->status === 1)
-        <span class="badge head-bg-warning px-3 py-2 fs-6">WAITING FOR DEPT
-            HEAD</span>
-        {{-- After the dept head signed --}}
-    @elseif ($pr->status === 7)
-        <span class="badge gm-bg-warning px-3 py-2 fs-6">WAITING FOR
-            GM</span>
-        {{-- After the GM signed --}}
-    @elseif($pr->status === 6)
-        <span class="badge purchaser-bg-warning px-3 py-2 fs-6">WAITING FOR PURCHASER</span>
-        {{-- After the purchaser signed --}}
-    @elseif($pr->status === 2)
-        <span class="badge verificator-bg-warning px-3 py-2 fs-6">WAITING FOR
-            VERIFICATOR</span>
-        {{-- After the verificator signed --}}
-    @elseif($pr->status === 3)
-        <span class="badge director-bg px-3 py-2 fs-6">WAITING FOR
-            DIRECTOR</span>
-    @elseif($pr->status === 4)
-        <span class="badge approved-bg px-3 py-2 fs-6">APPROVED</span>
-    @elseif($pr->status === 8)
-        <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fs-6">DRAFT</span>
+    @if($tooltip)
+        <span class="ml-2 inline-flex items-center text-slate-400" title="{{ $tooltip }}">
+            <i class='bx bx-info-circle text-base'></i>
+        </span>
     @endif
 @endif
-<script type="module">
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(
-        tooltipTriggerEl));
-</script>

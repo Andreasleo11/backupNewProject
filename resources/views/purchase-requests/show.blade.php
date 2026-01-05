@@ -2,30 +2,23 @@
 
 @section('content')
     @php
-        /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        // Build autograph slots as a simple array for Alpine
-        $autographSlots = collect(range(1, 7))->map(function ($i) use ($purchaseRequest) {
-            return [
-                'slot' => $i,
-                'image' => $purchaseRequest->{'autograph_' . $i} ?? null,
-                'user_name' => $purchaseRequest->{'autograph_user_' . $i} ?? null,
-            ];
-        });
+        // from controller/usecase now
+        $canAutoApprove = $flags['canAutoApprove'] ?? false;
+        $canApprove = $flags['canApprove'] ?? false;
+        $canUpload = $flags['canUpload'] ?? false;
+        $canEditPr = $flags['canEdit'] ?? false;
 
-        $canAutoApprove =
-            $user->is_gm ||
-            $user->specification->name === 'PURCHASER' ||
-            $purchaseRequest->from_department === 'MOULDING';
+        $totalall = (float) ($totals['total'] ?? 0);
+        $isThereAnyCurrencyDifference = (bool) ($totals['hasCurrencyDiff'] ?? false);
+        $prevCurrency = $totals['currency'] ?? null;
 
-        // We will reuse your existing PHP logic for totals & currency
-        $totalall = 0;
-        $isThereAnyCurrencyDifference = false;
-        $prevCurrency = null;
+        // for alpine
+        $slots = $autographSlots ?? [];
     @endphp
 
-    <div class="mx-auto max-w-6xl px-4 py-6 lg:py-8" x-data="prDetailPage(@js($autographSlots), @js($canAutoApprove), @js($purchaseRequest->id), @js(csrf_token()))">
+    <div class="mx-auto max-w-6xl px-4 py-6 lg:py-8" x-data="prDetailPage(@js($slots), @js($canAutoApprove), @js($purchaseRequest->id), @js(csrf_token()))">
 
         {{-- FLASH MESSAGES --}}
         @if (session('success'))
@@ -89,43 +82,28 @@
 
                 <div class="flex flex-wrap items-center justify-end gap-2">
                     {{-- Upload button --}}
-                    @if ($user->id == $userCreatedBy->id || $user->specification->name === 'PURCHASER' || $user->is_head === 1)
+                    @if ($canUpload)
                         <button type="button"
                             class="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
-                            data-bs-target="#upload-files-modal" data-bs-toggle="modal">
+                            @click="openUploadFiles = true">
                             <i class='bx bx-upload text-sm'></i>
                             <span>Upload</span>
                         </button>
-
-                        {{-- existing partial (convert to Tailwind later if needed) --}}
                         @include('partials.upload-files-modal', ['doc_id' => $purchaseRequest->doc_num])
                     @endif
 
                     {{-- Edit button --}}
-                    @php
-                        // You can move this complex condition into a helper like canEditPr($user, $purchaseRequest)
-                        $canEditPr =
-                            ($purchaseRequest->user_id_create === $user->id && $purchaseRequest->status === 1) ||
-                            ($purchaseRequest->status === 1 && $user->is_head) ||
-                            ($purchaseRequest->status === 6 && $user->specification->name === 'PURCHASER') ||
-                            (($purchaseRequest->status === 2 &&
-                                $user->department->name == 'PERSONALIA' &&
-                                $user->is_head === 1) ||
-                                ($purchaseRequest->status === 7 && $user->is_gm));
-                    @endphp
-
                     @if ($canEditPr)
-                        @include('partials.edit-purchase-request-modal', [
-                            'pr' => $purchaseRequest,
-                            'details' => $filteredItemDetail,
-                        ])
-
                         <button type="button"
                             class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700"
                             data-bs-target="#edit-purchase-request-modal-{{ $purchaseRequest->id }}" data-bs-toggle="modal">
                             <i class='bx bx-edit text-sm'></i>
                             <span>Edit</span>
                         </button>
+                        @include('partials.edit-purchase-request-modal', [
+                            'pr' => $purchaseRequest,
+                            'details' => $filteredItemDetail,
+                        ])
                     @endif
                 </div>
             </div>
@@ -183,7 +161,8 @@
                                     </dt>
                                     <dd>
                                         <div
-                                            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 text-xs sm:text-sm whitespace-pre-wrap">{{ $purchaseRequest->remark }}</div>
+                                            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-800 text-xs sm:text-sm whitespace-pre-wrap">{{ $purchaseRequest->remark }}
+                                        </div>
                                     </dd>
                                 </div>
                             </dl>
@@ -196,7 +175,6 @@
                         'purchaseRequest' => $purchaseRequest,
                         'canApprove' => $canApprove,
                     ])
-
                 </div>
 
                 {{-- ITEMS TABLE CARD --}}
@@ -330,13 +308,6 @@
                             <tbody class="divide-y divide-slate-100">
                                 @forelse($filteredItemDetail as $detail)
                                     @php
-                                        // Detect currency difference
-                                        if (!isset($prevCurrency)) {
-                                            $prevCurrency = $detail->currency;
-                                        } elseif ($prevCurrency != $detail->currency) {
-                                            $isThereAnyCurrencyDifference = true;
-                                        }
-
                                         // Map approval status to row colors (similar to original)
                                         $rowClass = '';
                                         if ($detail->is_approve === 1) {
@@ -362,59 +333,6 @@
                                         }
 
                                         $subtotal = $detail->quantity * $detail->price;
-
-                                        // ORIGINAL TOTAL LOGIC (kept as-is)
-                                        if ($purchaseRequest->status === 6 || $purchaseRequest->status === 7) {
-                                            if (!is_null($detail->is_approve_by_head)) {
-                                                if ($detail->is_approve_by_head) {
-                                                    $totalall += $subtotal;
-                                                }
-                                            } else {
-                                                $totalall += $subtotal;
-                                            }
-                                        } elseif ($purchaseRequest->status === 2) {
-                                            if (!is_null($detail->is_approve_by_verificator)) {
-                                                if ($detail->is_approve_by_verificator) {
-                                                    $totalall += $subtotal;
-                                                }
-                                            } else {
-                                                if ($detail->is_approve_by_head) {
-                                                    $totalall += $subtotal;
-                                                }
-                                            }
-                                        } elseif ($purchaseRequest->status === 3) {
-                                            if (!is_null($detail->is_approve)) {
-                                                if ($detail->is_approve) {
-                                                    $totalall += $subtotal;
-                                                }
-                                            } else {
-                                                if (
-                                                    $purchaseRequest->type === 'office' ||
-                                                    ($purchaseRequest->to_department->value === 'COMPUTER' &&
-                                                        $purchaseRequest->type === 'factory')
-                                                ) {
-                                                    if ($detail->is_approve_by_verificator) {
-                                                        $totalall += $subtotal;
-                                                    }
-                                                } elseif ($detail->is_approve_by_gm) {
-                                                    $totalall += $subtotal;
-                                                }
-                                            }
-                                        } elseif ($purchaseRequest->status === 4) {
-                                            if ($detail->is_approve) {
-                                                $totalall += $subtotal;
-                                            }
-                                        } elseif ($purchaseRequest->status === 1) {
-                                            if (!is_null($detail->is_approve_by_head)) {
-                                                if ($detail->is_approve_by_head) {
-                                                    $totalall += $subtotal;
-                                                }
-                                            } else {
-                                                $totalall += $subtotal;
-                                            }
-                                        } else {
-                                            $totalall += 0;
-                                        }
 
                                         // Dept head item approval visibility logic
                                         $showDeptHeadItemApprove =
@@ -671,52 +589,114 @@
                     </div>
                 </section>
 
-                {{-- AUTOGRAPHS (SIGNATURES) --}}
+                {{-- APPROVAL SUMMARY (no duplicate signatures) --}}
                 <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <div class="border-b border-slate-100 px-4 py-3">
                         <h2 class="text-sm font-semibold text-slate-900">
-                            Approval Signatures
+                            Approval Summary
                         </h2>
                         <p class="mt-1 text-[11px] text-slate-500">
-                            Klik <span class="font-semibold">Sign</span> untuk menambahkan tanda tangan digital Anda.
+                            Ringkasan status approval (detail ada di panel kiri).
                         </p>
                     </div>
-                    <div class="px-4 py-4">
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            <template x-for="slot in slots" :key="slot.slot">
-                                <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-3">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-[11px] font-medium uppercase tracking-wide text-slate-500">
-                                            Position <span x-text="slot.slot"></span>
-                                        </span>
-                                        <span class="text-[10px] uppercase tracking-wide"
-                                            :class="slot.image ? 'text-emerald-600' : 'text-slate-400'">
-                                            <span x-text="slot.image ? 'Signed' : 'Pending'"></span>
-                                        </span>
-                                    </div>
 
-                                    <div
-                                        class="mt-2 flex h-20 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-white">
-                                        <img x-show="slot.image" :src="`/autographs/${slot.image}`" alt=""
-                                            class="max-h-full">
-                                        <span x-show="!slot.image" class="text-[11px] text-slate-400">
-                                            No signature
-                                        </span>
-                                    </div>
+                    <div class="px-4 py-4 space-y-3 text-xs sm:text-sm">
+                        @if (!$approval)
+                            <div class="text-xs text-slate-500">
+                                Belum ada workflow approval untuk PR ini.
+                            </div>
+                        @else
+                            @php
+                                $steps = $approval->steps->sortBy('sequence');
+                                $currentStep = $steps->firstWhere('sequence', (int) $approval->current_step);
+                                $currentStatus = $approval->status;
+                                $pendingCount = $steps->where('status', 'PENDING')->count();
+                                $approvedCount = $steps->where('status', 'APPROVED')->count();
+                                $rejectedCount = $steps->where('status', 'REJECTED')->count();
 
-                                    <p x-show="slot.user_name" class="mt-2 truncate text-xs font-medium text-slate-700"
-                                        x-text="slot.user_name"></p>
+                                // Label current approver (role/user)
+                                $currentApprover = null;
+                                if ($currentStep) {
+                                    if ($currentStep->approver_type === 'role') {
+                                        $role = \Spatie\Permission\Models\Role::find($currentStep->approver_id);
+                                        $currentApprover = $role?->name ?? 'Unknown role';
+                                    } else {
+                                        $u = \App\Infrastructure\Persistence\Eloquent\Models\User::find(
+                                            $currentStep->approver_id,
+                                        );
+                                        $currentApprover = $u?->name ?? 'User #' . $currentStep->approver_id;
+                                    }
+                                }
 
-                                    <button type="button" x-show="!slot.image && canSign"
-                                        @click="addAutograph(slot.slot)"
-                                        class="mt-3 inline-flex w-full items-center justify-center rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-white shadow-sm hover:bg-black">
-                                        Sign as {{ $user->name }}
-                                    </button>
+                                $map = [
+                                    'pr-dept-head-office' => 'Dept Head (Office)',
+                                    'pr-dept-head-factory' => 'Dept Head (Factory)',
+                                    'pr-head-design' => 'Head Design',
+                                    'pr-gm-factory' => 'General Manager',
+                                    'pr-verificator-personalia' => 'Verificator Personalia',
+                                    'pr-verificator-computer' => 'Verificator Computer',
+                                    'pr-purchaser' => 'Purchaser',
+                                    'pr-director' => 'Director',
+                                ];
+                                $prettyApprover =
+                                    $currentApprover && isset($map[$currentApprover])
+                                        ? $map[$currentApprover]
+                                        : $currentApprover;
+
+                                $statusPill =
+                                    $currentStatus === 'APPROVED'
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : ($currentStatus === 'REJECTED'
+                                            ? 'bg-rose-100 text-rose-800'
+                                            : ($currentStatus === 'IN_REVIEW'
+                                                ? 'bg-amber-100 text-amber-800'
+                                                : 'bg-slate-100 text-slate-700'));
+                            @endphp
+
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Workflow Status</span>
+                                <span
+                                    class="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold {{ $statusPill }}">
+                                    {{ $approval->status }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Current Step</span>
+                                <span class="font-medium text-slate-800">
+                                    {{ $currentStep ? 'Step ' . $currentStep->sequence : '-' }}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Waiting For</span>
+                                <span class="font-medium text-slate-800 text-right">
+                                    {{ $prettyApprover ?? '-' }}
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-2 pt-2">
+                                <div class="rounded-xl bg-slate-50 border border-slate-200 p-2 text-center">
+                                    <div class="text-[11px] text-slate-500">Approved</div>
+                                    <div class="text-sm font-semibold text-slate-900">{{ $approvedCount }}</div>
                                 </div>
-                            </template>
-                        </div>
+                                <div class="rounded-xl bg-slate-50 border border-slate-200 p-2 text-center">
+                                    <div class="text-[11px] text-slate-500">Pending</div>
+                                    <div class="text-sm font-semibold text-slate-900">{{ $pendingCount }}</div>
+                                </div>
+                                <div class="rounded-xl bg-slate-50 border border-slate-200 p-2 text-center">
+                                    <div class="text-[11px] text-slate-500">Rejected</div>
+                                    <div class="text-sm font-semibold text-slate-900">{{ $rejectedCount }}</div>
+                                </div>
+                            </div>
+
+                            <div class="pt-3 text-[11px] text-slate-400">
+                                Detail step + signature bisa dilihat di panel “Approval Workflow” sebelah kiri.
+                            </div>
+                        @endif
                     </div>
                 </section>
+
 
                 {{-- UPLOADED FILES --}}
                 <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -750,6 +730,8 @@
                 canAutoApprove: !!canAutoApprove,
                 prId,
                 csrfToken,
+
+                openUploadFiles: false,
                 // if you want to restrict who can sign which slot, add logic here
                 get canSign() {
                     return true;

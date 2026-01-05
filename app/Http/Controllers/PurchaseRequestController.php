@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
+use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\DataTables\PurchaseRequestsDataTable;
@@ -15,7 +16,6 @@ use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Department;
 use App\Models\DetailPurchaseRequest;
-use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -220,94 +220,26 @@ class PurchaseRequestController extends Controller
         return redirect()->route('purchase-requests.index')->with('success', 'Purchase request created successfully');
     }
 
-    public function show($id)
+    public function show(int $id, GetPurchaseRequestDetail $query)
     {
-        $user = Auth::user();
-        $departments = Department::all();
-        $purchaseRequest = PurchaseRequest::with('itemDetail', 'itemDetail.master', 'approvalRequest.steps')->find($id);
-        $approval = $purchaseRequest->approvalRequest;
+        /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
+        $user = auth()->user();
 
-        $canApprove = false;
-        if ($purchaseRequest->approvalRequest) {
-            $canApprove = $this->approvals->canAct($purchaseRequest, (int) $user->id);
-        }
+        $vm = $query->handle($id, $user);
 
-        if (! $purchaseRequest) {
-            // Handle the case where the purchase request is not found
-            abort(404, 'Purchase request not found');
-        }
+        return view('purchase-requests.show', [
+            'purchaseRequest' => $vm->purchaseRequest,
+            'user' => $user,
+            'userCreatedBy' => $vm->meta['userCreatedBy'],
+            'files' => $vm->files,
+            'filteredItemDetail' => $vm->filteredItemDetail,
+            'departments' => $vm->departments,
+            'fromDeptNo' => $vm->fromDeptNo,
+            'approval' => $vm->approval,
 
-        foreach ($purchaseRequest->itemDetail as $detail) {
-            $priceBefore = MasterDataPr::where('name', $detail->item_name)->first()->price ?? 0;
-        }
-
-        $fromDepartment = Department::where('name', $purchaseRequest->from_department)->first();
-        if (! $fromDepartment) {
-            // Handle the case where the department is not found
-            abort(404, 'Department not found');
-        }
-        $fromDeptNo = $fromDepartment->dept_no;
-        
-        $userCreatedBy = $purchaseRequest->createdBy;
-
-        // $this->updateStatus($purchaseRequest);
-
-        $timestamp = strtotime($purchaseRequest->created_at);
-        $formattedDate = date('Ymd', $timestamp);
-        $doc_id = $purchaseRequest->doc_num;
-
-        $files = File::where('doc_id', $doc_id)->get();
-
-        // Filter itemDetail based on user role
-        $filteredItemDetail = $purchaseRequest->itemDetail
-            ->filter(function ($detail) use ($user, $purchaseRequest) {
-                $detail->quantity = $this->formatDecimal($detail->quantity);
-                if ($user->specification->name === 'DIRECTOR') {
-                    if ($purchaseRequest->type === 'factory') {
-                        if ($purchaseRequest->to_department->value === ToDepartment::COMPUTER->value) {
-                            return $detail->is_approve_by_head &&
-                                $detail->is_approve_by_gm &&
-                                $detail->is_approve_by_verificator;
-                        }
-
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                    } else {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
-                    }
-                } elseif ($user->specification->name === 'VERIFICATOR') {
-                    if (
-                        $purchaseRequest->to_department->value === ToDepartment::COMPUTER->value &&
-                        $purchaseRequest->type === 'factory'
-                    ) {
-                        return $detail->is_approve_by_head && $detail->is_approve_by_gm;
-                    }
-
-                    return $detail->is_approve_by_head;
-                } else {
-                    return true; // Include all details for other roles
-                }
-            })
-            ->values(); // Ensure that the result is an array
-
-        if ($purchaseRequest->status == 4) {
-            // dd($filteredItemDetail);
-            $this->updateMasterPRItems($filteredItemDetail);
-        }
-
-        return view(
-            'purchase-requests.show',
-            compact(
-                'purchaseRequest',
-                'user',
-                'userCreatedBy',
-                'files',
-                'filteredItemDetail',
-                'departments',
-                'fromDeptNo',
-                'approval',
-                'canApprove'
-            ),
-        );
+            'flags' => $vm->flags,
+            'totals' => $vm->totals,
+        ]);
     }
 
     private function updateStatus($purchaseRequest)

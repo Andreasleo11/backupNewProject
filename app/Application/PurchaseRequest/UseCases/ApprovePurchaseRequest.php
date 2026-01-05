@@ -3,12 +3,16 @@
 namespace App\Application\PurchaseRequest\UseCases;
 
 use App\Application\Approval\Contracts\Approvals;
+use App\Application\PurchaseRequest\Contracts\SyncPrWorkflow;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
-use App\Models\PurchaseRequest; // sementara pakai model existing
+use App\Models\PurchaseRequest;
 
 final class ApprovePurchaseRequest
 {
-    public function __construct(private readonly Approvals $approvals) {}
+    public function __construct(
+        private readonly Approvals $approvals, 
+        private readonly SyncPrWorkflow $syncPrWorkflow
+    ) {}
 
     public function handle(ApprovalActionDTO $dto): void
     {
@@ -18,5 +22,8 @@ final class ApprovePurchaseRequest
             ->findOrFail($dto->purchaseRequestId);
 
         $this->approvals->approve($pr, $dto->actorUserId, $dto->remarks);
+
+        $pr->load(['approvalRequest.steps']);
+        $this->syncPrWorkflow->sync($pr);
     }
 }

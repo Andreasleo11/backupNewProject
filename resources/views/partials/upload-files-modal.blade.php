@@ -1,5 +1,5 @@
 {{-- Upload Files Modal (Tailwind + Alpine) --}}
-<div x-show="openUploadFiles" x-cloak x-data class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+<div x-show="openUploadFiles" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
     @keydown.escape.window="openUploadFiles = false">
     {{-- Overlay klik luar untuk close --}}
     <div class="absolute inset-0" @click="openUploadFiles = false"></div>

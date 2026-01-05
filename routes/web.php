@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountingPurchaseRequestController;
 use App\Http\Controllers\AdjustFormQcController;
+use App\Http\Controllers\ApprovalSignatureController;
 use App\Http\Controllers\DefectCategoryController;
 use App\Http\Controllers\DetailPurchaseRequestController;
 use App\Http\Controllers\director\DirectorHomeController;
@@ -410,8 +411,7 @@ Route::middleware('auth')->group(function () {
     Route::get('settings/signatures', ManageSignatures::class)->name('signatures.manage');
     Route::get('settings/signatures/capture', CaptureSignature::class)->name('signatures.capture');
 
-    Route::get('/approval-steps/{step}/signature', [\App\Http\Controllers\ApprovalStepSignatureController::class, 'show'])
-    ->name('approval-steps.signature');
+    Route::get('/approval-steps/{step}/signature', [ApprovalSignatureController::class, 'show'])->name('approval-steps.signature');
 
 });
 

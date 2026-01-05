@@ -54,6 +54,8 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(\App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository::class, \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentPurchaseRequestRepository::class);
+
+        $this->app->bind(\App\Application\PurchaseRequest\Contracts\SyncPrWorkflow::class, \App\Application\PurchaseRequest\Services\SyncPrWorkflowFromApproval::class);
     }
 
     /**
