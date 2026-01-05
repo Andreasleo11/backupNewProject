@@ -1,7 +1,7 @@
 <div class="modal fade" id="cancel-confirmation-modal-{{ $pr->id }}">
     <div class="modal-dialog">
         <div class="modal-content text-start">
-            <form action="{{ route('purchaserequest.cancel', $pr->id) }}" method="post">
+            <form action="{{ route('purchase-requests.cancel', $pr->id) }}" method="post">
                 @csrf
                 @method('put')
                 <div class="modal-header">

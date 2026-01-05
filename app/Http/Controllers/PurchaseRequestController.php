@@ -418,114 +418,69 @@ class PurchaseRequestController extends Controller
         return response()->json($items);
     }
 
-    public function update(UpdatePurchaseRequest $request, $id)
-    {
-        $validated = $request->validated();
-        // Define the additional attribute and its value
-        $additionalData = [
-            'updated_at' => now(),
-        ];
+    public function update(
+        UpdatePurchaseRequest $request, 
+        $id,
+        \App\Application\PurchaseRequest\UseCases\UpdatePurchaseRequest $useCase
+    ) {
+        try {
+            $validated = $request->validated();
+            
+            // Build DTO
+            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePurchaseRequestDTO(
+                purchaseRequestId: (int) $id,
+                updatedByUserId: Auth::id(),
+                toDepartment: $validated['to_department'],
+                datePr: $validated['date_of_pr'],
+                dateRequired: $validated['date_of_required'],
+                remark: $validated['remark'] ?? null,
+                supplier: $validated['supplier'] ?? null,
+                pic: $validated['pic'] ?? null,
+                items: array_map(fn($item) => new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
+                    itemName: $item['item_name'],
+                    quantity: (float) $item['quantity'],
+                    uom: $item['uom'],
+                    price: (float) $this->sanitizeCurrencyInput($item['price']),
+                    currency: $item['currency'] ?? 'IDR',
+                    purpose: $item['purpose'] ?? null
+                ), $validated['items']),
+                isImport: $request->is_import === 'true',
+            );
 
-        if ($request->is_import === 'true') {
-            $additionalData['is_import'] = true;
-        } else {
-            $additionalData['is_import'] = false;
+            // Execute UseCase
+            $useCase->handle($dto);
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'Purchase request updated successfully!']);
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => 'Failed to update purchase request: ' . $e->getMessage()])
+                ->withInput();
         }
-
-        $pr = PurchaseRequest::find($id);
-        $isPurchaser = Auth::user()->specification->name === 'PURCHASER';
-        $isHead = Auth::user()->is_head === 1;
-
-        // dept head update
-        if ($pr->status === 1) {
-            if ($isHead) {
-                $additionalData['autograph_2'] = null;
-                $additionalData['autograph_user_2'] = null;
-            }
-            $additionalData['status'] = 1;
-            $dataToUpdate = array_merge($validated, $additionalData);
-
-            $pr->update($dataToUpdate);
-        } elseif ($pr->status === 6) {
-            if ($isPurchaser) {
-                $additionalData['autograph_5'] = null;
-                $additionalData['autograph_user_5'] = null;
-            } elseif ($isHead) {
-                $additionalData['autograph_2'] = null;
-                $additionalData['autograph_user_2'] = null;
-            }
-            $additionalData['status'] = 6;
-
-            // Merge the validated data with the additional data
-            $dataToUpdate = array_merge($validated, $additionalData);
-            // dd($dataToUpdate);
-            $pr->update($dataToUpdate);
-
-            // verificator update
-        } elseif ($pr->status === 3) {
-            $additionalData['autograph_3'] = null;
-            $additionalData['autograph_user_3'] = null;
-            $additionalData['status'] = 3;
-
-            // Merge the validated data with the additional data
-            $dataToUpdate = array_merge($validated, $additionalData);
-
-            // dd($dataToUpdate);
-            $pr->update($dataToUpdate);
-        } else {
-            $pr->update($additionalData);
-        }
-
-        // Delete and Store it again
-        $oldDetails = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-        DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
-
-        $this->verifyAndInsertItems($request->items, $pr);
-
-        $details = DetailPurchaseRequest::where('purchase_request_id', $id)->get();
-
-        foreach ($details as $detail) {
-            foreach ($oldDetails as $oldDetail) {
-                // If the current detail name equal with the old detail name than it will replaced with the old one
-                if ($detail->item_name === $oldDetail->item_name) {
-                    $detail->update([
-                        'is_approve_by_head' => $oldDetail->is_approve_by_head,
-                        'is_approve_by_gm' => $oldDetail->is_approve_by_gm,
-                        'is_approve_by_verificator' => $oldDetail->is_approve_by_verificator,
-                    ]);
-                } else {
-                    $detail->update([
-                        'is_approve_by_head' => auth()->user()->specification->name === 'PURCHASER'
-                                ? 1
-                                : $oldDetail->is_approve_by_head,
-                    ]);
-
-                    if ($pr->type === 'factory') {
-                        $detail->update([
-                            'is_approve_by_gm' => auth()->user()->specification->name === 'PURCHASER'
-                                    ? 1
-                                    : $oldDetail->is_approve_by_gm,
-                        ]);
-                    }
-                }
-            }
-        }
-
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase request updated successfully!']);
     }
 
-    public function destroy($id)
-    {
-        DB::statement('SET FOREIGN_KEY_CHECKS = 0');
-        DetailPurchaseRequest::where('purchase_request_id', $id)->delete();
-        PurchaseRequest::find($id)->delete();
-        DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+    public function destroy(
+        $id,
+        \App\Application\PurchaseRequest\UseCases\DeletePurchaseRequest $useCase
+    ) {
+        try {
+            // Execute UseCase
+            $useCase->handle((int) $id, Auth::id());
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase request deleted succesfully!']);
+            return redirect()
+                ->back()
+                ->with(['success' => 'Purchase request deleted successfully!']);
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => 'Failed to delete purchase request']);
+        }
     }
 
     public function reject(Request $request, $id)
@@ -614,25 +569,54 @@ class PurchaseRequestController extends Controller
         );
     }
 
-    public function cancel(Request $request, $id)
-    {
-        PurchaseRequest::find($id)->update([
-            'is_cancel' => true,
-            'description' => $request->description,
-        ]);
+    public function cancel(
+        Request $request, 
+        $id,
+        \App\Application\PurchaseRequest\UseCases\CancelPurchaseRequest $useCase
+    ) {
+        try {
+            // Build DTO
+            $dto = new \App\Application\PurchaseRequest\DTOs\CancelPurchaseRequestDTO(
+                purchaseRequestId: (int) $id,
+                cancelledByUserId: Auth::id(),
+                reason: $request->description
+            );
 
-        return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+            // Execute UseCase
+            $useCase->handle($dto);
+
+            return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to cancel purchase request');
+        }
     }
 
-    public function updatePoNumber(Request $request, $id)
-    {
-        PurchaseRequest::find($id)->update([
-            'po_number' => $request->po_number,
-        ]);
+    public function updatePoNumber(
+        Request $request, 
+        $id,
+        \App\Application\PurchaseRequest\UseCases\UpdatePoNumber $useCase
+    ) {
+        try {
+            // Build DTO
+            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO(
+                purchaseRequestId: (int) $id,
+                poNumber: $request->po_number,
+                updatedByUserId: Auth::id()
+            );
 
-        return redirect()
-            ->back()
-            ->with('success', 'Purchase request PO Number updated successfully!');
+            // Execute UseCase
+            $useCase->handle($dto);
+
+            return redirect()
+                ->back()
+                ->with('success', 'Purchase request PO Number updated successfully!');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to update PO Number');
+        }
     }
 
     public function exportExcel()

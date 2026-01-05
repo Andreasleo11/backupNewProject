@@ -1,7 +1,7 @@
 <div class="modal fade" id="edit-purchase-request-po-number-{{ $pr->id }}">
     <div class="modal-dialog">
         <div class="modal-content text-start">
-            <form action="{{ route('purchaserequest.update.ponumber', $pr->id) }}" method="post">
+            <form action="{{ route('purchase-requests.po-number.update', $pr->id) }}" method="post">
                 @csrf
                 @method('put')
                 <div class="modal-header">

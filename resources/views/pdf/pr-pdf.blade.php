@@ -267,9 +267,9 @@
                                 @if ($purchaseRequest->is_import)
                                     <td class="{{ $mouldingApprovalCase ? '' : 'd-none' }}">
                                         @if ($detail->is_approve_by_head === null)
-                                            <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"
                                                 class="btn btn-danger">Reject</a>
-                                            <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'head']) }}"
                                                 class="btn btn-success">Approve</a>
                                         @else
                                             {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
@@ -278,9 +278,9 @@
                                 @elseif ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1)
                                     <td>
                                         @if ($detail->is_approve_by_head === null)
-                                            <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"
                                                 class="btn btn-danger">Reject</a>
-                                            <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'head']) }}"
                                                 class="btn btn-success">Approve</a>
                                         @else
                                             {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
@@ -289,9 +289,9 @@
                                 @elseif ($user->specification->name == 'VERIFICATOR')
                                     <td>
                                         @if ($detail->is_approve_by_verificator === null)
-                                            <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
                                                 class="btn btn-danger">Reject</a>
-                                            <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
                                                 class="btn btn-success">Approve</a>
                                         @else
                                             {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
@@ -300,9 +300,9 @@
                                 @elseif ($user->specification->name === 'DIRECTOR')
                                     <td>
                                         @if ($detail->is_approve === null)
-                                            <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
+                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'director']) }}"
                                                 class="btn btn-danger">Reject</a>
-                                            <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
+                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'director']) }}"
                                                 class="btn btn-success">Approve</a>
                                         @else
                                             {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}

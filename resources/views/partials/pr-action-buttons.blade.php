@@ -2,7 +2,7 @@
     <a href="{{ route('purchase-requests.show', ['id' => $pr->id]) }}" class="my-1 btn btn-secondary">
         <i class='bx bx-info-circle'></i> Detail
     </a>
-    <a href="{{ route('purchaserequest.exportToPdf', $pr->id) }}" class="my-1 btn btn-outline-success my-1 ">
+    <a href="{{ route('purchase-requests.export-pdf', $pr->id) }}" class="my-1 btn btn-outline-success my-1 ">
         <i class='bx bxs-file-pdf'></i> <span class="d-none d-sm-inline">Export
             PDF</span>
     </a>
@@ -51,7 +51,7 @@
         </button>
         <ul class="dropdown-menu">
             <li>
-                <a href="{{ route('purchaserequest.exportToPdf', $pr->id) }}"
+                <a href="{{ route('purchase-requests.export-pdf', $pr->id) }}"
                     class="my-1 btn btn-success my-1 dropdown-item">
                     <i class='bx bxs-file-pdf'></i> <span class="d-none d-sm-inline">Export PDF</span>
                 </a>

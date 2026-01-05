@@ -2,48 +2,41 @@
 
 namespace App\Infrastructure\Listeners;
 
-use App\Enums\ToDepartment;
 use App\Events\PurchaseRequestCreated;
-use App\Models\User;
+use App\Infrastructure\Notifications\Services\PurchaseRequestRecipientResolver;
 use App\Notifications\PurchaseRequestCreated as PurchaseRequestCreatedNotification;
 use Illuminate\Support\Facades\Notification;
 
 class SendPurchaseRequestCreatedNotification
 {
+    public function __construct(
+        private PurchaseRequestRecipientResolver $recipientResolver
+    ) {}
+
     public function handle(PurchaseRequestCreated $event): void
     {
         $pr = $event->purchaseRequest;
 
-        $details = $this->prepareNotificationDetails($pr);
-        
-        // Determine recipients
-        $users = [$pr->createdBy]; // Assuming relation is loaded or lazy-loaded
-        
-        $extraUser = null;
-        if ($pr->to_department->value === ToDepartment::MAINTENANCE->value) {
-            if (
-                $pr->from_department === 'PLASTIC INJECTION' &&
-                $pr->branch === 'KARAWANG'
-            ) {
-                $extraUser = null;
-            } else {
-                $extraUser = User::where('email', 'nur@daijo.co.id')->first();
-            }
+        // Use Recipient Resolver Service to determine who gets notified
+        $recipients = $this->recipientResolver->resolveForCreation($pr);
+
+        if ($recipients->isEmpty()) {
+            return; // No recipients, skip notification
         }
 
-        if ($extraUser) {
-            $users[] = $extraUser;
-        }
+        $details = $this->prepareNotificationDetails($pr);
 
         Notification::send(
-            $users,
+            $recipients,
             new PurchaseRequestCreatedNotification($pr, $details)
         );
     }
 
+
     private function prepareNotificationDetails($pr): array
     {
-        $statusText = $this->getStatusText($pr->status);
+        // Use Recipient Resolver for status text
+        $statusText = $this->recipientResolver->getStatusUpdateMessage($pr, $pr->status);
 
         $body = "Here's the detail : <br>
                 - Doc. Num : $pr->doc_num <br>
@@ -62,19 +55,5 @@ class SendPurchaseRequestCreatedNotification
             'actionURL' => route('purchase-requests.show', $pr->id),
             'body' => $body,
         ];
-    }
-
-    private function getStatusText(int $status): string
-    {
-        return match ($status) {
-            1 => 'WAITING FOR DEPT HEAD',
-            2 => 'WAITING FOR VERIFICATOR',
-            3 => 'WAITING FOR DIRECTOR',
-            4 => 'APPROVED',
-            5 => 'REJECTED',
-            6 => 'WAITING FOR PURCHASER',
-            7 => 'WAITING FOR GM',
-            default => 'NOT DEFINED',
-        };
     }
 }

@@ -1,6 +1,6 @@
 <div class="modal fade" id="reject-pr-confirmation">
     <div class="modal-dialog modal-dialog">
-        <form action="{{ route('purchaserequest.reject', $purchaseRequest->id) }}" method="get">
+        <form action="{{ route('purchase-requests.reject', $purchaseRequest->id) }}" method="get">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="pr-modal">Confirmation Reject</h1>

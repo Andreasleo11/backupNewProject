@@ -8,7 +8,7 @@
                 <div class="row justify-content-center">
                     <div class="container p-5 pb-0">
                         <div class="h2 text-center fw-bold mb-4">Edit Purchase Request</div>
-                        <form action="{{ route('purchaserequest.update', $pr->id) }}" method="POST" class="row"
+                        <form action="{{ route('purchase-requests.update', $pr->id) }}" method="POST" class="row"
                             id="form-pr-edit">
                             @method('PUT')
                             @csrf

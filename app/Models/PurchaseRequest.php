@@ -74,23 +74,7 @@ class PurchaseRequest extends Model implements Approvable
         // atau 'from_department_id' kalau sudah dinormalisasi
     }
 
-    /**
-     * Context yang dipakai RuleResolver untuk milih rule template.
-     */
-    public function buildApprovalContext(): array
-    {
-        $total = $this->items->sum(function ($item) {
-            return (float) $item->quantity * (float) $item->price;
-        });
 
-        return [
-            'from_department' => $this->from_department,                 // string nama dept
-            'to_department' => $this->to_department->value,                   // COMPUTER / MAINTENANCE / ...
-            'branch' => $this->branch,                          // JAKARTA / KARAWANG
-            'at_office' => (bool) optional($this->fromDepartment)->is_office,
-            'amount' => $total,                                 // buat threshold nominal kalau perlu
-        ];
-    }
 
     public function signatures()
     {
@@ -125,17 +109,6 @@ class PurchaseRequest extends Model implements Approvable
     public function scopeRejected($query)
     {
         return $query->where('status', 5);
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::updated(function ($pr) {
-            if ($pr->isDirty('status') && $pr->status != 8) {
-                \App\Events\PurchaseRequestStatusUpdated::dispatch($pr);
-            }
-        });
     }
 
 

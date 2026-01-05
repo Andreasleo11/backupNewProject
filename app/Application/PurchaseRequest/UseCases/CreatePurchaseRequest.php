@@ -7,8 +7,11 @@ namespace App\Application\PurchaseRequest\UseCases;
 use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestNumberGenerator;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestStatusCalculator;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestTypeResolver;
 use App\Events\PurchaseRequestCreated;
-use App\Models\Department;
 use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +21,10 @@ final class CreatePurchaseRequest
     public function __construct(
         private PurchaseRequestRepository $repo,
         private Approvals $approvals,
-        private \App\Domain\PurchaseRequest\Services\PurchaseRequestNumberGenerator $numberGenerator,
+        private PurchaseRequestNumberGenerator $numberGenerator,
+        private PurchaseRequestStatusCalculator $statusCalculator,
+        private PurchaseRequestTypeResolver $typeResolver,
+        private PurchaseRequestApprovalContextBuilder $contextBuilder,
     ) {}
 
     public function handle(CreatePurchaseRequestDTO $dto): PurchaseRequest
@@ -47,7 +53,16 @@ final class CreatePurchaseRequest
             // Submit to approval engine if final
             if (! $dto->isDraft && ! $pr->approvalRequest) {
                 $pr = $this->repo->loadForApprovalContext($pr);
-                $ctx = $pr->buildApprovalContext(); 
+                
+                // Build approval context using Domain Service
+                $ctx = $this->contextBuilder->build(
+                    fromDepartment: $pr->from_department,
+                    toDepartment: $pr->to_department->value,
+                    branch: $pr->branch,
+                    isOffice: $pr->type === 'office',
+                    items: $pr->items->toArray()
+                );
+                
                 $this->approvals->submit($pr, $dto->requestedByUserId, $ctx);
             }
             
@@ -60,27 +75,15 @@ final class CreatePurchaseRequest
 
     private function buildHeader(CreatePurchaseRequestDTO $dto): array
     {
-        // Determine office/factory using your existing rules
-        $officeDepartments = $this->repo->getOfficeDepartmentNames();
-
         $from = strtoupper($dto->fromDepartment);
 
-        $type = in_array($from, $officeDepartments, true) ? 'office' : 'factory';
-        if ($from === 'PE') $type = 'factory';
-        
-        // ... (rest of method unchanged)
-        
-        $status = $dto->isDraft ? 8 : 1;
-
-        // your special cases
-        if (! $dto->isDraft) {
-            if ($from === 'PLASTIC INJECTION' || ($from === 'MAINTENANCE MACHINE' && $dto->branch === 'KARAWANG')) {
-                $status = 7;
-            }
-            if ($from === 'PERSONALIA') {
-                $status = 6;
-            }
-        }
+        // Use Domain Services to calculate type and status
+        $type = $this->typeResolver->resolve($dto->fromDepartment);
+        $status = $this->statusCalculator->calculateInitialStatus(
+            fromDepartment: $from,
+            branch: $dto->branch,
+            isDraft: $dto->isDraft
+        );
 
         $header = [
             'user_id_create' => $dto->requestedByUserId,

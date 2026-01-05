@@ -378,34 +378,36 @@ Route::middleware('auth')->group(function () {
     Route::get('overtime-forms/push-overtime-detail/{detailId}', [FormOvertimeController::class, 'pushSingleDetailToJPayroll']);
     Route::post('overtime-forms/push-all/{headerId}', [FormOvertimeController::class, 'pushAllDetailsToJPayroll']);
 
+    // Purchase Request Routes - Standardized
     Route::get('purchase-requests', [PurchaseRequestController::class, 'index'])->name('purchase-requests.index');
     Route::get('purchase-requests/create', [PurchaseRequestController::class, 'create'])->name('purchase-requests.create');
-    Route::post('purchase-requests/store', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
+    Route::post('purchase-requests', [PurchaseRequestController::class, 'store'])->name('purchase-requests.store');
     Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
-
-    Route::get('purchase-requests/reject/{id}', [PurchaseRequestController::class, 'reject'])->name('purchaserequest.reject');
-    Route::put('purchase-requests/{id}/update', [PurchaseRequestController::class, 'update'])->name('purchaserequest.update');
-    Route::delete('purchase-requests/{id}/delete', [PurchaseRequestController::class, 'destroy'])->name('purchaserequest.delete');
-    Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchaserequest.cancel');
-    Route::put('purchase-requests/{id}/ponum', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchaserequest.update.ponumber');
-
-    Route::post('save-signature-path/{prId}/{section}', [PurchaseRequestController::class, 'saveSignaturePath']);
-    Route::get('approveAllDetailItems/{prId}/{type}', [PurchaseRequestController::class, 'approveAllDetailItems']);
-
-    Route::get('purchase-requests/detail/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchaserequest.detail.approve');
-    Route::get('purchase-requests/detail/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchaserequest.detail.reject');
-    Route::post('purchase-requests/detail/update', [DetailPurchaseRequestController::class, 'update'])->name('purchaserequest.detail.update');
-
-    Route::get('purchase-requests/get-item-names', [PurchaseRequestController::class, 'getItemNames']);
-
-    Route::post('purchase-requests/detail/{id}/updateReceivedQuantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchaserequest.update.receivedQuantity');
-    Route::get('purchase-requests/detail/{id}/updateAllReceivedQuantity', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchaserequest.update.allReceivedQuantity');
-
-    Route::get('purchase-requests/{id}/exportToPdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchaserequest.exportToPdf');
-    Route::get('purchase-requests/exportExcel', [PurchaseRequestController::class, 'exportExcel'])->name('purchaserequest.export.excel');
-
-    Route::post('/purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
-    Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'rejectWorkflow'])->name('purchase-requests.reject');
+    Route::put('purchase-requests/{id}', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
+    Route::delete('purchase-requests/{id}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
+    
+    // Purchase Request Actions
+    Route::get('purchase-requests/{id}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
+    Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchase-requests.cancel');
+    Route::put('purchase-requests/{id}/po-number', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
+    Route::get('purchase-requests/{id}/export-pdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
+    Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
+    
+    // Purchase Request Approvals (Workflow)
+    Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
+    Route::post('purchase-requests/{purchaseRequest}/reject-workflow', [PurchaseRequestController::class, 'rejectWorkflow'])->name('purchase-requests.reject-workflow');
+    
+    // Purchase Request Utilities
+    Route::post('purchase-requests/{prId}/signature/{section}', [PurchaseRequestController::class, 'saveSignaturePath'])->name('purchase-requests.signature.save');
+    Route::get('purchase-requests/{prId}/approve-all-items/{type}', [PurchaseRequestController::class, 'approveAllDetailItems'])->name('purchase-requests.approve-all-items');
+    Route::get('purchase-requests/item-names', [PurchaseRequestController::class, 'getItemNames'])->name('purchase-requests.item-names');
+    
+    // Purchase Request Item (Detail) Routes
+    Route::get('purchase-requests/items/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchase-requests.items.approve');
+    Route::get('purchase-requests/items/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
+    Route::post('purchase-requests/items/update', [DetailPurchaseRequestController::class, 'update'])->name('purchase-requests.items.update');
+    Route::post('purchase-requests/items/{id}/received-quantity', [DetailPurchaseRequestController::class, 'updateReceivedQuantity'])->name('purchase-requests.items.received-quantity.update');
+    Route::get('purchase-requests/items/{id}/received-quantity-all', [DetailPurchaseRequestController::class, 'updateAllReceivedQuantity'])->name('purchase-requests.items.received-quantity-all.update');
 
     Route::get('signatures/{id}', [SignatureController::class, 'show'])->name('signatures.show');
     Route::get('settings/signatures', ManageSignatures::class)->name('signatures.manage');

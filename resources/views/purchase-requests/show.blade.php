@@ -418,11 +418,11 @@
                                                 <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
                                                     @if ($detail->is_approve === null)
                                                         <div class="inline-flex gap-1">
-                                                            <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'director']) }}"
                                                                 class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
                                                                 Reject
                                                             </a>
-                                                            <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'director']) }}"
+                                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'director']) }}"
                                                                 class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
                                                                 Approve
                                                             </a>
@@ -435,11 +435,11 @@
                                                 <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
                                                     @if ($detail->is_approve_by_verificator === null)
                                                         <div class="inline-flex gap-1">
-                                                            <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
                                                                 class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
                                                                 Reject
                                                             </a>
-                                                            <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
+                                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
                                                                 class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
                                                                 Approve
                                                             </a>
@@ -454,11 +454,11 @@
                                                         class="whitespace-nowrap px-2 py-2 text-center align-middle {{ $mouldingApprovalCase ? '' : 'hidden' }}">
                                                         @if ($detail->is_approve_by_head === null)
                                                             <div class="inline-flex gap-1">
-                                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                                <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"
                                                                     class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
                                                                     Reject
                                                                 </a>
-                                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                                <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'head']) }}"
                                                                     class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
                                                                     Approve
                                                                 </a>
@@ -471,11 +471,11 @@
                                                     <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
                                                         @if ($detail->is_approve_by_head === null)
                                                             <div class="inline-flex gap-1">
-                                                                <a href="{{ route('purchaserequest.detail.reject', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                                <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"
                                                                     class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
                                                                     Reject
                                                                 </a>
-                                                                <a href="{{ route('purchaserequest.detail.approve', ['id' => $detail->id, 'type' => 'head']) }}"
+                                                                <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'head']) }}"
                                                                     class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
                                                                     Approve
                                                                 </a>
