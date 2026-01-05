@@ -7,8 +7,10 @@ namespace App\Application\PurchaseRequest\UseCases;
 use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
+use App\Events\PurchaseRequestCreated;
 use App\Models\Department;
 use App\Models\PurchaseRequest;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 final class CreatePurchaseRequest
@@ -16,14 +18,28 @@ final class CreatePurchaseRequest
     public function __construct(
         private PurchaseRequestRepository $repo,
         private Approvals $approvals,
+        private \App\Domain\PurchaseRequest\Services\PurchaseRequestNumberGenerator $numberGenerator,
     ) {}
 
     public function handle(CreatePurchaseRequestDTO $dto): PurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
             $header = $this->buildHeader($dto);
+            
+            // Generate Doc Num before create
+            $header['doc_num'] = $this->numberGenerator->generateDocNum(
+                $dto->toDepartment, 
+                $dto->branch, 
+                Carbon::parse($dto->datePr) // Or use now() if datePr is just input date
+            );
+            // PR No depends on ID, so we fill it temporarily or update after
+            $header['pr_no'] = 'TMP'; 
 
             $pr = $this->repo->create($header);
+
+            // Update PR No
+            $pr->pr_no = $this->numberGenerator->generatePrNo($dto->toDepartment, $pr->id);
+            $pr->saveQuietly(); // Use saveQuietly to avoid triggering events if we were still using Model events
 
             $items = $this->buildItems($dto, $pr->from_department);
             $this->repo->addItems($pr, $items);
@@ -31,10 +47,13 @@ final class CreatePurchaseRequest
             // Submit to approval engine if final
             if (! $dto->isDraft && ! $pr->approvalRequest) {
                 $pr = $this->repo->loadForApprovalContext($pr);
-                $ctx = $pr->buildApprovalContext(); // keep your existing method for now
+                $ctx = $pr->buildApprovalContext(); 
                 $this->approvals->submit($pr, $dto->requestedByUserId, $ctx);
             }
-
+            
+            // Dispatch Event
+            PurchaseRequestCreated::dispatch($pr);
+            
             return $pr;
         });
     }
@@ -42,16 +61,15 @@ final class CreatePurchaseRequest
     private function buildHeader(CreatePurchaseRequestDTO $dto): array
     {
         // Determine office/factory using your existing rules
-        $officeDepartments = Department::where('is_office', true)
-            ->pluck('name')
-            ->map(fn ($n) => strtoupper($n))
-            ->toArray();
+        $officeDepartments = $this->repo->getOfficeDepartmentNames();
 
         $from = strtoupper($dto->fromDepartment);
 
         $type = in_array($from, $officeDepartments, true) ? 'office' : 'factory';
         if ($from === 'PE') $type = 'factory';
-
+        
+        // ... (rest of method unchanged)
+        
         $status = $dto->isDraft ? 8 : 1;
 
         // your special cases

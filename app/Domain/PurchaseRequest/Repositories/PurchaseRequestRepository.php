@@ -14,4 +14,9 @@ interface PurchaseRequestRepository
     public function addItems(PurchaseRequest $pr, array $items): void;
 
     public function loadForApprovalContext(PurchaseRequest $pr): PurchaseRequest;
+
+    public function getLatestByDocNumPrefix(string $prefix): ?PurchaseRequest;
+
+    /** @return string[] */
+    public function getOfficeDepartmentNames(): array;
 }

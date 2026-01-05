@@ -40,4 +40,19 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
             'approvalRequest.steps', // optional, but useful
         ]);
     }
+
+    public function getLatestByDocNumPrefix(string $prefix): ?PurchaseRequest
+    {
+        return PurchaseRequest::where('doc_num', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->first();
+    }
+
+    public function getOfficeDepartmentNames(): array
+    {
+        return \App\Models\Department::where('is_office', true)
+            ->pluck('name')
+            ->map(fn ($n) => strtoupper($n))
+            ->toArray();
+    }
 }
