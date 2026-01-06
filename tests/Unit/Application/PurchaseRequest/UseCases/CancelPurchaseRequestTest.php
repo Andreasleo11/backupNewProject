@@ -6,9 +6,8 @@ use App\Application\PurchaseRequest\DTOs\CancelPurchaseRequestDTO;
 use App\Application\PurchaseRequest\UseCases\CancelPurchaseRequest;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\PurchaseRequest;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Mockery;
 use Tests\TestCase;
 
@@ -23,7 +22,7 @@ class CancelPurchaseRequestTest extends TestCase
     public function test_handle_cancels_pr()
     {
         Event::fake();
-        DB::shouldReceive('transaction')->andReturnUsing(fn($callback) => $callback());
+        DB::shouldReceive('transaction')->andReturnUsing(fn ($callback) => $callback());
 
         $repo = Mockery::mock(PurchaseRequestRepository::class);
         $useCase = new CancelPurchaseRequest($repo);

@@ -15,7 +15,7 @@ final class CreateReport
     ) {}
 
     /**
-     * @param  ItemData[]  $items
+     * @param ItemData[] $items
      */
     public function handle(ReportData $data, array $items, int $creatorId): VerificationReport
     {

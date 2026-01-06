@@ -1,7 +1,8 @@
 <?php
+
 namespace App\Application\Department\DTOs;
 
-class DepartmentData 
+class DepartmentData
 {
     public function __construct(
         public readonly ?int $id,
@@ -11,5 +12,5 @@ class DepartmentData
         public readonly string $branch,
         public readonly bool $isOffice,
         public readonly bool $isActive,
-    ){}
+    ) {}
 }

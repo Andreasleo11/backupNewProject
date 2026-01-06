@@ -23,9 +23,9 @@ final class UpdatePurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
             $pr = $this->repo->find($dto->purchaseRequestId);
-            
+
             if (! $pr) {
-                throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
             // Determine if we need to reset autographs based on status and user role
@@ -74,8 +74,8 @@ final class UpdatePurchaseRequest
     private function shouldResetAutographs(PurchaseRequest $pr, int $userId): bool
     {
         $user = \App\Models\User::find($userId);
-        
-        if (!$user) {
+
+        if (! $user) {
             return false;
         }
 

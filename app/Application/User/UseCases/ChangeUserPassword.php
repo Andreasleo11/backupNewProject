@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Application\User\UseCases;
 
 use App\Domain\User\Repositories\UserRepository;
@@ -14,7 +15,7 @@ class ChangeUserPassword
     {
         $user = $this->users->findById($userId);
 
-        if(!$user) {
+        if (! $user) {
             throw new DomainException('User not Found');
         }
 

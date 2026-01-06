@@ -15,7 +15,7 @@ class ImportantDocumentDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -56,7 +56,7 @@ class ImportantDocumentDataTable extends DataTable
     /**
      * Get query source of dataTable.
      *
-     * @param  \App\Models\ImportantDocument  $model
+     * @param \App\Models\ImportantDocument $model
      */
     public function query(ImportantDoc $model): QueryBuilder
     {
@@ -139,6 +139,6 @@ class ImportantDocumentDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'ImportantDocument_'.date('YmdHis');
+        return 'ImportantDocument_' . date('YmdHis');
     }
 }

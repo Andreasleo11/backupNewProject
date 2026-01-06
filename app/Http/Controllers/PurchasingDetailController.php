@@ -234,14 +234,14 @@ class PurchasingDetailController extends Controller
             $vendorName,
         );
 
-        $fileName = $vendorName ? $vendorName.'_exported_data_INTERNAL.xlsx' : 'filename.xlsx';
+        $fileName = $vendorName ? $vendorName . '_exported_data_INTERNAL.xlsx' : 'filename.xlsx';
 
         $userEmail = auth()->user()->email;
         $userName = auth()->user()->name;
 
         // Tambahan testing send email saat klik export
 
-        Excel::store($export, 'public/'.$fileName);
+        Excel::store($export, 'public/' . $fileName);
         // Export data to Excel file and store it temporarily
 
         $filePath = Storage::url($fileName);
@@ -359,7 +359,7 @@ class PurchasingDetailController extends Controller
             $contact,
         );
 
-        $fileName = $vendorName ? $vendorName.'_exported_data_Customer.xlsx' : 'filename.xlsx';
+        $fileName = $vendorName ? $vendorName . '_exported_data_Customer.xlsx' : 'filename.xlsx';
 
         return Excel::download($export, $fileName);
     }

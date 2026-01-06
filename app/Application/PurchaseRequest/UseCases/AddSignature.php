@@ -26,7 +26,7 @@ final class AddSignature
 
         $stepCode = self::STEP_MAP[$dto->section] ?? null;
 
-        if (!$stepCode) {
+        if (! $stepCode) {
             return;
         }
 

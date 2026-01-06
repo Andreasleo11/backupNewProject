@@ -15,7 +15,7 @@ class SpecificationDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -83,6 +83,6 @@ class SpecificationDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Specification_'.date('YmdHis');
+        return 'Specification_' . date('YmdHis');
     }
 }

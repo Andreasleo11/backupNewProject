@@ -56,7 +56,7 @@ class MonthlyBudgetSummaryReportRequestSign extends Notification implements Shou
     public function toArray(object $notifiable): array
     {
         return [
-            'data' => ' Monthly Budget Summary Report of '.$this->report->id.' needs your sign',
+            'data' => ' Monthly Budget Summary Report of ' . $this->report->id . ' needs your sign',
         ];
     }
 }

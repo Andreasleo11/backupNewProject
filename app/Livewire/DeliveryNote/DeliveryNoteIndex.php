@@ -97,7 +97,7 @@ class DeliveryNoteIndex extends Component
         }
 
         if ($this->searchAll) {
-            $search = '%'.$this->searchAll.'%';
+            $search = '%' . $this->searchAll . '%';
 
             $query->where(function ($q) use ($search) {
                 $q->where('branch', 'like', $search)

@@ -12,9 +12,6 @@ class ListUsers
         private UserRepository $users
     ) {}
 
-    /**
-     * @return \Illuminate\Pagination\LengthAwarePaginator
-     */
     public function execute(UserFilter $filter): LengthAwarePaginator
     {
         return $this->users->paginate(

@@ -62,7 +62,7 @@ class ImportJobsList extends Component
         }
 
         if (trim($this->search) !== '') {
-            $term = '%'.trim($this->search).'%';
+            $term = '%' . trim($this->search) . '%';
             $q->where(function ($x) use ($term) {
                 $x->where('id', 'like', $term)
                     ->orWhere('type', 'like', $term)

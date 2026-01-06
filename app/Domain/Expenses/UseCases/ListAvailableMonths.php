@@ -17,7 +17,7 @@ final class ListAvailableMonths
         $months = $this->repo->listMonths($prSigner, $limit); // ['2025-04','2025-03',...]
 
         return array_map(function (string $ym) {
-            $label = Carbon::parse($ym.'-01')->isoFormat('MMM YYYY');
+            $label = Carbon::parse($ym . '-01')->isoFormat('MMM YYYY');
 
             return ['value' => $ym, 'label' => $label];
         }, $months);

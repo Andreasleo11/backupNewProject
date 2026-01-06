@@ -55,8 +55,8 @@ class PurchaseOrderRejected extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => 'Purchase Order with document number = '.
-                $this->report->id.
+            'message' => 'Purchase Order with document number = ' .
+                $this->report->id .
                 ' has just been rejected!',
             'status' => $this->report->status,
         ];

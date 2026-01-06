@@ -25,7 +25,7 @@ class UpdateUser
 
         if ((string) $existing->email() !== $data->email) {
             $existing = $this->users->findByEmail($data->email);
-            
+
             if ($existing && $existing->id() !== $existing->id()) {
                 throw new DomainException('Email already in use');
             }
@@ -44,14 +44,14 @@ class UpdateUser
 
         $employeeId = $existing->employeeId();
 
-        if($data->employeeId !== null && $data->employeeId !== $employeeId) {
+        if ($data->employeeId !== null && $data->employeeId !== $employeeId) {
             $employee = $this->employees->findById($data->employeeId);
-            if(!$employee) {
+            if (! $employee) {
                 throw new \DomainException('Employee not found');
             }
 
             $otherUser = $this->users->findByEmployeeId($data->employeeId);
-            if($otherUser && $otherUser->id() !== $existing->id()) {
+            if ($otherUser && $otherUser->id() !== $existing->id()) {
                 throw new DomainException('This employee already has a user account.');
             }
 

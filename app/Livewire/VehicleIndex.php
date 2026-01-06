@@ -17,8 +17,8 @@ class VehicleIndex extends Component
 
     public function render()
     {
-        $vehicles = Vehicle::where('plate_number', 'like', '%'.$this->search.'%')
-            ->orWhere('driver_name', 'like', '%'.$this->search.'%')
+        $vehicles = Vehicle::where('plate_number', 'like', '%' . $this->search . '%')
+            ->orWhere('driver_name', 'like', '%' . $this->search . '%')
             ->orderBy('plate_number')
             ->get();
 

@@ -109,7 +109,7 @@ class StepDimension extends Component
         $fifteen = function ($attribute, $value, $fail) {
             $minutes = \Carbon\Carbon::createFromFormat('H:i', $value)->minute;
             if ($minutes % 15 !== 0) {
-                $fail('The '.$attribute.' must be in 15-minute increments (00, 15, 30, 45).');
+                $fail('The ' . $attribute . ' must be in 15-minute increments (00, 15, 30, 45).');
             }
         };
 
@@ -176,7 +176,7 @@ class StepDimension extends Component
     public function mount($inspection_report_document_number = null)
     {
         $this->inspection_report_document_number = $inspection_report_document_number;
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
 
         $this->dimensions = session("stepDetailSaved.dimensions.{$this->periodKey}", []);
         $this->sessionSaved = session("stepDetailSaved.dimensions.{$this->periodKey}", []);
@@ -213,11 +213,11 @@ class StepDimension extends Component
         $period = session('stepDetailSaved.period');
 
         $this->start_time = Carbon::parse(
-            session('stepDetailSaved.details.'.'p'.$period.'.start_datetime'),
+            session('stepDetailSaved.details.' . 'p' . $period . '.start_datetime'),
         )->format('H:i');
 
         $this->end_time = Carbon::parse(
-            session('stepDetailSaved.details.'.'p'.$period.'.end_datetime'),
+            session('stepDetailSaved.details.' . 'p' . $period . '.end_datetime'),
         )->format('H:i');
 
         $this->dimensions[] = [

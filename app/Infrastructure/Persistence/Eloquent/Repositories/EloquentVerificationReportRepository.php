@@ -21,11 +21,11 @@ final class EloquentVerificationReportRepository implements VerificationReportRe
 
     public function nextDocumentNumber(): string
     {
-        $prefix = 'VQC-'.now()->format('Ymd').'-';
-        $last = VerificationReport::where('document_number', 'like', $prefix.'%')
+        $prefix = 'VQC-' . now()->format('Ymd') . '-';
+        $last = VerificationReport::where('document_number', 'like', $prefix . '%')
             ->orderByDesc('id')->value('document_number');
         $n = $last ? (int) substr($last, -4) + 1 : 1;
 
-        return $prefix.str_pad((string) $n, 4, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $n, 4, '0', STR_PAD_LEFT);
     }
 }

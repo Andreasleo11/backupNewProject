@@ -19,9 +19,9 @@ final class CancelPurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
             $pr = $this->repo->find($dto->purchaseRequestId);
-            
+
             if (! $pr) {
-                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
             // Validate that PR can be cancelled

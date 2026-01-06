@@ -119,7 +119,7 @@ class RuleManager extends Component
                 }
             } catch (\Throwable $e) {
                 throw ValidationException::withMessages([
-                    'rule_match_expr_raw' => 'Invalid JSON: '.$e->getMessage(),
+                    'rule_match_expr_raw' => 'Invalid JSON: ' . $e->getMessage(),
                 ]);
             }
         }
@@ -281,9 +281,9 @@ class RuleManager extends Component
     {
         $rules = RuleTemplate::query()
             ->when($this->search !== '', function ($q) {
-                $q->where('code', 'like', '%'.$this->search.'%')
-                    ->orWhere('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('model_type', 'like', '%'.$this->search.'%');
+                $q->where('code', 'like', '%' . $this->search . '%')
+                    ->orWhere('name', 'like', '%' . $this->search . '%')
+                    ->orWhere('model_type', 'like', '%' . $this->search . '%');
             })
             ->orderBy('priority')
             ->orderBy('code')

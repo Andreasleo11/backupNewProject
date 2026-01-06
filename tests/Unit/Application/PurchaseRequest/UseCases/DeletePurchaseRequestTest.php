@@ -5,8 +5,8 @@ namespace Tests\Unit\Application\PurchaseRequest\UseCases;
 use App\Application\PurchaseRequest\UseCases\DeletePurchaseRequest;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\PurchaseRequest;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Mockery;
 use Tests\TestCase;
 
@@ -21,7 +21,7 @@ class DeletePurchaseRequestTest extends TestCase
     public function test_handle_deletes_pr()
     {
         Event::fake();
-        DB::shouldReceive('transaction')->andReturnUsing(fn($callback) => $callback());
+        DB::shouldReceive('transaction')->andReturnUsing(fn ($callback) => $callback());
 
         $repo = Mockery::mock(PurchaseRequestRepository::class);
         $useCase = new DeletePurchaseRequest($repo);

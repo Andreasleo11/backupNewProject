@@ -181,7 +181,7 @@ class MasterInventoryController extends BaseController
         if ($request->hasFile('position_image')) {
             // Delete the old image if it exists
             if ($masterInventory->position_image) {
-                $oldImagePath = public_path('storage/'.$masterInventory->position_image);
+                $oldImagePath = public_path('storage/' . $masterInventory->position_image);
                 if (file_exists($oldImagePath)) {
                     unlink($oldImagePath);
                 }
@@ -624,12 +624,12 @@ class MasterInventoryController extends BaseController
         $data = DetailHardware::with('masterInventory', 'hardwareType')->find($id);
 
         $qrData =
-            $data->brand.
-            '~'.
-            $data->hardwareType->name.
-            '~'.
-            $data->hardware_name.
-            '~'.
+            $data->brand .
+            '~' .
+            $data->hardwareType->name .
+            '~' .
+            $data->hardware_name .
+            '~' .
             $data->remark;
 
         $qrCodeWriter = new PngWriter;

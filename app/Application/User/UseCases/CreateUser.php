@@ -32,11 +32,11 @@ class CreateUser
         }
 
         $existingEmployee = $this->users->findByEmployeeId($data->employeeId);
-        if($existingEmployee) {
+        if ($existingEmployee) {
             throw new \DomainException('This employee already has a user account.');
         }
-        
-        if($data->password === null && $data->password === '') {
+
+        if ($data->password === null && $data->password === '') {
             throw new \DomainException('Password is required when creating a user.');
         }
 

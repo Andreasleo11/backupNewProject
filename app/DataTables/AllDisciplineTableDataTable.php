@@ -15,7 +15,7 @@ class AllDisciplineTableDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -189,7 +189,7 @@ class AllDisciplineTableDataTable extends DataTable
     /**
      * Get query source of dataTable.
      *
-     * @param  \App\Models\AllDisciplineTable  $model
+     * @param \App\Models\AllDisciplineTable $model
      */
     public function query(EvaluationData $model): QueryBuilder
     {
@@ -290,6 +290,6 @@ class AllDisciplineTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'AllDisciplineTable_'.date('YmdHis');
+        return 'AllDisciplineTable_' . date('YmdHis');
     }
 }

@@ -133,7 +133,7 @@ class InspectionIndex extends Component
             ])
             // global search
             ->when($this->search !== '', function ($q) {
-                $s = '%'.trim($this->search).'%';
+                $s = '%' . trim($this->search) . '%';
                 $q->where(
                     fn ($qq) => $qq
                         ->where('document_number', 'like', $s)
@@ -147,7 +147,7 @@ class InspectionIndex extends Component
                 fn ($q) => $q->where(
                     'document_number',
                     'like',
-                    '%'.trim($this->filters['document_number']).'%',
+                    '%' . trim($this->filters['document_number']) . '%',
                 ),
             )
             ->when(
@@ -155,7 +155,7 @@ class InspectionIndex extends Component
                 fn ($q) => $q->where(
                     'customer',
                     'like',
-                    '%'.trim($this->filters['customer']).'%',
+                    '%' . trim($this->filters['customer']) . '%',
                 ),
             )
             ->when(
@@ -163,7 +163,7 @@ class InspectionIndex extends Component
                 fn ($q) => $q->where(
                     'part_number',
                     'like',
-                    '%'.trim($this->filters['part_number']).'%',
+                    '%' . trim($this->filters['part_number']) . '%',
                 ),
             )
             ->when(
@@ -190,7 +190,7 @@ class InspectionIndex extends Component
             $this->ready = true;
         }
 
-        $filename = 'inspection-reports-'.now()->format('Ymd-His').'.csv';
+        $filename = 'inspection-reports-' . now()->format('Ymd-His') . '.csv';
 
         // Respect visible columns
         $labels = [

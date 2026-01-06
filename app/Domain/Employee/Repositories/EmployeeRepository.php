@@ -17,7 +17,7 @@ interface EmployeeRepository
     public function search(string $term, int $limit = 10): array;
 
     /**
-     * @param  int[]  $ids
+     * @param int[] $ids
      * @return Employee[]
      */
     public function findByIds(array $ids): array;

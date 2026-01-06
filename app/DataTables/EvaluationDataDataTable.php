@@ -15,7 +15,7 @@ class EvaluationDataDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -85,6 +85,6 @@ class EvaluationDataDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'EvaluationData_'.date('YmdHis');
+        return 'EvaluationData_' . date('YmdHis');
     }
 }

@@ -12,9 +12,6 @@ class ListDepartments
         private DepartmentRepository $departments,
     ) {}
 
-    /**
-     * @return \Illuminate\Pagination\LengthAwarePaginator
-     */
     public function execute(DepartmentFilter $filter): LengthAwarePaginator
     {
         return $this->departments->paginate(

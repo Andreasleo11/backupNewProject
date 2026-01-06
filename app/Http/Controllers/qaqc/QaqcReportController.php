@@ -118,7 +118,7 @@ class QaqcReportController extends Controller
         $file = $request->file('attachment');
 
         // Generate a unique filename
-        $filename = time().'_'.$file->getClientOriginalName();
+        $filename = time() . '_' . $file->getClientOriginalName();
 
         // Move the uploaded file to a storage location (you can customize the storage path)
         $file->storeAs('public/attachments', $filename);
@@ -132,7 +132,7 @@ class QaqcReportController extends Controller
     public function saveImagePath(Request $request, $reportId, $section)
     {
         $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
+        $imagePath = $username . '.png';
 
         // Save $imagePath to the database for the specified $reportId and $section
         $report = Report::find($reportId);
@@ -173,7 +173,7 @@ class QaqcReportController extends Controller
             compact('report', 'user', 'autographNames'),
         )->setPaper('a4', 'landscape');
 
-        return $pdf->download('verification-report-'.$report->id.'.pdf');
+        return $pdf->download('verification-report-' . $report->id . '.pdf');
     }
 
     public function previewPdf($id)
@@ -212,7 +212,7 @@ class QaqcReportController extends Controller
 
         if ($id != null) {
             $cust = session()->get('header')->customer ?? session()->get('header_edit')->customer;
-            $pdfName = 'pdfs/verification-report-'.$id.'.pdf';
+            $pdfName = 'pdfs/verification-report-' . $id . '.pdf';
             $pdfPath[] = Storage::url($pdfName);
 
             $this->savePdf($id);
@@ -224,8 +224,8 @@ class QaqcReportController extends Controller
             $mailData = [
                 'to' => $to,
                 'cc' => $cc,
-                'subject' => 'QAQC Verification Report Mail '.$cust,
-                'body' => 'Mail from '.env('APP_NAME'),
+                'subject' => 'QAQC Verification Report Mail ' . $cust,
+                'body' => 'Mail from ' . env('APP_NAME'),
                 'file_paths' => $pdfPath,
             ];
             // dd($mailData);
@@ -266,8 +266,8 @@ class QaqcReportController extends Controller
         )->setPaper('a4', 'landscape');
 
         // Define the file path and name
-        $fileName = 'verification-report-'.$report->id.'.pdf';
-        $filePath = 'pdfs/'.$fileName; // Adjust the directory structure as needed
+        $fileName = 'verification-report-' . $report->id . '.pdf';
+        $filePath = 'pdfs/' . $fileName; // Adjust the directory structure as needed
 
         // Save the PDF file to the public storage
         Storage::disk('public')->put($filePath, $pdf->output());
@@ -283,13 +283,13 @@ class QaqcReportController extends Controller
         $this->savePdf($id);
 
         $report = Report::with('details')->find($id);
-        $pdfName = 'pdfs/verification-report-'.$report->id.'.pdf';
+        $pdfName = 'pdfs/verification-report-' . $report->id . '.pdf';
         $pdfPath = Storage::url($pdfName);
 
         $files = File::where('doc_id', $report->doc_num)->get();
         $filePaths = collect($files)
             ->map(function ($file) {
-                return Storage::url('files/'.$file->name);
+                return Storage::url('files/' . $file->name);
             })
             ->toArray();
 
@@ -303,7 +303,7 @@ class QaqcReportController extends Controller
                 'raymondlay034@gmail.com',
             ],
             'subject' => $request->subject ?? 'QAQC Verification Report Mail',
-            'body' => $request->body ?? 'Mail from '.env('APP_NAME'),
+            'body' => $request->body ?? 'Mail from ' . env('APP_NAME'),
             'file_paths' => $filePaths,
         ];
 

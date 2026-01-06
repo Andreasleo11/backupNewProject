@@ -135,7 +135,7 @@ class MonthlyBudgetSummaryReport extends Model
         static::created(function ($report) {
             $prefix = 'MBSR';
             if ($report->is_moulding) {
-                $prefix = $prefix.'/MOULD';
+                $prefix = $prefix . '/MOULD';
             }
             $id = $report->id;
             $date = $report->created_at->format('dmY');

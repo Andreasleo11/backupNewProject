@@ -13,7 +13,9 @@ class CreatePurchaseRequestFeatureTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Department $fromDept;
+
     private Department $toDept;
 
     protected function setUp(): void
@@ -22,12 +24,12 @@ class CreatePurchaseRequestFeatureTest extends TestCase
 
         // Create test user with department
         $this->fromDept = Department::factory()->create([
-            'name' => 'COMPUTER',
+            'name' => 'Computer',
             'is_office' => true,
         ]);
 
         $this->toDept = Department::factory()->create([
-            'name' => 'PURCHASING',
+            'name' => 'Purchasing',
             'is_office' => true,
         ]);
 
@@ -42,8 +44,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
         $this->actingAs($this->user);
 
         $response = $this->post(route('purchase-requests.store'), [
-            'from_department' => 'COMPUTER',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -76,8 +78,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
 
         $this->assertDatabaseHas('purchase_requests', [
             'user_id_create' => $this->user->id,
-            'from_department' => 'COMPUTER',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'status' => 1, // Pending Department Head
             'type' => 'office',
@@ -107,8 +109,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
         $this->actingAs($this->user);
 
         $response = $this->post(route('purchase-requests.store'), [
-            'from_department' => 'COMPUTER',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -141,8 +143,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
 
         // Create first PR
         $this->post(route('purchase-requests.store'), [
-            'from_department' => 'COMPUTER',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -164,8 +166,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
 
         // Create second PR
         $this->post(route('purchase-requests.store'), [
-            'from_department' => 'COMPUTER',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -217,8 +219,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
         $this->actingAs($this->user);
 
         $response = $this->post(route('purchase-requests.store'), [
-            'from_department' => 'COMPUTER',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -238,8 +240,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
         $this->actingAs($this->user);
 
         $response = $this->post(route('purchase-requests.store'), [
-            'from_department' => 'PLASTIC INJECTION',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Plastic Injection',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -261,7 +263,7 @@ class CreatePurchaseRequestFeatureTest extends TestCase
 
         // Plastic Injection should go directly to GM (status 7)
         $this->assertDatabaseHas('purchase_requests', [
-            'from_department' => 'PLASTIC INJECTION',
+            'from_department' => 'Plastic Injection',
             'status' => 7,
         ]);
     }
@@ -272,8 +274,8 @@ class CreatePurchaseRequestFeatureTest extends TestCase
         $this->actingAs($this->user);
 
         $response = $this->post(route('purchase-requests.store'), [
-            'from_department' => 'PERSONALIA',
-            'to_department' => 'PURCHASING',
+            'from_department' => 'Personalia',
+            'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'date_of_pr' => now()->format('Y-m-d'),
             'date_of_required' => now()->addDays(7)->format('Y-m-d'),
@@ -295,7 +297,7 @@ class CreatePurchaseRequestFeatureTest extends TestCase
 
         // Personalia should go directly to Purchaser (status 6)
         $this->assertDatabaseHas('purchase_requests', [
-            'from_department' => 'PERSONALIA',
+            'from_department' => 'Personalia',
             'status' => 6,
         ]);
     }

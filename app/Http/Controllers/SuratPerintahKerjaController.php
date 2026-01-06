@@ -53,7 +53,7 @@ class SuratPerintahKerjaController extends Controller
             if (in_array($filterColumn, $validColumns)) {
                 switch ($filterAction) {
                     case 'contains':
-                        $reportsQuery->where($filterColumn, 'like', '%'.$filterValue.'%');
+                        $reportsQuery->where($filterColumn, 'like', '%' . $filterValue . '%');
                         break;
                     case 'equals':
                         $reportsQuery->where($filterColumn, '=', $filterValue);
@@ -121,7 +121,7 @@ class SuratPerintahKerjaController extends Controller
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $filename = time().'_'.$file->getClientOriginalName();
+                $filename = time() . '_' . $file->getClientOriginalName();
                 // $filePath = $file->storeAs('files', $filename, 'public');
                 $fileType = $file->getMimeType();
                 $fileSize = $file->getSize();
@@ -282,7 +282,7 @@ class SuratPerintahKerjaController extends Controller
             return redirect()->back()->with('success', 'SPK deleted successfully!');
         } catch (Exception $e) {
             // Log the exception message for debugging
-            Log::error('Failed to delete SPK: '.$e->getMessage());
+            Log::error('Failed to delete SPK: ' . $e->getMessage());
 
             return redirect()
                 ->back()

@@ -11,9 +11,10 @@ class EmployeeLoginController extends Controller
 {
     public function showLoginForm()
     {
-        if(Auth::guard('employee')->check()) {
+        if (Auth::guard('employee')->check()) {
             return redirect('/employees/home');
         }
+
         return view('employee.auth.login');
     }
 
@@ -30,7 +31,7 @@ class EmployeeLoginController extends Controller
             return back()->withErrors(['nik' => 'NIK not found!']);
         }
 
-        $expectedPassword = $employee->NIK.$employee->date_birth->format('dmY');
+        $expectedPassword = $employee->NIK . $employee->date_birth->format('dmY');
 
         if ($data['password'] !== $expectedPassword) {
             return back()->withErrors(['password' => 'Incorrect password.']);
@@ -38,6 +39,7 @@ class EmployeeLoginController extends Controller
 
         Auth::guard('employee')->login($employee);
         session()->put('logged_in_employee_nik', $employee->NIK);
+
         return redirect('/employees/home');
     }
 

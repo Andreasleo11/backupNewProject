@@ -58,7 +58,7 @@ class Vehicle extends Model
 
     public function getDisplayNameAttribute(): string
     {   // e.g. "B 1234 XYZ — Avanza (2019)"
-        $name = trim($this->brand.' '.$this->model);
+        $name = trim($this->brand . ' ' . $this->model);
 
         return sprintf('%s — %s (%s)', $this->plate_number, $name ?: 'Vehicle', $this->year ?: 'N/A');
     }

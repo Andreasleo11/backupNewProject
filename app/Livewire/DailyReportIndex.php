@@ -152,7 +152,7 @@ class DailyReportIndex extends Component
             )
             ->when($this->jabatan, fn ($q) => $q->where('e.position', $this->jabatan))
             ->when($this->search, function ($q) {
-                $term = '%'.trim($this->search).'%';
+                $term = '%' . trim($this->search) . '%';
                 $q->where(function ($w) use ($term) {
                     $w->where('dr.employee_id', 'like', $term)->orWhere('e.name', 'like', $term);
                 });

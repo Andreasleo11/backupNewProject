@@ -19,7 +19,7 @@ class DestinationIndex extends Component
 
     public function render()
     {
-        $destinations = Destination::where('name', 'like', '%'.$this->search.'%')->get();
+        $destinations = Destination::where('name', 'like', '%' . $this->search . '%')->get();
 
         return view('livewire.destination-index', [
             'destinations' => $destinations,

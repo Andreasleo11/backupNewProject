@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\SuperAdminHomeController;
-use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\Approvals\RuleManager;
+use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');

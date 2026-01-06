@@ -19,7 +19,7 @@ class DirectorPurchaseRequestController extends Controller
     {
         $ids = $request->input('ids', []);
         $username = Auth::user()->name;
-        $imageUrl = $username.'.png';
+        $imageUrl = $username . '.png';
 
         if (empty($ids)) {
             return response()->json(['message' => 'No records selected for approval. (server)']);

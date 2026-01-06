@@ -8,4 +8,3 @@ interface RuleResolver
 {
     public function resolveFor(string $modelType, array $context = []): ?RuleTemplate;
 }
- 

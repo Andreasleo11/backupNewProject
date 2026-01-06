@@ -19,7 +19,7 @@ class FileController extends Controller
             // dd($request->files);
             foreach ($request->file('files') as $file) {
                 // Generate a unique filename
-                $fileName = time().'-'.$file->getClientOriginalName();
+                $fileName = time() . '-' . $file->getClientOriginalName();
 
                 // Get the file size in bytes
                 $fileSize = $file->getSize();
@@ -56,7 +56,7 @@ class FileController extends Controller
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 // Generate a unique filename (timestamp + original filename)
-                $fileName = time().'-'.$file->getClientOriginalName();
+                $fileName = time() . '-' . $file->getClientOriginalName();
 
                 // Get the file size
                 $fileSize = $file->getSize();
@@ -65,7 +65,7 @@ class FileController extends Controller
                 $filePath = $file->storeAs('public/files', $fileName);
 
                 // Find the last document with the same year, month, and department to determine the next incremental number
-                $lastDoc = File::where('doc_id', 'like', $prefix.'%') // Filter by the prefix
+                $lastDoc = File::where('doc_id', 'like', $prefix . '%') // Filter by the prefix
                     ->orderByDesc('doc_id')
                     ->first();
 
@@ -81,7 +81,7 @@ class FileController extends Controller
                 $incrementalDocId = sprintf('%03d', $incrementNumber);
 
                 // Combine the prefix with the incremental number to generate a unique doc_id
-                $docId = $prefix.$incrementalDocId;
+                $docId = $prefix . $incrementalDocId;
 
                 // Store file data in the database
                 File::create([
@@ -108,7 +108,7 @@ class FileController extends Controller
             $filename = $file->name;
 
             // Delete the file from the storage directory
-            Storage::delete('public/files/'.$filename);
+            Storage::delete('public/files/' . $filename);
 
             // Delete the database record
             $file->delete();

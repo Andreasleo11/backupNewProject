@@ -34,13 +34,13 @@ final class CaptureSignature extends Component
         $bytes = base64_decode($base64, true);
         abort_unless($bytes !== false, 422, 'Invalid PNG payload');
 
-        $dir = 'signatures/'.auth()->id();
-        $pngPath = $dir.'/'.Str::uuid().'.png';
+        $dir = 'signatures/' . auth()->id();
+        $pngPath = $dir . '/' . Str::uuid() . '.png';
         Storage::disk('private')->put($pngPath, $bytes);
 
         $svgPath = null;
         if ($this->svgText) {
-            $svgPath = $dir.'/'.Str::uuid().'.svg';
+            $svgPath = $dir . '/' . Str::uuid() . '.svg';
             Storage::disk('private')->put($svgPath, $this->svgText);
         }
 

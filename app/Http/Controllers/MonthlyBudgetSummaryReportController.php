@@ -185,7 +185,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $reportDate = Carbon::parse($report->report_date);
         $monthName = $reportDate->format('F'); // Full month name
         $year = $reportDate->format('Y'); // Year
-        $monthYear = $monthName.' '.$year;
+        $monthYear = $monthName . ' ' . $year;
 
         $dateString = $report->created_at;
         $carbonDate = Carbon::parse($dateString);
@@ -277,7 +277,7 @@ class MonthlyBudgetSummaryReportController extends Controller
         $newDetails = [];
 
         foreach ($approvedReports as $mbr) {
-            if (!$existingDeptNos->contains($mbr->dept_no)) {
+            if (! $existingDeptNos->contains($mbr->dept_no)) {
                 foreach ($mbr->details as $detail) {
                     $newDetails[] = [
                         'header_id' => $report->id,
@@ -298,7 +298,7 @@ class MonthlyBudgetSummaryReportController extends Controller
             }
         }
 
-        if (!empty($newDetails)) {
+        if (! empty($newDetails)) {
             Detail::insert($newDetails);
             $message = 'Newly approved department reports were successfully added.';
         } else {

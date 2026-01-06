@@ -14,11 +14,11 @@ final readonly class Month
 
     public function start(): \DateTimeImmutable
     {
-        return new \DateTimeImmutable($this->ym.'-01 00:00:00');
+        return new \DateTimeImmutable($this->ym . '-01 00:00:00');
     }
 
     public function end(): \DateTimeImmutable
     {
-        return (new \DateTimeImmutable($this->ym.'-01'))->modify('last day of this month 23:59:59');
+        return (new \DateTimeImmutable($this->ym . '-01'))->modify('last day of this month 23:59:59');
     }
 }

@@ -2,20 +2,23 @@
 
 namespace App\Livewire\Admin\Roles;
 
-use Livewire\Component;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Validation\Rule;
+use Livewire\Component;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleIndex extends Component
 {
     public string $search = '';
 
     public bool $showModal = false;
+
     public string $modalMode = 'create'; // 'create' | 'edit'
 
     public ?int $editingRoleId = null;
+
     public string $name = '';
+
     public array $selectedPermissions = [];
 
     public function getRolesProperty()
@@ -77,7 +80,9 @@ class RoleIndex extends Component
 
         $this->showModal = false;
 
-        session()->flash('success', $this->modalMode === 'create'
+        session()->flash(
+            'success',
+            $this->modalMode === 'create'
             ? 'Role created successfully.'
             : 'Role updated successfully.'
         );
@@ -92,6 +97,7 @@ class RoleIndex extends Component
 
         if ($role->name === 'admin') {
             session()->flash('error', 'The admin role cannot be deleted.');
+
             return;
         }
 
@@ -103,7 +109,7 @@ class RoleIndex extends Component
     public function render()
     {
         return view('livewire.admin.roles.role-index', [
-            'roles'       => $this->roles,
+            'roles' => $this->roles,
             'permissions' => $this->permissions,
         ])->layout('new.layouts.app');
     }

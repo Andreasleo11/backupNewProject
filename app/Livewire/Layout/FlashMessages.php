@@ -8,6 +8,7 @@ use Livewire\Component;
 class FlashMessages extends Component
 {
     public ?string $type = null;
+
     public ?string $message = null;
 
     #[On('flash')]
@@ -27,4 +28,3 @@ class FlashMessages extends Component
         return view('livewire.layout.flash-messages');
     }
 }
-

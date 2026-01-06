@@ -5,7 +5,6 @@ namespace App\Application\PurchaseRequest\UseCases;
 use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\Contracts\SyncPrWorkflow;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
-use App\Models\PurchaseRequest;
 
 final class RejectPurchaseRequest
 {
@@ -18,11 +17,11 @@ final class RejectPurchaseRequest
     public function handle(ApprovalActionDTO $dto): void
     {
         $pr = $this->repo->find($dto->purchaseRequestId);
-        
+
         if (! $pr) {
-            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
         }
-        
+
         // Ensure relations are loaded
         $this->repo->loadForApprovalContext($pr);
 

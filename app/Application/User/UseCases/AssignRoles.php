@@ -12,7 +12,7 @@ class AssignRoles
     ) {}
 
     /**
-     * @param string[] $roles  Role names to assign (e.g. ['admin', 'manager'])
+     * @param string[] $roles Role names to assign (e.g. ['admin', 'manager'])
      */
     public function execute(int $userId, array $roles)
     {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\PurchaseRequest\UseCases;
 
 use App\Events\PurchaseRequestDeleted;
-use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\DB;
 
 final class DeletePurchaseRequest
@@ -20,7 +19,7 @@ final class DeletePurchaseRequest
             $pr = $this->repo->find($purchaseRequestId);
 
             if (! $pr) {
-                throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
             // Validate that PR can be deleted

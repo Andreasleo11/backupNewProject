@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Resolves notification recipients for Purchase Request events.
- * 
+ *
  * Centralizes all the complex logic for determining who should receive
  * notifications based on PR status, department, and user roles.
  */
@@ -119,7 +119,7 @@ class PurchaseRequestRecipientResolver
         // Status 4: Approved - notify creator and department head
         if ($newStatus === 4) {
             $fromDept = strtoupper($pr->from_department ?? '');
-            
+
             $deptHeads = User::whereHas('department', function ($query) use ($fromDept) {
                 $query->where('name', $fromDept);
             })->where('is_head', 1)->get();
@@ -153,7 +153,7 @@ class PurchaseRequestRecipientResolver
     /**
      * Get notification message for status update.
      *
-     * @param PurchaseRequest $pr The purchase request  
+     * @param PurchaseRequest $pr The purchase request
      * @param int $newStatus The new status
      * @return string Notification message
      */

@@ -127,7 +127,7 @@ class Index extends Component
 
         // Keyword
         if ($this->search) {
-            $like = '%'.trim($this->search).'%';
+            $like = '%' . trim($this->search) . '%';
             $query->where(function (Builder $q) use ($like) {
                 $q->where('doc_num', 'like', $like)->orWhereHas(
                     'user',

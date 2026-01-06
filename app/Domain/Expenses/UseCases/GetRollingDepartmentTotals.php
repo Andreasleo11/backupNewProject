@@ -11,7 +11,7 @@ final class GetRollingDepartmentTotals
     public function execute(string $endYm, int $monthsBack, ?string $prSigner): array
     {
         $end = new \App\Domain\Expenses\ValueObjects\Month($endYm);
-        $startYm = (new \DateTimeImmutable($endYm.'-01'))->modify('-'.($monthsBack - 1).' months')->format('Y-m');
+        $startYm = (new \DateTimeImmutable($endYm . '-01'))->modify('-' . ($monthsBack - 1) . ' months')->format('Y-m');
         $start = new \App\Domain\Expenses\ValueObjects\Month($startYm);
 
         return $this->repo->getMonthlyDepartmentTotals($start, $end, $prSigner);

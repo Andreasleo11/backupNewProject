@@ -385,23 +385,23 @@ Route::middleware('auth')->group(function () {
     Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
     Route::put('purchase-requests/{id}', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
     Route::delete('purchase-requests/{id}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
-    
+
     // Purchase Request Actions
     Route::get('purchase-requests/{id}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
     Route::put('purchase-requests/{id}/cancel', [PurchaseRequestController::class, 'cancel'])->name('purchase-requests.cancel');
     Route::put('purchase-requests/{id}/po-number', [PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
     Route::get('purchase-requests/{id}/export-pdf', [PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
     Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
-    
+
     // Purchase Request Approvals (Workflow)
     Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
     Route::post('purchase-requests/{purchaseRequest}/reject-workflow', [PurchaseRequestController::class, 'rejectWorkflow'])->name('purchase-requests.reject-workflow');
-    
+
     // Purchase Request Utilities
     Route::post('purchase-requests/{prId}/signature/{section}', [PurchaseRequestController::class, 'saveSignaturePath'])->name('purchase-requests.signature.save');
     Route::get('purchase-requests/{prId}/approve-all-items/{type}', [PurchaseRequestController::class, 'approveAllDetailItems'])->name('purchase-requests.approve-all-items');
     Route::get('purchase-requests/item-names', [PurchaseRequestController::class, 'getItemNames'])->name('purchase-requests.item-names');
-    
+
     // Purchase Request Item (Detail) Routes
     Route::get('purchase-requests/items/{id}/approve', [DetailPurchaseRequestController::class, 'approve'])->name('purchase-requests.items.approve');
     Route::get('purchase-requests/items/{id}/reject', [DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
@@ -417,7 +417,7 @@ Route::middleware('auth')->group(function () {
 
 });
 
-require __DIR__.'/admin.php';
+require __DIR__ . '/admin.php';
 
 Route::middleware(['checkDepartment:QA,QC,ACCOUNTING,PPIC,STORE,LOGISTIC,BUSINESS', 'checkSessionId'])->group(function () {
     Route::get('/qaqc/home', [QaqcHomeController::class, 'index'])->name('qaqc');

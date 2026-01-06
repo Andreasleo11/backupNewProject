@@ -10,7 +10,7 @@ class ListEmployees
 {
     public function __construct(
         private EmployeeRepository $employees,
-    ){}
+    ) {}
 
     public function execute(EmployeeFilter $filter): LengthAwarePaginator
     {

@@ -33,7 +33,7 @@ class NofifyMissingReports extends Command
     {
         $today = Carbon::today();
 
-        $this->info('Checking for missing reports as of '.$today->toDateString());
+        $this->info('Checking for missing reports as of ' . $today->toDateString());
 
         $deptHeads = User::where('is_head', true)->get();
 
@@ -81,8 +81,8 @@ class NofifyMissingReports extends Command
                 Notification::send($head, new MissingDailyReportsNotification($missingReports));
 
                 $this->info(
-                    "Notification sent to {$head->email} for ".
-                        count($missingReports).
+                    "Notification sent to {$head->email} for " .
+                        count($missingReports) .
                         ' missing reports.',
                 );
             } else {

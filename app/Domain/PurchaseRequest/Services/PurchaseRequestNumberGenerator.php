@@ -36,22 +36,22 @@ class PurchaseRequestNumberGenerator
         // Pattern for query: %/PR/{AreaCode}/{Date}/%
         // But the previous implementation queried: "%/PR/{$areaCode}/{$date}/%"
         // And the doc_num format is: "{$toDepartmentCode}/PR/{$areaCode}/{$date}/{$increment}"
-        
+
         $prefixKey = "/PR/{$areaCode}/{$dateStr}/";
-        
+
         $latest = $this->repository->getLatestByDocNumPrefix("%{$prefixKey}");
 
         $lastIncrement = 0;
         if ($latest) {
-             // Extract 001 from CP/PR/JKT/240101/001
-             $parts = explode('/', $latest->doc_num);
-             $lastPart = end($parts);
-             if (is_numeric($lastPart)) {
-                 $lastIncrement = (int) $lastPart;
-             }
+            // Extract 001 from CP/PR/JKT/240101/001
+            $parts = explode('/', $latest->doc_num);
+            $lastPart = end($parts);
+            if (is_numeric($lastPart)) {
+                $lastIncrement = (int) $lastPart;
+            }
         }
 
-        $increment = str_pad((string)($lastIncrement + 1), 3, '0', STR_PAD_LEFT);
+        $increment = str_pad((string) ($lastIncrement + 1), 3, '0', STR_PAD_LEFT);
 
         return "{$deptCode}/PR/{$areaCode}/{$dateStr}/{$increment}";
     }

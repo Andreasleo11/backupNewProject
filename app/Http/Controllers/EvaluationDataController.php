@@ -63,7 +63,7 @@ class EvaluationDataController extends Controller
         $excelFileName = 'EvaluationData.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new EvaluationDataExp($allData), 'public/Evaluation/'.$excelFileName);
+        Excel::store(new EvaluationDataExp($allData), 'public/Evaluation/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -73,7 +73,7 @@ class EvaluationDataController extends Controller
     {
         Excel::import(
             new EvaluationDataImport,
-            public_path('/storage/Evaluation/'.$excelFileName),
+            public_path('/storage/Evaluation/' . $excelFileName),
         );
 
         // If the import is successful, return a success message or any other response
@@ -85,7 +85,7 @@ class EvaluationDataController extends Controller
         $selectedMonth = $request->input('filter_status');
         $selectedYear = date('Y');
 
-        $startDate = $selectedYear.'-'.$selectedMonth.'-01';
+        $startDate = $selectedYear . '-' . $selectedMonth . '-01';
         $endDate = date('Y-m-t', strtotime($startDate));
 
         EvaluationData::whereBetween('Month', [$startDate, $endDate])->delete();
@@ -136,7 +136,7 @@ class EvaluationDataController extends Controller
         $excelFileName = 'EvaluationData.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new EvaluationDataWeeklyExp($allData), 'public/Evaluation/'.$excelFileName);
+        Excel::store(new EvaluationDataWeeklyExp($allData), 'public/Evaluation/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -146,7 +146,7 @@ class EvaluationDataController extends Controller
     {
         Excel::import(
             new EvaluationWeeklyDataImport,
-            public_path('/storage/Evaluation/'.$excelFileName),
+            public_path('/storage/Evaluation/' . $excelFileName),
         );
 
         // If the import is successful, return a success message or any other response

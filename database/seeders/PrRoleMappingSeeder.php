@@ -35,7 +35,7 @@ class PrRoleMappingSeeder extends Seeder
             ->keyBy('name');
 
         // Helper
-        $getPerms = fn(array $names) => $perms->only($names)->values();
+        $getPerms = fn (array $names) => $perms->only($names)->values();
 
         // ===== PR approval roles (generic, dipakai di ApprovalEngine) =====
         $roleSpecs = [

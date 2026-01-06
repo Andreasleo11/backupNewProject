@@ -160,7 +160,7 @@ class DepartmentExpenses extends Component
         }
 
         // chart data seeded when (month|signer) changes
-        $key = $this->month.'|'.($this->prSigner ?? '');
+        $key = $this->month . '|' . ($this->prSigner ?? '');
         if ($this->chartKeySent !== $key) {
             $this->dispatch('chart:render', data: [
                 'labels' => $totals->pluck('dept_name')->values(),
@@ -176,19 +176,19 @@ class DepartmentExpenses extends Component
             $endYm = $this->endMonth ?: $this->month;
 
             // ensure start <= end
-            $s = Carbon::parse($startYm.'-01');
-            $e = Carbon::parse($endYm.'-01');
+            $s = Carbon::parse($startYm . '-01');
+            $e = Carbon::parse($endYm . '-01');
             if ($s->gt($e)) {
                 // not returning any data
             }
 
             $cmp = $getMonthlyTotals->execute($startYm, $endYm, $this->prSigner);
-            $cmpKey = "range|$startYm|$endYm|".($this->prSigner ?? 'all');
+            $cmpKey = "range|$startYm|$endYm|" . ($this->prSigner ?? 'all');
         } else {
             $n = max(2, min(6, (int) $this->rollingN));
             $endYm = $this->endMonth ?: $this->month;
             $cmp = $getRollingTotals->execute($endYm, $n, $this->prSigner);
-            $cmpKey = "rolling|$endYm|$n|".($this->prSigner ?? 'all');
+            $cmpKey = "rolling|$endYm|$n|" . ($this->prSigner ?? 'all');
         }
 
         // Build Chart.js payload: labels are departments, datasets per month
@@ -200,7 +200,7 @@ class DepartmentExpenses extends Component
         $datasets = [];
         foreach ($months as $mi => $ym) {
             $datasets[] = [
-                'label' => Carbon::parse($ym.'-01')->isoFormat('MMM YYYY'),
+                'label' => Carbon::parse($ym . '-01')->isoFormat('MMM YYYY'),
                 'data' => array_map(fn ($d) => (float) ($d['series'][$mi] ?? 0), $cmp['departments']),
             ];
         }

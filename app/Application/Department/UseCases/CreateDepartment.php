@@ -10,7 +10,7 @@ class CreateDepartment
 {
     public function __construct(
         private readonly DepartmentRepository $departments
-    ){}
+    ) {}
 
     public function execute(DepartmentData $data): Department
     {

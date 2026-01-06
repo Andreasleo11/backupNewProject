@@ -31,15 +31,15 @@ final class CreatePurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
             $header = $this->buildHeader($dto);
-            
+
             // Generate Doc Num before create
             $header['doc_num'] = $this->numberGenerator->generateDocNum(
-                $dto->toDepartment, 
-                $dto->branch, 
+                $dto->toDepartment,
+                $dto->branch,
                 Carbon::parse($dto->datePr) // Or use now() if datePr is just input date
             );
             // PR No depends on ID, so we fill it temporarily or update after
-            $header['pr_no'] = 'TMP'; 
+            $header['pr_no'] = 'TMP';
 
             $pr = $this->repo->create($header);
 
@@ -53,7 +53,7 @@ final class CreatePurchaseRequest
             // Submit to approval engine if final
             if (! $dto->isDraft && ! $pr->approvalRequest) {
                 $pr = $this->repo->loadForApprovalContext($pr);
-                
+
                 // Build approval context using Domain Service
                 $ctx = $this->contextBuilder->build(
                     fromDepartment: $pr->from_department,
@@ -62,13 +62,13 @@ final class CreatePurchaseRequest
                     isOffice: $pr->type === 'office',
                     items: $pr->items->toArray()
                 );
-                
+
                 $this->approvals->submit($pr, $dto->requestedByUserId, $ctx);
             }
-            
+
             // Dispatch Event
             PurchaseRequestCreated::dispatch($pr);
-            
+
             return $pr;
         });
     }
@@ -104,7 +104,7 @@ final class CreatePurchaseRequest
 
     private function buildItems(CreatePurchaseRequestDTO $dto, string $fromDepartment): array
     {
-        $autoHeadApprove = in_array($fromDepartment, ['PERSONALIA','PLASTIC INJECTION','MAINTENANCE MACHINE'], true);
+        $autoHeadApprove = in_array($fromDepartment, ['PERSONALIA', 'PLASTIC INJECTION', 'MAINTENANCE MACHINE'], true);
 
         return array_map(function ($item) use ($autoHeadApprove) {
             return [

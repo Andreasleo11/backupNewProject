@@ -150,7 +150,7 @@ class MonthlyBudgetReportController extends Controller
                 DB::rollBack();
 
                 // Log the error (check laravel.log for details)
-                Log::error('Error importing Excel file: '.$e->getMessage());
+                Log::error('Error importing Excel file: ' . $e->getMessage());
 
                 return redirect()->back()->with('error', 'Error importing Excel file!');
             }
@@ -214,7 +214,7 @@ class MonthlyBudgetReportController extends Controller
         $reportDate = Carbon::parse($report->report_date);
         $monthName = $reportDate->format('F'); // Full month name
         $year = $reportDate->format('Y'); // Year
-        $monthYear = $monthName.' '.$year;
+        $monthYear = $monthName . ' ' . $year;
 
         $this->updateStatus($report);
 

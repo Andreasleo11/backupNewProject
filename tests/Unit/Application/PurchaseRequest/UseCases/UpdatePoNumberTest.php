@@ -6,8 +6,8 @@ use App\Application\PurchaseRequest\DTOs\UpdatePoNumberDTO;
 use App\Application\PurchaseRequest\UseCases\UpdatePoNumber;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\PurchaseRequest;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Mockery;
 use Tests\TestCase;
 
@@ -22,7 +22,7 @@ class UpdatePoNumberTest extends TestCase
     public function test_handle_updates_po_number()
     {
         Event::fake();
-        DB::shouldReceive('transaction')->andReturnUsing(fn($callback) => $callback());
+        DB::shouldReceive('transaction')->andReturnUsing(fn ($callback) => $callback());
 
         $repo = Mockery::mock(PurchaseRequestRepository::class);
         $useCase = new UpdatePoNumber($repo);

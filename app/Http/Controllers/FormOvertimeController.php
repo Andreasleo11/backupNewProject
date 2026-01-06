@@ -57,7 +57,7 @@ class FormOvertimeController extends Controller
     public function sign(Request $request, $id)
     {
         $username = Auth::user()->name;
-        $imagePath = $username.'.png';
+        $imagePath = $username . '.png';
 
         $form = HeaderFormOvertime::find($id);
         $approval = $form->approvals()->where('flow_step_id', $request->step_id)->firstOrFail();
@@ -74,7 +74,7 @@ class FormOvertimeController extends Controller
         if ($form->currentStep() === null) {
             $form->update(['status' => 'approved']);
         } elseif ($form->nextStep()) {
-            $status = 'waiting-'.str_replace('_', '-', $form->nextStep()->role_slug);
+            $status = 'waiting-' . str_replace('_', '-', $form->nextStep()->role_slug);
             $form->update(['status' => $status]);
         } else {
             $form->update(['status' => 'Unknown']);
@@ -279,7 +279,7 @@ class FormOvertimeController extends Controller
                 return response()->json(
                     [
                         'success' => false,
-                        'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: '.
+                        'message' => 'Push ditolak oleh JPayroll: Data Karyawan sudah ada - Error Note: ' .
                             ($responseJson['msg'] ?? 'Unknown error'),
                         'response' => $responseData,
                     ],
@@ -401,7 +401,7 @@ class FormOvertimeController extends Controller
                 $failed[] = [
                     'detail_id' => $detail->id,
                     'NIK' => $detail->NIK,
-                    'reason' => 'Exception: '.$e->getMessage(),
+                    'reason' => 'Exception: ' . $e->getMessage(),
                 ];
             }
         }
@@ -467,7 +467,7 @@ class FormOvertimeController extends Controller
                 $totalMinutes = $start->diffInMinutes($end) - $item->break;
                 $totalHours = $totalMinutes / 60;
 
-                $key = $item->NIK.'|'.$item->name;
+                $key = $item->NIK . '|' . $item->name;
 
                 if (! isset($grouped[$key])) {
                     $grouped[$key] = [
@@ -628,7 +628,7 @@ class FormOvertimeController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            return back()->withErrors('Gagal impor: '.$e->getMessage());
+            return back()->withErrors('Gagal impor: ' . $e->getMessage());
         }
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
         if (Schema::hasColumn('vehicles', 'status')) {
             // Check if it's already a string, if so, skip
             $columnType = DB::select("SHOW COLUMNS FROM vehicles WHERE Field = 'status'")[0]->Type ?? '';
-            
+
             if (strpos($columnType, 'enum') !== false) {
                 // It's an ENUM, convert to string
                 Schema::table('vehicles', function (Blueprint $table) {
@@ -44,18 +44,18 @@ return new class extends Migration
         // Only reverse if status is a string
         if (Schema::hasColumn('vehicles', 'status')) {
             $columnType = DB::select("SHOW COLUMNS FROM vehicles WHERE Field = 'status'")[0]->Type ?? '';
-            
+
             if (strpos($columnType, 'varchar') !== false || strpos($columnType, 'char') !== false) {
                 Schema::table('vehicles', function (Blueprint $table) {
                     $table->enum('status_temp', ['active', 'maintenance', 'retired'])->default('active');
                 });
-                
+
                 DB::statement("UPDATE vehicles SET status_temp = IF(status='sold','retired',status)");
-                
+
                 Schema::table('vehicles', function (Blueprint $table) {
                     $table->dropColumn('status');
                 });
-                
+
                 Schema::table('vehicles', function (Blueprint $table) {
                     $table->renameColumn('status_temp', 'status');
                 });

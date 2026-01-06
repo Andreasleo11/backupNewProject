@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Application\PurchaseRequest\DTOs;
 
 final class ApprovalActionDTO

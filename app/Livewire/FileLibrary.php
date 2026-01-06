@@ -91,7 +91,7 @@ class FileLibrary extends Component
         $q = Upload::query();
 
         if ($this->search !== '') {
-            $q->where('original_name', 'like', '%'.$this->search.'%');
+            $q->where('original_name', 'like', '%' . $this->search . '%');
         }
 
         if ($this->type !== 'all') {
@@ -371,7 +371,7 @@ class FileLibrary extends Component
         $newBase = preg_replace('/[\/\\\\\?\%\*\:\|"<>]+/', '-', trim($this->newName));
         // Optional: collapse multiple spaces
         $newBase = preg_replace("/\s+/", ' ', $newBase);
-        $newPath = $dir.'/'.$newBase.($ext ? ".{$ext}" : '');
+        $newPath = $dir . '/' . $newBase . ($ext ? ".{$ext}" : '');
 
         if ($newPath !== $upload->path) {
             if (Storage::disk($upload->disk)->exists($newPath)) {
@@ -383,7 +383,7 @@ class FileLibrary extends Component
         }
 
         $upload->update([
-            'original_name' => $newBase.($ext ? ".{$ext}" : ''),
+            'original_name' => $newBase . ($ext ? ".{$ext}" : ''),
             'path' => $newPath,
         ]);
 

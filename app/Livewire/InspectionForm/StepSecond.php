@@ -94,7 +94,7 @@ class StepSecond extends Component
 
     public function mount()
     {
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
 
         $saved = session("stepDetailSaved.second_inspections.{$this->periodKey}", []);
         $this->sessionSaved = $saved;
@@ -114,7 +114,7 @@ class StepSecond extends Component
 
         if (! $this->document_number) {
             $this->document_number =
-                'SECOND-'.now()->format('Ymd-His').'-'.strtoupper(Str::random(4));
+                'SECOND-' . now()->format('Ymd-His') . '-' . strtoupper(Str::random(4));
         }
         $this->refreshSavedFlags();
     }

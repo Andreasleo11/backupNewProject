@@ -127,7 +127,7 @@ class OvertimeFormService
         $import = new OvertimeImport($headerId, $isAfterHour);
 
         // use absolute path
-        Excel::import($import, storage_path('app/'.$path));
+        Excel::import($import, storage_path('app/' . $path));
         Storage::delete($path);
 
         return (int) ($import->createdCount ?? 0);
@@ -146,14 +146,14 @@ class OvertimeFormService
             ->map(function ($i) {
                 // Combine date & time safely
                 $start = Carbon::parse(
-                    trim(($i['start_date'] ?? '').' '.($i['start_time'] ?? '00:00')),
+                    trim(($i['start_date'] ?? '') . ' ' . ($i['start_time'] ?? '00:00')),
                 );
                 $end = Carbon::parse(
-                    trim(($i['end_date'] ?? '').' '.($i['end_time'] ?? '00:00')),
+                    trim(($i['end_date'] ?? '') . ' ' . ($i['end_time'] ?? '00:00')),
                 );
 
                 if ($end->lt($start)) {
-                    return null;
+                    return;
                 }
 
                 $i['_start'] = $start;
@@ -178,12 +178,12 @@ class OvertimeFormService
             ->whereIn('NIK', $pairs->pluck(0))
             ->whereIn('overtime_date', $pairs->pluck(1))
             ->get(['NIK', 'overtime_date'])
-            ->map(fn ($d) => $d['NIK'].'|'.$d['overtime_date'])
+            ->map(fn ($d) => $d['NIK'] . '|' . $d['overtime_date'])
             ->all();
 
         $inserts = [];
         foreach ($rows as $i) {
-            $key = $i['nik'].'|'.$i['overtime_date'];
+            $key = $i['nik'] . '|' . $i['overtime_date'];
             if (in_array($key, $existing, true)) {
                 continue;
             }

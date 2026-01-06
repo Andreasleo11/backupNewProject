@@ -43,7 +43,7 @@ class DailyOvertimeSummaryNotification extends Notification implements ShouldQue
         $name = ucwords($notifiable->name);
         $mail = (new MailMessage)
             ->subject(
-                'Overtime Approval Summary – '.ucwords(str_replace('-', ' ', $this->status)),
+                'Overtime Approval Summary – ' . ucwords(str_replace('-', ' ', $this->status)),
             )
             ->greeting("Dear {$name},")
             ->line('Here are the overtime forms waiting for your action:');

@@ -20,12 +20,12 @@ class ApiHelper
         if (! empty($missing)) {
             return self::response(
                 false,
-                'Missing required parameter(s): '.implode(', ', $missing),
+                'Missing required parameter(s): ' . implode(', ', $missing),
                 null,
             );
         }
 
-        return null; // No issues
+         // No issues
     }
 
     /**

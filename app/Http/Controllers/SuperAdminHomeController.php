@@ -46,7 +46,7 @@ class SuperAdminHomeController extends Controller
 
         // Write the updated configuration to the file
         $path = config_path('email.php');
-        File::put($path, '<?php return '.var_export($config, true).';');
+        File::put($path, '<?php return ' . var_export($config, true) . ';');
 
         // Clear the config cache
         Artisan::call('config:clear');

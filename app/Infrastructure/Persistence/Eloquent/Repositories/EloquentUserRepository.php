@@ -30,6 +30,7 @@ class EloquentUserRepository implements UserRepository
         $model = UserModel::with('roles')
             ->where('employee_id', $employeeId)
             ->first();
+
         return $model ? $this->toEntity($model) : null;
     }
 

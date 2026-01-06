@@ -13,7 +13,7 @@ class WeeklyComplianceDigest extends Notification implements ShouldQueue
     use Queueable;
 
     /**
-     * @param  Collection  $rows  // collection of ['name','code','percent'] (already filtered)
+     * @param Collection $rows // collection of ['name','code','percent'] (already filtered)
      */
     public function __construct(
         public Collection $rows,

@@ -31,21 +31,29 @@ final class PurchaseRequestAccess
             }
 
             $baseSigned = $pr->autograph_1 && $pr->autograph_2 && $pr->autograph_5;
-            if (!$baseSigned) return false;
+            if (! $baseSigned) {
+                return false;
+            }
 
             // allow if to Personnel (office) or Computer, similar to your query block
-            if ($pr->to_department === 'Personnel' && $pr->type === 'office') return true;
-            if ($pr->to_department === 'Computer') return true;
+            if ($pr->to_department === 'Personnel' && $pr->type === 'office') {
+                return true;
+            }
+            if ($pr->to_department === 'Computer') {
+                return true;
+            }
 
             return true; // keep permissive for now, since your original query is complex
         }
 
         // GM rule: must have autograph_1 and autograph_2 and no autograph_6
         if ($isGM) {
-            if (!($pr->autograph_1 && $pr->autograph_2) || $pr->autograph_6) {
+            if (! ($pr->autograph_1 && $pr->autograph_2) || $pr->autograph_6) {
                 return false;
             }
-            if ($pr->type !== 'factory') return false;
+            if ($pr->type !== 'factory') {
+                return false;
+            }
 
             if ($userDepartmentName === 'MOULDING') {
                 return $pr->from_department === 'MOULDING';
@@ -56,7 +64,9 @@ final class PurchaseRequestAccess
 
         // Head rule: can see own dept PR
         if ($isHead) {
-            if ($pr->from_department === $userDepartmentName) return true;
+            if ($pr->from_department === $userDepartmentName) {
+                return true;
+            }
 
             if ($userDepartmentName === 'PURCHASING') {
                 return $pr->to_department === 'Purchasing';
@@ -71,7 +81,9 @@ final class PurchaseRequestAccess
 
         // Purchaser rule
         if ($isPurchaser) {
-            if (!$pr->autograph_1) return false;
+            if (! $pr->autograph_1) {
+                return false;
+            }
 
             // mirrors your query logic loosely
             if ($userDepartmentName === 'COMPUTER') {
@@ -92,10 +104,14 @@ final class PurchaseRequestAccess
         }
 
         // Default: creator / same dept
-        if ($pr->from_department === $userDepartmentName) return true;
+        if ($pr->from_department === $userDepartmentName) {
+            return true;
+        }
 
         // creator can always view
-        if ((int)$pr->user_id_create === (int)$user->id) return true;
+        if ((int) $pr->user_id_create === (int) $user->id) {
+            return true;
+        }
 
         return false;
     }

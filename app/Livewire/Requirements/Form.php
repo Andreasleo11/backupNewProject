@@ -139,7 +139,8 @@ class Form extends Component
     {
         if (in_array($key, $this->selected_presets, true)) {
             $this->selected_presets = array_values(array_filter(
-                $this->selected_presets, fn ($k) => $k !== $key
+                $this->selected_presets,
+                fn ($k) => $k !== $key
             ));
         } else {
             $this->selected_presets[] = $key;
@@ -262,7 +263,7 @@ class Form extends Component
     public function getPolicyLineProperty(): string
     {
         $parts = [];
-        $parts[] = "Min {$this->min_count} file".($this->min_count > 1 ? 's' : '');
+        $parts[] = "Min {$this->min_count} file" . ($this->min_count > 1 ? 's' : '');
         if ($this->validity_days) {
             $parts[] = "valid {$this->validity_days} day(s)";
         }
@@ -316,8 +317,10 @@ class Form extends Component
         // Re-check usage just in case it changed
         $this->refreshUsageCounts();
         if ($this->usage['assignments'] > 0 || $this->usage['uploads'] > 0) {
-            $this->addError('delete_confirm_input',
-                'Cannot delete while assigned or with uploads. Detach assignments and remove uploads first.');
+            $this->addError(
+                'delete_confirm_input',
+                'Cannot delete while assigned or with uploads. Detach assignments and remove uploads first.'
+            );
 
             return;
         }

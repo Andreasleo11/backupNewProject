@@ -158,7 +158,7 @@ class AdjustFormQcController extends Controller
     {
         $username = Auth::user()->name;
         // Log::info('Username:', ['username' => $username]);
-        $imagePath = $username.'.png';
+        $imagePath = $username . '.png';
         // Log::info('imagepath : ', $imagePath);
 
         // Save $imagePath to the database for the specified $reportId and $section

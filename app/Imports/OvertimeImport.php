@@ -109,11 +109,11 @@ class OvertimeImport implements ToCollection
                 }
 
                 // If none of the formats match, return null or handle the error as needed
-                return null;
+                return;
             }
         } catch (\Exception $e) {
             // Handle the exception if the format is invalid
-            return null;
+            return;
         }
     }
 }

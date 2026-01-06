@@ -16,7 +16,7 @@ class DisciplineTableDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -610,6 +610,6 @@ class DisciplineTableDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DisciplineTable_'.date('YmdHis');
+        return 'DisciplineTable_' . date('YmdHis');
     }
 }

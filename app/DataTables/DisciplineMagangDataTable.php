@@ -16,7 +16,7 @@ class DisciplineMagangDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -468,6 +468,6 @@ class DisciplineMagangDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'DisciplineMagang_'.date('YmdHis');
+        return 'DisciplineMagang_' . date('YmdHis');
     }
 }

@@ -6,7 +6,7 @@ namespace App\Domain\PurchaseRequest\Services;
 
 /**
  * Builds approval context for submission to the approval workflow engine.
- * 
+ *
  * The approval engine uses this context to determine which approval steps
  * are required based on department, branch, amount, etc.
  */
@@ -53,7 +53,7 @@ class PurchaseRequestApprovalContextBuilder
         foreach ($items as $item) {
             $price = is_object($item) ? ($item->price ?? 0) : ($item['price'] ?? 0);
             $quantity = is_object($item) ? ($item->quantity ?? 0) : ($item['quantity'] ?? 0);
-            
+
             $total += ((float) $price) * ((float) $quantity);
         }
 

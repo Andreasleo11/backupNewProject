@@ -76,7 +76,7 @@ trait VerificationRules
             'items.*.cant_use.required' => ':attribute quantity is required.',
             'items.*.price.required' => ':attribute is required.',
             'items.*.currency.required' => ':attribute is required.',
-            
+
             // Defects (wildcards)
             'items.*.defects.*.name.required' => ':attribute is required.',
             'items.*.defects.*.name.required_with' => ':attribute is required when defect quantity is provided.',

@@ -10,14 +10,16 @@ use Livewire\Component;
 class ChangePasswordPage extends Component
 {
     public string $current_password = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     public function rules(): array
     {
         return [
-            'current_password'      => ['required', 'string'],
-            'password'              => ['required', 'string', 'min:8', 'confirmed'],
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string'],
         ];
     }
@@ -30,12 +32,14 @@ class ChangePasswordPage extends Component
 
         if (! $user) {
             session()->flash('error', 'You must be logged in.');
+
             return;
         }
 
         // Verify current password
         if (! Hash::check($this->current_password, $user->password)) {
             $this->addError('current_password', 'The current password is incorrect.');
+
             return;
         }
 

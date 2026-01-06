@@ -2,8 +2,6 @@
 
 namespace App\Presentation\Http\Requests;
 
-use Illuminate\Validation\Rule;
-
 class UpdateUserRequest extends UserRequest
 {
     /**

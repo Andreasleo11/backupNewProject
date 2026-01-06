@@ -11,7 +11,7 @@ final class EmployeeRepository
     /**
      * Upsert by NIK.
      *
-     * @param  array<array<string,mixed>>  $rows
+     * @param array<array<string,mixed>> $rows
      */
     public function upsert(array $rows): int
     {
@@ -43,7 +43,7 @@ final class EmployeeRepository
     /**
      * Update leave balances (may vary by schema).
      *
-     * @param  array<string,int>  $nikToRemain
+     * @param array<string,int> $nikToRemain
      */
     public function updateLeaveBalances(array $nikToRemain): void
     {

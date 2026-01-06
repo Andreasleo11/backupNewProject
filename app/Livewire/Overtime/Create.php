@@ -168,10 +168,10 @@ class Create extends Component
     protected function fetchEmployees(): Collection
     {
         return $this->dept_id
-            ? Employee::whereHas('department', fn($q) => $q->where('id', $this->dept_id))
+            ? Employee::whereHas('department', fn ($q) => $q->where('id', $this->dept_id))
                 ->orderBy('name')
                 ->get(['nik', 'name'])
-                ->map(fn($employee) => ['nik' => $employee->nik, 'name' => $employee->name])
+                ->map(fn ($employee) => ['nik' => $employee->nik, 'name' => $employee->name])
             : collect();
     }
 
@@ -192,8 +192,9 @@ class Create extends Component
     public function render()
     {
         $this->validationErrors = $this->getErrorBag()->toArray();
+
         return view('livewire.overtime.create', [
-            'departments' => Department::orderBy('name')->get()
+            'departments' => Department::orderBy('name')->get(),
         ]);
     }
 }

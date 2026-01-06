@@ -10,7 +10,7 @@ class UpdateDepartment
 {
     public function __construct(
         private readonly DepartmentRepository $departments,
-    ){}
+    ) {}
 
     public function execute(int $id, DepartmentData $data): Department
     {

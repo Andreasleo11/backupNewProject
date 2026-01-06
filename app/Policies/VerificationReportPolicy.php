@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\VerificationReport;
 
 class VerificationReportPolicy
 {

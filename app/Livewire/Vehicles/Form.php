@@ -58,7 +58,7 @@ class Form extends Component
             ],
             'brand' => ['nullable', 'string', 'max:80'],
             'model' => ['nullable', 'string', 'max:120'],
-            'year' => ['nullable', 'integer', 'min:1900', 'max:'.date('Y')],
+            'year' => ['nullable', 'integer', 'min:1900', 'max:' . date('Y')],
             'vin' => ['nullable', 'string', 'max:50'],
             'odometer' => ['nullable', 'integer', 'min:0'],
             'status' => ['required', Rule::in(array_column(VehicleStatus::cases(), 'value'))],

@@ -517,7 +517,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
                 $monthNumber = $monthToNumber[$detail->month];
 
-                return $detail->year.'-'.$monthNumber; // Format: "2025-01"
+                return $detail->year . '-' . $monthNumber; // Format: "2025-01"
             })
             ->toArray();
         // dd($monthsInDetails);
@@ -657,7 +657,7 @@ class PurchasingSupplierEvaluationController extends Controller
     private function generateDocNum()
     {
         // You can implement any custom logic to generate the doc_num
-        return 'DOC-'.now()->format('YmdHis'); // Example: DOC-20240917123000
+        return 'DOC-' . now()->format('YmdHis'); // Example: DOC-20240917123000
     }
 
     protected function calculateGrade($averageScore)
@@ -788,7 +788,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'like', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
         if ($request->filled('month')) {
@@ -829,7 +829,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'like', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
         if ($request->filled('month')) {
@@ -856,7 +856,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'like', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
         if ($request->filled('month')) {
@@ -885,7 +885,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'like', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
         if ($request->filled('month')) {
@@ -912,7 +912,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'like', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
         if ($request->filled('month')) {
@@ -939,7 +939,7 @@ class PurchasingSupplierEvaluationController extends Controller
 
         // Apply filter if vendor_name is provided
         if ($request->filled('vendor_name')) {
-            $query->where('vendor_name', 'like', '%'.$request->vendor_name.'%');
+            $query->where('vendor_name', 'like', '%' . $request->vendor_name . '%');
         }
 
         // Fetch data

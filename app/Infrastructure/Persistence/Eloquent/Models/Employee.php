@@ -42,7 +42,7 @@ class Employee extends Authenticatable
         'jatah_cuti_tahun' => 'integer',
     ];
 
-    public function evaluationData() : HasMany
+    public function evaluationData(): HasMany
     {
         return $this->hasMany(EvaluationData::class, 'NIK', 'NIK');
     }

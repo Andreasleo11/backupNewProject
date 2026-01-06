@@ -23,7 +23,9 @@ class Index extends Component
     public function render()
     {
         $q = VerificationReport::query()
-            ->when($this->status !== 'all', fn (Builder $query) => $query->where('status', $this->status)
+            ->when(
+                $this->status !== 'all',
+                fn (Builder $query) => $query->where('status', $this->status)
             )
             ->when($this->search, function (Builder $query) {
                 $s = "%{$this->search}%";

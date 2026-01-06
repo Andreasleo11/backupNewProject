@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
@@ -56,13 +56,13 @@ class PrApprovalRulesSeeder extends Seeder
                 // ========= MOULDING + is_design (lebih spesifik, priority kecil) =========
 
                 [
-                    'code'     => 'pr.moulding.design.to-maintenance',
-                    'name'     => 'PR MOULDING (design) → Maintenance',
+                    'code' => 'pr.moulding.design.to-maintenance',
+                    'name' => 'PR MOULDING (design) → Maintenance',
                     'priority' => 10,
-                    'match'    => [
+                    'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design'       => true,
-                        'to_department'   => 'MAINTENANCE',
+                        'is_design' => true,
+                        'to_department' => 'MAINTENANCE',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -73,13 +73,13 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.moulding.design.to-purchasing',
-                    'name'     => 'PR MOULDING (design) → Purchasing',
+                    'code' => 'pr.moulding.design.to-purchasing',
+                    'name' => 'PR MOULDING (design) → Purchasing',
                     'priority' => 10,
-                    'match'    => [
+                    'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design'       => true,
-                        'to_department'   => 'PURCHASING',
+                        'is_design' => true,
+                        'to_department' => 'PURCHASING',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -90,13 +90,13 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.moulding.design.to-computer',
-                    'name'     => 'PR MOULDING (design) → Computer',
+                    'code' => 'pr.moulding.design.to-computer',
+                    'name' => 'PR MOULDING (design) → Computer',
                     'priority' => 10,
-                    'match'    => [
+                    'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design'       => true,
-                        'to_department'   => 'COMPUTER',
+                        'is_design' => true,
+                        'to_department' => 'COMPUTER',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -108,13 +108,13 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.moulding.design.to-personalia',
-                    'name'     => 'PR MOULDING (design) → Personalia',
+                    'code' => 'pr.moulding.design.to-personalia',
+                    'name' => 'PR MOULDING (design) → Personalia',
                     'priority' => 10,
-                    'match'    => [
+                    'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design'       => true,
-                        'to_department'   => 'PERSONALIA',
+                        'is_design' => true,
+                        'to_department' => 'PERSONALIA',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -129,11 +129,11 @@ class PrApprovalRulesSeeder extends Seeder
                 // ========= Office departments =========
 
                 [
-                    'code'     => 'pr.office.to-maintenance',
-                    'name'     => 'PR Office → Maintenance',
+                    'code' => 'pr.office.to-maintenance',
+                    'name' => 'PR Office → Maintenance',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => true,
+                    'match' => [
+                        'at_office' => true,
                         'to_department' => 'MAINTENANCE',
                     ],
                     'steps' => [
@@ -143,11 +143,11 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.office.to-purchasing',
-                    'name'     => 'PR Office → Purchasing',
+                    'code' => 'pr.office.to-purchasing',
+                    'name' => 'PR Office → Purchasing',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => true,
+                    'match' => [
+                        'at_office' => true,
                         'to_department' => 'PURCHASING',
                     ],
                     'steps' => [
@@ -157,11 +157,11 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.office.to-computer',
-                    'name'     => 'PR Office → Computer (with verificator)',
+                    'code' => 'pr.office.to-computer',
+                    'name' => 'PR Office → Computer (with verificator)',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => true,
+                    'match' => [
+                        'at_office' => true,
                         'to_department' => 'COMPUTER',
                     ],
                     'steps' => [
@@ -172,11 +172,11 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.office.to-personalia',
-                    'name'     => 'PR Office → Personalia (with verificator)',
+                    'code' => 'pr.office.to-personalia',
+                    'name' => 'PR Office → Personalia (with verificator)',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => true,
+                    'match' => [
+                        'at_office' => true,
                         'to_department' => 'PERSONALIA',
                     ],
                     'steps' => [
@@ -190,11 +190,11 @@ class PrApprovalRulesSeeder extends Seeder
                 // ========= Factory departments =========
 
                 [
-                    'code'     => 'pr.factory.to-maintenance',
-                    'name'     => 'PR Factory → Maintenance',
+                    'code' => 'pr.factory.to-maintenance',
+                    'name' => 'PR Factory → Maintenance',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => false,
+                    'match' => [
+                        'at_office' => false,
                         'to_department' => 'MAINTENANCE',
                     ],
                     'steps' => [
@@ -205,11 +205,11 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.factory.to-purchasing',
-                    'name'     => 'PR Factory → Purchasing',
+                    'code' => 'pr.factory.to-purchasing',
+                    'name' => 'PR Factory → Purchasing',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => false,
+                    'match' => [
+                        'at_office' => false,
                         'to_department' => 'PURCHASING',
                     ],
                     'steps' => [
@@ -220,11 +220,11 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.factory.to-computer',
-                    'name'     => 'PR Factory → Computer (GM + verificator)',
+                    'code' => 'pr.factory.to-computer',
+                    'name' => 'PR Factory → Computer (GM + verificator)',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => false,
+                    'match' => [
+                        'at_office' => false,
                         'to_department' => 'COMPUTER',
                     ],
                     'steps' => [
@@ -236,11 +236,11 @@ class PrApprovalRulesSeeder extends Seeder
                     ],
                 ],
                 [
-                    'code'     => 'pr.factory.to-personalia',
-                    'name'     => 'PR Factory → Personalia (GM + verificator)',
+                    'code' => 'pr.factory.to-personalia',
+                    'name' => 'PR Factory → Personalia (GM + verificator)',
                     'priority' => 100,
-                    'match'    => [
-                        'at_office'    => false,
+                    'match' => [
+                        'at_office' => false,
                         'to_department' => 'PERSONALIA',
                     ],
                     'steps' => [
@@ -258,20 +258,20 @@ class PrApprovalRulesSeeder extends Seeder
                 /** @var RuleTemplate $tpl */
                 $tpl = RuleTemplate::create([
                     'model_type' => $modelType,
-                    'code'       => $rule['code'],
-                    'name'       => $rule['name'],
-                    'active'     => true,
-                    'priority'   => $rule['priority'],
+                    'code' => $rule['code'],
+                    'name' => $rule['name'],
+                    'active' => true,
+                    'priority' => $rule['priority'],
                     // match_expr dikast ke array di model
                     'match_expr' => $rule['match'],
                 ]);
 
                 foreach ($rule['steps'] as $step) {
                     $tpl->steps()->create([
-                        'sequence'       => $step['seq'],
-                        'approver_type'  => 'role',
-                        'approver_id'    => $getRoleId($step['role']),
-                        'final'          => (bool) ($step['final'] ?? false),
+                        'sequence' => $step['seq'],
+                        'approver_type' => 'role',
+                        'approver_id' => $getRoleId($step['role']),
+                        'final' => (bool) ($step['final'] ?? false),
                         'parallel_group' => 0,
                     ]);
                 }

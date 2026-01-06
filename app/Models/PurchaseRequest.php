@@ -3,19 +3,12 @@
 namespace App\Models;
 
 use App\Domain\Approval\Contracts\Approvable;
-use App\Domain\Signature\Contracts\SignatureStampsApproval;
-use App\Domain\Signature\Entities\UserSignature;
 use App\Enums\ToDepartment;
 use App\Infrastructure\Approval\Concerns\HasApproval;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
-use App\Notifications\PurchaseRequestCreated;
-use App\Notifications\PurchaseRequestUpdated;
 use App\Traits\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Notification;
 
 class PurchaseRequest extends Model implements Approvable
 {
@@ -74,8 +67,6 @@ class PurchaseRequest extends Model implements Approvable
         // atau 'from_department_id' kalau sudah dinormalisasi
     }
 
-
-
     public function signatures()
     {
         return $this->hasMany(PurchaseRequestSignature::class);
@@ -110,6 +101,4 @@ class PurchaseRequest extends Model implements Approvable
     {
         return $query->where('status', 5);
     }
-
-
 }

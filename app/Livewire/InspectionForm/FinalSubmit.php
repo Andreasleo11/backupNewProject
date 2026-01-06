@@ -311,7 +311,7 @@ class FinalSubmit extends Component
 
         $this->dispatch(
             'toast',
-            message: "Saved periods: {$ok}".($bad ? ". Skipped: {$bad}" : ''),
+            message: "Saved periods: {$ok}" . ($bad ? ". Skipped: {$bad}" : ''),
             type: $bad ? 'warning' : 'success',
         );
         $this->dispatch('toast', message: 'Inspection report submitted successfully!');

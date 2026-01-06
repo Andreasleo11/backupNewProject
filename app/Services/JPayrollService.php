@@ -85,7 +85,7 @@ final class JPayrollService
                     'attendance',
                     $processed,
                     null, // unknown total (unless you estimate)
-                    $rangeStart->toDateString().' → '.$rangeEnd->toDateString(),
+                    $rangeStart->toDateString() . ' → ' . $rangeEnd->toDateString(),
                 );
 
                 $cursor = $cursor->addWeek();
@@ -104,7 +104,7 @@ final class JPayrollService
                 'error' => $e->getMessage(),
             ]);
 
-            return ['success' => false, 'message' => 'Sync failed: '.$e->getMessage()];
+            return ['success' => false, 'message' => 'Sync failed: ' . $e->getMessage()];
         }
     }
 }

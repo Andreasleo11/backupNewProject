@@ -20,7 +20,7 @@ final class SyncPrWorkflowFromApproval implements SyncPrWorkflow
 
         $approval = $pr->approvalRequest;
 
-        if (!$approval) {
+        if (! $approval) {
             // no workflow => draft / null
             $pr->workflow_status = $pr->workflow_status ?: 'DRAFT';
             $pr->workflow_step = null;
@@ -45,7 +45,7 @@ final class SyncPrWorkflowFromApproval implements SyncPrWorkflow
                     ?? null;
 
                 // fallback: store something stable
-                if (!$pr->workflow_step) {
+                if (! $pr->workflow_step) {
                     $pr->workflow_step = $current->approver_type . ':' . $current->approver_id;
                 }
             }

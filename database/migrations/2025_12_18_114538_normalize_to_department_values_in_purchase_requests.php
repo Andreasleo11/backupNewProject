@@ -7,7 +7,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $table  = 'purchase_requests';
+        $table = 'purchase_requests';
         $column = 'to_department';
 
         // MySQL / PostgreSQL compatible SQL (uses LOWER + TRIM)

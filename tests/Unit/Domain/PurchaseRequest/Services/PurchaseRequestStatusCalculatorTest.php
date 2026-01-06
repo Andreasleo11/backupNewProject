@@ -3,7 +3,7 @@
 use App\Domain\PurchaseRequest\Services\PurchaseRequestStatusCalculator;
 
 beforeEach(function () {
-    $this->calculator = new PurchaseRequestStatusCalculator();
+    $this->calculator = new PurchaseRequestStatusCalculator;
 });
 
 test('it returns draft status when is_draft is true', function () {
@@ -72,7 +72,7 @@ test('it identifies pending statuses', function () {
     expect($this->calculator->isPending(3))->toBeTrue();
     expect($this->calculator->isPending(6))->toBeTrue();
     expect($this->calculator->isPending(7))->toBeTrue();
-    
+
     expect($this->calculator->isPending(0))->toBeFalse();
     expect($this->calculator->isPending(4))->toBeFalse();
     expect($this->calculator->isPending(5))->toBeFalse();

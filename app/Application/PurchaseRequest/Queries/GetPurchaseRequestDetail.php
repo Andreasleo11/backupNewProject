@@ -5,11 +5,11 @@ namespace App\Application\PurchaseRequest\Queries;
 use App\Application\PurchaseRequest\Services\PurchaseRequestDetailCalculator;
 use App\Application\PurchaseRequest\Services\PurchaseRequestPermissions;
 use App\Application\PurchaseRequest\ViewModels\PurchaseRequestDetailVM;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\Department;
 use App\Models\File;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
-use App\Infrastructure\Persistence\Eloquent\Models\User;
 
 final class GetPurchaseRequestDetail
 {

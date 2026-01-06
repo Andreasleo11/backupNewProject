@@ -47,7 +47,7 @@ final class ApprovalSignatureController extends Controller
 
             // allow: creator, acted_by, submitted_by, current approver actor (if user-based)
             $isCreator = $creatorId && (int) $creatorId === (int) $user->id;
-            $isActor   = $step->acted_by && (int) $step->acted_by === (int) $user->id;
+            $isActor = $step->acted_by && (int) $step->acted_by === (int) $user->id;
             $isSubmitter = $req->submitted_by && (int) $req->submitted_by === (int) $user->id;
 
             $isCurrentApproverUser =

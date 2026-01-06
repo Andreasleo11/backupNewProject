@@ -11,7 +11,7 @@ final class SpatieUserRoles implements UserRoles
     {
         $user = User::query()->find($userId);
 
-        if(!$user) {
+        if (! $user) {
             return false;
         }
 

@@ -9,7 +9,6 @@ use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Domain\PurchaseRequest\Services\PurchaseRequestNumberGenerator;
 use App\Events\PurchaseRequestCreated;
 use App\Models\PurchaseRequest;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Mockery;
@@ -96,10 +95,10 @@ class CreatePurchaseRequestTest extends TestCase
             ->andReturn('MAIN-123');
 
         $repo->shouldReceive('addItems')->once();
-        
+
         // 6. Approval Context
         $repo->shouldReceive('loadForApprovalContext')->andReturn($mockPr);
-        
+
         $contextBuilder->shouldReceive('build')
             ->once()
             ->andReturn(['some' => 'context']);
@@ -110,8 +109,8 @@ class CreatePurchaseRequestTest extends TestCase
             ->andReturn(new \App\Application\Approval\DTOs\ApprovalInfo(1, 'pending', 1));
 
         $useCase = new CreatePurchaseRequest(
-            $repo, 
-            $approvals, 
+            $repo,
+            $approvals,
             $generator,
             $statusCalculator,
             $typeResolver,
@@ -120,7 +119,7 @@ class CreatePurchaseRequestTest extends TestCase
         $result = $useCase->handle($dto);
 
         $this->assertSame($mockPr, $result);
-        
+
         Event::assertDispatched(PurchaseRequestCreated::class);
     }
 }

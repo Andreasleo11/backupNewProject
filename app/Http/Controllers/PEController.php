@@ -109,7 +109,7 @@ class PEController extends Controller
     public function saveSignature(Request $request, $trialId, $section)
     {
         $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
+        $imagePath = $username . '.png';
 
         // Save $imagePath to the database for the specified $reportId and $section
         $trial = Trial::find($trialId);

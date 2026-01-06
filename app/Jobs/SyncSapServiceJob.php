@@ -41,8 +41,8 @@ class SyncSapServiceJob implements ShouldQueue
         Log::info("Queue done: {$this->label}");
 
         // Debug log
-        Log::info('Checking serviceClass: '.$this->serviceClass);
-        Log::info('Comparing with: '.FctForecastService::class);
+        Log::info('Checking serviceClass: ' . $this->serviceClass);
+        Log::info('Comparing with: ' . FctForecastService::class);
 
         if ($this->serviceClass === FctForecastService::class) {
             Log::info('Condition matched! Starting post-processing...');
@@ -74,7 +74,7 @@ class SyncSapServiceJob implements ShouldQueue
 
             Log::info('Forecast post-processing completed successfully');
         } catch (\Exception $e) {
-            Log::error('Error in forecast post-processing: '.$e->getMessage());
+            Log::error('Error in forecast post-processing: ' . $e->getMessage());
             throw $e; // Re-throw untuk trigger job failure
         }
     }

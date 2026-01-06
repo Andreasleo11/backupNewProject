@@ -141,8 +141,8 @@ class Compliance extends Component
         // Filters
         if ($this->search !== '') {
             $term = mb_strtolower($this->search);
-            $rows = $rows->filter(fn ($r) =>
-                str_contains(mb_strtolower($r['code']), $term) ||
+            $rows = $rows->filter(
+                fn ($r) => str_contains(mb_strtolower($r['code']), $term) ||
                 str_contains(mb_strtolower($r['name']), $term)
             );
         }
@@ -156,10 +156,10 @@ class Compliance extends Component
         // Sort
         $rows = $rows->sortBy(function ($r) {
             return match ($this->sort) {
-                'name'    => $r['name'],
+                'name' => $r['name'],
                 'percent' => $r['percent'],
                 'expires' => $r['last_valid_until']?->timestamp ?? -INF,
-                default   => $r['code'],
+                default => $r['code'],
             };
         }, SORT_REGULAR, $this->dir === 'desc');
 

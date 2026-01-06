@@ -18,22 +18,31 @@ class DepartmentIndex extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?string $branchFilter = null;
+
     public bool $onlyActive = false;
+
     public int $perPage = 10;
 
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public string $code = '';
+
     public string $name = '';
+
     public string $dept_no = '';
+
     public ?string $branch = 'JAKARTA';
+
     public bool $is_active = true;
+
     public bool $is_office = true;
 
     protected $listeners = [
-        'refreshDepartments' => '$refresh'
+        'refreshDepartments' => '$refresh',
     ];
 
     public function updateSearch(): void
@@ -53,9 +62,10 @@ class DepartmentIndex extends Component
 
     protected function rules(): array
     {
-        if(is_null($this->editingId)) {
+        if (is_null($this->editingId)) {
             return DepartmentRequest::storeRules();
         }
+
         return DepartmentRequest::updateRules($this->editingId);
     }
 
@@ -76,8 +86,9 @@ class DepartmentIndex extends Component
         $this->resetForm();
         $department = $departments->findById($id);
 
-        if(! $department) {
+        if (! $department) {
             session()->flash('error', 'Department not found');
+
             return;
         }
 
@@ -105,7 +116,7 @@ class DepartmentIndex extends Component
             isActive: $this->is_active,
         );
 
-        if(is_null($this->editingId)) {
+        if (is_null($this->editingId)) {
             $createDepartment->execute($dto);
             session()->flash('success', 'Department created successfully!');
         } else {
@@ -135,7 +146,7 @@ class DepartmentIndex extends Component
         $this->is_active = true;
         $this->is_office = true;
     }
-    
+
     public function render(ListDepartments $listDepartments)
     {
         $filter = new DepartmentFilter(
@@ -146,6 +157,7 @@ class DepartmentIndex extends Component
         );
 
         $departments = $listDepartments->execute($filter);
+
         return view('livewire.admin.departments.department-index', ['departments' => $departments]);
     }
 }

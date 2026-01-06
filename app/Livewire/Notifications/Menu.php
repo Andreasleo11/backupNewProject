@@ -201,7 +201,7 @@ final class Menu extends Component
         foreach (['status', 'total_employees', 'count', 'level'] as $k) {
             if (array_key_exists($k, $data)) {
                 $label = Str::headline(str_replace('_', ' ', $k));
-                $metaBriefs[] = "{$label}: ".$this->stringify($data[$k]);
+                $metaBriefs[] = "{$label}: " . $this->stringify($data[$k]);
             }
         }
 

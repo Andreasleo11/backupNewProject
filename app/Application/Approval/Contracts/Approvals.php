@@ -17,7 +17,7 @@ interface Approvals
      */
     public function approve(Approvable $approvable, int $byUserId, ?string $remarks = null): void;
 
-     /**
+    /**
      * Reject the current step of the approvable's approval flow.
      */
     public function reject(Approvable $approvable, int $byUserId, ?string $remarks = null): void;

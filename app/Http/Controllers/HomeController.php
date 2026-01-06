@@ -27,7 +27,7 @@ class HomeController extends Controller
         if ($user->hasRole('super-admin')) {
             return view('admin.home');
         } elseif ($user->hasRole('director')) {
-            return redirect()->intended(route('director'));            
+            return redirect()->intended(route('director'));
         } else {
             $department = $user->department->name;
 
@@ -35,11 +35,12 @@ class HomeController extends Controller
                 return redirect()->route('qaqc');
             } elseif ($department === 'PURCHASING') {
                 return redirect()->route('purchasing');
-            } elseif($department === 'PERSONALIA' && $user->is_head) {
+            } elseif ($department === 'PERSONALIA' && $user->is_head) {
                 return redirect()->route('hrd');
-            } elseif($department === 'PE') {
+            } elseif ($department === 'PE') {
                 return redirect()->route('pe');
             }
+
             return view('home');
         }
     }

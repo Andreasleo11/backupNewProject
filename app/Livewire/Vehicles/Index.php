@@ -113,10 +113,10 @@ class Index extends Component
             ->when(
                 $this->q,
                 fn ($q) => $q->where(function ($w) {
-                    $w->where('plate_number', 'like', '%'.$this->q.'%')
-                        ->orWhere('brand', 'like', '%'.$this->q.'%')
-                        ->orWhere('model', 'like', '%'.$this->q.'%')
-                        ->orWhere('driver_name', 'like', '%'.$this->q.'%');
+                    $w->where('plate_number', 'like', '%' . $this->q . '%')
+                        ->orWhere('brand', 'like', '%' . $this->q . '%')
+                        ->orWhere('model', 'like', '%' . $this->q . '%')
+                        ->orWhere('driver_name', 'like', '%' . $this->q . '%');
                 }),
             )
             ->when($this->fullFeature && $this->status !== 'all', function ($q) {

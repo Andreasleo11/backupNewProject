@@ -14,6 +14,7 @@ final class GetDefaultActiveUserSignature
     public function execute(int $userId): ?UserSignature
     {
         $list = $this->repo->listByUser($userId, onlyActive: true);
+
         return $list[0] ?? null;
     }
 }

@@ -19,15 +19,15 @@ class EmployeeDailyReportController extends Controller
     public function index(Request $request)
     {
         $search = $request->input('search');
-        $from   = $request->input('from');
-        $to     = $request->input('to');
-        
+        $from = $request->input('from');
+        $to = $request->input('to');
+
         $query = EmployeeDailyReport::query();
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('employee_name', 'like', '%' . $search . '%')
-                  ->orWhere('work_description', 'like', '%' . $search . '%');
+                    ->orWhere('work_description', 'like', '%' . $search . '%');
             });
         }
 
@@ -49,7 +49,7 @@ class EmployeeDailyReportController extends Controller
         return view('employee.index', compact('reports'));
     }
 
-    // planned to move this to livewire 
+    // planned to move this to livewire
     public function showUploadForm()
     {
         return view('dailyreport.upload-daily-report');
@@ -89,7 +89,7 @@ class EmployeeDailyReportController extends Controller
                 // Tambahkan suffix jika nama kolom sudah dipakai
                 if (isset($usedColumns[$key])) {
                     $suffix = ++$usedColumns[$key];
-                    $key .= '.'.$suffix;
+                    $key .= '.' . $suffix;
                 } else {
                     $usedColumns[$key] = 0;
                 }
@@ -132,8 +132,8 @@ class EmployeeDailyReportController extends Controller
                 $descKey =
                     $i === 1
                         ? 'Deskripsi Pekerjaan yang dilakukan'
-                        : 'Deskripsi Pekerjaan yang dilakukan.'.($i - 1);
-                $proofKey = $i === 1 ? 'Bukti Pekerjaan' : 'Bukti Pekerjaan.'.($i - 1);
+                        : 'Deskripsi Pekerjaan yang dilakukan.' . ($i - 1);
+                $proofKey = $i === 1 ? 'Bukti Pekerjaan' : 'Bukti Pekerjaan.' . ($i - 1);
 
                 if (empty($record[$jamKey]) || empty($record[$descKey])) {
                     continue;
@@ -155,7 +155,7 @@ class EmployeeDailyReportController extends Controller
 
         return view('dailyreport.preview', compact('previewData'));
     }
-    
+
     // planned to move this to livewire
     public function confirmUpload(Request $request)
     {
@@ -195,7 +195,7 @@ class EmployeeDailyReportController extends Controller
 
         return view('dailyreport.upload-log', compact('logs'));
     }
-    
+
     // planned to move this to livewire
     public function show(Request $request, $employee_id)
     {

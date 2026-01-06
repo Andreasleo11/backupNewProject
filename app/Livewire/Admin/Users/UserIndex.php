@@ -157,7 +157,7 @@ class UserIndex extends Component
     {
         $option = collect($this->employeeOptions)->firstWhere('id', $employeeId);
 
-        if (!$option) {
+        if (! $option) {
             // Nothing to select (optional: you could resolve EmployeeRepository here to re-fetch)
             return;
         }
@@ -182,7 +182,7 @@ class UserIndex extends Component
 
         $user = $users->findById($userId);
 
-        if (!$user) {
+        if (! $user) {
             $this->dispatch('flash', type: 'error', message: 'User not found.');
 
             return;
@@ -239,7 +239,7 @@ class UserIndex extends Component
     public function savePassword(ChangeUserPassword $changeUserPassword): void
     {
         $this->validate($this->passwordRules());
-        if (!$this->passwordUserId) {
+        if (! $this->passwordUserId) {
             $this->dispatch('flash', type: 'error', message: 'User not found.');
         }
 

@@ -1,0 +1,32 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - config
+        - database
+        - routes
+    
+    # Start at level 4, gradually increase to 8
+    level: 4
+    
+    # Exclude paths
+    excludePaths:
+        - app/Console/Kernel.php
+        - app/Exceptions/Handler.php
+        - bootstrap/*.php
+        - vendor
+    
+    # Ignore common Laravel patterns that are safe
+    ignoreErrors:
+        - '#Unsafe usage of new static#'
+        - '#PHPDoc tag @var#'
+        - '#Access to an undefined property#'
+    
+    # Check missing typehints
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    
+    # Report level
+    reportUnmatchedIgnoredErrors: false

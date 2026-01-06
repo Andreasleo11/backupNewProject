@@ -8,7 +8,7 @@ use App\Models\PurchaseRequest;
 
 /**
  * Calculates Purchase Request status based on business rules.
- * 
+ *
  * Status codes:
  * 0 = Draft (not submitted)
  * 1 = Pending Department Head
@@ -61,8 +61,9 @@ class PurchaseRequestStatusCalculator
     /**
      * Calculate status based on autograph signatures.
      * This is used for legacy signature system.
-     * 
+     *
      * @deprecated Use approval workflow system instead
+     *
      * @param PurchaseRequest $pr The purchase request
      * @return int Updated status code
      */
@@ -104,7 +105,7 @@ class PurchaseRequestStatusCalculator
         // After Purchaser signature
         if ($pr->autograph_5 !== null) {
             $toDept = $pr->to_department?->value ?? '';
-            
+
             if (
                 ($toDept === 'PURCHASING' && $pr->type === 'factory') ||
                 $toDept === 'MAINTENANCE'

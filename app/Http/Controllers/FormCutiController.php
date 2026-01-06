@@ -30,7 +30,7 @@ class FormCutiController extends Controller
         $satuanWaktuCuti = $request->input('satuan_waktu_cuti');
 
         // Concatenate the values
-        $waktuCuti .= ' '.$satuanWaktuCuti;
+        $waktuCuti .= ' ' . $satuanWaktuCuti;
         // dd($request->all());
 
         $formcuti = FormCuti::create([
@@ -66,7 +66,7 @@ class FormCutiController extends Controller
     public function saveImagePath(Request $request, $formId, $section)
     {
         $username = Auth::check() ? Auth::user()->name : '';
-        $imagePath = $username.'.png';
+        $imagePath = $username . '.png';
 
         // Save $imagePath to the database for the specified $reportId and $section
         $fc = FormCuti::find($formId);

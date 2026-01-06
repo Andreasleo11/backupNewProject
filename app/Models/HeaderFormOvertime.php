@@ -114,7 +114,7 @@ class HeaderFormOvertime extends Model
                             $query->where('name', 'LOGISTIC');
                         })
                         ->first();
-                } elseif($report->department->name === 'QA') {
+                } elseif ($report->department->name === 'QA') {
                     $user = User::where('is_head', 1)
                         ->whereHas('department', function ($query) {
                             $query->where('name', 'QC');
@@ -170,8 +170,8 @@ class HeaderFormOvertime extends Model
                         ",
             'cc' => $cc,
             'actionText' => 'Click to see the detail',
-            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/').
-                'formovertime/detail/'.
+            'actionURL' => env('APP_URL', 'http://116.254.114.93:2420/') .
+                'formovertime/detail/' .
                 $report->id,
         ];
 

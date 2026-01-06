@@ -32,7 +32,6 @@ class SendPurchaseRequestCreatedNotification
         );
     }
 
-
     private function prepareNotificationDetails($pr): array
     {
         // Use Recipient Resolver for status text

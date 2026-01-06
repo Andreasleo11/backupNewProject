@@ -36,7 +36,7 @@ class RejectPurchaseRequestTest extends TestCase
         $dto = new ApprovalActionDTO($prId, $userId, $remarks);
 
         $mockPr = Mockery::mock(PurchaseRequest::class);
-        
+
         // Expectations
         $repo->shouldReceive('find')
             ->once()

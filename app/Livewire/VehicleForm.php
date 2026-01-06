@@ -26,7 +26,7 @@ class VehicleForm extends Component
     public function rules()
     {
         return [
-            'plate_number' => 'required|string|max:255|unique:vehicles,plate_number,'.$this->vehicleId,
+            'plate_number' => 'required|string|max:255|unique:vehicles,plate_number,' . $this->vehicleId,
             'driver_name' => 'required|string|max:255',
         ];
     }

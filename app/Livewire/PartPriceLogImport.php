@@ -150,7 +150,6 @@ class PartPriceLogImport extends Component
                 }
             }
 
-            return null;
         };
 
         return [

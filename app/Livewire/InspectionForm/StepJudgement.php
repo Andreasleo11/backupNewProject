@@ -76,7 +76,7 @@ class StepJudgement extends Component
 
     public function mount()
     {
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
         $saved = session("stepDetailSaved.judgements.{$this->periodKey}", []);
         $this->sessionSaved = $saved;
         $this->savedAt = session("stepDetailSaved.judgements_meta.{$this->periodKey}.savedAt");

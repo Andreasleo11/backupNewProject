@@ -16,7 +16,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
-    use HasFactory, HasApiTokens, Notifiable, SoftDeletes, HasRoles;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
     protected string $guard_name = 'web';
 
@@ -65,5 +65,3 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('super-admin');
     }
 }
-
-  

@@ -356,7 +356,7 @@ class EmployeeDashboardController extends Controller
     /**
      * Get employee count grouped by month for a given year.
      *
-     * @param  int|null  $year
+     * @param int|null $year
      * @return \Illuminate\Http\JsonResponse
      */
     public function getEmployeeCountByMonth($year = null)
@@ -389,7 +389,7 @@ class EmployeeDashboardController extends Controller
             return response()->json($formattedCounts);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error(
-                'Error fetching employee counts: '.$e->getMessage(),
+                'Error fetching employee counts: ' . $e->getMessage(),
             );
 
             return response()->json(['error' => 'Internal Server Error'], 500);

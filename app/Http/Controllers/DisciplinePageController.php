@@ -381,7 +381,7 @@ class DisciplinePageController extends Controller
         $excelFileName = 'DisciplineData.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new DesciplineDataExp($allData), 'public/Evaluation/'.$excelFileName);
+        Excel::store(new DesciplineDataExp($allData), 'public/Evaluation/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;
@@ -1198,7 +1198,7 @@ class DisciplinePageController extends Controller
         $excelFileName = 'DisciplineDataYayasan.xlsx';
         $excelFilePath = public_path($excelFileName);
 
-        Excel::store(new DesciplineDataExp($allData), 'public/Evaluation/'.$excelFileName);
+        Excel::store(new DesciplineDataExp($allData), 'public/Evaluation/' . $excelFileName);
 
         // $filePath = Storage::url($fileName);
         return $excelFileName;

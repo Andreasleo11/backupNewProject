@@ -3,7 +3,7 @@
 use App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder;
 
 beforeEach(function () {
-    $this->builder = new PurchaseRequestApprovalContextBuilder();
+    $this->builder = new PurchaseRequestApprovalContextBuilder;
 });
 
 test('it builds approval context with all required fields', function () {

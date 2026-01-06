@@ -14,17 +14,38 @@ class Employee
         private ?\DateTimeImmutable $endDate = null,
     ) {}
 
-    public function id(): int {return $this->id; }
+    public function id(): int
+    {
+        return $this->id;
+    }
 
-    public function nik(): string { return $this->nik; }
+    public function nik(): string
+    {
+        return $this->nik;
+    }
 
-    public function name(): string { return $this->name; }
+    public function name(): string
+    {
+        return $this->name;
+    }
 
-    public function branch(): ?string { return $this->branch; }
+    public function branch(): ?string
+    {
+        return $this->branch;
+    }
 
-    public function deptCode(): ?string { return $this->deptCode; }
+    public function deptCode(): ?string
+    {
+        return $this->deptCode;
+    }
 
-    public function startDate(): ?\DateTimeImmutable { return $this->startDate; }
+    public function startDate(): ?\DateTimeImmutable
+    {
+        return $this->startDate;
+    }
 
-    public function endDate(): ?\DateTimeImmutable { return $this->endDate;}
+    public function endDate(): ?\DateTimeImmutable
+    {
+        return $this->endDate;
+    }
 }

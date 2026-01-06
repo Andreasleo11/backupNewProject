@@ -44,7 +44,7 @@ class Upload extends Component
 
         // MIME check
         if ($req->allowed_mimetypes) {
-            $this->validate(['file' => 'file|mimetypes:'.implode(',', $req->allowed_mimetypes)]);
+            $this->validate(['file' => 'file|mimetypes:' . implode(',', $req->allowed_mimetypes)]);
         }
 
         $disk = 'public';

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Application\Employee\DTOs;
 
 class EmployeeFilter
@@ -8,5 +9,5 @@ class EmployeeFilter
         public readonly ?int $perPage = 10,
         public ?string $sortBy = null,
         public string $sortDirection = 'asc',
-    ){}
+    ) {}
 }

@@ -15,17 +15,19 @@ class SyncPrWorkflowState
             $pr->workflow_status = 'CANCELED';
             $pr->workflow_step = null;
             $pr->save();
+
             return;
         }
 
-        if (!$approval) {
+        if (! $approval) {
             // if no workflow exists, keep null or mark DRAFT (your choice)
             // safest: only set if empty
-            if (!$pr->workflow_status) {
+            if (! $pr->workflow_status) {
                 $pr->workflow_status = 'DRAFT';
                 $pr->workflow_step = null;
                 $pr->save();
             }
+
             return;
         }
 
@@ -43,7 +45,7 @@ class SyncPrWorkflowState
                 $roleName = $step->approver_snapshot_name ?? null;
 
                 // If not available, derive from role/user (role is typical for approval)
-                if (!$roleName && $step->approver_type === 'role') {
+                if (! $roleName && $step->approver_type === 'role') {
                     $roleName = Role::find($step->approver_id)?->name;
                 }
 

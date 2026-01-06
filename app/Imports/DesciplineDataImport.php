@@ -11,7 +11,7 @@ class DesciplineDataImport implements ToModel, WithUpserts
     public function model(array $row)
     {
         /**
-         * @param  array  $row
+         * @param array $row
          * @return \Illuminate\Database\Eloquent\Model|null
          */
         return new EvaluationData([

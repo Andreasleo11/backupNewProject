@@ -111,10 +111,10 @@ class MasterDataPartsImportQueued implements ShouldQueue, ToCollection, WithBatc
                 DB::table('import_jobs')
                     ->where('id', $job->id)
                     ->update([
-                        'processed_rows' => DB::raw('processed_rows + '.(int) $rows->count()),
-                        'created_rows' => DB::raw('created_rows + '.(int) $createdCount),
-                        'updated_rows' => DB::raw('updated_rows + '.(int) $updatedCount),
-                        'skipped_rows' => DB::raw('skipped_rows + '.(int) $skipped),
+                        'processed_rows' => DB::raw('processed_rows + ' . (int) $rows->count()),
+                        'created_rows' => DB::raw('created_rows + ' . (int) $createdCount),
+                        'updated_rows' => DB::raw('updated_rows + ' . (int) $updatedCount),
+                        'skipped_rows' => DB::raw('skipped_rows + ' . (int) $skipped),
                         'updated_at' => now(),
                     ]);
             }
@@ -123,7 +123,7 @@ class MasterDataPartsImportQueued implements ShouldQueue, ToCollection, WithBatc
                 // Add a one-liner to the same log file for post-mortem
                 Storage::disk('local')->append(
                     "import_logs/job-{$job->id}.csv",
-                    '"","","","","EXCEPTION: '.str_replace('"', '""', $e->getMessage())."\"\n",
+                    '"","","","","EXCEPTION: ' . str_replace('"', '""', $e->getMessage()) . "\"\n",
                 );
                 $job->update([
                     'status' => 'failed',
@@ -162,7 +162,7 @@ class MasterDataPartsImportQueued implements ShouldQueue, ToCollection, WithBatc
 
         $dir = 'import_logs';
         $file = "job-{$job->id}.csv";
-        $path = $dir.'/'.$file;
+        $path = $dir . '/' . $file;
 
         // Create header if file not exists
         if (! Storage::disk('local')->exists($path)) {

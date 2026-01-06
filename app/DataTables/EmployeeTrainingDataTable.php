@@ -16,7 +16,7 @@ class EmployeeTrainingDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
@@ -51,11 +51,11 @@ class EmployeeTrainingDataTable extends DataTable
     public function query(EmployeeTraining $model): QueryBuilder
     {
         return $model::select([
-                'employee_trainings.*',
-                'employees.name as employee_name',
-                'employees.nik as employee_nik',
-                'employees.dept_code as employee_dept',
-            ])
+            'employee_trainings.*',
+            'employees.name as employee_name',
+            'employees.nik as employee_nik',
+            'employees.dept_code as employee_dept',
+        ])
             ->join('employees', 'employees.id', '=', 'employee_trainings.employee_id');
     }
 
@@ -102,6 +102,6 @@ class EmployeeTrainingDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'EmployeeTraining_'.date('YmdHis');
+        return 'EmployeeTraining_' . date('YmdHis');
     }
 }

@@ -31,4 +31,3 @@ class Timeline extends Component
         return view('livewire.approval.timeline');
     }
 }
- 

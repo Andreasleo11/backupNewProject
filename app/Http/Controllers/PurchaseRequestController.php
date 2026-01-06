@@ -7,14 +7,12 @@ use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\Services\MasterPrItemService;
 use App\Application\PurchaseRequest\Services\PurchaseRequestItemFilter;
-use App\Application\PurchaseRequest\Services\PurchaseRequestQueryScoper;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\DataTables\PurchaseRequestsDataTable;
-use App\Enums\ToDepartment;
 use App\Exports\PurchaseRequestWithDetailsExport;
-use App\Http\Requests\ApprovePurchaseRequest;
 use App\Http\Requests\ApproveAllDetailItems;
+use App\Http\Requests\ApprovePurchaseRequest;
 use App\Http\Requests\RejectPurchaseRequest;
 use App\Http\Requests\RejectPurchaseRequestManual;
 use App\Http\Requests\SaveSignatureRequest;
@@ -38,7 +36,7 @@ class PurchaseRequestController extends Controller
     ) {}
 
     public function index(
-        Request $request, 
+        Request $request,
         PurchaseRequestsDataTable $dataTable,
         \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query
     ) {
@@ -164,11 +162,9 @@ class PurchaseRequestController extends Controller
         ]);
     }
 
-
-
     public function saveSignaturePath(
-        SaveSignatureRequest $request, 
-        $prId, 
+        SaveSignatureRequest $request,
+        $prId,
         int $section,
         \App\Application\PurchaseRequest\UseCases\AddSignature $useCase
     ) {
@@ -203,13 +199,13 @@ class PurchaseRequestController extends Controller
     }
 
     public function update(
-        UpdatePurchaseRequest $request, 
+        UpdatePurchaseRequest $request,
         $id,
         \App\Application\PurchaseRequest\UseCases\UpdatePurchaseRequest $useCase
     ) {
         try {
             $validated = $request->validated();
-            
+
             // Build DTO
             $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePurchaseRequestDTO(
                 purchaseRequestId: (int) $id,
@@ -220,7 +216,7 @@ class PurchaseRequestController extends Controller
                 remark: $validated['remark'] ?? null,
                 supplier: $validated['supplier'] ?? null,
                 pic: $validated['pic'] ?? null,
-                items: array_map(fn($item) => new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
+                items: array_map(fn ($item) => new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
                     itemName: $item['item_name'],
                     quantity: (float) $item['quantity'],
                     uom: $item['uom'],
@@ -268,7 +264,7 @@ class PurchaseRequestController extends Controller
     }
 
     public function reject(
-        RejectPurchaseRequestManual $request, 
+        RejectPurchaseRequestManual $request,
         $id,
         \App\Application\PurchaseRequest\UseCases\ManualRejectPurchaseRequest $useCase
     ) {
@@ -287,7 +283,7 @@ class PurchaseRequestController extends Controller
     public function approveAllDetailItems($prId, ApproveAllDetailItems $request)
     {
         $type = $request->validated()['type'];
-        
+
         if ($type === 'GM') {
             $details = DetailPurchaseRequest::where('purchase_request_id', $prId)
                 ->where('is_approve_by_head', true)
@@ -327,17 +323,17 @@ class PurchaseRequestController extends Controller
         )->setPaper('a4', 'landscape');
 
         return $pdf->download(
-            'Purchase Request-'.
-                $purchaseRequest->id.
-                ' ('.
-                $purchaseRequest->pr_no.
-                ')'.
+            'Purchase Request-' .
+                $purchaseRequest->id .
+                ' (' .
+                $purchaseRequest->pr_no .
+                ')' .
                 '.pdf',
         );
     }
 
     public function cancel(
-        Request $request, 
+        Request $request,
         $id,
         \App\Application\PurchaseRequest\UseCases\CancelPurchaseRequest $useCase
     ) {
@@ -361,7 +357,7 @@ class PurchaseRequestController extends Controller
     }
 
     public function updatePoNumber(
-        Request $request, 
+        Request $request,
         $id,
         \App\Application\PurchaseRequest\UseCases\UpdatePoNumber $useCase
     ) {

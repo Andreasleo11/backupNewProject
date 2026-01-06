@@ -22,6 +22,7 @@ class Bell extends Component
 
         if (! $user) {
             $this->unreadCount = 0;
+
             return;
         }
 

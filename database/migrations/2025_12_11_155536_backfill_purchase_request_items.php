@@ -27,7 +27,7 @@ return new class extends Migration
 
                 foreach ($rows as $row) {
                     // Skip if purchase_request doesn't exist (deleted or invalid)
-                    if (!in_array($row->purchase_request_id, $validPrIds)) {
+                    if (! in_array($row->purchase_request_id, $validPrIds)) {
                         continue;
                     }
 

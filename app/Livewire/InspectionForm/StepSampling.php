@@ -114,7 +114,7 @@ class StepSampling extends Component
     public function mount($second_inspection_document_number = null)
     {
         $this->second_inspection_document_number = $second_inspection_document_number;
-        $this->periodKey = 'p'.session('stepDetailSaved.period');
+        $this->periodKey = 'p' . session('stepDetailSaved.period');
 
         $this->samples = session("stepDetailSaved.samples.{$this->periodKey}", []);
         $this->sessionSaved = session("stepDetailSaved.samples.{$this->periodKey}", []);

@@ -214,24 +214,24 @@ class ReportWizardDetails extends Component
                     "details.$index.price" => 'required|string',
                 ],
                 [
-                    "details.$index.part_name.required" => 'Part name in row #'.($index + 1).' is required.',
-                    "details.$index.rec_quantity.required" => 'Received quantity in row #'.($index + 1).' is required.',
-                    "details.$index.rec_quantity.integer" => 'Received quantity in row #'.($index + 1).' must be a number.',
-                    "details.$index.rec_quantity.min" => 'Received quantity in row #'.($index + 1).' cannot be negative.',
+                    "details.$index.part_name.required" => 'Part name in row #' . ($index + 1) . ' is required.',
+                    "details.$index.rec_quantity.required" => 'Received quantity in row #' . ($index + 1) . ' is required.',
+                    "details.$index.rec_quantity.integer" => 'Received quantity in row #' . ($index + 1) . ' must be a number.',
+                    "details.$index.rec_quantity.min" => 'Received quantity in row #' . ($index + 1) . ' cannot be negative.',
 
-                    "details.$index.verify_quantity.required" => 'Verified quantity in row #'.($index + 1).' is required.',
-                    "details.$index.verify_quantity.integer" => 'Verified quantity in row #'.($index + 1).' must be a number.',
-                    "details.$index.verify_quantity.min" => 'Verified quantity in row #'.($index + 1).' cannot be negative.',
+                    "details.$index.verify_quantity.required" => 'Verified quantity in row #' . ($index + 1) . ' is required.',
+                    "details.$index.verify_quantity.integer" => 'Verified quantity in row #' . ($index + 1) . ' must be a number.',
+                    "details.$index.verify_quantity.min" => 'Verified quantity in row #' . ($index + 1) . ' cannot be negative.',
 
-                    "details.$index.can_use.required" => 'Can-use quantity in row #'.($index + 1).' is required.',
-                    "details.$index.can_use.integer" => 'Can-use quantity in row #'.($index + 1).' must be a number.',
-                    "details.$index.can_use.min" => 'Can-use quantity in row #'.($index + 1).' cannot be negative.',
+                    "details.$index.can_use.required" => 'Can-use quantity in row #' . ($index + 1) . ' is required.',
+                    "details.$index.can_use.integer" => 'Can-use quantity in row #' . ($index + 1) . ' must be a number.',
+                    "details.$index.can_use.min" => 'Can-use quantity in row #' . ($index + 1) . ' cannot be negative.',
 
-                    "details.$index.cant_use.required" => "Can't-use quantity in row #".($index + 1).' is required.',
-                    "details.$index.cant_use.integer" => "Can't-use quantity in row #".($index + 1).' must be a number.',
-                    "details.$index.cant_use.min" => "Can't-use quantity in row #".($index + 1).' cannot be negative.',
+                    "details.$index.cant_use.required" => "Can't-use quantity in row #" . ($index + 1) . ' is required.',
+                    "details.$index.cant_use.integer" => "Can't-use quantity in row #" . ($index + 1) . ' must be a number.',
+                    "details.$index.cant_use.min" => "Can't-use quantity in row #" . ($index + 1) . ' cannot be negative.',
 
-                    "details.$index.price.required" => 'Price in row #'.($index + 1).' is required.',
+                    "details.$index.price.required" => 'Price in row #' . ($index + 1) . ' is required.',
                 ],
             );
             $detail['price'] = (float) str_replace(',', '', $detail['price']);

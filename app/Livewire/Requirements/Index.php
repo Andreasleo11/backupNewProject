@@ -66,7 +66,9 @@ class Index extends Component
                 });
             })
             ->when($this->filterFreq, fn ($q, $f) => $q->where('frequency', $f))
-            ->when($this->filterApproval !== null && $this->filterApproval !== '', fn ($q) => $q->where('requires_approval', (int) $this->filterApproval)
+            ->when(
+                $this->filterApproval !== null && $this->filterApproval !== '',
+                fn ($q) => $q->where('requires_approval', (int) $this->filterApproval)
             )
             ->orderBy($this->sort, $this->dir)
             ->paginate($this->perPage);

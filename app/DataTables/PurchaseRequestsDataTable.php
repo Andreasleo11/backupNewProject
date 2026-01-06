@@ -22,7 +22,7 @@ class PurchaseRequestsDataTable extends DataTable
     /**
      * Build DataTable class.
      *
-     * @param  QueryBuilder  $query  Results from query() method.
+     * @param QueryBuilder $query Results from query() method.
      * @return \Yajra\DataTables\EloquentDataTable
      */
     protected $statusMap = [
@@ -95,7 +95,7 @@ class PurchaseRequestsDataTable extends DataTable
                     ->select(
                         'status as value',
                         DB::raw(
-                            '(CASE '.
+                            '(CASE ' .
                                 implode(
                                     ' ',
                                     array_map(
@@ -105,7 +105,7 @@ class PurchaseRequestsDataTable extends DataTable
                                         array_keys($this->statusMap),
                                         $this->statusMap,
                                     ),
-                                ).
+                                ) .
                                 ' ELSE status END) as label',
                         ),
                     )
@@ -122,6 +122,7 @@ class PurchaseRequestsDataTable extends DataTable
     public function query(PurchaseRequest $model): QueryBuilder
     {
         $query = $model->newQuery()->with('files', 'createdBy');
+
         return $this->queryScoper->scopeForUser(auth()->user(), $query);
     }
 
@@ -184,6 +185,6 @@ class PurchaseRequestsDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PurchaseRequests_'.date('YmdHis');
+        return 'PurchaseRequests_' . date('YmdHis');
     }
 }

@@ -54,9 +54,15 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
     }
 
     public function getExpenseLinesByDepartment(
-        int $deptId, Month $month, ?string $prSigner, string $sortBy, string $sortDir, int $page, int $perPage,
-        ?string $search = null): array
-    {
+        int $deptId,
+        Month $month,
+        ?string $prSigner,
+        string $sortBy,
+        string $sortDir,
+        int $page,
+        int $perPage,
+        ?string $search = null
+    ): array {
         $q = UnifiedExpensesQuery::detailByDepartment($deptId, $month->start(), $month->end());
 
         if ($prSigner) {
@@ -67,7 +73,7 @@ final class ExpenseReadRepositoryDb implements ExpenseReadRepository
         }
 
         if ($search !== null && $search !== '') {
-            $term = '%'.$search.'%';
+            $term = '%' . $search . '%';
             $q->where(function ($qq) use ($term) {
                 $qq->where('item_name', 'like', $term)
                     ->orWhere('source', 'like', $term)

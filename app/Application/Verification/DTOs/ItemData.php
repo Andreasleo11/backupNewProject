@@ -57,7 +57,8 @@ final class ItemData
             (float) ($a['price'] ?? 0),
             (string) ($a['currency'] ?? 'IDR'),
             array_map(
-                fn ($d) => DefectData::fromArray((array) $d), (array) $a['defects'] ?? []
+                fn ($d) => DefectData::fromArray((array) $d),
+                (array) $a['defects'] ?? []
             ),
         );
     }
@@ -74,7 +75,8 @@ final class ItemData
             'price' => $this->price,
             'currency' => $this->currency,
             'defects' => array_map(
-                fn ($d) => $d instanceof DefectData ? $d->toArray() : [], $this->defects
+                fn ($d) => $d instanceof DefectData ? $d->toArray() : [],
+                $this->defects
             ),
         ];
     }

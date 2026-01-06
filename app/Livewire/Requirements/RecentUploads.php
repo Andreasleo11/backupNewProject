@@ -11,6 +11,7 @@ use Livewire\Component;
 class RecentUploads extends Component
 {
     public ?Department $department = null;
+
     public ?Requirement $requirement = null;
 
     /** @var \Illuminate\Support\Collection */
@@ -27,14 +28,14 @@ class RecentUploads extends Component
 
     public function load(): void
     {
-       $this->uploads = RequirementUpload::query()
-        ->with('uploadedBy')
-        ->where('requirement_id', $this->requirement->id)
-        ->where('scope_type', Department::class)
-        ->where('scope_id', $this->department->id)
-        ->latest()
-        ->take(20)
-        ->get();
+        $this->uploads = RequirementUpload::query()
+            ->with('uploadedBy')
+            ->where('requirement_id', $this->requirement->id)
+            ->where('scope_type', Department::class)
+            ->where('scope_id', $this->department->id)
+            ->latest()
+            ->take(20)
+            ->get();
     }
 
     public function render()

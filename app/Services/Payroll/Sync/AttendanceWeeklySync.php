@@ -23,7 +23,7 @@ final class AttendanceWeeklySync
 
         foreach ($items as $it) {
             $week = $it->shiftDate->startOfWeek(CarbonInterface::MONDAY)->toDateString();
-            $key = $it->nik.'|'.$week;
+            $key = $it->nik . '|' . $week;
 
             if (! isset($bucket[$key])) {
                 $dept = $this->employees->getDeptForNik($it->nik);

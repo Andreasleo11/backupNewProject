@@ -11,7 +11,7 @@ final class MasterPrItemService
      */
     public function updateFromItems(?array $items): void
     {
-        if (!isset($items)) {
+        if (! isset($items)) {
             return;
         }
 
@@ -23,7 +23,7 @@ final class MasterPrItemService
             // Check if the item exists in MasterDataPr
             $existingItem = MasterDataPr::where('name', $itemName)->first();
 
-            if (!$existingItem) {
+            if (! $existingItem) {
                 // Item not available in MasterDataPr - create new
                 MasterDataPr::create([
                     'name' => $itemName,
@@ -46,6 +46,7 @@ final class MasterPrItemService
     public function sanitizeCurrencyInput(mixed $value): float
     {
         $price = preg_replace('/[Rp$¥]\.?\s*/', '', (string) ($value ?? 0));
+
         return (float) str_replace(',', '', $price);
     }
 

@@ -9,7 +9,7 @@ class PurchaseOrderDownloadLog extends Model
 {
     use HasFactory;
 
-    const UPDATED_AT = null; // Disable 'updated_at' management
+    public const UPDATED_AT = null; // Disable 'updated_at' management
 
     protected $fillable = ['purchase_order_id', 'user_id', 'last_downloaded_at'];
 

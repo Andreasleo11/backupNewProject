@@ -240,6 +240,7 @@ final class ApprovalEngine implements Approvals
                 'approval_step_id' => $step->id,
                 'sequence' => $step->sequence,
                 'remarks' => $remarks,
-            ]);
+            ]
+        );
     }
 }

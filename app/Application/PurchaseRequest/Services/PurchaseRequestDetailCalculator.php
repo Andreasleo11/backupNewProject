@@ -2,8 +2,8 @@
 
 namespace App\Application\PurchaseRequest\Services;
 
-use App\Models\PurchaseRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
+use App\Models\PurchaseRequest;
 use Illuminate\Support\Collection;
 
 final class PurchaseRequestDetailCalculator
@@ -67,34 +67,48 @@ final class PurchaseRequestDetailCalculator
 
             // keep your current total rules (copied from blade)
             if ($pr->status === 6 || $pr->status === 7) {
-                if (!is_null($d->is_approve_by_head)) {
-                    if ($d->is_approve_by_head) $total += $subtotal;
+                if (! is_null($d->is_approve_by_head)) {
+                    if ($d->is_approve_by_head) {
+                        $total += $subtotal;
+                    }
                 } else {
                     $total += $subtotal;
                 }
             } elseif ($pr->status === 2) {
-                if (!is_null($d->is_approve_by_verificator)) {
-                    if ($d->is_approve_by_verificator) $total += $subtotal;
+                if (! is_null($d->is_approve_by_verificator)) {
+                    if ($d->is_approve_by_verificator) {
+                        $total += $subtotal;
+                    }
                 } else {
-                    if ($d->is_approve_by_head) $total += $subtotal;
+                    if ($d->is_approve_by_head) {
+                        $total += $subtotal;
+                    }
                 }
             } elseif ($pr->status === 3) {
-                if (!is_null($d->is_approve)) {
-                    if ($d->is_approve) $total += $subtotal;
+                if (! is_null($d->is_approve)) {
+                    if ($d->is_approve) {
+                        $total += $subtotal;
+                    }
                 } else {
                     // keep as-is (mind enum vs string)
                     $toDept = $pr->to_department?->value ?? $pr->to_department;
                     if ($pr->type === 'office' || ($toDept === 'COMPUTER' && $pr->type === 'factory')) {
-                        if ($d->is_approve_by_verificator) $total += $subtotal;
+                        if ($d->is_approve_by_verificator) {
+                            $total += $subtotal;
+                        }
                     } elseif ($d->is_approve_by_gm) {
                         $total += $subtotal;
                     }
                 }
             } elseif ($pr->status === 4) {
-                if ($d->is_approve) $total += $subtotal;
+                if ($d->is_approve) {
+                    $total += $subtotal;
+                }
             } elseif ($pr->status === 1) {
-                if (!is_null($d->is_approve_by_head)) {
-                    if ($d->is_approve_by_head) $total += $subtotal;
+                if (! is_null($d->is_approve_by_head)) {
+                    if ($d->is_approve_by_head) {
+                        $total += $subtotal;
+                    }
                 } else {
                     $total += $subtotal;
                 }
