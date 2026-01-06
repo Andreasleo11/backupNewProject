@@ -33,13 +33,15 @@ class PurchaseRequestController extends Controller
 {
     public function __construct(
         private Approvals $approvals,
-        private PurchaseRequestQueryScoper $queryScoper,
         private PurchaseRequestItemFilter $itemFilter,
         private MasterPrItemService $masterPrService,
     ) {}
 
-    public function index(Request $request, PurchaseRequestsDataTable $dataTable)
-    {
+    public function index(
+        Request $request, 
+        PurchaseRequestsDataTable $dataTable,
+        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query
+    ) {
         // Check if reset is requested
         if ($request->has('reset')) {
             // Clear session filters
@@ -58,33 +60,30 @@ class PurchaseRequestController extends Controller
         $status = $request->status ?: $request->session()->get('status');
         $branch = $request->branch ?: $request->session()->get('branch');
 
-        // Build query using the query scoper service
-        $purchaseRequestsQuery = PurchaseRequest::with('files', 'createdBy');
-        $purchaseRequestsQuery = $this->queryScoper->scopeForUser(Auth::user(), $purchaseRequestsQuery);
-
-        // Apply date range filter
         if ($startDate && $endDate) {
-            $purchaseRequestsQuery->whereBetween('date_pr', [$startDate, $endDate]);
             $request->session()->put('start_date', $startDate);
             $request->session()->put('end_date', $endDate);
         }
 
-        // Apply status filter
         if ($status) {
-            $purchaseRequestsQuery->where('status', $status);
             $request->session()->put('status', $status);
         }
 
-        // Apply branch filter
         if ($branch) {
-            $purchaseRequestsQuery->where('branch', $branch);
             $request->session()->put('branch', $branch);
         }
 
-        // Fetch purchase requests with pagination
-        $purchaseRequests = $purchaseRequestsQuery
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $dto = new \App\Application\PurchaseRequest\DTOs\GetPurchaseRequestListDTO(
+            userId: Auth::id(),
+            startDate: $startDate,
+            endDate: $endDate,
+            status: $status,
+            branch: $branch,
+            perPage: 10
+        );
+
+        // Fetch purchase requests using the Query class
+        $purchaseRequests = $query->handle($dto);
 
         // Append the filter parameters to the pagination links
         $purchaseRequests->appends([
@@ -167,47 +166,21 @@ class PurchaseRequestController extends Controller
 
 
 
-    public function saveSignaturePath(SaveSignatureRequest $request, $prId, int $section)
-    {
-        $pr = PurchaseRequest::findOrFail($prId);
+    public function saveSignaturePath(
+        SaveSignatureRequest $request, 
+        $prId, 
+        int $section,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $useCase
+    ) {
+        $dto = new \App\Application\PurchaseRequest\DTOs\AddSignatureDTO(
+            purchaseRequestId: (int) $prId,
+            signedByUserId: $request->user()->id,
+            section: $section,
+            imagePath: $request->input('imagePath')
+        );
 
-        // Fetching the user from the request
-        $user = $request->user();
-        $imagePath = $request->input('imagePath');
+        $useCase->handle($dto);
 
-        // Define the step-to-role mapping
-        $stepMap = [
-            1 => 'MAKER',
-            2 => 'DEPT_HEAD',
-            3 => 'VERIFICATOR',
-            4 => 'DIRECTOR',
-            5 => 'PURCHASER',
-            6 => 'GM',
-            7 => 'HEAD_DESIGN',
-        ];
-
-        $stepCode = $stepMap[$section] ?? null;
-
-        // If stepCode exists, update the signatures table
-        if ($stepCode) {
-            $pr->signatures()->updateOrCreate(
-                ['step_code' => $stepCode],
-                [
-                    'signed_by_user_id' => $user->id,
-                    'image_path' => $imagePath,
-                    'signed_at' => now(),
-                ]
-            );
-        }
-
-        // If the role is DIRECTOR, mark the approval timestamp
-        if ($stepCode === 'DIRECTOR') {
-            $pr->update([
-                'approved_at' => now(),
-            ]);
-        }
-
-        // Return success message
         return response()->json(['success' => 'Autograph saved successfully!']);
     }
 
@@ -294,12 +267,17 @@ class PurchaseRequestController extends Controller
         }
     }
 
-    public function reject(RejectPurchaseRequestManual $request, $id)
-    {
-        PurchaseRequest::find($id)->update([
-            'status' => 5,
-            'description' => $request->description,
-        ]);
+    public function reject(
+        RejectPurchaseRequestManual $request, 
+        $id,
+        \App\Application\PurchaseRequest\UseCases\ManualRejectPurchaseRequest $useCase
+    ) {
+        $dto = new \App\Application\PurchaseRequest\DTOs\ManualRejectPurchaseRequestDTO(
+            purchaseRequestId: (int) $id,
+            description: $request->description
+        );
+
+        $useCase->handle($dto);
 
         return redirect()
             ->back()
