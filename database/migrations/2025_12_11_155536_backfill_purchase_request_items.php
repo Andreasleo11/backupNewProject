@@ -10,12 +10,27 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Only backfill if purchase_request_items is empty
+        if (DB::table('purchase_request_items')->count() > 0) {
+            return; // Already backfilled
+        }
+
+        // Get all valid purchase_request IDs
+        $validPrIds = DB::table('purchase_requests')
+            ->pluck('id')
+            ->toArray();
+
         DB::table('detail_purchase_requests')
             ->orderBy('id')
-            ->chunkById(500, function ($rows) {
+            ->chunkById(500, function ($rows) use ($validPrIds) {
                 $insert = [];
 
                 foreach ($rows as $row) {
+                    // Skip if purchase_request doesn't exist (deleted or invalid)
+                    if (!in_array($row->purchase_request_id, $validPrIds)) {
+                        continue;
+                    }
+
                     $insert[] = [
                         // if you want to keep same ID, you *can* set 'id' => $row->id
                         'id' => $row->id,

@@ -113,7 +113,7 @@ class PurchaseRequestController extends Controller
             }
 
             $purchaseRequestsQuery->whereNotNull('autograph_1');
-        } elseif ($user->role->name === 'SUPERADMIN') {
+        } elseif ($user->hasRole('super-admin')) {
             $purchaseRequestsQuery->whereNotNull('autograph_1');
         } else {
             $purchaseRequestsQuery->where('from_department', $userDepartmentName);

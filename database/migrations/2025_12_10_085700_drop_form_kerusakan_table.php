@@ -19,7 +19,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('form_kerusakan', function (Blueprint $table) {
+        Schema::create('form_kerusakan', function (Blueprint $table) {
             $table->id();
             $table->string('doc_num')->nullable();
             $table->string('customer')->nullable();

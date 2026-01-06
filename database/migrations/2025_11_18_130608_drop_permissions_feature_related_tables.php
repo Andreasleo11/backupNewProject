@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::dropIfExists('permissions');
-        Schema::dropIfExists('permission_role');
         Schema::dropIfExists('permission_user');
+        Schema::dropIfExists('permission_role');
+        Schema::dropIfExists('permissions');
     }
 
     /**

@@ -36,16 +36,36 @@ return new class extends Migration
             ->update(['updated_at' => null]);
 
         Schema::table('employees', function (Blueprint $table) {
-            $table->renameColumn('NIK', 'nik');
-            $table->renameColumn('Nama', 'name');
-            $table->renameColumn('Gender', 'gender');
-            $table->renameColumn('Dept', 'dept_code');
-            $table->renameColumn('jabatan', 'position');
-            $table->renameColumn('Branch', 'branch');
-            $table->renameColumn('employee_status', 'employment_type');
-            $table->renameColumn('status', 'employment_scheme');
-            $table->renameColumn('Grade', 'grade_code');
-            $table->renameColumn('level', 'grade_level');
+            if (Schema::hasColumn('employees', 'NIK') && !Schema::hasColumn('employees', 'nik')) {
+                $table->renameColumn('NIK', 'nik');
+            }
+            if (Schema::hasColumn('employees', 'Nama') && !Schema::hasColumn('employees', 'name')) {
+                $table->renameColumn('Nama', 'name');
+            }
+            if (Schema::hasColumn('employees', 'Gender') && !Schema::hasColumn('employees', 'gender')) {
+                $table->renameColumn('Gender', 'gender');
+            }
+            if (Schema::hasColumn('employees', 'Dept') && !Schema::hasColumn('employees', 'dept_code')) {
+                $table->renameColumn('Dept', 'dept_code');
+            }
+            if (Schema::hasColumn('employees', 'jabatan') && !Schema::hasColumn('employees', 'position')) {
+                $table->renameColumn('jabatan', 'position');
+            }
+            if (Schema::hasColumn('employees', 'Branch') && !Schema::hasColumn('employees', 'branch')) {
+                $table->renameColumn('Branch', 'branch');
+            }
+            if (Schema::hasColumn('employees', 'employee_status') && !Schema::hasColumn('employees', 'employment_type')) {
+                $table->renameColumn('employee_status', 'employment_type');
+            }
+            if (Schema::hasColumn('employees', 'status') && !Schema::hasColumn('employees', 'employment_scheme')) {
+                $table->renameColumn('status', 'employment_scheme');
+            }
+            if (Schema::hasColumn('employees', 'Grade') && !Schema::hasColumn('employees', 'grade_code')) {
+                $table->renameColumn('Grade', 'grade_code');
+            }
+            if (Schema::hasColumn('employees', 'level') && !Schema::hasColumn('employees', 'grade_level')) {
+                $table->renameColumn('level', 'grade_level');
+            }
         });
 
         Schema::table('employees', function (Blueprint $table) {
@@ -61,12 +81,28 @@ return new class extends Migration
             $table->integer('grade_level')->nullable()->change();
             $table->integer('jatah_cuti_tahun')->default(0)->change();
             $table->char('organization_structure', 6)->nullable()->change();
+        });
 
-            // add index/unique
-            $table->unique('nik');
-            $table->index('dept_code');
-            $table->index('employment_type');
-            $table->index('branch');
+        // Add indexes only if they don't exist
+        $sm = Schema::getConnection()->getDoctrineSchemaManager();
+        $indexesFound = $sm->listTableIndexes('employees');
+        
+        Schema::table('employees', function (Blueprint $table) use ($indexesFound) {
+            // Check and add unique index for nik
+            if (!isset($indexesFound['employees_nik_unique'])) {
+                $table->unique('nik');
+            }
+            
+            // Check and add regular indexes
+            if (!isset($indexesFound['employees_dept_code_index'])) {
+                $table->index('dept_code');
+            }
+            if (!isset($indexesFound['employees_employment_type_index'])) {
+                $table->index('employment_type');
+            }
+            if (!isset($indexesFound['employees_branch_index'])) {
+                $table->index('branch');
+            }
         });
     }
 

@@ -13,7 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             SpecificationSeeder::class,
-            PermissionSeeder::class,
+            AdminUserSeeder::class,  // Creates super-admin role and admin user
             StockTypeSeeder::class,
             PurchaseOrderCategorySeeder::class,
         ]);

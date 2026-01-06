@@ -11,7 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Disable foreign key checks to allow dropping table with constraints
+        Schema::disableForeignKeyConstraints();
+        
         Schema::dropIfExists('roles');
+        
+        // Re-enable foreign key checks
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

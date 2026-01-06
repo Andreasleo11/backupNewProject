@@ -2,67 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-
-class User extends Authenticatable implements FilamentUser
+/**
+ * DEPRECATED: This model is kept for backward compatibility only.
+ * 
+ * Please use: App\Infrastructure\Persistence\Eloquent\Models\User
+ * 
+ * This follows Clean Architecture pattern where models belong
+ * in the Infrastructure layer, not the Domain layer.
+ * 
+ * @deprecated Use App\Infrastructure\Persistence\Eloquent\Models\User instead
+ */
+class User extends \App\Infrastructure\Persistence\Eloquent\Models\User
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
-
-    // 👇 Add this line if it's missing
-    protected string $guard_name = 'web';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role_id',
-        'department_id',
-        'specification_id',
-        'remember_token',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = ['password', 'remember_token'];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    public function department()
-    {
-        return $this->belongsTo(Department::class);
-    }
-
-    public function specification()
-    {
-        return $this->belongsTo(Specification::class);
-    }
-
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return User::where('email', $this->email)->first()->role->name === 'SUPERADMIN';
-    }
+    // This class extends the Infrastructure User model
+    // for backward compatibility with existing code
 }

@@ -1,4 +1,4 @@
-<a href="{{ route('po.view', $po->id) }}" class="btn btn-outline-primary">
+hasRole('super-admin')<a href="{{ route('po.view', $po->id) }}" class="btn btn-outline-primary">
     <i class="bi bi-eye"></i></i> View
 </a>
 @if ($po->status === 1 && auth()->user()->department->name !== 'MANAGEMENT')
@@ -6,7 +6,7 @@
         <i class="bi bi-pencil"></i></i> Edit
     </a>
 @endif
-@if (auth()->user()->role->name === 'SUPERADMIN')
+@if (auth()->user()->hasRole('super-admin'))
     @include('partials.delete-confirmation-modal', [
         'id' => $po->id,
         'route' => 'po.destroy',
@@ -21,7 +21,7 @@
 @endif
 @if (
     ($po->status === 2 && auth()->user()->department->name === 'ACCOUNTING') ||
-        auth()->user()->role->name === 'SUPERADMIN')
+        auth()->user()->hasRole('super-admin'))
     @include('partials.cancel-confirmation-modal', [
         'id' => $po->id,
         'route' => route('po.cancel', $po->id),

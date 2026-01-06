@@ -15,8 +15,8 @@ final class PurchaseRequestAccess
         $isPurchaser = ($user->specification->name ?? null) === 'PURCHASER';
         $isGM = (int) $user->is_gm === 1;
 
-        // SUPERADMIN (matches your index logic style)
-        if (($user->role->name ?? null) === 'SUPERADMIN') {
+        // super-admin (matches your index logic style)
+        if ($user->hasRole('super-admin')) {
             return $pr->autograph_1 !== null;
         }
 
