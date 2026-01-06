@@ -19,4 +19,6 @@ interface PurchaseRequestRepository
 
     /** @return string[] */
     public function getOfficeDepartmentNames(): array;
+
+    public function find(int $id): ?PurchaseRequest;
 }

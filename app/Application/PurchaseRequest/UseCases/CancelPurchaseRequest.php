@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 final class CancelPurchaseRequest
 {
+    public function __construct(
+        private readonly \App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository $repo
+    ) {}
+
     public function handle(CancelPurchaseRequestDTO $dto): PurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
-            /** @var PurchaseRequest $pr */
-            $pr = PurchaseRequest::findOrFail($dto->purchaseRequestId);
+            $pr = $this->repo->find($dto->purchaseRequestId);
+            
+            if (! $pr) {
+                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+            }
 
             // Validate that PR can be cancelled
             if ($pr->status === 4) {

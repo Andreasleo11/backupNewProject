@@ -22,8 +22,11 @@ final class UpdatePurchaseRequest
     public function handle(UpdatePurchaseRequestDTO $dto): PurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
-            /** @var PurchaseRequest $pr */
-            $pr = PurchaseRequest::findOrFail($dto->purchaseRequestId);
+            $pr = $this->repo->find($dto->purchaseRequestId);
+            
+            if (! $pr) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+            }
 
             // Determine if we need to reset autographs based on status and user role
             $resetAutographs = $this->shouldResetAutographs($pr, $dto->updatedByUserId);

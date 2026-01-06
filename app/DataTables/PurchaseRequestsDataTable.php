@@ -2,6 +2,7 @@
 
 namespace App\DataTables;
 
+use App\Application\PurchaseRequest\Services\PurchaseRequestQueryScoper;
 use App\Models\PurchaseRequest;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
@@ -14,6 +15,10 @@ use Yajra\DataTables\Services\DataTable;
 
 class PurchaseRequestsDataTable extends DataTable
 {
+    public function __construct(
+        private readonly PurchaseRequestQueryScoper $queryScoper
+    ) {}
+
     /**
      * Build DataTable class.
      *
@@ -116,111 +121,8 @@ class PurchaseRequestsDataTable extends DataTable
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
-        $user = auth()->user();
-        $userDepartmentName = $user->department->name ?? null;
-        $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && $user->is_head === 1;
-        $isHead = $user->is_head === 1;
-        $isPurchaser = $user->specification->name === 'PURCHASER';
-        $isGM = $user->is_gm === 1;
-
-        // Initialize the query
         $query = $model->newQuery()->with('files', 'createdBy');
-
-        $query->where(function ($q) use ($userDepartmentName, $user, $isPersonaliaHead, $isGM, $isHead, $isPurchaser) {
-            if ($isPersonaliaHead) {
-                $q->where(function ($query) {
-                    $query
-                        ->whereNotNull("autograph_1")
-                        ->where(function ($query) {
-                            $query
-                                ->whereNotNull("autograph_2")
-                                ->where("branch", "JAKARTA")
-                                ->orWhere(function ($query) {
-                                    $query->where("type", "factory")->where("branch", "KARAWANG");
-                                });
-                        })
-                        ->whereNotNull("autograph_5")
-                        ->where(function ($query) {
-                            $query
-                                ->whereNull("autograph_3")
-                                ->orWhereNotNull("autograph_3")
-                                ->where(function ($query) {
-                                    $query
-                                        ->where("to_department", "Personnel")
-                                        ->where("type", "office")
-                                        ->orWhere("to_department", "Computer");
-                                });
-                        })
-                        ->orWhere("from_department", "PERSONALIA");
-                });
-            } elseif ($isGM) {
-                $q
-                    ->whereNotNull("autograph_1")
-                    ->whereNull("autograph_6")
-                    ->where(function ($query) use ($userDepartmentName) {
-                        $query->where("type", "factory");
-                        if ($userDepartmentName === "MOULDING") {
-                            $query->where("from_department", "MOULDING");
-                        } else {
-                            $query->where("from_department", "!=", "MOULDING");
-                        }
-                    });
-                // Pawarid case
-                if ($userDepartmentName !== "PLASTIC INJECTION") {
-                    $q->whereNotNull("autograph_2");
-                }
-            } elseif ($isHead) {
-                $q->where(function ($query) use ($userDepartmentName) {
-                    $query->where("from_department", $userDepartmentName);
-                });
-
-                if ($userDepartmentName === "PURCHASING") {
-                    $q->orWhere("to_department", ucwords(strtolower($userDepartmentName)));
-                } elseif ($userDepartmentName === "LOGISTIC") {
-                    $q->orWhere("from_department", "STORE");
-                }
-            } elseif ($isPurchaser) {
-                $q->where(function ($query) {
-                    $query
-                        ->where(function ($query) {
-                            $query->where(function ($query) {
-                                $query->where("type", "office")->orWhere("from_department", "MOULDING");
-                            });
-                        })
-                        ->orWhere(function ($query) {
-                            $query->where("type", "factory");
-                        });
-                });
-
-                if ($userDepartmentName === "COMPUTER" || $userDepartmentName === "PURCHASING") {
-                    $q->where("to_department", ucwords(strtolower($userDepartmentName)));
-                } elseif ($user->email === "nur@daijo.co.id") {
-                    $q->where("to_department", "Maintenance");
-                } elseif ($userDepartmentName === "PERSONALIA") {
-                    $q->where("to_department", "Personnel");
-                }
-
-                $q->where(function ($query) use ($user){
-                    $query->whereNotNull("autograph_1")->orWhere("user_id_create", $user->id);
-                });
-            } elseif ($user->hasRole('super-admin')) {
-                $q->whereNot("from_department", "ADMIN");
-            } else {
-                $q->where(function ($subQuery) use ($userDepartmentName, $user) {
-                    $subQuery->where("from_department", $userDepartmentName);
-
-                    if (auth()->user()->department->name === "QA") {
-                        $subQuery
-                            ->orWhere("from_department", "QC")
-                            ->orWhere("user_id_create", $user->id);
-                    }
-                });
-            }
-
-            $q->orWhere('user_id_create', $user->id);
-        });
-
-        return $query;
+        return $this->queryScoper->scopeForUser(auth()->user(), $query);
     }
 
     /**

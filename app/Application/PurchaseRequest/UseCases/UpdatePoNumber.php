@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 final class UpdatePoNumber
 {
+    public function __construct(
+        private readonly \App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository $repo
+    ) {}
+
     public function handle(UpdatePoNumberDTO $dto): PurchaseRequest
     {
         return DB::transaction(function () use ($dto) {
-            /** @var PurchaseRequest $pr */
-            $pr = PurchaseRequest::findOrFail($dto->purchaseRequestId);
+            $pr = $this->repo->find($dto->purchaseRequestId);
+            
+            if (! $pr) {
+                throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+            }
 
             // Only allow PO number update if PR is approved
             if ($pr->status !== 4) {

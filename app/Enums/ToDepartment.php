@@ -4,10 +4,10 @@ namespace App\Enums;
 
 enum ToDepartment: string
 {
-    case MAINTENANCE = 'MAINTENANCE';
-    case COMPUTER    = 'COMPUTER';
-    case PERSONALIA  = 'PERSONALIA';
-    case PURCHASING  = 'PURCHASING';
+    case MAINTENANCE = 'Maintenance';
+    case COMPUTER    = 'Computer';
+    case PERSONALIA  = 'Personnel';
+    case PURCHASING  = 'Purchasing';
 
     public function label(): string
     {

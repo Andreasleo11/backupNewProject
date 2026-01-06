@@ -11,19 +11,25 @@ final class ApprovePurchaseRequest
 {
     public function __construct(
         private readonly Approvals $approvals, 
-        private readonly SyncPrWorkflow $syncPrWorkflow
+        private readonly SyncPrWorkflow $syncPrWorkflow,
+        private readonly \App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository $repo
     ) {}
 
     public function handle(ApprovalActionDTO $dto): void
     {
-        /** @var PurchaseRequest $pr */
-        $pr = PurchaseRequest::query()
-            ->with(['approvalRequest.steps']) // biar engine ga N+1
-            ->findOrFail($dto->purchaseRequestId);
+        $pr = $this->repo->find($dto->purchaseRequestId);
+        
+        if (! $pr) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Purchase Request not found");
+        }
+
+        // Ensure relations are loaded for the engine
+        $this->repo->loadForApprovalContext($pr);
 
         $this->approvals->approve($pr, $dto->actorUserId, $dto->remarks);
 
-        $pr->load(['approvalRequest.steps']);
+        // Reload fresh state if needed for sync (or repo->loadForApprovalContext might be enough)
+        $this->repo->loadForApprovalContext($pr);
         $this->syncPrWorkflow->sync($pr);
     }
 }

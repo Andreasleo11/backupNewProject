@@ -55,4 +55,9 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
             ->map(fn ($n) => strtoupper($n))
             ->toArray();
     }
+
+    public function find(int $id): ?PurchaseRequest
+    {
+        return PurchaseRequest::find($id);
+    }
 }

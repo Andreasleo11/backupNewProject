@@ -33,6 +33,9 @@ class CreatePurchaseRequestTest extends TestCase
         $repo = Mockery::mock(PurchaseRequestRepository::class);
         $approvals = Mockery::mock(Approvals::class);
         $generator = Mockery::mock(PurchaseRequestNumberGenerator::class);
+        $statusCalculator = Mockery::mock(\App\Domain\PurchaseRequest\Services\PurchaseRequestStatusCalculator::class);
+        $typeResolver = Mockery::mock(\App\Domain\PurchaseRequest\Services\PurchaseRequestTypeResolver::class);
+        $contextBuilder = Mockery::mock(\App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder::class);
 
         $dto = new CreatePurchaseRequestDTO(
             requestedByUserId: 1,
@@ -52,41 +55,68 @@ class CreatePurchaseRequestTest extends TestCase
         $mockPr = Mockery::mock(PurchaseRequest::class)->makePartial();
         $mockPr->id = 123;
         $mockPr->from_department = 'COMPUTER';
+        $mockPr->to_department = \App\Enums\ToDepartment::MAINTENANCE; // Ensure enum is used if model casts it
+        $mockPr->branch = 'JAKARTA';
+        $mockPr->type = 'office';
+        $mockPr->items = new \Illuminate\Database\Eloquent\Collection([]); // For item access
         $mockPr->approvalRequest = null;
         $mockPr->shouldReceive('saveQuietly')->once();
 
-        // Expectation: Generator called
-        $repo->shouldReceive('getOfficeDepartmentNames')
+        // 1. Resolve Type
+        $typeResolver->shouldReceive('resolve')
             ->once()
-            ->andReturn(['COMPUTER', 'HRD', 'FINANCE']);
+            ->with('COMPUTER')
+            ->andReturn('office');
 
+        // 2. Calculate Status
+        $statusCalculator->shouldReceive('calculateInitialStatus')
+            ->once()
+            ->with('COMPUTER', 'JAKARTA', false)
+            ->andReturn(1);
+
+        // 3. Generate Doc Num
         $generator->shouldReceive('generateDocNum')
             ->once()
             ->andReturn('CP/PR/JKT/240101/001');
 
+        // 4. Create in Repo
+        $repo->shouldReceive('create')
+            ->once()
+            ->with(Mockery::on(function ($arg) {
+                return $arg['doc_num'] === 'CP/PR/JKT/240101/001'
+                    && $arg['status'] === 1
+                    && $arg['type'] === 'office';
+            }))
+            ->andReturn($mockPr);
+
+        // 5. Generate PR No and update
         $generator->shouldReceive('generatePrNo')
             ->once()
             ->with('MAINTENANCE', 123)
             ->andReturn('MAIN-123');
 
-        // Expectation: Repository create called with doc_num
-        $repo->shouldReceive('create')
-            ->once()
-            ->with(Mockery::on(function ($arg) {
-                return $arg['doc_num'] === 'CP/PR/JKT/240101/001'
-                    && $arg['status'] === 1 // Not draft
-                    && $arg['type'] === 'office'; // COMPUTER is office
-            }))
-            ->andReturn($mockPr);
-
         $repo->shouldReceive('addItems')->once();
+        
+        // 6. Approval Context
         $repo->shouldReceive('loadForApprovalContext')->andReturn($mockPr);
-        $mockPr->shouldReceive('buildApprovalContext')->andReturn([]);
+        
+        $contextBuilder->shouldReceive('build')
+            ->once()
+            ->andReturn(['some' => 'context']);
+
         $approvals->shouldReceive('submit')
             ->once()
+            ->with($mockPr, 1, ['some' => 'context'])
             ->andReturn(new \App\Application\Approval\DTOs\ApprovalInfo(1, 'pending', 1));
 
-        $useCase = new CreatePurchaseRequest($repo, $approvals, $generator);
+        $useCase = new CreatePurchaseRequest(
+            $repo, 
+            $approvals, 
+            $generator,
+            $statusCalculator,
+            $typeResolver,
+            $contextBuilder
+        );
         $result = $useCase->handle($dto);
 
         $this->assertSame($mockPr, $result);
