@@ -107,7 +107,7 @@ class DeletePurchaseRequestTest extends TestCase
         $response = $this->delete(route('purchase-requests.destroy', $this->draftPr->id));
 
         $response->assertRedirect(route('login'));
-        
+
         // Re-login for tearDown/subsequent tests if needed, though setUp handles it
         $this->actingAs($this->user);
     }

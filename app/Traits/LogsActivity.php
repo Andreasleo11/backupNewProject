@@ -25,7 +25,7 @@ trait LogsActivity
     protected static function logActivity($model, $action)
     {
         ActivityLog::create([
-            'user_id' => Auth::id(),
+            'user_id' => Auth::id() ?? 0, // Fallback to system user when no auth context
             'action' => $action,
             'model_type' => get_class($model),
             'model_id' => $model->id,
