@@ -302,46 +302,6 @@ class DisciplineExcelService
         return Excel::download(new \App\Exports\YayasanDisciplineFullExport($employees), $fileName);
     }
 
-    /**
-     * Get department status for Jpayroll export.
-     */
-    public function getJpayrollDepartmentStatus(int $month, int $year): array
-    {
-        $cutoffDate = \Carbon\Carbon::createFromDate($year, $month, 1)
-            ->copy()
-            ->subMonths(6)
-            ->startOfMonth();
-
-        $employees = EvaluationData::with('karyawan')
-            ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                    ->where('start_date', '<', $cutoffDate);
-            })
-            ->whereMonth('month', $month)
-            ->get()
-            ->groupBy('dept');
-
-        $actualdata = EvaluationData::with('karyawan')
-            ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
-                    ->where('start_date', '<', $cutoffDate);
-            })
-            ->whereMonth('month', $month)
-            ->whereNotNull('depthead')
-            ->where('depthead', '!=', '')
-            ->get()
-            ->groupBy('dept');
-
-        $departments = \App\Models\Department::pluck('name', 'dept_no');
-        $departmentStatus = [];
-
-        foreach ($employees as $dept_no => $employeeGroup) {
-            $departmentName = $departments->get($dept_no, 'Unknown Department');
-            $departmentStatus[$departmentName] = isset($actualdata[$dept_no]) ? 'Ready' : 'Not Ready';
-        }
-
-        return $departmentStatus;
-    }
 
     /**
      * Export Yayasan data for Jpayroll with grade categorization.

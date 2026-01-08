@@ -120,4 +120,29 @@ class EvaluationDataRepository
             ->whereYear('Month', $year)
             ->get();
     }
+
+    /**
+     * Get all Yayasan employees with relationships.
+     *
+     * @return Collection
+     */
+    public function getAllYayasanEmployees(): Collection
+    {
+        return EvaluationData::with('karyawan')
+            ->whereHas('karyawan', function ($query) {
+                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            })
+            ->get();
+    }
+
+    /**
+     * Find evaluation data by ID with relationships loaded.
+     *
+     * @param int $id
+     * @return EvaluationData|null
+     */
+    public function findWithRelations(int $id): ?EvaluationData
+    {
+        return EvaluationData::with(['karyawan', 'department'])->find($id);
+    }
 }
