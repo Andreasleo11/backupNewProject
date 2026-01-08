@@ -19,7 +19,7 @@ class DisciplineAccessPolicyTest extends TestCase
     /** @test */
     public function department_head_can_view_any_discipline()
     {
-        $user = new User();
+        $user = new User;
         $user->is_head = 1;
 
         $this->assertTrue($this->policy->viewAnyDiscipline($user));
@@ -36,7 +36,7 @@ class DisciplineAccessPolicyTest extends TestCase
     /** @test */
     public function special_user_id_120_can_view_any_discipline()
     {
-        $user = new User();
+        $user = new User;
         $user->id = 120;
         $user->is_head = 0;
 
@@ -86,7 +86,7 @@ class DisciplineAccessPolicyTest extends TestCase
     /** @test */
     public function department_head_can_view_yayasan_discipline()
     {
-        $user = new User();
+        $user = new User;
         $user->is_head = 1;
 
         $this->assertTrue($this->policy->viewYayasanDiscipline($user));

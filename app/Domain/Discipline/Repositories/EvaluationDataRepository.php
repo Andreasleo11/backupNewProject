@@ -96,7 +96,7 @@ class EvaluationDataRepository
         $query = EvaluationData::whereHas('karyawan', function ($query) use ($deptNo, $statuses) {
             $query->where('Dept', $deptNo);
 
-            if (!empty($statuses)) {
+            if (! empty($statuses)) {
                 $query->whereIn('status', $statuses);
             }
         })->whereMonth('Month', $month);
@@ -123,8 +123,6 @@ class EvaluationDataRepository
 
     /**
      * Get all Yayasan employees with relationships.
-     *
-     * @return Collection
      */
     public function getAllYayasanEmployees(): Collection
     {
@@ -137,9 +135,6 @@ class EvaluationDataRepository
 
     /**
      * Find evaluation data by ID with relationships loaded.
-     *
-     * @param int $id
-     * @return EvaluationData|null
      */
     public function findWithRelations(int $id): ?EvaluationData
     {

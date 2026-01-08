@@ -302,7 +302,6 @@ class DisciplineExcelService
         return Excel::download(new \App\Exports\YayasanDisciplineFullExport($employees), $fileName);
     }
 
-
     /**
      * Export Yayasan data for Jpayroll with grade categorization.
      */

@@ -12,7 +12,7 @@ class DisciplineDataSyncServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new DisciplineDataSyncService();
+        $this->service = new DisciplineDataSyncService;
     }
 
     /** @test */
@@ -80,7 +80,7 @@ class DisciplineDataSyncServiceTest extends TestCase
         $result = $this->service->syncAllDepartments();
 
         $expectedTotal = $result['evaluation_data_updated'] + $result['weekly_data_updated'];
-        
+
         $this->assertEquals($expectedTotal, $result['total_updated']);
     }
 

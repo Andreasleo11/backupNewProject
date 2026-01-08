@@ -13,6 +13,11 @@ final class RepositoryServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(UserSignatureRepository::class, EloquentUserSignatureRepository::class);
+
+        $this->app->bind(
+            \App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract::class,
+            \App\Infrastructure\Persistence\Eloquent\Repositories\EloquentEvaluationDataRepository::class
+        );
     }
 
     public function boot(): void {}

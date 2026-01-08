@@ -9,12 +9,13 @@ use Tests\TestCase;
 class DisciplineDepartmentStatusServiceTest extends TestCase
 {
     private DisciplineDepartmentStatusService $service;
+
     private EvaluationDataRepository $repository;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create a mock repository
         $this->repository = $this->createMock(EvaluationDataRepository::class);
         $this->service = new DisciplineDepartmentStatusService($this->repository);
@@ -65,7 +66,7 @@ class DisciplineDepartmentStatusServiceTest extends TestCase
     {
         // Should not throw exception with valid parameters
         $result = $this->service->getDepartmentStatusForMonth(12, 2024);
-        
+
         $this->assertIsArray($result);
     }
 

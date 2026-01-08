@@ -145,4 +145,28 @@ class DisciplineApprovalService
 
         return $query->get();
     }
+
+    /**
+     * Reset approvals for previously rejected evaluation data.
+     * This allows the record to be resubmitted for approval.
+     *
+     * @param EvaluationData $evaluationData The evaluation data to reset
+     * @return bool Whether approvals were reset
+     */
+    public function resetRejectedApprovals(EvaluationData $evaluationData): bool
+    {
+        if (
+            $evaluationData->generalmanager === 'rejected' ||
+            $evaluationData->depthead === 'rejected'
+        ) {
+            $evaluationData->update([
+                'depthead' => null,
+                'generalmanager' => null,
+            ]);
+
+            return true;
+        }
+
+        return false;
+    }
 }

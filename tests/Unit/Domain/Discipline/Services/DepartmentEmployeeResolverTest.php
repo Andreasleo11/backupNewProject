@@ -4,7 +4,6 @@ namespace Tests\Unit\Domain\Discipline\Services;
 
 use App\Domain\Discipline\Repositories\EvaluationDataRepository;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Enums\DepartmentCode;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -29,10 +28,10 @@ class DepartmentEmployeeResolverTest extends TestCase
     /** @test */
     public function it_resolves_employees_for_special_user_id_120()
     {
-        $dept = new Department();
+        $dept = new Department;
         $dept->name = 'QC';
-        
-        $user = new User();
+
+        $user = new User;
         $user->id = 120;
         $user->department = $dept;
 
@@ -75,10 +74,10 @@ class DepartmentEmployeeResolverTest extends TestCase
     /** @test */
     public function it_resolves_employees_for_department_head()
     {
-        $dept = new Department();
+        $dept = new Department;
         $dept->name = 'QC';
-        
-        $user = new User();
+
+        $user = new User;
         $user->department = $dept;
         $user->is_head = 1;
 
@@ -113,10 +112,10 @@ class DepartmentEmployeeResolverTest extends TestCase
     /** @test */
     public function it_throws_exception_for_unknown_department()
     {
-        $dept = new Department();
+        $dept = new Department;
         $dept->name = 'UNKNOWN_DEPT';
-        
-        $user = new User();
+
+        $user = new User;
         $user->department = $dept;
         $user->is_head = 1;
 
@@ -128,10 +127,10 @@ class DepartmentEmployeeResolverTest extends TestCase
     /** @test */
     public function it_resolves_logistic_department_with_store()
     {
-        $dept = new Department();
+        $dept = new Department;
         $dept->name = 'Logistic';
-        
-        $user = new User();
+
+        $user = new User;
         $user->department = $dept;
         $user->is_head = 1;
 

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Discipline\Services;
 
-use App\Domain\Discipline\Repositories\EvaluationDataRepository;
+use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Enums\DepartmentCode;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 class DepartmentEmployeeResolver
 {
     public function __construct(
-        public EvaluationDataRepository $repository
+        public EvaluationDataRepositoryContract $repository
     ) {}
 
     /**
@@ -170,5 +170,61 @@ class DepartmentEmployeeResolver
             'ani_apriani@daijo.co.id',
             'bernadett@daijo.co.id',
         ], true);
+    }
+
+    /**
+     * Fetch filtered employees for department head based on department and month.
+     *
+     * @param string $deptNo Department number
+     * @param int $month Month to filter
+     */
+    public function fetchForDepartmentHead(string $deptNo, int $month): Collection
+    {
+        return $this->repository->getByDepartmentAndMonth($deptNo, $month);
+    }
+
+    /**
+     * Fetch filtered employees for general manager (Yayasan only).
+     *
+     * @param string $deptNo Department number
+     * @param int $month Month to filter
+     */
+    public function fetchForGeneralManager(string $deptNo, int $month): Collection
+    {
+        return $this->repository->getByDepartmentAndMonth(
+            $deptNo,
+            $month,
+            statuses: ['YAYASAN', 'YAYASAN KARAWANG']
+        );
+    }
+
+    /**
+     * Fetch Yayasan employees based on user's role and filters.
+     *
+     * @param int $month Month to filter
+     * @param int $year Year to filter
+     * @param bool $isGM Whether user is GM
+     * @param string|null $deptNo Department number (null for GM)
+     */
+    public function fetchYayasanEmployees(
+        int $month,
+        int $year,
+        bool $isGM,
+        ?string $deptNo = null
+    ): Collection {
+        if ($isGM) {
+            return $this->repository->getYayasanByMonthAndYear($month, $year);
+        }
+
+        if (! $deptNo) {
+            throw new \InvalidArgumentException('Department number required for non-GM users');
+        }
+
+        return $this->repository->getByDepartmentAndMonth(
+            $deptNo,
+            $month,
+            $year,
+            ['YAYASAN', 'YAYASAN KARAWANG']
+        );
     }
 }

@@ -3,11 +3,8 @@
 namespace Tests\Unit\Domain\Discipline\Services;
 
 use App\Domain\Discipline\Services\DisciplineApprovalService;
-use App\Models\Employee;
-use App\Models\EvaluationData;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
@@ -26,7 +23,7 @@ class DisciplineApprovalServiceTest extends TestCase
         $this->service = new DisciplineApprovalService;
 
         // Create a test user
-        $this->user = new User();
+        $this->user = new User;
         $this->user->name = 'Test Manager';
         $this->user->email = 'manager@test.com';
 

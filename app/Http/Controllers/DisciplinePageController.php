@@ -6,10 +6,10 @@ use App\DataTables\AllDisciplineTableDataTable;
 use App\DataTables\DisciplineMagangDataTable;
 use App\DataTables\DisciplineTableDataTable;
 use App\DataTables\DisciplineYayasanTableDataTable;
-use App\Domain\Discipline\Repositories\EvaluationDataRepository;
+use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Domain\Discipline\Services\DisciplineDepartmentStatusService;
 use App\Domain\Discipline\Services\DisciplineDataSyncService;
+use App\Domain\Discipline\Services\DisciplineDepartmentStatusService;
 use App\Models\EvaluationData;
 use App\Policies\DisciplineAccessPolicy;
 use Illuminate\Http\Request;
@@ -60,7 +60,7 @@ class DisciplinePageController extends Controller
             abort(403, 'Unauthorized access');
         }
 
-        $repository = app(EvaluationDataRepository::class);
+        $repository = app(EvaluationDataRepositoryContract::class);
         $employees = $repository->getAllYayasanEmployees();
 
         return $dataTable->render('setting.allyayasandisciplineindex', compact('employees'));
@@ -251,15 +251,8 @@ class DisciplinePageController extends Controller
         ]);
 
         // Reset approvals if previously rejected
-        if (
-            $evaluationData->generalmanager === 'rejected' ||
-            $evaluationData->depthead === 'rejected'
-        ) {
-            $evaluationData->update([
-                'depthead' => null,
-                'generalmanager' => null,
-            ]);
-        }
+        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
+        $approvalService->resetRejectedApprovals($evaluationData);
 
         return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
     }
@@ -303,51 +296,32 @@ class DisciplinePageController extends Controller
 
     public function fetchFilteredEmployees(Request $request)
     {
-        $repository = app(\App\Domain\Discipline\Repositories\EvaluationDataRepository::class);
-
         $deptNo = Auth::user()->department->dept_no;
         $month = $request->input('filter_month');
 
-        $employees = $repository->getByDepartmentAndMonth($deptNo, $month);
+        $employees = $this->resolver->fetchForDepartmentHead($deptNo, $month);
 
         return response()->json($employees);
     }
 
     public function fetchFilteredEmployeesGM(Request $request)
     {
-        $repository = app(\App\Domain\Discipline\Repositories\EvaluationDataRepository::class);
-
         $deptNo = $request->input('filter_dept');
         $month = $request->input('filter_month');
 
-        $employees = $repository->getByDepartmentAndMonth(
-            $deptNo,
-            $month,
-            statuses: ['YAYASAN', 'YAYASAN KARAWANG']
-        );
+        $employees = $this->resolver->fetchForGeneralManager($deptNo, $month);
 
         return response()->json($employees);
     }
 
     public function fetchFilteredYayasanEmployees(Request $request)
     {
-        $repository = app(\App\Domain\Discipline\Repositories\EvaluationDataRepository::class);
-
         $month = $request->input('filter_month');
         $year = $request->input('filter_year');
         $isGM = Auth::user()->is_gm;
+        $deptNo = $isGM ? null : Auth::user()->department->dept_no;
 
-        if ($isGM) {
-            $employees = $repository->getYayasanByMonthAndYear($month, $year);
-        } else {
-            $deptNo = Auth::user()->department->dept_no;
-            $employees = $repository->getByDepartmentAndMonth(
-                $deptNo,
-                $month,
-                $year,
-                ['YAYASAN', 'YAYASAN KARAWANG']
-            );
-        }
+        $employees = $this->resolver->fetchYayasanEmployees($month, $year, $isGM, $deptNo);
 
         return response()->json($employees);
     }
@@ -489,7 +463,6 @@ class DisciplinePageController extends Controller
         }
     }
 
-
     public function exportYayasanJpayrollFunction(Request $request)
     {
         $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
@@ -505,7 +478,7 @@ class DisciplinePageController extends Controller
         $repository = app(EvaluationDataRepository::class);
         $employee = $repository->findWithRelations($id);
 
-        if (!$employee) {
+        if (! $employee) {
             return response()->json(['error' => 'Evaluation data not found'], 404);
         }
 

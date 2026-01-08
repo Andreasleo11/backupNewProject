@@ -2,7 +2,7 @@
 
 namespace App\Domain\Discipline\Services;
 
-use App\Domain\Discipline\Repositories\EvaluationDataRepository;
+use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Models\Department;
 use App\Models\EvaluationData;
 use Carbon\Carbon;
@@ -10,15 +10,13 @@ use Carbon\Carbon;
 class DisciplineDepartmentStatusService
 {
     public function __construct(
-        private EvaluationDataRepository $repository
+        private EvaluationDataRepositoryContract $repository
     ) {}
 
     /**
      * Get department status for Yayasan employees by month and year.
      * Determines which departments are "Ready" or "Not Ready" based on approval status.
      *
-     * @param int $month
-     * @param int $year
      * @return array ['Department Name' => 'Ready'|'Not Ready']
      */
     public function getDepartmentStatusForMonth(int $month, int $year): array
@@ -68,10 +66,6 @@ class DisciplineDepartmentStatusService
     /**
      * Get J-payroll export status data for departments.
      * Similar to getDepartmentStatusForMonth but returns more detailed data.
-     *
-     * @param int $month
-     * @param int $year
-     * @return array
      */
     public function getJpayrollDepartmentStatus(int $month, int $year): array
     {
