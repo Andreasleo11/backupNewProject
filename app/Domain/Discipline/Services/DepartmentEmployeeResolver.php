@@ -4,7 +4,7 @@ namespace App\Domain\Discipline\Services;
 
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Enums\DepartmentCode;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 

@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class DisciplineAccessPolicy
