@@ -1,185 +1,148 @@
 <?php
 
-namespace Tests\Feature\PurchaseRequest;
-
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Tests\TestCase;
 
-class ApprovePurchaseRequestTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private User $approver;
+beforeEach(function () {
+    $dept = Department::factory()->create(['name' => 'Computer']);
 
-    private PurchaseRequest $pr;
+    // Create requester
+    $requester = User::factory()->create([
+        'department_id' => $dept->id,
+    ]);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    // Create approver with appropriate role/permissions
+    $this->approver = User::factory()->create([
+        'department_id' => $dept->id,
+    ]);
 
-        $dept = Department::factory()->create(['name' => 'Computer']);
+    $this->pr = PurchaseRequest::factory()->create([
+        'user_id_create' => $requester->id,
+        'from_department' => 'Computer',
+        'to_department' => 'Purchasing',
+        'status' => 1, // Pending approval
+    ]);
+});
 
-        // Create requester
-        $requester = User::factory()->create([
-            'department_id' => $dept->id,
-        ]);
+test('authorized user can approve purchase request', function () {
+    $this->actingAs($this->approver);
 
-        // Create approver with appropriate role/permissions
-        $this->approver = User::factory()->create([
-            'department_id' => $dept->id,
-        ]);
+    $response = $this->post(route('purchase-requests.approve', $this->pr->id), [
+        'notes' => 'Approved by department head',
+    ]);
 
-        // Assign approval permission/role to approver
-        // This depends on your permission system
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
 
-        $this->pr = PurchaseRequest::factory()->create([
-            'user_id_create' => $requester->id,
-            'from_department' => 'Computer',
-            'to_department' => 'Purchasing',
-            'status' => 1, // Pending approval
-        ]);
-    }
+    $this->assertDatabaseHas('purchase_requests', [
+        'id' => $this->pr->id,
+        'status' => 2, // Next status after approval
+    ]);
+});
 
-    /** @test */
-    public function authorized_user_can_approve_purchase_request()
-    {
-        $this->actingAs($this->approver);
+test('approval updates status correctly based on workflow', function () {
+    $this->actingAs($this->approver);
 
-        $response = $this->post(route('purchase-requests.approve', $this->pr->id), [
-            'notes' => 'Approved by department head',
-        ]);
+    $response = $this->post(route('purchase-requests.approve', $this->pr->id));
 
-        $response->assertRedirect();
-        $response->assertSessionHas('success');
+    $updatedPr = $this->pr->fresh();
 
-        $this->assertDatabaseHas('purchase_requests', [
-            'id' => $this->pr->id,
-            'status' => 2, // Next status after approval
-        ]);
-    }
+    // Verify status changed
+    expect($updatedPr->status)->not->toEqual(1);
+    expect([2, 3, 4, 6, 7])->toContain($updatedPr->status);
+});
 
-    /** @test */
-    public function approval_updates_status_correctly_based_on_workflow()
-    {
-        // Test status progression through approval workflow
-        $this->actingAs($this->approver);
+test('approval creates approval record', function () {
+    $this->actingAs($this->approver);
 
-        $response = $this->post(route('purchase-requests.approve', $this->pr->id));
+    $response = $this->post(route('purchase-requests.approve', $this->pr->id), [
+        'notes' => 'Test approval notes',
+    ]);
 
-        $updatedPr = $this->pr->fresh();
+    // Verify approval record created
+    $this->assertDatabaseHas('approvals', [
+        'approvable_type' => PurchaseRequest::class,
+        'approvable_id' => $this->pr->id,
+        'user_id' => $this->approver->id,
+        'status' => 'approved',
+    ]);
+});
 
-        // Verify status changed
-        $this->assertNotEquals(1, $updatedPr->status);
-        $this->assertContains($updatedPr->status, [2, 3, 4, 6, 7]); // Valid next statuses
-    }
+test('cannot approve already approved purchase request', function () {
+    $approvedPr = PurchaseRequest::factory()->create([
+        'status' => 4, // Already fully approved
+    ]);
 
-    /** @test */
-    public function approval_creates_approval_record()
-    {
-        $this->actingAs($this->approver);
+    $this->actingAs($this->approver);
 
-        $response = $this->post(route('purchase-requests.approve', $this->pr->id), [
-            'notes' => 'Test approval notes',
-        ]);
+    $response = $this->post(route('purchase-requests.approve', $approvedPr->id));
 
-        // Verify approval record created
-        $this->assertDatabaseHas('approvals', [
-            'approvable_type' => PurchaseRequest::class,
-            'approvable_id' => $this->pr->id,
-            'user_id' => $this->approver->id,
-            'status' => 'approved',
-        ]);
-    }
+    $response->assertForbidden();
+});
 
-    /** @test */
-    public function cannot_approve_already_approved_purchase_request()
-    {
-        $approvedPr = PurchaseRequest::factory()->create([
-            'status' => 4, // Already fully approved
-        ]);
+test('cannot approve cancelled purchase request', function () {
+    $cancelledPr = PurchaseRequest::factory()->create([
+        'status' => 5, // Cancelled
+    ]);
 
-        $this->actingAs($this->approver);
+    $this->actingAs($this->approver);
 
-        $response = $this->post(route('purchase-requests.approve', $approvedPr->id));
+    $response = $this->post(route('purchase-requests.approve', $cancelledPr->id));
 
-        $response->assertForbidden();
-    }
+    $response->assertForbidden();
+});
 
-    /** @test */
-    public function cannot_approve_cancelled_purchase_request()
-    {
-        $cancelledPr = PurchaseRequest::factory()->create([
-            'status' => 5, // Cancelled
-        ]);
+test('approval requires authentication', function () {
+    $response = $this->post(route('purchase-requests.approve', $this->pr->id));
 
-        $this->actingAs($this->approver);
+    $response->assertRedirect(route('login'));
+});
 
-        $response = $this->post(route('purchase-requests.approve', $cancelledPr->id));
+test('approval requires authorization', function () {
+    // Create user without approval permissions
+    $unauthorizedUser = User::factory()->create();
 
-        $response->assertForbidden();
-    }
+    $this->actingAs($unauthorizedUser);
 
-    /** @test */
-    public function approval_requires_authentication()
-    {
-        $response = $this->post(route('purchase-requests.approve', $this->pr->id));
+    $response = $this->post(route('purchase-requests.approve', $this->pr->id));
 
-        $response->assertRedirect(route('login'));
-    }
+    $response->assertForbidden();
 
-    /** @test */
-    public function approval_requires_authorization()
-    {
-        // Create user without approval permissions
-        $unauthorizedUser = User::factory()->create();
+    $this->assertDatabaseHas('purchase_requests', [
+        'id' => $this->pr->id,
+        'status' => 1, // Status unchanged
+    ]);
+});
 
-        $this->actingAs($unauthorizedUser);
+test('approval sends notification to requester', function () {
+    Event::fake();
 
-        $response = $this->post(route('purchase-requests.approve', $this->pr->id));
+    $this->actingAs($this->approver);
 
-        $response->assertForbidden();
+    $response = $this->post(route('purchase-requests.approve', $this->pr->id));
 
-        $this->assertDatabaseHas('purchase_requests', [
-            'id' => $this->pr->id,
-            'status' => 1, // Status unchanged
-        ]);
-    }
+    // Verify notification event was dispatched
+    // Event::assertDispatched(PurchaseRequestApproved::class);
+});
 
-    /** @test */
-    public function approval_sends_notification_to_requester()
-    {
-        Event::fake();
+test('final approval sets status to approved', function () {
+    $prReadyForFinalApproval = PurchaseRequest::factory()->create([
+        'status' => 3, // One step before final approval
+    ]);
 
-        $this->actingAs($this->approver);
+    $finalApprover = User::factory()->create();
 
-        $response = $this->post(route('purchase-requests.approve', $this->pr->id));
+    $this->actingAs($finalApprover);
 
-        // Verify notification event was dispatched
-        // Event::assertDispatched(PurchaseRequestApproved::class);
-    }
+    $response = $this->post(route('purchase-requests.approve', $prReadyForFinalApproval->id));
 
-    /** @test */
-    public function final_approval_sets_status_to_approved()
-    {
-        // Test final approval in workflow
-        $prReadyForFinalApproval = PurchaseRequest::factory()->create([
-            'status' => 3, // One step before final approval
-        ]);
-
-        $finalApprover = User::factory()->create();
-        // Assign final approver role
-
-        $this->actingAs($finalApprover);
-
-        $response = $this->post(route('purchase-requests.approve', $prReadyForFinalApproval->id));
-
-        $this->assertDatabaseHas('purchase_requests', [
-            'id' => $prReadyForFinalApproval->id,
-            'status' => 4, // Fully approved
-        ]);
-    }
-}
+    $this->assertDatabaseHas('purchase_requests', [
+        'id' => $prReadyForFinalApproval->id,
+        'status' => 4, // Fully approved
+    ]);
+});

@@ -1,162 +1,133 @@
 <?php
 
-namespace Tests\Feature\PurchaseRequest;
-
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class RejectPurchaseRequestTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private User $approver;
+beforeEach(function () {
+    $dept = Department::factory()->create(['name' => 'Computer']);
 
-    private PurchaseRequest $pr;
+    $requester = User::factory()->create([
+        'department_id' => $dept->id,
+    ]);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $this->approver = User::factory()->create([
+        'department_id' => $dept->id,
+    ]);
 
-        $dept = Department::factory()->create(['name' => 'Computer']);
+    $this->pr = PurchaseRequest::factory()->create([
+        'user_id_create' => $requester->id,
+        'from_department' => 'Computer',
+        'to_department' => 'Purchasing',
+        'status' => 1, // Pending approval
+    ]);
+});
 
-        $requester = User::factory()->create([
-            'department_id' => $dept->id,
-        ]);
+test('authorized user can reject purchase request', function () {
+    $this->actingAs($this->approver);
 
-        $this->approver = User::factory()->create([
-            'department_id' => $dept->id,
-        ]);
+    $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
+        'reason' => 'Budget not available',
+    ]);
 
-        $this->pr = PurchaseRequest::factory()->create([
-            'user_id_create' => $requester->id,
-            'from_department' => 'Computer',
-            'to_department' => 'Purchasing',
-            'status' => 1, // Pending approval
-        ]);
-    }
+    $response->assertRedirect();
+    $response->assertSessionHas('success');
 
-    /** @test */
-    public function authorized_user_can_reject_purchase_request()
-    {
-        $this->actingAs($this->approver);
+    $this->assertDatabaseHas('purchase_requests', [
+        'id' => $this->pr->id,
+        'status' => 3, // Rejected
+    ]);
+});
 
-        $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
-            'reason' => 'Budget not available',
-        ]);
+test('rejection requires reason', function () {
+    $this->actingAs($this->approver);
 
-        $response->assertRedirect();
-        $response->assertSessionHas('success');
+    $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
+        'reason' => '', // Empty reason
+    ]);
 
-        $this->assertDatabaseHas('purchase_requests', [
-            'id' => $this->pr->id,
-            'status' => 3, // Rejected
-        ]);
-    }
+    $response->assertSessionHasErrors(['reason']);
+});
 
-    /** @test */
-    public function rejection_requires_reason()
-    {
-        $this->actingAs($this->approver);
+test('rejection creates approval record with rejected status', function () {
+    $this->actingAs($this->approver);
 
-        $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
-            'reason' => '', // Empty reason
-        ]);
+    $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
+        'reason' => 'Not aligned with company policy',
+    ]);
 
-        $response->assertSessionHasErrors(['reason']);
-    }
+    $this->assertDatabaseHas('approvals', [
+        'approvable_type' => PurchaseRequest::class,
+        'approvable_id' => $this->pr->id,
+        'user_id' => $this->approver->id,
+        'status' => 'rejected',
+    ]);
+});
 
-    /** @test */
-    public function rejection_creates_approval_record_with_rejected_status()
-    {
-        $this->actingAs($this->approver);
+test('cannot reject already approved purchase request', function () {
+    $approvedPr = PurchaseRequest::factory()->create([
+        'status' => 4, // Fully approved
+    ]);
 
-        $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
-            'reason' => 'Not aligned with company policy',
-        ]);
+    $this->actingAs($this->approver);
 
-        $this->assertDatabaseHas('approvals', [
-            'approvable_type' => PurchaseRequest::class,
-            'approvable_id' => $this->pr->id,
-            'user_id' => $this->approver->id,
-            'status' => 'rejected',
-        ]);
-    }
+    $response = $this->post(route('purchase-requests.reject', $approvedPr->id), [
+        'reason' => 'Test reason',
+    ]);
 
-    /** @test */
-    public function cannot_reject_already_approved_purchase_request()
-    {
-        $approvedPr = PurchaseRequest::factory()->create([
-            'status' => 4, // Fully approved
-        ]);
+    $response->assertForbidden();
+});
 
-        $this->actingAs($this->approver);
+test('cannot reject cancelled purchase request', function () {
+    $cancelledPr = PurchaseRequest::factory()->create([
+        'status' => 5, // Cancelled
+    ]);
 
-        $response = $this->post(route('purchase-requests.reject', $approvedPr->id), [
-            'reason' => 'Test reason',
-        ]);
+    $this->actingAs($this->approver);
 
-        $response->assertForbidden();
-    }
+    $response = $this->post(route('purchase-requests.reject', $cancelledPr->id), [
+        'reason' => 'Test reason',
+    ]);
 
-    /** @test */
-    public function cannot_reject_cancelled_purchase_request()
-    {
-        $cancelledPr = PurchaseRequest::factory()->create([
-            'status' => 5, // Cancelled
-        ]);
+    $response->assertForbidden();
+});
 
-        $this->actingAs($this->approver);
+test('rejection requires authentication', function () {
+    $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
+        'reason' => 'Test reason',
+    ]);
 
-        $response = $this->post(route('purchase-requests.reject', $cancelledPr->id), [
-            'reason' => 'Test reason',
-        ]);
+    $response->assertRedirect(route('login'));
+});
 
-        $response->assertForbidden();
-    }
+test('rejection requires authorization', function () {
+    $unauthorizedUser = User::factory()->create();
 
-    /** @test */
-    public function rejection_requires_authentication()
-    {
-        $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
-            'reason' => 'Test reason',
-        ]);
+    $this->actingAs($unauthorizedUser);
 
-        $response->assertRedirect(route('login'));
-    }
+    $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
+        'reason' => 'Test reason',
+    ]);
 
-    /** @test */
-    public function rejection_requires_authorization()
-    {
-        $unauthorizedUser = User::factory()->create();
+    $response->assertForbidden();
 
-        $this->actingAs($unauthorizedUser);
+    $this->assertDatabaseHas('purchase_requests', [
+        'id' => $this->pr->id,
+        'status' => 1, // Status unchanged
+    ]);
+});
 
-        $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
-            'reason' => 'Test reason',
-        ]);
+test('rejection sends notification to requester', function () {
+    // Event::fake();
 
-        $response->assertForbidden();
+    $this->actingAs($this->approver);
 
-        $this->assertDatabaseHas('purchase_requests', [
-            'id' => $this->pr->id,
-            'status' => 1, // Status unchanged
-        ]);
-    }
+    $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
+        'reason' => 'Budget constraints',
+    ]);
 
-    /** @test */
-    public function rejection_sends_notification_to_requester()
-    {
-        // Event::fake();
-
-        $this->actingAs($this->approver);
-
-        $response = $this->post(route('purchase-requests.reject', $this->pr->id), [
-            'reason' => 'Budget constraints',
-        ]);
-
-        // Event::assertDispatched(PurchaseRequestRejected::class);
-    }
-}
+    // Event::assertDispatched(PurchaseRequestRejected::class);
+});
