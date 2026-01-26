@@ -1,226 +1,197 @@
 <?php
 
-namespace Tests\Unit\Domain\MasterData;
-
 use App\Domain\MasterData\Services\StockManagementService;
 use App\Models\Department;
 use App\Models\MasterStock;
 use App\Models\StockRequest;
 use App\Models\StockTransaction;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class StockManagementServiceTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private StockManagementService $service;
+beforeEach(function () {
+    $this->service = new StockManagementService();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->service = new StockManagementService();
-    }
+test('it can process out transaction', function () {
+    $stock = MasterStock::factory()->create(['stock_quantity' => 10]);
+    $department = Department::factory()->create();
+    $transaction = StockTransaction::factory()->create([
+        'stock_id' => $stock->id,
+        'unique_code' => 'ITEM-001',
+        'is_out' => false
+    ]);
 
-    /** @test */
-    public function it_can_process_out_transaction()
-    {
-        $stock = MasterStock::factory()->create(['stock_quantity' => 10]);
-        $department = Department::factory()->create();
-        $transaction = StockTransaction::factory()->create([
-            'stock_id' => $stock->id,
-            'unique_code' => 'ITEM-001',
-            'is_out' => false
-        ]);
+    StockRequest::factory()->create([
+        'stock_id' => $stock->id,
+        'dept_id' => $department->id,
+        'quantity_available' => 5,
+        'created_at' => now()
+    ]);
 
-        StockRequest::factory()->create([
-            'stock_id' => $stock->id,
-            'dept_id' => $department->id,
-            'quantity_available' => 5,
-            'created_at' => now()
-        ]);
+    $data = [
+        'stock_id' => $stock->id,
+        'transaction_type' => 'out',
+        'item_name_1' => 'ITEM-001',
+        'department' => $department->id,
+        'pic' => 'John Doe',
+        'remark' => 'Test remark'
+    ];
 
-        $data = [
-            'stock_id' => $stock->id,
-            'transaction_type' => 'out',
-            'item_name_1' => 'ITEM-001',
-            'department' => $department->id,
-            'pic' => 'John Doe',
-            'remark' => 'Test remark'
-        ];
+    $this->service->storeTransaction($data);
 
-        $this->service->storeTransaction($data);
+    $transaction->refresh();
+    $stock->refresh();
 
-        $transaction->refresh();
-        $stock->refresh();
+    expect($transaction->is_out)->toBe(1);
+    expect($transaction->dept_id)->toBe($department->id);
+    expect($transaction->receiver)->toBe('John Doe');
+    expect($stock->stock_quantity)->toBe(9);
+});
 
-        $this->assertTrue($transaction->is_out);
-        $this->assertEquals($department->id, $transaction->dept_id);
-        $this->assertEquals('John Doe', $transaction->receiver);
-        $this->assertEquals(9, $stock->stock_quantity);
-    }
+test('it can process in transaction', function () {
+    $stock = MasterStock::factory()->create(['stock_quantity' => 10]);
 
-    /** @test */
-    public function it_can_process_in_transaction()
-    {
-        $stock = MasterStock::factory()->create(['stock_quantity' => 10]);
+    $data = [
+        'stock_id' => $stock->id,
+        'transaction_type' => 'in',
+        'item_name_1' => 'ITEM-001',
+        'item_name_2' => 'ITEM-002',
+        'item_name_3' => 'ITEM-003'
+    ];
 
-        $data = [
-            'stock_id' => $stock->id,
-            'transaction_type' => 'in',
-            'item_name_1' => 'ITEM-001',
-            'item_name_2' => 'ITEM-002',
-            'item_name_3' => 'ITEM-003'
-        ];
+    $this->service->storeTransaction($data);
 
-        $this->service->storeTransaction($data);
+    $stock->refresh();
 
-        $stock->refresh();
+    expect($stock->stock_quantity)->toBe(13);
+    $this->assertDatabaseCount('stock_transactions', 3);
+    $this->assertDatabaseHas('stock_transactions', [
+        'stock_id' => $stock->id,
+        'unique_code' => 'ITEM-001'
+    ]);
+});
 
-        $this->assertEquals(13, $stock->stock_quantity);
-        $this->assertDatabaseCount('stock_transactions', 3);
-        $this->assertDatabaseHas('stock_transactions', [
-            'stock_id' => $stock->id,
-            'unique_code' => 'ITEM-001'
-        ]);
-    }
+test('it can get available items for stock', function () {
+    $stock = MasterStock::factory()->create();
+    StockTransaction::factory()->count(3)->create([
+        'stock_id' => $stock->id,
+        'is_out' => false
+    ]);
+    StockTransaction::factory()->count(2)->create([
+        'stock_id' => $stock->id,
+        'is_out' => true
+    ]);
 
-    /** @test */
-    public function it_can_get_available_items_for_stock()
-    {
-        $stock = MasterStock::factory()->create();
-        StockTransaction::factory()->count(3)->create([
-            'stock_id' => $stock->id,
-            'is_out' => false
-        ]);
-        StockTransaction::factory()->count(2)->create([
-            'stock_id' => $stock->id,
-            'is_out' => true
-        ]);
+    $items = $this->service->getAvailableItems($stock->id);
 
-        $items = $this->service->getAvailableItems($stock->id);
+    expect($items)->toHaveCount(3);
+});
 
-        $this->assertCount(3, $items);
-    }
+test('it can create stock request with availability calculation', function () {
+    $stock = MasterStock::factory()->create(['stock_quantity' => 100]);
+    $department = Department::factory()->create();
 
-    /** @test */
-    public function it_can_create_stock_request_with_availability_calculation()
-    {
-        $stock = MasterStock::factory()->create(['stock_quantity' => 100]);
-        $department = Department::factory()->create();
+    $data = [
+        'masterStock' => $stock->id,
+        'department' => $department->id,
+        'stockRequest' => 20,
+        'month' => '2026-01-01',
+        'remark' => 'Test request'
+    ];
 
-        $data = [
-            'masterStock' => $stock->id,
-            'department' => $department->id,
-            'stockRequest' => 20,
-            'month' => '2026-01-01',
-            'remark' => 'Test request'
-        ];
+    $request = $this->service->createStockRequest($data);
 
-        $request = $this->service->createStockRequest($data);
+    $this->assertDatabaseHas('stock_requests', [
+        'stock_id' => $stock->id,
+        'dept_id' => $department->id,
+        'request_quantity' => 20,
+        'quantity_available' => 20
+    ]);
+});
 
-        $this->assertDatabaseHas('stock_requests', [
-            'stock_id' => $stock->id,
-            'dept_id' => $department->id,
-            'request_quantity' => 20,
-            'quantity_available' => 20
-        ]);
-    }
+test('it calculates available quantity correctly when stock is limited', function () {
+    $stock = MasterStock::factory()->create(['stock_quantity' => 15]);
+    $department = Department::factory()->create();
 
-    /** @test */
-    public function it_calculates_available_quantity_correctly_when_stock_is_limited()
-    {
-        $stock = MasterStock::factory()->create(['stock_quantity' => 15]);
-        $department = Department::factory()->create();
+    StockRequest::factory()->create([
+        'stock_id' => $stock->id,
+        'dept_id' => Department::factory()->create()->id,
+        'quantity_available' => 10,
+        'month' => now()
+    ]);
 
-        StockRequest::factory()->create([
-            'stock_id' => $stock->id,
-            'dept_id' => Department::factory()->create()->id,
-            'quantity_available' => 10,
-            'month' => now()
-        ]);
+    $data = [
+        'masterStock' => $stock->id,
+        'department' => $department->id,
+        'stockRequest' => 20,
+        'month' => now()->format('Y-m-d'),
+        'remark' => 'Test'
+    ];
 
-        $data = [
-            'masterStock' => $stock->id,
-            'department' => $department->id,
-            'stockRequest' => 20,
-            'month' => now()->format('Y-m-d'),
-            'remark' => 'Test'
-        ];
+    $request = $this->service->createStockRequest($data);
 
-        $request = $this->service->createStockRequest($data);
+    // Available: 15 - 10 = 5
+    expect($request->quantity_available)->toBe(5);
+});
 
-        // Available: 15 - 10 = 5
-        $this->assertEquals(5, $request->quantity_available);
-    }
+test('it can get available quantity for department', function () {
+    $stock = MasterStock::factory()->create();
+    $department = Department::factory()->create();
 
-    /** @test */
-    public function it_can_get_available_quantity_for_department()
-    {
-        $stock = MasterStock::factory()->create();
-        $department = Department::factory()->create();
+    StockRequest::factory()->create([
+        'stock_id' => $stock->id,
+        'dept_id' => $department->id,
+        'quantity_available' => 25,
+        'month' => now()
+    ]);
 
-        StockRequest::factory()->create([
-            'stock_id' => $stock->id,
-            'dept_id' => $department->id,
-            'quantity_available' => 25,
-            'month' => now()
-        ]);
+    $quantity = $this->service->getAvailableQuantity($stock->id, $department->id);
 
-        $quantity = $this->service->getAvailableQuantity($stock->id, $department->id);
+    expect($quantity)->toBe(25);
+});
 
-        $this->assertEquals(25, $quantity);
-    }
+test('it returns zero when no stock request exists', function () {
+    $quantity = $this->service->getAvailableQuantity(999, 999);
 
-    /** @test */
-    public function it_returns_zero_when_no_stock_request_exists()
-    {
-        $quantity = $this->service->getAvailableQuantity(999, 999);
+    expect($quantity)->toBe(0);
+});
 
-        $this->assertEquals(0, $quantity);
-    }
+test('it can filter stock requests by multiple criteria', function () {
+    $stock1 = MasterStock::factory()->create();
+    $stock2 = MasterStock::factory()->create();
+    $dept = Department::factory()->create();
 
-    /** @test */
-    public function it_can_filter_stock_requests_by_multiple_criteria()
-    {
-        $stock1 = MasterStock::factory()->create();
-        $stock2 = MasterStock::factory()->create();
-        $dept = Department::factory()->create();
+    StockRequest::factory()->create([
+        'stock_id' => $stock1->id,
+        'dept_id' => $dept->id,
+        'month' => '2026-01-15'
+    ]);
+    StockRequest::factory()->create([
+        'stock_id' => $stock2->id,
+        'dept_id' => $dept->id,
+        'month' => '2026-02-15'
+    ]);
 
-        StockRequest::factory()->create([
-            'stock_id' => $stock1->id,
-            'dept_id' => $dept->id,
-            'month' => '2026-01-15'
-        ]);
-        StockRequest::factory()->create([
-            'stock_id' => $stock2->id,
-            'dept_id' => $dept->id,
-            'month' => '2026-02-15'
-        ]);
+    $filters = [
+        'stock_id' => $stock1->id,
+        'dept_id' => $dept->id,
+        'month' => '2026-01-15'
+    ];
 
-        $filters = [
-            'stock_id' => $stock1->id,
-            'dept_id' => $dept->id,
-            'month' => '2026-01-15'
-        ];
+    $results = $this->service->getFilteredStockRequests($filters);
 
-        $results = $this->service->getFilteredStockRequests($filters);
+    expect($results)->toHaveCount(1);
+});
 
-        $this->assertCount(1, $results);
-    }
+test('it can get filtered transactions by stock id', function () {
+    $stock1 = MasterStock::factory()->create();
+    $stock2 = MasterStock::factory()->create();
 
-    /** @test */
-    public function it_can_get_filtered_transactions_by_stock_id()
-    {
-        $stock1 = MasterStock::factory()->create();
-        $stock2 = MasterStock::factory()->create();
+    StockTransaction::factory()->count(3)->create(['stock_id' => $stock1->id]);
+    StockTransaction::factory()->count(2)->create(['stock_id' => $stock2->id]);
 
-        StockTransaction::factory()->count(3)->create(['stock_id' => $stock1->id]);
-        StockTransaction::factory()->count(2)->create(['stock_id' => $stock2->id]);
+    $results = $this->service->getFilteredTransactions($stock1->id);
 
-        $results = $this->service->getFilteredTransactions($stock1->id);
-
-        $this->assertCount(3, $results);
-    }
-}
+    expect($results)->toHaveCount(3);
+});

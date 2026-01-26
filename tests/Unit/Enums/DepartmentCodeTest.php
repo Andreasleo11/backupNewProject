@@ -1,80 +1,62 @@
 <?php
 
-namespace Tests\Unit\Enums;
-
 use App\Enums\DepartmentCode;
-use PHPUnit\Framework\TestCase;
 
-class DepartmentCodeTest extends TestCase
-{
-    /** @test */
-    public function it_has_correct_department_codes()
-    {
-        $this->assertEquals('100', DepartmentCode::ACCOUNTING->value);
-        $this->assertEquals('200', DepartmentCode::BUSINESS->value);
-        $this->assertEquals('310', DepartmentCode::PERSONALIA->value);
-        $this->assertEquals('311', DepartmentCode::PPIC->value);
-        $this->assertEquals('320', DepartmentCode::PURCHASING->value);
-        $this->assertEquals('330', DepartmentCode::STORE->value);
-        $this->assertEquals('331', DepartmentCode::LOGISTIC->value);
-        $this->assertEquals('340', DepartmentCode::QC->value);
-        $this->assertEquals('341', DepartmentCode::QA->value);
-        $this->assertEquals('350', DepartmentCode::MAINTENANCE->value);
-        $this->assertEquals('351', DepartmentCode::MAINTENANCE_MACHINE->value);
-        $this->assertEquals('361', DepartmentCode::SECOND_PROCESS->value);
-        $this->assertEquals('362', DepartmentCode::ASSEMBLY->value);
-        $this->assertEquals('363', DepartmentCode::MOULDING->value);
-        $this->assertEquals('390', DepartmentCode::PLASTIC_INJECTION->value);
-        $this->assertEquals('500', DepartmentCode::PE->value);
-        $this->assertEquals('600', DepartmentCode::COMPUTER->value);
-    }
+test('it has correct department codes', function () {
+    expect(DepartmentCode::ACCOUNTING->value)->toBe('100');
+    expect(DepartmentCode::BUSINESS->value)->toBe('200');
+    expect(DepartmentCode::PERSONALIA->value)->toBe('310');
+    expect(DepartmentCode::PPIC->value)->toBe('311');
+    expect(DepartmentCode::PURCHASING->value)->toBe('320');
+    expect(DepartmentCode::STORE->value)->toBe('330');
+    expect(DepartmentCode::LOGISTIC->value)->toBe('331');
+    expect(DepartmentCode::QC->value)->toBe('340');
+    expect(DepartmentCode::QA->value)->toBe('341');
+    expect(DepartmentCode::MAINTENANCE->value)->toBe('350');
+    expect(DepartmentCode::MAINTENANCE_MACHINE->value)->toBe('351');
+    expect(DepartmentCode::SECOND_PROCESS->value)->toBe('361');
+    expect(DepartmentCode::ASSEMBLY->value)->toBe('362');
+    expect(DepartmentCode::MOULDING->value)->toBe('363');
+    expect(DepartmentCode::PLASTIC_INJECTION->value)->toBe('390');
+    expect(DepartmentCode::PE->value)->toBe('500');
+    expect(DepartmentCode::COMPUTER->value)->toBe('600');
+});
 
-    /** @test */
-    public function it_returns_correct_labels()
-    {
-        $this->assertEquals('Accounting', DepartmentCode::ACCOUNTING->getLabel());
-        $this->assertEquals('QC', DepartmentCode::QC->getLabel());
-        $this->assertEquals('Plastic Injection', DepartmentCode::PLASTIC_INJECTION->getLabel());
-        $this->assertEquals('Maintenance Machine', DepartmentCode::MAINTENANCE_MACHINE->getLabel());
-    }
+test('it returns correct labels', function () {
+    expect(DepartmentCode::ACCOUNTING->getLabel())->toBe('Accounting');
+    expect(DepartmentCode::QC->getLabel())->toBe('QC');
+    expect(DepartmentCode::PLASTIC_INJECTION->getLabel())->toBe('Plastic Injection');
+    expect(DepartmentCode::MAINTENANCE_MACHINE->getLabel())->toBe('Maintenance Machine');
+});
 
-    /** @test */
-    public function it_converts_from_department_name()
-    {
-        $this->assertEquals(DepartmentCode::QC, DepartmentCode::fromDepartmentName('QC'));
-        $this->assertEquals(DepartmentCode::QC, DepartmentCode::fromDepartmentName('qc'));
-        $this->assertEquals(DepartmentCode::QC, DepartmentCode::fromDepartmentName(' QC '));
+test('it converts from department name', function () {
+    expect(DepartmentCode::fromDepartmentName('QC'))->toBe(DepartmentCode::QC);
+    expect(DepartmentCode::fromDepartmentName('qc'))->toBe(DepartmentCode::QC);
+    expect(DepartmentCode::fromDepartmentName(' QC '))->toBe(DepartmentCode::QC);
 
-        $this->assertEquals(DepartmentCode::ACCOUNTING, DepartmentCode::fromDepartmentName('ACCOUNTING'));
-        $this->assertEquals(DepartmentCode::PLASTIC_INJECTION, DepartmentCode::fromDepartmentName('PLASTIC INJECTION'));
-        $this->assertEquals(DepartmentCode::MAINTENANCE_MACHINE, DepartmentCode::fromDepartmentName('Maintenance Machine'));
-    }
+    expect(DepartmentCode::fromDepartmentName('ACCOUNTING'))->toBe(DepartmentCode::ACCOUNTING);
+    expect(DepartmentCode::fromDepartmentName('PLASTIC INJECTION'))->toBe(DepartmentCode::PLASTIC_INJECTION);
+    expect(DepartmentCode::fromDepartmentName('Maintenance Machine'))->toBe(DepartmentCode::MAINTENANCE_MACHINE);
+});
 
-    /** @test */
-    public function it_returns_null_for_unknown_department_name()
-    {
-        $this->assertNull(DepartmentCode::fromDepartmentName('UNKNOWN_DEPT'));
-        $this->assertNull(DepartmentCode::fromDepartmentName(''));
-        $this->assertNull(DepartmentCode::fromDepartmentName('Marketing'));
-    }
+test('it returns null for unknown department name', function () {
+    expect(DepartmentCode::fromDepartmentName('UNKNOWN_DEPT'))->toBeNull();
+    expect(DepartmentCode::fromDepartmentName(''))->toBeNull();
+    expect(DepartmentCode::fromDepartmentName('Marketing'))->toBeNull();
+});
 
-    /** @test */
-    public function it_returns_all_department_values()
-    {
-        $values = DepartmentCode::values();
+test('it returns all department values', function () {
+    $values = DepartmentCode::values();
 
-        $this->assertIsArray($values);
-        $this->assertCount(17, $values);
-        $this->assertContains('100', $values);
-        $this->assertContains('340', $values);
-        $this->assertContains('600', $values);
-    }
+    expect($values)->toBeArray();
+    expect($values)->toHaveCount(17);
+    expect($values)->toContain('100');
+    expect($values)->toContain('340');
+    expect($values)->toContain('600');
+});
 
-    /** @test */
-    public function it_has_all_17_department_codes()
-    {
-        $cases = DepartmentCode::cases();
+test('it has all 17 department codes', function () {
+    $cases = DepartmentCode::cases();
 
-        $this->assertCount(17, $cases);
-    }
-}
+    expect($cases)->toHaveCount(17);
+});

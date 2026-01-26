@@ -1,159 +1,126 @@
 <?php
 
-namespace Tests\Unit\Domain\QAQC;
-
 use App\Domain\QAQC\Services\QaqcReportService;
 use App\Models\Detail;
 use App\Models\Report;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-class QaqcReportServiceTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private QaqcReportService $service;
+beforeEach(function () {
+    $this->service = new QaqcReportService();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->service = new QaqcReportService();
-    }
+test('it can get reports without status filter', function () {
+    Report::factory()->count(15)->create();
 
-    /** @test */
-    public function it_can_get_reports_without_status_filter()
-    {
-        Report::factory()->count(15)->create();
+    $reports = $this->service->getReports();
 
-        $reports = $this->service->getReports();
+    expect($reports)->toHaveCount(9);
+    expect($reports->total())->toBe(15);
+});
 
-        $this->assertCount(9, $reports);
-        $this->assertEquals(15, $reports->total());
-    }
+test('it can filter reports by approved status', function () {
+    Report::factory()->count(3)->create(['is_approve' => 1]);
+    Report::factory()->count(2)->create(['is_approve' => 0]);
 
-    /** @test */
-    public function it_can_filter_reports_by_approved_status()
-    {
-        Report::factory()->count(3)->create(['is_approve' => 1]);
-        Report::factory()->count(2)->create(['is_approve' => 0]);
+    $reports = $this->service->getReports('approved');
 
-        $reports = $this->service->getReports('approved');
+    expect($reports)->toHaveCount(3);
+});
 
-        $this->assertCount(3, $reports);
-    }
+test('it can filter reports by rejected status', function () {
+    Report::factory()->count(2)->create(['is_approve' => false]);
+    Report::factory()->count(3)->create(['is_approve' => true]);
 
-    /** @test */
-    public function it_can_filter_reports_by_rejected_status()
-    {
-        Report::factory()->count(2)->create(['is_approve' => false]);
-        Report::factory()->count(3)->create(['is_approve' => true]);
+    $reports = $this->service->getReports('rejected');
 
-        $reports = $this->service->getReports('rejected');
+    expect($reports)->toHaveCount(2);
+});
 
-        $this->assertCount(2, $reports);
-    }
+test('it can delete report and its details', function () {
+    $report = Report::factory()->create();
+    Detail::factory()->count(3)->create(['report_id' => $report->id]);
 
-    /** @test */
-    public function it_can_delete_report_and_its_details()
-    {
-        $report = Report::factory()->create();
-        Detail::factory()->count(3)->create(['report_id' => $report->id]);
+    $this->service->deleteReport($report->id);
 
-        $this->service->deleteReport($report->id);
+    $this->assertDatabaseMissing('reports', ['id' => $report->id]);
+    $this->assertDatabaseCount('details', 0);
+});
 
-        $this->assertDatabaseMissing('reports', ['id' => $report->id]);
-        $this->assertDatabaseCount('details', 0);
-    }
+test('it can save autograph for report', function () {
+    $report = Report::factory()->create();
 
-    /** @test */
-    public function it_can_save_autograph_for_report()
-    {
-        $report = Report::factory()->create();
+    $this->service->saveAutograph($report->id, 1, 'john_doe');
 
-        $this->service->saveAutograph($report->id, 1, 'john_doe');
+    $report->refresh();
+    expect($report->autograph_1)->toBe('john_doe.png');
+    expect($report->autograph_user_1)->toBe('john_doe');
+});
 
-        $report->refresh();
-        $this->assertEquals('john_doe.png', $report->autograph_1);
-        $this->assertEquals('john_doe', $report->autograph_user_1);
-    }
+test('it can reject report with description', function () {
+    $report = Report::factory()->create(['is_approve' => true]);
 
-    /** @test */
-    public function it_can_reject_report_with_description()
-    {
-        $report = Report::factory()->create(['is_approve' => true]);
+    $this->service->rejectReport($report->id, 'Quality issues found');
 
-        $this->service->rejectReport($report->id, 'Quality issues found');
+    $report->refresh();
+    expect($report->is_approve)->toBeFalse();
+    expect($report->description)->toBe('Quality issues found');
+});
 
-        $report->refresh();
-        $this->assertFalse($report->is_approve);
-        $this->assertEquals('Quality issues found', $report->description);
-    }
+test('it can lock report', function () {
+    $report = Report::factory()->create(['is_locked' => false]);
 
-    /** @test */
-    public function it_can_lock_report()
-    {
-        $report = Report::factory()->create(['is_locked' => false]);
+    $this->service->lockReport($report->id);
 
-        $this->service->lockReport($report->id);
+    $report->refresh();
+    expect($report->is_locked)->toBeTrue();
+});
 
-        $report->refresh();
-        $this->assertTrue($report->is_locked);
-    }
+test('it can update do number for detail', function () {
+    $detail = Detail::factory()->create(['do_num' => null]);
 
-    /** @test */
-    public function it_can_update_do_number_for_detail()
-    {
-        $detail = Detail::factory()->create(['do_num' => null]);
+    $this->service->updateDoNumber($detail->id, 'DO-2026-001');
 
-        $this->service->updateDoNumber($detail->id, 'DO-2026-001');
+    $detail->refresh();
+    expect($detail->do_num)->toBe('DO-2026-001');
+});
 
-        $detail->refresh();
-        $this->assertEquals('DO-2026-001', $detail->do_num);
-    }
+test('it can get monthly report data grouped by month and customer', function () {
+    // Create reports with different months and customers
+    $report1 = Report::factory()->create([
+        'rec_date' => '2026-01-15',
+        'customer' => 'Customer A'
+    ]);
+    Detail::factory()->create([
+        'report_id' => $report1->id,
+        'rec_quantity' => 100,
+        'verify_quantity' => 95,
+        'price' => 10,
+        'cant_use' => 5
+    ]);
 
-    /** @test */
-    public function it_can_get_monthly_report_data_grouped_by_month_and_customer()
-    {
-        // Create reports with different months and customers
-        $report1 = Report::factory()->create([
-            'rec_date' => '2026-01-15',
-            'customer' => 'Customer A'
-        ]);
-        Detail::factory()->create([
-            'report_id' => $report1->id,
-            'rec_quantity' => 100,
-            'verify_quantity' => 95,
-            'price' => 10,
-            'cant_use' => 5
-        ]);
+    $result = $this->service->getMonthlyReportData();
 
-        $result = $this->service->getMonthlyReportData();
+    expect($result)->toHaveKey('2026-01');
+    expect($result['2026-01'])->toHaveKey('Customer A');
+    expect($result['2026-01']['Customer A']['total_rec_quantity'])->toBe(100);
+});
 
-        $this->assertArrayHasKey('2026-01', $result);
-        $this->assertArrayHasKey('Customer A', $result['2026-01']);
-        $this->assertEquals(100, $result['2026-01']['Customer A']['total_rec_quantity']);
-    }
+test('it can get monthly report details for specific month', function () {
+    Report::factory()->create(['rec_date' => '2026-01-15']);
+    Report::factory()->create(['rec_date' => '2026-02-15']);
 
-    /** @test */
-    public function it_can_get_monthly_report_details_for_specific_month()
-    {
-        Report::factory()->create(['rec_date' => '2026-01-15']);
-        Report::factory()->create(['rec_date' => '2026-02-15']);
+    $reports = $this->service->getMonthlyReportDetails('2026-01-15');
 
-        $reports = $this->service->getMonthlyReportDetails('2026-01-15');
+    expect($reports)->toHaveCount(1);
+});
 
-        $this->assertCount(1, $reports);
-    }
+test('it can mark report as emailed', function () {
+    $report = Report::factory()->create(['has_been_emailed' => false]);
 
-    /** @test */
-    public function it_can_mark_report_as_emailed()
-    {
-        $report = Report::factory()->create(['has_been_emailed' => false]);
+    $this->service->markAsEmailed($report->id);
 
-        $this->service->markAsEmailed($report->id);
-
-        $report->refresh();
-        $this->assertTrue($report->has_been_emailed);
-    }
-}
+    $report->refresh();
+    expect($report->has_been_emailed)->toBeTrue();
+});

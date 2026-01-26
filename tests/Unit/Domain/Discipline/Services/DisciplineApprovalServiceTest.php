@@ -1,143 +1,104 @@
 <?php
 
-namespace Tests\Unit\Domain\Discipline\Services;
-
 use App\Domain\Discipline\Services\DisciplineApprovalService;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
-use Tests\TestCase;
 
-class DisciplineApprovalServiceTest extends TestCase
-{
-    use RefreshDatabase;
+uses(RefreshDatabase::class);
 
-    private DisciplineApprovalService $service;
+beforeEach(function () {
+    $this->service = new DisciplineApprovalService;
 
-    private User $user;
+    // Create a test user
+    $this->user = new User;
+    $this->user->name = 'Test Manager';
+    $this->user->email = 'manager@test.com';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    // Authenticate the user
+    Auth::shouldReceive('user')->andReturn($this->user);
+});
 
-        $this->service = new DisciplineApprovalService;
+test('it has approve dept head method', function () {
+    expect(method_exists($this->service, 'approveDeptHead'))->toBeTrue();
+});
 
-        // Create a test user
-        $this->user = new User;
-        $this->user->name = 'Test Manager';
-        $this->user->email = 'manager@test.com';
+test('it has approve general manager method', function () {
+    expect(method_exists($this->service, 'approveGeneralManager'))->toBeTrue();
+});
 
-        // Authenticate the user
-        Auth::shouldReceive('user')->andReturn($this->user);
-    }
+test('it has reject dept head method', function () {
+    expect(method_exists($this->service, 'rejectDeptHead'))->toBeTrue();
+});
 
-    /** @test */
-    public function it_has_approve_dept_head_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'approveDeptHead'));
-    }
+test('it has reject hrd method', function () {
+    expect(method_exists($this->service, 'rejectHRD'))->toBeTrue();
+});
 
-    /** @test */
-    public function it_has_approve_general_manager_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'approveGeneralManager'));
-    }
+test('it returns integer count from approve dept head', function () {
+    $result = $this->service->approveDeptHead('310', 5, 2024);
 
-    /** @test */
-    public function it_has_reject_dept_head_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'rejectDeptHead'));
-    }
+    expect($result)->toBeInt();
+});
 
-    /** @test */
-    public function it_has_reject_hrd_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'rejectHRD'));
-    }
+test('it returns integer count from approve general manager', function () {
+    $result = $this->service->approveGeneralManager('310', 6, 2024);
 
-    /** @test */
-    public function it_returns_integer_count_from_approve_dept_head()
-    {
-        $result = $this->service->approveDeptHead('310', 5, 2024);
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('it returns integer count from reject dept head', function () {
+    $result = $this->service->rejectDeptHead('310', 7, 2024);
 
-    /** @test */
-    public function it_returns_integer_count_from_approve_general_manager()
-    {
-        $result = $this->service->approveGeneralManager('310', 6, 2024);
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('it returns integer count from reject hrd', function () {
+    $result = $this->service->rejectHRD('310', 8, 2024);
 
-    /** @test */
-    public function it_returns_integer_count_from_reject_dept_head()
-    {
-        $result = $this->service->rejectDeptHead('310', 7, 2024);
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('it accepts lock data parameter in approve dept head', function () {
+    // Should not throw exception with lockData parameter
+    $result = $this->service->approveDeptHead('310', 5, 2024, lockData: true);
 
-    /** @test */
-    public function it_returns_integer_count_from_reject_hrd()
-    {
-        $result = $this->service->rejectHRD('310', 8, 2024);
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('it accepts year parameter in approve general manager', function () {
+    // Should work with year
+    $result1 = $this->service->approveGeneralManager('310', 6, 2024);
+    expect($result1)->toBeInt();
 
-    /** @test */
-    public function it_accepts_lock_data_parameter_in_approve_dept_head()
-    {
-        // Should not throw exception with lockData parameter
-        $result = $this->service->approveDeptHead('310', 5, 2024, lockData: true);
+    // Should work without year (null)
+    $result2 = $this->service->approveGeneralManager('310', 6);
+    expect($result2)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('it accepts optional remark in reject dept head', function () {
+    // With remark
+    $result1 = $this->service->rejectDeptHead('310', 7, 2024, 'Test remark');
+    expect($result1)->toBeInt();
 
-    /** @test */
-    public function it_accepts_year_parameter_in_approve_general_manager()
-    {
-        // Should work with year
-        $result1 = $this->service->approveGeneralManager('310', 6, 2024);
-        $this->assertIsInt($result1);
+    // Without remark
+    $result2 = $this->service->rejectDeptHead('310', 7, 2024);
+    expect($result2)->toBeInt();
+});
 
-        // Should work without year (null)
-        $result2 = $this->service->approveGeneralManager('310', 6);
-        $this->assertIsInt($result2);
-    }
+test('it accepts optional remark in reject hrd', function () {
+    // With remark
+    $result1 = $this->service->rejectHRD('310', 8, 2024, 'Test remark');
+    expect($result1)->toBeInt();
 
-    /** @test */
-    public function it_accepts_optional_remark_in_reject_dept_head()
-    {
-        // With remark
-        $result1 = $this->service->rejectDeptHead('310', 7, 2024, 'Test remark');
-        $this->assertIsInt($result1);
+    // Without remark
+    $result2 = $this->service->rejectHRD('310', 8, 2024);
+    expect($result2)->toBeInt();
+});
 
-        // Without remark
-        $result2 = $this->service->rejectDeptHead('310', 7, 2024);
-        $this->assertIsInt($result2);
-    }
+test('it returns zero when no matching records', function () {
+    // Using a department and date that don't exist
+    $result = $this->service->approveDeptHead('99999', 12, 2099);
 
-    /** @test */
-    public function it_accepts_optional_remark_in_reject_hrd()
-    {
-        // With remark
-        $result1 = $this->service->rejectHRD('310', 8, 2024, 'Test remark');
-        $this->assertIsInt($result1);
-
-        // Without remark
-        $result2 = $this->service->rejectHRD('310', 8, 2024);
-        $this->assertIsInt($result2);
-    }
-
-    /** @test */
-    public function it_returns_zero_when_no_matching_records()
-    {
-        // Using a department and date that don't exist
-        $result = $this->service->approveDeptHead('99999', 12, 2099);
-
-        $this->assertEquals(0, $result);
-    }
-}
+    expect($result)->toBe(0);
+});

@@ -1,99 +1,69 @@
 <?php
 
-namespace Tests\Unit\Domain\Discipline\Services;
-
 use App\Domain\Discipline\Services\DisciplineDataSyncService;
-use Tests\TestCase;
 
-class DisciplineDataSyncServiceTest extends TestCase
-{
-    private DisciplineDataSyncService $service;
+beforeEach(function () {
+    $this->service = new DisciplineDataSyncService;
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->service = new DisciplineDataSyncService;
-    }
+test('it has sync departments from employees method', function () {
+    expect(method_exists($this->service, 'syncDepartmentsFromEmployees'))->toBeTrue();
+});
 
-    /** @test */
-    public function it_has_sync_departments_from_employees_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'syncDepartmentsFromEmployees'));
-    }
+test('it has sync departments in weekly data method', function () {
+    expect(method_exists($this->service, 'syncDepartmentsInWeeklyData'))->toBeTrue();
+});
 
-    /** @test */
-    public function it_has_sync_departments_in_weekly_data_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'syncDepartmentsInWeeklyData'));
-    }
+test('it has sync departments using relationships method', function () {
+    expect(method_exists($this->service, 'syncDepartmentsUsingRelationships'))->toBeTrue();
+});
 
-    /** @test */
-    public function it_has_sync_departments_using_relationships_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'syncDepartmentsUsingRelationships'));
-    }
+test('it has sync all departments method', function () {
+    expect(method_exists($this->service, 'syncAllDepartments'))->toBeTrue();
+});
 
-    /** @test */
-    public function it_has_sync_all_departments_method()
-    {
-        $this->assertTrue(method_exists($this->service, 'syncAllDepartments'));
-    }
+test('sync departments from employees returns integer', function () {
+    $result = $this->service->syncDepartmentsFromEmployees();
 
-    /** @test */
-    public function sync_departments_from_employees_returns_integer()
-    {
-        $result = $this->service->syncDepartmentsFromEmployees();
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('sync departments in weekly data returns integer', function () {
+    $result = $this->service->syncDepartmentsInWeeklyData();
 
-    /** @test */
-    public function sync_departments_in_weekly_data_returns_integer()
-    {
-        $result = $this->service->syncDepartmentsInWeeklyData();
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('sync departments using relationships returns integer', function () {
+    $result = $this->service->syncDepartmentsUsingRelationships();
 
-    /** @test */
-    public function sync_departments_using_relationships_returns_integer()
-    {
-        $result = $this->service->syncDepartmentsUsingRelationships();
+    expect($result)->toBeInt();
+});
 
-        $this->assertIsInt($result);
-    }
+test('sync all departments returns array with statistics', function () {
+    $result = $this->service->syncAllDepartments();
 
-    /** @test */
-    public function sync_all_departments_returns_array_with_statistics()
-    {
-        $result = $this->service->syncAllDepartments();
+    expect($result)->toBeArray();
+    expect($result)->toHaveKey('evaluation_data_updated');
+    expect($result)->toHaveKey('weekly_data_updated');
+    expect($result)->toHaveKey('total_updated');
+});
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('evaluation_data_updated', $result);
-        $this->assertArrayHasKey('weekly_data_updated', $result);
-        $this->assertArrayHasKey('total_updated', $result);
-    }
+test('sync all departments totals match individual counts', function () {
+    $result = $this->service->syncAllDepartments();
 
-    /** @test */
-    public function sync_all_departments_totals_match_individual_counts()
-    {
-        $result = $this->service->syncAllDepartments();
+    $expectedTotal = $result['evaluation_data_updated'] + $result['weekly_data_updated'];
 
-        $expectedTotal = $result['evaluation_data_updated'] + $result['weekly_data_updated'];
+    expect($result['total_updated'])->toBe($expectedTotal);
+});
 
-        $this->assertEquals($expectedTotal, $result['total_updated']);
-    }
+test('all sync methods return zero when no data exists', function () {
+    // With empty database, all should return 0
+    $result1 = $this->service->syncDepartmentsFromEmployees();
+    $result2 = $this->service->syncDepartmentsInWeeklyData();
+    $result3 = $this->service->syncDepartmentsUsingRelationships();
 
-    /** @test */
-    public function all_sync_methods_return_zero_when_no_data_exists()
-    {
-        // With empty database, all should return 0
-        $result1 = $this->service->syncDepartmentsFromEmployees();
-        $result2 = $this->service->syncDepartmentsInWeeklyData();
-        $result3 = $this->service->syncDepartmentsUsingRelationships();
-
-        $this->assertEquals(0, $result1);
-        $this->assertEquals(0, $result2);
-        $this->assertEquals(0, $result3);
-    }
-}
+    expect($result1)->toBe(0);
+    expect($result2)->toBe(0);
+    expect($result3)->toBe(0);
+});
