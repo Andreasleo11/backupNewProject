@@ -72,6 +72,38 @@ class PurchaseRequest extends Model implements Approvable
         return $this->hasMany(PurchaseRequestSignature::class);
     }
 
+    /**
+     * Get all signatures, merging the new relationship and legacy columns.
+     * Useful during the transition period.
+     */
+    public function getAllSignaturesAttribute(): array
+    {
+        $modern = $this->signatures->map(fn($s) => [
+            'step_code' => $s->step_code,
+            'user' => $s->signed_by_user_id,
+            'image' => $s->image_path,
+            'at' => $s->signed_at,
+            'source' => 'modern'
+        ])->toArray();
+
+        $legacy = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $col = "autograph_{$i}";
+            $userCol = "autograph_user_{$i}";
+            if ($this->$col) {
+                $legacy[] = [
+                    'step_code' => "SLOT_{$i}",
+                    'user' => $this->$userCol,
+                    'image' => $this->$col,
+                    'at' => $this->updated_at,
+                    'source' => 'legacy'
+                ];
+            }
+        }
+
+        return array_merge($modern, $legacy);
+    }
+
     public function itemDetail()
     {
         return $this->hasMany(DetailPurchaseRequest::class);
