@@ -34,7 +34,7 @@ class DetailFormOvertime extends Model
 
     public function employee()
     {
-        return $this->belongsTo(Employee::class, 'NIK', 'NIK');
+        return $this->belongsTo(Employee::class, 'NIK', 'nik');
     }
 
     public function actualOvertimeDetail()

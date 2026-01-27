@@ -44,21 +44,41 @@ class Employee extends Authenticatable
 
     public function evaluationData(): HasMany
     {
-        return $this->hasMany(EvaluationData::class, 'NIK', 'NIK');
+        return $this->hasMany(EvaluationData::class, 'nik', 'NIK');
     }
 
     public function warningLogs(): HasMany
     {
-        return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'NIK');
+        return $this->hasMany(EmployeeWarningLog::class, 'nik', 'NIK');
     }
 
     public function department(): BelongsTo
     {
-        return $this->belongsTo(Department::class, 'Dept', 'dept_no');
+        return $this->belongsTo(Department::class, 'dept_code', 'dept_no');
     }
 
     public function user(): HasOne
     {
         return $this->hasOne(User::class);
+    }
+
+    public function getNikAttribute(): string
+    {
+        return $this->attributes['nik'];
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->attributes['name'];
+    }
+
+    public function getBranchAttribute(): ?string
+    {
+        return $this->attributes['branch'] ?? null;
+    }
+
+    public function getDeptCodeAttribute(): ?string
+    {
+        return $this->attributes['dept_code'] ?? null;
     }
 }

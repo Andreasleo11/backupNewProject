@@ -17,7 +17,7 @@ class EmployeeFactory extends Factory
      *
      * @var string
      */
-    protected $primaryKey = 'NIK';
+    protected $primaryKey = 'nik';
 
     /**
      * Define the model's default state.
@@ -29,20 +29,20 @@ class EmployeeFactory extends Factory
         static $nikCounter = 1000;
 
         return [
-            'NIK' => 'EMP' . str_pad($nikCounter++, 5, '0', STR_PAD_LEFT),
-            'Nama' => fake()->name(),
+            'nik' => 'EMP' . str_pad($nikCounter++, 5, '0', STR_PAD_LEFT),
+            'name' => fake()->name(),
             'date_birth' => fake()->dateTimeBetween('-50 years', '-20 years'),
-            'Gender' => fake()->randomElement(['L', 'P']),
-            'Dept' => fake()->randomElement(['001', '002', '003', '004', '005']),
+            'gender' => fake()->randomElement(['L', 'P']),
+            'dept_code' => fake()->randomElement(['001', '002', '003', '004', '005']),
             'start_date' => fake()->dateTimeBetween('-10 years', '-1 year'),
-            'status' => fake()->randomElement(['YAYASAN', 'YAYASAN KARAWANG', 'KONTRAK', 'MAGANG']),
-            'level' => fake()->randomElement(['Staff', 'Supervisor', 'Manager']),
+            'employment_scheme' => fake()->randomElement(['YAYASAN', 'YAYASAN KARAWANG', 'KONTRAK', 'MAGANG']),
+            'grade_level' => fake()->randomElement(['Staff', 'Supervisor', 'Manager']),
             'jatah_cuti_tahun' => fake()->numberBetween(12, 18),
             'organization_structure' => fake()->randomElement(['Production', 'Quality', 'Maintenance', 'HR']),
             'end_date' => null,
-            'employee_status' => fake()->randomElement(['Active', 'Inactive']),
-            'Branch' => fake()->randomElement(['Jakarta', 'Karawang']),
-            'Grade' => fake()->randomElement(['A', 'B', 'C']),
+            'employment_type' => fake()->randomElement(['Active', 'Inactive']),
+            'branch' => fake()->randomElement(['Jakarta', 'Karawang']),
+            'grade_code' => fake()->randomElement(['A', 'B', 'C']),
         ];
     }
 
@@ -82,7 +82,7 @@ class EmployeeFactory extends Factory
     public function inDepartment(string $deptNo): static
     {
         return $this->state(fn (array $attributes) => [
-            'Dept' => $deptNo,
+            'dept_code' => $deptNo,
         ]);
     }
 
@@ -92,7 +92,7 @@ class EmployeeFactory extends Factory
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => [
-            'employee_status' => 'Inactive',
+            'employment_type' => 'Inactive',
             'end_date' => fake()->dateTimeBetween('-1 year', 'now'),
         ]);
     }
