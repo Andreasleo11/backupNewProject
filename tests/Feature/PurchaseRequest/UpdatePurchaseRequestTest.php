@@ -78,6 +78,8 @@ test('it cannot update approved purchase request', function () {
         'branch' => 'JAKARTA',
         'date_of_pr' => now()->format('Y-m-d'),
         'date_of_required' => now()->addDays(7)->format('Y-m-d'),
+        'supplier' => 'Supplier',
+        'pic' => 'PIC',
         'items' => [
             [
                 'item_name' => 'Item',
@@ -102,6 +104,8 @@ test('it updates items when updating purchase request', function () {
         'branch' => 'JAKARTA',
         'date_of_pr' => now()->format('Y-m-d'),
         'date_of_required' => now()->addDays(7)->format('Y-m-d'),
+        'supplier' => 'Supplier',
+        'pic' => 'PIC',
         'is_draft' => true,
         'items' => [
             [
@@ -151,6 +155,8 @@ test('user can only update their own purchase requests', function () {
         'branch' => 'JAKARTA',
         'date_of_pr' => now()->format('Y-m-d'),
         'date_of_required' => now()->addDays(7)->format('Y-m-d'),
+        'supplier' => 'Supplier',
+        'pic' => 'PIC',
         'items' => [
             [
                 'item_name' => 'Item',

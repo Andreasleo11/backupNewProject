@@ -19,41 +19,45 @@ class DepartmentSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        Department::truncate();
+        // Department::truncate();
 
         $departments = [
-            ['dept_no' => '341', 'name' => 'QA', 'is_office' => false, 'code' => 'QA'],
-            ['dept_no' => '340', 'name' => 'QC', 'is_office' => false, 'code' => 'QC'],
-            ['dept_no' => '100', 'name' => 'ACCOUNTING', 'is_office' => true, 'code' => 'ACU'],
-            ['dept_no' => '000', 'name' => 'MANAGEMENT', 'is_office' => true, 'code' => 'ADM'],
-            ['dept_no' => '320', 'name' => 'PURCHASING', 'is_office' => true, 'code' => 'PUR'],
-            ['dept_no' => '200', 'name' => 'BUSINESS', 'is_office' => true, 'code' => 'BUS'],
-            ['dept_no' => '500', 'name' => 'PE', 'is_office' => true, 'code' => 'PE'],
+            ['dept_no' => '341', 'name' => 'QA', 'code' => 'QA', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '340', 'name' => 'QC', 'code' => 'QC', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '100', 'name' => 'ACCOUNTING', 'code' => 'ACU', 'branch' => null, 'is_office' => true, 'is_active' => true],
+            ['dept_no' => '000', 'name' => 'MANAGEMENT', 'code' => 'ADM', 'branch' => null, 'is_office' => true, 'is_active' => true],
+            ['dept_no' => '320', 'name' => 'PURCHASING', 'code' => 'PUR', 'branch' => null, 'is_office' => true, 'is_active' => true],
+            ['dept_no' => '200', 'name' => 'BUSINESS', 'code' => 'BUS', 'branch' => null, 'is_office' => true, 'is_active' => true],
+            ['dept_no' => '500', 'name' => 'PE', 'code' => 'PE', 'branch' => null, 'is_office' => true, 'is_active' => true],
             [
                 'dept_no' => '390',
                 'name' => 'PLASTIC INJECTION',
-                'is_office' => false,
                 'code' => 'PI',
+                'branch' => null,
+                'is_office' => false,
+                'is_active' => true,
             ],
-            ['dept_no' => '600', 'name' => 'COMPUTER', 'is_office' => true, 'code' => 'CP'],
-            ['dept_no' => '363', 'name' => 'MOULDING', 'is_office' => false, 'code' => 'MLD'],
-            ['dept_no' => '330', 'name' => 'STORE', 'is_office' => false, 'code' => 'STR'],
-            ['dept_no' => '350', 'name' => 'MAINTENANCE', 'is_office' => false, 'code' => 'MT'],
-            ['dept_no' => '361', 'name' => 'SECOND PROCESS', 'is_office' => false, 'code' => 'SPC'],
-            ['dept_no' => '362', 'name' => 'ASSEMBLY', 'is_office' => false, 'code' => 'ASM'],
-            ['dept_no' => '311', 'name' => 'PPIC', 'is_office' => false, 'code' => 'PIC'],
-            ['dept_no' => '310', 'name' => 'PERSONALIA', 'is_office' => true, 'code' => 'HRD'],
-            ['dept_no' => '331', 'name' => 'LOGISTIC', 'is_office' => false, 'code' => 'LOG'],
+            ['dept_no' => '600', 'name' => 'COMPUTER', 'code' => 'CP', 'branch' => null, 'is_office' => true, 'is_active' => true],
+            ['dept_no' => '363', 'name' => 'MOULDING', 'code' => 'MLD', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '330', 'name' => 'STORE', 'code' => 'STR', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '350', 'name' => 'MAINTENANCE', 'code' => 'MT', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '361', 'name' => 'SECOND PROCESS', 'code' => 'SPC', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '362', 'name' => 'ASSEMBLY', 'code' => 'ASM', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '311', 'name' => 'PPIC', 'code' => 'PIC', 'branch' => null, 'is_office' => false, 'is_active' => true],
+            ['dept_no' => '310', 'name' => 'PERSONALIA', 'code' => 'HRD', 'branch' => null, 'is_office' => true, 'is_active' => true],
+            ['dept_no' => '331', 'name' => 'LOGISTIC', 'code' => 'LOG', 'branch' => null, 'is_office' => false, 'is_active' => true],
             [
                 'dept_no' => '351',
                 'name' => 'MAINTENANCE MACHINE',
-                'is_office' => false,
                 'code' => 'MTM',
+                'branch' => null,
+                'is_office' => false,
+                'is_active' => true,
             ],
         ];
 
         foreach ($departments as $department) {
-            Department::create($department);
+            Department::firstOrCreate(['code' => $department['code']], $department);
         }
     }
 }

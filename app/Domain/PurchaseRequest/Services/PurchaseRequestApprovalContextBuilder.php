@@ -33,7 +33,7 @@ class PurchaseRequestApprovalContextBuilder
 
         return [
             'from_department' => strtoupper($fromDepartment),
-            'to_department' => strtoupper($toDepartment),
+            'to_department' => $toDepartment,
             'branch' => strtoupper($branch),
             'at_office' => $isOffice,
             'amount' => $totalAmount,

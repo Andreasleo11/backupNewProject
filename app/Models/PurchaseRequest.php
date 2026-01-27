@@ -49,6 +49,8 @@ class PurchaseRequest extends Model implements Approvable
         'po_number',
         'doc_num',
         'branch',
+        'workflow_status',
+        'workflow_step',
     ];
 
     protected $casts = [

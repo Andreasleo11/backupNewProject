@@ -24,15 +24,14 @@ beforeEach(function () {
 
 test('it can cancel pending purchase request', function () {
     $this->actingAs($this->user);
-
-    $response = $this->post(route('purchase-requests.cancel', $this->pr->id));
+    $response = $this->put(route('purchase-requests.cancel', $this->pr->id));
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
 
     $this->assertDatabaseHas('purchase_requests', [
         'id' => $this->pr->id,
-        'status' => 5, // Cancelled
+        'status' => 8, // CANCELED
     ]);
 });
 
@@ -44,7 +43,7 @@ test('it cannot cancel approved purchase request', function () {
 
     $this->actingAs($this->user);
 
-    $response = $this->post(route('purchase-requests.cancel', $approvedPr->id));
+    $response = $this->put(route('purchase-requests.cancel', $approvedPr->id));
 
     $response->assertForbidden();
 
@@ -62,7 +61,7 @@ test('it cannot cancel already cancelled purchase request', function () {
 
     $this->actingAs($this->user);
 
-    $response = $this->post(route('purchase-requests.cancel', $cancelledPr->id));
+    $response = $this->put(route('purchase-requests.cancel', $cancelledPr->id));
 
     $response->assertForbidden();
 });
@@ -76,7 +75,7 @@ test('user can only cancel their own purchase requests', function () {
 
     $this->actingAs($this->user);
 
-    $response = $this->post(route('purchase-requests.cancel', $otherPr->id));
+    $response = $this->put(route('purchase-requests.cancel', $otherPr->id));
 
     $response->assertForbidden();
 
@@ -87,7 +86,7 @@ test('user can only cancel their own purchase requests', function () {
 });
 
 test('cancellation requires authentication', function () {
-    $response = $this->post(route('purchase-requests.cancel', $this->pr->id));
+    $response = $this->put(route('purchase-requests.cancel', $this->pr->id));
 
     $response->assertRedirect(route('login'));
 });

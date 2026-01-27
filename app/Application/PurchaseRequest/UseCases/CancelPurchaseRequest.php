@@ -36,6 +36,8 @@ final class CancelPurchaseRequest
             // Update PR to cancelled state
             $pr->update([
                 'is_cancel' => true,
+                'status' => 8, // CANCELED
+                'workflow_status' => 'CANCELED',
                 'description' => $dto->reason,
                 'updated_at' => now(),
             ]);

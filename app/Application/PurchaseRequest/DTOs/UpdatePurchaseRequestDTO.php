@@ -10,6 +10,7 @@ final class UpdatePurchaseRequestDTO
         public readonly int $purchaseRequestId,
         public readonly int $updatedByUserId,
         public readonly string $toDepartment,
+        public readonly string $branch,
         public readonly string $datePr,
         public readonly string $dateRequired,
         public readonly ?string $remark,

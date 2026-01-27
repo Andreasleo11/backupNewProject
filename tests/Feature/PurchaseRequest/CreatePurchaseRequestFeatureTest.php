@@ -8,6 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->seed(\Database\Seeders\PrRoleMappingSeeder::class);
+    $this->seed(\Database\Seeders\PrApprovalRulesSeeder::class);
+
     // Create test user with department
     $this->fromDept = Department::factory()->create([
         'name' => 'Computer',
@@ -62,14 +65,14 @@ test('it can create a purchase request successfully', function () {
 
     $this->assertDatabaseHas('purchase_requests', [
         'user_id_create' => $this->user->id,
-        'from_department' => 'Computer',
+        'from_department' => 'COMPUTER',
         'to_department' => 'Purchasing',
         'branch' => 'JAKARTA',
-        'status' => 1, // Pending Department Head
+        'status' => 1,
         'type' => 'office',
     ]);
 
-    $pr = PurchaseRequest::latest()->first();
+    $pr = PurchaseRequest::latest('id')->first();
     expect($pr->doc_num)->not->toBeNull();
     expect($pr->pr_no)->not->toBeNull();
 
@@ -167,7 +170,7 @@ test('it generates unique document numbers', function () {
         ],
     ]);
 
-    $prs = PurchaseRequest::latest()->take(2)->get();
+    $prs = PurchaseRequest::latest('id')->take(2)->get();
 
     // Verify doc_nums are different
     expect($prs[0]->doc_num)->not->toEqual($prs[1]->doc_num);
@@ -211,6 +214,7 @@ test('it requires at least one item', function () {
 });
 
 test('it sets correct status for plastic injection department', function () {
+    Department::factory()->create(['name' => 'Plastic Injection', 'is_office' => false]);
     $this->actingAs($this->user);
 
     $response = $this->post(route('purchase-requests.store'), [
@@ -237,12 +241,13 @@ test('it sets correct status for plastic injection department', function () {
 
     // Plastic Injection should go directly to GM (status 7)
     $this->assertDatabaseHas('purchase_requests', [
-        'from_department' => 'Plastic Injection',
+        'from_department' => 'PLASTIC INJECTION',
         'status' => 7,
     ]);
 });
 
 test('it sets correct status for personalia department', function () {
+    Department::factory()->create(['name' => 'Personalia', 'is_office' => true]);
     $this->actingAs($this->user);
 
     $response = $this->post(route('purchase-requests.store'), [
@@ -269,7 +274,7 @@ test('it sets correct status for personalia department', function () {
 
     // Personalia should go directly to Purchaser (status 6)
     $this->assertDatabaseHas('purchase_requests', [
-        'from_department' => 'Personalia',
+        'from_department' => 'PERSONALIA',
         'status' => 6,
     ]);
 });

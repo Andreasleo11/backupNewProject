@@ -203,42 +203,36 @@ class PurchaseRequestController extends Controller
         $id,
         \App\Application\PurchaseRequest\UseCases\UpdatePurchaseRequest $useCase
     ) {
-        try {
-            $validated = $request->validated();
+        $validated = $request->validated();
 
-            // Build DTO
-            $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePurchaseRequestDTO(
-                purchaseRequestId: (int) $id,
-                updatedByUserId: Auth::id(),
-                toDepartment: $validated['to_department'],
-                datePr: $validated['date_of_pr'],
-                dateRequired: $validated['date_of_required'],
-                remark: $validated['remark'] ?? null,
-                supplier: $validated['supplier'] ?? null,
-                pic: $validated['pic'] ?? null,
-                items: array_map(fn ($item) => new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
-                    itemName: $item['item_name'],
-                    quantity: (float) $item['quantity'],
-                    uom: $item['uom'],
-                    price: (float) $this->masterPrService->sanitizeCurrencyInput($item['price']),
-                    currency: $item['currency'] ?? 'IDR',
-                    purpose: $item['purpose'] ?? null
-                ), $validated['items']),
-                isImport: $request->is_import === 'true',
-            );
+        // Build DTO
+        $dto = new \App\Application\PurchaseRequest\DTOs\UpdatePurchaseRequestDTO(
+            purchaseRequestId: (int) $id,
+            updatedByUserId: Auth::id(),
+            toDepartment: $validated['to_department'],
+            branch: $validated['branch'],
+            datePr: $validated['date_of_pr'],
+            dateRequired: $validated['date_of_required'],
+            remark: $validated['remark'] ?? null,
+            supplier: $validated['supplier'] ?? null,
+            pic: $validated['pic'] ?? null,
+            items: array_map(fn ($item) => new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
+                itemName: $item['item_name'],
+                quantity: (float) $item['quantity'],
+                uom: $item['uom'],
+                price: (float) $this->masterPrService->sanitizeCurrencyInput($item['price']),
+                currency: $item['currency'] ?? 'IDR',
+                purpose: $item['purpose'] ?? null
+            ), $validated['items']),
+            isImport: $request->is_import === 'true',
+        );
 
-            // Execute UseCase
-            $useCase->handle($dto);
+        // Execute UseCase
+        $useCase->handle($dto);
 
-            return redirect()
-                ->back()
-                ->with(['success' => 'Purchase request updated successfully!']);
-        } catch (\Exception $e) {
-            return redirect()
-                ->back()
-                ->with(['error' => 'Failed to update purchase request: ' . $e->getMessage()])
-                ->withInput();
-        }
+        return redirect()
+            ->back()
+            ->with(['success' => 'Purchase request updated successfully!']);
     }
 
     public function destroy(

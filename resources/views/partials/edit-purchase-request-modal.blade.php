@@ -14,12 +14,12 @@
                             @csrf
 
                             <div class="form-group mt-3 col">
-                                <label class="form-label fs-5 fw-bold" for="from_department">From Department</label>
-                                <select class="form-select" name="from_department" id="fromDepartmentDropdown" required
-                                    disabled>
-                                    <option value="{{ $pr->from_department }}" selected>{{ $pr->from_department }}
-                                    </option>
+                                <label class="form-label fs-5 fw-bold" for="from_department_display">From Department</label>
+                                <select class="form-select" id="fromDepartmentDropdown" disabled>
+                                    <option value="{{ $pr->from_department }}" selected>{{ $pr->from_department }}</option>
                                 </select>
+                                {{-- Hidden field for validation --}}
+                                <input type="hidden" name="from_department" value="{{ $pr->from_department }}">
                             </div>
                             <div class="form-group mt-3 col d-none" id="localImportFormGroup">
                                 <label class="form-label fs-5 fw-bold">Local/Import</label>
@@ -44,12 +44,17 @@
                             </div>
 
                             <div class="form-group mt-3 col">
-                                <label class="form-label fs-5 fw-bold" for="to_department">To Department</label>
-                                <select class="form-select" name="to_department" id="to_department" required disabled>
-                                    <option value="{{ $pr->to_department }}" selected>
-                                        {{ $pr->to_department }}
-                                    </option>
+                                <label class="form-label fs-5 fw-bold" for="to_department_display">To Department</label>
+                                <select class="form-select" id="to_department" disabled>
+                                    <option value="{{ $pr->to_department }}" selected>{{ $pr->to_department }}</option>
                                 </select>
+                                {{-- Hidden field for validation --}}
+                                <input type="hidden" name="to_department" value="{{ $pr->to_department }}">
+                            </div>
+
+                            <div class="form-group mt-3 col">
+                                <label class="form-label fs-5 fw-bold" for="branch">Branch</label>
+                                <input class="form-control" type="text" name="branch" required value="{{ $pr->branch ?? 'JAKARTA' }}">
                             </div>
 
                             <div class="form-group mt-3 col">
@@ -74,14 +79,14 @@
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label fs-5 fw-bold" for="date_pr">Date of PR</label>
-                                <input class="form-control" type="date" id="date_pr" name="date_pr" required
+                                <label class="form-label fs-5 fw-bold" for="date_of_pr">Date of PR</label>
+                                <input class="form-control" type="date" id="date_of_pr" name="date_of_pr" required
                                     value="{{ $pr->date_pr }}">
                             </div>
 
                             <div class="form-group mt-3 col-md-6">
-                                <label class="form-label fs-5 fw-bold" for="date_required">Date of Required</label>
-                                <input class="form-control" type="date" name="date_required" required
+                                <label class="form-label fs-5 fw-bold" for="date_of_required">Date of Required</label>
+                                <input class="form-control" type="date" name="date_of_required" required
                                     value="{{ $pr->date_required }}">
                             </div>
 

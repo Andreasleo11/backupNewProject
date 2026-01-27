@@ -50,11 +50,11 @@ class PurchaseRequestStatusCalculator
             return 7; // Goes directly to GM
         }
 
-        if ($from === 'PERSONALIA') {
+        // Default: Start with pending department head
+        if ($from === 'PERSONALIA' || $from === 'PERSONNEL') {
             return 6; // Goes directly to purchaser
         }
 
-        // Default: Start with pending department head
         return 1;
     }
 
