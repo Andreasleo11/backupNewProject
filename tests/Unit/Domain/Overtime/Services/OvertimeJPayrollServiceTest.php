@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new OvertimeJPayrollService();
+    $this->service = new OvertimeJPayrollService;
 });
 
 describe('OvertimeJPayrollService', function () {
@@ -63,7 +63,7 @@ describe('OvertimeJPayrollService', function () {
         $employee = \App\Models\Employee::factory()->create([
             'NIK' => 'TEST001',
         ]);
-        
+
         $detail = DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'NIK' => 'TEST001',
@@ -110,12 +110,12 @@ describe('OvertimeJPayrollService', function () {
 
     it('checks and updates header push status', function () {
         $header = HeaderFormOvertime::factory()->create(['is_push' => 0]);
-        
+
         DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'status' => 'Approved',
         ]);
-        
+
         DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'status' => 'Rejected',
@@ -131,12 +131,12 @@ describe('OvertimeJPayrollService', function () {
 
     it('does not update header when details pending', function () {
         $header = HeaderFormOvertime::factory()->create(['is_push' => 0]);
-        
+
         DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'status' => 'Approved',
         ]);
-        
+
         DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'status' => null, // Still pending
@@ -156,13 +156,13 @@ describe('OvertimeJPayrollService', function () {
         ]);
 
         $header = HeaderFormOvertime::factory()->create(['is_push' => 0]);
-        
+
         $detail1 = DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'NIK' => 'TEST001',
             'status' => null,
         ]);
-        
+
         $detail2 = DetailFormOvertime::factory()->create([
             'header_id' => $header->id,
             'NIK' => 'TEST002',

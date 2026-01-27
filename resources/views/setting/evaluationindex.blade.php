@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
     <h1>PAGE FOR EVALUATION </h1>

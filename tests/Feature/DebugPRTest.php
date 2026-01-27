@@ -39,7 +39,7 @@ test('debug pr creation', function () {
                 price: 100,
                 uom: 'PCS',
                 currency: 'IDR'
-            )
+            ),
         ]
     );
 
@@ -48,8 +48,8 @@ test('debug pr creation', function () {
         expect($pr->from_department)->toBe('COMPUTER');
         expect($pr->status)->toBe(1);
     } catch (\Throwable $e) {
-        fwrite(STDERR, "ERROR CAUGHT: " . $e->getMessage() . "\n");
-        fwrite(STDERR, "TRACE: " . $e->getTraceAsString() . "\n");
+        fwrite(STDERR, 'ERROR CAUGHT: ' . $e->getMessage() . "\n");
+        fwrite(STDERR, 'TRACE: ' . $e->getTraceAsString() . "\n");
         throw $e;
     }
 });

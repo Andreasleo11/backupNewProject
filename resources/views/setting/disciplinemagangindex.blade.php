@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
     @include('partials.info-discipline-page-yayasan-modal')

@@ -24,13 +24,13 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('employees', function (Blueprint $table) {
-            if (Schema::hasColumn('employees', 'nik') && !Schema::hasColumn('employees', 'NIK')) {
+            if (Schema::hasColumn('employees', 'nik') && ! Schema::hasColumn('employees', 'NIK')) {
                 $table->renameColumn('nik', 'NIK');
             }
-            if (Schema::hasColumn('employees', 'gender') && !Schema::hasColumn('employees', 'Gender')) {
+            if (Schema::hasColumn('employees', 'gender') && ! Schema::hasColumn('employees', 'Gender')) {
                 $table->renameColumn('gender', 'Gender');
             }
-            if (Schema::hasColumn('employees', 'branch') && !Schema::hasColumn('employees', 'Branch')) {
+            if (Schema::hasColumn('employees', 'branch') && ! Schema::hasColumn('employees', 'Branch')) {
                 $table->renameColumn('branch', 'Branch');
             }
         });

@@ -9,7 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new QaqcExportService();
+    $this->service = new QaqcExportService;
     Storage::fake('public');
 });
 
@@ -39,7 +39,7 @@ test('it can export monthly report with correct filename', function () {
 
 test('it can save pdf to storage', function () {
     $this->actingAs(\App\Models\User::factory()->create());
-    
+
     $report = Report::factory()->create();
     \App\Models\Detail::factory()->create(['report_id' => $report->id]);
 
@@ -51,7 +51,7 @@ test('it can save pdf to storage', function () {
 
 test('it prepares report data correctly for pdf', function () {
     $this->actingAs(\App\Models\User::factory()->create());
-    
+
     $report = Report::factory()->create([
         'autograph_user_1' => 'john_doe',
         'autograph_user_2' => 'jane_smith',

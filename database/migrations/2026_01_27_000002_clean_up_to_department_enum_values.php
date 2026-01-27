@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -13,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         // Standardize to case-sensitive backing values in App\Enums\ToDepartment
-        
+
         // Personnel / Personalia
         DB::table('purchase_requests')
             ->whereIn(DB::raw('LOWER(to_department)'), ['personnel', 'personalia'])

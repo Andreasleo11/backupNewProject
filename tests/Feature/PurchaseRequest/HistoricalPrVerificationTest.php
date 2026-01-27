@@ -1,7 +1,6 @@
 <?php
 
 use App\Application\PurchaseRequest\Services\HistoricalPrBackfiller;
-use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +9,7 @@ uses(RefreshDatabase::class);
 
 test('it backfills historical records correctly', function () {
     $user = User::factory()->create();
-    
+
     // 1. Insert raw records directly into DB
     $records = [
         ['status' => 0, 'doc_num' => 'PR-0'],
@@ -39,7 +38,7 @@ test('it backfills historical records correctly', function () {
         ]));
     }
 
-    $backfiller = new HistoricalPrBackfiller();
+    $backfiller = new HistoricalPrBackfiller;
     $updatedCount = $backfiller->backfill();
 
     expect($updatedCount)->toBe(9);

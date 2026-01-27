@@ -12,7 +12,7 @@ class ToDepartmentTest extends TestCase
     {
         $this->assertEquals('Personnel', ToDepartment::PERSONALIA->value);
         $this->assertEquals('Personalia', ToDepartment::PERSONALIA->label());
-        
+
         $this->assertEquals('Maintenance', ToDepartment::MAINTENANCE->value);
         $this->assertEquals('Maintenance', ToDepartment::MAINTENANCE->label());
     }

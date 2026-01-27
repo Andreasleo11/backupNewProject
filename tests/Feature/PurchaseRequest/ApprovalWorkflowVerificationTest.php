@@ -5,20 +5,19 @@ use App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO;
 use App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO;
 use App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest;
 use App\Models\Department;
-use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    (new \Database\Seeders\PrRoleMappingSeeder())->run();
-    (new \Database\Seeders\PrApprovalRulesSeeder())->run();
+    (new \Database\Seeders\PrRoleMappingSeeder)->run();
+    (new \Database\Seeders\PrApprovalRulesSeeder)->run();
 
     $this->fromDept = Department::factory()->create(['name' => 'Computer', 'is_office' => true]);
     $this->toDept = Department::factory()->create(['name' => 'Purchasing', 'is_office' => true]);
     $this->user = User::factory()->create(['department_id' => $this->fromDept->id]);
-    
+
     // Assign role for approval steps
     $this->deptHead = User::factory()->create();
     $this->deptHead->assignRole('pr-dept-head-office');
@@ -48,7 +47,7 @@ test('it progresses through approval steps', function () {
         isDraft: false,
         isImport: false,
         items: [
-            new PurchaseRequestItemDTO('Item', 1, 'Test', 100, 'PCS', 'IDR')
+            new PurchaseRequestItemDTO('Item', 1, 'Test', 100, 'PCS', 'IDR'),
         ]
     );
 
@@ -68,7 +67,7 @@ test('it progresses through approval steps', function () {
     // After first approval, it should move to Purchaser (for office -> purchasing)
     // Rule pr.office.to-purchasing: 1: dept-head-office, 2: purchaser, 3: director
     expect($pr->approvalRequest->current_step)->toBe(2);
-    
+
     // Check if Sync service updated the PR fields
     // Assuming Sync service is triggered by event or manually
     // In CreatePurchaseRequest, it doesn't sync unless we call it.

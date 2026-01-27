@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new QaqcReportService();
+    $this->service = new QaqcReportService;
 });
 
 test('it can get reports without status filter', function () {
@@ -90,14 +90,14 @@ test('it can get monthly report data grouped by month and customer', function ()
     // Create reports with different months and customers
     $report1 = Report::factory()->create([
         'rec_date' => '2026-01-15',
-        'customer' => 'Customer A'
+        'customer' => 'Customer A',
     ]);
     Detail::factory()->create([
         'report_id' => $report1->id,
         'rec_quantity' => 100,
         'verify_quantity' => 95,
         'price' => 10,
-        'cant_use' => 5
+        'cant_use' => 5,
     ]);
 
     $result = $this->service->getMonthlyReportData();

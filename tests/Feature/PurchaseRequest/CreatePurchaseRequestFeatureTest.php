@@ -51,7 +51,7 @@ test('it can create a purchase request successfully', function () {
             ],
             [
                 'item_name' => 'Test Item 2',
-                 'quantity' => 5,
+                'quantity' => 5,
                 'uom' => 'PCS',
                 'price' => 200.00,
                 'currency' => 'IDR',

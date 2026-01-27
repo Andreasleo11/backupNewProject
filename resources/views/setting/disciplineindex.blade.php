@@ -1,95 +1,96 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
+
+@section('page-title', 'Employee Discipline')
 
 @section('content')
-    @include('partials.info-discipline-page-modal')
-    <a class="btn btn-secondary float-right" data-bs-target="#info-discipline-page" data-bs-toggle="modal">
-        Info </a>
+    <div class="max-w-7xl mx-auto space-y-6">
+        {{-- Action Buttons --}}
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                @include('partials.info-discipline-page-modal')
+                <button type="button" class="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium" data-bs-target="#info-discipline-page" data-bs-toggle="modal">
+                    Info
+                </button>
 
-    <!-- <a href="{{ route('update.point') }}" class="btn btn-primary">Update Point</a> -->
-
-    @if ($user->department->name === 'PERSONALIA')
-        <a href="{{ route('alldiscipline.index') }}" class="btn btn-outline-primary">List All Selain
-            Yayasan</a>
-        <a href="{{ route('allyayasandiscipline.index') }}" class="btn btn-outline-primary">List All
-            Yayasan</a>
-    @endif
-
-    @include('partials.upload-excel-file-discipline-modal')
-    <button type="button" class="btn btn-primary btn-upload" data-bs-toggle="modal"
-        data-bs-target="#upload-excel-file-discipline-modal">Upload
-        File
-        Excel</button>
-
-    @include('partials.lock-confirmation-modal', [
-        'id' => 1,
-        'route' => route('lock.data'),
-        'title' => 'Lock Selected Month Data',
-        'body' =>
-            'Once the report is locked, it cannot be <b> modified </b> or <b> edited </b>. Are you sure want to lock all the selected month data?',
-    ])
-    <button class="btn btn-danger" id="lock-data-btn" data-bs-target="#lock-confirmation-modal-1" data-bs-toggle="modal"><i
-            class='bx bxs-lock'></i> Lock Data</button>
-
-    <form method="GET" action="{{ route('export.yayasan.first.time') }}">
-        <div class="row align-items-center mt-3">
-            <div class="col-auto">
-                <div class="form-label">Filter Bulan</div>
-            </div>
-            <div class="col-auto">
-                <select name="filter_status" id="status-filter" class="form-select">
-                    <option value="01">January</option>
-                    <option value="02">February</option>
-                    <option value="03">March</option>
-                    <option value="04">April</option>
-                    <option value="05">May</option>
-                    <option value="06">June</option>
-                    <option value="07">July</option>
-                    <option value="08">August</option>
-                    <option value="09">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
+                @if ($user->department->name === 'PERSONALIA')
+                    <a href="{{ route('alldiscipline.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-600">
+                        List All Selain Yayasan
+                    </a>
+                    <a href="{{ route('allyayasandiscipline.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-600">
+                        List All Yayasan
+                    </a>
+                @endif
             </div>
 
-            <div class="col-auto">
-                <?php echo date('Y') - 1; ?>
-            </div>
-            <div class="col text-end" id="filtered-employees">
-                <!-- Filtered employees will be displayed here -->
-            </div>
+            <div class="flex items-center gap-2">
+                @include('partials.upload-excel-file-discipline-modal')
+                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium btn-upload" data-bs-toggle="modal" data-bs-target="#upload-excel-file-discipline-modal">
+                    Upload File Excel
+                </button>
 
-            @if ($user->name === 'timotius' || $user->name === 'ani')
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary">Export Yayasan</button>
-                </div>
-
-                <div class="col-auto">
-                    <!-- New Button -->
-                    <button type="button" class="btn btn-secondary" id="other-route-button">Export Yayasan
-                        Full</button>
-                </div>
-            @endif
-            <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
+                @include('partials.lock-confirmation-modal', [
+                    'id' => 1,
+                    'route' => route('lock.data'),
+                    'title' => 'Lock Selected Month Data',
+                    'body' => 'Once the report is locked, it cannot be <b> modified </b> or <b> edited </b>. Are you sure want to lock all the selected month data?',
+                ])
+                <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium" id="lock-data-btn" data-bs-target="#lock-confirmation-modal-1" data-bs-toggle="modal">
+                    <i class='bx bxs-lock'></i> Lock Data
+                </button>
+            </div>
         </div>
-    </form>
 
-    {{-- <form method="POST" action="{{ route('lock.data') }}" id="lock-form">
-        @csrf
-        <input type="hidden" name="filter_month" id="filter-month-input">
-        <!-- If there are employees that are not locked, show the button -->
-        <button type="submit" class="btn btn-danger" id="lock-data-btn"><i class='bx bxs-lock'></i> Lock Data</button>
-    </form> --}}
+        {{-- Filter Form --}}
+        <form method="GET" action="{{ route('export.yayasan.first.time') }}" class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-slate-700">Filter Bulan</label>
+                    <select name="filter_status" id="status-filter" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        <option value="01">January</option>
+                        <option value="02">February</option>
+                        <option value="03">March</option>
+                        <option value="04">April</option>
+                        <option value="05">May</option>
+                        <option value="06">June</option>
+                        <option value="07">July</option>
+                        <option value="08">August</option>
+                        <option value="09">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
 
-    <section class="content">
-        <div class="card mt-5">
-            <div class="card-body">
-                <div class="table-responsive">
+                <div class="text-sm text-slate-600">
+                    <?php echo date('Y') - 1; ?>
+                </div>
+
+                <div class="flex-1 text-right" id="filtered-employees">
+                    <!-- Filtered employees will be displayed here -->
+                </div>
+
+                @if ($user->name === 'timotius' || $user->name === 'ani')
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                        Export Yayasan
+                    </button>
+
+                    <button type="button" class="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium" id="other-route-button">
+                        Export Yayasan Full
+                    </button>
+                @endif
+            </div>
+            <input type="hidden" id="user-department" value="{{ Auth::user()->department_id }}">
+        </form>
+
+        {{-- Data Table --}}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div class="p-6">
+                <div class="overflow-x-auto">
                     {{ $dataTable->table() }}
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     @foreach ($employees as $employee)
         @include('partials.edit-discipline-modal')

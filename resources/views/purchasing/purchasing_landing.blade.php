@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @push('extraCss')
     <style>

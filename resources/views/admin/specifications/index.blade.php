@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 @section('content')
     <section aria-label="header">
         <div class="d-flex justify-content-between align-items-center">

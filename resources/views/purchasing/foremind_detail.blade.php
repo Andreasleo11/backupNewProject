@@ -45,140 +45,136 @@
     </style>
 @endpush
 
-@section('content')
-    <div class="container py-3">
+@section('page-title', 'Forecast Reminder Detail')
 
+@section('content')
+    <div class="max-w-7xl mx-auto space-y-6">
         {{-- HEADER --}}
-        <section class="mb-3">
-            <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
-                <div>
-                    <h1 class="h4 mb-1">Forecast Reminder Detail</h1>
-                    <p class="text-muted small mb-0">
-                        Monitoring kebutuhan material per vendor berdasarkan forecast & quantity material.
-                    </p>
-                </div>
-                <div class="text-md-end">
-                    <span class="badge bg-light text-muted border">
-                        Terakhir di update :
-                        <span class="rainbow-text">
-                            -
-                        </span>
-                    </span>
-                </div>
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Forecast Reminder Detail</h1>
+                <p class="text-slate-600 mt-1">
+                    Monitoring kebutuhan material per vendor berdasarkan forecast & quantity material.
+                </p>
             </div>
-        </section>
+            <div class="md:text-right">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-slate-100 text-slate-700 border border-slate-200">
+                    Terakhir di update :
+                    <span class="ml-1 font-medium text-slate-900">
+                        -
+                    </span>
+                </span>
+            </div>
+        </div>
 
         {{-- FORM: INTERNAL VENDOR --}}
-        <section class="mb-2">
-            <form method="GET" action="/foremind-detail/print" target="_blank" class="card shadow-sm border-0 mb-2">
-                @csrf
-                <div class="card-body py-3">
-                    <div class="row align-items-center g-2">
-                        <div class="col-12 col-md-4">
-                            <label class="form-label mb-1" for="vendor_code_internal">
-                                Vendor (Internal)
-                            </label>
-                            <small class="text-muted d-block">
-                                Pilih vendor untuk cetak form internal.
-                            </small>
-                        </div>
-                        <div class="col-12 col-md-5">
-                            <select class="form-select" id="vendor_code_internal" name="vendor_code" required>
-                                <option value="" selected disabled>Select Vendor Name</option>
-                                @foreach ($contacts as $contact)
-                                    <option value="{{ $contact->vendor_code }}">
-                                        {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12 col-md-3 text-md-end">
-                            <button class="btn btn-primary w-100 w-md-auto" type="submit">
-                                Print Internal
-                            </button>
-                        </div>
+        <form method="GET" action="/foremind-detail/print" target="_blank" class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            @csrf
+            <div class="p-6">
+                <div class="grid md:grid-cols-12 gap-4 items-end">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="vendor_code_internal">
+                            Vendor (Internal)
+                        </label>
+                        <p class="text-xs text-slate-500">
+                            Pilih vendor untuk cetak form internal.
+                        </p>
+                    </div>
+                    <div class="md:col-span-5">
+                        <select class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" id="vendor_code_internal" name="vendor_code" required>
+                            <option value="" selected disabled>Select Vendor Name</option>
+                            @foreach ($contacts as $contact)
+                                <option value="{{ $contact->vendor_code }}">
+                                    {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 md:text-right">
+                        <button class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium" type="submit">
+                            Print Internal
+                        </button>
                     </div>
                 </div>
-            </form>
+            </div>
+        </form>
 
-            {{-- FORM: CUSTOMER VENDOR --}}
-            <form method="GET" action="/foremind-detail/printCustomer" target="_blank"
-                  class="card shadow-sm border-0">
-                @csrf
-                <div class="card-body py-3">
-                    <div class="row align-items-center g-2">
-                        <div class="col-12 col-md-4">
-                            <label class="form-label mb-1" for="vendor_code_customer">
-                                Vendor (Customer)
-                            </label>
-                            <small class="text-muted d-block">
-                                Pilih vendor untuk form ke customer.
-                            </small>
-                        </div>
-                        <div class="col-12 col-md-5">
-                            <select class="form-select" id="vendor_code_customer" name="vendor_code" required>
-                                <option value="" selected disabled>Select Vendor Name</option>
-                                @foreach ($contacts as $contact)
-                                    <option value="{{ $contact->vendor_code }}">
-                                        {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-12 col-md-3 text-md-end">
-                            <button class="btn btn-outline-primary w-100 w-md-auto" type="submit">
-                                Print Customer
-                            </button>
-                        </div>
+        {{-- FORM: CUSTOMER VENDOR --}}
+        <form method="GET" action="/foremind-detail/printCustomer" target="_blank" class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            @csrf
+            <div class="p-6">
+                <div class="grid md:grid-cols-12 gap-4 items-end">
+                    <div class="md:col-span-4">
+                        <label class="block text-sm font-medium text-slate-700 mb-1" for="vendor_code_customer">
+                            Vendor (Customer)
+                        </label>
+                        <p class="text-xs text-slate-500">
+                            Pilih vendor untuk form ke customer.
+                        </p>
+                    </div>
+                    <div class="md:col-span-5">
+                        <select class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" id="vendor_code_customer" name="vendor_code" required>
+                            <option value="" selected disabled>Select Vendor Name</option>
+                            @foreach ($contacts as $contact)
+                                <option value="{{ $contact->vendor_code }}">
+                                    {{ $contact->vendor_code }} - {{ $contact->vendor_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 md:text-right">
+                        <button class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium border border-blue-600" type="submit">
+                            Print Customer
+                        </button>
                     </div>
                 </div>
-            </form>
-        </section>
+            </div>
+        </form>
 
-        {{-- TABEL --}}
-        <div class="card mt-3 shadow-sm border-0">
-            <div class="card-body">
-                <div class="table-responsive" style="max-height: 70vh;">
-                    <table class="table table-hover table-forecast mb-0">
-                        <thead class="align-middle">
-                            <tr>
-                                <th>Material Code</th>
-                                <th>Material Name</th>
-                                <th>Item No</th>
-                                <th>Vendor Code</th>
-                                <th>UoM</th>
-                                <th>Qty Material</th>
+        {{-- TABLE --}}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm">
+            <div class="p-6">
+                <div class="overflow-x-auto max-h-[70vh]">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-slate-50 sticky top-0 z-10">
+                            <tr class="border-b border-slate-200">
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Material Code</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Material Name</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Item No</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Vendor Code</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">UoM</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Qty Material</th>
 
                                 @foreach ($mon as $month)
-                                    <th>{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
+                                    <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">{{ \Carbon\Carbon::parse($month)->format('Y-m') }}</th>
                                 @endforeach
 
-                                <th>Total</th>
+                                <th class="px-4 py-3 text-xs font-semibold text-slate-600 uppercase tracking-wider">Total</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-slate-200">
                             @php
                                 $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
                                 $currentMaterialCode = null;
                             @endphp
 
                             @foreach ($materials as $key => $material)
-                                <tr>
+                                <tr class="hover:bg-slate-50">
                                     @if ($material->material_code != $currentMaterialCode)
                                         {{-- First row for material code --}}
-                                        <td>{{ $material->material_code }}</td>
-                                        <td>{{ $material->material_name }}</td>
+                                        <td class="px-4 py-3 text-sm text-slate-900">{{ $material->material_code }}</td>
+                                        <td class="px-4 py-3 text-sm text-slate-900">{{ $material->material_name }}</td>
                                         @php $currentMaterialCode = $material->material_code; @endphp
                                     @else
                                         {{-- Subsequent rows: empty cells for code & name --}}
-                                        <td></td>
-                                        <td></td>
+                                        <td class="px-4 py-3"></td>
+                                        <td class="px-4 py-3"></td>
                                     @endif
 
-                                    <td>{{ $material->item_no }}</td>
-                                    <td>{{ $material->vendor_code }}</td>
-                                    <td>{{ $material->unit_of_measure }}</td>
-                                    <td>{{ $material->quantity_material }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->item_no }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->vendor_code }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->unit_of_measure }}</td>
+                                    <td class="px-4 py-3 text-sm text-slate-700">{{ $material->quantity_material }}</td>
 
                                     @php $total = 0; @endphp
 
@@ -189,15 +185,13 @@
                                             $monthlyTotals[$index] += $calculation;
                                         @endphp
 
-                                        <td>
-                                            <div>{{ $value }}</div>
-                                            <strong>{{ $calculation }}</strong>
+                                        <td class="px-4 py-3 text-sm">
+                                            <div class="text-slate-600">{{ $value }}</div>
+                                            <div class="font-semibold text-slate-900">{{ $calculation }}</div>
                                         </td>
                                     @endforeach
 
-                                    <td>
-                                        <strong>{{ $total }}</strong>
-                                    </td>
+                                    <td class="px-4 py-3 text-sm font-semibold text-slate-900">{{ $total }}</td>
                                 </tr>
 
                                 {{-- Ketika material_code berganti, tampilkan subtotal + separator --}}
@@ -205,25 +199,21 @@
                                     !$loop->last &&
                                         $material->material_code != $materials[$loop->index + 1]->material_code
                                 )
-                                    <tr class="table-light fw-semibold">
-                                        <td colspan="5"></td>
-                                        <td>Monthly Total</td>
+                                    <tr class="bg-slate-50 font-semibold border-t-2 border-slate-300">
+                                        <td colspan="5" class="px-4 py-3"></td>
+                                        <td class="px-4 py-3 text-sm text-slate-700">Monthly Total</td>
                                         @foreach ($monthlyTotals as $monthlyTotal)
-                                            <td>
-                                                <strong>{{ $monthlyTotal }}</strong>
-                                            </td>
+                                            <td class="px-4 py-3 text-sm text-slate-900 font-semibold">{{ $monthlyTotal }}</td>
                                         @endforeach
-                                        <td>
-                                            <strong>{{ array_sum($monthlyTotals) }}</strong>
-                                        </td>
+                                        <td class="px-4 py-3 text-sm text-slate-900 font-semibold">{{ array_sum($monthlyTotals) }}</td>
                                     </tr>
 
                                     @php
                                         $monthlyTotals = array_fill(0, count($qforecast[0]), 0);
                                     @endphp
 
-                                    <tr class="sub-row-separator">
-                                        <td colspan="{{ 6 + count($qforecast[0]) + 1 }}"></td>
+                                    <tr>
+                                        <td colspan="{{ 6 + count($qforecast[0]) + 1 }}" class="border-t-2 border-slate-300"></td>
                                     </tr>
                                 @endif
                             @endforeach
@@ -234,10 +224,9 @@
         </div>
 
         {{-- PAGINATION --}}
-        <div class="mt-3 d-flex justify-content-end">
+        <div class="mt-6 flex justify-end">
             {{ $materials->links() }}
         </div>
-
     </div>
 @endsection
 

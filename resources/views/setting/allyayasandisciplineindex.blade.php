@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('new.layouts.app')
 
 @section('content')
     <a href="{{ route('discipline.index') }}" class="btn btn-primary">Back</a>

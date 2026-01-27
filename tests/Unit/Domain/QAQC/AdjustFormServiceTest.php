@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new AdjustFormService();
+    $this->service = new AdjustFormService;
 });
 
 test('it can get or create header form adjust', function () {
@@ -38,11 +38,11 @@ test('it can get master data for report parts', function () {
     $report = Report::factory()->create();
     Detail::factory()->create([
         'report_id' => $report->id,
-        'part_name' => 'ABC/123'
+        'part_name' => 'ABC/123',
     ]);
     Detail::factory()->create([
         'report_id' => $report->id,
-        'part_name' => 'DEF/456'
+        'part_name' => 'DEF/456',
     ]);
 
     MasterDataAdjust::create(['fg_code' => 'ABC', 'rm_code' => 'RM-001']);
@@ -56,7 +56,7 @@ test('it can get master data for report parts', function () {
 test('it can save adjustment with master data', function () {
     $detail = Detail::factory()->create();
     $header = HeaderFormAdjust::create(['report_id' => $detail->report_id]);
-    
+
     $masterData = MasterDataAdjust::create([
         'fg_code' => 'FG-001',
         'rm_code' => 'RM-001',
@@ -106,7 +106,7 @@ test('it can add remark to detail', function () {
 
 test('it can save autograph for header form', function () {
     $this->actingAs(\App\Models\User::factory()->create(['name' => 'test_user']));
-    
+
     $report = Report::factory()->create();
     $header = HeaderFormAdjust::create(['report_id' => $report->id]);
 

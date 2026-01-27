@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new InventoryManagementService();
+    $this->service = new InventoryManagementService;
     Storage::fake('public');
 });
 
@@ -61,21 +61,21 @@ test('it can store inventory with image', function () {
                 'type' => $hardwareType->id,
                 'brand' => 'Intel',
                 'hardware_name' => 'i7-12700K',
-                'remark' => 'CPU'
-            ]
-        ]
+                'remark' => 'CPU',
+            ],
+        ],
     ];
 
     $inventory = $this->service->storeInventory($data, $image);
 
     $this->assertDatabaseHas('master_inventories', [
         'ip_address' => '192.168.1.100',
-        'username' => 'john_doe'
+        'username' => 'john_doe',
     ]);
     Storage::disk('public')->assertExists('masterinventory/' . $image->getClientOriginalName());
     $this->assertDatabaseHas('detail_hardwares', [
         'master_inventory_id' => $inventory->id,
-        'hardware_name' => 'i7-12700K'
+        'hardware_name' => 'i7-12700K',
     ]);
 });
 
@@ -84,7 +84,7 @@ test('it can update inventory and sync hardwares', function () {
     $hardwareType = HardwareTypeInventory::factory()->create();
     DetailHardware::factory()->create([
         'master_inventory_id' => $inventory->id,
-        'hardware_name' => 'Old Hardware'
+        'hardware_name' => 'Old Hardware',
     ]);
 
     $data = [
@@ -101,9 +101,9 @@ test('it can update inventory and sync hardwares', function () {
                 'type' => $hardwareType->id,
                 'brand' => 'AMD',
                 'hardware_name' => 'Ryzen 9',
-                'remark' => 'New CPU'
-            ]
-        ]
+                'remark' => 'New CPU',
+            ],
+        ],
     ];
 
     $updated = $this->service->updateInventory($inventory->id, $data, null);
@@ -111,11 +111,11 @@ test('it can update inventory and sync hardwares', function () {
     expect($updated->ip_address)->toBe('192.168.1.101');
     $this->assertDatabaseHas('detail_hardwares', [
         'master_inventory_id' => $inventory->id,
-        'hardware_name' => 'Ryzen 9'
+        'hardware_name' => 'Ryzen 9',
     ]);
     $this->assertDatabaseMissing('detail_hardwares', [
         'master_inventory_id' => $inventory->id,
-        'hardware_name' => 'Old Hardware'
+        'hardware_name' => 'Old Hardware',
     ]);
 });
 
@@ -135,7 +135,7 @@ test('it can add hardware type', function () {
     $type = $this->service->addHardwareType('Graphics Card');
 
     $this->assertDatabaseHas('hardware_type_inventories', [
-        'name' => 'Graphics Card'
+        'name' => 'Graphics Card',
     ]);
     expect($type)->toBeInstanceOf(HardwareTypeInventory::class);
 });
@@ -144,7 +144,7 @@ test('it can add software type', function () {
     $type = $this->service->addSoftwareType('Operating System');
 
     $this->assertDatabaseHas('software_type_inventories', [
-        'name' => 'Operating System'
+        'name' => 'Operating System',
     ]);
     expect($type)->toBeInstanceOf(SoftwareTypeInventory::class);
 });

@@ -80,12 +80,12 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function getAllSignaturesAttribute(): array
     {
-        $modern = $this->signatures->map(fn($s) => [
+        $modern = $this->signatures->map(fn ($s) => [
             'step_code' => $s->step_code,
             'user' => $s->signed_by_user_id,
             'image' => $s->image_path,
             'at' => $s->signed_at,
-            'source' => 'modern'
+            'source' => 'modern',
         ])->toArray();
 
         $legacy = [];
@@ -98,7 +98,7 @@ class PurchaseRequest extends Model implements Approvable
                     'user' => $this->$userCol,
                     'image' => $this->$col,
                     'at' => $this->updated_at,
-                    'source' => 'legacy'
+                    'source' => 'legacy',
                 ];
             }
         }

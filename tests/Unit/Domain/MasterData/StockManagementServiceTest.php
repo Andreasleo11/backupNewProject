@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new StockManagementService();
+    $this->service = new StockManagementService;
 });
 
 test('it can process out transaction', function () {
@@ -19,14 +19,14 @@ test('it can process out transaction', function () {
     $transaction = StockTransaction::factory()->create([
         'stock_id' => $stock->id,
         'unique_code' => 'ITEM-001',
-        'is_out' => false
+        'is_out' => false,
     ]);
 
     StockRequest::factory()->create([
         'stock_id' => $stock->id,
         'dept_id' => $department->id,
         'quantity_available' => 5,
-        'created_at' => now()
+        'created_at' => now(),
     ]);
 
     $data = [
@@ -35,7 +35,7 @@ test('it can process out transaction', function () {
         'item_name_1' => 'ITEM-001',
         'department' => $department->id,
         'pic' => 'John Doe',
-        'remark' => 'Test remark'
+        'remark' => 'Test remark',
     ];
 
     $this->service->storeTransaction($data);
@@ -57,7 +57,7 @@ test('it can process in transaction', function () {
         'transaction_type' => 'in',
         'item_name_1' => 'ITEM-001',
         'item_name_2' => 'ITEM-002',
-        'item_name_3' => 'ITEM-003'
+        'item_name_3' => 'ITEM-003',
     ];
 
     $this->service->storeTransaction($data);
@@ -68,7 +68,7 @@ test('it can process in transaction', function () {
     $this->assertDatabaseCount('stock_transactions', 3);
     $this->assertDatabaseHas('stock_transactions', [
         'stock_id' => $stock->id,
-        'unique_code' => 'ITEM-001'
+        'unique_code' => 'ITEM-001',
     ]);
 });
 
@@ -76,11 +76,11 @@ test('it can get available items for stock', function () {
     $stock = MasterStock::factory()->create();
     StockTransaction::factory()->count(3)->create([
         'stock_id' => $stock->id,
-        'is_out' => false
+        'is_out' => false,
     ]);
     StockTransaction::factory()->count(2)->create([
         'stock_id' => $stock->id,
-        'is_out' => true
+        'is_out' => true,
     ]);
 
     $items = $this->service->getAvailableItems($stock->id);
@@ -97,7 +97,7 @@ test('it can create stock request with availability calculation', function () {
         'department' => $department->id,
         'stockRequest' => 20,
         'month' => '2026-01-01',
-        'remark' => 'Test request'
+        'remark' => 'Test request',
     ];
 
     $request = $this->service->createStockRequest($data);
@@ -106,7 +106,7 @@ test('it can create stock request with availability calculation', function () {
         'stock_id' => $stock->id,
         'dept_id' => $department->id,
         'request_quantity' => 20,
-        'quantity_available' => 20
+        'quantity_available' => 20,
     ]);
 });
 
@@ -118,7 +118,7 @@ test('it calculates available quantity correctly when stock is limited', functio
         'stock_id' => $stock->id,
         'dept_id' => Department::factory()->create()->id,
         'quantity_available' => 10,
-        'month' => now()
+        'month' => now(),
     ]);
 
     $data = [
@@ -126,7 +126,7 @@ test('it calculates available quantity correctly when stock is limited', functio
         'department' => $department->id,
         'stockRequest' => 20,
         'month' => now()->format('Y-m-d'),
-        'remark' => 'Test'
+        'remark' => 'Test',
     ];
 
     $request = $this->service->createStockRequest($data);
@@ -143,7 +143,7 @@ test('it can get available quantity for department', function () {
         'stock_id' => $stock->id,
         'dept_id' => $department->id,
         'quantity_available' => 25,
-        'month' => now()
+        'month' => now(),
     ]);
 
     $quantity = $this->service->getAvailableQuantity($stock->id, $department->id);
@@ -165,18 +165,18 @@ test('it can filter stock requests by multiple criteria', function () {
     StockRequest::factory()->create([
         'stock_id' => $stock1->id,
         'dept_id' => $dept->id,
-        'month' => '2026-01-15'
+        'month' => '2026-01-15',
     ]);
     StockRequest::factory()->create([
         'stock_id' => $stock2->id,
         'dept_id' => $dept->id,
-        'month' => '2026-02-15'
+        'month' => '2026-02-15',
     ]);
 
     $filters = [
         'stock_id' => $stock1->id,
         'dept_id' => $dept->id,
-        'month' => '2026-01-15'
+        'month' => '2026-01-15',
     ];
 
     $results = $this->service->getFilteredStockRequests($filters);

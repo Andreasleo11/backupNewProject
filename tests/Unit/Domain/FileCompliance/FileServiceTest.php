@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new FileService();
+    $this->service = new FileService;
     Storage::fake('public');
 });
 

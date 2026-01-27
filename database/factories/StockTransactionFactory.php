@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Department;
 use App\Models\MasterStock;
 use App\Models\StockTransaction;
 use Illuminate\Database\Eloquent\Factories\Factory;

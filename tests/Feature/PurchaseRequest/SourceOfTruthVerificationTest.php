@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 
 test('it correctly backfills source of truth sample data', function () {
     $user = User::factory()->create();
-    
+
     // Legacy Source of Truth IDs: 4681, 4680, 4679, 4678, 4677
     $samples = [
         [
@@ -74,11 +74,11 @@ test('it correctly backfills source of truth sample data', function () {
         ]));
     }
 
-    $backfiller = new HistoricalPrBackfiller();
+    $backfiller = new HistoricalPrBackfiller;
     $backfiller->backfill();
 
     // Assertions based on our refined mapping
-    
+
     // ID 4681: Status 6 -> IN_REVIEW / Pending Purchaser
     $pr4681 = DB::table('purchase_requests')->where('id', 4681)->first();
     expect($pr4681->workflow_status)->toBe('IN_REVIEW');

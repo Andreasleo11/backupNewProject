@@ -82,7 +82,7 @@ test('user can only delete their own purchase requests', function () {
 
 test('deletion requires authentication', function () {
     Auth::logout();
-    
+
     $response = $this->delete(route('purchase-requests.destroy', $this->draftPr->id));
 
     $response->assertRedirect(route('login'));

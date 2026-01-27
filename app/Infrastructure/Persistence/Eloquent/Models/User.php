@@ -56,6 +56,7 @@ class User extends Authenticatable implements FilamentUser
         if ($this->department_id) {
             return $this->department()->first();
         }
+
         return $this->employee ? $this->employee->department : null;
     }
 

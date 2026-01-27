@@ -11,11 +11,14 @@
   },
   "devDependencies": {
     "@popperjs/core": "^2.11.6",
+    "autoprefixer": "^10.4.23",
     "axios": "^1.6.1",
     "laravel-datatables-vite": "^0.5.2",
     "laravel-vite-plugin": "^1.0.0",
+    "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "sass": "^1.56.1",
+    "tailwindcss": "^4.1.18",
     "vite": "^6.3.4"
   },
   "dependencies": {

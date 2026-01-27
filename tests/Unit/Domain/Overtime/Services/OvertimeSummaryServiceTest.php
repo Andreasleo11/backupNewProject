@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->service = new OvertimeSummaryService();
+    $this->service = new OvertimeSummaryService;
 });
 
 describe('OvertimeSummaryService', function () {
@@ -136,7 +136,7 @@ describe('OvertimeSummaryService', function () {
         $summary = $this->service->generateSummary('2026-01-15', '2026-01-16');
 
         expect($summary)->toHaveCount(2);
-        
+
         $emp001 = $summary->firstWhere('NIK', 'EMP001');
         expect($emp001['total_ot'])->toBe(5.0); // 2 + 3 hours
     });

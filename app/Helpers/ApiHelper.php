@@ -25,7 +25,7 @@ class ApiHelper
             );
         }
 
-         // No issues
+        // No issues
     }
 
     /**
