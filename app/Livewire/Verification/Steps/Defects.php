@@ -121,7 +121,6 @@ class Defects extends Component
     public function updatedDefectSearch(): void
     {
         $this->catalogResults = $this->searchCatalog($this->defectSearch);
-        dd($this->catalogResults);
     }
 
     private function searchCatalog(string $term): array

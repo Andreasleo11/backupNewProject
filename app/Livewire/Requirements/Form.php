@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Layout('layouts.app')]
+#[Layout('new.layouts.app')]
 class Form extends Component
 {
     public ?Requirement $requirement = null; // null = create mode
@@ -131,7 +131,6 @@ class Form extends Component
     /** Rebuild allowed_mimetypes whenever selection changes */
     public function updatedSelectedPresets(): void
     {
-        dd('test');
         $this->rebuildAllowedMimes();
     }
 

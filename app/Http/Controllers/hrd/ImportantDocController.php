@@ -136,8 +136,6 @@ class ImportantDocController extends Controller
         // Retrieve the document from the database
         $document = $file;
 
-        dd($document);
-
         // Initialize Dompdf
         $dompdf = new Dompdf;
 

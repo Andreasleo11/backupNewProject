@@ -12,7 +12,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Maatwebsite\Excel\Facades\Excel;
 
-#[Layout('layouts.app')]
+#[Layout('new.layouts.app')]
 class Dashboard extends Component
 {
     public string $search = '';
