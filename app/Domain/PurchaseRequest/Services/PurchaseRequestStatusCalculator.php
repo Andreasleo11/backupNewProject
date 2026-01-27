@@ -107,8 +107,8 @@ class PurchaseRequestStatusCalculator
             $toDept = $pr->to_department?->value ?? '';
 
             if (
-                ($toDept === 'PURCHASING' && $pr->type === 'factory') ||
-                $toDept === 'MAINTENANCE'
+                ($toDept === 'Purchasing' && $pr->type === 'factory') ||
+                $toDept === 'Maintenance'
             ) {
                 if (
                     $pr->from_department === 'COMPUTER' ||
@@ -119,8 +119,8 @@ class PurchaseRequestStatusCalculator
                     $status = 3; // Direct to director
                 }
             } elseif (
-                $toDept === 'COMPUTER' ||
-                $toDept === 'PERSONALIA'
+                $toDept === 'Computer' ||
+                $toDept === 'Personnel'
             ) {
                 $status = 2; // Waiting for verificator
             }

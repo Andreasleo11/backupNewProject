@@ -62,7 +62,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'match' => [
                         'from_department' => 'MOULDING',
                         'is_design' => true,
-                        'to_department' => 'MAINTENANCE',
+                        'to_department' => 'Maintenance',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -79,7 +79,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'match' => [
                         'from_department' => 'MOULDING',
                         'is_design' => true,
-                        'to_department' => 'PURCHASING',
+                        'to_department' => 'Purchasing',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -96,7 +96,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'match' => [
                         'from_department' => 'MOULDING',
                         'is_design' => true,
-                        'to_department' => 'COMPUTER',
+                        'to_department' => 'Computer',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -114,7 +114,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'match' => [
                         'from_department' => 'MOULDING',
                         'is_design' => true,
-                        'to_department' => 'PERSONALIA',
+                        'to_department' => 'Personnel',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -134,7 +134,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => true,
-                        'to_department' => 'MAINTENANCE',
+                        'to_department' => 'Maintenance',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-office'],
@@ -148,7 +148,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => true,
-                        'to_department' => 'PURCHASING',
+                        'to_department' => 'Purchasing',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-office'],
@@ -162,7 +162,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => true,
-                        'to_department' => 'COMPUTER',
+                        'to_department' => 'Computer',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-office'],
@@ -177,7 +177,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => true,
-                        'to_department' => 'PERSONALIA',
+                        'to_department' => 'Personnel',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-office'],
@@ -195,7 +195,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => false,
-                        'to_department' => 'MAINTENANCE',
+                        'to_department' => 'Maintenance',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -210,7 +210,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => false,
-                        'to_department' => 'PURCHASING',
+                        'to_department' => 'Purchasing',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -225,7 +225,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => false,
-                        'to_department' => 'COMPUTER',
+                        'to_department' => 'Computer',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
@@ -241,7 +241,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'priority' => 100,
                     'match' => [
                         'at_office' => false,
-                        'to_department' => 'PERSONALIA',
+                        'to_department' => 'Personnel',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],

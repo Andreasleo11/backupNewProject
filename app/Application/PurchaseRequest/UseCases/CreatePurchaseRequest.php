@@ -88,7 +88,7 @@ final class CreatePurchaseRequest
         $header = [
             'user_id_create' => $dto->requestedByUserId,
             'from_department' => $from,
-            'to_department' => strtoupper($dto->toDepartment),
+            'to_department' => $dto->toDepartment,
             'date_pr' => $dto->datePr,
             'date_required' => $dto->dateRequired,
             'remark' => $dto->remark,

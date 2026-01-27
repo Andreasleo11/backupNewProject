@@ -33,7 +33,7 @@ final class UpdatePurchaseRequest
 
             // Build update data
             $updateData = [
-                'to_department' => strtoupper($dto->toDepartment),
+                'to_department' => $dto->toDepartment,
                 'date_pr' => $dto->datePr,
                 'date_required' => $dto->dateRequired,
                 'remark' => $dto->remark,
