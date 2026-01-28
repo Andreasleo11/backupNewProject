@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Collection;
 
 class NavigationService
 {
@@ -15,7 +13,7 @@ class NavigationService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return self::getGuestMenu();
         }
 
@@ -53,7 +51,7 @@ class NavigationService
                 'icon' => 'home',
                 'active' => request()->routeIs('home'),
                 'roles' => ['all'], // Available to all roles
-                'priority' => 100
+                'priority' => 100,
             ],
 
             // Section: Administration & Management
@@ -70,42 +68,42 @@ class NavigationService
                         'route' => 'admin.access-overview.index',
                         'icon' => 'shield',
                         'active' => request()->routeIs('admin.access-overview.index'),
-                        'roles' => ['admin', 'super-admin']
+                        'roles' => ['admin', 'super-admin'],
                     ],
                     [
                         'label' => 'Users',
                         'route' => 'admin.users.index',
                         'icon' => 'user-group',
                         'active' => request()->routeIs('admin.users.index'),
-                        'roles' => ['admin', 'super-admin']
+                        'roles' => ['admin', 'super-admin'],
                     ],
                     [
                         'label' => 'Roles',
                         'route' => 'admin.roles.index',
                         'icon' => 'key',
                         'active' => request()->routeIs('admin.roles.index'),
-                        'roles' => ['admin', 'super-admin']
+                        'roles' => ['admin', 'super-admin'],
                     ],
                     [
                         'label' => 'Approval Rules',
                         'route' => 'admin.approval-rules.index',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('admin.approval-rules.index'),
-                        'roles' => ['admin', 'super-admin']
+                        'roles' => ['admin', 'super-admin'],
                     ],
                     [
                         'label' => 'Departments',
                         'route' => 'admin.departments.index',
                         'icon' => 'building',
                         'active' => request()->routeIs('admin.departments.*'),
-                        'roles' => ['admin', 'super-admin', 'manager']
+                        'roles' => ['admin', 'super-admin', 'manager'],
                     ],
                     [
                         'label' => 'Employees',
                         'route' => 'admin.employees.index',
                         'icon' => 'users',
                         'active' => request()->routeIs('admin.employees.*'),
-                        'roles' => ['admin', 'super-admin', 'hr', 'manager']
+                        'roles' => ['admin', 'super-admin', 'hr', 'manager'],
                     ],
                 ],
             ],
@@ -124,28 +122,28 @@ class NavigationService
                         'route' => 'mastertinta.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('mastertinta.index'),
-                        'roles' => ['admin', 'super-admin', 'inventory', 'operations']
+                        'roles' => ['admin', 'super-admin', 'inventory', 'operations'],
                     ],
                     [
                         'label' => 'Inventory Master',
                         'route' => 'masterinventory.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('masterinventory.index'),
-                        'roles' => ['admin', 'super-admin', 'inventory', 'operations']
+                        'roles' => ['admin', 'super-admin', 'inventory', 'operations'],
                     ],
                     [
                         'label' => 'Maintenance Inventory',
                         'route' => 'maintenance.inventory.index',
                         'icon' => 'wrench',
                         'active' => request()->routeIs('maintenance.inventory.index'),
-                        'roles' => ['admin', 'super-admin', 'maintenance', 'operations']
+                        'roles' => ['admin', 'super-admin', 'maintenance', 'operations'],
                     ],
                     [
                         'label' => 'Type Inventory',
                         'route' => 'masterinventory.typeindex',
                         'icon' => 'cog',
                         'active' => request()->routeIs('masterinventory.typeindex'),
-                        'roles' => ['admin', 'super-admin', 'inventory']
+                        'roles' => ['admin', 'super-admin', 'inventory'],
                     ],
                 ],
             ],
@@ -161,21 +159,21 @@ class NavigationService
                         'route' => 'qaqc.report.index',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('qaqc.report.*'),
-                        'roles' => ['admin', 'super-admin', 'quality', 'operations']
+                        'roles' => ['admin', 'super-admin', 'quality', 'operations'],
                     ],
                     [
                         'label' => 'Form Adjust',
                         'route' => 'listformadjust',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('listformadjust'),
-                        'roles' => ['admin', 'super-admin', 'quality']
+                        'roles' => ['admin', 'super-admin', 'quality'],
                     ],
                     [
                         'label' => 'Defect Categories',
                         'route' => 'qaqc.defectcategory',
                         'icon' => 'x-circle',
                         'active' => request()->routeIs('qaqc.defectcategory'),
-                        'roles' => ['admin', 'super-admin', 'quality']
+                        'roles' => ['admin', 'super-admin', 'quality'],
                     ],
                 ],
             ],
@@ -191,7 +189,7 @@ class NavigationService
                         'route' => 'pe.formlist',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('pe.*'),
-                        'roles' => ['admin', 'super-admin', 'production', 'operations']
+                        'roles' => ['admin', 'super-admin', 'production', 'operations'],
                     ],
                 ],
             ],
@@ -210,35 +208,35 @@ class NavigationService
                         'route' => auth()->check() && auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager']
+                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
                         'label' => 'Purchase Orders',
                         'route' => 'po.dashboard',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('po.dashboard'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager']
+                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
                         'label' => 'Forecast Prediction',
                         'route' => 'purchasing_home',
                         'icon' => 'chart-bar',
                         'active' => request()->routeIs('purchasing_home'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager']
+                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
                         'label' => 'Supplier Evaluation',
                         'route' => 'purchasing.evaluationsupplier.index',
                         'icon' => 'check-circle',
                         'active' => request()->routeIs('purchasing.evaluationsupplier.*'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager']
+                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
                         'label' => 'Forecast Customer Master',
                         'route' => 'fc.index',
                         'icon' => 'user-group',
                         'active' => request()->routeIs('fc.index'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'sales']
+                        'roles' => ['admin', 'super-admin', 'procurement', 'sales'],
                     ],
                 ],
             ],
@@ -257,21 +255,21 @@ class NavigationService
                         'route' => 'accounting.purchase-request',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('accounting.purchase-request'),
-                        'roles' => ['admin', 'super-admin', 'finance', 'accounting']
+                        'roles' => ['admin', 'super-admin', 'finance', 'accounting'],
                     ],
                     [
                         'label' => 'Monthly Budget Reports',
                         'route' => 'monthly-budget-reports.index',
                         'icon' => 'chart-bar',
                         'active' => request()->routeIs('monthly-budget-reports.*'),
-                        'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager']
+                        'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager'],
                     ],
                     [
                         'label' => 'Budget Summary Reports',
                         'route' => 'monthly-budget-summary-report.index',
                         'icon' => 'chart-bar',
                         'active' => request()->routeIs('monthly-budget-summary-report.*'),
-                        'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager']
+                        'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager'],
                     ],
                 ],
             ],
@@ -287,49 +285,49 @@ class NavigationService
                         'route' => 'delivery-notes.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('delivery-notes.*'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'logistics']
+                        'roles' => ['admin', 'super-admin', 'operations', 'logistics'],
                     ],
                     [
                         'label' => 'Destinations',
                         'route' => 'destination.index',
                         'icon' => 'map-pin',
                         'active' => request()->routeIs('destination.*'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'logistics']
+                        'roles' => ['admin', 'super-admin', 'operations', 'logistics'],
                     ],
                     [
                         'label' => 'Vehicles',
                         'route' => 'vehicles.index',
                         'icon' => 'truck',
                         'active' => request()->routeIs('vehicles.*') || request()->routeIs('services.*'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'logistics']
+                        'roles' => ['admin', 'super-admin', 'operations', 'logistics'],
                     ],
                     [
                         'label' => 'SPK Management',
                         'route' => 'spk.index',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('spk.*'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'production']
+                        'roles' => ['admin', 'super-admin', 'operations', 'production'],
                     ],
                     [
                         'label' => 'Daily Reports',
                         'route' => 'daily-reports.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('daily-reports.*'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'manager']
+                        'roles' => ['admin', 'super-admin', 'operations', 'manager'],
                     ],
                     [
                         'label' => 'Upload Daily Report',
                         'route' => 'daily-report.form',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('daily-report.form'),
-                        'roles' => ['admin', 'super-admin', 'operations', 'manager']
+                        'roles' => ['admin', 'super-admin', 'operations', 'manager'],
                     ],
                     [
                         'label' => 'Department Expenses',
                         'route' => 'department-expenses.index',
                         'icon' => 'currency-dollar',
                         'active' => request()->routeIs('department-expenses.*'),
-                        'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager']
+                        'roles' => ['admin', 'super-admin', 'finance', 'accounting', 'manager'],
                     ],
                 ],
             ],
@@ -348,49 +346,49 @@ class NavigationService
                         'route' => 'discipline.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('discipline.*'),
-                        'roles' => ['admin', 'super-admin', 'hr', 'manager']
+                        'roles' => ['admin', 'super-admin', 'hr', 'manager'],
                     ],
                     [
                         'label' => 'Yayasan Evaluations',
                         'route' => 'yayasan.table',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('yayasan.table'),
-                        'roles' => ['admin', 'super-admin', 'hr']
+                        'roles' => ['admin', 'super-admin', 'hr'],
                     ],
                     [
                         'label' => 'Internship Evaluations',
                         'route' => 'magang.table',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('magang.table'),
-                        'roles' => ['admin', 'super-admin', 'hr']
+                        'roles' => ['admin', 'super-admin', 'hr'],
                     ],
                     [
                         'label' => 'Individual Evaluations (All IN)',
                         'route' => 'format.evaluation.year.allin',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('format.evaluation.year.allin'),
-                        'roles' => ['admin', 'super-admin', 'hr', 'manager']
+                        'roles' => ['admin', 'super-admin', 'hr', 'manager'],
                     ],
                     [
                         'label' => 'Individual Evaluations (Yayasan)',
                         'route' => 'format.evaluation.year.yayasan',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('format.evaluation.year.yayasan'),
-                        'roles' => ['admin', 'super-admin', 'hr']
+                        'roles' => ['admin', 'super-admin', 'hr'],
                     ],
                     [
                         'label' => 'Individual Evaluations (Internship)',
                         'route' => 'format.evaluation.year.magang',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('format.evaluation.year.magang'),
-                        'roles' => ['admin', 'super-admin', 'hr']
+                        'roles' => ['admin', 'super-admin', 'hr'],
                     ],
                     [
                         'label' => 'Export Yayasan JPayroll',
                         'route' => 'exportyayasan.dateinput',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('exportyayasan.dateinput'),
-                        'roles' => ['admin', 'super-admin', 'hr', 'finance']
+                        'roles' => ['admin', 'super-admin', 'hr', 'finance'],
                     ],
                 ],
             ],
@@ -406,42 +404,42 @@ class NavigationService
                         'route' => 'requirements.index',
                         'icon' => 'clipboard-document-list',
                         'active' => request()->routeIs('requirements.index'),
-                        'roles' => ['admin', 'super-admin', 'compliance', 'hr']
+                        'roles' => ['admin', 'super-admin', 'compliance', 'hr'],
                     ],
                     [
                         'label' => 'Assign Requirements',
                         'route' => 'requirements.assign',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('requirements.assign'),
-                        'roles' => ['admin', 'super-admin', 'compliance', 'hr']
+                        'roles' => ['admin', 'super-admin', 'compliance', 'hr'],
                     ],
                     [
                         'label' => 'Review Uploads',
                         'route' => 'admin.requirement-uploads',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('admin.requirement-uploads'),
-                        'roles' => ['admin', 'super-admin', 'compliance']
+                        'roles' => ['admin', 'super-admin', 'compliance'],
                     ],
                     [
                         'label' => 'Departments Overview',
                         'route' => 'departments.overview',
                         'icon' => 'building',
                         'active' => request()->routeIs('departments.overview'),
-                        'roles' => ['admin', 'super-admin', 'manager', 'hr']
+                        'roles' => ['admin', 'super-admin', 'manager', 'hr'],
                     ],
                     [
                         'label' => 'Compliance Dashboard',
                         'route' => 'compliance.dashboard',
                         'icon' => 'chart-bar',
                         'active' => request()->routeIs('compliance.dashboard'),
-                        'roles' => ['admin', 'super-admin', 'compliance', 'manager']
+                        'roles' => ['admin', 'super-admin', 'compliance', 'manager'],
                     ],
                     [
                         'label' => 'File Library',
                         'route' => 'files.index',
                         'icon' => 'folder',
                         'active' => request()->routeIs('files.*'),
-                        'roles' => ['admin', 'super-admin', 'compliance', 'hr', 'manager']
+                        'roles' => ['admin', 'super-admin', 'compliance', 'hr', 'manager'],
                     ],
                 ],
             ],
@@ -485,9 +483,11 @@ class NavigationService
                         if (isset($child['route'])) {
                             $child['active'] = request()->routeIs($child['route']);
                         }
+
                         return $child;
                     })->toArray();
                 }
+
                 return $item;
             })->toArray();
         }
@@ -503,7 +503,8 @@ class NavigationService
 
             // Check if user has required roles for this item
             if (isset($item['roles'])) {
-                $hasAccess = !empty(array_intersect($userRoles, $item['roles']));
+                $hasAccess = ! empty(array_intersect($userRoles, $item['roles']));
+
                 return $hasAccess;
             }
 
@@ -511,14 +512,15 @@ class NavigationService
             if (isset($item['children'])) {
                 $item['children'] = collect($item['children'])->filter(function ($child) use ($userRoles) {
                     if (isset($child['roles'])) {
-                        return !empty(array_intersect($userRoles, $child['roles']));
+                        return ! empty(array_intersect($userRoles, $child['roles']));
                     }
+
                     // If child has no roles set, deny access (stricter security)
                     return false;
                 })->toArray();
 
                 // Hide group if no children are accessible
-                return !empty($item['children']);
+                return ! empty($item['children']);
             }
 
             // Default: deny access for items without explicit roles
@@ -579,7 +581,7 @@ class NavigationService
             'type' => 'quick-access',
             'label' => 'Quick Access',
             'icon' => 'star',
-            'items' => $quickAccessItems
+            'items' => $quickAccessItems,
         ]);
 
         return $menu;
@@ -604,7 +606,7 @@ class NavigationService
                 ];
 
                 if (isset($autoExpandRoles[$item['label']])) {
-                    $item['defaultOpen'] = !empty(array_intersect($userRoles, $autoExpandRoles[$item['label']]));
+                    $item['defaultOpen'] = ! empty(array_intersect($userRoles, $autoExpandRoles[$item['label']]));
                 } else {
                     $item['defaultOpen'] = false; // Default collapsed
                 }
@@ -628,7 +630,7 @@ class NavigationService
 
             // Only merge defaults that don't override existing values
             foreach ($defaults as $key => $value) {
-                if (!isset($item[$key])) {
+                if (! isset($item[$key])) {
                     $item[$key] = $value;
                 }
             }
@@ -660,10 +662,10 @@ class NavigationService
 
             // Ensure group-specific keys
             if ($item['type'] === 'group') {
-                if (!isset($item['defaultOpen'])) {
+                if (! isset($item['defaultOpen'])) {
                     $item['defaultOpen'] = false;
                 }
-                if (!isset($item['children'])) {
+                if (! isset($item['children'])) {
                     $item['children'] = [];
                 }
             }

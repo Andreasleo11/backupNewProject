@@ -30,6 +30,7 @@ class ChangePasswordPage extends Component
         // Rate limiting: max 5 attempts per minute
         if (RateLimiter::tooManyAttempts('change-password:' . Auth::id(), 5)) {
             $this->addError('general', 'Too many attempts. Please try again later.');
+
             return;
         }
 
@@ -39,6 +40,7 @@ class ChangePasswordPage extends Component
 
         if (! $user) {
             session()->flash('error', 'You must be logged in.');
+
             return;
         }
 
@@ -46,6 +48,7 @@ class ChangePasswordPage extends Component
         if (! Hash::check($this->current_password, $user->password)) {
             RateLimiter::hit('change-password:' . Auth::id(), 60); // 1 minute
             $this->addError('current_password', 'The current password is incorrect.');
+
             return;
         }
 
