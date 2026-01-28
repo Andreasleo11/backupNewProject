@@ -11,8 +11,17 @@
 @import 'mixins';
 @import 'base';
 @import 'layout';
-@import 'sidebar';
-@import 'flyout';
+
+// =============================================================================
+// ⚠️ DEPRECATED SIDEBAR STYLES - Commented out as of 2026-01-28
+// The old Livewire sidebar component has been deprecated in favor of the new
+// Alpine.js + Tailwind sidebar system (resources/views/new/layouts/app.blade.php)
+// These imports are kept commented for reference but can be fully removed in
+// the next release cycle. See: .deprecation/SIDEBAR_DEPRECATION_PLAN.md
+// =============================================================================
+// @import 'sidebar';
+// @import 'flyout';
+
 @import 'notifications';
 @import 'skeletons';
 @import 'utilities';
