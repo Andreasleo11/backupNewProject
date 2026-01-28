@@ -94,8 +94,6 @@ final class ApprovalEngine implements Approvals
                 'remarks' => $remarks,
             ]);
 
-            $this->attachSignatureSnapshotToStep($step, $by, $remarks);
-
             $next = $req->steps()->where('sequence', '>', $req->current_step)->orderBy('sequence')->first();
 
             if ($next) {
