@@ -5,6 +5,7 @@ namespace App\Livewire\Auth;
 use App\Application\User\UseCases\ChangeUserPassword;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 class ChangePasswordPage extends Component
@@ -26,25 +27,32 @@ class ChangePasswordPage extends Component
 
     public function changePassword(ChangeUserPassword $changeUserPassword): void
     {
+        // Rate limiting: max 5 attempts per minute
+        if (RateLimiter::tooManyAttempts('change-password:' . Auth::id(), 5)) {
+            $this->addError('general', 'Too many attempts. Please try again later.');
+            return;
+        }
+
         $this->validate();
 
         $user = Auth::user();
 
         if (! $user) {
             session()->flash('error', 'You must be logged in.');
-
             return;
         }
 
         // Verify current password
         if (! Hash::check($this->current_password, $user->password)) {
+            RateLimiter::hit('change-password:' . Auth::id(), 60); // 1 minute
             $this->addError('current_password', 'The current password is incorrect.');
-
             return;
         }
 
         // Use the same use case as admin
         $changeUserPassword->execute($user->id, $this->password);
+
+        RateLimiter::clear('change-password:' . Auth::id()); // Clear on success
 
         // Clean up fields
         $this->reset(['current_password', 'password', 'password_confirmation']);
