@@ -19,11 +19,11 @@
                     'icon' => 'x-circle'
                 ],
                 default => [
-                    'bg' => 'bg-indigo-50/80',
-                    'border' => 'border-indigo-200/50',
-                    'text' => 'text-indigo-800',
-                    'icon_bg' => 'bg-indigo-100',
-                    'icon_color' => 'text-indigo-600',
+                    'bg' => 'bg-blue-50/80',
+                    'border' => 'border-blue-200/50',
+                    'text' => 'text-blue-800',
+                    'icon_bg' => 'bg-blue-100',
+                    'icon_color' => 'text-blue-600',
                     'icon' => 'clock'
                 ],
             };

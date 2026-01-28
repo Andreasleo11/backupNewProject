@@ -68,7 +68,7 @@
     @stack('head')
 </head>
 
-<body class="min-h-screen main-gradient text-slate-900 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900" x-data="{
+<body class="min-h-screen main-gradient text-slate-900 font-sans antialiased selection:bg-blue-100 selection:text-blue-900" x-data="{
     sidebarOpen: false,
     sidebarCollapsed: $persist(false),
     q: '',
@@ -110,7 +110,7 @@
             {{-- Header --}}
             <div class="flex items-center justify-between h-16 px-5 border-b border-slate-100">
                 <a href="{{ url('/') }}" class="flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-200">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-lg shadow-blue-200">
                         <img class="h-6 w-6 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
                     </div>
                     <span class="text-base font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
@@ -157,12 +157,12 @@
                     foreach ($words as $word) { $appAcronym .= mb_substr($word, 0, 1); }
                 @endphp
                 <a href="{{ url('/') }}" class="flex items-center gap-3.5 group" :class="sidebarCollapsed ? 'mx-auto' : ''">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-lg shadow-indigo-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 shadow-lg shadow-blue-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
                         <img class="h-6 w-6 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
                     </div>
                     <div x-show="!sidebarCollapsed" x-cloak class="transition-opacity duration-300">
                         <span class="text-base font-extrabold tracking-tight text-slate-900 block leading-none">{{ $appName }}</span>
-                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-[0.2em] mt-0.5 block leading-none">{{ strtoupper($appAcronym) }} SYSTEM</span>
+                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-0.5 block leading-none">{{ strtoupper($appAcronym) }} SYSTEM</span>
                     </div>
                 </a>
             </div>
@@ -173,7 +173,7 @@
 
             <div class="border-t border-slate-100 p-4">
                 <button @click="sidebarCollapsed = !sidebarCollapsed" 
-                        class="w-full flex items-center justify-center h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all duration-300">
+                        class="w-full flex items-center justify-center h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all duration-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-500" 
                          :class="sidebarCollapsed ? 'rotate-180' : ''" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M12.79 4.21a.75.75 0 010 1.06L9.06 9l3.73 3.73a.75.75 0 11-1.06 1.06L7.47 9.53a.75.75 0 010-1.06l4.26-4.26a.75.75 0 011.06 0z" clip-rule="evenodd" />
@@ -189,7 +189,7 @@
                 <div class="flex items-center gap-6">
                     {{-- Mobile menu button --}}
                     <button type="button"
-                        class="md:hidden flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm text-slate-600 hover:text-indigo-600 hover:border-indigo-200 transition-all"
+                        class="md:hidden flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all"
                         @click="sidebarOpen = true">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -198,7 +198,7 @@
 
                     <div class="hidden sm:block">
                         <nav class="flex text-xs space-x-2 text-slate-400 font-medium uppercase tracking-wider">
-                            <span class="hover:text-indigo-600 transition-colors">Main System</span>
+                            <span class="hover:text-blue-600 transition-colors">Main System</span>
                             <span>/</span>
                             <span class="text-slate-900 font-bold whitespace-nowrap">@yield('page-title', 'Overview')</span>
                         </nav>
@@ -216,7 +216,7 @@
                     $envColorClasses = match ($env) {
                         'production' => 'from-emerald-500 to-teal-600 shadow-emerald-100',
                         'staging' => 'from-amber-400 to-orange-500 shadow-amber-100',
-                        default => 'from-indigo-500 to-violet-600 shadow-indigo-100',
+                        default => 'from-blue-500 to-violet-600 shadow-blue-100',
                     };
                     $initials = $user ? collect(explode(' ', $user->name))->filter()->map(fn($part) => mb_substr($part, 0, 1))->join('') : 'U';
                 @endphp
@@ -240,7 +240,7 @@
                         <div class="relative" x-data="{ userMenuOpen: false }">
                             <button type="button" @click="userMenuOpen = !userMenuOpen" @click.outside="userMenuOpen = false"
                                 class="flex items-center gap-3 p-1 rounded-2xl hover:bg-slate-50 transition-all duration-300 group">
-                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-100 group-hover:scale-105 transition-all">
+                                <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-100 group-hover:scale-105 transition-all">
                                     {{ strtoupper(mb_substr($initials, 0, 2)) }}
                                 </div>
                                 <div class="hidden sm:block text-left pr-2">
@@ -254,21 +254,21 @@
 
                             {{-- Profile Dropdown --}}
                             <div x-show="userMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95 translate-y-2" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-cloak
-                                class="absolute right-0 mt-3 w-64 rounded-2xl bg-white shadow-2xl shadow-indigo-900/10 border border-slate-200/60 p-2 z-[60]">
+                                class="absolute right-0 mt-3 w-64 rounded-2xl bg-white shadow-2xl shadow-blue-900/10 border border-slate-200/60 p-2 z-[60]">
                                 <div class="px-4 py-4 mb-1 rounded-xl bg-slate-50 border border-slate-100">
                                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Signed in as</p>
                                     <p class="text-sm font-bold text-slate-900 truncate">{{ $user->name ?? 'User' }}</p>
                                 </div>
                                 
                                 <div class="space-y-0.5">
-                                    <a href="{{ route('account.security') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-all group">
-                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-all">
+                                    <a href="{{ route('account.security') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all group">
+                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
                                             @include('new.layouts.partials.nav-icon', ['name' => 'shield'])
                                         </div>
                                         Security Settings
                                     </a>
-                                    <a href="{{ route('signatures.manage') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-all group">
-                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-all">
+                                    <a href="{{ route('signatures.manage') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-blue-50 hover:text-blue-700 transition-all group">
+                                        <div class="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all">
                                             @include('new.layouts.partials.nav-icon', ['name' => 'wrench'])
                                         </div>
                                         My Signatures

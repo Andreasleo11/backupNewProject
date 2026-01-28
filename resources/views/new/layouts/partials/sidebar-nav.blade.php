@@ -8,10 +8,10 @@
         <input type="text" x-model="q" placeholder="Explore menu..."
             class="w-full rounded-xl border border-slate-200/60 bg-white/50 backdrop-blur-md py-2.5 pl-10
                    text-sm text-slate-700 shadow-sm outline-none ring-offset-2
-                   focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/20
+                   focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20
                    placeholder:text-slate-400 transition-all duration-300">
         <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-            <svg class="h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-300"
+            <svg class="h-4 w-4 text-slate-400 group-focus-within:text-blue-500 transition-colors duration-300"
                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
@@ -26,7 +26,7 @@
     </div>
     <div x-show="q.length > 0" class="mt-2 text-[10px] font-semibold text-slate-400 uppercase tracking-tighter px-1 flex items-center justify-between">
         <span>Matches found</span>
-        <span x-text="getSearchResultCount()" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded"></span>
+        <span x-text="getSearchResultCount()" class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded"></span>
     </div>
 </div>
 
@@ -54,13 +54,13 @@
             <a href="{{ route($flatItem['route']) }}"
                x-show="'{{ strtolower($flatItem['label']) }}'.includes(q.toLowerCase()) || '{{ strtolower($flatItem['parent_label'] ?? '') }}'.includes(q.toLowerCase())"
                class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300 group
-                      hover:bg-indigo-50/50 hover:translate-x-1
-                      {{ $flatItem['active'] ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-600' }}">
-                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100/80 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600">
+                      hover:bg-blue-50/50 hover:translate-x-1
+                      {{ $flatItem['active'] ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-600' }}">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100/80 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600">
                     @include('new.layouts.partials.nav-icon', ['name' => $flatItem['icon']])
                 </span>
                 <div class="flex flex-col min-w-0">
-                    <span class="font-bold truncate text-xs" x-html="'{{ $flatItem['label'] }}'.replace(new RegExp(q, 'gi'), match => `<mark class='bg-indigo-200/50 text-indigo-900 rounded-sm px-0.5'>${match}</mark>`)"></span>
+                    <span class="font-bold truncate text-xs" x-html="'{{ $flatItem['label'] }}'.replace(new RegExp(q, 'gi'), match => `<mark class='bg-blue-200/50 text-blue-900 rounded-sm px-0.5'>${match}</mark>`)"></span>
                     @if(isset($flatItem['parent_label']))
                         <span class="text-[9px] text-slate-400 uppercase tracking-widest">{{ $flatItem['parent_label'] }}</span>
                     @endif
@@ -125,9 +125,9 @@
                     role="none">
                     <a href="{{ route($item['route']) }}"
                         class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300
-                               hover:bg-indigo-50/50 hover:text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 active:scale-[0.98]
+                               hover:bg-blue-50/50 hover:text-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500/20 active:scale-[0.98]
                                {{ $isActive 
-                                  ? 'bg-white shadow-lg shadow-indigo-100/50 border border-indigo-100 text-indigo-700 font-semibold mb-0.5' 
+                                  ? 'bg-white shadow-lg shadow-blue-100/50 border border-blue-100 text-blue-700 font-semibold mb-0.5' 
                                   : 'text-slate-600 font-medium' }}"
                         :class="{
                             'justify-center px-0 mx-2': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
@@ -141,14 +141,14 @@
                             <span
                                 class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300
                                      {{ $isActive 
-                                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' 
-                                        : 'bg-slate-100/80 text-slate-500 group-hover/nav-item:bg-indigo-100 group-hover/nav-item:text-indigo-600' }}">
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                                        : 'bg-slate-100/80 text-slate-500 group-hover/nav-item:bg-blue-100 group-hover/nav-item:text-blue-600' }}">
                                 @include('new.layouts.partials.nav-icon', ['name' => $item['icon']])
                             </span>
                             @if($isActive)
                                 <span class="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
                                 </span>
                             @endif
                         </div>
@@ -174,13 +174,13 @@
                              x-transition:enter-end="opacity-100 translate-x-0"
                              x-transition:leave="transition ease-in duration-150"
                              x-cloak
-                             class="fixed z-[90] ml-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-indigo-100/50 px-5 py-4 shadow-2xl shadow-indigo-900/10 min-w-[200px]"
+                             class="fixed z-[90] ml-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-blue-100/50 px-5 py-4 shadow-2xl shadow-blue-900/10 min-w-[200px]"
                              :style="{
                                  top: (flyoutTop) + 'px',
                                  left: '5rem',
                              }">
                              <div class="flex items-center gap-3 mb-2">
-                                <div class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
+                                <div class="p-2 rounded-lg bg-blue-50 text-blue-600">
                                     @include('new.layouts.partials.nav-icon', ['name' => $item['icon']])
                                 </div>
                                 <div class="font-bold text-slate-900 text-base">{{ $item['label'] }}</div>
@@ -227,8 +227,8 @@
                     <button type="button" @click="open = !open"
                         class="group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-semibold
                                transition-all duration-300 active:scale-[0.98]
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500/20
-                               {{ $anyActive ? 'text-indigo-950 bg-indigo-50/30' : 'text-slate-600 hover:bg-slate-50' }}"
+                               focus:outline-none focus:ring-2 focus:ring-blue-500/20
+                               {{ $anyActive ? 'text-blue-950 bg-blue-50/30' : 'text-slate-600 hover:bg-slate-50' }}"
                         :class="{
                             'justify-between': !sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }},
                             'justify-center px-0 mx-2 w-auto': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
@@ -239,14 +239,14 @@
                             <span
                                 class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300 shrink-0
                                      {{ $anyActive 
-                                        ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-150' 
-                                        : 'bg-slate-100/80 text-slate-500 group-hover:bg-white group-hover:text-indigo-600 group-hover:shadow-sm' }}">
+                                        ? 'bg-gradient-to-br from-blue-500 to-violet-600 text-white shadow-md shadow-blue-150' 
+                                        : 'bg-slate-100/80 text-slate-500 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm' }}">
                                 @include('new.layouts.partials.nav-icon', ['name' => $item['icon']])
                             </span>
                             <span x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}" class="font-bold tracking-tight text-sm">{{ $groupLabel }}</span>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg"
-                            :class="open ? 'rotate-90 text-indigo-600' : 'text-slate-300'"
+                            :class="open ? 'rotate-90 text-blue-600' : 'text-slate-300'"
                             class="h-4 w-4 transition-transform duration-300"
                             viewBox="0 0 20 20" fill="currentColor"
                             x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
@@ -274,11 +274,11 @@
                             <li role="none">
                                 <a href="{{ route($child['route']) }}"
                                     class="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300
-                                          hover:bg-indigo-50/50 hover:translate-x-1
-                                          {{ $childActive ? 'text-indigo-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-900' }}"
+                                          hover:bg-blue-50/50 hover:translate-x-1
+                                          {{ $childActive ? 'text-blue-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-900' }}"
                                     role="menuitem">
                                     <div class="w-1.5 h-1.5 rounded-full transition-all duration-300
-                                               {{ $childActive ? 'bg-indigo-500 scale-125 shadow-[0_0_8px_rgba(99,102,241,0.6)]' : 'bg-slate-300 group-hover:bg-indigo-400' }}"></div>
+                                               {{ $childActive ? 'bg-blue-500 scale-125 shadow-[0_0_8px_rgba(99,102,241,0.6)]' : 'bg-slate-300 group-hover:bg-blue-400' }}"></div>
                                     <span class="truncate tracking-tight">{{ $child['label'] }}</span>
                                 </a>
                             </li>
@@ -294,7 +294,7 @@
                              x-transition:enter-end="opacity-100 scale-100 translate-x-0"
                              x-transition:leave="transition ease-in duration-150"
                              x-cloak
-                             class="fixed z-[90] w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-indigo-100/50 p-2 shadow-2xl shadow-indigo-900/15"
+                             class="fixed z-[90] w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-blue-100/50 p-2 shadow-2xl shadow-blue-900/15"
                              :style="{
                                  top: (flyoutTop) + 'px',
                                  left: '5.5rem',
@@ -303,8 +303,8 @@
                              @mouseleave="flyoutTimer = setTimeout(() => { flyoutOpen = false }, 150)">
                             
                             <div class="px-3 py-3 border-b border-slate-100/80 mb-1">
-                                <div class="font-black text-indigo-950 uppercase tracking-widest text-[10px] flex items-center gap-2">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                                <div class="font-black text-blue-950 uppercase tracking-widest text-[10px] flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                                     {{ $groupLabel }}
                                 </div>
                             </div>
@@ -318,10 +318,10 @@
                                         <a href="{{ route($child['route']) }}"
                                             class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300 
                                                    {{ $childActive 
-                                                      ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
-                                                      : 'text-slate-600 hover:bg-indigo-50 hover:text-indigo-700' }}">
+                                                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
+                                                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700' }}">
                                             <span class="flex h-6 w-6 items-center justify-center rounded-lg transition-all duration-300
-                                                        {{ $childActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-indigo-100' }}">
+                                                        {{ $childActive ? 'bg-white/20' : 'bg-slate-100 group-hover:bg-blue-100' }}">
                                                 @include('new.layouts.partials.nav-icon', ['name' => $child['icon']])
                                             </span>
                                             <span class="font-bold text-xs truncate">{{ $child['label'] }}</span>
