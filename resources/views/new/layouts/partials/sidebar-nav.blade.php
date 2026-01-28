@@ -1,8 +1,12 @@
-{{-- Sidebar search --}}
-<div class="px-4 pt-4 pb-2" x-show="!sidebarCollapsed">
+@php
+    $isMobile = $isMobile ?? false;
+@endphp
+
+{{-- Sidebar Search Section --}}
+<div class="px-4 pt-3 pb-1" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
     <div class="relative group">
         <input type="text" x-model="q" placeholder="Explore menu..."
-            class="w-full rounded-xl border border-slate-200/60 bg-white/50 backdrop-blur-md px-4 py-2.5 pl-10
+            class="w-full rounded-xl border border-slate-200/60 bg-white/50 backdrop-blur-md py-2.5 pl-10
                    text-sm text-slate-700 shadow-sm outline-none ring-offset-2
                    focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-500/20
                    placeholder:text-slate-400 transition-all duration-300">
@@ -20,8 +24,9 @@
             </svg>
         </button>
     </div>
-    <div x-show="q.length > 0" class="mt-2 text-[10px] font-semibold text-slate-400 uppercase tracking-tighter px-1">
-        <span x-text="getSearchResultCount()"></span> matches found
+    <div x-show="q.length > 0" class="mt-2 text-[10px] font-semibold text-slate-400 uppercase tracking-tighter px-1 flex items-center justify-between">
+        <span>Matches found</span>
+        <span x-text="getSearchResultCount()" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded"></span>
     </div>
 </div>
 
@@ -30,12 +35,46 @@
     $nav = NavigationService::getPersonalizedMenu();
 @endphp
 
-<nav class="flex-1 overflow-y-auto custom-scrollbar px-2 py-4" role="navigation" aria-label="Main system navigation">
-    <ul class="space-y-1.5" role="menubar">
+<nav class="flex-1 overflow-y-auto custom-scrollbar px-2 py-2" role="navigation" aria-label="Main system navigation">
+    {{-- High-Priority Search Results (Visible only when searching) --}}
+    <div x-show="q.length > 0" class="mb-6 space-y-1.5 px-2">
+        @php
+            $flattenedItems = [];
+            foreach ($nav as $item) {
+                if ($item['type'] === 'single') $flattenedItems[] = $item;
+                if ($item['type'] === 'group') {
+                    foreach ($item['children'] ?? [] as $child) {
+                        $child['parent_label'] = $item['label'];
+                        $flattenedItems[] = $child;
+                    }
+                }
+            }
+        @endphp
+        @foreach ($flattenedItems as $flatItem)
+            <a href="{{ route($flatItem['route']) }}"
+               x-show="'{{ strtolower($flatItem['label']) }}'.includes(q.toLowerCase()) || '{{ strtolower($flatItem['parent_label'] ?? '') }}'.includes(q.toLowerCase())"
+               class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300 group
+                      hover:bg-indigo-50/50 hover:translate-x-1
+                      {{ $flatItem['active'] ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-600' }}">
+                <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100/80 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600">
+                    @include('new.layouts.partials.nav-icon', ['name' => $flatItem['icon']])
+                </span>
+                <div class="flex flex-col min-w-0">
+                    <span class="font-bold truncate text-xs" x-html="'{{ $flatItem['label'] }}'.replace(new RegExp(q, 'gi'), match => `<mark class='bg-indigo-200/50 text-indigo-900 rounded-sm px-0.5'>${match}</mark>`)"></span>
+                    @if(isset($flatItem['parent_label']))
+                        <span class="text-[9px] text-slate-400 uppercase tracking-widest">{{ $flatItem['parent_label'] }}</span>
+                    @endif
+                </div>
+            </a>
+        @endforeach
+        <div class="h-[1px] w-full bg-slate-100 my-4"></div>
+    </div>
+
+    <ul class="space-y-1.5" role="menubar" x-show="q.length === 0">
         @foreach ($nav as $item)
             @if ($item['type'] === 'quick-access')
                 {{-- Premium Quick Access Section --}}
-                <div class="px-3 py-4 mt-2 mb-1" x-show="!sidebarCollapsed">
+                <div class="px-3 py-4 mt-2 mb-1" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
                     <div class="flex items-center gap-2.5 mb-3.5">
                         <div class="flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shadow-amber-200">
                             @include('new.layouts.partials.nav-icon', ['name' => $item['icon'] ?? 'star'])
@@ -47,27 +86,28 @@
                     <div class="space-y-1">
                         @foreach ($item['items'] ?? [] as $quickItem)
                             <a href="{{ route($quickItem['route']) }}"
-                                x-show="q === '' || '{{ strtolower($quickItem['label']) }}'.includes(q.toLowerCase())"
                                 class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-300 group
                                        hover:bg-amber-50/80 hover:scale-[1.02] active:scale-[0.98]
                                        {{ $quickItem['active'] 
-                                          ? 'bg-gradient-to-r from-amber-50 to-white border-l-4 border-amber-500 text-amber-900 shadow-md shadow-amber-100/50' 
-                                          : 'text-slate-600' }}">
-                                <span
-                                    class="flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-300
-                                         {{ $quickItem['active'] 
-                                            ? 'bg-amber-100/80 text-amber-600 shadow-inner' 
-                                            : 'bg-slate-100/50 text-slate-400 group-hover:bg-amber-100 group-hover:text-amber-600 group-hover:rotate-12' }}">
-                                    @include('new.layouts.partials.nav-icon', ['name' => $quickItem['icon']])
-                                </span>
-                                <span class="font-semibold truncate">{{ $quickItem['label'] }}</span>
+                                          ? 'bg-gradient-to-r from-amber-50 to-white border-l-4 border-amber-500 text-amber-900 shadow-md shadow-amber-100/50 block' 
+                                          : 'text-slate-600 block' }}">
+                                <div class="flex items-center gap-3">
+                                    <span
+                                        class="flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-300
+                                             {{ $quickItem['active'] 
+                                                ? 'bg-amber-100/80 text-amber-600 shadow-inner' 
+                                                : 'bg-slate-100/50 text-slate-400 group-hover:bg-amber-100 group-hover:text-amber-600 group-hover:rotate-12' }}">
+                                        @include('new.layouts.partials.nav-icon', ['name' => $quickItem['icon']])
+                                    </span>
+                                    <span class="font-semibold truncate">{{ $quickItem['label'] }}</span>
+                                </div>
                             </a>
                         @endforeach
                     </div>
                 </div>
             @elseif ($item['type'] === 'divider')
                 {{-- Elegant Section Divider --}}
-                <div class="px-4 py-4" x-show="!sidebarCollapsed">
+                <div class="px-4 py-4" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
                     <div class="flex items-center gap-3">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
                             {{ $item['label'] }}
@@ -80,9 +120,9 @@
                     $label = $item['label'];
                     $isActive = $item['active'] ?? false;
                 @endphp
-                <li class="relative group/nav-item" x-data="{ hover: false, flyoutTop: 0, label: '{{ strtolower($label) }}' }"
+                <li class="relative group/nav-item" x-data="{ hover: false, flyoutTop: 0 }"
                     @mouseenter="hover = true; flyoutTop = $el.getBoundingClientRect().top" @mouseleave="hover = false"
-                    x-show="q === '' || label.includes(q.toLowerCase())" role="none">
+                    role="none">
                     <a href="{{ route($item['route']) }}"
                         class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300
                                hover:bg-indigo-50/50 hover:text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 active:scale-[0.98]
@@ -90,14 +130,14 @@
                                   ? 'bg-white shadow-lg shadow-indigo-100/50 border border-indigo-100 text-indigo-700 font-semibold mb-0.5' 
                                   : 'text-slate-600 font-medium' }}"
                         :class="{
-                            'justify-center px-0 mx-2': sidebarCollapsed,
-                            'justify-start': !sidebarCollapsed,
+                            'justify-center px-0 mx-2': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
+                            'justify-start': !sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }},
                         }"
                         role="menuitem"
                         tabindex="0"
                         :aria-current="$isActive ? 'page' : false">
                         
-                        <div class="relative">
+                        <div class="relative flex items-center justify-center shrink-0">
                             <span
                                 class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300
                                      {{ $isActive 
@@ -113,29 +153,28 @@
                             @endif
                         </div>
 
-                        <span class="truncate text-sm tracking-tight" x-show="!sidebarCollapsed">
+                        <span class="truncate text-sm tracking-tight" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
                             {{ $item['label'] }}
                         </span>
 
                         @if(isset($item['badge']) && $item['badge'] > 0)
                             <span class="ml-auto bg-rose-500 text-white text-[10px] px-1.5 py-0.5 rounded-lg min-w-[18px] text-center font-bold shadow-sm shadow-rose-200"
-                                  x-show="!sidebarCollapsed">
+                                  x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
                                 {{ $item['badge'] }}
                             </span>
                         @endif
                     </a>
 
                     {{-- Glassmorphic Collapsed Flyout --}}
+                    @if(!$isMobile)
                     <template x-teleport="body">
                         <div x-show="sidebarCollapsed && hover" 
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 translate-x-[-10px]"
                              x-transition:enter-end="opacity-100 translate-x-0"
                              x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-100 translate-x-0"
-                             x-transition:leave-end="opacity-0 translate-x-[-10px]"
                              x-cloak
-                             class="fixed z-[60] ml-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-indigo-100/50 px-5 py-4 shadow-2xl shadow-indigo-900/10 min-w-[200px]"
+                             class="fixed z-[90] ml-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-indigo-100/50 px-5 py-4 shadow-2xl shadow-indigo-900/10 min-w-[200px]"
                              :style="{
                                  top: (flyoutTop) + 'px',
                                  left: '5rem',
@@ -151,6 +190,7 @@
                             @endif
                         </div>
                     </template>
+                    @endif
                 </li>
             @elseif ($item['type'] === 'group')
                 @php
@@ -165,26 +205,22 @@
                         open: {{ $defaultOpen ? 'true' : 'false' }},
                         flyoutOpen: false,
                         flyoutTop: 0,
-                        flyoutTimer: null,
-                        label: '{{ strtolower($groupLabel) }}',
-                        hasMatchingChildren() {
-                            if (!q) return false;
-                            const query = q.toLowerCase();
-                            return {{ json_encode(collect($children)->pluck('label')->map('strtolower')->toArray()) }}.some(childLabel => childLabel.includes(query));
-                        }
+                        flyoutTimer: null
                     }"
-                    x-effect="if (q && hasMatchingChildren()) open = true"
                     @mouseenter="
-                        clearTimeout(flyoutTimer);
-                        hover = true;
-                        flyoutOpen = true;
-                        flyoutTop = $el.getBoundingClientRect().top;
+                        if (!{{ $isMobile ? 'true' : 'false' }}) {
+                            clearTimeout(flyoutTimer);
+                            hover = true;
+                            flyoutOpen = true;
+                            flyoutTop = $el.getBoundingClientRect().top;
+                        }
                     "
                     @mouseleave="
-                        hover = false;
-                        flyoutTimer = setTimeout(() => { flyoutOpen = false }, 150);
+                        if (!{{ $isMobile ? 'true' : 'false' }}) {
+                            hover = false;
+                            flyoutTimer = setTimeout(() => { flyoutOpen = false }, 150);
+                        }
                     "
-                    x-show="q === '' || label.includes(q.toLowerCase()) || hasMatchingChildren()"
                     role="none"
                 >
                     {{-- Group Header --}}
@@ -194,26 +230,26 @@
                                focus:outline-none focus:ring-2 focus:ring-indigo-500/20
                                {{ $anyActive ? 'text-indigo-950 bg-indigo-50/30' : 'text-slate-600 hover:bg-slate-50' }}"
                         :class="{
-                            'justify-between': !sidebarCollapsed,
-                            'justify-center px-0 mx-2 w-auto': sidebarCollapsed,
+                            'justify-between': !sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }},
+                            'justify-center px-0 mx-2 w-auto': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
                         }"
                         role="menuitem"
                         :aria-expanded="open">
                         <div class="flex items-center gap-3">
                             <span
-                                class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300
+                                class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300 shrink-0
                                      {{ $anyActive 
                                         ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-150' 
                                         : 'bg-slate-100/80 text-slate-500 group-hover:bg-white group-hover:text-indigo-600 group-hover:shadow-sm' }}">
                                 @include('new.layouts.partials.nav-icon', ['name' => $item['icon']])
                             </span>
-                            <span x-show="!sidebarCollapsed" class="font-bold tracking-tight text-sm">{{ $groupLabel }}</span>
+                            <span x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}" class="font-bold tracking-tight text-sm">{{ $groupLabel }}</span>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg"
                             :class="open ? 'rotate-90 text-indigo-600' : 'text-slate-300'"
                             class="h-4 w-4 transition-transform duration-300"
                             viewBox="0 0 20 20" fill="currentColor"
-                            x-show="!sidebarCollapsed">
+                            x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
                             <path fill-rule="evenodd"
                                 d="M7.21 14.77a.75.75 0 01.02-1.06L11 10 7.23 6.29a.75.75 0 111.06-1.06l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 01-1.08-.02z"
                                 clip-rule="evenodd" />
@@ -221,7 +257,7 @@
                     </button>
 
                     {{-- Submenu --}}
-                    <ul x-show="open && !sidebarCollapsed"
+                    <ul x-show="open && (!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }})"
                         x-transition:enter="transition-all duration-300 ease-out"
                         x-transition:enter-start="opacity-0 -translate-y-2 max-h-0"
                         x-transition:enter-end="opacity-100 translate-y-0 max-h-[800px]"
@@ -235,7 +271,7 @@
                                 $childLabel = $child['label'];
                                 $childActive = $child['active'] ?? false;
                             @endphp
-                            <li x-data="{ label: '{{ strtolower($childLabel) }}' }" x-show="q === '' || label.includes(q.toLowerCase())" role="none">
+                            <li role="none">
                                 <a href="{{ route($child['route']) }}"
                                     class="group flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300
                                           hover:bg-indigo-50/50 hover:translate-x-1
@@ -250,6 +286,7 @@
                     </ul>
 
                     {{-- Glassmorphic Collapsed Group Flyout --}}
+                    @if(!$isMobile)
                     <template x-teleport="body">
                         <div x-show="sidebarCollapsed && flyoutOpen"
                              x-transition:enter="transition ease-out duration-200"
@@ -257,7 +294,7 @@
                              x-transition:enter-end="opacity-100 scale-100 translate-x-0"
                              x-transition:leave="transition ease-in duration-150"
                              x-cloak
-                             class="fixed z-[60] w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-indigo-100/50 p-2 shadow-2xl shadow-indigo-900/15"
+                             class="fixed z-[90] w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-indigo-100/50 p-2 shadow-2xl shadow-indigo-900/15"
                              :style="{
                                  top: (flyoutTop) + 'px',
                                  left: '5.5rem',
@@ -294,6 +331,7 @@
                             </ul>
                         </div>
                     </template>
+                    @endif
                 </li>
             @endif
         @endforeach
@@ -313,5 +351,9 @@
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(148, 163, 184, 0.6);
+}
+mark {
+    background: transparent;
+    color: inherit;
 }
 </style>

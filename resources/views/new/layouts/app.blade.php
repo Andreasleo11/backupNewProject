@@ -127,7 +127,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto custom-scrollbar">
-                @include('new.layouts.partials.sidebar-nav')
+                @include('new.layouts.partials.sidebar-nav', ['isMobile' => true])
             </div>
 
             <div class="border-t border-slate-100 p-5 bg-slate-50/50">
