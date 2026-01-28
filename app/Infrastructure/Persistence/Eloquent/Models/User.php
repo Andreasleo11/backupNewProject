@@ -66,30 +66,12 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * Temporarily bypass all permission checks for deployment.
-     * Override Spatie methods to allow all access.
-     */
-    public function hasRole($roles, $guard = null): bool
-    {
-        return true;
-    }
-
-    public function hasPermission($permission, $guard = null): bool
-    {
-        return true;
-    }
-
-    public function can($ability, $arguments = []): bool
-    {
-        return true;
-    }
-
-    /**
      * Determine if the user can access the Filament admin panel.
      * Uses Spatie Permission for efficient role checking.
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // Temporarily allow all for deployment
+        // Allow access if user has any admin-related role or is super-admin
+        return $this->hasAnyRole(['super-admin', 'admin', 'manager']) || $this->hasPermission('access_admin');
     }
 }
