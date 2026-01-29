@@ -34,8 +34,7 @@ Route::middleware('auth')->group(function () {
     // Form Overtime (Livewire)
     Route::get('/form-overtime', FormOvertimeIndex::class)->name('formovertime.index');
     Route::get('/formovertime/create', FormOvertimeCreate::class)->name('formovertime.create');
-    // TODO: Verify correct Livewire component for overtime detail view
-    // Route::get('/formovertime/{id}', OvertimeDetail::class)->name('overtime.detail');
+    Route::get('/formovertime/{id}', [FormOvertimeController::class, 'detail'])->name('overtime.detail');
 
     // Form Overtime (Controller)
     Route::get('formovertime/{id}/detail-old', [FormOvertimeController::class, 'detail'])->name('formovertime.detail');
