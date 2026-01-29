@@ -4,12 +4,10 @@ use App\Http\Controllers\SuperAdminHomeController;
 use App\Livewire\Admin\Approvals\RuleManager;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'role:super-admin|it-admin'])->group(function () {
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
     Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
     Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
-
-    Route::get('/admin/home', fn () => view('admin.home'))->name('admin');
 
     Route::prefix('admin')->group(function () {
         Route::name('admin.')->group(function () {
