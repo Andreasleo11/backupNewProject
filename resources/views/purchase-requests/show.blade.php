@@ -105,6 +105,33 @@
                             'details' => $filteredItemDetail,
                         ])
                     @endif
+                    
+                    {{-- Approve/Reject buttons --}}
+                    @if ($canApprove)
+                        <div class="flex gap-2">
+                            {{-- Approve Button --}}
+                            <form method="POST" action="{{ route('purchase-requests.approve', $purchaseRequest->id) }}"
+                                  onsubmit="return confirm('Are you sure you want to approve this Purchase Request?')">
+                                @csrf
+                                <button type="submit"
+                                        class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700">
+                                    <i class='bx bx-check-circle text-sm'></i>
+                                    <span>Approve</span>
+                                </button>
+                            </form>
+                            
+                            {{-- Reject Button --}}
+                            <button type="button"
+                                    @click="$dispatch('open-reject-modal')"
+                                    class="inline-flex items-center gap-1 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-rose-700">
+                                <i class='bx bx-x-circle text-sm'></i>
+                                <span>Reject</span>
+                            </button>
+                        </div>
+                        
+                        {{-- Include Reject Modal --}}
+                        @include('partials.pr-reject-modal', ['pr' => $purchaseRequest])
+                    @endif
                 </div>
             </div>
         </div>
@@ -169,13 +196,16 @@
                         </div>
                     </div>
                 </section>
-                <div class="mt-4">
-                    @include('approval._pr-approval-panel', [
-                        'approval' => $approval,
-                        'purchaseRequest' => $purchaseRequest,
-                        'canApprove' => $canApprove,
-                    ])
-                </div>
+                
+                {{-- APPROVAL TIMELINE CARD --}}
+                <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div class="border-b border-slate-100 px-4 py-3 sm:px-6">
+                        <h2 class="text-sm font-semibold text-slate-900">
+                            Approval Workflow
+                        </h2>
+                    </div>
+                    @include('partials.pr-approval-timeline', ['pr' => $purchaseRequest])
+                </section>
 
                 {{-- ITEMS TABLE CARD --}}
                 <section class="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -238,9 +268,9 @@
                                     {{-- Show "Is Approve" column depending on roles/status like original --}}
                                     @php
                                         $showIsApproveColumn =
-                                            $user->specification->name === 'DIRECTOR' ||
-                                            $user->specification->name == 'VERIFICATOR' ||
-                                            ((($user->department->name === $purchaseRequest->from_department &&
+                                            $user->specification?->name === 'DIRECTOR' ||
+                                            $user->specification?->name == 'VERIFICATOR' ||
+                                            ((($user->department?->name === $purchaseRequest->from_department &&
                                                 $user->is_head == 1) ||
                                                 ($user->is_head == 1 &&
                                                     $purchaseRequest->from_department == 'STORE')) &&
@@ -254,13 +284,13 @@
                                                 $mouldingApprovalCase = false;
                                                 $mouldingApprovalCase =
                                                     ($purchaseRequest->is_import === 1 &&
-                                                        $user->specification->name !== 'DESIGN') ||
+                                                        $user->specification?->name !== 'DESIGN') ||
                                                     (!$purchaseRequest->is_import &&
-                                                        $user->specification->name !== 'DESIGN') ||
+                                                        $user->specification?->name !== 'DESIGN') ||
                                                     ($purchaseRequest->is_import === 0 &&
-                                                        $user->specification->name === 'DESIGN') ||
+                                                        $user->specification?->name === 'DESIGN') ||
                                                     (!$purchaseRequest->is_import &&
-                                                        $user->specification->name === 'DESIGN');
+                                                        $user->specification?->name === 'DESIGN');
 
                                                 if (
                                                     $purchaseRequest->to_department ===
@@ -315,13 +345,13 @@
                                         } elseif ($detail->is_approve === 0) {
                                             $rowClass = 'bg-rose-50 line-through text-slate-400';
                                         } elseif (is_null($detail->is_approve)) {
-                                            if ($user->specification->name === 'DIRECTOR') {
+                                            if ($user->specification?->name === 'DIRECTOR') {
                                                 // no extra color, director sees final only
                                             } elseif ($detail->is_approve_by_verificator === 1) {
                                                 $rowClass = 'bg-emerald-50';
                                             } elseif ($detail->is_approve_by_verificator === 0) {
                                                 $rowClass = 'bg-rose-50 line-through text-slate-400';
-                                            } elseif ($user->specification->name === 'VERIFICATOR') {
+                                            } elseif ($user->specification?->name === 'VERIFICATOR') {
                                                 // no color
                                             } else {
                                                 if ($detail->is_approve_by_head === 1) {
@@ -336,13 +366,13 @@
 
                                         // Dept head item approval visibility logic
                                         $showDeptHeadItemApprove =
-                                            $user->department->name === $purchaseRequest->from_department &&
+                                            $user->department?->name === $purchaseRequest->from_department &&
                                             $user->is_head == 1;
                                         if ($user->is_head == 1 && $purchaseRequest->from_department === 'STORE') {
                                             $showDeptHeadItemApprove = true;
                                         } elseif (
                                             $purchaseRequest->from_department === 'PERSONALIA' &&
-                                            ($user->department->name === 'PERSONALIA' && $user->is_head === 1)
+                                            ($user->department?->name === 'PERSONALIA' && $user->is_head === 1)
                                         ) {
                                             $showDeptHeadItemApprove = true;
                                         }
@@ -414,7 +444,7 @@
 
                                         {{-- Approve / reject per item --}}
                                         @if (!$purchaseRequest->is_cancel && $showIsApproveColumn)
-                                            @if ($user->specification->name === 'DIRECTOR' && $purchaseRequest->status === 3)
+                                            @if ($user->specification?->name === 'DIRECTOR' && $purchaseRequest->status === 3)
                                                 <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
                                                     @if ($detail->is_approve === null)
                                                         <div class="inline-flex gap-1">
@@ -431,7 +461,7 @@
                                                         {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
                                                     @endif
                                                 </td>
-                                            @elseif ($user->specification->name == 'VERIFICATOR' && $purchaseRequest->status === 2)
+                                            @elseif ($user->specification?->name == 'VERIFICATOR' && $purchaseRequest->status === 2)
                                                 <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
                                                     @if ($detail->is_approve_by_verificator === null)
                                                         <div class="inline-flex gap-1">
@@ -713,7 +743,7 @@
                         @include('partials.uploaded-section', [
                             'showDeleteButton' =>
                                 ($user->id === $userCreatedBy->id && $purchaseRequest->status === 1) ||
-                                ($user->specification->name === 'PURCHASER' && $purchaseRequest->status === 6),
+                                ($user->specification?->name === 'PURCHASER' && $purchaseRequest->status === 6),
                         ])
                     </div>
                 </section>

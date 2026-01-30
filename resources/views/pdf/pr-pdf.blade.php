@@ -36,7 +36,7 @@
                 class="p-2 {{ ($purchaseRequest->user_id_create === $user->id && $purchaseRequest->status === 1) ||
                 ($purchaseRequest->status === 1 && $user->is_head) ||
                 ($purchaseRequest->status === 6 && $user->specification->name === 'PURCHASER') ||
-                (($purchaseRequest->status === 2 && $user->department->name == 'PERSONALIA' && $user->is_head === 1) ||
+                (($purchaseRequest->status === 2 && $user->department?->name == 'PERSONALIA' && $user->is_head === 1) ||
                     ($purchaseRequest->status === 7 && $user->is_gm))
                     ? ''
                     : 'd-none' }}">
@@ -122,9 +122,9 @@
                                     Approve
                                 </th>
                             @elseif (
-                                $user->specification->name === 'DIRECTOR' ||
-                                    $user->specification->name == 'VERIFICATOR' ||
-                                    ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1))
+                                $user->specification?->name === 'DIRECTOR' ||
+                                    $user->specification?->name == 'VERIFICATOR' ||
+                                    ($user->department?->name === $purchaseRequest->from_department && $user->is_head == 1))
                                 <th rowspan="2" class="align-middle">Is Approve</th>
                             @endif
                             @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
@@ -275,7 +275,7 @@
                                             {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
                                         @endif
                                     </td>
-                                @elseif ($user->department->name === $purchaseRequest->from_department && $user->is_head == 1)
+                                @elseif ($user->department?->name === $purchaseRequest->from_department && $user->is_head == 1)
                                     <td>
                                         @if ($detail->is_approve_by_head === null)
                                             <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"

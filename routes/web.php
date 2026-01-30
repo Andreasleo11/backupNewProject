@@ -43,6 +43,9 @@ Route::get('/format-evaluation-year-magang', [App\Http\Controllers\EvaluationDat
 Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
 Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
 
+Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
+Route::get('purchase-requests/{id}/export-pdf', [App\Http\Controllers\PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
+    
 /*
 |-------------------------------------------------------------------------- 
 | Feature-Based Modular Routes

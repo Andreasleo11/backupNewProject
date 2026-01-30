@@ -46,6 +46,9 @@
             </div>
         </div>
 
+        {{-- STATS DASHBOARD --}}
+        @include('partials.pr-stats-cards', ['stats' => $stats])
+
         {{-- INFO STRIP / LEGEND (optional) --}}
         <div class="mb-4 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-600 shadow-sm sm:text-xs">
             <div class="flex flex-wrap items-center gap-2">

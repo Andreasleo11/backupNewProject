@@ -38,7 +38,8 @@ class PurchaseRequestController extends Controller
     public function index(
         Request $request,
         PurchaseRequestsDataTable $dataTable,
-        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query
+        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestList $query,
+        \App\Application\PurchaseRequest\Queries\GetPurchaseRequestStats $statsQuery
     ) {
         // Check if reset is requested
         if ($request->has('reset')) {
@@ -90,9 +91,14 @@ class PurchaseRequestController extends Controller
             'end_date' => $endDate,
             'branch' => $branch,
         ]);
+        
+        // Get stats for dashboard
+        $stats = $statsQuery->execute();
 
-        return $dataTable->render('purchase-requests.index');
+        return $dataTable->render('purchase-requests.index', compact('stats'));
     }
+
+        
 
     public function create()
     {

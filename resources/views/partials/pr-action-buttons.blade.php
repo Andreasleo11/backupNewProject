@@ -32,7 +32,7 @@
 
     @if (
         ($user->id === $pr->user_id_create && $pr->status === 1) ||
-            ($user->department->name === 'COMPUTER' && $user->is_head && $pr->status === 4) ||
+            ($user->department?->name === 'COMPUTER' && $user->is_head && $pr->status === 4) ||
             auth()->user()->hasRole('super-admin'))
         <button data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}" data-bs-toggle="modal"
             class="my-1 btn btn-danger my-1"><i class='bx bx-x-circle'></i> <span

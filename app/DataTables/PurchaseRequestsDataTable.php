@@ -59,6 +59,20 @@ class PurchaseRequestsDataTable extends DataTable
                         ->format('d-m-Y (H:i)')
                     : '';
             })
+            ->addColumn('workflow_status', function ($pr) {
+                if (!$pr->workflow_status) {
+                    return '<span class="text-slate-400 text-xs">-</span>';
+                }
+                
+                $badge = view('partials.pr-status-badge', ['pr' => $pr])->render();
+                
+                // Add current approver if in review
+                if ($pr->workflow_status === 'IN_REVIEW' && $pr->workflow_step) {
+                    return $badge . '<div class="text-[10px] text-slate-500 mt-1">' . $pr->workflow_step . '</div>';
+                }
+                
+                return $badge;
+            })
             ->searchPane(
                 'branch',
                 PurchaseRequest::query()
@@ -112,7 +126,7 @@ class PurchaseRequestsDataTable extends DataTable
                     ->distinct()
                     ->get(),
             )
-            ->rawColumns(['action', 'status'])
+            ->rawColumns(['action', 'status', 'workflow_status'])
             ->setRowId('id');
     }
 
@@ -121,7 +135,13 @@ class PurchaseRequestsDataTable extends DataTable
      */
     public function query(PurchaseRequest $model): QueryBuilder
     {
-        $query = $model->newQuery()->with('files', 'createdBy');
+        $query = $model->newQuery()->with([
+            'files',
+            'createdBy',
+            'approvalRequest' => function($q) {
+                $q->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step');
+            },
+        ]);
 
         return $this->queryScoper->scopeForUser(auth()->user(), $query);
     }
@@ -167,6 +187,11 @@ class PurchaseRequestsDataTable extends DataTable
             Column::make('to_department'),
             Column::make('pr_no'),
             Column::make('supplier'),
+            Column::computed('workflow_status')
+                ->title('Status')
+                ->exportable(false)
+                ->printable(false)
+                ->addClass('text-center'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
@@ -174,7 +199,8 @@ class PurchaseRequestsDataTable extends DataTable
             Column::computed('status')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center'),
+                ->addClass('text-center')
+                ->visible(false), // Hide legacy status column
             Column::make('approved_at')->title('Approved Date')->data('approved_at'),
             Column::make('po_number'),
         ];

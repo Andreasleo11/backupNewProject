@@ -145,7 +145,7 @@ final class PurchaseRequestQueryScoper
      */
     private function scopeForSuperAdmin(Builder $query): Builder
     {
-        return $query->whereNotNull('autograph_1');
+        return $query;
     }
 
     /**

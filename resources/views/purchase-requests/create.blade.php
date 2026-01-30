@@ -7,7 +7,7 @@
 
     <div class="mx-auto max-w-5xl px-4 py-6 lg:py-8" x-data="purchaseRequestForm(
         @js(old('items', [])),
-        '{{ old('from_department', $authUser->department->name ?? '') }}',
+        '{{ old('from_department', $authUser->department?->name) }}',
         '{{ old('to_department') }}'
     )" x-init="init()">
         {{-- TOP BAR --}}
@@ -129,7 +129,7 @@
                                     <option value="" disabled>Select from department…</option>
                                     @foreach ($departments as $department)
                                         <option value="{{ $department->name }}"
-                                            {{ old('from_department', $authUser->department->name) === $department->name ? 'selected' : '' }}>
+                                            {{ old('from_department', $authUser->department?->name) === $department->name ? 'selected' : '' }}>
                                             {{ $department->name }}
                                         </option>
                                     @endforeach

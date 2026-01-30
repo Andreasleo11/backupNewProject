@@ -15,6 +15,17 @@ class RejectPurchaseRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Support both 'notes' (test usage) and 'remarks' (production)
+        if ($this->has('notes') && !$this->has('remarks')) {
+            $this->merge(['remarks' => $this->input('notes')]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>

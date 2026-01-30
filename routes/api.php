@@ -23,8 +23,8 @@ Route::prefix('v1')->group(function () {
 
         // Purchase Requests
         Route::apiResource('purchase-requests', PurchaseRequestController::class);
-        Route::post('/purchase-requests/{id}/approve', [PurchaseRequestController::class, 'approve']);
-        Route::post('/purchase-requests/{id}/reject', [PurchaseRequestController::class, 'reject']);
+        Route::post('/purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve']);
+        Route::post('/purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject']);
         Route::get('/purchase-requests/{id}/history', [PurchaseRequestController::class, 'history']);
 
         // Discipline Evaluations
