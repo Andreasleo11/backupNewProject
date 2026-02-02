@@ -108,19 +108,19 @@ class PurchaseRequestController extends Controller
         return view('purchase-requests.create', compact('items', 'departments'));
     }
 
-    public function store(StorePurchaseRequest $request, \App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest $useCase)
-    {
+    public function store(
+        StorePurchaseRequest $request,
+        \App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest $useCase,
+        \App\Domain\PurchaseRequest\Services\PriceSanitizer $priceSanitizer
+    ) {
         $user = Auth::user();
 
-        $items = array_map(function ($item) {
-            $price = preg_replace('/[Rp$¥]\.?\s*/', '', (string) ($item['price'] ?? 0));
-            $price = (float) str_replace(',', '', $price);
-
+        $items = array_map(function ($item) use ($priceSanitizer) {
             return new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
                 itemName: (string) $item['item_name'],
                 quantity: (float) $item['quantity'],
                 purpose: (string) $item['purpose'],
-                price: $price,
+                price: $priceSanitizer->sanitize($item['price'] ?? 0),
                 uom: (string) $item['uom'],
                 currency: (string) $item['currency'],
             );

@@ -107,10 +107,16 @@ final class PurchaseOrderApprovalService
     private function approveSingleRequest(int $id, string $username, string $imageUrl): void
     {
         $pr = PurchaseRequest::find($id);
+        
+        // Add signature using new signature system
+        $signatureService = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService::class);
+        $user = \App\Models\User::where('name', $username)->first();
+        
+        if ($user) {
+            $signatureService->addSignature($pr, 'DIRECTOR', $user->id, $imageUrl);
+        }
 
         $pr->update([
-            'autograph_4' => $imageUrl,
-            'autograph_user_4' => $username,
             'status' => 4,
             'approved_at' => now(),
         ]);

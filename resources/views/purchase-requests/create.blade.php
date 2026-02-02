@@ -41,7 +41,8 @@
             </div>
 
             <div class="px-4 pb-5 sm:px-6">
-                <form action="{{ route('purchase-requests.store') }}" method="POST" class="space-y-8" id="pr-form">
+                <form action="{{ route('purchase-requests.store') }}" method="POST" class="space-y-8" id="pr-form"
+                      @submit="if (!validateBeforeSubmit()) $event.preventDefault()">
                     @csrf
 
                     {{-- SECTION 1: GENERAL --}}
@@ -501,9 +502,55 @@
                         }
                     });
                 },
-
                 get showLocalImport() {
                     return this.from_department === 'MOULDING' && this.to_department === 'PURCHASING';
+                },
+
+                init() {
+                    Alpine.nextTick(() => {
+                        this.items = @js(old('items', [])).length > 0 ? @js(old('items', [])) : [
+                            { item_name: '', quantity: '', uom: 'PCS', currency: 'IDR', price: '', purpose: '' },
+                        ];
+                    });
+                },
+
+                validateBeforeSubmit() {
+                    const errors = [];
+                    
+                    // Check minimum items
+                    if (this.items.length === 0) {
+                        errors.push('⚠️ At least one item is required');
+                    }
+                    
+                    // Validate each item
+                    this.items.forEach((item, i) => {
+                        const itemNum = i + 1;
+                        
+                        if (!item.item_name || item.item_name.trim() === '') {
+                            errors.push(`Item ${itemNum}: Name is required`);
+                        }
+                        
+                        const qty = parseFloat(item.quantity);
+                        if (!item.quantity || isNaN(qty) || qty <= 0) {
+                            errors.push(`Item ${itemNum}: Quantity must be greater than 0`);
+                        }
+                        
+                        const price = parseFloat(String(item.price || '').replace(/[^0-9.]/g, ''));
+                        if (!item.price || isNaN(price) || price <= 0) {
+                            errors.push(`Item ${itemNum}: Price must be greater than 0`);
+                        }
+                        
+                        if (!item.purpose || item.purpose.trim() === '') {
+                            errors.push(`Item ${itemNum}: Purpose is required`);
+                        }
+                    });
+                    
+                    if (errors.length > 0) {
+                        alert('Please fix the following errors:\n\n' + errors.join('\n'));
+                        return false;
+                    }
+                    
+                    return true;
                 },
 
                 addItem() {

@@ -55,8 +55,16 @@
                     </h1>
 
                     {{-- STATUS BADGE (tailwind wrapper around existing partial) --}}
-                    <div class="inline-flex items-center">
+                    <div class="inline-flex items-center gap-2">
                         @include('partials.pr-status-badge', ['pr' => $purchaseRequest])
+                        
+                        {{-- Draft Indicator --}}
+                        @if($purchaseRequest->status === 'draft' || $purchaseRequest->status === 0)
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                                <i class='bx bx-edit-alt text-sm'></i>
+                                DRAFT
+                            </span>
+                        @endif
                     </div>
                 </div>
                 <p class="text-xs text-slate-500 sm:text-sm">
@@ -169,6 +177,42 @@
 
                                 <div class="grid grid-cols-1 gap-2 px-4 py-3 text-xs sm:grid-cols-2 sm:text-sm">
                                     <div>
+                                        <dt class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Branch
+                                        </dt>
+                                        <dd class="mt-0.5">
+                                            <span class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-semibold
+                                                  {{ $purchaseRequest->branch === 'JAKARTA' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                                                <i class='bx bx-buildings text-sm'></i>
+                                                {{ $purchaseRequest->branch }}
+                                            </span>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Type</dt>
+                                        <dd class="mt-0.5">
+                                            @if($purchaseRequest->from_department === 'MOULDING' && $purchaseRequest->to_department->value === 'PURCHASING')
+                                                @if($purchaseRequest->is_import === true || $purchaseRequest->is_import === 1)
+                                                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">
+                                                        <i class='bx bx-world text-sm'></i>
+                                                        Import
+                                                    </span>
+                                                @elseif($purchaseRequest->is_import === false || $purchaseRequest->is_import === 0)
+                                                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800">
+                                                        <i class='bx bx-home text-sm'></i>
+                                                        Local
+                                                    </span>
+                                                @else
+                                                    <span class="text-slate-400 text-xs">Not specified</span>
+                                                @endif
+                                            @else
+                                                <span class="text-slate-400 text-xs">N/A</span>
+                                            @endif
+                                        </dd>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-2 px-4 py-3 text-xs sm:grid-cols-2 sm:text-sm">
+                                    <div>
                                         <dt class="text-[11px] font-medium uppercase tracking-wide text-slate-500">Supplier
                                         </dt>
                                         <dd class="mt-0.5 text-slate-800">
@@ -182,6 +226,20 @@
                                         </dd>
                                     </div>
                                 </div>
+
+                                {{-- PO Number (if available) --}}
+                                @if($purchaseRequest->po_number)
+                                    <div class="px-4 py-3 text-xs sm:text-sm">
+                                        <dt class="text-[11px] font-medium uppercase tracking-wide text-slate-500 mb-1">PO Number
+                                        </dt>
+                                        <dd>
+                                            <div class="inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-slate-800">
+                                                <i class='bx bx-receipt text-lg text-indigo-600'></i>
+                                                <span class="font-semibold text-indigo-900">{{ $purchaseRequest->po_number }}</span>
+                                            </div>
+                                        </dd>
+                                    </div>
+                                @endif
 
                                 <div class="px-4 py-3 text-xs sm:text-sm">
                                     <dt class="text-[11px] font-medium uppercase tracking-wide text-slate-500 mb-1">Remark
@@ -756,56 +814,14 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('prDetailPage', (initialSlots, canAutoApprove, prId, csrfToken) => ({
+                // Upload modal control
+                openUploadFiles: false,
+                
+                // Legacy slots data (kept for backward compatibility with any remaining references)
                 slots: initialSlots ?? [],
                 canAutoApprove: !!canAutoApprove,
                 prId,
                 csrfToken,
-
-                openUploadFiles: false,
-                // if you want to restrict who can sign which slot, add logic here
-                get canSign() {
-                    return true;
-                },
-                async addAutograph(section) {
-                    // signed image assumed to be saved as "<username>.png" in /public
-                    const username = @js(auth()->check() ? auth()->user()->name : null);
-                    if (!username) return;
-
-                    const imagePath = username + '.png';
-                    const fullUrl = '{{ asset(':path') }}'.replace(':path', imagePath);
-
-                    try {
-                        // Save signature path
-                        await fetch(`/save-signature-path/${this.prId}/${section}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': this.csrfToken,
-                            },
-                            body: JSON.stringify({
-                                imagePath: fullUrl
-                            }),
-                        });
-
-                        // Update local state so UI reflects immediately
-                        const idx = this.slots.findIndex(s => s.slot === section);
-                        if (idx !== -1) {
-                            this.slots[idx].image = imagePath;
-                            this.slots[idx].user_name = username;
-                        }
-
-                        // Auto-approve all details if allowed (same as your original logic)
-                        if (this.canAutoApprove) {
-                            await fetch(`/approveAllDetailItems/${this.prId}/GM`);
-                        }
-
-                        // Reload to sync server state (status, etc.)
-                        window.location.reload();
-                    } catch (e) {
-                        console.error(e);
-                        alert('Failed to sign. Please try again.');
-                    }
-                },
             }));
         });
     </script>

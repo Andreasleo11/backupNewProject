@@ -17,8 +17,9 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
 
     public function addItems(PurchaseRequest $pr, array $items): void
     {
-        foreach ($items as $row) {
-            DetailPurchaseRequest::create([
+        // Batch insert for better performance (instead of N individual inserts)
+        $records = array_map(function ($row) use ($pr) {
+            return [
                 'purchase_request_id' => $pr->id,
                 'item_name' => $row['item_name'],
                 'quantity' => $row['quantity'],
@@ -27,8 +28,13 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
                 'uom' => $row['uom'],
                 'currency' => $row['currency'],
                 'is_approve_by_head' => $row['is_approve_by_head'] ?? null,
-            ]);
-        }
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }, $items);
+
+        // Single INSERT with multiple rows (10-100x faster than loop)
+        DetailPurchaseRequest::insert($records);
     }
 
     public function loadForApprovalContext(PurchaseRequest $pr): PurchaseRequest

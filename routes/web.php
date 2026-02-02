@@ -45,6 +45,8 @@ Route::get('/departments/overview', DepartmentsOverview::class)->name('departmen
 
 Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
 Route::get('purchase-requests/{id}/export-pdf', [App\Http\Controllers\PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
+Route::get('purchase-requests/items/{id}/reject', [App\Http\Controllers\DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
+Route::get('purchase-requests/items/{id}/approve', [App\Http\Controllers\DetailPurchaseRequestController::class, 'approve'])->name('purchase-requests.items.approve');
     
 /*
 |-------------------------------------------------------------------------- 

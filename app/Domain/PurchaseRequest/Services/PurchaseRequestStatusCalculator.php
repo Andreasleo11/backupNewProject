@@ -59,16 +59,17 @@ class PurchaseRequestStatusCalculator
     }
 
     /**
-     * Calculate status based on autograph signatures.
-     * This is used for legacy signature system.
-     *
-     * @deprecated Use approval workflow system instead
+     * Calculate status based on signatures.
+     * Migrated from legacy autograph system to new signature system.
      *
      * @param PurchaseRequest $pr The purchase request
+     * @param PurchaseRequestSignatureService $signatureService
      * @return int Updated status code
      */
-    public function calculateStatusFromAutographs(PurchaseRequest $pr): int
-    {
+    public function calculateStatusFromSignatures(
+        PurchaseRequest $pr,
+        PurchaseRequestSignatureService $signatureService
+    ): int {
         // If rejected, status doesn't change
         if ($pr->status === 5) {
             return 5;
@@ -77,12 +78,12 @@ class PurchaseRequestStatusCalculator
         $status = 0; // Default to draft
 
         // After Maker signature
-        if ($pr->autograph_1 !== null) {
+        if ($signatureService->hasSignature($pr, 'MAKER')) {
             $status = 1; // Pending dept head
         }
 
         // After Department Head signature
-        if ($pr->autograph_2 !== null) {
+        if ($signatureService->hasSignature($pr, 'DEPT_HEAD')) {
             if (
                 $pr->from_department === 'MOULDING' ||
                 $pr->from_department === 'QA' ||
@@ -98,12 +99,12 @@ class PurchaseRequestStatusCalculator
         }
 
         // After GM signature
-        if ($pr->autograph_6 !== null) {
+        if ($signatureService->hasSignature($pr, 'GM')) {
             $status = 6; // Waiting for purchaser
         }
 
         // After Purchaser signature
-        if ($pr->autograph_5 !== null) {
+        if ($signatureService->hasSignature($pr, 'PURCHASER')) {
             $toDept = $pr->to_department?->value ?? '';
 
             if (
@@ -127,12 +128,12 @@ class PurchaseRequestStatusCalculator
         }
 
         // After Verificator signature
-        if ($pr->autograph_3 !== null) {
+        if ($signatureService->hasSignature($pr, 'VERIFICATOR')) {
             $status = 3; // Waiting for director
         }
 
         // After Director signature
-        if ($pr->autograph_4 !== null) {
+        if ($signatureService->hasSignature($pr, 'DIRECTOR')) {
             $status = 4; // Approved
         }
 

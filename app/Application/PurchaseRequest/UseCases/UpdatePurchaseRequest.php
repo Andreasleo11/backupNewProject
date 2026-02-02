@@ -28,9 +28,6 @@ final class UpdatePurchaseRequest
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Determine if we need to reset autographs based on status and user role
-            $resetAutographs = $this->shouldResetAutographs($pr, $dto->updatedByUserId);
-
             // Build update data
             $updateData = [
                 'to_department' => $dto->toDepartment,
@@ -43,11 +40,6 @@ final class UpdatePurchaseRequest
                 'is_import' => $dto->isImport ?? false,
                 'updated_at' => now(),
             ];
-
-            // Reset autographs if necessary
-            if ($resetAutographs) {
-                $updateData = array_merge($updateData, $this->getAutographResets($pr));
-            }
 
             // Update PR header
             $pr->update($updateData);
@@ -72,52 +64,8 @@ final class UpdatePurchaseRequest
         });
     }
 
-    private function shouldResetAutographs(PurchaseRequest $pr, int $userId): bool
-    {
-        $user = \App\Models\User::find($userId);
-
-        if (! $user) {
-            return false;
-        }
-
-        $isHead = $user->is_head === 1;
-        $isPurchaser = $user->specification?->name === 'PURCHASER';
-
-        // Reset based on status and role
-        if ($pr->status === 1 && $isHead) {
-            return true; // Dept head can reset their signature
-        }
-
-        if ($pr->status === 6 && ($isPurchaser || $isHead)) {
-            return true; // Purchaser or head can reset at purchaser stage
-        }
-
-        if ($pr->status === 3) {
-            return true; // Verificator stage allows resets
-        }
-
-        return false;
-    }
-
-    private function getAutographResets(PurchaseRequest $pr): array
-    {
-        $resets = [];
-
-        if ($pr->status === 1) {
-            $resets['autograph_2'] = null;
-            $resets['autograph_user_2'] = null;
-        } elseif ($pr->status === 6) {
-            $resets['autograph_5'] = null;
-            $resets['autograph_user_5'] = null;
-            $resets['autograph_2'] = null;
-            $resets['autograph_user_2'] = null;
-        } elseif ($pr->status === 3) {
-            $resets['autograph_3'] = null;
-            $resets['autograph_user_3'] = null;
-        }
-
-        return $resets;
-    }
+    // Note: Removed shouldResetApproval - signature system handles state via immutable records
+    // If approval workflow needs reset, it should be handled by approval system events
 
     private function buildItems(UpdatePurchaseRequestDTO $dto, string $fromDepartment): array
     {

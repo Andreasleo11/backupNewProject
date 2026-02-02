@@ -17,7 +17,8 @@ final class PurchaseRequestAccess
 
         // super-admin (matches your index logic style)
         if ($user->hasRole('super-admin')) {
-            return $pr->autograph_1 !== null;
+            $signatureService = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService::class);
+            return $signatureService->hasSignature($pr, 'MAKER');
         }
 
         // Personalia head rule (taken from your index query intent)
@@ -30,7 +31,10 @@ final class PurchaseRequestAccess
                 return true;
             }
 
-            $baseSigned = $pr->autograph_1 && $pr->autograph_2 && $pr->autograph_5;
+            $signatureService = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService::class);
+            $baseSigned = $signatureService->hasSignature($pr, 'MAKER') &&
+                         $signatureService->hasSignature($pr, 'DEPT_HEAD') &&
+                         $signatureService->hasSignature($pr, 'PURCHASER');
             if (! $baseSigned) {
                 return false;
             }
@@ -46,9 +50,14 @@ final class PurchaseRequestAccess
             return true; // keep permissive for now, since your original query is complex
         }
 
-        // GM rule: must have autograph_1 and autograph_2 and no autograph_6
+        // GM rule: must have MAKER and DEPT_HEAD signatures, but not GM signature yet
         if ($isGM) {
-            if (! ($pr->autograph_1 && $pr->autograph_2) || $pr->autograph_6) {
+            $signatureService = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService::class);
+            $hasMakerAndDept = $signatureService->hasSignature($pr, 'MAKER') &&
+                              $signatureService->hasSignature($pr, 'DEPT_HEAD');
+            $hasGM = $signatureService->hasSignature($pr, 'GM');
+            
+            if (! $hasMakerAndDept || $hasGM) {
                 return false;
             }
             if ($pr->type !== 'factory') {
@@ -81,7 +90,8 @@ final class PurchaseRequestAccess
 
         // Purchaser rule
         if ($isPurchaser) {
-            if (! $pr->autograph_1) {
+            $signatureService = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService::class);
+            if (! $signatureService->hasSignature($pr, 'MAKER')) {
                 return false;
             }
 

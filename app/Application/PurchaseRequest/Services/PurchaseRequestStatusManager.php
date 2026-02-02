@@ -8,42 +8,45 @@ use App\Models\PurchaseRequest;
 final class PurchaseRequestStatusManager
 {
     /**
-     * Update purchase request status based on autograph progression
+     * Update purchase request status based on signature progression
+     * Migrated from autograph system to signature system
      */
-    public function updateStatus(PurchaseRequest $pr): void
-    {
+    public function updateStatus(
+        PurchaseRequest $pr,
+        \App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService $signatureService
+    ): void {
         // If PR is Rejected, don't update status
         if ($pr->status === 5) {
             return;
         }
 
-        // After Maker Autograph
-        if ($pr->autograph_1 !== null) {
+        // After Maker Signature
+        if ($signatureService->hasSignature($pr, 'MAKER')) {
             $pr->status = 1;
         }
 
-        // After Dept Head Autograph
-        if ($pr->autograph_2 !== null) {
+        // After Dept Head Signature
+        if ($signatureService->hasSignature($pr, 'DEPT_HEAD')) {
             $pr->status = $this->determineStatusAfterDeptHead($pr);
         }
 
-        // After GM Autograph
-        if ($pr->autograph_6 !== null) {
+        // After GM Signature
+        if ($signatureService->hasSignature($pr, 'GM')) {
             $pr->status = $this->determineStatusAfterGM($pr);
         }
 
-        // After Purchaser Autograph
-        if ($pr->autograph_5 !== null) {
+        // After Purchaser Signature
+        if ($signatureService->hasSignature($pr, 'PURCHASER')) {
             $pr->status = $this->determineStatusAfterPurchaser($pr);
         }
 
-        // After Verificator Autograph
-        if ($pr->autograph_3 !== null) {
+        // After Verificator Signature
+        if ($signatureService->hasSignature($pr, 'VERIFICATOR')) {
             $pr->status = $this->determineStatusAfterVerificator($pr);
         }
 
-        // After Director Autograph
-        if ($pr->autograph_4 !== null) {
+        // After Director Signature
+        if ($signatureService->hasSignature($pr, 'DIRECTOR')) {
             $pr->status = $this->determineStatusAfterDirector($pr);
         }
 
