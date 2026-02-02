@@ -73,8 +73,8 @@
     sidebarCollapsed: $persist(false),
     q: '',
     getSearchResultCount() {
-        if (!q) return 0;
-        const query = q.toLowerCase();
+        if (!this.q) return 0;
+        const query = this.q.toLowerCase();
         let count = 0;
         @php
             $navItems = App\Services\NavigationService::getPersonalizedMenu();

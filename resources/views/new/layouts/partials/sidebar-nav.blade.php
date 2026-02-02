@@ -135,7 +135,7 @@
                         }"
                         role="menuitem"
                         tabindex="0"
-                        :aria-current="$isActive ? 'page' : false">
+                        aria-current="{{ $isActive ? 'page' : 'false' }}">
                         
                         <div class="relative flex items-center justify-center shrink-0">
                             <span
