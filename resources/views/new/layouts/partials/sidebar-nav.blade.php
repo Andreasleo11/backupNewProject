@@ -106,15 +106,32 @@
                     </div>
                 </div>
             @elseif ($item['type'] === 'divider')
-                {{-- Elegant Section Divider --}}
-                <div class="px-4 py-4" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
-                    <div class="flex items-center gap-3">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
-                            {{ $item['label'] }}
-                        </span>
-                        <div class="h-[1px] w-full bg-gradient-to-r from-slate-200 to-transparent"></div>
+                {{-- Elegant Section Divider - Only show if there are visible items after it --}}
+                @php
+                    $currentIndex = $loop->index;
+                    $hasItemsAfter = false;
+                    // Check if there are any visible items after this divider (until next divider or end)
+                    for ($i = $currentIndex + 1; $i < count($nav); $i++) {
+                        $nextItem = $nav[$i];
+                        // Stop at next divider
+                        if ($nextItem['type'] === 'divider') break;
+                        // If we find any non-divider item, there's content after this divider
+                        if ($nextItem['type'] !== 'divider') {
+                            $hasItemsAfter = true;
+                            break;
+                        }
+                    }
+                @endphp
+                @if($hasItemsAfter)
+                    <div class="px-4 py-4" x-show="(!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}) && q.length === 0">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">
+                                {{ $item['label'] }}
+                            </span>
+                            <div class="h-[1px] w-full bg-gradient-to-r from-slate-200 to-transparent"></div>
+                        </div>
                     </div>
-                </div>
+                @endif
             @elseif ($item['type'] === 'single')
                 @php
                     $label = $item['label'];
