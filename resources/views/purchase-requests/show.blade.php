@@ -706,6 +706,7 @@
                                                             </span>
                                                         @endif
                                                     </td>
+                                                @endcan
                                                 @else
                                                     @can('approve', $detail)
                                                         <td class="whitespace-nowrap px-2 py-2 text-center align-middle 
@@ -749,6 +750,7 @@
                                                             </span>
                                                         @endif
                                                     </td>
+                                                @endcan
                                                 @endif
                                             @endif
                                         @endif
