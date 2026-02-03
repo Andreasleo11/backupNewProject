@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Application\PurchaseRequest\UseCases\BatchApprovePurchaseRequests;
+use App\Application\PurchaseRequest\UseCases\BatchRejectPurchaseRequests;
 use App\DataTables\DirectorPurchaseRequestDataTable;
-use App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalService;
-use App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService;
-use App\Models\PurchaseRequest;
-use App\Models\User;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DirectorPurchaseRequestController extends Controller
 {
     public function __construct(
-        private readonly PurchaseRequestApprovalService $approvalService
+        private readonly BatchApprovePurchaseRequests $batchApproveUseCase,
+        private readonly BatchRejectPurchaseRequests $batchRejectUseCase
     ) {}
 
     public function index(DirectorPurchaseRequestDataTable $datatable)
@@ -22,28 +21,50 @@ class DirectorPurchaseRequestController extends Controller
         return $datatable->render('director.purchaseRequest.index');
     }
 
-    public function approveSelected(Request $request)
+    public function approveSelected(Request $request): JsonResponse
     {
         $ids = $request->input('ids', []);
-        $username = Auth::user()->name;
-        $imageUrl = $username . '.png';
+        $userId = Auth::id();
 
-        $result = $this->approvalService->batchApprove($ids, $username, $imageUrl);
+        if (! $userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated.',
+            ], 401);
+        }
+
+        $result = $this->batchApproveUseCase->handle($ids, $userId);
 
         return response()->json([
-            'message' => $result['message'] . ' (server)',
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'approved' => $result['approved'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
         ]);
     }
 
-    public function rejectSelected(Request $request)
+    public function rejectSelected(Request $request): JsonResponse
     {
         $ids = $request->input('ids', []);
-        $rejectionReason = $request->input('rejection_reason');
+        $rejectionReason = $request->input('rejection_reason', '');
+        $userId = Auth::id();
 
-        $result = $this->approvalService->batchReject($ids, $rejectionReason);
+        if (! $userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated.',
+            ], 401);
+        }
+
+        $result = $this->batchRejectUseCase->handle($ids, $userId, $rejectionReason);
 
         return response()->json([
-            'message' => $result['message'] . ' (server)',
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'rejected' => $result['rejected'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
         ]);
     }
 }

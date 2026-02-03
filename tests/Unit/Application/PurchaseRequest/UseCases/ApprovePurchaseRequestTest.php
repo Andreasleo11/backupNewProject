@@ -7,7 +7,7 @@ use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\PurchaseRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Mockery;
+
 
 afterEach(function () {
     Mockery::close();
@@ -17,8 +17,9 @@ test('handle approves and syncs pr', function () {
     $approvals = Mockery::mock(Approvals::class);
     $syncWorkflow = Mockery::mock(SyncPrWorkflow::class);
     $repo = Mockery::mock(PurchaseRequestRepository::class);
+    $itemValidator = Mockery::mock(\App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService::class);
 
-    $useCase = new ApprovePurchaseRequest($approvals, $syncWorkflow, $repo);
+    $useCase = new ApprovePurchaseRequest($approvals, $syncWorkflow, $repo, $itemValidator);
 
     $prId = 123;
     $userId = 456;
@@ -38,6 +39,9 @@ test('handle approves and syncs pr', function () {
         ->with($mockPr)
         ->andReturn($mockPr);
 
+    // Mock item validator to bypass item validation (returns null approver type)
+    $itemValidator->shouldReceive('getApproverTypeFromStep')->andReturn(null);
+
     $approvals->shouldReceive('approve')
         ->once()
         ->with($mockPr, $userId, $remarks);
@@ -55,8 +59,9 @@ test('handle throws exception if pr not found', function () {
     $approvals = Mockery::mock(Approvals::class);
     $syncWorkflow = Mockery::mock(SyncPrWorkflow::class);
     $repo = Mockery::mock(PurchaseRequestRepository::class);
+    $itemValidator = Mockery::mock(\App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService::class);
 
-    $useCase = new ApprovePurchaseRequest($approvals, $syncWorkflow, $repo);
+    $useCase = new ApprovePurchaseRequest($approvals, $syncWorkflow, $repo, $itemValidator);
 
     $dto = new ApprovalActionDTO(999, 1, 'remarks');
 
