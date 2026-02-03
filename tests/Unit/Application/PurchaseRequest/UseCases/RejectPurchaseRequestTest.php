@@ -7,7 +7,6 @@ use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest;
 use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\PurchaseRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Mockery;
 
 afterEach(function () {
     Mockery::close();

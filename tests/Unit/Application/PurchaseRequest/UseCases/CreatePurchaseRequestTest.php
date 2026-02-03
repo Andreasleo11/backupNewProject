@@ -9,7 +9,6 @@ use App\Events\PurchaseRequestCreated;
 use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Mockery;
 
 afterEach(function () {
     Mockery::close();
