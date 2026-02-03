@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\DirectorPurchaseRequestDataTable;
-use App\Domain\PurchaseOrder\Services\PurchaseOrderApprovalService;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalService;
+use App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService;
+use App\Models\PurchaseRequest;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DirectorPurchaseRequestController extends Controller
 {
     public function __construct(
-        private readonly PurchaseOrderApprovalService $approvalService
+        private readonly PurchaseRequestApprovalService $approvalService
     ) {}
 
     public function index(DirectorPurchaseRequestDataTable $datatable)

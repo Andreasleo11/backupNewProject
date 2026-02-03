@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\PurchaseOrder\Services;
+namespace App\Domain\PurchaseRequest\Services;
 
-use App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService;
 use App\Models\DetailPurchaseRequest;
 use App\Models\PurchaseRequest;
 
-final class PurchaseOrderApprovalService
+final class PurchaseRequestApprovalService
 {
     public function __construct(
         private readonly PurchaseRequestItemValidationService $itemValidator

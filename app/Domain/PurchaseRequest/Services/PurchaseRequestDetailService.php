@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\PurchaseOrder\Services;
+namespace App\Domain\PurchaseRequest\Services;
 
 use App\Models\DetailPurchaseRequest;
 use App\Models\PurchaseRequest;
 
-final class PurchaseOrderDetailService
+final class PurchaseRequestDetailService
 {
     /**
      * Update detail field.
