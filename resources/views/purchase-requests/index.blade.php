@@ -30,7 +30,9 @@
                 </a>
 
                 {{-- Create PR (non Director) --}}
-                @if (Auth::user()->specification?->name !== 'DIRECTOR')
+                {{-- Deprecation for specification --}}
+                {{-- Do check on role instead --}}
+                @if (Auth::user()->specification?->name !== 'DIRECTOR' && !Auth::user()->hasRole('director'))
                     <a href="{{ route('purchase-requests.create') }}"
                        class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
                         <svg xmlns="http://www.w3.org/2000/svg"
