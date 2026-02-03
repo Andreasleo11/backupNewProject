@@ -39,8 +39,17 @@ test('handle approves and syncs pr', function () {
         ->with($mockPr)
         ->andReturn($mockPr);
 
-    // Mock item validator to bypass item validation (returns null approver type)
-    $itemValidator->shouldReceive('getApproverTypeFromStep')->andReturn(null);
+    // Mock the approval request relationship for getCurrentStep()
+    // The use case calls $pr->approvalRequest which should return null to bypass validation
+    $mockPr->shouldReceive('getAttribute')
+        ->with('approvalRequest')
+        ->andReturn(null);
+
+    // Mock item validator - since approvalRequest is null, getCurrentStep returns null
+    // So getApproverTypeFromStep will not be called, but we mock it anyway for safety
+    $itemValidator->shouldReceive('getApproverTypeFromStep')
+        ->with(null)
+        ->andReturn(null);
 
     $approvals->shouldReceive('approve')
         ->once()
