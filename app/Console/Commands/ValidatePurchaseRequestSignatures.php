@@ -45,24 +45,24 @@ class ValidatePurchaseRequestSignatures extends Command
             $hasApprovalSigs = $pr->approvalRequest?->steps()
                 ->whereNotNull('signature_image_path')
                 ->exists() ?? false;
-            
+
             // Check legacy table
             $legacyCount = $pr->signatures()->count();
-            
+
             // Check autographs
             $oldCount = $this->countAutographs($pr);
 
             if ($hasApprovalSigs) {
                 $stats['with_approval_signatures']++;
             }
-            
+
             if ($legacyCount > 0) {
                 $stats['with_legacy_signatures']++;
             }
-            
+
             if ($oldCount > 0) {
                 $stats['with_old_autographs']++;
-                
+
                 // Check if created recently (potential new write to old system)
                 if ($pr->created_at >= now()->subWeek()) {
                     $stats['autograph_writes']++;
@@ -71,7 +71,7 @@ class ValidatePurchaseRequestSignatures extends Command
                     }
                 }
             }
-            
+
             if (($hasApprovalSigs || $legacyCount > 0) && $oldCount > 0) {
                 $stats['with_both_systems']++;
             }
@@ -90,6 +90,7 @@ class ValidatePurchaseRequestSignatures extends Command
                 $count++;
             }
         }
+
         return $count;
     }
 

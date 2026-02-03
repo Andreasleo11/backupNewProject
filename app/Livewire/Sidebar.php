@@ -7,12 +7,12 @@ use Livewire\Component;
 
 /**
  * @deprecated This Livewire sidebar component is DEPRECATED as of 2026-01-28.
- * 
+ *
  * Please use the new Alpine.js-based sidebar system instead:
  * - Layout: resources/views/new/layouts/app.blade.php
  * - Sidebar: resources/views/new/layouts/partials/sidebar-nav.blade.php
  * - Navigation logic: App\Services\NavigationService::getPersonalizedMenu()
- * 
+ *
  * This component will be removed in a future release.
  * Migration guide: .deprecation/SIDEBAR_DEPRECATION_PLAN.md
  */

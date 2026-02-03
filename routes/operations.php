@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\EmployeeDailyReportController;
 use App\Http\Controllers\DownloadUploadController;
 use App\Http\Controllers\PreviewUploadController;
 use App\Livewire\DailyReportIndex;

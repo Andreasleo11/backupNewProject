@@ -44,7 +44,7 @@ Route::middleware(['checkDepartment:DIRECTOR,PERSONNEL', 'checkSessionId'])->gro
     Route::get('/director/qaqc/{id}', [ReportController::class, 'show'])->name('director.qaqc.show');
     Route::put('/director/qaqc/{id}/approve', [ReportController::class, 'approve'])->name('director.qaqc.approve');
     Route::put('/director/qaqc/{id}/reject', [ReportController::class, 'reject'])->name('director.qaqc.reject');
-   
+
     // Warning log
     Route::post('/director/warning-log', [DirectorHomeController::class, 'storeWarningLog'])->name('director.store.warning.log');
 });

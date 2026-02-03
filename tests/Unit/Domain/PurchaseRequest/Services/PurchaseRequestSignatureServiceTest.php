@@ -13,14 +13,16 @@ class PurchaseRequestSignatureServiceTest extends TestCase
     use RefreshDatabase;
 
     private PurchaseRequestSignatureService $service;
+
     private PurchaseRequest $pr;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->service = new PurchaseRequestSignatureService();
+
+        $this->service = new PurchaseRequestSignatureService;
         $this->user = User::factory()->create();
         $this->pr = PurchaseRequest::factory()->create();
     }
@@ -74,7 +76,7 @@ class PurchaseRequestSignatureServiceTest extends TestCase
     public function test_creates_signature_with_timestamp(): void
     {
         $before = now();
-        
+
         $signature = $this->service->addSignature(
             $this->pr,
             'DIRECTOR',
@@ -107,7 +109,7 @@ class PurchaseRequestSignatureServiceTest extends TestCase
     public function test_removes_signature(): void
     {
         $this->service->addSignature($this->pr, 'DEPT_HEAD', $this->user->id, 'test.png');
-        
+
         $this->assertTrue($this->service->hasSignature($this->pr, 'DEPT_HEAD'));
 
         $removed = $this->service->removeSignature($this->pr, 'DEPT_HEAD');

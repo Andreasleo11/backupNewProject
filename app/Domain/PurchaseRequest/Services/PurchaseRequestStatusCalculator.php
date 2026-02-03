@@ -63,7 +63,6 @@ class PurchaseRequestStatusCalculator
      * Migrated from legacy autograph system to new signature system.
      *
      * @param PurchaseRequest $pr The purchase request
-     * @param PurchaseRequestSignatureService $signatureService
      * @return int Updated status code
      */
     public function calculateStatusFromSignatures(

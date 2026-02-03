@@ -20,7 +20,7 @@ class ApprovePurchaseRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Support both 'notes' (test usage) and 'remarks' (production)
-        if ($this->has('notes') && !$this->has('remarks')) {
+        if ($this->has('notes') && ! $this->has('remarks')) {
             $this->merge(['remarks' => $this->input('notes')]);
         }
     }

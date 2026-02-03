@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\AutoLoginController;
 use App\Http\Controllers\EmployeeDashboardController;
 use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\SuperAdminHomeController;

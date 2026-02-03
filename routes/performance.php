@@ -60,25 +60,25 @@ Route::middleware('auth')->group(function () {
     Route::post('/monthlyEvaluationReport/table', [EvaluationDataController::class, 'showtable'])->name('showtable');
 
     // Setting Pages for Data Upload
-    Route::get('/evaluationindex', [DisciplinePageController::class,'settingIndexEvaluation'])->name('indexevaluation');
-    Route::post('/updateevaluation', [DisciplinePageController::class,'updateEvaluation'])->name('UpdateEvaluation');
-    Route::post('/deleteevaluation', [DisciplinePageController::class,'deleteEvaluation'])->name('DeleteEvaluation');
-    Route::get('/weeklyindex', [DisciplinePageController::class,'settingIndexWeekly'])->name('weekly.index');
-    Route::post('/updateweeklyeleration', [DisciplinePageController::class,'updateWeeklyEvaluation'])->name('WeeklyUpdateEvaluation');
-    Route::get('/indexdata', [DisciplinePageController::class,'indexdata'])->name('indexdata');
-    Route::post('/updatedatastep1', [DisciplinePageController::class,'updatedatastep1'])->name('updatedata');
-    Route::get('/step2disciplinedata', [DisciplinePageController::class,'disciplineindexstep2view'])->name('step2.discipline');
+    Route::get('/evaluationindex', [DisciplinePageController::class, 'settingIndexEvaluation'])->name('indexevaluation');
+    Route::post('/updateevaluation', [DisciplinePageController::class, 'updateEvaluation'])->name('UpdateEvaluation');
+    Route::post('/deleteevaluation', [DisciplinePageController::class, 'deleteEvaluation'])->name('DeleteEvaluation');
+    Route::get('/weeklyindex', [DisciplinePageController::class, 'settingIndexWeekly'])->name('weekly.index');
+    Route::post('/updateweeklyeleration', [DisciplinePageController::class, 'updateWeeklyEvaluation'])->name('WeeklyUpdateEvaluation');
+    Route::get('/indexdata', [DisciplinePageController::class, 'indexdata'])->name('indexdata');
+    Route::post('/updatedatastep1', [DisciplinePageController::class, 'updatedatastep1'])->name('updatedata');
+    Route::get('/step2disciplinedata', [DisciplinePageController::class, 'disciplineindexstep2view'])->name('step2.discipline');
 
     // Format Request Pages
-    Route::get('/formatrequestmagang', [DisciplinePageController::class,'formatrequestmagang'])->name('formatrequest.magang');
-    Route::post('/getformat/magang', [DisciplinePageController::class,'getFormat'])->name('get.format.magang');
-    Route::get('/formatrequestyayasan', [DisciplinePageController::class,'formatrequestyayasan'])->name('formatrequest.yayasan');
-    Route::post('/getformat/yayasan', [DisciplinePageController::class,'getFormat'])->name('get.format');
-    Route::get('/formatrequestallin', [DisciplinePageController::class,'formatrequestallin'])->name('formatrequest.all');
-    Route::post('/getformat/all', [DisciplinePageController::class,'getFormat'])->name('get.format.allin');
+    Route::get('/formatrequestmagang', [DisciplinePageController::class, 'formatrequestmagang'])->name('formatrequest.magang');
+    Route::post('/getformat/magang', [DisciplinePageController::class, 'getFormat'])->name('get.format.magang');
+    Route::get('/formatrequestyayasan', [DisciplinePageController::class, 'formatrequestyayasan'])->name('formatrequest.yayasan');
+    Route::post('/getformat/yayasan', [DisciplinePageController::class, 'getFormat'])->name('get.format');
+    Route::get('/formatrequestallin', [DisciplinePageController::class, 'formatrequestallin'])->name('formatrequest.all');
+    Route::post('/getformat/all', [DisciplinePageController::class, 'getFormat'])->name('get.format.allin');
 
     // Export Pages
-    Route::get('/exportyayasantodateinput', [DisciplinePageController::class,'exportyayasantodateinput'])->name('exportyayasan.dateinput');
-    Route::get('/exportyayasan', [DisciplinePageController::class,'exportyayasanjpayroll'])->name('export.yayasan.jpayroll');
-    Route::get('/exportyayasan/summary', [DisciplinePageController::class,'exportYayasanSummary'])->name('exportyayasan.summary');
+    Route::get('/exportyayasantodateinput', [DisciplinePageController::class, 'exportyayasantodateinput'])->name('exportyayasan.dateinput');
+    Route::get('/exportyayasan', [DisciplinePageController::class, 'exportyayasanjpayroll'])->name('export.yayasan.jpayroll');
+    Route::get('/exportyayasan/summary', [DisciplinePageController::class, 'exportYayasanSummary'])->name('exportyayasan.summary');
 });

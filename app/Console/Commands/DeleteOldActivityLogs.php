@@ -35,13 +35,13 @@ class DeleteOldActivityLogs extends Command
         $deletedCount = Activity::where('created_at', '<', $cutoffDate)->delete();
 
         $this->info("Deleted {$deletedCount} activity log(s) older than {$days} days (before {$cutoffDate->format('Y-m-d H:i:s')}).");
-        
+
         // Optionally clean up old activity_logs table if it still exists
         if (\Schema::hasTable('activity_logs')) {
             $oldDeletedCount = \DB::table('activity_logs')
                 ->where('created_at', '<', $cutoffDate)
                 ->delete();
-                
+
             if ($oldDeletedCount > 0) {
                 $this->comment("Also deleted {$oldDeletedCount} records from legacy activity_logs table.");
             }

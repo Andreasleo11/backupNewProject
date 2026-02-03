@@ -91,14 +91,12 @@ class PurchaseRequestController extends Controller
             'end_date' => $endDate,
             'branch' => $branch,
         ]);
-        
+
         // Get stats for dashboard
         $stats = $statsQuery->execute();
 
         return $dataTable->render('purchase-requests.index', compact('stats'));
     }
-
-        
 
     public function create()
     {

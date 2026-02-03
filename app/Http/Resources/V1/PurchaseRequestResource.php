@@ -21,7 +21,7 @@ class PurchaseRequestResource extends JsonResource
             'doc_num' => $this->doc_num,
             'pr_no' => $this->pr_no,
             'branch' => $this->branch,
-            
+
             // Workflow information (new)
             'workflow' => [
                 'status' => $this->workflow_status,
@@ -32,7 +32,7 @@ class PurchaseRequestResource extends JsonResource
                     ? round(($this->approvalRequest->current_step / $this->approvalRequest->steps()->count()) * 100)
                     : 0,
             ],
-            
+
             // Request details
             'request_date' => $this->created_at?->format('Y-m-d'),
             'expected_date' => $this->expected_date,
@@ -41,7 +41,7 @@ class PurchaseRequestResource extends JsonResource
             'supplier' => $this->supplier,
             'pic' => $this->pic,
             'remark' => $this->remark,
-            
+
             // Departments
             'from_department' => [
                 'id' => $this->fromDepartment?->id,
@@ -49,15 +49,15 @@ class PurchaseRequestResource extends JsonResource
                 'dept_no' => $this->fromDepartment?->dept_no,
             ],
             'to_department' => $this->to_department,
-            
+
             // Legacy status (backward compatibility)
             'status' => $this->status,
             'status_text' => $this->getStatusText(),
-            
+
             // Related data
             'items' => PurchaseRequestItemResource::collection($this->whenLoaded('items')),
             'created_by' => new UserResource($this->whenLoaded('createdBy')),
-            
+
             // Timestamps
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

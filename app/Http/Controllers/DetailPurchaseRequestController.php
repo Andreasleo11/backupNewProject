@@ -2,33 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Domain\PurchaseOrder\Services\PurchaseOrderApprovalService;
+use App\Application\PurchaseRequest\DTOs\ItemApprovalActionDTO;
+use App\Application\PurchaseRequest\UseCases\ApproveItem;
+use App\Application\PurchaseRequest\UseCases\RejectItem;
 use App\Domain\PurchaseOrder\Services\PurchaseOrderDetailService;
+use App\Models\DetailPurchaseRequest;
 use Illuminate\Http\Request;
 
 class DetailPurchaseRequestController extends Controller
 {
     public function __construct(
-        private readonly PurchaseOrderApprovalService $approvalService,
-        private readonly PurchaseOrderDetailService $detailService
+        private readonly PurchaseOrderDetailService $detailService,
+        private readonly ApproveItem $approveItemUseCase,
+        private readonly RejectItem $rejectItemUseCase
     ) {}
 
-    public function approve($id, Request $request)
+    public function approve(DetailPurchaseRequest $item)
     {
-        $this->approvalService->approveDetail($id, $request->type);
+        try {
+            $this->authorize('approve', $item);
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Detail approved successfully!']);
+            $this->approveItemUseCase->handle(new ItemApprovalActionDTO(
+                itemId: $item->id,
+                actorUser: auth()->user()
+            ));
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'Item approved successfully!']);
+
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
+        }
     }
 
-    public function reject($id, Request $request)
+    public function reject(DetailPurchaseRequest $item)
     {
-        $this->approvalService->rejectDetail($id, $request->type);
+        try {
+            $this->authorize('reject', $item);
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Detail rejected successfully!']);
+            $this->rejectItemUseCase->handle(new ItemApprovalActionDTO(
+                itemId: $item->id,
+                actorUser: auth()->user()
+            ));
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'Item rejected successfully!']);
+
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
+        }
     }
 
     public function update(Request $request)

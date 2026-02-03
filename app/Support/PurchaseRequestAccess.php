@@ -18,6 +18,7 @@ final class PurchaseRequestAccess
         // super-admin (matches your index logic style)
         if ($user->hasRole('super-admin')) {
             $signatureService = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestSignatureService::class);
+
             return $signatureService->hasSignature($pr, 'MAKER');
         }
 
@@ -56,7 +57,7 @@ final class PurchaseRequestAccess
             $hasMakerAndDept = $signatureService->hasSignature($pr, 'MAKER') &&
                               $signatureService->hasSignature($pr, 'DEPT_HEAD');
             $hasGM = $signatureService->hasSignature($pr, 'GM');
-            
+
             if (! $hasMakerAndDept || $hasGM) {
                 return false;
             }

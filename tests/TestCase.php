@@ -26,8 +26,8 @@ abstract class TestCase extends BaseTestCase
     protected function shouldSeedApprovalSystem(): bool
     {
         $testClass = static::class;
-        
-        return str_contains($testClass, 'PurchaseRequest') 
+
+        return str_contains($testClass, 'PurchaseRequest')
             || str_contains($testClass, '\\\\PR\\\\')
             || str_contains($testClass, 'Approval');
     }

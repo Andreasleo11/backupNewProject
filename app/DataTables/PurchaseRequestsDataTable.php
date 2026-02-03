@@ -60,17 +60,17 @@ class PurchaseRequestsDataTable extends DataTable
                     : '';
             })
             ->addColumn('workflow_status', function ($pr) {
-                if (!$pr->workflow_status) {
+                if (! $pr->workflow_status) {
                     return '<span class="text-slate-400 text-xs">-</span>';
                 }
-                
+
                 $badge = view('partials.pr-status-badge', ['pr' => $pr])->render();
-                
+
                 // Add current approver if in review
                 if ($pr->workflow_status === 'IN_REVIEW' && $pr->workflow_step) {
                     return $badge . '<div class="text-[10px] text-slate-500 mt-1">' . $pr->workflow_step . '</div>';
                 }
-                
+
                 return $badge;
             })
             ->searchPane(
@@ -138,7 +138,7 @@ class PurchaseRequestsDataTable extends DataTable
         $query = $model->newQuery()->with([
             'files',
             'createdBy',
-            'approvalRequest' => function($q) {
+            'approvalRequest' => function ($q) {
                 $q->select('id', 'approvable_id', 'approvable_type', 'status', 'current_step');
             },
         ]);

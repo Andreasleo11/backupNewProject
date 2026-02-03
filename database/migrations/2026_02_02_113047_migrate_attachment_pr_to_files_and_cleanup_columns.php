@@ -18,7 +18,7 @@ return new class extends Migration
             ->whereNot('attachment_pr', '')
             ->each(function ($pr) {
                 // Only create if doc_num exists and file doesn't already exist
-                if ($pr->doc_num && !File::where('doc_id', $pr->doc_num)->where('filename', $pr->attachment_pr)->exists()) {
+                if ($pr->doc_num && ! File::where('doc_id', $pr->doc_num)->where('filename', $pr->attachment_pr)->exists()) {
                     try {
                         File::create([
                             'doc_id' => $pr->doc_num,

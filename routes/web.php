@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Auth\ChangePasswordPage;
+use App\Livewire\Departments\Overview as DepartmentsOverview;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
-use App\Livewire\Departments\Overview as DepartmentsOverview;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // not decide where to put this route
- Route::get('/daily-reports/{employee_id}', [App\Http\Controllers\EmployeeDailyReportController::class, 'show'])->name('daily-reports.depthead.show');
+Route::get('/daily-reports/{employee_id}', [App\Http\Controllers\EmployeeDailyReportController::class, 'show'])->name('daily-reports.depthead.show');
 
 Route::get('/upload-daily-report', [App\Http\Controllers\EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
 Route::post('/daily-report/confirm-upload', [App\Http\Controllers\EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
@@ -45,11 +45,28 @@ Route::get('/departments/overview', DepartmentsOverview::class)->name('departmen
 
 Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
 Route::get('purchase-requests/{id}/export-pdf', [App\Http\Controllers\PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
-Route::get('purchase-requests/items/{id}/reject', [App\Http\Controllers\DetailPurchaseRequestController::class, 'reject'])->name('purchase-requests.items.reject');
-Route::get('purchase-requests/items/{id}/approve', [App\Http\Controllers\DetailPurchaseRequestController::class, 'approve'])->name('purchase-requests.items.approve');
-    
+
+// Item-level approval/rejection (POST for security - CSRF protected)
+Route::post('purchase-requests/items/{item}/approve', [App\Http\Controllers\DetailPurchaseRequestController::class, 'approve'])
+    ->middleware('can:approve,item')
+    ->name('purchase-requests.items.approve');
+
+Route::post('purchase-requests/items/{item}/reject', [App\Http\Controllers\DetailPurchaseRequestController::class, 'reject'])
+        ->middleware('can:reject,item')
+        ->name('purchase-requests.items.reject');
+
+// DEPRECATED: Old GET routes - kept temporarily for backward compatibility
+// TODO: Remove after frontend migration complete
+Route::get('purchase-requests/items/{id}/approve', function () {
+    abort(405, 'Please use POST method for item approval');
+})->name('purchase-requests.items.approve.deprecated');
+
+Route::get('purchase-requests/items/{id}/reject', function () {
+    abort(405, 'Please use POST method for item rejection');
+})->name('purchase-requests.items.reject.deprecated');
+
 /*
-|-------------------------------------------------------------------------- 
+|--------------------------------------------------------------------------
 | Feature-Based Modular Routes
 |--------------------------------------------------------------------------
 |

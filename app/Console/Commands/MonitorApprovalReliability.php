@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\PurchaseRequest;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Command to monitor approval system reliability
@@ -118,7 +117,7 @@ class MonitorApprovalReliability extends Command
     {
         $this->newLine();
         $this->info('🔄 Workflow Statistics');
-        
+
         $approvalRate = $stats['rates']['approval_rate'];
         $completionRate = $stats['rates']['completion_rate'];
 
@@ -137,12 +136,12 @@ class MonitorApprovalReliability extends Command
     {
         $this->newLine();
         $this->info('⚡ Performance Metrics');
-        
+
         $avgTime = $stats['performance']['avg_approval_time_hours'];
         $coverage = $stats['performance']['signature_coverage'];
 
         $this->line("   Average Approval Time: {$avgTime} hours");
-        
+
         if ($coverage >= 90) {
             $this->info("✅ Signature Coverage: {$coverage}%");
         } elseif ($coverage >= 50) {
@@ -154,9 +153,9 @@ class MonitorApprovalReliability extends Command
 
     private function exportStats(array $stats): void
     {
-        $filename = storage_path("app/approval_stats_" . now()->format('Y-m-d_H-i-s') . ".json");
+        $filename = storage_path('app/approval_stats_' . now()->format('Y-m-d_H-i-s') . '.json');
         file_put_contents($filename, json_encode($stats, JSON_PRETTY_PRINT));
-        
+
         $this->newLine();
         $this->info("📁 Stats exported to: {$filename}");
     }

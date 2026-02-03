@@ -17,8 +17,8 @@ class GetPurchaseRequestStats
     {
         $userId = auth()->id();
         $cacheKey = "pr_stats_user_{$userId}";
-        
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($userId) {
+
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () {
             return [
                 'pending_my_approval' => $this->getPendingMyApproval(),
                 'in_review' => $this->getInReview(),
@@ -27,7 +27,7 @@ class GetPurchaseRequestStats
             ];
         });
     }
-    
+
     /**
      * Get count of PRs pending current user's approval
      */
@@ -37,12 +37,12 @@ class GetPurchaseRequestStats
             ->where('workflow_status', 'IN_REVIEW')
             ->whereHas('approvalRequest.steps', function ($q) {
                 $q->where('sequence', DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
-                  ->where('approver_id', auth()->id())
-                  ->whereNull('acted_at');
+                    ->where('approver_id', auth()->id())
+                    ->whereNull('acted_at');
             })
             ->count();
     }
-    
+
     /**
      * Get count of all PRs in review
      */
@@ -52,7 +52,7 @@ class GetPurchaseRequestStats
             ->where('workflow_status', 'IN_REVIEW')
             ->count();
     }
-    
+
     /**
      * Get count of PRs approved this month
      */
@@ -64,7 +64,7 @@ class GetPurchaseRequestStats
             ->whereMonth('approved_at', now()->month)
             ->count();
     }
-    
+
     /**
      * Get total value of pending PRs (rough estimate)
      */
@@ -79,10 +79,10 @@ class GetPurchaseRequestStats
                     return ($item->quantity ?? 0) * ($item->unit_price ?? 0);
                 });
             });
-            
+
         return round($total, 2);
     }
-    
+
     /**
      * Clear stats cache for a user
      */

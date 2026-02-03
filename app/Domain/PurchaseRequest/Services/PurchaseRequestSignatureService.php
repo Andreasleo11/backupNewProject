@@ -112,15 +112,72 @@ class PurchaseRequestSignatureService
     }
 
     /**
-     * Map approval sequence to step code
+     * Map approval step sequence number to step code based on PR characteristics.
+     * Updated to reflect new workflow where Purchaser comes BEFORE Verificator.
      */
     private function mapSequenceToStepCode(int $sequence, PurchaseRequest $pr): string
     {
-        // Basic mapping - can be enhanced based on approval rules
+        // Check if approval request has a rule to get better context
+        $approval = $pr->approvalRequest;
+        $isDesignMoulding = $pr->from_department === 'MOULDING' && $pr->is_design;
+        $toComputer = $pr->to_department === 'Computer';
+        $toPersonnel = $pr->to_department === 'Personnel';
+        $hasVerificator = $toComputer || $toPersonnel;
+
+        // MOULDING design workflows (6 steps)
+        if ($isDesignMoulding && $hasVerificator) {
+            return match ($sequence) {
+                1 => 'DEPT_HEAD',
+                2 => 'HEAD_DESIGN',
+                3 => 'GM',
+                4 => 'PURCHASER',
+                5 => $toComputer ? 'VERIFICATOR_COMPUTER' : 'VERIFICATOR_PERSONALIA',
+                6 => 'DIRECTOR',
+                default => "STEP_{$sequence}",
+            };
+        }
+
+        // Office workflows with verificator (4 steps)
+        if ($pr->at_office && $hasVerificator) {
+            return match ($sequence) {
+                1 => 'DEPT_HEAD',
+                2 => 'PURCHASER',
+                3 => $toComputer ? 'VERIFICATOR_COMPUTER' : 'VERIFICATOR_PERSONALIA',
+                4 => 'DIRECTOR',
+                default => "STEP_{$sequence}",
+            };
+        }
+
+        // Factory workflows with verificator (5 steps)
+        if (! $pr->at_office && $hasVerificator) {
+            return match ($sequence) {
+                1 => 'DEPT_HEAD',
+                2 => 'GM',
+                3 => 'PURCHASER',
+                4 => $toComputer ? 'VERIFICATOR_COMPUTER' : 'VERIFICATOR_PERSONALIA',
+                5 => 'DIRECTOR',
+                default => "STEP_{$sequence}",
+            };
+        }
+
+        // Simple workflows without verificator (3-4 steps)
+        // Office: Dept Head → Purchaser → Director (3 steps)
+        // Factory: Dept Head → GM → Purchaser → Director (4 steps)
+        if ($pr->at_office) {
+            return match ($sequence) {
+                1 => 'DEPT_HEAD',
+                2 => 'PURCHASER',
+                3 => 'DIRECTOR',
+                default => "STEP_{$sequence}",
+            };
+        }
+
+        // Factory (no verificator)
         return match ($sequence) {
             1 => 'DEPT_HEAD',
-            2 => $pr->type === 'factory' ? 'GM' : 'VERIFICATOR',
-            3 => 'DIRECTOR',
+            2 => 'GM',
+            3 => 'PURCHASER',
+            4 => 'DIRECTOR',
             default => "STEP_{$sequence}",
         };
     }

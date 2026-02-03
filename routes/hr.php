@@ -1,13 +1,11 @@
 <?php
 
-use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\EmployeeTrainingController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\FormOvertimeController;
 use App\Livewire\Overtime\Create as FormOvertimeCreate;
-use App\Livewire\Overtime\Detail as OvertimeDetail;
 use App\Livewire\Overtime\Index as FormOvertimeIndex;
 use Illuminate\Support\Facades\Route;
 

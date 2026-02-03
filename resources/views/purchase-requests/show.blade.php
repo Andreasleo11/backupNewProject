@@ -114,15 +114,87 @@
                         ])
                     @endif
                     
+                    
                     {{-- Approve/Reject buttons --}}
                     @if ($canApprove)
+                        @php
+                            // Get current step and check if user can review items
+                            $currentStep = $approval?->steps->firstWhere('sequence', $approval->current_step);
+                            $approverType = null;
+                            $itemStats = null;
+                            
+                            if ($currentStep) {
+                                $approverType = match($currentStep->approver_snapshot_role_slug) {
+                                    'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
+                                    'pr-verificator-computer', 'pr-verificator-personalia' => 'verificator',
+                                    'pr-director' => 'director',
+                                    default => null,
+                                };
+                                
+                                if ($approverType) {
+                                    $itemStats = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService::class)
+                                        ->getItemStats($purchaseRequest, $approverType);
+                                }
+                            }
+                        @endphp
+                        
+                        @if($itemStats)
+                            {{-- Item Review Progress Card --}}
+                            <div class="mb-4 rounded-xl border-2 px-4 py-3
+                                {{ $itemStats['pending'] > 0 ? 'border-amber-300 bg-amber-50' : 'border-emerald-300 bg-emerald-50' }}">
+                                
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0">
+                                        @if($itemStats['pending'] > 0)
+                                            <i class='bx bx-error-circle text-2xl text-amber-600'></i>
+                                        @else
+                                            <i class='bx bx-check-circle text-2xl text-emerald-600'></i>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold 
+                                            {{ $itemStats['pending'] > 0 ? 'text-amber-900' : 'text-emerald-900' }}">
+                                            Item Review Status
+                                        </h4>
+                                        
+                                        <p class="mt-1 text-xs 
+                                            {{ $itemStats['pending'] > 0 ? 'text-amber-700' : 'text-emerald-700' }}">
+                                            @if($itemStats['pending'] > 0)
+                                                <strong>{{ $itemStats['pending'] }}</strong> item(s) pending review.
+                                                You must approve or reject all items before approving this PR.
+                                            @else
+                                                All items reviewed!
+                                                Approved: <strong>{{ $itemStats['approved'] }}</strong>,
+                                                Rejected: <strong>{{ $itemStats['rejected'] }}</strong>
+                                            @endif
+                                        </p>
+                                        
+                                        {{-- Progress Bar --}}
+                                        <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                                            @php
+                                                $reviewedPercent = $itemStats['total'] > 0 
+                                                    ? (($itemStats['total'] - $itemStats['pending']) / $itemStats['total']) * 100 
+                                                    : 0;
+                                            @endphp
+                                            <div class="h-full transition-all duration-500
+                                                {{ $itemStats['pending'] > 0 ? 'bg-amber-500' : 'bg-emerald-500' }}"
+                                                style="width: {{ $reviewedPercent }}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        
                         <div class="flex gap-2">
                             {{-- Approve Button --}}
                             <form method="POST" action="{{ route('purchase-requests.approve', $purchaseRequest->id) }}"
                                   onsubmit="return confirm('Are you sure you want to approve this Purchase Request?')">
                                 @csrf
                                 <button type="submit"
-                                        class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700">
+                                        {{ $itemStats && $itemStats['pending'] > 0 ? 'disabled' : '' }}
+                                        class="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        {{ $itemStats && $itemStats['pending'] > 0 ? 'title="Please review all items first"' : '' }}>
                                     <i class='bx bx-check-circle text-sm'></i>
                                     <span>Approve</span>
                                 </button>
@@ -502,74 +574,179 @@
 
                                         {{-- Approve / reject per item --}}
                                         @if (!$purchaseRequest->is_cancel && $showIsApproveColumn)
-                                            @if ($user->specification?->name === 'DIRECTOR' && $purchaseRequest->status === 3)
-                                                <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
+                                            @can('approve', $detail)
+                                                <td class="whitespace-nowrap px-2 py-2 text-center align-middle 
+                                                    {{ is_null($detail->is_approve) ? 'bg-amber-50' : '' }}">
                                                     @if ($detail->is_approve === null)
-                                                        <div class="inline-flex gap-1">
-                                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'director']) }}"
-                                                                class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
-                                                                Reject
-                                                            </a>
-                                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'director']) }}"
-                                                                class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
-                                                                Approve
-                                                            </a>
+                                                        <div class="inline-flex flex-col gap-1">
+                                                            {{-- Pending Badge --}}
+                                                            <span class="text-[10px] font-medium text-amber-600 uppercase tracking-wide mb-1">
+                                                                Needs Review
+                                                            </span>
+                                                            
+                                                            <div class="inline-flex gap-1">
+                                                                {{-- Reject Form --}}
+                                                                <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit"
+                                                                        class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700"
+                                                                        onclick="return confirm('Reject this item?')">
+                                                                        <i class='bx bx-x text-sm'></i>
+                                                                        Reject
+                                                                    </button>
+                                                                </form>
+                                                                
+                                                                {{-- Approve Form --}}
+                                                                <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit"
+                                                                        class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700"
+                                                                        onclick="return confirm('Approve this item?')">
+                                                                        <i class='bx bx-check text-sm'></i>
+                                                                        Approve
+                                                                    </button>
+                                                                </form>
+                                                            </div>
                                                         </div>
+                                                    @elseif($detail->is_approve == 1)
+                                                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                                                            <i class='bx bx-check'></i>
+                                                            Approved
+                                                        </span>
                                                     @else
-                                                        {{ $detail->is_approve == 1 ? 'Yes' : 'No' }}
+                                                        <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-[10px] font-semibold text-rose-700">
+                                                            <i class='bx bx-x'></i>
+                                                            Rejected
+                                                        </span>
                                                     @endif
                                                 </td>
-                                            @elseif ($user->specification?->name == 'VERIFICATOR' && $purchaseRequest->status === 2)
-                                                <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
+                                            @elsecan('approve', $detail)
+                                                <td class="whitespace-nowrap px-2 py-2 text-center align-middle 
+                                                    {{ is_null($detail->is_approve_by_verificator) ? 'bg-amber-50' : '' }}">
                                                     @if ($detail->is_approve_by_verificator === null)
-                                                        <div class="inline-flex gap-1">
-                                                            <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'verificator']) }}"
-                                                                class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
-                                                                Reject
-                                                            </a>
-                                                            <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'verificator']) }}"
-                                                                class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
-                                                                Approve
-                                                            </a>
+                                                        <div class="inline-flex flex-col gap-1">
+                                                            <span class="text-[10px] font-medium text-amber-600 uppercase tracking-wide mb-1">
+                                                                Needs Review
+                                                            </span>
+                                                            
+                                                            <div class="inline-flex gap-1">
+                                                                <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit"
+                                                                        class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700"
+                                                                        onclick="return confirm('Reject this item?')">
+                                                                        <i class='bx bx-x text-sm'></i>
+                                                                        Reject
+                                                                    </button>
+                                                                </form>
+                                                                <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit"
+                                                                        class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700"
+                                                                        onclick="return confirm('Approve this item?')">
+                                                                        <i class='bx bx-check text-sm'></i>
+                                                                        Approve
+                                                                    </button>
+                                                                </form>
+                                                            </div>
                                                         </div>
+                                                    @elseif($detail->is_approve_by_verificator == 1)
+                                                        <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                                                            <i class='bx bx-check'></i>
+                                                            Approved
+                                                        </span>
                                                     @else
-                                                        {{ $detail->is_approve_by_verificator == 1 ? 'Yes' : 'No' }}
+                                                        <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-[10px] font-semibold text-rose-700">
+                                                            <i class='bx bx-x'></i>
+                                                            Rejected
+                                                        </span>
                                                     @endif
                                                 </td>
                                             @elseif ($showDeptHeadItemApprove && $purchaseRequest->status === 1)
                                                 @if ($purchaseRequest->from_department === 'MOULDING')
-                                                    <td
-                                                        class="whitespace-nowrap px-2 py-2 text-center align-middle {{ $mouldingApprovalCase ? '' : 'hidden' }}">
-                                                        @if ($detail->is_approve_by_head === null)
-                                                            <div class="inline-flex gap-1">
-                                                                <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"
-                                                                    class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
-                                                                    Reject
-                                                                </a>
-                                                                <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'head']) }}"
-                                                                    class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
-                                                                    Approve
-                                                                </a>
-                                                            </div>
-                                                        @else
-                                                            {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                    @can('approve', $detail)
+                                                        <td class="whitespace-nowrap px-2 py-2 text-center align-middle {{ $mouldingApprovalCase ? '' : 'hidden' }} 
+                                                            {{ is_null($detail->is_approve_by_head) ? 'bg-amber-50' : '' }}">
+                                                            @if ($detail->is_approve_by_head === null)
+                                                                <div class="inline-flex flex-col gap-1">
+                                                                    <span class="text-[10px] font-medium text-amber-600 uppercase tracking-wide mb-1">
+                                                                        Needs Review
+                                                                    </span>
+                                                                    
+                                                                    <div class="inline-flex gap-1">
+                                                                        <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}" class="inline">
+                                                                            @csrf
+                                                                            <button type="submit"
+                                                                                class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700"
+                                                                                onclick="return confirm('Reject this item?')">
+                                                                                <i class='bx bx-x text-sm'></i>
+                                                                                Reject
+                                                                            </button>
+                                                                        </form>
+                                                                        <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}" class="inline">
+                                                                            @csrf
+                                                                            <button type="submit"
+                                                                                class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700"
+                                                                                onclick="return confirm('Approve this item?')">
+                                                                                <i class='bx bx-check text-sm'></i>
+                                                                                Approve
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            @elseif($detail->is_approve_by_head == 1)
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                                                                    <i class='bx bx-check'></i>
+                                                                    Approved
+                                                                </span>
+                                                            @else
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-[10px] font-semibold text-rose-700">
+                                                                <i class='bx bx-x'></i>
+                                                                Rejected
+                                                            </span>
                                                         @endif
                                                     </td>
                                                 @else
-                                                    <td class="whitespace-nowrap px-2 py-2 text-center align-middle">
-                                                        @if ($detail->is_approve_by_head === null)
-                                                            <div class="inline-flex gap-1">
-                                                                <a href="{{ route('purchase-requests.items.reject', ['id' => $detail->id, 'type' => 'head']) }}"
-                                                                    class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700">
-                                                                    Reject
-                                                                </a>
-                                                                <a href="{{ route('purchase-requests.items.approve', ['id' => $detail->id, 'type' => 'head']) }}"
-                                                                    class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700">
-                                                                    Approve
-                                                                </a>
-                                                            </div>
-                                                        @else
-                                                            {{ $detail->is_approve_by_head == 1 ? 'Yes' : 'No' }}
+                                                    @can('approve', $detail)
+                                                        <td class="whitespace-nowrap px-2 py-2 text-center align-middle 
+                                                            {{ is_null($detail->is_approve_by_head) ? 'bg-amber-50' : '' }}">
+                                                            @if ($detail->is_approve_by_head === null)
+                                                                <div class="inline-flex flex-col gap-1">
+                                                                    <span class="text-[10px] font-medium text-amber-600 uppercase tracking-wide mb-1">
+                                                                        Needs Review
+                                                                    </span>
+                                                                    
+                                                                    <div class="inline-flex gap-1">
+                                                                        <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}" class="inline">
+                                                                            @csrf
+                                                                            <button type="submit"
+                                                                                class="inline-flex items-center rounded-md bg-rose-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-rose-700"
+                                                                                onclick="return confirm('Reject this item?')">
+                                                                                <i class='bx bx-x text-sm'></i>
+                                                                                Reject
+                                                                            </button>
+                                                                        </form>
+                                                                        <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}" class="inline">
+                                                                            @csrf
+                                                                            <button type="submit"
+                                                                                class="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-[11px] font-semibold text-white shadow-sm hover:bg-emerald-700"
+                                                                                onclick="return confirm('Approve this item?')">
+                                                                                <i class='bx bx-check text-sm'></i>
+                                                                                Approve
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                </div>
+                                                            @elseif($detail->is_approve_by_head == 1)
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-semibold text-emerald-700">
+                                                                    <i class='bx bx-check'></i>
+                                                                    Approved
+                                                                </span>
+                                                            @else
+                                                                <span class="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-1 text-[10px] font-semibold text-rose-700">
+                                                                    <i class='bx bx-x'></i>
+                                                                    Rejected
+                                                            </span>
                                                         @endif
                                                     </td>
                                                 @endif

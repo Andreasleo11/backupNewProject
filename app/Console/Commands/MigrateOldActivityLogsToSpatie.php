@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Spatie\Activitylog\Models\Activity;
 
 class MigrateOldActivityLogsToSpatie extends Command
 {
@@ -33,16 +32,18 @@ class MigrateOldActivityLogsToSpatie extends Command
         $batchSize = (int) $this->option('batch-size');
 
         // Check if old table exists
-        if (!DB::getSchemaBuilder()->hasTable('activity_logs')) {
+        if (! DB::getSchemaBuilder()->hasTable('activity_logs')) {
             $this->error('The activity_logs table does not exist.');
+
             return 1;
         }
 
         // Get total count
         $totalCount = DB::table('activity_logs')->count();
-        
+
         if ($totalCount === 0) {
             $this->info('No records to migrate.');
+
             return 0;
         }
 
@@ -50,7 +51,7 @@ class MigrateOldActivityLogsToSpatie extends Command
 
         if ($dryRun) {
             $this->warn('DRY RUN MODE - No changes will be made');
-            
+
             // Show sample transformation
             $sample = DB::table('activity_logs')->first();
             if ($sample) {
@@ -66,12 +67,14 @@ class MigrateOldActivityLogsToSpatie extends Command
                     ]
                 );
             }
+
             return 0;
         }
 
         // Confirm before proceeding
-        if (!$this->confirm("This will migrate {$totalCount} records. Continue?")) {
+        if (! $this->confirm("This will migrate {$totalCount} records. Continue?")) {
             $this->info('Migration cancelled.');
+
             return 0;
         }
 
@@ -90,7 +93,7 @@ class MigrateOldActivityLogsToSpatie extends Command
                     try {
                         // Parse the changes JSON
                         $changes = $oldLog->changes ? json_decode($oldLog->changes, true) : [];
-                        
+
                         // Prepare properties in Spatie format
                         $properties = [
                             'attributes' => $changes,
@@ -121,7 +124,7 @@ class MigrateOldActivityLogsToSpatie extends Command
                 }
 
                 // Batch insert into new table
-                if (!empty($newLogs)) {
+                if (! empty($newLogs)) {
                     DB::table('activity_log')->insert($newLogs);
                 }
             });
@@ -130,7 +133,7 @@ class MigrateOldActivityLogsToSpatie extends Command
         $this->newLine(2);
 
         // Summary
-        $this->info("Migration completed!");
+        $this->info('Migration completed!');
         $this->table(
             ['Metric', 'Count'],
             [

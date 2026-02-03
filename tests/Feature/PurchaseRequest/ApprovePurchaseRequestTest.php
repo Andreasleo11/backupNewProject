@@ -67,7 +67,7 @@ test('approval creates approval record', function () {
     // Verify approval request exists
     $pr = $this->pr->fresh();
     expect($pr->approvalRequest)->not->toBeNull();
-    
+
     // Verify a step was acted upon
     $this->assertDatabaseHas('approval_steps', [
         'approval_request_id' => $pr->approvalRequest->id,
