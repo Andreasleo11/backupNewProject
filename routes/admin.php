@@ -11,7 +11,7 @@ Route::middleware(['auth', 'role:super-admin|it-admin'])->group(function () {
 
     Route::prefix('admin')->group(function () {
         Route::name('admin.')->group(function () {
-            Route::get('/access-overview', fn () => view('admin.access-overview'))->name('access-overview.index');
+            Route::get('/access-overview', \App\Livewire\Admin\AccessOverviewDashboard::class)->name('access-overview.index');
             Route::view('/users', 'admin.users.index')->name('users.index');
             Route::view('/roles', 'admin.roles.index')->name('roles.index');
             Route::view('/departments', 'admin.departments.index')->name('departments.index');
