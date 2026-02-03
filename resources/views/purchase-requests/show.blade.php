@@ -45,7 +45,7 @@
         {{-- TOP BAR --}}
         <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
             <div class="space-y-2">
-                <a href="{{ auth()->user()->specification->name === 'DIRECTOR' ? route('director.pr.index') : route('purchase-requests.index') }}"
+                <a href="{{ (auth()->user()->specification?->name === 'DIRECTOR' && auth()->user()->hasRole('director')) ? route('director.pr.index') : route('purchase-requests.index') }}"
                     class="inline-flex items-center text-xs font-medium text-slate-400 hover:text-slate-600">
                     ‹ Back to list
                 </a>
@@ -398,8 +398,8 @@
                                     {{-- Show "Is Approve" column depending on roles/status like original --}}
                                     @php
                                         $showIsApproveColumn =
-                                            $user->specification?->name === 'DIRECTOR' ||
-                                            $user->specification?->name == 'VERIFICATOR' ||
+                                            ($user->specification?->name === 'DIRECTOR' && auth()->user()->hasRole('director')) ||
+                                            ($user->specification?->name == 'VERIFICATOR' && auth()->user()->hasRole('verificator')) ||
                                             ((($user->department?->name === $purchaseRequest->from_department &&
                                                 $user->is_head == 1) ||
                                                 ($user->is_head == 1 &&
@@ -414,13 +414,13 @@
                                                 $mouldingApprovalCase = false;
                                                 $mouldingApprovalCase =
                                                     ($purchaseRequest->is_import === 1 &&
-                                                        $user->specification?->name !== 'DESIGN') ||
+                                                        ($user->specification?->name !== 'DESIGN' && auth()->user()->hasRole('design'))) ||
                                                     (!$purchaseRequest->is_import &&
-                                                        $user->specification?->name !== 'DESIGN') ||
+                                                        ($user->specification?->name !== 'DESIGN' && auth()->user()->hasRole('design'))) ||
                                                     ($purchaseRequest->is_import === 0 &&
-                                                        $user->specification?->name === 'DESIGN') ||
+                                                        ($user->specification?->name === 'DESIGN' && auth()->user()->hasRole('design'))) ||
                                                     (!$purchaseRequest->is_import &&
-                                                        $user->specification?->name === 'DESIGN');
+                                                        ($user->specification?->name === 'DESIGN' && auth()->user()->hasRole('design')));
 
                                                 if (
                                                     $purchaseRequest->to_department ===
@@ -475,13 +475,13 @@
                                         } elseif ($detail->is_approve === 0) {
                                             $rowClass = 'bg-rose-50 line-through text-slate-400';
                                         } elseif (is_null($detail->is_approve)) {
-                                            if ($user->specification?->name === 'DIRECTOR') {
+                                            if ($user->specification?->name === 'DIRECTOR' && auth()->user()->hasRole('director')) {
                                                 // no extra color, director sees final only
                                             } elseif ($detail->is_approve_by_verificator === 1) {
                                                 $rowClass = 'bg-emerald-50';
                                             } elseif ($detail->is_approve_by_verificator === 0) {
                                                 $rowClass = 'bg-rose-50 line-through text-slate-400';
-                                            } elseif ($user->specification?->name === 'VERIFICATOR') {
+                                            } elseif ($user->specification?->name === 'VERIFICATOR' && auth()->user()->hasRole('verificator')) {
                                                 // no color
                                             } else {
                                                 if ($detail->is_approve_by_head === 1) {
@@ -980,7 +980,7 @@
                         @include('partials.uploaded-section', [
                             'showDeleteButton' =>
                                 ($user->id === $userCreatedBy->id && $purchaseRequest->status === 1) ||
-                                ($user->specification?->name === 'PURCHASER' && $purchaseRequest->status === 6),
+                                (($user->specification?->name === 'PURCHASER' && auth()->user()->hasRole('purchaser')) && $purchaseRequest->status === 6),
                         ])
                     </div>
                 </section>
