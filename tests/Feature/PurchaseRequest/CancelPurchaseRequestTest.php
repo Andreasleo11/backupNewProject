@@ -36,10 +36,12 @@ test('it can cancel pending purchase request', function () {
 });
 
 test('it cannot cancel approved purchase request', function () {
-    $approvedPr = PurchaseRequest::factory()->create([
-        'user_id_create' => $this->user->id,
-        'status' => 4, // Approved
-    ]);
+    // ✅ Use approved() factory state
+    $approvedPr = PurchaseRequest::factory()
+        ->approved()
+        ->create([
+            'user_id_create' => $this->user->id,
+        ]);
 
     $this->actingAs($this->user);
 
@@ -54,10 +56,12 @@ test('it cannot cancel approved purchase request', function () {
 });
 
 test('it cannot cancel already cancelled purchase request', function () {
-    $cancelledPr = PurchaseRequest::factory()->create([
-        'user_id_create' => $this->user->id,
-        'status' => 5, // Already cancelled
-    ]);
+    // ✅ Use cancelled() factory state
+    $cancelledPr = PurchaseRequest::factory()
+        ->cancelled()
+        ->create([
+            'user_id_create' => $this->user->id,
+        ]);
 
     $this->actingAs($this->user);
 

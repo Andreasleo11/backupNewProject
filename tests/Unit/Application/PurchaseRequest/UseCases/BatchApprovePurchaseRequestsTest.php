@@ -16,6 +16,7 @@ class BatchApprovePurchaseRequestsTest extends TestCase
     use RefreshDatabase;
 
     private BatchApprovePurchaseRequests $useCase;
+
     private ApprovePurchaseRequest $mockApprovePR;
 
     protected function setUp(): void

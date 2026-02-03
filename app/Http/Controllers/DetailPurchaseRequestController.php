@@ -7,7 +7,6 @@ use App\Application\PurchaseRequest\UseCases\ApproveItem;
 use App\Application\PurchaseRequest\UseCases\RejectItem;
 use App\Domain\PurchaseRequest\Services\PurchaseRequestDetailService;
 use App\Models\DetailPurchaseRequest;
-use App\Models\PurchaseRequest;
 use Illuminate\Http\Request;
 
 class DetailPurchaseRequestController extends Controller

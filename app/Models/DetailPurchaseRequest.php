@@ -35,6 +35,20 @@ class DetailPurchaseRequest extends Model
         'received_quantity',
     ];
 
+    /**
+     * Get the purchase request that owns this item.
+     * Proper relationship naming convention.
+     */
+    public function purchaseRequest()
+    {
+        return $this->belongsTo(PurchaseRequest::class);
+    }
+
+    /**
+     * Alias for purchaseRequest() for backward compatibility.
+     *
+     * @deprecated Use purchaseRequest() instead
+     */
     public function itemDetail()
     {
         return $this->belongsTo(PurchaseRequest::class);

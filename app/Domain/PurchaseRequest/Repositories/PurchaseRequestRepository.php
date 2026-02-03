@@ -21,4 +21,19 @@ interface PurchaseRequestRepository
     public function getOfficeDepartmentNames(): array;
 
     public function find(int $id): ?PurchaseRequest;
+
+    /**
+     * Soft delete a purchase request (cascades to items).
+     */
+    public function delete(PurchaseRequest $pr): bool;
+
+    /**
+     * Restore a soft-deleted purchase request (cascades to items).
+     */
+    public function restore(PurchaseRequest $pr): bool;
+
+    /**
+     * Permanently delete a purchase request (cascades to items).
+     */
+    public function forceDelete(PurchaseRequest $pr): bool;
 }

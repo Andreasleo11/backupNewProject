@@ -20,8 +20,6 @@ final class BatchRejectPurchaseRequests
 
     /**
      * @param array<int> $purchaseRequestIds
-     * @param int $actorUserId
-     * @param string $rejectionReason
      * @return array{success: bool, message: string, rejected: int, failed: int, errors: array<string>}
      */
     public function handle(array $purchaseRequestIds, int $actorUserId, string $rejectionReason): array

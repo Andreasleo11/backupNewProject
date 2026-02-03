@@ -123,6 +123,14 @@ class PurchaseRequest extends Model implements Approvable
         return $this->belongsTo(User::class, 'user_id_create');
     }
 
+    /**
+     * Alias for createdBy() for better semantic clarity
+     */
+    public function creator()
+    {
+        return $this->createdBy();
+    }
+
     public function files()
     {
         return $this->hasMany(File::class, 'doc_id', 'doc_num');

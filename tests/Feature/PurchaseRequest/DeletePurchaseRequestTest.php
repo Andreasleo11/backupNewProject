@@ -53,10 +53,12 @@ test('it cannot delete non draft purchase request', function () {
 });
 
 test('it cannot delete approved purchase request', function () {
-    $approvedPr = PurchaseRequest::factory()->create([
-        'user_id_create' => $this->user->id,
-        'status' => 4, // Approved
-    ]);
+    // ✅ Use approved() factory state
+    $approvedPr = PurchaseRequest::factory()
+        ->approved()
+        ->create([
+            'user_id_create' => $this->user->id,
+        ]);
 
     $response = $this->delete(route('purchase-requests.destroy', $approvedPr->id));
 

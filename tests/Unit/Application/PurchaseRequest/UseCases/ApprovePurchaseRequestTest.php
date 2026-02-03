@@ -8,7 +8,6 @@ use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\PurchaseRequest;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-
 afterEach(function () {
     Mockery::close();
 });

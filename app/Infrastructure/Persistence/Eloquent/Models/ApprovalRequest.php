@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,6 +10,21 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ApprovalRequest extends Model
 {
+    use HasFactory;
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * Required because this model is in Infrastructure namespace
+     * instead of the default App\Models namespace.
+     *
+     * @see https://laravel.com/docs/eloquent-factories#factory-relationships
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\Infrastructure\Persistence\Eloquent\Models\ApprovalRequestFactory::new();
+    }
+
     protected $fillable = [
         'status', 'rule_template_id', 'current_step', 'submitted_by', 'submitted_at', 'meta',
     ];

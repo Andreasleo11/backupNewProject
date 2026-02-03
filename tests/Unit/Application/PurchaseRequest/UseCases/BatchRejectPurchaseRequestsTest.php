@@ -16,6 +16,7 @@ class BatchRejectPurchaseRequestsTest extends TestCase
     use RefreshDatabase;
 
     private BatchRejectPurchaseRequests $useCase;
+
     private RejectPurchaseRequest $mockRejectPR;
 
     protected function setUp(): void

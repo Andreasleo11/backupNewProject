@@ -20,8 +20,6 @@ final class BatchApprovePurchaseRequests
 
     /**
      * @param array<int> $purchaseRequestIds
-     * @param int $actorUserId
-     * @param string|null $remarks
      * @return array{success: bool, message: string, approved: int, failed: int, errors: array<string>}
      */
     public function handle(array $purchaseRequestIds, int $actorUserId, ?string $remarks = null): array

@@ -10,7 +10,7 @@ use App\Models\User;
 
 /**
  * Legacy service maintained for backward compatibility.
- * 
+ *
  * @deprecated This service is deprecated. Use the following instead:
  *   - For batch approval: BatchApprovePurchaseRequests use case
  *   - For batch rejection: BatchRejectPurchaseRequests use case
@@ -26,11 +26,10 @@ final class PurchaseRequestApprovalService
 
     /**
      * Batch approve purchase requests.
-     * 
+     *
      * @deprecated Use BatchApprovePurchaseRequests use case directly
+     *
      * @param array<int> $ids
-     * @param string $username
-     * @param string $imageUrl
      * @return array{success: bool, message: string}
      */
     public function batchApprove(array $ids, string $username, string $imageUrl): array
@@ -55,10 +54,10 @@ final class PurchaseRequestApprovalService
 
     /**
      * Batch reject purchase requests.
-     * 
+     *
      * @deprecated Use BatchRejectPurchaseRequests use case directly
+     *
      * @param array<int> $ids
-     * @param string $rejectionReason
      * @return array{success: bool, message: string}
      */
     public function batchReject(array $ids, string $rejectionReason): array

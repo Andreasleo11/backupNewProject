@@ -63,12 +63,14 @@ test('it can update a draft purchase request', function () {
 });
 
 test('it cannot update approved purchase request', function () {
-    $approvedPr = PurchaseRequest::factory()->create([
-        'user_id_create' => $this->user->id,
-        'from_department' => 'Computer',
-        'to_department' => 'Purchasing',
-        'status' => 4, // Approved
-    ]);
+    // ✅ Use approved() factory state
+    $approvedPr = PurchaseRequest::factory()
+        ->approved()
+        ->create([
+            'user_id_create' => $this->user->id,
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
+        ]);
 
     $this->actingAs($this->user);
 

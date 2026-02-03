@@ -66,4 +66,45 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
     {
         return PurchaseRequest::find($id);
     }
+
+    /**
+     * Soft delete a purchase request and cascade to its items.
+     * This is infrastructure-level cascade logic.
+     */
+    public function delete(PurchaseRequest $pr): bool
+    {
+        // Cascade soft delete to items first
+        $pr->items()->delete();
+
+        // Then soft delete the purchase request
+        return $pr->delete();
+    }
+
+    /**
+     * Restore a soft-deleted purchase request and its items.
+     */
+    public function restore(PurchaseRequest $pr): bool
+    {
+        // Restore the purchase request
+        $restored = $pr->restore();
+
+        // Cascade restore to items
+        if ($restored) {
+            $pr->items()->withTrashed()->restore();
+        }
+
+        return $restored;
+    }
+
+    /**
+     * Permanently delete a purchase request and its items.
+     */
+    public function forceDelete(PurchaseRequest $pr): bool
+    {
+        // Force delete items first (to avoid foreign key constraint)
+        $pr->items()->withTrashed()->forceDelete();
+
+        // Then force delete the purchase request
+        return $pr->forceDelete();
+    }
 }

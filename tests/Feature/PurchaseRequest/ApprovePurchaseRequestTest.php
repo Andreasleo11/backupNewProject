@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Department;
+use App\Models\DetailPurchaseRequest;
 use App\Models\PurchaseRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,13 +20,22 @@ beforeEach(function () {
     // Create approver with appropriate role/permissions
     $this->approver = User::factory()->create([
         'department_id' => $dept->id,
+        'is_head' => 1, // Dept head permission
     ]);
 
-    $this->pr = PurchaseRequest::factory()->create([
-        'user_id_create' => $requester->id,
-        'from_department' => 'Computer',
-        'to_department' => 'Purchasing',
-        'workflow_status' => 'IN_REVIEW', // Use new workflow status
+    // ✅ Use factory state for workflow
+    $this->pr = PurchaseRequest::factory()
+        ->atDeptHeadStep() // Creates PR with approval workflow at step 1
+        ->create([
+            'user_id_create' => $requester->id,
+            'from_department' => 'Computer',
+            'to_department' => 'Purchasing',
+        ]);
+
+    // Create items awaiting approval
+    DetailPurchaseRequest::factory()->create([
+        'purchase_request_id' => $this->pr->id,
+        'is_approve_by_head' => null, // Pending review
     ]);
 });
 
@@ -76,9 +86,11 @@ test('approval creates approval record', function () {
 });
 
 test('cannot approve already approved purchase request', function () {
-    $approvedPr = PurchaseRequest::factory()->create([
-        'workflow_status' => 'APPROVED',
-    ]);
+    // ✅ Use approved() factory state
+    $approvedPr = PurchaseRequest::factory()
+        ->withApprovalWorkflow()
+        ->approved()
+        ->create();
 
     $this->actingAs($this->approver);
 
@@ -91,9 +103,10 @@ test('cannot approve already approved purchase request', function () {
 });
 
 test('cannot approve cancelled purchase request', function () {
-    $cancelledPr = PurchaseRequest::factory()->create([
-        'is_cancel' => 1,
-    ]);
+    // ✅ Use cancelled() factory state
+    $cancelledPr = PurchaseRequest::factory()
+        ->cancelled()
+        ->create();
 
     $this->actingAs($this->approver);
 

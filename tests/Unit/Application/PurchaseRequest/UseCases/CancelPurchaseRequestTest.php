@@ -7,7 +7,6 @@ use App\Models\PurchaseRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
-
 afterEach(function () {
     Mockery::close();
 });
