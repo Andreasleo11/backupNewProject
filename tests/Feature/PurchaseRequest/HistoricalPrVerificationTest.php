@@ -2,10 +2,10 @@
 
 use App\Application\PurchaseRequest\Services\HistoricalPrBackfiller;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 test('it backfills historical records correctly', function () {
     $user = User::factory()->create();

@@ -6,9 +6,9 @@ use App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO;
 use App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest;
 use App\Models\Department;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 beforeEach(function () {
     (new \Database\Seeders\PrRoleMappingSeeder)->run();

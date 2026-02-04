@@ -4,9 +4,9 @@ use App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository;
 use App\Models\DetailPurchaseRequest;
 use App\Models\PurchaseRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 test('soft deleting purchase request cascades to items', function () {
     // Arrange: Create a user, PR, and items

@@ -3,10 +3,10 @@
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Auth;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 beforeEach(function () {
     $dept = Department::factory()->create(['name' => 'Computer']);
