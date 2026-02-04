@@ -27,6 +27,9 @@ final class DeletePurchaseRequest
                 throw new \DomainException('Cannot delete an approved Purchase Request');
             }
 
+            // Soft delete items first (cascade)
+            \App\Models\DetailPurchaseRequest::where('purchase_request_id', $purchaseRequestId)->delete();
+
             // Soft delete the PR
             $deleted = $pr->delete();
 

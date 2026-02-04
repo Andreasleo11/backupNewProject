@@ -3,11 +3,16 @@
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
+use Tests\Database\Seeders\TestRoleSeeder;
+use Tests\Helpers\SignatureTestHelper;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 beforeEach(function () {
+    // Seed test roles
+    $this->seed(TestRoleSeeder::class);
+
     $dept = Department::factory()->create(['name' => 'Computer']);
 
     $requester = User::factory()->create([
@@ -17,6 +22,12 @@ beforeEach(function () {
     $this->approver = User::factory()->create([
         'department_id' => $dept->id,
     ]);
+
+    // Assign PR approval role
+    $this->approver->assignRole('pr-dept-head-office');
+
+    // Create signature for approver (required for rejection)
+    SignatureTestHelper::createDefaultSignature($this->approver->id);
 
     // ✅ Use factory state for workflow
     $this->pr = PurchaseRequest::factory()

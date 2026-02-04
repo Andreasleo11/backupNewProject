@@ -17,52 +17,50 @@ class ApprovalStepFactory extends Factory
         return [
             'approval_request_id' => ApprovalRequest::factory(),
             'sequence' => 1,
-            'approver_snapshot_role_slug' => 'pr-dept-head-office',
-            'approver_snapshot_role_name' => 'Dept Head - Office',
-            'approver_snapshot_user_id' => null,
-            'approver_snapshot_user_name' => null,
-            'status' => 'pending',
+            'approver_type' => 'role',  // 'role' or 'user'
+            'approver_id' => null,  // Role/User ID
+            'user_signature_id' => null,
+            'acted_by' => null,  // User ID who acted
+            'status' => 'PENDING',  // Enum: PENDING, APPROVED, REJECTED
             'acted_at' => null,
-            'acted_by_user_id' => null,
-            'acted_by_user_name' => null,
             'remarks' => null,
+            'signature_image_path' => null,
+            'signature_sha256' => null,
         ];
     }
 
-    public function withRole(string $roleSlug): self
+    public function withRole(int $roleId): self
     {
-        $roleNames = [
-            'pr-dept-head-office' => 'Dept Head - Office',
-            'pr-dept-head-factory' => 'Dept Head - Factory',
-            'pr-verificator-computer' => 'Verificator - Computer',
-            'pr-verificator-personalia' => 'Verificator - Personalia',
-            'pr-director' => 'Director',
-        ];
-
         return $this->state(fn (array $attributes) => [
-            'approver_snapshot_role_slug' => $roleSlug,
-            'approver_snapshot_role_name' => $roleNames[$roleSlug] ?? $roleSlug,
+            'approver_type' => 'role',
+            'approver_id' => $roleId,
         ]);
     }
 
-    public function approved(): self
+    public function withUser(int $userId): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'approved',
-            'acted_at' => now(),
-            'acted_by_user_id' => 1,
-            'acted_by_user_name' => 'Test User',
+            'approver_type' => 'user',
+            'approver_id' => $userId,
         ]);
     }
 
-    public function rejected(): self
+    public function approved(int $userId = 1): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'rejected',
+            'status' => 'APPROVED',
             'acted_at' => now(),
-            'acted_by_user_id' => 1,
-            'acted_by_user_name' => 'Test User',
-            'remarks' => 'Rejected for testing',
+            'acted_by' => $userId,
+        ]);
+    }
+
+    public function rejected(int $userId = 1, string $reason = 'Rejected for testing'): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'REJECTED',
+            'acted_at' => now(),
+            'acted_by' => $userId,
+            'remarks' => $reason,
         ]);
     }
 }

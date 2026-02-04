@@ -65,11 +65,9 @@ class PurchaseRequestFactory extends Factory
                 'approvable_id' => $pr->id,
                 'approvable_type' => PurchaseRequest::class,
                 'current_step' => $currentStep,
-                'total_steps' => $totalSteps,
-                'status' => 'pending',
-                'initiated_by_user_id' => $pr->user_id_create,
-                'initiated_by_user_name' => $pr->creator->name ?? 'Test User',
-                'initiated_at' => now(),
+                'status' => 'IN_REVIEW',
+                'submitted_by' => $pr->user_id_create,
+                'submitted_at' => now(),
             ]);
 
             $this->createApprovalSteps($approval, $type, $currentStep);
@@ -82,14 +80,14 @@ class PurchaseRequestFactory extends Factory
     /**
      * Convenience states for common workflow steps
      */
-    public function atDeptHeadStep(): static
+    public function atDeptHeadStep(?int $approverId = null): static
     {
-        return $this->withApprovalWorkflow(1);
+        return $this->withApprovalWorkflow(1, 'office', $approverId);
     }
 
-    public function atVerificatorStep(): static
+    public function atVerificatorStep(?int $approverId = null): static
     {
-        return $this->withApprovalWorkflow(2);
+        return $this->withApprovalWorkflow(2, 'office', $approverId);
     }
 
     public function atGmStep(): static
@@ -115,16 +113,14 @@ class PurchaseRequestFactory extends Factory
         ])->afterCreating(function (PurchaseRequest $pr) {
             if ($pr->approvalRequest) {
                 $pr->approvalRequest->update([
-                    'status' => 'approved',
-                    'completed_at' => now(),
+                    'status' => 'APPROVED',
                 ]);
 
                 // Mark all steps as approved
                 $pr->approvalRequest->steps()->update([
-                    'status' => 'approved',
+                    'status' => 'APPROVED',
                     'acted_at' => now(),
-                    'acted_by_user_id' => 1,
-                    'acted_by_user_name' => 'Test User',
+                    'acted_by' => 1,
                 ]);
             }
         });
@@ -141,8 +137,7 @@ class PurchaseRequestFactory extends Factory
         ])->afterCreating(function (PurchaseRequest $pr) {
             if ($pr->approvalRequest) {
                 $pr->approvalRequest->update([
-                    'status' => 'rejected',
-                    'completed_at' => now(),
+                    'status' => 'REJECTED',
                 ]);
             }
         });
@@ -170,21 +165,33 @@ class PurchaseRequestFactory extends Factory
     /**
      * Helper: Create approval steps for workflow
      */
-    private function createApprovalSteps(ApprovalRequest $approval, string $type, int $currentStep): void
+    private function createApprovalSteps(ApprovalRequest $approval, string $type, int $currentStep, ?int $userApproverId = null): void
     {
         $steps = $this->getStepsConfiguration($type);
 
-        foreach ($steps as $sequence => $roleSlug) {
-            ApprovalStep::factory()->create([
-                'approval_request_id' => $approval->id,
-                'sequence' => $sequence,
-                'approver_snapshot_role_slug' => $roleSlug,
-                'approver_snapshot_role_name' => $this->getRoleName($roleSlug),
-                'status' => $sequence < $currentStep ? 'approved' : 'pending',
-                'acted_at' => $sequence < $currentStep ? now() : null,
-                'acted_by_user_id' => $sequence < $currentStep ? 1 : null,
-                'acted_by_user_name' => $sequence < $currentStep ? 'Previous Approver' : null,
-            ]);
+        foreach ($steps as $sequence => $roleId) {
+            // For tests with user approver, create user-based approval instead of role-based
+            if ($userApproverId && $sequence === $currentStep) {
+                ApprovalStep::factory()->create([
+                    'approval_request_id' => $approval->id,
+                    'sequence' => $sequence,
+                    'approver_type' => 'user',
+                    'approver_id' => $userApproverId,  // Specific user for testing
+                    'status' => $sequence < $currentStep ? 'APPROVED' : 'PENDING',
+                    'acted_at' => $sequence < $currentStep ? now() : null,
+                    'acted_by' => $sequence < $currentStep ? $userApproverId : null,
+                ]);
+            } else {
+                ApprovalStep::factory()->create([
+                    'approval_request_id' => $approval->id,
+                    'sequence' => $sequence,
+                    'approver_type' => 'role',
+                    'approver_id' => $roleId,  // This should be actual role ID, not slug
+                    'status' => $sequence < $currentStep ? 'APPROVED' : 'PENDING',
+                    'acted_at' => $sequence < $currentStep ? now() : null,
+                    'acted_by' => $sequence < $currentStep ? 1 : null,
+                ]);
+            }
         }
     }
 
@@ -193,16 +200,21 @@ class PurchaseRequestFactory extends Factory
      */
     private function getStepsConfiguration(string $type): array
     {
+        // Use actual test role IDs from TestRoleSeeder
+        // Role ID 100 = pr-dept-head-office
+        // Role ID 102 = pr-verificator-computer
+        // Role ID 104 = pr-gm
+        // Role ID 105 = pr-director
         $baseSteps = [
-            1 => 'pr-dept-head-office',
-            2 => 'pr-verificator-computer',
+            1 => 100,  // pr-dept-head-office
+            2 => 102,  // pr-verificator-computer
         ];
 
         if ($type === 'factory') {
-            $baseSteps[3] = 'pr-gm';
-            $baseSteps[4] = 'pr-director';
+            $baseSteps[3] = 104;  // pr-gm
+            $baseSteps[4] = 105;  // pr-director
         } else {
-            $baseSteps[3] = 'pr-director';
+            $baseSteps[3] = 105;  // pr-director
         }
 
         return $baseSteps;

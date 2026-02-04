@@ -250,11 +250,13 @@ class PurchaseRequestController extends Controller
             return redirect()
                 ->back()
                 ->with(['success' => 'Purchase request deleted successfully!']);
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            abort(403, $e->getMessage());
         } catch (\DomainException $e) {
-            return redirect()
-                ->back()
-                ->with(['error' => $e->getMessage()]);
+            // Domain exceptions contain user-friendly messages about business rules
+            abort(403, $e->getMessage());
         } catch (\Exception $e) {
+            \Log::error('Deletion failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
             return redirect()
                 ->back()
                 ->with(['error' => 'Failed to delete purchase request']);
@@ -347,9 +349,13 @@ class PurchaseRequestController extends Controller
             $useCase->handle($dto);
 
             return redirect()->back()->with('success', 'Purchase request canceled successfully!');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            abort(403, $e->getMessage());
         } catch (\DomainException $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            // Domain exceptions contain user-friendly messages
+            abort(403, $e->getMessage());
         } catch (\Exception $e) {
+            \Log::error('Cancellation failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to cancel purchase request');
         }
     }
@@ -395,23 +401,41 @@ class PurchaseRequestController extends Controller
 
     public function approve(ApprovePurchaseRequest $request, PurchaseRequest $purchaseRequest, ApprovePR $useCase)
     {
-        $useCase->handle(new ApprovalActionDTO(
-            purchaseRequestId: (int) $purchaseRequest->id,
-            actorUserId: (int) auth()->id(),
-            remarks: $request->input('remarks')
-        ));
+        try {
+            $useCase->handle(new ApprovalActionDTO(
+                purchaseRequestId: (int) $purchaseRequest->id,
+                actorUserId: (int) auth()->id(),
+                remarks: $request->input('remarks')
+            ));
 
-        return back()->with('success', 'Approved.');
+            return back()->with('success', 'Approved.');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return back()->with('error', $e->getMessage())->setStatusCode(403);
+        } catch (\DomainException | \RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'Failed to approve purchase request')->setStatusCode(500);
+        }
     }
 
     public function rejectWorkflow(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
     {
-        $useCase->handle(new ApprovalActionDTO(
-            purchaseRequestId: (int) $purchaseRequest->id,
-            actorUserId: (int) auth()->id(),
-            remarks: $request->input('remarks')
-        ));
+        try {
+            $useCase->handle(new ApprovalActionDTO(
+                purchaseRequestId: (int) $purchaseRequest->id,
+                actorUserId: (int) auth()->id(),
+                remarks: $request->input('remarks')
+            ));
 
-        return back()->with('success', 'Rejected.');
+            return back()->with('success', 'Rejected.');
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return back()->with('error', $e->getMessage())->setStatusCode(403);
+        } catch (\DomainException | \RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
+        }
     }
 }

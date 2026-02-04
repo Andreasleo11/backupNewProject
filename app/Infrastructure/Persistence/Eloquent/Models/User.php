@@ -20,11 +20,22 @@ class User extends Authenticatable implements FilamentUser
 
     protected string $guard_name = 'web';
 
+    /**
+     * Create a new factory instance for the model.
+     * 
+     * Required because this model is in Infrastructure namespace
+     * instead of the default App\Models namespace.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\UserFactory::new();
+    }
+
     protected $table = 'users';
 
     protected $fillable = [
         'name',
-        'email',
+        'email', 
         'password',
         'department_id',
         'specification_id',

@@ -18,28 +18,25 @@ class ApprovalRequestFactory extends Factory
             'approvable_id' => PurchaseRequest::factory(),
             'approvable_type' => PurchaseRequest::class,
             'current_step' => 1,
-            'status' => 'pending',
-            'total_steps' => 4,
-            'initiated_by_user_id' => 1,
-            'initiated_by_user_name' => 'Test User',
-            'initiated_at' => now(),
-            'completed_at' => null,
+            'status' => 'DRAFT',  // Matches enum values
+            'submitted_by' => null,  // Nullable until submitted
+            'submitted_at' => null,
+            'rule_template_id' => null,  // Optional workflow template
+            'meta' => null,  // Optional JSON metadata
         ];
     }
 
     public function approved(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'approved',
-            'completed_at' => now(),
+            'status' => 'APPROVED',
         ]);
     }
 
     public function rejected(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'rejected',
-            'completed_at' => now(),
+            'status' => 'REJECTED',
         ]);
     }
 

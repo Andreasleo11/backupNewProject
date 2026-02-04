@@ -26,18 +26,7 @@ final class ItemApprovalAuthorizationService
             return false;
         }
 
-        // Get current workflow step
-        $approval = $pr->approvalRequest;
-        if (! $approval) {
-            return false;
-        }
-
-        $currentStepData = $approval->steps()->where('sequence', $approval->current_step)->first();
-        if (! $currentStepData) {
-            return false;
-        }
-
-        $workflowStep = WorkflowStep::fromRoleSlug($currentStepData->approver_snapshot_role_slug);
+        $workflowStep = $this->getCurrentWorkflowStep($pr);
 
         if (! $workflowStep || ! $workflowStep->requiresItemApproval()) {
             return false;
@@ -67,7 +56,21 @@ final class ItemApprovalAuthorizationService
             return null;
         }
 
-        return WorkflowStep::fromRoleSlug($currentStepData->approver_snapshot_role_slug);
+        $roleSlug = null;
+        if ($currentStepData->approver_type === 'role') {
+            $role = \Spatie\Permission\Models\Role::find($currentStepData->approver_id);
+            $roleSlug = $role?->name;
+        } else {
+            // If we have other approver types (strategies), we might need logic here
+            // For now, only role-based steps support item approval
+            return null;
+        }
+
+        if (! $roleSlug) {
+            return null;
+        }
+
+        return WorkflowStep::fromRoleSlug($roleSlug);
     }
 
     /**

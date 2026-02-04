@@ -15,6 +15,7 @@ final class ManualRejectPurchaseRequest
 
         $pr->update([
             'status' => 5,
+            'workflow_status' => 'REJECTED',
             'description' => $dto->description,
         ]);
     }
