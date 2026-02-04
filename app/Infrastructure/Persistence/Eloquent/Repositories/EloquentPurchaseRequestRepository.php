@@ -39,7 +39,7 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
 
     public function loadForApprovalContext(PurchaseRequest $pr): PurchaseRequest
     {
-        return $pr->loadMissing([
+        return $pr->load([
             'items',                 // used by buildApprovalContext()
             'fromDepartment',        // used by buildApprovalContext()
             'approvalRequest',       // to check existing request

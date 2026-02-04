@@ -92,7 +92,7 @@ test('approval creates approval record', function () {
     // Verify a step was acted upon
     $this->assertDatabaseHas('approval_steps', [
         'approval_request_id' => $pr->approvalRequest->id,
-        'acted_by_user_id' => $this->approver->id,
+        'acted_by' => $this->approver->id,
     ]);
 });
 

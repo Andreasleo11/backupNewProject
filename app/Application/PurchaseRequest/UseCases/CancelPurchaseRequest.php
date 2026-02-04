@@ -24,13 +24,22 @@ final class CancelPurchaseRequest
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Validate that PR can be cancelled
+            // Authorization: Only creator can cancel
+            if ($pr->user_id_create !== (int) $dto->cancelledByUserId) {
+                throw new \Illuminate\Auth\Access\AuthorizationException('You are not authorized to cancel this purchase request');
+            }
+
+            // Validate that PR can be cancelled (Cannot cancel if already approved or rejected)
             if ($pr->status === 4) {
                 throw new \DomainException('Cannot cancel an approved Purchase Request');
             }
 
             if ($pr->status === 5) {
                 throw new \DomainException('Cannot cancel a rejected Purchase Request');
+            }
+
+            if ($pr->is_cancel) {
+                throw new \DomainException('Purchase Request is already cancelled');
             }
 
             // Update PR to cancelled state

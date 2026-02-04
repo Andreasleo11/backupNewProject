@@ -22,9 +22,17 @@ final class DeletePurchaseRequest
                 throw new \Illuminate\Database\Eloquent\ModelNotFoundException('Purchase Request not found');
             }
 
-            // Validate that PR can be deleted
-            if ($pr->status === 4) {
-                throw new \DomainException('Cannot delete an approved Purchase Request');
+            // Authorization: Only creator can delete
+            if ($pr->user_id_create !== $deletedByUserId) {
+                throw new \Illuminate\Auth\Access\AuthorizationException('You are not authorized to delete this purchase request');
+            }
+
+            // Validation: Only Draft can be deleted
+            if ($pr->status !== 8 || $pr->workflow_status !== 'DRAFT') {
+                if ($pr->status === 4) {
+                    throw new \DomainException('Cannot delete an approved Purchase Request');
+                }
+                throw new \DomainException('Only draft purchase requests can be deleted');
             }
 
             // Soft delete items first (cascade)
