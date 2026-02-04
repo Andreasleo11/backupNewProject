@@ -3,9 +3,9 @@
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 beforeEach(function () {
     $dept = Department::factory()->create(['name' => 'Computer']);
@@ -24,7 +24,9 @@ beforeEach(function () {
 
 test('it can cancel pending purchase request', function () {
     $this->actingAs($this->user);
-    $response = $this->put(route('purchase-requests.cancel', $this->pr->id));
+    $response = $this->put(route('purchase-requests.cancel', $this->pr->id), [
+        'description' => 'Test reason',
+    ]);
 
     $response->assertRedirect();
     $response->assertSessionHas('success');
@@ -45,7 +47,9 @@ test('it cannot cancel approved purchase request', function () {
 
     $this->actingAs($this->user);
 
-    $response = $this->put(route('purchase-requests.cancel', $approvedPr->id));
+    $response = $this->put(route('purchase-requests.cancel', $approvedPr->id), [
+        'description' => 'Attempt to cancel approved',
+    ]);
 
     $response->assertForbidden();
 
@@ -65,7 +69,9 @@ test('it cannot cancel already cancelled purchase request', function () {
 
     $this->actingAs($this->user);
 
-    $response = $this->put(route('purchase-requests.cancel', $cancelledPr->id));
+    $response = $this->put(route('purchase-requests.cancel', $cancelledPr->id), [
+        'description' => 'Attempt to cancel already cancelled',
+    ]);
 
     $response->assertForbidden();
 });
@@ -79,7 +85,9 @@ test('user can only cancel their own purchase requests', function () {
 
     $this->actingAs($this->user);
 
-    $response = $this->put(route('purchase-requests.cancel', $otherPr->id));
+    $response = $this->put(route('purchase-requests.cancel', $otherPr->id), [
+        'description' => 'Attempt to cancel other user pr',
+    ]);
 
     $response->assertForbidden();
 

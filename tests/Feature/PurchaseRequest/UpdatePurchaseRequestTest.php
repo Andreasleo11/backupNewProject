@@ -3,9 +3,9 @@
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 beforeEach(function () {
     $this->dept = Department::factory()->create([
@@ -39,13 +39,13 @@ test('it can update a draft purchase request', function () {
         'remark' => 'Updated remark',
         'supplier' => 'Updated Supplier',
         'pic' => 'Updated PIC',
-        'is_draft' => true,
+        'is_draft' => '1',
         'items' => [
             [
                 'item_name' => 'Updated Item',
                 'quantity' => 20,
                 'uom' => 'PCS',
-                'price' => 150.00,
+                'price' => 'Rp 150.00',
                 'currency' => 'IDR',
                 'purpose' => 'Updated purpose',
             ],
@@ -87,7 +87,7 @@ test('it cannot update approved purchase request', function () {
                 'item_name' => 'Item',
                 'quantity' => 1,
                 'uom' => 'PCS',
-                'price' => 100,
+                'price' => '100.00',
                 'currency' => 'IDR',
                 'purpose' => 'Test',
             ],
@@ -108,13 +108,13 @@ test('it updates items when updating purchase request', function () {
         'date_of_required' => now()->addDays(7)->format('Y-m-d'),
         'supplier' => 'Supplier',
         'pic' => 'PIC',
-        'is_draft' => true,
+        'is_draft' => '1',
         'items' => [
             [
                 'item_name' => 'New Item 1',
                 'quantity' => 5,
                 'uom' => 'PCS',
-                'price' => 100,
+                'price' => '100.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -122,7 +122,7 @@ test('it updates items when updating purchase request', function () {
                 'item_name' => 'New Item 2',
                 'quantity' => 10,
                 'uom' => 'PCS',
-                'price' => 200,
+                'price' => '200.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -164,7 +164,7 @@ test('user can only update their own purchase requests', function () {
                 'item_name' => 'Item',
                 'quantity' => 1,
                 'uom' => 'PCS',
-                'price' => 100,
+                'price' => '100.00',
                 'currency' => 'IDR',
                 'purpose' => 'Test',
             ],

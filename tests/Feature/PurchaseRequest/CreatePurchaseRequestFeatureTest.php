@@ -3,9 +3,9 @@
 use App\Models\Department;
 use App\Models\PurchaseRequest;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTruncation;
 
-uses(RefreshDatabase::class);
+uses(DatabaseTruncation::class);
 
 beforeEach(function () {
     $this->seed(\Database\Seeders\PrRoleMappingSeeder::class);
@@ -39,13 +39,13 @@ test('it can create a purchase request successfully', function () {
         'remark' => 'Test purchase request',
         'supplier' => 'Test Supplier',
         'pic' => 'Test PIC',
-        'is_draft' => false,
+        'is_draft' => '0',
         'items' => [
             [
                 'item_name' => 'Test Item 1',
                 'quantity' => 10,
                 'uom' => 'PCS',
-                'price' => 100.50,
+                'price' => 'Rp 100.50',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -53,7 +53,7 @@ test('it can create a purchase request successfully', function () {
                 'item_name' => 'Test Item 2',
                 'quantity' => 5,
                 'uom' => 'PCS',
-                'price' => 200.00,
+                'price' => '200.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -102,13 +102,13 @@ test('it creates draft purchase request with status 8', function () {
         'remark' => 'Draft PR',
         'supplier' => 'Test Supplier',
         'pic' => 'Test PIC',
-        'is_draft' => true, // Draft mode
+        'is_draft' => '1', // Draft mode
         'items' => [
             [
                 'item_name' => 'Draft Item',
                 'quantity' => 1,
                 'uom' => 'PCS',
-                'price' => 50,
+                'price' => 'Rp 50.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing draft',
             ],
@@ -134,13 +134,13 @@ test('it generates unique document numbers', function () {
         'remark' => 'First PR',
         'supplier' => 'Test Supplier',
         'pic' => 'Test PIC',
-        'is_draft' => false,
+        'is_draft' => '0',
         'items' => [
             [
                 'item_name' => 'Item 1',
                 'quantity' => 1,
                 'uom' => 'PCS',
-                'price' => 100,
+                'price' => '100.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -157,13 +157,13 @@ test('it generates unique document numbers', function () {
         'remark' => 'Second PR',
         'supplier' => 'Test Supplier 2',
         'pic' => 'Test PIC 2',
-        'is_draft' => false,
+        'is_draft' => '0',
         'items' => [
             [
                 'item_name' => 'Item 2',
                 'quantity' => 2,
                 'uom' => 'PCS',
-                'price' => 200,
+                'price' => '200.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -206,7 +206,7 @@ test('it requires at least one item', function () {
         'remark' => 'Test',
         'supplier' => 'Test Supplier',
         'pic' => 'Test PIC',
-        'is_draft' => false,
+        'is_draft' => '0',
         'items' => [], // No items
     ]);
 
@@ -226,13 +226,13 @@ test('it sets correct status for plastic injection department', function () {
         'remark' => 'Test',
         'supplier' => 'Test Supplier',
         'pic' => 'Test PIC',
-        'is_draft' => false,
+        'is_draft' => '0',
         'items' => [
             [
                 'item_name' => 'Test Item',
                 'quantity' => 1,
                 'uom' => 'PCS',
-                'price' => 100,
+                'price' => '100.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
@@ -259,13 +259,13 @@ test('it sets correct status for personalia department', function () {
         'remark' => 'Test',
         'supplier' => 'Test Supplier',
         'pic' => 'Test PIC',
-        'is_draft' => false,
+        'is_draft' => '0',
         'items' => [
             [
                 'item_name' => 'Test Item',
                 'quantity' => 1,
                 'uom' => 'PCS',
-                'price' => 100,
+                'price' => '100.00',
                 'currency' => 'IDR',
                 'purpose' => 'Testing',
             ],
