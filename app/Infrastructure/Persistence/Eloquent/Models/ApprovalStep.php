@@ -21,7 +21,20 @@ class ApprovalStep extends Model
     }
 
     protected $fillable = [
-        'approval_request_id', 'sequence', 'approver_type', 'approver_id', 'status', 'acted_by', 'acted_at', 'remarks', 'user_signature_id', 'signature_image_path', 'signature_sha256',
+        'approval_request_id',
+        'sequence',
+        'approver_type',
+        'approver_id',
+        'approver_snapshot_name',
+        'approver_snapshot_role_slug',
+        'approver_snapshot_label',
+        'status',
+        'acted_by',
+        'acted_at',
+        'remarks',
+        'user_signature_id',
+        'signature_image_path',
+        'signature_sha256',
     ];
 
     protected $casts = ['acted_at' => 'datetime'];

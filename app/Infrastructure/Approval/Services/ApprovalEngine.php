@@ -59,10 +59,15 @@ final class ApprovalEngine implements Approvals
 
             // snapshot steps
             foreach ($tpl->steps as $s) {
+                $snapshot = $this->resolveApproverSnapshot($s->approver_type, $s->approver_id);
+
                 $req->steps()->create([
                     'sequence' => $s->sequence,
                     'approver_type' => $s->approver_type,
                     'approver_id' => $s->approver_id,
+                    'approver_snapshot_name' => $snapshot['name'],
+                    'approver_snapshot_role_slug' => $snapshot['role_slug'],
+                    'approver_snapshot_label' => $snapshot['label'],
                     'status' => 'PENDING',
                 ]);
             }
@@ -240,5 +245,40 @@ final class ApprovalEngine implements Approvals
                 'remarks' => $remarks,
             ]
         );
+    }
+
+    private function resolveApproverSnapshot(string $type, int $id): array
+    {
+        if ($type === 'user') {
+            $user = \App\Infrastructure\Persistence\Eloquent\Models\User::find($id);
+
+            return [
+                'name' => $user->name ?? 'Unknown User',
+                'role_slug' => null,
+                'label' => $user->name ?? 'Unknown User',
+            ];
+        }
+
+        // role
+        $role = \Spatie\Permission\Models\Role::find($id);
+
+        return [
+            'name' => $role->name ?? 'Unknown Role',
+            'role_slug' => $role->name ?? null,
+            'label' => $this->getRoleLabel($role->name ?? ''),
+        ];
+    }
+
+    private function getRoleLabel(string $slug): string
+    {
+        return match ($slug) {
+            'pr-dept-head-office', 'pr-dept-head-factory' => 'Dept head',
+            'pr-verificator-computer' => 'Verificator (Computer)',
+            'pr-verificator-personalia' => 'Verificator (Personalia)',
+            'pr-director' => 'Director',
+            'pr-gm' => 'General Manager',
+            'pr-purchaser' => 'Purchasing',
+            default => $slug,
+        };
     }
 }
