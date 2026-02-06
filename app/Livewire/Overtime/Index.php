@@ -426,7 +426,7 @@ class Index extends Component
                     $form->user_id = $andriani->id;
                     $form->saveQuietly();
                 }
-            } elseif ($user->specification->name === 'VERIFICATOR') {
+            } elseif ($user->hasRole('VERIFICATOR')) {
                 $query->where(function ($subQuery) {
                     $subQuery->where('status', 'approved')->orWhere(function ($q) {
                         $q->where('status', 'waiting-dept-head')->whereHas(
@@ -435,7 +435,7 @@ class Index extends Component
                         );
                     });
                 });
-            } elseif ($user->specification->name === 'DIRECTOR') {
+            } elseif ($user->hasRole('DIRECTOR')) {
                 $query->where('status', 'waiting-director');
             } elseif ($user->is_gm) {
                 $query
@@ -491,7 +491,7 @@ class Index extends Component
         }
 
         if (
-            Auth::user()->specification->name === 'VERIFICATOR' &&
+            Auth::user()->hasRole('VERIFICATOR') &&
             ($this->isPush === '0' || $this->isPush === '1')
         ) {
             $query->where('is_push', (int) $this->isPush);
@@ -535,7 +535,7 @@ class Index extends Component
         if ($manual) {
             $query->orderBy($this->sortField, $this->sortDirection);
         } else {
-            if ($user->specification->name === 'VERIFICATOR') {
+            if ($user->hasRole('VERIFICATOR')) {
                 $query->orderBy('first_overtime_date', 'asc');
             } else {
                 $query->orderBy('id', 'desc');

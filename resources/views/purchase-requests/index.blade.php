@@ -3,46 +3,32 @@
 @section('title', 'Purchase Requisition List')
 
 @section('content')
-    <div class="mx-auto max-w-6xl px-3 py-6 sm:px-4 lg:px-0">
-        {{-- TOP BAR: TITLE + ACTION BUTTONS --}}
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6">
+        {{-- HEADER CARD --}}
+        <div class="glass-card flex flex-wrap items-center justify-between gap-4 p-5">
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-800 sm:text-2xl">
-                    Purchase Requisition List
+                <h1 class="text-2xl font-bold tracking-tight text-slate-800">
+                    Purchase Requisition
                 </h1>
-                <p class="mt-1 text-xs text-slate-500 sm:text-sm">
-                    Lihat, filter, dan ekspor daftar Purchase Requisition yang tercatat di sistem.
+                <p class="mt-1 text-sm text-slate-500">
+                    Manage and track all procurement requests in one place.
                 </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-2">
+            <div class="flex flex-wrap items-center gap-3">
                 {{-- Export button --}}
                 <a href="{{ route('purchase-requests.export-excel') }}"
-                   class="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-100">
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                         class="h-4 w-4"
-                         viewBox="0 0 20 20"
-                         fill="currentColor">
-                        <path d="M3 4a1 1 0 011-1h3v2H5v10h10V5h-2V3h3a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"/>
-                        <path d="M9 3h2v2h2v2h-2v2H9V7H7V5h2V3z"/>
-                    </svg>
-                    <span>Export Excel</span>
+                   class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 hover:shadow-md hover:-translate-y-0.5">
+                    <i class="bi bi-file-earmark-excel text-lg"></i>
+                    <span>Export</span>
                 </a>
 
-                {{-- Create PR (non Director) --}}
-                {{-- Deprecation for specification --}}
-                {{-- Do check on role instead --}}
+                {{-- Create PR (Role Check) --}}
                 @if (Auth::user()->specification?->name !== 'DIRECTOR' && !Auth::user()->hasRole('director'))
                     <a href="{{ route('purchase-requests.create') }}"
-                       class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-indigo-700">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             class="h-4 w-4"
-                             viewBox="0 0 20 20"
-                             fill="currentColor">
-                            <path
-                                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 010-2h3V6a1 1 0 011-1z"/>
-                        </svg>
-                        <span>Create PR</span>
+                       class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:-translate-y-0.5">
+                        <i class="bi bi-plus-lg text-lg"></i>
+                        <span>New Request</span>
                     </a>
                 @endif
             </div>
@@ -51,19 +37,16 @@
         {{-- STATS DASHBOARD --}}
         @include('partials.pr-stats-cards', ['stats' => $stats])
 
-        {{-- INFO STRIP / LEGEND (optional) --}}
-        <div class="mb-4 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-600 shadow-sm sm:text-xs">
-            <div class="flex flex-wrap items-center gap-2">
-                <span class="font-semibold text-slate-700">Tips:</span>
-                <span>Gunakan <span class="font-semibold">Search Panes</span> di atas tabel untuk filter cepat by status, dept, dll.</span>
-            </div>
-        </div>
+        {{-- DATATABLE CARD --}}
+        <div class="glass-card overflow-hidden p-1">
+            <div class="rounded-xl bg-white/50 p-4">
+                {{-- Tips/Info --}}
+                <div class="mb-4 flex items-center gap-2 rounded-lg bg-blue-50/50 px-3 py-2 text-xs text-blue-700 border border-blue-100">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span><strong>Pro Tip:</strong> Use the <strong>Search Panes</strong> button above the table to filter by multiple criteria instantly.</span>
+                </div>
 
-        {{-- DATATABLE WRAPPER --}}
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div class="overflow-x-auto">
-                {{-- Yajra DataTable (tetap pakai struktur aslinya) --}}
-                <div class="p-2 sm:p-3">
+                <div class="premium-datatable-wrapper">
                     {{ $dataTable->table() }}
                 </div>
             </div>
@@ -71,20 +54,72 @@
     </div>
 
     {{-- Search Panes CSS --}}
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/searchpanes/2.1.1/css/searchPanes.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.1.1/css/searchPanes.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     {{-- Search Panes JS --}}
-    <script type="module"
-            src="https://cdn.datatables.net/searchpanes/2.3.3/js/dataTables.searchPanes.min.js"></script>
-    <script type="module"
-            src="https://cdn.datatables.net/searchpanes/2.3.3/js/searchPanes.bootstrap5.min.js"></script>
+    <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/dataTables.searchPanes.min.js"></script>
+    <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/searchPanes.bootstrap5.min.js"></script>
+
+    <style>
+        /* Custom DataTable Styling Overrides */
+        .dataTables_wrapper .dataTables_length select {
+            border-radius: 0.5rem;
+            border-color: #e2e8f0;
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 0.5rem;
+            border-color: #e2e8f0;
+            padding-top: 0.35rem;
+            padding-bottom: 0.35rem;
+        }
+        table.dataTable.table-striped > tbody > tr.odd > * {
+            box-shadow: none !important; /* Remove bootstrap striped shadow */
+            background-color: rgba(248, 250, 252, 0.5); /* Very light slate */
+        }
+        table.dataTable.table-striped > tbody > tr:hover > * {
+            background-color: rgba(241, 245, 249, 0.8) !important; /* Slate-100 on hover */
+        }
+        table.dataTable {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        table.dataTable thead th {
+            border-bottom: 1px solid #e2e8f0 !important;
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+        }
+        .page-item.active .page-link {
+            background-color: #4f46e5 !important;
+            border-color: #4f46e5 !important;
+            border-radius: 0.5rem;
+        }
+        .page-link {
+            border-radius: 0.5rem;
+            margin: 0 2px;
+            color: #64748b;
+            border: none;
+        }
+        div.dt-button-collection {
+            border-radius: 1rem !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 0.5rem !important;
+        }
+    </style>
 @endsection
 
 @push('scripts')
-    {{-- Chart.js (kalau nanti mau dipakai untuk summary chart) --}}
+    {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    {{-- Yajra datatable scripts --}}
     {{ $dataTable->scripts() }}
 @endpush

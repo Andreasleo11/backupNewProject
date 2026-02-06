@@ -72,9 +72,7 @@ class PurchaseRequestRecipientResolver
         // Status 6: Pending Purchaser
         if ($newStatus === 6) {
             // Notify all purchasers
-            $purchasers = User::whereHas('specification', function ($query) {
-                $query->where('name', 'PURCHASER');
-            })->get();
+            $purchasers = User::role('PURCHASER')->get();
 
             $recipients = $recipients->merge($purchasers);
 
@@ -94,18 +92,14 @@ class PurchaseRequestRecipientResolver
 
         // Status 2: Pending Verificator
         if ($newStatus === 2) {
-            $verificators = User::whereHas('specification', function ($query) {
-                $query->where('name', 'VERIFICATOR');
-            })->get();
+            $verificators = User::role('VERIFICATOR')->get();
 
             $recipients = $recipients->merge($verificators);
         }
 
         // Status 3: Pending Director
         if ($newStatus === 3) {
-            $directors = User::whereHas('specification', function ($query) {
-                $query->where('name', 'DIRECTOR');
-            })->get();
+            $directors = User::role('DIRECTOR')->get();
 
             $recipients = $recipients->merge($directors);
         }

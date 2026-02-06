@@ -102,7 +102,7 @@ final class ItemApprovalAuthorizationService
      */
     private function canActAsVerificator(User $user): bool
     {
-        return $user->specification?->name === 'VERIFICATOR';
+        return $user->hasRole('VERIFICATOR');
     }
 
     /**
@@ -110,6 +110,6 @@ final class ItemApprovalAuthorizationService
      */
     private function canActAsDirector(User $user): bool
     {
-        return $user->specification?->name === 'DIRECTOR';
+        return $user->hasRole('DIRECTOR');
     }
 }

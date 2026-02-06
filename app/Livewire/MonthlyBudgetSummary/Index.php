@@ -117,9 +117,9 @@ class Index extends Component
             ->withPrevTotals();
 
         // Role based visibility
-        if ($user->specification->name === 'DIRECTOR') {
+        if ($user->hasRole('DIRECTOR')) {
             $query->whereIn('status', [4, 5, 6]);
-        } elseif ($user->is_head && $user->specification->name === 'DESIGN') {
+        } elseif ($user->is_head && $user->hasRole('DESIGN')) {
             $query->where('status', 3);
         } elseif ($user->is_gm) {
             $query->where('status', 2);

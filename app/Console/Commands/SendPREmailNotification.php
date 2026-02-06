@@ -95,20 +95,13 @@ class SendPREmailNotification extends Command
                 $to = $purchaser;
                 break;
             case 2:
-                $user = User::with('specification')
-                    ->whereHas('specification', function ($query) {
-                        $query->where('name', 'VERIFICATOR');
-                    })
+                $user = User::role('VERIFICATOR')
                     ->where('is_head', 1)
                     ->first();
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 3:
-                $user = User::with('specification')
-                    ->whereHas('specification', function ($query) {
-                        $query->where('name', 'DIRECTOR');
-                    })
-                    ->first();
+                $user = User::role('DIRECTOR')->first();
                 $to = $user ? $user->email : $newPr->createdBy->email;
                 break;
             case 4:

@@ -1,5 +1,5 @@
 {{-- 
-    Purchase Request Approval Timeline
+    Purchase Request Approval Timeline (Vertical)
     Shows visual progress through the approval workflow
     
     Props:
@@ -14,88 +14,107 @@
 @endphp
 
 @if($approval && $totalSteps > 0)
-    <div class="relative px-4 py-6">
-        {{-- Progress Bar Background --}}
-        <div class="absolute left-8 right-8 top-10 h-1 bg-slate-200 rounded"></div>
+    <div class="relative px-2 py-2">
         
-        {{-- Progress Bar Fill --}}
-        @php
-            $progressPercent = $totalSteps > 0 ? (($currentStep / $totalSteps) * 100) : 0;
-        @endphp
-        <div class="absolute left-8 right-8 top-10 h-1 bg-indigo-500 rounded transition-all duration-500"
-             style="width: {{ $progressPercent }}%"></div>
-        
-        {{-- Steps --}}
-        <div class="relative flex justify-between">
+        <div class="space-y-0">
             @foreach($steps as $step)
                 @php
                     $isCompleted = $step->sequence < $currentStep;
                     $isCurrent = $step->sequence == $currentStep;
                     $isPending = $step->sequence > $currentStep;
+                    $isLast = $loop->last;
                     
-                    $circleClasses = match(true) {
-                        $isCompleted => 'bg-emerald-500 border-emerald-500 text-white',
-                        $isCurrent => 'bg-white border-indigo-500 text-indigo-600',
-                        default => 'bg-white border-slate-300 text-slate-400',
+                    $userLabel = $step->approver_snapshot_label ?? $step->approver?->name ?? 'Unknown';
+                    
+                    // Colors
+                    $dotColor = match(true) {
+                        $isCompleted => 'bg-emerald-500 ring-emerald-100',
+                        $isCurrent => 'bg-white border-2 border-indigo-600 ring-indigo-50',
+                        $approval->status == 'REJECTED' && $isCurrent => 'bg-rose-500 ring-rose-100', // If rejected at this step
+                        default => 'bg-slate-200 ring-slate-50',
                     };
                     
-                    $labelClasses = match(true) {
-                        $isCurrent => 'text-indigo-600 font-semibold',
-                        $isCompleted => 'text-emerald-600',
-                        default => 'text-slate-500',
+                    $icon = match(true) {
+                        $isCompleted => '<i class="bi bi-check text-white text-xs"></i>',
+                        $isCurrent => '<div class="h-2 w-2 rounded-full bg-indigo-600"></div>',
+                        default => '',
                     };
                 @endphp
                 
-                <div class="flex flex-col items-center" style="flex: 1;">
-                    {{-- Circle --}}
-                    <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border-4 {{ $circleClasses }} shadow-sm">
-                        @if($isCompleted)
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        @else
-                            <span class="text-sm font-bold">{{ $step->sequence }}</span>
-                        @endif
+                <div class="relative flex gap-4 pb-8 {{ $isLast ? 'pb-0' : '' }}">
+                    {{-- Connecting Line --}}
+                    @if(!$isLast)
+                        <div class="absolute left-3.5 top-8 h-full w-0.5 bg-slate-100 -ml-px"></div>
+                    @endif
+                    
+                    {{-- Dot/Icon --}}
+                    <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ring-4 {{ $dotColor }} transition-all">
+                        {!! $icon !!}
                     </div>
                     
-                    {{-- Label --}}
-                    <div class="mt-3 text-center max-w-[120px]">
-                        <p class="text-xs {{ $labelClasses }} truncate" title="{{ $step->approver_snapshot_label ?? $step->approver?->name ?? 'Unknown' }}">
-                            {{ $step->approver_snapshot_label ?? $step->approver?->name ?? 'Unknown' }}
-                        </p>
-                        
-                        @if($step->acted_at)
-                            <p class="text-[10px] text-slate-400 mt-1">
-                                {{ \Carbon\Carbon::parse($step->acted_at)->format('d M, H:i') }}
-                            </p>
-                        @elseif($isCurrent)
-                            <p class="text-[10px] text-indigo-500 mt-1 font-medium">
-                                Pending
-                            </p>
-                        @endif
+                    {{-- Content --}}
+                    <div class="pt-0.5 w-full">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold {{ $isCurrent ? 'text-indigo-700' : 'text-slate-700' }}">
+                                {{ $userLabel }}
+                            </span>
+                            <span class="text-[10px] uppercase tracking-wide text-slate-500">
+                                {{ $step->role_name ?? 'Approver' }}
+                            </span>
+                            
+                            @if($step->acted_at)
+                                <span class="mt-1 text-[10px] text-slate-400">
+                                    {{ \Carbon\Carbon::parse($step->acted_at)->format('d M Y, H:i') }}
+                                </span>
+                            @elseif($isCurrent)
+                                <div class="mt-2 flex items-center gap-1.5">
+                                    <span class="relative flex h-2 w-2">
+                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                    </span>
+                                    <span class="text-[10px] font-medium text-indigo-500">Awaiting Action</span>
+                                </div>
+                            @endif
+                            
+                            {{-- Specific comments if any --}}
+                            @if($step->comment)
+                                <div class="mt-2 rounded-lg bg-slate-50 p-2 text-[10px] italic text-slate-600 border border-slate-100">
+                                    "{{ $step->comment }}"
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @endforeach
         </div>
         
-        {{-- Status Summary --}}
-        <div class="mt-6 text-center">
-            <p class="text-xs text-slate-500">
-                @if($approval->status == 'APPROVED')
-                    <span class="text-emerald-600 font-semibold">✓ Fully Approved</span>
-                @elseif($approval->status == 'REJECTED')
-                    <span class="text-rose-600 font-semibold">✗ Rejected</span>
-                @else
-                    Step <span class="font-semibold">{{ $currentStep }}</span> of <span class="font-semibold">{{ $totalSteps }}</span>
-                @endif
-            </p>
-        </div>
+        {{-- Final Status --}}
+        @if($approval->status == 'APPROVED')
+             <div class="relative flex gap-4 mt-8">
+                 <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-600 ring-4 ring-emerald-100">
+                    <i class="bi bi-check-all text-white text-xs"></i>
+                </div>
+                <div class="pt-1">
+                    <p class="text-xs font-bold text-emerald-700">Fully Approved</p>
+                </div>
+             </div>
+        @elseif($approval->status == 'REJECTED')
+             <div class="relative flex gap-4 mt-8">
+                 <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rose-600 ring-4 ring-rose-100">
+                    <i class="bi bi-x-lg text-white text-xs"></i>
+                </div>
+                <div class="pt-1">
+                    <p class="text-xs font-bold text-rose-700">Request Rejected</p>
+                </div>
+             </div>
+        @endif
+
     </div>
 @else
-    {{-- No workflow available --}}
-    <div class="px-4 py-6 text-center">
-        <p class="text-sm text-slate-400">
-            No approval workflow initiated yet.
-        </p>
+    <div class="py-4 text-center">
+        <div class="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <i class="bi bi-hourglass text-lg"></i>
+        </div>
+        <p class="text-xs text-slate-500">Workflow not started</p>
     </div>
 @endif

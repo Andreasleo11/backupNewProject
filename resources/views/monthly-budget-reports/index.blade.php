@@ -7,7 +7,7 @@
         $authUser = auth()->user();
 
         $showCreateButton = false;
-        if (!$authUser->is_head && !$authUser->is_gm && $authUser->department->name !== 'MANAGEMENT') {
+        if (!$authUser->is_head && !$authUser->is_gm && $authUser->department?->name !== 'MANAGEMENT') {
             $showCreateButton = true;
         }
     @endphp

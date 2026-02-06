@@ -45,7 +45,7 @@ final class DailyReportAnalyticsService
      */
     private function canViewAllDepartments($user): bool
     {
-        return $user->name === 'Bernadett' || $user->specification->name === 'DIRECTOR';
+        return $user->name === 'Bernadett' || $user->hasRole('DIRECTOR');
     }
 
     /**

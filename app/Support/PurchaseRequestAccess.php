@@ -12,7 +12,7 @@ final class PurchaseRequestAccess
         $userDepartmentName = $user->department->name ?? null;
         $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && (int) $user->is_head === 1;
         $isHead = (int) $user->is_head === 1;
-        $isPurchaser = ($user->specification->name ?? null) === 'PURCHASER';
+        $isPurchaser = $user->hasRole('PURCHASER');
         $isGM = (int) $user->is_gm === 1;
 
         // super-admin (matches your index logic style)

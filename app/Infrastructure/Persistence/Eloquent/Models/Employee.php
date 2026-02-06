@@ -44,12 +44,12 @@ class Employee extends Authenticatable
 
     public function evaluationData(): HasMany
     {
-        return $this->hasMany(EvaluationData::class, 'nik', 'NIK');
+        return $this->hasMany(EvaluationData::class, 'NIK', 'nik');
     }
 
     public function warningLogs(): HasMany
     {
-        return $this->hasMany(EmployeeWarningLog::class, 'nik', 'NIK');
+        return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'nik');
     }
 
     public function department(): BelongsTo

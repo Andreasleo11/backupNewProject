@@ -242,7 +242,7 @@ class PurchaseOrderDataTable extends DataTable
                 return 'row-' . $po->id; // Set a unique row ID
             });
         // Conditionally add the checkbox column for directors
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             $dataTable->addColumn('checkbox', function ($po) {
                 return '<input type="checkbox" class="row-checkbox" value="' . $po->id . '">';
             });
@@ -302,7 +302,7 @@ class PurchaseOrderDataTable extends DataTable
         ];
 
         // Add conditional buttons for directors
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             $buttons = array_merge(
                 [
                     Button::make()
@@ -375,7 +375,7 @@ class PurchaseOrderDataTable extends DataTable
         ];
 
         // Conditionally add the checkbox column for directors
-        if (auth()->user()->specification->name === 'DIRECTOR') {
+        if (auth()->user()->hasRole('DIRECTOR')) {
             array_unshift(
                 $columns,
                 Column::computed('checkbox')

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Employee extends Authenticatable
@@ -34,15 +35,15 @@ class Employee extends Authenticatable
 
     public function evaluationData()
     {
-        return $this->hasMany(EvaluationData::class, 'NIK', 'NIK');
+        return $this->hasMany(EvaluationData::class, 'NIK', 'nik');
     }
 
     public function warningLogs()
     {
-        return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'NIK');
+        return $this->hasMany(EmployeeWarningLog::class, 'NIK', 'nik');
     }
 
-    public function department()
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_code', 'dept_no');
     }

@@ -149,14 +149,12 @@ class MonthlyBudgetReport extends Model
                 ! $this->approved_autograph
             ) {
                 if ($this->department->name === 'MOULDING') {
-                    $user = User::with('department', 'specification')
+                    $user = User::with('department')
+                        ->role('DESIGN')
                         ->whereHas('department', function ($query) {
                             $query->where('name', 'MOULDING');
                         })
                         ->where('is_head', 1)
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'design');
-                        })
                         ->first();
                 } elseif ($this->department->name === 'STORE') {
                     $user = User::where('is_head', 1)
@@ -177,21 +175,17 @@ class MonthlyBudgetReport extends Model
                 ! $this->approved_autograph
             ) {
                 if ($this->department->name === 'MOULDING') {
-                    $user = User::with('department', 'specification')
+                    $user = User::with('department')
+                        ->whereDoesntHave('roles', function ($query) {
+                            $query->where('name', 'DESIGN');
+                        })
                         ->whereHas('department', function ($query) {
                             $query->where('name', 'MOULDING');
                         })
                         ->where('is_head', 1)
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', '!=', 'design');
-                        })
                         ->first();
                 } elseif ($this->department->name === 'QA' || $this->department->name === 'QC') {
-                    $user = User::with('specification')
-                        ->whereHas('specification', function ($query) {
-                            $query->where('name', 'DIRECTOR');
-                        })
-                        ->first();
+                    $user = User::role('DIRECTOR')->first();
                 } else {
                     $user = User::where('email', 'albert@daijo.co.id')->first();
                 }

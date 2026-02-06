@@ -48,7 +48,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model::with(['role', 'department', 'specification'])->newQuery();
+        return $model::with(['roles', 'department'])->newQuery();
     }
 
     /**
@@ -112,8 +112,9 @@ class UsersDataTable extends DataTable
                 ->searchable(false)
                 ->addClass('align-middle')
                 ->orderable(false),
-            Column::make('specification')
-                ->data('specification.name')
+            Column::make('roles')
+                ->data('roles.0.name')
+                ->title('Roles')
                 ->searchable(false)
                 ->addClass('align-middle')
                 ->orderable(false),

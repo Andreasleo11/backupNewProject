@@ -19,7 +19,7 @@ final class PurchaseRequestDetailCalculator
             ->filter(function ($detail) use ($user, $pr) {
                 // this was your legacy filtering inside show()
 
-                if ($user->specification?->name === 'DIRECTOR') {
+                if ($user->hasRole('DIRECTOR')) {
                     if ($pr->type === 'factory') {
                         if ($pr->to_department?->value === 'COMPUTER' || $pr->to_department === 'Computer') {
                             return $detail->is_approve_by_head
@@ -33,7 +33,7 @@ final class PurchaseRequestDetailCalculator
                     return $detail->is_approve_by_head && $detail->is_approve_by_verificator;
                 }
 
-                if ($user->specification?->name === 'VERIFICATOR') {
+                if ($user->hasRole('VERIFICATOR')) {
                     if (
                         ($pr->to_department?->value === 'COMPUTER' || $pr->to_department === 'Computer')
                         && $pr->type === 'factory'

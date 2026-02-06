@@ -31,7 +31,7 @@
                     Export All
                 </a>
 
-                @if (true)
+                @if ($currentUser->department?->name === 'QC' && $currentUser->hasRole('INSPECTOR'))
                     <a href="{{ route('qaqc.report.create') }}"
                        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                         <i class='bx bx-plus mr-1 text-base'></i>

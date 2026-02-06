@@ -87,7 +87,7 @@ final class UpdatePurchaseRequest
     private function preserveApprovalStates(PurchaseRequest $pr, $oldDetails, int $userId): void
     {
         $user = \App\Models\User::find($userId);
-        $isPurchaser = $user?->specification?->name === 'PURCHASER';
+        $isPurchaser = $user?->hasRole('PURCHASER');
 
         $newDetails = DetailPurchaseRequest::where('purchase_request_id', $pr->id)->get();
 

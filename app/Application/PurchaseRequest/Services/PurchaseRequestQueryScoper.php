@@ -16,7 +16,7 @@ final class PurchaseRequestQueryScoper
         $userDepartmentName = $user->department->name ?? null;
         $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && $user->is_head === 1;
         $isHead = $user->is_head === 1;
-        $isPurchaser = $user->specification?->name === 'PURCHASER';
+        $isPurchaser = $user->hasRole('PURCHASER');
         $isGM = $user->is_gm === 1;
 
         if ($isPersonaliaHead) {

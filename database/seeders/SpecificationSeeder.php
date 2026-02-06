@@ -12,15 +12,25 @@ class SpecificationSeeder extends Seeder
      */
     public function run(): void
     {
-        Specification::firstOrCreate(['name' => '-']);
-        Specification::firstOrCreate(['name' => 'INSPECTOR']);
-        Specification::firstOrCreate(['name' => 'LEADER']);
-        Specification::firstOrCreate(['name' => 'STAFF']);
-        Specification::firstOrCreate(['name' => 'DIRECTOR']);
-        Specification::firstOrCreate(['name' => 'ADMIN']);
-        Specification::firstOrCreate(['name' => 'HEAD']);
-        Specification::firstOrCreate(['name' => 'PURCHASER']);
-        Specification::firstOrCreate(['name' => 'VERIFICATOR']);
-        Specification::firstOrCreate(['name' => 'DESIGN']);
+        $specs = [
+            1 => '-',
+            2 => 'INSPECTOR',
+            3 => 'LEADER',
+            4 => 'STAFF',
+            5 => 'DIRECTOR',
+            6 => 'ADMIN',
+            7 => 'HEAD',
+            14 => 'PURCHASER',
+            15 => 'VERIFICATOR',
+            16 => 'DESIGN',
+            17 => 'SUPERVISOR',
+        ];
+
+        foreach ($specs as $id => $name) {
+            Specification::updateOrCreate(
+                ['id' => $id],
+                ['name' => $name]
+            );
+        }
     }
 }

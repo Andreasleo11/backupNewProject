@@ -14,13 +14,11 @@ final class PurchaseRequestItemFilter
      */
     public function filterItemsForUser(User $user, PurchaseRequest $pr, Collection $items): Collection
     {
-        $specificationName = $user->specification?->name;
-
-        if ($specificationName === 'DIRECTOR') {
+        if ($user->hasRole('DIRECTOR')) {
             return $this->filterForDirector($pr, $items);
         }
 
-        if ($specificationName === 'VERIFICATOR') {
+        if ($user->hasRole('VERIFICATOR')) {
             return $this->filterForVerificator($pr, $items);
         }
 

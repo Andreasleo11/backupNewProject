@@ -91,17 +91,11 @@ class HeaderFormOvertime extends Model
 
     public function sendNotification($report)
     {
-        $director = User::whereHas('specification', function ($query) {
-            $query->where('name', 'DIRECTOR');
-        })->first();
+        $director = User::role('DIRECTOR')->first();
 
-        $verificator = User::whereHas('specification', function ($query) {
-            $query->where('name', 'VERIFICATOR');
-        })->first();
+        $verificator = User::role('VERIFICATOR')->first();
 
-        $supervisor = User::whereHas('specification', function ($query) {
-            $query->where('name', 'SUPERVISOR');
-        })->first();
+        $supervisor = User::role('SUPERVISOR')->first();
 
         $deptHead = User::where('is_head', 1)->where('department_id', $report->dept_id)->first();
 

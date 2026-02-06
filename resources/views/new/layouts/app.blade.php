@@ -40,13 +40,25 @@
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1rem;
+        }
         .main-gradient {
-            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.03), transparent),
-                        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.03), transparent),
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent),
+                        radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.05), transparent),
                         #f8fafc;
+        }
+        .premium-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 5px;
+            height: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;

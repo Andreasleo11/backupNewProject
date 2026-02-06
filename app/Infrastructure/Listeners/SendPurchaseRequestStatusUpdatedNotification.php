@@ -97,10 +97,7 @@ class SendPurchaseRequestStatusUpdatedNotification
                 break;
 
             case 2: // WAITING FOR VERIFICATOR
-                $verificator = User::with('specification')
-                    ->whereHas('specification', function ($query) {
-                        $query->where('name', 'VERIFICATOR');
-                    })
+                $verificator = User::role('VERIFICATOR')
                     ->where('is_head', 1)
                     ->first();
 
@@ -108,11 +105,7 @@ class SendPurchaseRequestStatusUpdatedNotification
                 break;
 
             case 3: // WAITING FOR DIRECTOR
-                $director = User::with('specification')
-                    ->whereHas('specification', function ($query) {
-                        $query->where('name', 'DIRECTOR');
-                    })
-                    ->first();
+                $director = User::role('DIRECTOR')->first();
 
                 $user = $director ?: $pr->createdBy;
                 break;

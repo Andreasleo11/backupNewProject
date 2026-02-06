@@ -60,30 +60,21 @@ class NotifyOvertimeApprovers extends Command
                     break;
 
                 case 'waiting-supervisor':
-                    $user = User::whereHas(
-                        'specification',
-                        fn ($q) => $q->where('name', 'SUPERVISOR'),
-                    )->first();
+                    $user = User::role('SUPERVISOR')->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
                 case 'waiting-verificator':
-                    $user = User::whereHas(
-                        'specification',
-                        fn ($q) => $q->where('name', 'VERIFICATOR'),
-                    )->first();
+                    $user = User::role('VERIFICATOR')->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }
                     break;
 
                 case 'waiting-director':
-                    $user = User::whereHas(
-                        'specification',
-                        fn ($q) => $q->where('name', 'DIRECTOR'),
-                    )->first();
+                    $user = User::role('DIRECTOR')->first();
                     if ($user) {
                         $user->notify(new DailyOvertimeSummaryNotification($reports, $status));
                     }

@@ -46,7 +46,7 @@ class EvaluationData extends Model
 
     public function karyawan()
     {
-        return $this->belongsTo(Employee::class, 'NIK', 'nik');
+        return $this->belongsTo(Employee::class, 'nik', 'NIK');
     }
 
     public function department()
