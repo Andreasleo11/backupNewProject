@@ -51,7 +51,7 @@ class Index extends Component
     {
         $u = auth()->user();
         $this->showGenerateButton =
-            ! $u->is_head && ! $u->is_gm && $u->department->name !== 'MANAGEMENT';
+            ! $u->is_head && ! $u->is_gm && $u->department?->name !== 'MANAGEMENT';
     }
 
     public function updating($name): void

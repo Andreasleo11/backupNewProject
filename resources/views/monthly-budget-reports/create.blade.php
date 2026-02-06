@@ -47,10 +47,10 @@
                                 class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm
                                        focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
                                 @foreach ($departments as $department)
-                                    @if ($department->name !== 'MANAGEMENT')
-                                        <option value="{{ $department->dept_no }}"
-                                            {{ auth()->user()->department->id === $department->id ? 'selected' : '' }}>
-                                            {{ $department->name }}
+                                    @if ($department?->name !== 'MANAGEMENT')
+                                        <option value="{{ $department?->dept_no }}"
+                                            {{ auth()->user()->department?->id === $department?->id ? 'selected' : '' }}>
+                                            {{ $department?->name }}
                                         </option>
                                     @endif
                                 @endforeach
