@@ -155,11 +155,15 @@
 @push('extraJs')
     <script type="module">
         // Initialize the month picker
-        $('#monthPicker').datepicker({
-            format: "mm-yyyy",
-            startView: "months",
-            minViewMode: "months",
-            autoclose: true
+        flatpickr('#monthPicker', {
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
+                    dateFormat: "m-Y",
+                    altFormat: "F Y",
+                    theme: "light"
+                })
+            ]
         });
     </script>
 @endpush

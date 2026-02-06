@@ -31,7 +31,7 @@
                     Export All
                 </a>
 
-                @if ($currentUser->department->name === 'QC' && $currentUser->specification->name === 'INSPECTOR')
+                @if (true)
                     <a href="{{ route('qaqc.report.create') }}"
                        class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
                         <i class='bx bx-plus mr-1 text-base'></i>
@@ -113,29 +113,33 @@
 
     <script type="module">
         document.addEventListener('DOMContentLoaded', function() {
-            const $monthPicker = $('#monthPicker');
+            const monthPickerInput = document.getElementById('monthPicker');
             const tableId = 'vqcreports-table';
 
-            if ($monthPicker.length) {
-                // Bootstrap Datepicker month picker
-                $monthPicker.datepicker({
-                    format: 'mm-yyyy',
-                    startView: 'months',
-                    minViewMode: 'months',
-                    autoclose: true
-                });
-
-                // Trigger reload on change
-                $monthPicker.on('change', function() {
-                    if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
-                        window.LaravelDataTables[tableId].draw();
+            if (monthPickerInput) {
+                // Flatpickr for month selection
+                const fp = flatpickr(monthPickerInput, {
+                    plugins: [
+                        new monthSelectPlugin({
+                            shorthand: true,
+                            dateFormat: "m-Y",
+                            altFormat: "F Y",
+                            theme: "light"
+                        })
+                    ],
+                    onChange: function(selectedDates, dateStr) {
+                         if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                            window.LaravelDataTables[tableId].draw();
+                        }
                     }
                 });
             }
 
             // Clear month filter
             $('#clearMonth').on('click', function() {
-                $monthPicker.val('');
+                if (monthPickerInput._flatpickr) {
+                    monthPickerInput._flatpickr.clear();
+                }
                 if (window.LaravelDataTables && window.LaravelDataTables[tableId]) {
                     window.LaravelDataTables[tableId].draw();
                 }
@@ -143,20 +147,19 @@
 
             // DataTables custom month filter
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                // Pastikan hanya apply ke table ini
                 if (settings.sTableId !== tableId) {
                     return true;
                 }
 
-                const selectedMonth = $monthPicker.val();
-                if (!selectedMonth) return true; // jika kosong, skip filter
+                const selectedMonth = $('#monthPicker').val();
+                if (!selectedMonth) return true;
 
-                // Sesuaikan index ini dengan kolom rec_date di DataTable-mu
-                const recDate = data[3]; // example: "2025-11-29"
+                // Index of rec_date column
+                const recDate = data[3]; 
                 if (!recDate) return true;
 
                 const d = new Date(recDate);
-                if (isNaN(d.getTime())) return true; // kalau parse gagal, jangan di-drop
+                if (isNaN(d.getTime())) return true;
 
                 const month = ('0' + (d.getMonth() + 1)).slice(-2) + '-' + d.getFullYear();
 

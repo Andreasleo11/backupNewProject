@@ -1,16 +1,33 @@
 @push('scripts')
     <script type="module">
-        // Month pickers (bootstrap-datepicker or similar should be globally loaded)
+        // Month pickers using flatpickr
         const monthOpts = {
-            format: "mm-yyyy",
-            startView: "months",
-            minViewMode: "months",
-            autoclose: true,
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
+                    dateFormat: "m-Y",
+                    altFormat: "F Y",
+                    theme: "light"
+                })
+            ],
+            allowInput: true
         };
 
-        $('#monthPicker').datepicker(monthOpts);
-        $('#from').datepicker(monthOpts).on('changeDate', e => @this.set('monthFrom', e.format()));
-        $('#to').datepicker(monthOpts).on('changeDate', e => @this.set('monthTo', e.format()));
+        flatpickr('#monthPicker', monthOpts);
+        
+        flatpickr('#from', {
+            ...monthOpts,
+            onChange: (selectedDates, dateStr) => {
+                @this.set('monthFrom', dateStr);
+            }
+        });
+
+        flatpickr('#to', {
+            ...monthOpts,
+            onChange: (selectedDates, dateStr) => {
+                @this.set('monthTo', dateStr);
+            }
+        });
 
         // Tooltips
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
