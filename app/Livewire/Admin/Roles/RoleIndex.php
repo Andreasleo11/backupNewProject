@@ -56,6 +56,14 @@ class RoleIndex extends Component
         $this->showModal = true;
     }
 
+    public function updatedShowModal($value)
+    {
+        if(! $value){
+            $this->reset('name', 'selectedPermissions', 'editingRoleId', 'modalMode');
+            $this->resetValidation();
+        }
+    }
+
     public function save(): void
     {
         $this->validate([
@@ -80,12 +88,7 @@ class RoleIndex extends Component
 
         $this->showModal = false;
 
-        session()->flash(
-            'success',
-            $this->modalMode === 'create'
-            ? 'Role created successfully.'
-            : 'Role updated successfully.'
-        );
+        $this->dispatch('flash', type: 'success', message: $this->modalMode === 'create' ? 'Role created successfully.' : 'Role updated successfully.');
 
         $this->reset(['editingRoleId', 'name', 'selectedPermissions', 'modalMode']);
         $this->modalMode = 'create';
@@ -95,15 +98,15 @@ class RoleIndex extends Component
     {
         $role = Role::findOrFail($roleId);
 
-        if ($role->name === 'admin') {
-            session()->flash('error', 'The admin role cannot be deleted.');
+        if ($role->name === 'super-admin') {
+            $this->dispatch('flash', type: 'error', message: 'Super admin role cannot be deleted.');
 
             return;
         }
 
         $role->delete();
 
-        session()->flash('success', 'Role deleted successfully.');
+        $this->dispatch('flash', type: 'success', message: 'Role deleted successfully.');
     }
 
     public function render()
@@ -111,6 +114,6 @@ class RoleIndex extends Component
         return view('livewire.admin.roles.role-index', [
             'roles' => $this->roles,
             'permissions' => $this->permissions,
-        ])->layout('new.layouts.app');
+        ]);
     }
 }

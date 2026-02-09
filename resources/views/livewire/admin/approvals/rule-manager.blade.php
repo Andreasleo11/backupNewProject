@@ -114,9 +114,7 @@
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Trigger Conditions</h3>
-                                <div class="mt-2 font-mono text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 overflow-x-auto whitespace-pre-wrap">
-                                    {{ json_encode($selectedRule->match_expr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}
-                                </div>
+                                <div class="mt-2 font-mono text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-600 overflow-x-auto whitespace-pre-wrap">{{ json_encode($selectedRule->match_expr, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}</div>
                             </div>
                         </div>
                     </div>
