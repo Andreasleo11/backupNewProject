@@ -265,19 +265,19 @@
                                     {{-- DYNAMIC APPROVAL COLUMN LOGIC --}}
                                     @php
                                         $showIsApproveColumn =
-                                            ($user->specification?->name === 'DIRECTOR' && auth()->user()->hasRole('director')) ||
-                                            ($user->specification?->name == 'VERIFICATOR' && auth()->user()->hasRole('verificator')) ||
-                                            ((($user->department?->name === $purchaseRequest->from_department && $user->is_head == 1) ||
-                                                ($user->is_head == 1 && $purchaseRequest->from_department == 'STORE')) &&
+                                            ($user->hasRole('DIRECTOR')) ||
+                                            ($user->hasRole('VERIFICATOR')) ||
+                                            ((($user->department?->name === $purchaseRequest->from_department && $user->hasRole('HEAD')) ||
+                                                ($user->hasRole('HEAD') && $purchaseRequest->from_department == 'STORE')) &&
                                                 !$purchaseRequest->is_cancel);
                                         
                                         // Moulding logic
                                          if ($purchaseRequest->from_department === 'MOULDING') {
                                                 $mouldingApprovalCase =
-                                                    ($purchaseRequest->is_import === 1 && ($user->specification?->name !== 'DESIGN' && auth()->user()->hasRole('design'))) ||
-                                                    (!$purchaseRequest->is_import && ($user->specification?->name !== 'DESIGN' && auth()->user()->hasRole('design'))) ||
-                                                    ($purchaseRequest->is_import === 0 && ($user->specification?->name === 'DESIGN' && auth()->user()->hasRole('design'))) ||
-                                                    (!$purchaseRequest->is_import && ($user->specification?->name === 'DESIGN' && auth()->user()->hasRole('design')));
+                                                    ($purchaseRequest->is_import === 1 && ( !auth()->user()->hasRole('DESIGN'))) ||
+                                                    (!$purchaseRequest->is_import && ( !auth()->user()->hasRole('DESIGN'))) ||
+                                                    ($purchaseRequest->is_import === 0 && (auth()->user()->hasRole('DESIGN'))) ||
+                                                    (!$purchaseRequest->is_import && (auth()->user()->hasRole('DESIGN')));
 
                                                 if ($purchaseRequest->to_department === \App\Enums\ToDepartment::MAINTENANCE->value) {
                                                     $mouldingApprovalCase = $mouldingApprovalCase && $purchaseRequest->to_department === \App\Enums\ToDepartment::MAINTENANCE->value;
@@ -307,14 +307,12 @@
                                         $subtotal = $detail->quantity * $detail->price;
                                         
                                         // Logic for 'Dept Head Item Approve'
-                                         $showDeptHeadItemApprove =
-                                            $user->department?->name === $purchaseRequest->from_department &&
-                                            $user->is_head == 1;
-                                        if ($user->is_head == 1 && $purchaseRequest->from_department === 'STORE') {
+                                         $showDeptHeadItemApprove = $user->department?->name === $purchaseRequest->from_department && $user->hasRole('HEAD');
+                                        if ($user->hasRole('HEAD') && $purchaseRequest->from_department === 'STORE') {
                                             $showDeptHeadItemApprove = true;
                                         } elseif (
                                             $purchaseRequest->from_department === 'PERSONALIA' &&
-                                            ($user->department?->name === 'PERSONALIA' && $user->is_head === 1)
+                                            ($user->department?->name === 'PERSONALIA' && $user->hasRole('HEAD'))
                                         ) {
                                             $showDeptHeadItemApprove = true;
                                         }
@@ -368,11 +366,11 @@
                                                      $status = null; // null=pending, 1=approved, 0=rejected
                                                      
                                                      // Determine context
-                                                     if ($user->specification?->name === 'DIRECTOR') {
+                                                     if ($user->hasRole('DIRECTOR')) {
                                                          $status = $detail->is_approve; // Director sees final status usually? Or specific field? Assuming is_approve based on original
                                                          // Wait, original code: if director, "no extra color". 
                                                          // We'll mimic the logic blocks from original for Buttons vs Badges
-                                                     } elseif ($user->specification?->name === 'VERIFICATOR') {
+                                                     } elseif ($user->hasRole('VERIFICATOR')) {
                                                          $status = $detail->is_approve_by_verificator;
                                                          $canApproveThisItem = auth()->user()->can('approve', $detail); // Standard policy check
                                                      } elseif ($showDeptHeadItemApprove) {
@@ -482,13 +480,7 @@
                         $itemStats = null;
                         
                         if ($currentStep) {
-                            $approverType = match($currentStep->approver_snapshot_role_slug) {
-                                'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
-                                'pr-verificator-computer', 'pr-verificator-personalia' => 'verificator',
-                                'pr-director' => 'director',
-                                default => null,
-                            };
-                            
+                            $approverType = $currentStep->item_approver_type;
                             if ($approverType) {
                                 $itemStats = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService::class)
                                     ->getItemStats($purchaseRequest, $approverType);
@@ -500,7 +492,6 @@
                         <h3 class="text-sm font-bold uppercase tracking-widest text-slate-800 mb-4">
                             Action Required
                         </h3>
-                        
                         @if($itemStats)
                              <div class="mb-6 rounded-xl {{ isset($itemStats['pending']) && $itemStats['pending'] > 0 ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800' }} p-4">
                                 <div class="flex items-start gap-3">

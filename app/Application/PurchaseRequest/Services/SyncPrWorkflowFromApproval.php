@@ -39,10 +39,8 @@ final class SyncPrWorkflowFromApproval implements SyncPrWorkflow
             $current = $steps?->firstWhere('sequence', (int) $approval->current_step);
 
             if ($current) {
-                // if you store role name snapshot, prefer it
-                $pr->workflow_step = $current->approver_snapshot_name
-                    ?? $current->approver_snapshot_label
-                    ?? null;
+                // prefer label snapshot if you have it (human friendly)
+                $pr->workflow_step = $current->approver_label;
 
                 // fallback: store something stable
                 if (! $pr->workflow_step) {

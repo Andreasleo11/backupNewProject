@@ -24,7 +24,8 @@
                     $isPending = $step->sequence > $currentStep;
                     $isLast = $loop->last;
                     
-                    $userLabel = $step->approver_snapshot_label ?? $step->approver?->name ?? 'Unknown';
+                    $userLabel = $step->approver_name;
+                    $roleLabel = $step->approver_label;
                     
                     // Colors
                     $dotColor = match(true) {
@@ -59,7 +60,7 @@
                                 {{ $userLabel }}
                             </span>
                             <span class="text-[10px] uppercase tracking-wide text-slate-500">
-                                {{ $step->role_name ?? 'Approver' }}
+                                {{ $roleLabel }}
                             </span>
                             
                             @if($step->acted_at)
@@ -77,9 +78,9 @@
                             @endif
                             
                             {{-- Specific comments if any --}}
-                            @if($step->comment)
+                            @if($step->remarks)
                                 <div class="mt-2 rounded-lg bg-slate-50 p-2 text-[10px] italic text-slate-600 border border-slate-100">
-                                    "{{ $step->comment }}"
+                                    "{{ $step->remarks }}"
                                 </div>
                             @endif
                         </div>

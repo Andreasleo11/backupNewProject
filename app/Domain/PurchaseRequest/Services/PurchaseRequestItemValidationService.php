@@ -161,19 +161,6 @@ class PurchaseRequestItemValidationService
      */
     public function getApproverTypeFromStep(ApprovalStep $step): ?string
     {
-        $roleSlug = $step->approver_snapshot_role_slug ?? null;
-
-        // Fallback for legacy steps or steps created before the snapshot logic
-        if (! $roleSlug && $step->approver_type === 'role') {
-            $role = \Spatie\Permission\Models\Role::find($step->approver_id);
-            $roleSlug = $role?->name;
-        }
-
-        return match ($roleSlug) {
-            'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
-            'pr-verificator-computer', 'pr-verificator-personalia' => 'verificator',
-            'pr-director' => 'director',
-            default => null, // GM, Purchaser, etc. cannot review items
-        };
+        return $step->item_approver_type;
     }
 }

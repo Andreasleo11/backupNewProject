@@ -43,4 +43,56 @@ class ApprovalStep extends Model
     {
         return $this->belongsTo(ApprovalRequest::class, 'approval_request_id');
     }
+
+    /**
+     * Map the role slug to an approver type for item validation.
+     */
+    public function getItemApproverTypeAttribute(): ?string
+    {
+        $slug = $this->approver_snapshot_role_slug;
+
+        // Fallback for legacy data
+        if (! $slug && $this->approver_type === 'role') {
+            $role = \Spatie\Permission\Models\Role::find($this->approver_id);
+            $slug = $role?->name;
+        }
+
+        return match ($slug) {
+            'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
+            'pr-verificator-computer', 'pr-verificator-personalia' => 'verificator',
+            'pr-director' => 'director',
+            default => null,
+        };
+    }
+
+    /**
+     * Get a human-readable name of who is/was the approver.
+     */
+    public function getApproverNameAttribute(): string
+    {
+        if ($this->approver_snapshot_name) {
+            return $this->approver_snapshot_name;
+        }
+
+        if ($this->approver_type === 'user') {
+            return \App\Infrastructure\Persistence\Eloquent\Models\User::find($this->approver_id)?->name ?? 'Unknown User';
+        }
+
+        // role fallback
+        return \Spatie\Permission\Models\Role::find($this->approver_id)?->name ?? 'Unknown Role';
+    }
+
+    /**
+     * Get a human-readable label of the role.
+     */
+    public function getApproverLabelAttribute(): string
+    {
+        if ($this->approver_snapshot_label) {
+            return $this->approver_snapshot_label;
+        }
+
+        // Use the mapping logic from ApprovalEngine for fallback if needed, 
+        // but for now just return the name/type
+        return $this->approver_snapshot_name ?? $this->approver_type;
+    }
 }
