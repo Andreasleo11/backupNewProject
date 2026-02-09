@@ -215,6 +215,23 @@ class UserIndex extends Component
         $this->showPasswordModal = true;
     }
 
+    public function updatedShowModal($value)
+    {
+        if(! $value){
+            $this->reset('name', 'email', 'password', 'password_confirmation', 'employeeId', 'active', 'selectedRoles', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel');
+            $this->resetValidation();
+        }
+
+    }
+
+    public function updatedShowPasswordModal($value)
+    {
+        if(! $value) {
+            $this->reset('newPassword', 'newPassword_confirmation');
+            $this->resetValidation();
+        }
+    }
+
     public function save(CreateUser $createUser, UpdateUser $updateUser): void
     {
         $this->validate();
@@ -244,6 +261,7 @@ class UserIndex extends Component
         }
 
         $changeUserPassword->execute($this->passwordUserId, $this->newPassword);
+        $this->dispatch('flash', type: 'success', message: 'User password updated successfully.');
 
         $this->showPasswordModal = false;
         $this->passwordUserId = null;

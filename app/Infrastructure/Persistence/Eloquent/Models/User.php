@@ -37,9 +37,6 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email', 
         'password',
-        'department_id',
-        'specification_id',
-        'is_active',
         'employee_id',
     ];
 
@@ -71,10 +68,7 @@ class User extends Authenticatable implements FilamentUser
         return $this->employee ? $this->employee->department : null;
     }
 
-    public function specification(): BelongsTo
-    {
-        return $this->belongsTo(Specification::class);
-    }
+
 
     /**
      * Determine if the user can access the Filament admin panel.

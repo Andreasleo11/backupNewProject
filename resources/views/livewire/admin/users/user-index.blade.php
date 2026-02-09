@@ -1,439 +1,364 @@
-<div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-    {{-- Filters / actions row --}}
-    <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+<div class="max-w-7xl mx-auto space-y-6 py-6">
+    {{-- Header Section --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-            <h1 class="text-lg font-semibold text-slate-900">User Management</h1>
-            <!-- <p class="mt-0.5 text-xs text-slate-500">
-                Search, filter, link employees, assign roles, change passwords, and toggle status.
-            </p> -->
+            <h1 class="text-3xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                User Management
+            </h1>
+            <p class="mt-1 text-sm text-slate-500">
+                Manage system access, roles, and employee linkages.
+            </p>
         </div>
-
-        <div class="flex flex-wrap items-center gap-3">
-            <div class="relative">
-                <input type="text"
-                       wire:model.live.debounce.400ms="search"
-                       placeholder="Search name or email..."
-                       class="w-64 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm
-                              focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M21 21l-4.35-4.35M11 19a8 8 0 1 0-8-8 8 8 0 0 0 8 8z" />
-                    </svg>
-                </span>
-            </div>
-
-            <label class="inline-flex items-center gap-2 text-xs text-slate-600">
-                <input type="checkbox"
-                       wire:model.live.debounce.400ms="onlyActive"
-                       class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                Active only
-            </label>
-
-            <select wire:model.live.debounce.400ms="perPage"
-                    class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs shadow-sm
-                           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                <option value="10">10 / page</option>
-                <option value="25">25 / page</option>
-                <option value="50">50 / page</option>
-            </select>
-
-            <button type="button"
-                    wire:click="openCreateModal"
-                    class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-xs font-medium text-white shadow-sm
-                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-1 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" />
+        <div>
+            <button wire:click="openCreateModal"
+                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                 </svg>
                 New User
             </button>
         </div>
     </div>
 
-    {{-- Users table --}}
-    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">#</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Name
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Email
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Roles
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Employee Info
-                    </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Status
-                    </th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        Actions
-                    </th>
-                </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                @forelse ($users as $index => $user)
-                    <tr class="hover:bg-slate-50/60" wire:key="user-row-{{ $user->id }}">
-                        <td class="px-4 py-3 text-slate-500">
-                            {{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}
-                        </td>
+    {{-- Filters & Search --}}
+    <div class="rounded-2xl border border-slate-200 bg-white/50 p-4 shadow-sm backdrop-blur-xl">
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div class="relative w-full sm:w-96">
+                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                    <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input type="text"
+                    wire:model.live.debounce.400ms="search"
+                    class="block w-full rounded-xl border-0 bg-white py-3 pl-11 pr-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 transition-all"
+                    placeholder="Search users by name, email, or role...">
+            </div>
 
-                        {{-- User info --}}
-                        <td class="px-4 py-3">
-                            <div class="font-medium text-slate-900">{{ $user->name }}</div>
-                            @if ($user->employeeNik)
-                                <div class="text-xs text-slate-500">
-                                    {{ $user->employeeNik }} — {{ $user->employeeName }}
-                                </div>
-                            @endif
-                        </td>
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <label class="relative inline-flex items-center cursor-pointer group">
+                    <input type="checkbox" wire:model.live="onlyActive" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <span class="ml-3 text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Active Only</span>
+                </label>
 
-                        <td class="px-4 py-3 text-slate-600">
-                            {{ $user->email }}
-                        </td>
+                <select wire:model.live="perPage" class="rounded-xl border-0 py-2.5 pl-3 pr-8 text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6">
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
+        </div>
+    </div>
 
-                        <td class="px-4 py-3">
-                            <div class="flex flex-wrap gap-1">
-                                @forelse ($user->roles as $role)
-                                    <span
-                                        class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
-                                        {{ $role }}
-                                    </span>
-                                @empty
-                                    <span class="text-xs text-slate-400">No roles</span>
-                                @endforelse
+    {{-- Users Grid (Cards) --}}
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        @forelse ($users as $user)
+            <div class="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl hover:-translate-y-1">
+                {{-- Card Header --}}
+                <div class="p-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
+                                {{ substr($user->name, 0, 1) }}
                             </div>
-                        </td>
-
-                        <td class="px-4 py-3 text-xs text-slate-600">
-                            @if ($user->employeeBranch || $user->employeeDeptCode)
-                                <div>{{ $user->employeeBranch ?? '-' }}</div>
-                                <div class="text-[11px] text-slate-400">
-                                    Dept: {{ $user->employeeDeptCode ?? '-' }}
-                                </div>
-                            @else
-                                <span class="text-slate-400">No employee link</span>
-                            @endif
-                        </td>
-
-                        <td class="px-4 py-3">
+                            <div>
+                                <h3 class="font-bold text-slate-900 line-clamp-1" title="{{ $user->name }}">{{ $user->name }}</h3>
+                                <p class="text-xs text-slate-500 line-clamp-1" title="{{ $user->email }}">{{ $user->email }}</p>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">
                             @if ($user->active)
-                                <span
-                                    class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                                    <span class="mr-1 h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600 ring-1 ring-inset ring-emerald-600/20">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                                     Active
                                 </span>
                             @else
-                                <span
-                                    class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                                    <span class="mr-1 h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-600/20">
+                                    <span class="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
                                     Inactive
                                 </span>
                             @endif
-                        </td>
+                        </div>
+                    </div>
 
-                        <td class="px-4 py-3 text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <button type="button"
-                                        wire:click="toggleStatus({{ $user->id }})"
-                                        class="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">
-                                    {{ $user->active ? 'Suspend' : 'Activate' }}
-                                </button>
+                    <div class="mt-6 space-y-3">
+                        {{-- Employee Info --}}
+                        <div class="flex items-center gap-3 text-sm text-slate-600 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                             <svg class="h-5 w-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            @if ($user->employeeNik)
+                                <div class="truncate">
+                                    <span class="font-medium text-slate-900">{{ $user->employeeNik }}</span>
+                                    <span class="text-slate-400 mx-1">•</span>
+                                    <span class="text-xs">{{ $user->employeeDeptCode ?? 'No Dept' }}</span>
+                                    @if($user->employeeBranch)
+                                        <span class="ml-1 inline-flex items-center rounded-md bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600 border border-slate-200">
+                                            {{ $user->employeeBranch }}
+                                        </span>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-slate-400 italic text-xs">No employee record linked</span>
+                            @endif
+                        </div>
 
-                                <button type="button"
-                                        wire:click="openEditModal({{ $user->id }})"
-                                        class="rounded-md bg-slate-800 px-2.5 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-slate-900">
-                                    Edit
-                                </button>
+                        {{-- Roles --}}
+                        <div class="flex flex-wrap gap-2 min-h-[28px]">
+                            @forelse ($user->roles as $role)
+                                <span class="inline-flex items-center rounded-lg bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                    {{ $role }}
+                                </span>
+                            @empty
+                                <span class="text-xs text-slate-400 italic">No specific roles assigned</span>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
 
-                                <button type="button"
-                                        wire:click="openPasswordModal({{ $user->id }})"
-                                        class="rounded-md bg-amber-500 px-2.5 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-amber-600 text-nowrap">
-                                    Change Password
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        {{-- 7 columns total --}}
-                        <td colspan="7" class="px-4 py-6 text-center text-sm text-slate-500">
-                            No users found.
-                        </td>
-                    </tr>
-                @endforelse
-                </tbody>
-            </table>
-        </div>
-
+                {{-- Card Actions --}}
+                <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
+                    <div class="flex items-center justify-between gap-2">
+                        <button wire:click="toggleStatus({{ $user->id }})"
+                            class="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                            {{ $user->active ? 'Suspend Access' : 'Restore Access' }}
+                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                            <button wire:click="openPasswordModal({{ $user->id }})"
+                                class="rounded-lg p-2 text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-all"
+                                title="Change Password">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                </svg>
+                            </button>
+                            <button wire:click="openEditModal({{ $user->id }})"
+                                class="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                title="Edit User">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-span-full py-12 text-center">
+                <div class="mx-auto h-24 w-24 rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                    <svg class="h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-slate-900">No users found</h3>
+                <p class="mt-1 text-slate-500">Try adjusting your search or filter.</p>
+            </div>
+        @endforelse
     </div>
+
+    {{-- Pagination --}}
     @if ($users->hasPages())
-        <div class="px-4 py-3">
+        <div class="mt-6">
             {{ $users->links() }}
         </div>
     @endif
 
-    {{-- User form modal --}}
-    <div x-data="{ openModal: @entangle('showModal').live }">
-        {{-- Backdrop --}}
-        <div class="fixed inset-0 z-40 bg-black/30"
-             x-show="openModal"
-             @click="openModal = false"></div>
+    {{-- User Modal --}}
+    <x-modal wire:model="showModal" maxWidth="lg">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold text-slate-900">
+                    {{ $editingId ? 'Edit User' : 'Create User' }}
+                </h2>
+                <button wire:click="$set('showModal', false)" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
-        {{-- Modal --}}
-        <div x-show="openModal"
-             x-cloak
-             class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-0"
-             x-transition.opacity
-             @keydown.escape.window="openModal = false">
-            <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl ring-1 ring-slate-200" @click.stop>
-                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-                    <h2 class="text-sm font-semibold text-slate-900">
-                        {{ $editingId ? 'Edit User' : 'Create User' }}
-                    </h2>
-                    <button type="button"
-                            class="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            wire:click="$set('showModal', false)">
-                        <span class="sr-only">Close</span>
-                        ✕
-                    </button>
-                </div>
-
-                <form wire:submit.prevent="save" class="px-5 py-4 space-y-4">
-                    {{-- Employee (searchable) --}}
-                    <div x-data="{ open: false }" class="relative">
-                        <label class="block text-xs font-medium text-slate-700">
-                            Employee <span class="text-red-500">*</span>
-                        </label>
-
-                        <div class="mt-1">
-                            <div class="flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm"
-                                 @click="open = true">
-                                <input type="text"
-                                       wire:model.live.debounce.300ms="employeeSearch"
-                                       placeholder="Search NIK or name..."
-                                       class="flex-1 bg-transparent text-sm outline-none"
-                                       @focus="open = true"
-                                       autocomplete="off">
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                     class="h-4 w-4 text-slate-400"
-                                     viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                          clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        @if ($selectedEmployeeLabel)
-                            <p class="mt-1 text-xs text-slate-500">
-                                Selected: {{ $selectedEmployeeLabel }}
-                            </p>
-                        @endif
-
-                        @error('employeeId')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-
-                        {{-- Dropdown list --}}
-                        <div x-show="open"
-                             x-cloak
-                             @click.away="open = false"
-                             class="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white text-sm shadow-lg">
-                            @forelse ($employeeOptions as $emp)
-                                <button type="button"
-                                        class="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-slate-50"
-                                        wire:click="selectEmployee({{ $emp['id'] }})"
-                                        @click="open = false">
-                                    <div>
-                                        <div class="font-medium text-slate-800">
-                                            {{ $emp['nik'] }} — {{ $emp['name'] }}
-                                        </div>
-                                        <div class="text-xs text-slate-500">
-                                            {{ $emp['branch'] }} · Dept {{ $emp['dept_code'] }}
-                                        </div>
-                                    </div>
-                                </button>
-                            @empty
-                                <div class="px-3 py-2 text-xs text-slate-400">
-                                    No employees found.
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-
-                    {{-- Name --}}
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700">
-                            Name <span class="text-red-500">*</span>
-                        </label>
+            <form wire:submit.prevent="save" class="space-y-6">
+                {{-- Employee Search --}}
+                <div class="relative group">
+                    <div class="relative">
                         <input type="text"
-                               wire:model.defer="name"
-                               class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm
-                                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        @error('name')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Email --}}
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700">
-                            Email <span class="text-red-500">*</span>
+                            wire:model.live.debounce.300ms="employeeSearch"
+                            id="employeeSearch"
+                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                            placeholder=" " autocomplete="off">
+                        <label for="employeeSearch"
+                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            Search Employee (NIK or Name) <span class="text-red-500">*</span>
                         </label>
-                        <input type="email"
-                               wire:model.defer="email"
-                               class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm
-                                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        @error('email')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
 
-                    {{-- Password (create only) --}}
-                    @if (is_null($editingId))
-                        <div class="grid gap-3 sm:grid-cols-2">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-700">
-                                    Password <span class="text-red-500">*</span>
-                                </label>
-                                <input type="password"
-                                       wire:model.defer="password"
-                                       class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm
-                                              focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                                @error('password')
-                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-700">
-                                    Confirm Password <span class="text-red-500">*</span>
-                                </label>
-                                <input type="password"
-                                       wire:model.defer="password_confirmation"
-                                       class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm
-                                              focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                            </div>
+                    @if ($selectedEmployeeLabel)
+                        <div class="mt-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700 border border-emerald-100">
+                            <svg class="h-4 w-4 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                            Linked: {{ $selectedEmployeeLabel }}
                         </div>
                     @endif
 
-                    {{-- Roles --}}
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700">
-                            Roles
-                        </label>
-                        <div class="mt-1 flex flex-wrap gap-2">
-                            @foreach ($availableRoles as $role)
-                                <label
-                                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-700 hover:bg-slate-100">
-                                    <input type="checkbox"
-                                           value="{{ $role }}"
-                                           wire:model.defer="selectedRoles"
-                                           class="h-3.5 w-3.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                                    <span>{{ $role }}</span>
-                                </label>
+                    @if(!empty($employeeOptions))
+                        <div class="absolute z-50 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-slate-100 bg-white shadow-xl">
+                            @foreach ($employeeOptions as $emp)
+                                <button type="button"
+                                    class="w-full px-4 py-3 text-left transition-colors hover:bg-slate-50 border-b border-slate-50 last:border-0"
+                                    wire:click="selectEmployee({{ $emp['id'] }})">
+                                    <div class="font-medium text-slate-900">{{ $emp['name'] }}</div>
+                                    <div class="text-xs text-slate-500 flex items-center gap-2">
+                                        <span class="font-mono bg-slate-100 px-1 rounded">{{ $emp['nik'] }}</span>
+                                        <span>•</span>
+                                        <span>{{ $emp['branch'] }}</span>
+                                        <span>•</span>
+                                        <span>{{ $emp['dept_code'] }}</span>
+                                    </div>
+                                </button>
                             @endforeach
                         </div>
-                        @error('selectedRoles')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Active --}}
-                    <div class="flex items-center justify-between border-t border-slate-100 pt-3">
-                        <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-700">
-                            <input type="checkbox"
-                                   wire:model.defer="active"
-                                   class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                            Active
-                        </label>
-
-                        <div class="space-x-2">
-                            <button type="button"
-                                    class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                                    wire:click="$set('showModal', false)">
-                                Cancel
-                            </button>
-                            <button type="submit"
-                                    class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm
-                                           hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">
-                                {{ $editingId ? 'Save changes' : 'Create user' }}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    {{-- Password modal --}}
-    <div x-data="{ openPasswordModal: @entangle('showPasswordModal').live }">
-        {{-- Backdrop --}}
-        <div class="fixed inset-0 z-40 bg-black/30"
-             x-show="openPasswordModal"
-             @click="openPasswordModal = false"></div>
-
-        {{-- Modal --}}
-        <div x-show="openPasswordModal"
-             x-cloak
-             class="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 sm:px-0"
-             x-transition.opacity>
-            <div class="w-full max-w-md rounded-2xl bg-white shadow-xl ring-1 ring-slate-200" @click.stop>
-                <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3">
-                    <h2 class="text-sm font-semibold text-slate-900">
-                        Change Password
-                    </h2>
-                    <button type="button"
-                            class="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                            @click="openPasswordModal = false">
-                        ✕
-                    </button>
+                    @endif
+                    @error('employeeId') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
 
-                <form wire:submit.prevent="savePassword" class="px-5 py-4 space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700">
-                            New Password <span class="text-red-500">*</span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {{-- Name --}}
+                    <div class="relative">
+                        <input type="text" wire:model.defer="name" id="name"
+                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                            placeholder=" ">
+                        <label for="name"
+                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            Full Name <span class="text-red-500">*</span>
                         </label>
-                        <input type="password"
-                               wire:model.defer="newPassword"
-                               class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm
-                                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        @error('newPassword')
-                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
+                        @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-medium text-slate-700">
-                            Confirm New Password <span class="text-red-500">*</span>
+                    {{-- Email --}}
+                    <div class="relative">
+                        <input type="email" wire:model.defer="email" id="email"
+                            class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                            placeholder=" ">
+                        <label for="email"
+                            class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                            Email Address <span class="text-red-500">*</span>
                         </label>
-                        <input type="password"
-                               wire:model.defer="newPassword_confirmation"
-                               class="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm shadow-sm
-                                      focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        @error('email') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                     </div>
+                </div>
 
-                    <div class="flex items-center justify-end border-t border-slate-100 pt-3 space-x-2">
-                        <button type="button"
-                                class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                                @click="openPasswordModal = false">
+                {{-- Password Fields (Create Only) --}}
+                @if (is_null($editingId))
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="relative">
+                            <input type="password" wire:model.defer="password" id="password"
+                                class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                                placeholder=" ">
+                            <label for="password"
+                                class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                                Password <span class="text-red-500">*</span>
+                            </label>
+                            @error('password') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="relative">
+                            <input type="password" wire:model.defer="password_confirmation" id="password_confirmation"
+                                class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                                placeholder=" ">
+                            <label for="password_confirmation"
+                                class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                                Confirm Password <span class="text-red-500">*</span>
+                            </label>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- Roles --}}
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                        Assign Roles
+                    </label>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach ($availableRoles as $role)
+                            <label class="cursor-pointer">
+                                <input type="checkbox" value="{{ $role }}" wire:model.defer="selectedRoles" class="peer sr-only">
+                                <span class="inline-block px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-medium text-slate-600 transition-all hover:border-blue-200 peer-checked:!border-blue-600 peer-checked:!bg-blue-600 peer-checked:text-white peer-checked:shadow-md select-none">
+                                    {{ $role }}
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- Status --}}
+                <div class="flex items-center justify-between border-t border-slate-100 pt-6 mt-6">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" wire:model.defer="active" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 
+                                peer-checked:bg-emerald-500
+                                after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[2px] after:bg-white 
+                                after:border after:border-slate-300 after:rounded-full after:h-5 after:w-5 after:transition-all
+                                peer-checked:after:translate-x-[18px] peer-checked:after:border-white"></div>
+                        <span class="ml-3 text-sm font-medium text-slate-700">Active Status</span>
+                    </label>
+
+                    <div class="flex gap-3">
+                        <button type="button" wire:click="$set('showModal', false)"
+                                class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
                             Cancel
                         </button>
                         <button type="submit"
-                                class="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-700">
-                            Save Password
+                                wire:loading.attr="disabled"
+                                wire:target="save"
+                                class="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-500 transition-all hover:scale-105 active:scale-95">
+                            {{ $editingId ? 'Save Changes' : 'Create User' }}
                         </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
-    </div>
+    </x-modal>
+
+    {{-- Password Modal --}}
+    <x-modal wire:model="showPasswordModal" maxWidth="md">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-slate-900 mb-6">Change Password</h2>
+            
+            <form wire:submit.prevent="savePassword" class="space-y-5">
+                <div class="relative">
+                    <input type="password" wire:model.defer="newPassword" id="newPassword"
+                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                        placeholder=" ">
+                    <label for="newPassword"
+                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        New Password <span class="text-red-500">*</span>
+                    </label>
+                    @error('newPassword') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="relative">
+                    <input type="password" wire:model.defer="newPassword_confirmation" id="newPassword_confirmation"
+                        class="peer block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-500 focus:bg-white focus:ring-0"
+                        placeholder=" ">
+                    <label for="newPassword_confirmation"
+                        class="absolute left-4 top-2 z-10 origin-[0] -translate-y-6 scale-75 transform text-xs text-slate-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:left-4 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600">
+                        Confirm New Password <span class="text-red-500">*</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <button type="button" wire:click="$set('showPasswordModal', false)"
+                        class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold shadow-lg shadow-amber-500/30 hover:bg-amber-400 transition-all hover:scale-105 active:scale-95">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </x-modal>
 </div>
