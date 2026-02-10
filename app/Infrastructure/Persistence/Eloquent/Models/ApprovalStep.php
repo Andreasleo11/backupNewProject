@@ -61,6 +61,7 @@ class ApprovalStep extends Model
             'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
             'pr-verificator-computer', 'pr-verificator-personalia' => 'verificator',
             'pr-director' => 'director',
+            'pr-purchaser' => 'purchaser',
             default => null,
         };
     }

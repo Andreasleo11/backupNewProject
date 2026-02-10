@@ -26,6 +26,10 @@ final class ItemApprovalAuthorizationService
             return false;
         }
 
+        if ($pr->is_cancel) {
+            return false;
+        }
+
         $workflowStep = $this->getCurrentWorkflowStep($pr);
 
         if (! $workflowStep || ! $workflowStep->requiresItemApproval()) {
@@ -79,7 +83,7 @@ final class ItemApprovalAuthorizationService
     private function canActAsDeptHead(User $user, PurchaseRequest $pr): bool
     {
         // Must be a department head
-        if (! $user->is_head) {
+        if (! $user->hasRole('HEAD')) {
             return false;
         }
 
@@ -90,10 +94,47 @@ final class ItemApprovalAuthorizationService
 
         // Special case: STORE department allows any head
         if ($pr->from_department === 'STORE') {
+            // But still check Moulding restrictions if applicable? No, separate concern.
             return true;
         }
 
         // Default: must be head
+        // Also check Moulding specific restriction
+        if ($pr->from_department === 'MOULDING') {
+             if (! $this->passesMouldingRestrictions($user, $pr)) {
+                 return false;
+             }
+        }
+
+        if($pr->from_department === $user->department?->name){
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+    * Check special restrictions for Moulding department.
+    * Logic: If Import, Designers cannot approve. If Local, anyone can (effectively).
+    */
+    private function passesMouldingRestrictions(User $user, PurchaseRequest $pr): bool 
+    {
+        // Replicating Blade Logic:
+        // ($purchaseRequest->is_import === 1 && ( !auth()->user()->hasRole('DESIGN'))) ||
+        // (!$purchaseRequest->is_import && ( !auth()->user()->hasRole('DESIGN'))) ||
+        // ($purchaseRequest->is_import === 0 && (auth()->user()->hasRole('DESIGN'))) ||
+        // (!$purchaseRequest->is_import && (auth()->user()->hasRole('DESIGN')));
+        
+        $isImport = (int) $pr->is_import === 1;
+        $isDesigner = $user->hasRole('DESIGN');
+
+        if ($isImport) {
+            // If import, user MUST NOT be designer
+            return ! $isDesigner;
+        }
+
+        // If not import, ANYONE allowed based on the messy blade logic 
+        // (true && !designer) || (true && designer) => true
         return true;
     }
 

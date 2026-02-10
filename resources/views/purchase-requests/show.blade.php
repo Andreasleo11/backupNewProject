@@ -262,34 +262,8 @@
                                     <th class="px-4 py-3 text-right">Unit Price</th>
                                     <th class="px-4 py-3 text-right">Subtotal</th>
                                     
-                                    {{-- DYNAMIC APPROVAL COLUMN LOGIC --}}
-                                    @php
-                                        $showIsApproveColumn =
-                                            ($user->hasRole('DIRECTOR')) ||
-                                            ($user->hasRole('VERIFICATOR')) ||
-                                            ((($user->department?->name === $purchaseRequest->from_department && $user->hasRole('HEAD')) ||
-                                                ($user->hasRole('HEAD') && $purchaseRequest->from_department == 'STORE')) &&
-                                                !$purchaseRequest->is_cancel);
-                                        
-                                        // Moulding logic
-                                         if ($purchaseRequest->from_department === 'MOULDING') {
-                                                $mouldingApprovalCase =
-                                                    ($purchaseRequest->is_import === 1 && ( !auth()->user()->hasRole('DESIGN'))) ||
-                                                    (!$purchaseRequest->is_import && ( !auth()->user()->hasRole('DESIGN'))) ||
-                                                    ($purchaseRequest->is_import === 0 && (auth()->user()->hasRole('DESIGN'))) ||
-                                                    (!$purchaseRequest->is_import && (auth()->user()->hasRole('DESIGN')));
-
-                                                if ($purchaseRequest->to_department === \App\Enums\ToDepartment::MAINTENANCE->value) {
-                                                    $mouldingApprovalCase = $mouldingApprovalCase && $purchaseRequest->to_department === \App\Enums\ToDepartment::MAINTENANCE->value;
-                                                }
-                                                // Only show if case is true
-                                                if(!$mouldingApprovalCase) $showIsApproveColumn = false; 
-                                         }
-                                    @endphp
-
-                                    @if($showIsApproveColumn)
-                                        <th class="px-4 py-3 text-center w-32">Approval</th>
-                                    @endif
+                                    {{-- APPROVAL COLUMN (Always Visible) --}}
+                                    <th class="px-4 py-3 text-center w-48">Approvals</th>
 
                                     @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
                                          <th class="px-4 py-3 text-center">Received</th>
@@ -307,7 +281,7 @@
                                         $subtotal = $detail->quantity * $detail->price;
                                         
                                         // Logic for 'Dept Head Item Approve'
-                                         $showDeptHeadItemApprove = $user->department?->name === $purchaseRequest->from_department && $user->hasRole('HEAD');
+                                        $showDeptHeadItemApprove = $user->department?->name === $purchaseRequest->from_department && $user->hasRole('HEAD');
                                         if ($user->hasRole('HEAD') && $purchaseRequest->from_department === 'STORE') {
                                             $showDeptHeadItemApprove = true;
                                         } elseif (
@@ -357,68 +331,76 @@
                                             @endif
                                         </td>
 
-                                        {{-- APPROVAL ACTIONS / STATUS CELLS --}}
-                                        @if($showIsApproveColumn)
-                                            <td class="px-4 py-4 text-center align-middle">
-                                                 {{-- Logic Reuse: Check user role and item status --}}
-                                                 @php
-                                                     $canApproveThisItem = false;
-                                                     $status = null; // null=pending, 1=approved, 0=rejected
-                                                     
-                                                     // Determine context
-                                                     if ($user->hasRole('DIRECTOR')) {
-                                                         $status = $detail->is_approve; // Director sees final status usually? Or specific field? Assuming is_approve based on original
-                                                         // Wait, original code: if director, "no extra color". 
-                                                         // We'll mimic the logic blocks from original for Buttons vs Badges
-                                                     } elseif ($user->hasRole('VERIFICATOR')) {
-                                                         $status = $detail->is_approve_by_verificator;
-                                                         $canApproveThisItem = auth()->user()->can('approve', $detail); // Standard policy check
-                                                     } elseif ($showDeptHeadItemApprove) {
-                                                         $status = $detail->is_approve_by_head;
-                                                         $canApproveThisItem = auth()->user()->can('approve', $detail);
-                                                     } else {
-                                                         // Fallback/General
-                                                         $status = $detail->is_approve;
-                                                         $canApproveThisItem = auth()->user()->can('approve', $detail);
-                                                     }
-                                                 @endphp
-
-                                                 @if(is_null($status) && $canApproveThisItem)
-                                                    {{-- ACTIONS --}}
-                                                    <div class="flex items-center justify-center gap-1">
-                                                        <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}">
-                                                            @csrf
-                                                            <button type="submit" onclick="return confirm('Approve {{ $detail->item_name }}?')" 
-                                                                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 transition-all hover:bg-emerald-600 hover:text-white hover:shadow-lg hover:shadow-emerald-200" title="Approve">
-                                                                <i class="bi bi-check-lg text-lg"></i>
-                                                            </button>
-                                                        </form>
-                                                        <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}">
-                                                            @csrf
-                                                            <button type="submit" onclick="return confirm('Reject {{ $detail->item_name }}?')"
-                                                                    class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 text-rose-600 transition-all hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-200" title="Reject">
-                                                                <i class="bi bi-x-lg text-lg"></i>
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                 @else
-                                                    {{-- STATUS BADGES --}}
-                                                    @if($status === 1)
-                                                        <span class="inline-flex items-center justify-center rounded-full bg-emerald-100 p-1.5 text-emerald-600">
-                                                            <i class="bi bi-check-lg text-sm"></i>
-                                                        </span>
-                                                    @elseif($status === 0)
-                                                        <span class="inline-flex items-center justify-center rounded-full bg-rose-100 p-1.5 text-rose-600">
-                                                            <i class="bi bi-x-lg text-sm"></i>
-                                                        </span>
+                                    {{-- APPROVAL ACTIONS / STATUS CELLS --}}
+                                    <td class="px-4 py-4 text-center align-middle">
+                                        <div class="flex flex-col items-center gap-2">
+                                            
+                                            {{-- Status Indicators (Head -> Verif -> Director) --}}
+                                            <div class="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                                                
+                                                {{-- HEAD --}}
+                                                <div class="flex flex-col items-center gap-0.5" title="Department Head">
+                                                    <span class="text-[9px]">Head</span>
+                                                    @if($detail->is_approve_by_head === 1)
+                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                    @elseif($detail->is_approve_by_head === 0)
+                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
                                                     @else
-                                                        <span class="inline-flex items-center justify-center rounded-full bg-amber-100 p-1.5 text-amber-600" title="Waiting for review">
-                                                            <i class="bi bi-hourglass-split text-sm"></i>
-                                                        </span>
+                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
                                                     @endif
-                                                 @endif
-                                            </td>
-                                        @endif
+                                                </div>
+
+                                                <div class="h-px w-2 bg-slate-200 mt-3"></div>
+
+                                                {{-- VERIFICATOR --}}
+                                                <div class="flex flex-col items-center gap-0.5" title="Verificator">
+                                                    <span class="text-[9px]">Verif</span>
+                                                    @if($detail->is_approve_by_verificator === 1)
+                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                    @elseif($detail->is_approve_by_verificator === 0)
+                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                    @else
+                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                    @endif
+                                                </div>
+
+                                                <div class="h-px w-2 bg-slate-200 mt-3"></div>
+
+                                                {{-- DIRECTOR --}}
+                                                <div class="flex flex-col items-center gap-0.5" title="Director">
+                                                    <span class="text-[9px]">Dir</span>
+                                                    @if($detail->is_approve === 1)
+                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                    @elseif($detail->is_approve === 0)
+                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                    @else
+                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            {{-- ACTION BUTTONS --}}
+                                            @can('approve', $detail)
+                                                <div class="flex items-center gap-2 mt-1">
+                                                    <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}">
+                                                        @csrf
+                                                        <button type="submit"  onclick="return confirm('Approve {{ $detail->item_name }}?')" 
+                                                                class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Approve">
+                                                            <i class="bi bi-check-lg text-sm"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}">
+                                                        @csrf
+                                                        <button type="submit" onclick="return confirm('Reject {{ $detail->item_name }}?')" 
+                                                                class="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Reject">
+                                                            <i class="bi bi-x-lg text-sm"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @endcan
+
+                                        </div>
+                                    </td>
 
                                         {{-- Received Column --}}
                                         @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
@@ -450,7 +432,7 @@
                             </tbody>
                             <tfoot class="bg-slate-50/50">
                                 <tr>
-                                    <td colspan="{{ $showIsApproveColumn ? 4 : 3 }}" class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Total Amount</td>
+                                    <td colspan="4" class="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Total Amount</td>
                                     <td class="px-6 py-4 text-right text-base font-black text-slate-800">
                                         {{ number_format($totalall, 2) }}
                                         @if($isThereAnyCurrencyDifference)
@@ -493,16 +475,27 @@
                             Action Required
                         </h3>
                         @if($itemStats)
-                             <div class="mb-6 rounded-xl {{ isset($itemStats['pending']) && $itemStats['pending'] > 0 ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800' }} p-4">
+                             @php
+                                $hasPending = $itemStats['pending'] > 0;
+                                $hasApproved = $itemStats['approved'] > 0;
+                                $allRejected = !$hasPending && !$hasApproved;
+                                
+                                $cardColor = $hasPending ? 'bg-amber-50 text-amber-800' : ($allRejected ? 'bg-rose-50 text-rose-800' : 'bg-emerald-50 text-emerald-800');
+                                $icon = $hasPending ? 'bi-exclamation-triangle-fill text-amber-500' : ($allRejected ? 'bi-x-circle-fill text-rose-500' : 'bi-check-circle-fill text-emerald-500');
+                             @endphp
+
+                             <div class="mb-6 rounded-xl {{ $cardColor }} p-4">
                                 <div class="flex items-start gap-3">
-                                    <i class="bi {{ isset($itemStats['pending']) && $itemStats['pending'] > 0 ? 'bi-exclamation-triangle-fill text-amber-500' : 'bi-check-circle-fill text-emerald-500' }} text-xl"></i>
+                                    <i class="bi {{ $icon }} text-xl"></i>
                                     <div>
                                         <p class="text-xs font-bold uppercase tracking-wide opacity-80">Item Review Status</p>
                                         <p class="mt-1 text-sm font-bold">
-                                            @if($itemStats['pending'] > 0)
+                                            @if($hasPending)
                                                 {{ $itemStats['pending'] }} items pending review
+                                            @elseif($allRejected)
+                                                All items rejected (Cannot Approve PR)
                                             @else
-                                                All items reviewed
+                                                All items reviewed ({{ $itemStats['approved'] }} approved)
                                             @endif
                                         </p>
                                         <div class="mt-2 flex h-1.5 w-full overflow-hidden rounded-full bg-black/10">
@@ -510,8 +503,9 @@
                                                 $reviewedPercent = $itemStats['total'] > 0 
                                                     ? (($itemStats['total'] - $itemStats['pending']) / $itemStats['total']) * 100 
                                                     : 0;
+                                                $barColor = $hasPending ? 'bg-amber-500' : ($allRejected ? 'bg-rose-500' : 'bg-emerald-500');
                                             @endphp
-                                            <div class="h-full {{ isset($itemStats['pending']) && $itemStats['pending'] > 0 ? 'bg-amber-500' : 'bg-emerald-500' }}" style="width: {{ $reviewedPercent }}%"></div>
+                                            <div class="h-full {{ $barColor }}" style="width: {{ $reviewedPercent }}%"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -523,7 +517,7 @@
                                   onsubmit="return confirm('Approve this entire Purchase Request?')">
                                 @csrf
                                 <button type="submit" 
-                                        {{ isset($itemStats['pending']) && $itemStats['pending'] > 0 ? 'disabled' : '' }}
+                                        {{ (($itemStats['pending'] ?? 0) > 0 || ($itemStats['approved'] ?? 0) === 0) ? 'disabled' : '' }}
                                         class="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-700 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
                                     Approve Request
                                 </button>
