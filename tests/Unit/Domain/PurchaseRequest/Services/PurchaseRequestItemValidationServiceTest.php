@@ -140,7 +140,7 @@ class PurchaseRequestItemValidationServiceTest extends TestCase
     {
         $user = User::factory()->create(['is_head' => 1]);
         // PR is at step 2 (verificator), but user is dept head
-        $pr = $this->createPrWithWorkflow('pr-verificator-computer', 2);
+        $pr = $this->createPrWithWorkflow('pr-verificator', 2);
 
         $result = $this->service->canReviewItems($user, $pr);
 
@@ -195,7 +195,7 @@ class PurchaseRequestItemValidationServiceTest extends TestCase
 
     public function test_get_approver_type_from_step_returns_correct_type_for_verificator(): void
     {
-        $step = ApprovalStep::factory()->create(['approver_snapshot_role_slug' => 'pr-verificator-computer']);
+        $step = ApprovalStep::factory()->create(['approver_snapshot_role_slug' => 'pr-verificator']);
 
         $type = $this->service->getApproverTypeFromStep($step);
 

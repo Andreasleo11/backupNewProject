@@ -276,8 +276,7 @@ final class ApprovalEngine implements Approvals
     {
         return match ($slug) {
             'pr-dept-head-office', 'pr-dept-head-factory' => 'Dept head',
-            'pr-verificator-computer' => 'Verificator (Computer)',
-            'pr-verificator-personalia' => 'Verificator (Personalia)',
+            'pr-verificator' => 'Verificator',
             'pr-director' => 'Director',
             'pr-gm' => 'General Manager',
             'pr-purchaser' => 'Purchasing',

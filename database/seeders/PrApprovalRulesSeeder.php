@@ -29,8 +29,7 @@ class PrApprovalRulesSeeder extends Seeder
                 'pr-dept-head-factory',
                 'pr-head-design',
                 'pr-gm-factory',
-                'pr-verificator-personalia',
-                'pr-verificator-computer',
+                'pr-verificator',
                 'pr-purchaser',
                 'pr-director',
             ];
@@ -53,76 +52,65 @@ class PrApprovalRulesSeeder extends Seeder
             // priority: makin kecil = makin diutamakan
             $rules = [
 
-                // ========= MOULDING + is_design (lebih spesifik, priority kecil) =========
+                // ========= MOULDING + is_import (lebih spesifik, priority kecil) =========
 
                 [
-                    'code' => 'pr.moulding.design.to-maintenance',
-                    'name' => 'PR MOULDING (design) → Maintenance',
+                    'code' => 'pr.moulding.to-maintenance',
+                    'name' => 'PR MOULDING → Maintenance',
                     'priority' => 10,
                     'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design' => true,
                         'to_department' => 'Maintenance',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
                         ['seq' => 2, 'role' => 'pr-head-design'],
-                        ['seq' => 3, 'role' => 'pr-gm-factory'],
-                        ['seq' => 4, 'role' => 'pr-purchaser'],
-                        ['seq' => 5, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 3, 'role' => 'pr-purchaser'],
+                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
                 [
-                    'code' => 'pr.moulding.design.to-purchasing',
-                    'name' => 'PR MOULDING (design) → Purchasing',
+                    'code' => 'pr.moulding.to-purchasing',
+                    'name' => 'PR MOULDING → Purchasing',
                     'priority' => 10,
                     'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design' => true,
                         'to_department' => 'Purchasing',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
-                        ['seq' => 2, 'role' => 'pr-head-design'],
-                        ['seq' => 3, 'role' => 'pr-gm-factory'],
-                        ['seq' => 4, 'role' => 'pr-purchaser'],
-                        ['seq' => 5, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 2, 'role' => 'pr-purchaser'],
+                        ['seq' => 3, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
                 [
-                    'code' => 'pr.moulding.design.to-computer',
-                    'name' => 'PR MOULDING (design) → Computer',
+                    'code' => 'pr.moulding.to-computer',
+                    'name' => 'PR MOULDING → Computer',
                     'priority' => 10,
                     'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design' => true,
                         'to_department' => 'Computer',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
-                        ['seq' => 2, 'role' => 'pr-head-design'],
-                        ['seq' => 3, 'role' => 'pr-gm-factory'],
-                        ['seq' => 4, 'role' => 'pr-purchaser'],
-                        ['seq' => 5, 'role' => 'pr-verificator-computer'],
-                        ['seq' => 6, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 2, 'role' => 'pr-purchaser'],
+                        ['seq' => 3, 'role' => 'pr-verificator'],
+                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
                 [
-                    'code' => 'pr.moulding.design.to-personalia',
-                    'name' => 'PR MOULDING (design) → Personalia',
+                    'code' => 'pr.moulding.to-personalia',
+                    'name' => 'PR MOULDING → Personalia',
                     'priority' => 10,
                     'match' => [
                         'from_department' => 'MOULDING',
-                        'is_design' => true,
                         'to_department' => 'Personnel',
                     ],
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
-                        ['seq' => 2, 'role' => 'pr-head-design'],
-                        ['seq' => 3, 'role' => 'pr-gm-factory'],
-                        ['seq' => 4, 'role' => 'pr-purchaser'],
-                        ['seq' => 5, 'role' => 'pr-verificator-personalia'],
-                        ['seq' => 6, 'role' => 'pr-director', 'final' => true],
+                        ['seq' => 2, 'role' => 'pr-purchaser'],
+                        ['seq' => 3, 'role' => 'pr-verificator'],
+                        ['seq' => 4, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
 
@@ -167,7 +155,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-office'],
                         ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-verificator-computer'],
+                        ['seq' => 3, 'role' => 'pr-verificator'],
                         ['seq' => 4, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
@@ -182,7 +170,7 @@ class PrApprovalRulesSeeder extends Seeder
                     'steps' => [
                         ['seq' => 1, 'role' => 'pr-dept-head-office'],
                         ['seq' => 2, 'role' => 'pr-purchaser'],
-                        ['seq' => 3, 'role' => 'pr-verificator-personalia'],
+                        ['seq' => 3, 'role' => 'pr-verificator'],
                         ['seq' => 4, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
@@ -231,7 +219,7 @@ class PrApprovalRulesSeeder extends Seeder
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
                         ['seq' => 2, 'role' => 'pr-gm-factory'],
                         ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-verificator-computer'],
+                        ['seq' => 4, 'role' => 'pr-verificator'],
                         ['seq' => 5, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],
@@ -247,7 +235,7 @@ class PrApprovalRulesSeeder extends Seeder
                         ['seq' => 1, 'role' => 'pr-dept-head-factory'],
                         ['seq' => 2, 'role' => 'pr-gm-factory'],
                         ['seq' => 3, 'role' => 'pr-purchaser'],
-                        ['seq' => 4, 'role' => 'pr-verificator-personalia'],
+                        ['seq' => 4, 'role' => 'pr-verificator'],
                         ['seq' => 5, 'role' => 'pr-director', 'final' => true],
                     ],
                 ],

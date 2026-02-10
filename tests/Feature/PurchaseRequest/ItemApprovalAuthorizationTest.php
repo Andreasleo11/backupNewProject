@@ -21,7 +21,7 @@ function createPrWithWorkflow(string $roleSlug, int $currentStep): PurchaseReque
     // Map role slug to role ID from TestRoleSeeder
     $roleIdMap = [
         'pr-dept-head-office' => 100,
-        'pr-verificator-computer' => 102,
+        'pr-verificator' => 102,
         'pr-director' => 105,
     ];
 
@@ -90,10 +90,10 @@ test('dept head can reject item at correct step', function () {
 test('verificator can approve item at correct step', function () {
     $spec = Specification::factory()->create(['name' => 'VERIFICATOR']);
     $user = User::factory()->create(['specification_id' => $spec->id]);
-    $user->assignRole('pr-verificator-computer');
+    $user->assignRole('pr-verificator');
     SignatureTestHelper::createDefaultSignature($user->id);
 
-    $pr = createPrWithWorkflow('pr-verificator-computer', 2);
+    $pr = createPrWithWorkflow('pr-verificator', 2);
     $item = DetailPurchaseRequest::factory()->create([
         'purchase_request_id' => $pr->id,
         'is_approve_by_verificator' => null,

@@ -80,16 +80,8 @@ class PrRoleMappingSeeder extends Seeder
                 'approval.view-log',
             ],
 
-            // Verificator PERSONALIA (to_department=PERSONALIA)
-            'pr-verificator-personalia' => [
-                'pr.view-dept',
-                'pr.view-any',
-                'pr.approve',
-                'approval.view-log',
-            ],
-
-            // Verificator COMPUTER (to_department=COMPUTER)
-            'pr-verificator-computer' => [
+            // Verificator
+            'pr-verificator' => [
                 'pr.view-dept',
                 'pr.view-any',
                 'pr.approve',
@@ -138,8 +130,7 @@ class PrRoleMappingSeeder extends Seeder
          *      - Dept head office (ACCOUNTING, MANAGEMENT, ...) -> "pr-dept-head-office"
          *      - Dept head factory (MOULDING, QA, QC, ...) -> "pr-dept-head-factory"
          *      - Head Design -> "pr-head-design"
-         *      - Verificator personalia -> "pr-verificator-personalia"
-         *      - Verificator computer -> "pr-verificator-computer"
+         *      - Verificator -> "pr-verificator"
          *      - Tim purchaser -> "pr-purchaser"
          *
          *  Mapping ini bisa kamu lakukan via UI atau seeder terpisah.

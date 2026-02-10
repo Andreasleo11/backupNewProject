@@ -202,12 +202,12 @@ class PurchaseRequestFactory extends Factory
     {
         // Use actual test role IDs from TestRoleSeeder
         // Role ID 100 = pr-dept-head-office
-        // Role ID 102 = pr-verificator-computer
+        // Role ID 102 = pr-verificator
         // Role ID 104 = pr-gm
         // Role ID 105 = pr-director
         $baseSteps = [
             1 => 100,  // pr-dept-head-office
-            2 => 102,  // pr-verificator-computer
+            2 => 102,  // pr-verificator
         ];
 
         if ($type === 'factory') {
@@ -228,8 +228,7 @@ class PurchaseRequestFactory extends Factory
         $roleNames = [
             'pr-dept-head-office' => 'Dept Head - Office',
             'pr-dept-head-factory' => 'Dept Head - Factory',
-            'pr-verificator-computer' => 'Verificator - Computer',
-            'pr-verificator-personalia' => 'Verificator - Personalia',
+            'pr-verificator' => 'Verificator',
             'pr-gm' => 'General Manager',
             'pr-director' => 'Director',
         ];

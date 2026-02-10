@@ -134,8 +134,7 @@
                                                 'pr-dept-head-factory' => 'Dept Head (Factory)',
                                                 'pr-head-design' => 'Head Design',
                                                 'pr-gm-factory' => 'General Manager',
-                                                'pr-verificator-personalia' => 'Verificator Personalia',
-                                                'pr-verificator-computer' => 'Verificator Computer',
+                                                'pr-verificator' => 'Verificator',
                                                 'pr-purchaser' => 'Purchaser',
                                                 'pr-director' => 'Director',
                                             ];

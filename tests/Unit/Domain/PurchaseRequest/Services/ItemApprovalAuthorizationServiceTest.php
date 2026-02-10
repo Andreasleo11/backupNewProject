@@ -53,7 +53,7 @@ class ItemApprovalAuthorizationServiceTest extends TestCase
     {
         $spec = Specification::factory()->create(['name' => 'VERIFICATOR']);
         $user = User::factory()->create(['specification_id' => $spec->id]);
-        $pr = $this->createPrWithWorkflow('pr-verificator-computer', 2);
+        $pr = $this->createPrWithWorkflow('pr-verificator', 2);
         $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
         $result = $this->service->canApproveOrReject($user, $item);
@@ -64,7 +64,7 @@ class ItemApprovalAuthorizationServiceTest extends TestCase
     public function test_non_verificator_cannot_approve_at_verificator_step(): void
     {
         $user = User::factory()->create();
-        $pr = $this->createPrWithWorkflow('pr-verificator-computer', 2);
+        $pr = $this->createPrWithWorkflow('pr-verificator', 2);
         $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
         $result = $this->service->canApproveOrReject($user, $item);

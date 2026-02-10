@@ -59,21 +59,4 @@ class PurchaseRequestApprovalContextBuilder
 
         return $total;
     }
-
-    /**
-     * Build context from an existing PurchaseRequest model.
-     *
-     * @param \App\Models\PurchaseRequest $pr The purchase request
-     * @return array Approval context
-     */
-    public function buildFromModel(\App\Models\PurchaseRequest $pr): array
-    {
-        return $this->build(
-            fromDepartment: $pr->from_department ?? '',
-            toDepartment: $pr->to_department?->value ?? '',
-            branch: $pr->branch ?? '',
-            isOffice: $pr->type === 'office',
-            items: $pr->items->toArray()
-        );
-    }
 }
