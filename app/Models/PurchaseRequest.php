@@ -15,6 +15,28 @@ class PurchaseRequest extends Model implements Approvable
 {
     use HasApproval, HasFactory, LogsActivity, SoftDeletes;
 
+    /**
+     * Get combined activities from PR and its Items.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getCombinedActivitiesAttribute()
+    {
+        // 1. Get PR Logs
+        $prLogs = $this->activities;
+
+        // 2. Get Item Logs
+        $itemIds = $this->items()->pluck('id');
+        
+        $itemLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\DetailPurchaseRequest::class)
+            ->whereIn('subject_id', $itemIds)
+            ->with('causer') // Eager load causer for performance
+            ->get();
+
+        // 3. Merge & Sort desc
+        return $prLogs->concat($itemLogs)->sortByDesc('created_at');
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

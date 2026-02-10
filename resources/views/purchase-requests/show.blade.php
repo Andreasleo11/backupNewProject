@@ -600,7 +600,7 @@
                                 </div>
                                 <div class="relative mt-6 flex-1 px-4 sm:px-6">
                                     <ul role="list" class="-mb-8">
-                                        @forelse($purchaseRequest->activities->sortByDesc('created_at') as $activity)
+                                        @forelse($purchaseRequest->combined_activities as $activity)
                                             <li>
                                                 <div class="relative pb-8">
                                                     @if(!$loop->last)
