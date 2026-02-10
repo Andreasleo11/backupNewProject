@@ -96,6 +96,15 @@
 
             {{-- Top Actions --}}
             <div class="flex flex-wrap items-center gap-3">
+                @if(auth()->user()->hasRole('super-admin'))
+                    <button type="button" @click="$dispatch('open-audit-drawer')"
+                            class="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600"
+                            title="View Audit Log">
+                        <i class="bi bi-clock-history text-lg text-slate-400 group-hover:text-indigo-500"></i>
+                        <span class="hidden sm:inline">History</span>
+                    </button>
+                @endif
+
                 @if ($canUpload)
                     <button type="button" @click="openUploadFiles = true"
                             class="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-indigo-200 hover:text-indigo-600 hover:shadow-md">
@@ -446,6 +455,10 @@
                             </tfoot>
                         </table>
                     </div>
+                    
+                    {{-- DIGITAL SIGNATURES FOOTER --}}
+                    @include('partials.pr-digital-signatures', ['purchaseRequest' => $purchaseRequest])
+
                 </div>
 
             </div>
@@ -549,6 +562,94 @@
         </div>
 
     </div>
+
+    {{-- AUDIT LOG DRAWER --}}
+    @if(auth()->user()->hasRole('super-admin'))
+        <div x-data="{ open: false }" 
+             @open-audit-drawer.window="open = true"
+             x-show="open" 
+             style="display: none;"
+             class="relative z-[100]" 
+             aria-labelledby="slide-over-title" 
+             role="dialog" 
+             aria-modal="true">
+            
+            <div x-show="open" x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 overflow-hidden">
+                <div class="absolute inset-0 overflow-hidden">
+                    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                        <div x-show="open" x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" class="pointer-events-auto w-screen max-w-md">
+                            <div class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl" @click.outside="open = false">
+                                <div class="bg-indigo-700 px-4 py-6 sm:px-6">
+                                    <div class="flex items-center justify-between">
+                                        <h2 class="text-base font-semibold leading-6 text-white" id="slide-over-title">Audit Log History</h2>
+                                        <div class="ml-3 flex h-7 items-center">
+                                            <button type="button" @click="open = false" class="relative rounded-md bg-indigo-700 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
+                                                <span class="absolute -inset-2.5"></span>
+                                                <span class="sr-only">Close panel</span>
+                                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <p class="text-sm text-indigo-300">Detailed record of all system events.</p>
+                                    </div>
+                                </div>
+                                <div class="relative mt-6 flex-1 px-4 sm:px-6">
+                                    <ul role="list" class="-mb-8">
+                                        @forelse($purchaseRequest->activities->sortByDesc('created_at') as $activity)
+                                            <li>
+                                                <div class="relative pb-8">
+                                                    @if(!$loop->last)
+                                                        <span class="absolute left-4 top-4 -ml-px h-full w-0.5 bg-slate-200" aria-hidden="true"></span>
+                                                    @endif
+                                                    <div class="relative flex space-x-3">
+                                                        <div>
+                                                            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 ring-8 ring-white">
+                                                                <i class="bi bi-activity text-slate-500"></i>
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex flex-col min-w-0 flex-1 justify-between gap-2">
+                                                            <div>
+                                                                <p class="text-xs text-slate-500">
+                                                                    <span class="font-medium text-slate-900">{{ $activity->causer->name ?? 'System' }}</span>
+                                                                    {{ $activity->description }}
+                                                                </p>
+                                                                @if($activity->properties->has('attributes'))
+                                                                    <div class="mt-2 rounded-lg bg-slate-50 p-2 text-[10px] text-slate-600 font-mono overflow-auto border border-slate-100">
+                                                                        @foreach($activity->properties['attributes'] as $key => $val)
+                                                                            @if($key !== 'updated_at')
+                                                                                <div class="flex gap-2">
+                                                                                    <span class="font-bold text-slate-700">{{ $key }}:</span>
+                                                                                    <span class="truncate">{{ is_array($val) ? json_encode($val) : $val }}</span>
+                                                                                </div>
+                                                                            @endif
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                            <div class="whitespace-nowrap text-right text-[10px] text-slate-400">
+                                                                <time datetime="{{ $activity->created_at }}">{{ $activity->created_at->format('M d, H:i') }}</time>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        @empty
+                                            <li class="py-4 text-center text-sm text-slate-500">No activity recorded.</li>
+                                        @endforelse
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 @endsection
 
 @push('scripts')

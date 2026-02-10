@@ -44,6 +44,11 @@ class ApprovalStep extends Model
         return $this->belongsTo(ApprovalRequest::class, 'approval_request_id');
     }
 
+    public function actedUser(): BelongsTo
+    {
+        return $this->belongsTo(\App\Infrastructure\Persistence\Eloquent\Models\User::class, 'acted_by');
+    }
+
     /**
      * Map the role slug to an approver type for item validation.
      */
@@ -62,6 +67,7 @@ class ApprovalStep extends Model
             'pr-verificator-computer', 'pr-verificator-personalia' => 'verificator',
             'pr-director' => 'director',
             'pr-purchaser' => 'purchaser',
+            'pr-gm-factory' => 'gm',
             default => null,
         };
     }

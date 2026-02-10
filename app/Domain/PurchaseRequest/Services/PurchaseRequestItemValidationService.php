@@ -150,6 +150,7 @@ class PurchaseRequestItemValidationService
             'verificator' => 'is_approve_by_verificator',
             'director' => 'is_approve',
             'purchaser' => 'is_approve_by_head',
+            'gm' => 'is_approve_by_head',
             default => throw new \InvalidArgumentException("Invalid approver type: {$approverType}"),
         };
     }

@@ -92,11 +92,14 @@ final class ApprovalEngine implements Approvals
             // attach signature snapshot once
             $this->attachSignatureSnapshotToStep($step, $by, $remarks);
 
+            $actingUser = \App\Infrastructure\Persistence\Eloquent\Models\User::find($by);
+
             $step->update([
                 'status' => 'APPROVED',
                 'acted_by' => $by,
                 'acted_at' => now(),
                 'remarks' => $remarks,
+                'approver_snapshot_name' => $actingUser?->name,
             ]);
 
             $next = $req->steps()->where('sequence', '>', $req->current_step)->orderBy('sequence')->first();
@@ -263,7 +266,7 @@ final class ApprovalEngine implements Approvals
         $role = \Spatie\Permission\Models\Role::find($id);
 
         return [
-            'name' => $role->name ?? 'Unknown Role',
+            'name' => null,
             'role_slug' => $role->name ?? null,
             'label' => $this->getRoleLabel($role->name ?? ''),
         ];
