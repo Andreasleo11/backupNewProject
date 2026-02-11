@@ -11,6 +11,7 @@
             $nextTick(() => { document.getElementById('po_number_input').focus() });
         }
     }" 
+    x-effect="document.body.style.overflow = show ? 'hidden' : ''"
     @open-edit-po-modal.window="open($event)"
     @keydown.escape.window="show = false"
     x-show="show" 

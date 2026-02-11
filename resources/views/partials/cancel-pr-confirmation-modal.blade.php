@@ -9,6 +9,7 @@
             $nextTick(() => { document.getElementById('cancel-description').focus() });
         }
     }" 
+    x-effect="document.body.style.overflow = show ? 'hidden' : ''"
     @open-cancel-pr-modal.window="open($event)"
     @keydown.escape.window="show = false"
     x-show="show" 

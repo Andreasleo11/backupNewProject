@@ -8,6 +8,7 @@
             this.show = true;
         }
     }" 
+    x-effect="document.body.style.overflow = show ? 'hidden' : ''"
     @open-delete-pr-modal.window="open($event)"
     @keydown.escape.window="show = false"
     x-show="show" 

@@ -231,6 +231,7 @@
                         });
                     }
                 }" 
+                x-effect="document.body.style.overflow = show ? 'hidden' : ''"
                 @open-quick-view-modal.window="open($event)"
                 @keydown.escape.window="show = false"
                 x-show="show" 

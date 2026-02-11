@@ -40,7 +40,7 @@
         @endif
 
         {{-- Cancel Feature --}}
-        @if (($user->id === $pr->user_id_create && $pr->status === 1) || ($user->department?->name === 'COMPUTER' && $user->is_head && $pr->status === 4) || auth()->user()->hasRole('super-admin'))
+        @if (auth()->user()->id === $pr->user_id_create || auth()->user()->hasRole('super-admin'))
             <button type="button" 
                     @click="$dispatch('open-cancel-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' })"
                     class="group flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 border border-orange-100 text-orange-500 hover:bg-orange-500 hover:border-orange-600 hover:text-white transition-all shadow-sm"
@@ -51,28 +51,29 @@
 
         {{-- More Actions Dropdown --}}
         <div class="dropdown">
-            <button type="button" 
-                    class="group flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
-                    data-bs-toggle="dropdown" aria-expanded="false"
-                    data-bs-toggle="tooltip" data-bs-placement="top" title="More Actions">
-                <i class='bx bx-dots-vertical-rounded text-lg'></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-xl overflow-hidden mt-2 p-1 font-sans text-sm min-w-[160px]">
+            <span data-bs-toggle="tooltip" data-bs-placement="top" title="More Actions">
+                <button type="button" 
+                        class="group flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-all shadow-sm"
+                        data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window" data-bs-reference="parent">
+                    <i class='bx bx-dots-vertical-rounded text-lg'></i>
+                </button>
+            </span>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg border border-slate-100 rounded-xl overflow-hidden mt-2 p-1 font-sans text-sm min-w-[170px] z-[1050]">
                 <li>
                     <a href="{{ route('purchase-requests.export-pdf', $pr->id) }}" 
                        class="dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors font-medium">
                         <i class='bx bxs-file-pdf text-lg'></i> Export to PDF
                     </a>
                 </li>
-                @if ($pr->status === 4 && $user->specification->name === 'PURCHASER')
-                <li><hr class="dropdown-divider my-1 border-slate-100"></li>
-                <li>
-                    <button type="button" 
-                            @click="$dispatch('open-edit-po-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}', po: '{{ $pr->po_number }}' })"
-                            class="dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors font-medium w-full text-left">
-                        <i class='bx bx-edit text-lg'></i> Edit PO Number
-                    </button>
-                </li>
+                @if ($pr->status === 4 && auth()->user()->hasRole('PURCHASER') || auth()->user()->hasRole('super-admin'))
+                    <li><hr class="dropdown-divider my-1 border-slate-100"></li>
+                    <li>
+                        <button type="button" 
+                                @click="$dispatch('open-edit-po-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}', po: '{{ $pr->po_number }}' })"
+                                class="dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors font-medium w-full text-left">
+                            <i class='bx bx-edit text-lg'></i> Edit PO Number
+                        </button>
+                    </li>
                 @endif
             </ul>
         </div>
