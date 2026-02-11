@@ -25,6 +25,13 @@ class FileController extends Controller
         return redirect()->back()->with(['success' => 'Files successfully uploaded!']);
     }
 
+    public function destroy($id)
+    {
+        $this->fileService->deleteFile($id);
+
+        return redirect()->back()->with(['success' => 'File successfully deleted']);
+    }
+
     public function uploadEvaluation(Request $request)
     {
         $month = $request->input('filter_month');
@@ -37,14 +44,7 @@ class FileController extends Controller
 
         return redirect()->back()->with(['success' => 'Files successfully uploaded!']);
     }
-
-    public function destroy($id)
-    {
-        $this->fileService->deleteFile($id);
-
-        return redirect()->back()->with(['success' => 'File successfully deleted']);
-    }
-
+    
     public function getFiles(Request $request)
     {
         $year = $request->input('year');

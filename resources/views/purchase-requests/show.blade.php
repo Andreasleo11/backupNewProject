@@ -567,6 +567,15 @@
                                        title="Download / View">
                                         <i class="bi bi-download"></i>
                                     </a>
+                                    @if($canUpload) {{-- Using same permission as upload --}}
+                                        <form action="{{ route('file.destroy', $file->id) }}" method="POST" onsubmit="return confirm('Delete this file?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg text-rose-400 transition-all hover:bg-rose-50 hover:text-rose-600" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

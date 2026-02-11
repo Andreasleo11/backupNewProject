@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\HomeController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Auth\ChangePasswordPage;
@@ -64,6 +65,10 @@ Route::get('purchase-requests/items/{id}/approve', function () {
 Route::get('purchase-requests/items/{id}/reject', function () {
     abort(405, 'Please use POST method for item rejection');
 })->name('purchase-requests.items.reject.deprecated');
+
+
+Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
+Route::delete('files/{id}', [FileController::class, 'destroy'])->name('file.destroy');
 
 /*
 |--------------------------------------------------------------------------

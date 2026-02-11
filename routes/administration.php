@@ -45,8 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/approval-steps/{step}/signature', [ApprovalSignatureController::class, 'show'])->name('approval-steps.signature');
 
     // File Operations
-    Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
     Route::post('file/uploadEvaluation', [FileController::class, 'uploadEvaluation'])->name('file.upload.evaluation');
     Route::get('/get-files', [FileController::class, 'getFiles']);
-    Route::delete('file/{id}/delete', [FileController::class, 'destroy'])->name('file.delete');
 });
