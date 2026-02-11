@@ -61,7 +61,7 @@ class ApprovalStep extends Model
             $role = \Spatie\Permission\Models\Role::find($this->approver_id);
             $slug = $role?->name;
         }
-
+        
         return match ($slug) {
             'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
             'pr-verificator' => 'verificator',

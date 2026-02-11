@@ -450,6 +450,7 @@
                         
                         if ($currentStep) {
                             $approverType = $currentStep->item_approver_type;
+                            
                             if ($approverType) {
                                 $itemStats = app(\App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService::class)
                                     ->getItemStats($purchaseRequest, $approverType);

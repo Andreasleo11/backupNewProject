@@ -37,10 +37,22 @@ final class ItemApprovalAuthorizationService
         }
 
         // Check user authorization based on workflow step
-        return match ($workflowStep->approverType()) {
+        $hasRole = match ($workflowStep->approverType()) {
             'head' => $this->canActAsDeptHead($user, $pr),
             'verificator' => $this->canActAsVerificator($user),
             'director' => $this->canActAsDirector($user),
+            default => false,
+        };
+
+        if (! $hasRole) {
+            return false;
+        }
+
+        // Check if allow to act (must be null/pending)
+        return match ($workflowStep->approverType()) {
+            'head' => is_null($item->is_approve_by_head),
+            'verificator' => is_null($item->is_approve_by_verificator),
+            'director' => is_null($item->is_approve),
             default => false,
         };
     }
