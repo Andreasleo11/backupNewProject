@@ -48,8 +48,8 @@ Route::middleware('auth')->group(function () {
     Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
     Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
     Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'rejectWorkflow'])->name('purchase-requests.reject');
-    Route::post('purchase-requests/approve-selected', [PurchaseRequestController::class, 'approveSelected'])->name('purchase_requests.approve_selected');
-    Route::post('purchase-requests/reject-selected', [PurchaseRequestController::class, 'rejectSelected'])->name('purchase_requests.reject_selected');
+    // Route::post('purchase-requests/approve-selected', [PurchaseRequestController::class, 'approveSelected'])->name('purchase_requests.approve_selected');
+    // Route::post('purchase-requests/reject-selected', [PurchaseRequestController::class, 'rejectSelected'])->name('purchase_requests.reject_selected');
     Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
 
     // Purchase Request Details

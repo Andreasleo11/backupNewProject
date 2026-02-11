@@ -8,7 +8,14 @@
 
 <div x-data="{ open: false }" x-show="open" x-cloak
      @open-reject-modal.window="open = true"
-     class="fixed inset-0 z-50 overflow-y-auto" 
+     x-init="$watch('open', value => {
+        if (value) {
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.body.classList.remove('overflow-hidden');
+        }
+     })"
+     class="fixed inset-0 z-[100] overflow-y-auto" 
      aria-labelledby="modal-title" 
      role="dialog" 
      aria-modal="true">

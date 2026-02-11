@@ -1,8 +1,19 @@
 {{-- Upload Files Modal (Tailwind + Alpine) --}}
-<div x-show="openUploadFiles" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-    @keydown.escape.window="openUploadFiles = false">
+<div x-data="{ open: false }" 
+     x-show="open" 
+     x-cloak 
+     @open-upload-modal.window="open = true"
+     x-init="$watch('open', value => {
+        if (value) {
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.body.classList.remove('overflow-hidden');
+        }
+     })"
+     class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40"
+    @keydown.escape.window="open = false">
     {{-- Overlay klik luar untuk close --}}
-    <div class="absolute inset-0" @click="openUploadFiles = false"></div>
+    <div class="absolute inset-0" @click="open = false"></div>
 
     <div class="relative z-10 w-full max-w-md mx-4 rounded-2xl bg-white shadow-xl border border-slate-100">
         <form x-ref="uploadForm" action="{{ route('file.upload') }}" method="post" enctype="multipart/form-data"
@@ -18,7 +29,7 @@
                     class="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-400
                                hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus:ring-2
                                focus:ring-indigo-500 focus:ring-offset-1"
-                    @click="openUploadFiles = false">
+                    @click="open = false">
                     <span class="sr-only">Close</span>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none"
                         stroke="currentColor">

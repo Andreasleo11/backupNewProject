@@ -322,6 +322,7 @@
 
     {{-- Livewire scripts --}}
     @livewireScripts
+    @stack('modals')
     @stack('scripts')
 </body>
 </html>
