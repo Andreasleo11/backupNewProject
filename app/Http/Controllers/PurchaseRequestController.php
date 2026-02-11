@@ -11,15 +11,12 @@ use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestWithDetailsExport;
-use App\Http\Requests\ApproveAllDetailItems;
 use App\Http\Requests\ApprovePurchaseRequest;
 use App\Http\Requests\RejectPurchaseRequest;
-use App\Http\Requests\RejectPurchaseRequestManual;
 use App\Http\Requests\SaveSignatureRequest;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
 use App\Models\Department;
-use App\Models\DetailPurchaseRequest;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -263,41 +260,7 @@ class PurchaseRequestController extends Controller
         }
     }
 
-    public function reject(
-        RejectPurchaseRequestManual $request,
-        $id,
-        \App\Application\PurchaseRequest\UseCases\ManualRejectPurchaseRequest $useCase
-    ) {
-        $dto = new \App\Application\PurchaseRequest\DTOs\ManualRejectPurchaseRequestDTO(
-            purchaseRequestId: (int) $id,
-            description: $request->description
-        );
 
-        $useCase->handle($dto);
-
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase Request rejected']);
-    }
-
-    public function approveAllDetailItems($prId, ApproveAllDetailItems $request)
-    {
-        $type = $request->validated()['type'];
-
-        if ($type === 'GM') {
-            $details = DetailPurchaseRequest::where('purchase_request_id', $prId)
-                ->where('is_approve_by_head', true)
-                ->get();
-
-            foreach ($details as $detail) {
-                $detail->update(['is_approve_by_gm' => true]);
-            }
-
-            return response()->json(['success' => 'All detail approved successfully!']);
-        }
-
-        return response()->json(['error' => 'Something went wrong!']);
-    }
 
     public function exportToPdf($id)
     {
@@ -398,7 +361,6 @@ class PurchaseRequestController extends Controller
             "purchase requests for $authDepartment .xlsx",
         );
     }
-
     public function approve(ApprovePurchaseRequest $request, PurchaseRequest $purchaseRequest, ApprovePR $useCase)
     {
         try {
@@ -418,8 +380,7 @@ class PurchaseRequestController extends Controller
             return back()->with('error', 'Failed to approve purchase request')->setStatusCode(500);
         }
     }
-
-    public function rejectWorkflow(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
+    public function reject(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
     {
         try {
             $useCase->handle(new ApprovalActionDTO(
