@@ -30,11 +30,21 @@ class PurchaseRequest extends Model implements Approvable
         
         $itemLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\DetailPurchaseRequest::class)
             ->whereIn('subject_id', $itemIds)
-            ->with('causer') // Eager load causer for performance
+            ->with('causer') 
             ->get();
 
-        // 3. Merge & Sort desc
-        return $prLogs->concat($itemLogs)->sortByDesc('created_at');
+        // 3. Get File Logs (New)
+        // Assuming files are linked via doc_num. We need to find File IDs first.
+        // Since there is no direct relationship defined yet (files() accessor might exist but using raw query for safety)
+        $fileIds = \App\Models\File::where('doc_id', $this->doc_num)->pluck('id');
+
+        $fileLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\File::class)
+            ->whereIn('subject_id', $fileIds)
+            ->with('causer')
+            ->get();
+
+        // 4. Merge & Sort desc
+        return $prLogs->concat($itemLogs)->concat($fileLogs)->sortByDesc('created_at');
     }
 
     public function getActivitylogOptions(): LogOptions

@@ -15,6 +15,7 @@ final class FileService
     public function uploadFiles(array $files, string $docNum): int
     {
         $uploadedCount = 0;
+        $uploadedFileNames = [];
 
         foreach ($files as $file) {
             $fileName = time() . '-' . $file->getClientOriginalName();
@@ -22,15 +23,28 @@ final class FileService
 
             $file->storeAs('public/files', $fileName);
 
-            File::create([
+            $fileModel = File::create([
                 'doc_id' => $docNum,
                 'name' => $fileName,
                 'mime_type' => $file->getClientMimeType(),
                 'size' => $fileSize,
             ]);
 
+            // Explicitly log creation if not handled by trait auto-logging (or to add custom message)
+            // Since trait is there, it might log 'created' automatically. 
+            // But usually we want more info or just rely on standard 'created'.
+            // If we want "uploaded file X", we can do:
+            activity()
+               ->performedOn($fileModel)
+               ->causedBy(auth()->user())
+               ->log('uploaded file: ' . $file->getClientOriginalName());
+
+            $uploadedFileNames[] = $file->getClientOriginalName();
             $uploadedCount++;
         }
+
+        // We removed the PR-level aggregation log because now each file has its own log
+        // which will be aggregated by getCombinedActivitiesAttribute on the PR model.
 
         return $uploadedCount;
     }
