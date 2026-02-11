@@ -318,48 +318,106 @@
                                     <td class="px-4 py-4 text-center align-middle">
                                         <div class="flex flex-col items-center gap-2">
                                             
-                                            {{-- Status Indicators (Head -> Verif -> Director) --}}
+                                            {{-- Status Indicators (Dynamic based on Workflow) --}}
                                             <div class="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                                                
-                                                {{-- HEAD --}}
-                                                <div class="flex flex-col items-center gap-0.5" title="Department Head">
-                                                    <span class="text-[9px]">Head</span>
-                                                    @if($detail->is_approve_by_head === 1)
-                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                    @elseif($detail->is_approve_by_head === 0)
-                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                    @else
-                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                @php
+                                                    $steps = $approval?->steps->sortBy('sequence')->filter(fn($s) => !is_null($s->item_approver_type));
+                                                @endphp
+
+                                                @if($steps && $steps->isNotEmpty())
+                                                    @foreach($steps as $step)
+                                                        @php
+                                                            $type = $step->item_approver_type;
+                                                            $label = match($type) {
+                                                                'head' => 'Head',
+                                                                'gm' => 'GM',
+                                                                'verificator' => 'Verif',
+                                                                'director' => 'Dir',
+                                                                default => $type
+                                                            };
+                                                            $column = match($type) {
+                                                                'head' => 'is_approve_by_head',
+                                                                'gm' => 'is_approve_by_gm',
+                                                                'verificator' => 'is_approve_by_verificator',
+                                                                'director' => 'is_approve',
+                                                                default => null
+                                                            };
+                                                        @endphp
+
+                                                        @if($column)
+                                                            <div class="flex flex-col items-center gap-0.5" title="{{ $step->approver_label }}">
+                                                                <span class="text-[9px]">{{ $label }}</span>
+                                                                @if($detail->$column === 1)
+                                                                    <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                                @elseif($detail->$column === 0)
+                                                                    <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                                @else
+                                                                    <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                                @endif
+                                                            </div>
+
+                                                            @if(!$loop->last)
+                                                                <div class="h-px w-2 bg-slate-200 mt-3"></div>
+                                                            @endif
+                                                        @endif
+                                                    @endforeach
+                                                @else
+                                                    {{-- Fallback for legacy data (No Workflow) --}}
+                                                    {{-- HEAD --}}
+                                                    <div class="flex flex-col items-center gap-0.5" title="Department Head">
+                                                        <span class="text-[9px]">Head</span>
+                                                        @if($detail->is_approve_by_head === 1)
+                                                            <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                        @elseif($detail->is_approve_by_head === 0)
+                                                            <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                        @else
+                                                            <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                        @endif
+                                                    </div>
+
+                                                    @if(isset($detail->is_approve_by_gm))
+                                                        <div class="h-px w-2 bg-slate-200 mt-3"></div>
+                                                        <div class="flex flex-col items-center gap-0.5" title="General Manager">
+                                                            <span class="text-[9px]">GM</span>
+                                                            @if($detail->is_approve_by_gm === 1)
+                                                                <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                            @elseif($detail->is_approve_by_gm === 0)
+                                                                <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                            @else
+                                                                <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                            @endif
+                                                        </div>
                                                     @endif
-                                                </div>
-
-                                                <div class="h-px w-2 bg-slate-200 mt-3"></div>
-
-                                                {{-- VERIFICATOR --}}
-                                                <div class="flex flex-col items-center gap-0.5" title="Verificator">
-                                                    <span class="text-[9px]">Verif</span>
-                                                    @if($detail->is_approve_by_verificator === 1)
-                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                    @elseif($detail->is_approve_by_verificator === 0)
-                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                    @else
-                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
-                                                    @endif
-                                                </div>
-
-                                                <div class="h-px w-2 bg-slate-200 mt-3"></div>
-
-                                                {{-- DIRECTOR --}}
-                                                <div class="flex flex-col items-center gap-0.5" title="Director">
-                                                    <span class="text-[9px]">Dir</span>
-                                                    @if($detail->is_approve === 1)
-                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                    @elseif($detail->is_approve === 0)
-                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                    @else
-                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
-                                                    @endif
-                                                </div>
+    
+                                                    <div class="h-px w-2 bg-slate-200 mt-3"></div>
+    
+                                                    {{-- VERIFICATOR --}}
+                                                    <div class="flex flex-col items-center gap-0.5" title="Verificator">
+                                                        <span class="text-[9px]">Verif</span>
+                                                        @if($detail->is_approve_by_verificator === 1)
+                                                            <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                        @elseif($detail->is_approve_by_verificator === 0)
+                                                            <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                        @else
+                                                            <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                        @endif
+                                                    </div>
+    
+                                                    <div class="h-px w-2 bg-slate-200 mt-3"></div>
+    
+                                                    {{-- DIRECTOR --}}
+                                                    <div class="flex flex-col items-center gap-0.5" title="Director">
+                                                        <span class="text-[9px]">Dir</span>
+                                                        @if($detail->is_approve === 1)
+                                                            <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                        @elseif($detail->is_approve === 0)
+                                                            <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                        @else
+                                                            <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                        @endif
+                                                    </div>
+                                                    
+                                                @endif
                                             </div>
 
                                             {{-- ACTION BUTTONS --}}

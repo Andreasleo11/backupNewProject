@@ -6,7 +6,7 @@ namespace App\Application\PurchaseRequest\UseCases;
 
 use App\Application\PurchaseRequest\DTOs\ItemApprovalActionDTO;
 use App\Domain\PurchaseRequest\Services\ItemApprovalAuthorizationService;
-use App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService;
+
 use App\Models\DetailPurchaseRequest;
 
 /**
@@ -16,8 +16,7 @@ use App\Models\DetailPurchaseRequest;
 final class ApproveItem
 {
     public function __construct(
-        private readonly ItemApprovalAuthorizationService $authService,
-        private readonly PurchaseRequestItemValidationService $validator
+        private readonly ItemApprovalAuthorizationService $authService
     ) {}
 
     public function handle(ItemApprovalActionDTO $dto): void
@@ -46,6 +45,7 @@ final class ApproveItem
         // Update appropriate field based on approver type
         $updates = match ($approverType) {
             'head' => ['is_approve_by_head' => true],
+            'gm' => ['is_approve_by_gm' => true],
             'verificator' => ['is_approve_by_verificator' => true],
             'director' => ['is_approve' => true],
             default => throw new \DomainException("Invalid approver type: {$approverType}"),

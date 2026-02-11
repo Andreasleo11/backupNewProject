@@ -43,6 +43,7 @@ final class RejectItem
         // Update appropriate field based on approver type
         $updates = match ($approverType) {
             'head' => ['is_approve_by_head' => false],
+            'gm' => ['is_approve_by_gm' => false],
             'verificator' => ['is_approve_by_verificator' => false],
             'director' => ['is_approve' => false],
             default => throw new \DomainException("Invalid approver type: {$approverType}"),

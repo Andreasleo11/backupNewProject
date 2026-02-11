@@ -39,6 +39,7 @@ final class ItemApprovalAuthorizationService
         // Check user authorization based on workflow step
         $hasRole = match ($workflowStep->approverType()) {
             'head' => $this->canActAsDeptHead($user, $pr),
+            'gm' => $this->canActAsGM($user),
             'verificator' => $this->canActAsVerificator($user),
             'director' => $this->canActAsDirector($user),
             default => false,
@@ -51,6 +52,7 @@ final class ItemApprovalAuthorizationService
         // Check if allow to act (must be null/pending)
         return match ($workflowStep->approverType()) {
             'head' => is_null($item->is_approve_by_head),
+            'gm' => is_null($item->is_approve_by_gm),
             'verificator' => is_null($item->is_approve_by_verificator),
             'director' => is_null($item->is_approve),
             default => false,
@@ -148,6 +150,14 @@ final class ItemApprovalAuthorizationService
         // If not import, ANYONE allowed based on the messy blade logic 
         // (true && !designer) || (true && designer) => true
         return true;
+    }
+
+    /**
+     * Business rule: Can user act as GM?
+     */
+    private function canActAsGM(User $user): bool
+    {
+        return $user->hasRole('GM');
     }
 
     /**
