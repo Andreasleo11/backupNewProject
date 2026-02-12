@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder
          |--------------------------------------------------------------
          */
         $this->call([
-            RolesAndPermissionsSeeder::class, // Roles and basic permissions
-            PrRoleMappingSeeder::class,       // Map PR-specific permissions to roles
+            // RolesAndPermissionsSeeder::class, // Roles and basic permissions
+            RefactoredPrPermissionsSeeder::class, // Map PR-specific permissions to roles
             AdminUserSeeder::class,           // Create super-admin role and admin user
         ]);
 

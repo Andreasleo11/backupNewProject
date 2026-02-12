@@ -105,38 +105,12 @@ class PurchaseRequestController extends Controller
 
     public function store(
         StorePurchaseRequest $request,
-        \App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest $useCase,
+        
         \App\Domain\PurchaseRequest\Services\PriceSanitizer $priceSanitizer
     ) {
-        $user = Auth::user();
+        $dto = \App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO::fromValidated($request, $priceSanitizer);
 
-        $items = array_map(function ($item) use ($priceSanitizer) {
-            return new \App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO(
-                itemName: (string) $item['item_name'],
-                quantity: (float) $item['quantity'],
-                purpose: (string) $item['purpose'],
-                price: $priceSanitizer->sanitize($item['price'] ?? 0),
-                uom: (string) $item['uom'],
-                currency: (string) $item['currency'],
-            );
-        }, $request->input('items', []));
-
-        $dto = new \App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO(
-            requestedByUserId: $user->id,
-            fromDepartment: $request->input('from_department'),
-            toDepartment: $request->input('to_department'), // already normalized
-            branch: $request->branch,
-            datePr: $request->input('date_of_pr'),
-            dateRequired: $request->input('date_of_required'),
-            remark: $request->input('remark'),
-            supplier: $request->input('supplier'),
-            pic: $request->input('pic'),
-            isDraft: (bool) $request->is_draft,
-            isImport: $request->has('is_import') ? $request->is_import === 'true' : null,
-            items: $items
-        );
-
-        $useCase->handle($dto);
+        app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
 
         return redirect()->route('purchase-requests.index')->with('success', 'Purchase request created successfully');
     }

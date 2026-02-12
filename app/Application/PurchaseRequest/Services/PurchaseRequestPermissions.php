@@ -12,30 +12,27 @@ final class PurchaseRequestPermissions
 
     public function flags(User $user, PurchaseRequest $pr): array
     {
-        // --- canApprove (workflow new engine) ---
+        // 1. Approve: Workflow Engine Check + Permission Check
         $canApprove = false;
         if ($pr->approvalRequest) {
-            $canApprove = $this->approvals->canAct($pr, (int) $user->id);
+            // Must support workflow logic AND have permission
+            $canApprove = $this->approvals->canAct($pr, (int) $user->id) 
+                          && $user->can('approval.approve');
         }
 
-        // --- canUpload (from your view rules) ---
-        $canUpload =
-            $user->id === $pr->user_id_create
-            || $user->hasRole('PURCHASER')
-            || $user->is_head === 1;
+        // 2. Upload: Permission Check
+        $canUpload = $user->can('pr.upload-files');
 
-        // --- canEdit (your existing complex rule, kept) ---
-        $canEdit =
-            ($pr->user_id_create === $user->id && $pr->status === 1)
-            || ($pr->status === 1 && $user->is_head)
-            || ($pr->status === 6 && $user->hasRole('PURCHASER'))
-            || (($pr->status === 2 && $user->department?->name === 'PERSONALIA' && $user->is_head === 1)
-                || ($pr->status === 7 && $user->is_gm));
+        // 3. Edit: Policy Check
+        // The Policy handles status checks and ownership
+        $canEdit = $user->can('update', $pr);
 
-        // for autograph panel
+        // 4. Auto Approve (Autograph): Role/Permission Check
+        // This is a specific feature, let's map it to 'approval.approve' for now or keeps as specific check if needed
+        // For now, keeping legacy logic slightly adapted or mapped to sensitive roles
         $canAutoApprove =
             $user->is_gm
-            || $user->hasRole('PURCHASER')
+            || $user->hasRole('pr-purchaser') // mapped from PURCHASER
             || $pr->from_department === 'MOULDING';
 
         return [

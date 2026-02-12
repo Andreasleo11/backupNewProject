@@ -11,150 +11,83 @@ final class PurchaseRequestQueryScoper
     /**
      * Apply query scoping based on user role and permissions
      */
+    /**
+     * Apply query scoping based on user role and permissions
+     */
     public function scopeForUser(User $user, Builder $query): Builder
     {
-        $userDepartmentName = $user->department->name ?? null;
-        $isPersonaliaHead = $userDepartmentName === 'PERSONALIA' && $user->is_head === 1;
-        $isHead = $user->is_head === 1;
-        $isPurchaser = $user->hasRole('PURCHASER');
-        $isGM = $user->is_gm === 1;
-
-        if ($isPersonaliaHead) {
-            return $this->scopeForPersonaliaHead($query);
+        // 1. Super Admin: View All
+        if ($user->hasRole('super-admin')) {
+            return $query;
         }
 
-        if ($isGM) {
-            return $this->scopeForGM($user, $query);
-        }
-
-        if ($isHead) {
-            return $this->scopeForHead($user, $query);
-        }
-
-        if ($isPurchaser) {
+        // 2. View All Permission (Director, GM, etc if configured)
+        // Check specific permission first?
+        // Actually, user said Purchasers have 'view-all' but need filtering.
+        // So we must check specific roles/logic first before generic 'view-all'.
+        
+        // 3. Purchaser: Filter by Target Department
+        if ($user->hasRole('pr-purchaser')) {
             return $this->scopeForPurchaser($user, $query);
         }
 
-        if ($user->hasRole('super-admin')) {
-            return $this->scopeForSuperAdmin($query);
+        // 4. View All (Global access for Director/GM who are NOT purchasers)
+        if ($user->can('pr.view-all')) {
+            return $query;
         }
 
-        return $this->scopeForRegularUser($user, $query);
-    }
-
-    /**
-     * Scope for Personalia Head users
-     */
-    private function scopeForPersonaliaHead(Builder $query): Builder
-    {
-        return $query->where(function ($query) {
-            $query
-                ->whereNotNull('autograph_1')
-                ->whereNotNull('autograph_2')
-                ->whereNotNull('autograph_5')
-                ->where(function ($query) {
-                    $query
-                        ->whereNull('autograph_3')
-                        ->orWhereNotNull('autograph_3')
-                        ->where(function ($query) {
-                            $query
-                                ->where('to_department', ToDepartment::PERSONALIA->value)
-                                ->where('type', 'office')
-                                ->orWhere('to_department', ToDepartment::COMPUTER->value);
-                        });
-                })
-                ->orWhere('from_department', 'PERSONALIA');
-        });
-    }
-
-    /**
-     * Scope for GM users
-     */
-    private function scopeForGM(User $user, Builder $query): Builder
-    {
-        $userDepartmentName = $user->department->name ?? null;
-
-        return $query
-            ->whereNotNull('autograph_1')
-            ->whereNotNull('autograph_2')
-            ->whereNull('autograph_6')
-            ->where(function ($query) use ($userDepartmentName) {
-                $query->where('type', 'factory');
-                if ($userDepartmentName === 'MOULDING') {
-                    $query->where('from_department', 'MOULDING');
-                } else {
-                    $query->where('from_department', '!=', 'MOULDING');
-                }
-            });
-    }
-
-    /**
-     * Scope for Department Head users
-     */
-    private function scopeForHead(User $user, Builder $query): Builder
-    {
-        $userDepartmentName = $user->department->name ?? null;
-
-        $query->where(function ($query) use ($userDepartmentName) {
-            $query->where('from_department', $userDepartmentName);
-        });
-
-        if ($userDepartmentName === 'PURCHASING') {
-            $query->orWhere('to_department', ToDepartment::PURCHASING->value);
-        } elseif ($userDepartmentName === 'LOGISTIC') {
-            $query->orWhere('from_department', 'STORE');
+        // 5. Dept Head: View Department's Requests
+        if ($user->hasRole('pr-dept-head')) {
+            return $this->scopeForHead($user, $query);
         }
 
-        return $query;
+        // 6. Regular User: View Own
+        return $this->scopeForOwner($user, $query);
     }
 
-    /**
-     * Scope for Purchaser users
-     */
     private function scopeForPurchaser(User $user, Builder $query): Builder
     {
-        $userDepartmentName = $user->department->name ?? null;
+        $deptName = strtoupper($user->department->name ?? '');
 
-        $query->where(function ($query) {
-            $query
-                ->where(function ($query) {
-                    $query->where(function ($query) {
-                        $query->where('type', 'office')->orWhere('from_department', 'MOULDING');
-                    });
-                })
-                ->orWhere(function ($query) {
-                    $query->where('type', 'factory');
-                });
-        });
+        // Map User Department to PR 'to_department' Enum/Value
+        // PR `to_department` columns store: Purchasing, Maintenance, Computer, Personnel.
+        // Or sometimes numeric/enum. Based on ToDepartment enum:
+        // Case handling based on common enum values
+        $target = match ($deptName) {
+            'PURCHASING' => \App\Enums\ToDepartment::PURCHASING->value,
+            'MAINTENANCE' => \App\Enums\ToDepartment::MAINTENANCE->value,
+            'COMPUTER', 'IT' => \App\Enums\ToDepartment::COMPUTER->value,
+            'PERSONNEL', 'HRD', 'PERSONALIA' => \App\Enums\ToDepartment::PERSONALIA->value,
+            default => null
+        };
 
-        if ($userDepartmentName === 'COMPUTER' || $userDepartmentName === 'PURCHASING') {
-            $query->where('to_department', ToDepartment::COMPUTER->value);
-        } elseif ($user->email === 'nur@daijo.co.id') {
-            $query->where('to_department', ToDepartment::MAINTENANCE->value);
-        } elseif ($userDepartmentName === 'PERSONALIA') {
-            $query->where('to_department', ToDepartment::PERSONALIA->value);
+        if ($target) {
+            return $query->where('to_department', $target);
         }
 
-        $query->whereNotNull('autograph_1');
-
-        return $query;
+        // Fallback: If no matching target dept, maybe they can view all? 
+        // Or view nothing? 
+        // User said: "each to department is handled by different user"
+        // If we can't map it, safer to show nothing or just their own.
+        // Let's default to showing their own creation just in case
+        return $query->where('user_id_create', $user->id);
     }
 
-    /**
-     * Scope for Super Admin users
-     */
-    private function scopeForSuperAdmin(Builder $query): Builder
+    private function scopeForHead(User $user, Builder $query): Builder
     {
-        return $query;
+        // View requests originating FROM their department
+        if ($user->department_id) {
+             // If we have ID relationship
+             return $query->where('from_department_id', $user->department_id);
+        }
+        
+        // Fallback to name match if ID not set (legacy)
+        $deptName = $user->department->name ?? '';
+        return $query->where('from_department', $deptName);
     }
 
-    /**
-     * Scope for regular users
-     */
-    private function scopeForRegularUser(User $user, Builder $query): Builder
+    private function scopeForOwner(User $user, Builder $query): Builder
     {
-        $userDepartmentName = $user->department->name ?? null;
-
-        return $query->where('from_department', $userDepartmentName);
+        return $query->where('user_id_create', $user->id);
     }
 }

@@ -19,6 +19,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         DomainUserSignature::class => UserSignaturePolicy::class,
         \App\Models\DetailPurchaseRequest::class => \App\Policies\PurchaseRequestItemPolicy::class,
+        \App\Models\PurchaseRequest::class => \App\Policies\PurchaseRequestPolicy::class,
     ];
 
     /**
