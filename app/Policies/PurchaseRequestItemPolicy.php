@@ -6,7 +6,7 @@ namespace App\Policies;
 
 use App\Application\Approval\Contracts\Approvals;
 use App\Models\DetailPurchaseRequest;
-use App\Models\User;
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 
 /**
  * Policy for item-level approval authorization.

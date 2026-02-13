@@ -132,12 +132,23 @@ final class WorkflowStep
 
     /**
      * Check if this step requires item-level approval.
-     * Only certain steps (head, gm, verificator, director) review individual items.
      * 
-     * @return bool True if this step requires item approvals
+     * **Item Approval Policy:**
+     * - Purchaser and Accounting can approve PRs directly without reviewing items
+     * - All other roles (Head, GM, Verificator, Director) must review items
+     * 
+     * @return bool True if this step requires item approvals before PR approval
      */
     public function requiresItemApproval(): bool
     {
+        // Roles that can skip item approval
+        $skipItemApproval = ['pr-purchaser', 'pr-accounting'];
+        
+        if (in_array($this->roleSlug, $skipItemApproval)) {
+            return false;
+        }
+        
+        // All other configured steps require item approval
         return in_array($this->value, self::ITEM_APPROVAL_STEPS);
     }
 
