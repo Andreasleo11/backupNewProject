@@ -47,15 +47,6 @@ Route::get('/departments/overview', DepartmentsOverview::class)->name('departmen
 Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
 Route::get('purchase-requests/{id}/export-pdf', [App\Http\Controllers\PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
 
-// Item-level approval/rejection (POST for security - CSRF protected)
-Route::post('purchase-requests/items/{item}/approve', [App\Http\Controllers\DetailPurchaseRequestController::class, 'approve'])
-    ->middleware('can:approve,item')
-    ->name('purchase-requests.items.approve');
-
-Route::post('purchase-requests/items/{item}/reject', [App\Http\Controllers\DetailPurchaseRequestController::class, 'reject'])
-        ->middleware('can:reject,item')
-        ->name('purchase-requests.items.reject');
-
 // DEPRECATED: Old GET routes - kept temporarily for backward compatibility
 // TODO: Remove after frontend migration complete
 Route::get('purchase-requests/items/{id}/approve', function () {
