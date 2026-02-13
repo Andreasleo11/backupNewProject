@@ -6,10 +6,36 @@ namespace App\Domain\PurchaseRequest\ValueObjects;
 
 /**
  * Value Object representing a Purchase Request workflow step.
- * Encapsulates business rules about workflow progression.
+ * 
+ * **Purpose:**
+ * - Provides type-safe workflow step representation
+ * - Maps role slugs to approver types for item-level approvals
+ * - Encapsulates business rules about workflow progression
+ * - Single source of truth for step identifiers
+ * 
+ * **Use Cases:**
+ * - Determining which database column to update for item approvals
+ * - Checking if a step requires item-level review
+ * - Mapping approval steps to human-readable names
  */
 final class WorkflowStep
 {
+    // Step identifiers (constants eliminate magic numbers)
+    private const DEPT_HEAD = 1;
+    private const GM = 2;
+    private const VERIFICATOR = 3;
+    private const DIRECTOR = 4;
+    private const ACCOUNTING = 5;
+    private const COMPLETED = 6;
+    
+    // Steps that require item-level approval
+    private const ITEM_APPROVAL_STEPS = [
+        self::DEPT_HEAD,
+        self::GM,
+        self::VERIFICATOR,
+        self::DIRECTOR,
+    ];
+
     private function __construct(
         private readonly int $value,
         private readonly string $name,
@@ -18,42 +44,43 @@ final class WorkflowStep
 
     public static function deptHead(): self
     {
-        return new self(1, 'Department Head Review', 'pr-dept-head');
+        return new self(self::DEPT_HEAD, 'Department Head Review', 'pr-dept-head');
     }
+    
     public static function gm(): self
     {
-        return new self(2, 'GM Review', 'pr-gm');
+        return new self(self::GM, 'GM Review', 'pr-gm');
     }
 
     public static function verificator(): self
     {
-        return new self(3, 'Verificator Review', 'pr-verificator');
+        return new self(self::VERIFICATOR, 'Verificator Review', 'pr-verificator');
     }
 
     public static function director(): self
     {
-        return new self(4, 'Director Approval', 'pr-director');
+        return new self(self::DIRECTOR, 'Director Approval', 'pr-director');
     }
 
     public static function accounting(): self
     {
-        return new self(5, 'Accounting Processing', 'pr-accounting');
+        return new self(self::ACCOUNTING, 'Accounting Processing', 'pr-accounting');
     }
 
     public static function completed(): self
     {
-        return new self(6, 'Completed', null);
+        return new self(self::COMPLETED, 'Completed', null);
     }
 
     public static function fromValue(int $value): self
     {
         return match ($value) {
-            1 => self::deptHead(),
-            2 => self::gm(),
-            3 => self::verificator(),
-            4 => self::director(),
-            5 => self::accounting(),
-            6 => self::completed(),
+            self::DEPT_HEAD => self::deptHead(),
+            self::GM => self::gm(),
+            self::VERIFICATOR => self::verificator(),
+            self::DIRECTOR => self::director(),
+            self::ACCOUNTING => self::accounting(),
+            self::COMPLETED => self::completed(),
             default => throw new \DomainException("Invalid workflow step: {$value}"),
         };
     }
@@ -88,24 +115,30 @@ final class WorkflowStep
 
     /**
      * Get the approver type for item-level approvals.
+     * This maps to the database column prefix (e.g., 'head' => 'is_approve_by_head').
+     * 
+     * @return string|null The approver type, or null if this step doesn't approve items
      */
     public function approverType(): ?string
     {
         return match ($this->value) {
-            1 => 'head',
-            2 => 'gm',
-            3 => 'verificator',
-            4 => 'director',
+            self::DEPT_HEAD => 'head',
+            self::GM => 'gm',
+            self::VERIFICATOR => 'verificator',
+            self::DIRECTOR => 'director',
             default => null,
         };
     }
 
     /**
      * Check if this step requires item-level approval.
+     * Only certain steps (head, gm, verificator, director) review individual items.
+     * 
+     * @return bool True if this step requires item approvals
      */
     public function requiresItemApproval(): bool
     {
-        return in_array($this->value, [1, 2, 3, 4]);
+        return in_array($this->value, self::ITEM_APPROVAL_STEPS);
     }
 
     public function equals(self $other): bool

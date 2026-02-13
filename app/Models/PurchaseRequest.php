@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Domain\Approval\Contracts\Approvable;
 use App\Enums\ToDepartment;
 use App\Infrastructure\Approval\Concerns\HasApproval;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -61,25 +62,8 @@ class PurchaseRequest extends Model implements Approvable
         'date_required',
         'remark',
         'to_department',
-        'autograph_1',
-        'autograph_2',
-        'autograph_3',
-        'autograph_4',
-        'autograph_5',
-        'autograph_6',
-        'autograph_7',
-        'autograph_user_1',
-        'autograph_user_2',
-        'autograph_user_3',
-        'autograph_user_4',
-        'autograph_user_5',
-        'autograph_user_6',
-        'autograph_user_7',
-        'status',
         'pr_no',
         'supplier',
-        'approved_at',
-        'updated_at',
         'pic',
         'type',
         'from_department',
@@ -307,4 +291,91 @@ class PurchaseRequest extends Model implements Approvable
     {
         return $query->where('status', 5);
     }
+
+    /**
+     * Get workflow status from approval request.
+     * This replaces the workflow_status column.
+     *
+     * @return string|null
+     */
+    public function getWorkflowStatusAttribute(): ?string
+    {
+        // If cancelled, return CANCELED
+        if ((int) $this->is_cancel === 1) {
+            return 'CANCELED';
+        }
+
+        // Return status from approval request, or DRAFT if no approval
+        return $this->approvalRequest?->status ?? 'DRAFT';
+    }
+
+    /**
+     * Get current workflow step (approver label).
+     * This replaces the workflow_step column.
+     *
+     * @return string|null
+     */
+    public function getWorkflowStepAttribute(): ?string
+    {
+        $approval = $this->approvalRequest;
+        
+        if (!$approval || $approval->status !== 'IN_REVIEW') {
+            return null;
+        }
+
+        $currentStep = $approval->steps()
+            ->where('sequence', $approval->current_step)
+            ->first();
+
+        return $currentStep?->approver_snapshot_label ?? $currentStep?->approver_label;
+    }
+
+    /**
+     * Get current approver name (alias for workflow_step).
+     *
+     * @return string|null
+     */
+    public function getCurrentApproverAttribute(): ?string
+    {
+        return $this->workflow_step;
+    }
+
+    /**
+     * Scope: Filter PRs that are in review.
+     */
+    public function scopeInReview(Builder $query): Builder
+    {
+        return $query->whereHas('approvalRequest', fn($q) => 
+            $q->where('status', 'IN_REVIEW')
+        );
+    }
+
+    /**
+     * Scope: Filter PRs that are approved by workflow.
+     */
+    public function scopeWorkflowApproved(Builder $query): Builder
+    {
+        return $query->whereHas('approvalRequest', fn($q) => 
+            $q->where('status', 'APPROVED')
+        );
+    }
+
+    /**
+     * Scope: Filter PRs that are rejected by workflow.
+     */
+    public function scopeWorkflowRejected(Builder $query): Builder
+    {
+        return $query->whereHas('approvalRequest', fn($q) => 
+            $q->where('status', 'REJECTED')
+        );
+    }
+
+    /**
+     * Scope: Filter PRs that are cancelled.
+     */
+    public function scopeCancelled(Builder $query): Builder
+    {
+        return $query->where('is_cancel', 1);
+    }
 }
+

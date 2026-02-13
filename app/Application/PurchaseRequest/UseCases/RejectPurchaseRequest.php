@@ -3,14 +3,12 @@
 namespace App\Application\PurchaseRequest\UseCases;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Application\PurchaseRequest\Contracts\SyncPrWorkflow;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 
 final class RejectPurchaseRequest
 {
     public function __construct(
         private readonly Approvals $approvals,
-        private readonly SyncPrWorkflow $syncPrWorkflow,
         private readonly \App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository $repo
     ) {}
 
@@ -27,7 +25,7 @@ final class RejectPurchaseRequest
 
         $this->approvals->reject($pr, $dto->actorUserId, $dto->remarks);
 
+        // Reload fresh state (workflow_status computed from approvalRequest)
         $this->repo->loadForApprovalContext($pr);
-        $this->syncPrWorkflow->sync($pr);
     }
 }

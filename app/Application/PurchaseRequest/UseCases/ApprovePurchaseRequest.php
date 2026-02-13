@@ -3,7 +3,6 @@
 namespace App\Application\PurchaseRequest\UseCases;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Application\PurchaseRequest\Contracts\SyncPrWorkflow;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Domain\PurchaseRequest\Services\PurchaseRequestItemValidationService;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
@@ -13,7 +12,6 @@ final class ApprovePurchaseRequest
 {
     public function __construct(
         private readonly Approvals $approvals,
-        private readonly SyncPrWorkflow $syncPrWorkflow,
         private readonly \App\Domain\PurchaseRequest\Repositories\PurchaseRequestRepository $repo,
         private readonly PurchaseRequestItemValidationService $itemValidator
     ) {}
@@ -52,9 +50,8 @@ final class ApprovePurchaseRequest
                         'PR rejected: All items were rejected during review.'
                     );
 
-                    // Sync status
+                    // Status now computed from approvalRequest
                     $this->repo->loadForApprovalContext($pr);
-                    $this->syncPrWorkflow->sync($pr);
 
                     return; // Exit early, don't approve
                 }
@@ -64,9 +61,8 @@ final class ApprovePurchaseRequest
         // Proceed with normal approval
         $this->approvals->approve($pr, $dto->actorUserId, $dto->remarks);
 
-        // Reload fresh state if needed for sync (or repo->loadForApprovalContext might be enough)
+        // Reload fresh state (workflow_status computed from approvalRequest)
         $this->repo->loadForApprovalContext($pr);
-        $this->syncPrWorkflow->sync($pr);
     }
 
     /**
