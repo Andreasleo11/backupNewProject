@@ -275,7 +275,7 @@ final class ApprovalEngine implements Approvals
     private function getRoleLabel(string $slug): string
     {
         return match ($slug) {
-            'pr-dept-head-office', 'pr-dept-head-factory' => 'Dept head',
+            'pr-dept-head' => 'Dept head',
             'pr-verificator' => 'Verificator',
             'pr-director' => 'Director',
             'pr-gm' => 'General Manager',

@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 uses(DatabaseTruncation::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\PrRoleMappingSeeder::class);
+    $this->seed(\Database\Seeders\RefactoredPrPermissionsSeeder::class);
     $this->seed(\Database\Seeders\PrApprovalRulesSeeder::class);
 
     // Create test user with department
@@ -25,6 +25,8 @@ beforeEach(function () {
     $this->user = User::factory()->create([
         'department_id' => $this->fromDept->id,
     ]);
+
+
 });
 
 test('it can create a purchase request successfully', function () {

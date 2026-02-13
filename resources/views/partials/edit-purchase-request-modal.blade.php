@@ -250,12 +250,14 @@
 
             const uomInput = document.createElement('input');
             uomInput.classList.add('form-control');
-            uomInput.value = $detail?.uom ?? "";
             uomInput.setAttribute('required', 'required');
             uomInput.type = 'text';
             uomInput.name = `items[${itemIdCounter}][uom]`;
-            uomInput.placeholder = 'UoM';
+            uomInput.placeholder = 'Unit';
             uomInput.required = true;
+            uomInput.value = $detail?.uom ?? "";
+
+            uomInput.appendChild(defaultOption);
 
             formGroupUomInput.appendChild(uomInput);
 

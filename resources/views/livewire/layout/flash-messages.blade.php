@@ -30,6 +30,7 @@
         @endphp
     
         <div x-data="{ show: true }" 
+             x-init="@if($type === 'success') setTimeout(() => show = false, 5000) @endif"
              x-show="show" 
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="opacity-0 -translate-y-4"
@@ -48,6 +49,9 @@
                         <p class="text-[13px] font-bold {{ $config['text'] }} leading-tight">
                             {{ $message }}
                         </p>
+                        @if($type === 'success')
+                            <p class="text-[10px] font-medium text-emerald-600/70 mt-0.5">Auto-dismissing in 5 seconds</p>
+                        @endif
                     </div>
                 </div>
                 

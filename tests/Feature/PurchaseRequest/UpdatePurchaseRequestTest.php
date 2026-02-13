@@ -25,6 +25,8 @@ beforeEach(function () {
         'status' => 8, // Draft
         'branch' => 'JAKARTA',
     ]);
+
+
 });
 
 test('it can update a draft purchase request', function () {
@@ -33,7 +35,7 @@ test('it can update a draft purchase request', function () {
     $response = $this->put(route('purchase-requests.update', $this->pr->id), [
         'from_department' => 'Computer',
         'to_department' => 'Maintenance',
-        'branch' => 'BANDUNG',
+        'branch' => 'KARAWANG',
         'date_of_pr' => now()->format('Y-m-d'),
         'date_of_required' => now()->addDays(10)->format('Y-m-d'),
         'remark' => 'Updated remark',
@@ -57,7 +59,7 @@ test('it can update a draft purchase request', function () {
     $this->assertDatabaseHas('purchase_requests', [
         'id' => $this->pr->id,
         'to_department' => 'Maintenance',
-        'branch' => 'BANDUNG',
+        'branch' => 'KARAWANG',
         'remark' => 'Updated remark',
     ]);
 });

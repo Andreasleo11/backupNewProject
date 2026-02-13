@@ -58,7 +58,7 @@ final class CreatePurchaseRequest
                 $ctx = $this->contextBuilder->build(
                     fromDepartment: $pr->from_department,
                     toDepartment: $pr->to_department->value,
-                    branch: $pr->branch,
+                    branch: $pr->branch->value,
                     isOffice: $pr->type === 'office',
                     items: $pr->items->toArray()
                 );
@@ -112,7 +112,7 @@ final class CreatePurchaseRequest
                 'quantity' => $item->quantity,
                 'purpose' => $item->purpose,
                 'price' => $item->price,
-                'uom' => strtoupper($item->uom),
+                'uom' => $item->uom,
                 'currency' => $item->currency,
                 'is_approve_by_head' => $autoHeadApprove ? 1 : null,
             ];

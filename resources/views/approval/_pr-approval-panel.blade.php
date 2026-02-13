@@ -130,10 +130,9 @@
                                         @php
                                             $pretty = $actorLabel;
                                             $map = [
-                                                'pr-dept-head-office' => 'Dept Head (Office)',
-                                                'pr-dept-head-factory' => 'Dept Head (Factory)',
+                                                'pr-dept-head' => 'Dept Head',
                                                 'pr-head-design' => 'Head Design',
-                                                'pr-gm-factory' => 'General Manager',
+                                                'pr-gm' => 'General Manager',
                                                 'pr-verificator' => 'Verificator',
                                                 'pr-purchaser' => 'Purchaser',
                                                 'pr-director' => 'Director',

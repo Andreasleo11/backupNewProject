@@ -63,7 +63,7 @@ class ApprovalStep extends Model
         }
         
         return match ($slug) {
-            'pr-dept-head-office', 'pr-dept-head-factory' => 'head',
+            'pr-dept-head' => 'head',
             'pr-verificator' => 'verificator',
             'pr-director' => 'director',
             'pr-purchaser' => 'purchaser',

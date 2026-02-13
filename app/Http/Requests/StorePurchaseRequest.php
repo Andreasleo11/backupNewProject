@@ -37,7 +37,7 @@ class StorePurchaseRequest extends FormRequest
             'remark' => 'nullable|string',
             'supplier' => 'required|string|max:255',
             'pic' => 'required|string|max:255',
-            'branch' => ['required', 'string', Rule::in(['JAKARTA', 'KARAWANG'])],
+            'branch' => ['required', Rule::enum(\App\Enums\Branch::class)],
             'type' => [
                 'nullable',
                 'string',
@@ -48,7 +48,7 @@ class StorePurchaseRequest extends FormRequest
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric',
-            'items.*.uom' => 'required|string',
+            'items.*.uom' => 'required|string|max:50',
             'items.*.price' => ['nullable', new SanitizedNumeric],
         ];
     }
@@ -74,6 +74,7 @@ class StorePurchaseRequest extends FormRequest
             'items.required' => 'At least one item is required.',
             'items.*.item_name.required' => 'Each item must have a name.',
             'items.*.quantity.required' => 'Each item must have a quantity.',
+            'items.*.uom.required' => 'Each item unit of measure (UOM) is required.',
             'items.*.numeric' => 'Each item must be numeric.',
         ];
     }

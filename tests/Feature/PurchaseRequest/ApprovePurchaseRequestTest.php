@@ -29,7 +29,7 @@ beforeEach(function () {
     ]);
 
     // Assign PR approval role
-    $this->approver->assignRole('pr-dept-head-office');
+    $this->approver->assignRole('pr-dept-head');
 
     // Create signature for approver (required for approval)
     SignatureTestHelper::createDefaultSignature($this->approver->id);

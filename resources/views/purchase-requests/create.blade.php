@@ -248,8 +248,10 @@
                                             {{-- UoM --}}
                                             <div class="md:col-span-2 space-y-1">
                                                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Unit</label>
-                                                <input type="text" x-model="item.uom" :name="'items[' + index + '][uom]'"
-                                                       class="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-center focus:border-indigo-500 focus:bg-white transition-all" placeholder="PCS">
+                                                <div class="relative">
+                                                    <input type="text" x-model="item.uom" :name="'items[' + index + '][uom]'" required
+                                                           class="w-full rounded-lg border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-center focus:border-indigo-500 focus:bg-white transition-all" placeholder="Unit">
+                                                </div>
                                             </div>
 
                                             {{-- Price --}}
@@ -354,7 +356,7 @@
                         this.items = oldItems.map(i => ({
                             item_name: i.item_name || '',
                             quantity: i.quantity || '',
-                            uom: i.uom || 'PCS',
+                            uom: i.uom || '',
                             currency: i.currency || 'IDR',
                             price: i.price || '',
                             purpose: i.purpose || '',
@@ -448,6 +450,7 @@
                         const num = i + 1;
                         if (!item.item_name) errors.push(`Item #${num} name is missing`);
                         if (!item.quantity || item.quantity <= 0) errors.push(`Item #${num} quantity invalid`);
+                        if (!item.uom) errors.push(`Item #${num} UOM is missing`);
                         if (!item.price || item.price <= 0) errors.push(`Item #${num} price invalid`);
                         if (!item.purpose) errors.push(`Item #${num} purpose is missing`);
                     });
@@ -463,7 +466,7 @@
                     this.items.push({
                         item_name: '',
                         quantity: '',
-                        uom: 'PCS',
+                        uom: '',
                         currency: 'IDR',
                         price: '',
                         purpose: '',

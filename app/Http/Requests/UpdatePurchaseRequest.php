@@ -35,7 +35,7 @@ class UpdatePurchaseRequest extends FormRequest
         return [
             'from_department' => 'required|string|max:255',
             'to_department' => 'required|string|max:255',
-            'branch' => 'required|string|max:255',
+            'branch' => ['required', Rule::enum(\App\Enums\Branch::class)],
             'date_of_pr' => 'required|date',
             'date_of_required' => 'required|date',
             'remark' => 'nullable|string|max:255',
@@ -45,7 +45,7 @@ class UpdatePurchaseRequest extends FormRequest
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric|min:1',
             'items.*.price' => ['required', new SanitizedNumeric],
-            'items.*.uom' => ['required', 'string'],
+            'items.*.uom' => 'required|string|max:50',
             'items.*.currency' => ['required', 'string', Rule::in(['IDR', 'CNY', 'USD'])],
             'items.*.purpose' => 'required|string|max:255',
         ];

@@ -13,15 +13,19 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             // Drop foreign keys first if they exist
-            // Note: We use array syntax for dropForeign to let Laravel handle the naming convention
-            // or we can specify the exact constraint name if known. 
-            // Given the previous migrations, let's try standard array syntax.
-            // However, to be safe against "constraint does not exist" errors in some setups,
-            // we might want to check, but standard migration rollback usually handles it.
-            // Let's assume standard constraints.
+            // Check if column exists first to act as a proxy for the constraint
+            if (Schema::hasColumn('users', 'role_id')) {
+                 try {
+                    $table->dropForeign(['role_id']);
+                 } catch (\Exception $e) {
+                    // Ignore if FK doesn't exist
+                 }
+                 $table->dropColumn(['role_id']);
+            }
             
-            $table->dropForeign(['role_id']);
-            $table->dropColumn(['role_id', 'specification_id']);
+            if (Schema::hasColumn('users', 'specification_id')) {
+                $table->dropColumn(['specification_id']);
+            }
         });
     }
 

@@ -99,7 +99,6 @@ class PurchaseRequestController extends Controller
     {
         $items = MasterDataPr::get();
         $departments = Department::all();
-
         return view('purchase-requests.create', compact('items', 'departments'));
     }
 
@@ -197,7 +196,7 @@ class PurchaseRequestController extends Controller
                 uom: $item['uom'],
                 price: (float) $this->masterPrService->sanitizeCurrencyInput($item['price']),
                 currency: $item['currency'] ?? 'IDR',
-                purpose: $item['purpose'] ?? null
+                purpose: $item['purpose'] ?? ''
             ), $validated['items']),
             isImport: $request->is_import === 'true',
         );
@@ -344,7 +343,7 @@ class PurchaseRequestController extends Controller
                 remarks: $request->input('remarks')
             ));
 
-            return back()->with('success', 'Approved.');
+            return back()->with('toast_success', 'Purchase Request approved successfully!');
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return back()->with('error', $e->getMessage())->setStatusCode(403);
         } catch (\DomainException | \RuntimeException $e) {
@@ -363,7 +362,7 @@ class PurchaseRequestController extends Controller
                 remarks: $request->input('remarks')
             ));
 
-            return back()->with('success', 'Rejected.');
+            return back()->with('toast_success', 'Purchase Request rejected.');
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return back()->with('error', $e->getMessage())->setStatusCode(403);
         } catch (\DomainException | \RuntimeException $e) {

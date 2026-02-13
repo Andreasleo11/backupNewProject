@@ -94,6 +94,7 @@ class PurchaseRequest extends Model implements Approvable
 
     protected $casts = [
         'to_department' => ToDepartment::class,
+        'branch' => \App\Enums\Branch::class,
     ];
 
     public function items()

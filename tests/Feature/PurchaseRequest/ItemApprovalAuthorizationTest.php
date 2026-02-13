@@ -20,7 +20,7 @@ function createPrWithWorkflow(string $roleSlug, int $currentStep): PurchaseReque
 {
     // Map role slug to role ID from TestRoleSeeder
     $roleIdMap = [
-        'pr-dept-head-office' => 100,
+        'pr-dept-head' => 100,
         'pr-verificator' => 102,
         'pr-director' => 105,
     ];
@@ -49,10 +49,10 @@ function createPrWithWorkflow(string $roleSlug, int $currentStep): PurchaseReque
 
 test('dept head can approve item at correct step', function () {
     $user = User::factory()->create(['is_head' => 1]);
-    $user->assignRole('pr-dept-head-office');
+    $user->assignRole('pr-dept-head');
     SignatureTestHelper::createDefaultSignature($user->id);
 
-    $pr = createPrWithWorkflow('pr-dept-head-office', 1);
+    $pr = createPrWithWorkflow('pr-dept-head', 1);
     $item = DetailPurchaseRequest::factory()->create([
         'purchase_request_id' => $pr->id,
         'is_approve_by_head' => null,
@@ -69,10 +69,10 @@ test('dept head can approve item at correct step', function () {
 
 test('dept head can reject item at correct step', function () {
     $user = User::factory()->create(['is_head' => 1]);
-    $user->assignRole('pr-dept-head-office');
+    $user->assignRole('pr-dept-head');
     SignatureTestHelper::createDefaultSignature($user->id);
 
-    $pr = createPrWithWorkflow('pr-dept-head-office', 1);
+    $pr = createPrWithWorkflow('pr-dept-head', 1);
     $item = DetailPurchaseRequest::factory()->create([
         'purchase_request_id' => $pr->id,
         'is_approve_by_head' => null,
@@ -131,7 +131,7 @@ test('director can approve item at correct step', function () {
 
 test('unauthorized user gets 403', function () {
     $user = User::factory()->create(['is_head' => 0]);
-    $pr = createPrWithWorkflow('pr-dept-head-office', 1);
+    $pr = createPrWithWorkflow('pr-dept-head', 1);
     $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
     $response = $this->actingAs($user)->post(
@@ -145,7 +145,7 @@ test('wrong workflow step gets 403', function () {
     $spec = Specification::factory()->create(['name' => 'DIRECTOR']);
     $user = User::factory()->create(['specification_id' => $spec->id]);
     // PR at step 1 (dept head), but user is director
-    $pr = createPrWithWorkflow('pr-dept-head-office', 1);
+    $pr = createPrWithWorkflow('pr-dept-head', 1);
     $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
     $response = $this->actingAs($user)->post(
@@ -157,7 +157,7 @@ test('wrong workflow step gets 403', function () {
 
 test('post without csrf fails', function () {
     $user = User::factory()->create(['is_head' => 1]);
-    $pr = createPrWithWorkflow('pr-dept-head-office', 1);
+    $pr = createPrWithWorkflow('pr-dept-head', 1);
     $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
     // In testing environment, Laravel usually disables CSRF protection.

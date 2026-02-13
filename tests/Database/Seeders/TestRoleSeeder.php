@@ -20,8 +20,7 @@ class TestRoleSeeder extends Seeder
     {
         // PR Approval Roles
         $roles = [
-            ['id' => 100, 'name' => 'pr-dept-head-office', 'guard_name' => 'web'],
-            ['id' => 101, 'name' => 'pr-dept-head-factory', 'guard_name' => 'web'],
+            ['id' => 100, 'name' => 'pr-dept-head', 'guard_name' => 'web'],
             ['id' => 102, 'name' => 'pr-verificator', 'guard_name' => 'web'],
             ['id' => 104, 'name' => 'pr-gm', 'guard_name' => 'web'],
             ['id' => 105, 'name' => 'pr-director', 'guard_name' => 'web'],
@@ -41,8 +40,7 @@ class TestRoleSeeder extends Seeder
     public static function getRoleId(string $roleName): int
     {
         $map = [
-            'pr-dept-head-office' => 100,
-            'pr-dept-head-factory' => 101,
+            'pr-dept-head' => 100,
             'pr-verificator' => 102,
             'pr-gm' => 104,
             'pr-director' => 105,

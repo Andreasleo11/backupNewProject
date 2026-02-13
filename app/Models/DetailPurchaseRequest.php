@@ -58,4 +58,5 @@ class DetailPurchaseRequest extends Model
     {
         return $this->hasOne(MasterDataPr::class, 'name', 'item_name');
     }
+
 }

@@ -30,7 +30,7 @@ class ItemApprovalAuthorizationServiceTest extends TestCase
     public function test_dept_head_can_approve_at_step_1(): void
     {
         $user = User::factory()->create(['is_head' => 1]);
-        $pr = $this->createPrWithWorkflow('pr-dept-head-office', 1);
+        $pr = $this->createPrWithWorkflow('pr-dept-head', 1);
         $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
         $result = $this->service->canApproveOrReject($user, $item);
@@ -41,7 +41,7 @@ class ItemApprovalAuthorizationServiceTest extends TestCase
     public function test_non_head_cannot_approve_at_dept_head_step(): void
     {
         $user = User::factory()->create(['is_head' => 0]);
-        $pr = $this->createPrWithWorkflow('pr-dept-head-office', 1);
+        $pr = $this->createPrWithWorkflow('pr-dept-head', 1);
         $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
 
         $result = $this->service->canApproveOrReject($user, $item);
@@ -103,7 +103,7 @@ class ItemApprovalAuthorizationServiceTest extends TestCase
             'department_id' => $personaliaDept->id,
         ]);
 
-        $pr = $this->createPrWithWorkflow('pr-dept-head-office', 1);
+        $pr = $this->createPrWithWorkflow('pr-dept-head', 1);
         $pr->update(['from_department' => 'PERSONALIA']);
 
         $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);
@@ -121,7 +121,7 @@ class ItemApprovalAuthorizationServiceTest extends TestCase
             'department_id' => $otherDept->id,
         ]);
 
-        $pr = $this->createPrWithWorkflow('pr-dept-head-office', 1);
+        $pr = $this->createPrWithWorkflow('pr-dept-head', 1);
         $pr->update(['from_department' => 'PERSONALIA']);
 
         $item = DetailPurchaseRequest::factory()->create(['purchase_request_id' => $pr->id]);

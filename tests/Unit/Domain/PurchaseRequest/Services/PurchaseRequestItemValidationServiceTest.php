@@ -119,7 +119,7 @@ class PurchaseRequestItemValidationServiceTest extends TestCase
     public function test_can_review_items_returns_true_for_dept_head_at_correct_step(): void
     {
         $user = User::factory()->create(['is_head' => 1]);
-        $pr = $this->createPrWithWorkflow('pr-dept-head-office', 1);
+        $pr = $this->createPrWithWorkflow('pr-dept-head', 1);
 
         $result = $this->service->canReviewItems($user, $pr);
 
@@ -129,7 +129,7 @@ class PurchaseRequestItemValidationServiceTest extends TestCase
     public function test_can_review_items_returns_false_for_non_head_at_head_step(): void
     {
         $user = User::factory()->create(['is_head' => 0]);
-        $pr = $this->createPrWithWorkflow('pr-dept-head-office', 1);
+        $pr = $this->createPrWithWorkflow('pr-dept-head', 1);
 
         $result = $this->service->canReviewItems($user, $pr);
 
@@ -186,7 +186,7 @@ class PurchaseRequestItemValidationServiceTest extends TestCase
 
     public function test_get_approver_type_from_step_returns_correct_type_for_dept_head(): void
     {
-        $step = ApprovalStep::factory()->create(['approver_snapshot_role_slug' => 'pr-dept-head-office']);
+        $step = ApprovalStep::factory()->create(['approver_snapshot_role_slug' => 'pr-dept-head']);
 
         $type = $this->service->getApproverTypeFromStep($step);
 

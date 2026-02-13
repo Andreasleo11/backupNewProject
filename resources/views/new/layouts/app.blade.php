@@ -323,6 +323,150 @@
     {{-- Livewire scripts --}}
     @livewireScripts
     @stack('modals')
+    
+    {{-- Toast Notification System --}}
+    <div x-data="toastManager()" 
+         @toast.window="addToast($event.detail)"
+         class="fixed bottom-6 right-6 z-[100] space-y-3 max-w-sm"
+         x-cloak>
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="toast.visible"
+                 x-transition:enter="transform transition ease-out duration-300"
+                 x-transition:enter-start="translate-x-full opacity-0 scale-95"
+                 x-transition:enter-end="translate-x-0 opacity-100 scale-100"
+                 x-transition:leave="transform transition ease-in duration-200"
+                 x-transition:leave-start="translate-x-0 opacity-100 scale-100"
+                 x-transition:leave-end="translate-x-full opacity-0 scale-95"
+                 class="flex items-start gap-3 rounded-2xl px-5 py-4 shadow-2xl backdrop-blur-xl border min-w-[320px] max-w-sm"
+                 :class="{
+                     'bg-emerald-500/95 text-white border-emerald-400/50': toast.type === 'success',
+                     'bg-rose-500/95 text-white border-rose-400/50': toast.type === 'error',
+                     'bg-amber-500/95 text-white border-amber-400/50': toast.type === 'warning',
+                     'bg-blue-500/95 text-white border-blue-400/50': toast.type === 'info'
+                 }">
+                {{-- Icon --}}
+                <div class="flex-shrink-0 mt-0.5" x-html="getIcon(toast.type)"></div>
+                
+                {{-- Content --}}
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold leading-tight" x-text="toast.message"></p>
+                    <div class="mt-2 h-1 bg-white/20 rounded-full overflow-hidden">
+                        <div class="h-full bg-white/60 transition-all ease-linear" 
+                             :style="`width: ${toast.progress}%; transition-duration: 100ms`"></div>
+                    </div>
+                </div>
+                
+                {{-- Close button --}}
+                <button @click="removeToast(toast.id)" 
+                        class="flex-shrink-0 opacity-75 hover:opacity-100 transition-opacity">
+                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+                    </svg>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    {{-- Convert Laravel session flash to toast --}}
+    @if(session()->has('toast_success') || session()->has('toast_error') || session()->has('toast_warning') || session()->has('toast_info'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                @if(session()->has('toast_success'))
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { type: 'success', message: @json(session('toast_success')) }
+                    }));
+                @endif
+                @if(session()->has('toast_error'))
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { type: 'error', message: @json(session('toast_error')) }
+                    }));
+                @endif
+                @if(session()->has('toast_warning'))
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { type: 'warning', message: @json(session('toast_warning')) }
+                    }));
+                @endif
+                @if(session()->has('toast_info'))
+                    window.dispatchEvent(new CustomEvent('toast', {
+                        detail: { type: 'info', message: @json(session('toast_info')) }
+                    }));
+                @endif
+            });
+        </script>
+    @endif
+
+    {{-- Toast Manager Alpine Component --}}
+    <script>
+        function toastManager() {
+            return {
+                toasts: [],
+                nextId: 1,
+                
+                addToast(data) {
+                    const id = this.nextId++;
+                    const duration = data.duration || 5000;
+                    const toast = { 
+                        id, 
+                        type: data.type || 'info',
+                        message: data.message,
+                        visible: false,
+                        progress: 100
+                    };
+                    
+                    this.toasts.push(toast);
+                    
+                    // Trigger enter animation
+                    this.$nextTick(() => {
+                        toast.visible = true;
+                        
+                        // Progress bar animation
+                        const interval = 100;
+                        const steps = duration / interval;
+                        let currentStep = 0;
+                        
+                        const progressInterval = setInterval(() => {
+                            currentStep++;
+                            toast.progress = 100 - (currentStep / steps * 100);
+                            
+                            if (currentStep >= steps) {
+                                clearInterval(progressInterval);
+                                this.removeToast(id);
+                            }
+                        }, interval);
+                        
+                        // Store interval ID for manual clearing
+                        toast.intervalId = progressInterval;
+                    });
+                },
+                
+                removeToast(id) {
+                    const toast = this.toasts.find(t => t.id === id);
+                    if (toast) {
+                        // Clear progress interval
+                        if (toast.intervalId) {
+                            clearInterval(toast.intervalId);
+                        }
+                        
+                        toast.visible = false;
+                        setTimeout(() => {
+                            this.toasts = this.toasts.filter(t => t.id !== id);
+                        }, 300); // Wait for exit animation
+                    }
+                },
+                
+                getIcon(type) {
+                    const icons = {
+                        success: '<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"/></svg>',
+                        error: '<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"/></svg>',
+                        warning: '<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"/></svg>',
+                        info: '<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"/></svg>'
+                    };
+                    return icons[type] || icons.info;
+                }
+            }
+        }
+    </script>
+    
     @stack('scripts')
 </body>
 </html>

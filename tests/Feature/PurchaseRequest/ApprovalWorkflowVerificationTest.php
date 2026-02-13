@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 uses(DatabaseTruncation::class);
 
 beforeEach(function () {
-    (new \Database\Seeders\PrRoleMappingSeeder)->run();
+    (new \Database\Seeders\RefactoredPrPermissionsSeeder)->run();
     (new \Database\Seeders\PrApprovalRulesSeeder)->run();
 
     $this->fromDept = Department::factory()->create(['name' => 'Computer', 'is_office' => true]);
@@ -20,7 +20,7 @@ beforeEach(function () {
 
     // Assign role for approval steps
     $this->deptHead = User::factory()->create();
-    $this->deptHead->assignRole('pr-dept-head-office');
+    $this->deptHead->assignRole('pr-dept-head');
 
     \App\Infrastructure\Persistence\Eloquent\Models\UserSignature::create([
         'user_id' => $this->deptHead->id,

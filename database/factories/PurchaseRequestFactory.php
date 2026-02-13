@@ -201,12 +201,12 @@ class PurchaseRequestFactory extends Factory
     private function getStepsConfiguration(string $type): array
     {
         // Use actual test role IDs from TestRoleSeeder
-        // Role ID 100 = pr-dept-head-office
+        // Role ID 100 = pr-dept-head
         // Role ID 102 = pr-verificator
         // Role ID 104 = pr-gm
         // Role ID 105 = pr-director
         $baseSteps = [
-            1 => 100,  // pr-dept-head-office
+            1 => 100,  // pr-dept-head
             2 => 102,  // pr-verificator
         ];
 
@@ -226,8 +226,7 @@ class PurchaseRequestFactory extends Factory
     private function getRoleName(string $roleSlug): string
     {
         $roleNames = [
-            'pr-dept-head-office' => 'Dept Head - Office',
-            'pr-dept-head-factory' => 'Dept Head - Factory',
+            'pr-dept-head' => 'Dept Head',
             'pr-verificator' => 'Verificator',
             'pr-gm' => 'General Manager',
             'pr-director' => 'Director',

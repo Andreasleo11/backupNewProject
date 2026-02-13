@@ -77,7 +77,7 @@ final class UpdatePurchaseRequest
                 'quantity' => $item->quantity,
                 'purpose' => $item->purpose,
                 'price' => $item->price,
-                'uom' => strtoupper($item->uom),
+                'uom' => $item->uom,
                 'currency' => $item->currency,
                 'is_approve_by_head' => $autoHeadApprove ? 1 : null,
             ];
