@@ -328,6 +328,25 @@
     <div x-data="toastManager()" 
          @toast.window="addToast($event.detail)"
          class="fixed bottom-6 right-6 z-[100] space-y-3 max-w-sm"
+        x-init="
+            // Safe: runs AFTER this component has initialized
+            $nextTick(() => {
+                @if(session()->has('toast_success') || session()->has('toast_error') || session()->has('toast_warning') || session()->has('toast_info'))
+                    @if(session()->has('toast_success'))
+                        $dispatch('toast', { type: 'success', message: @json(session('toast_success')) })
+                    @endif
+                    @if(session()->has('toast_error'))
+                        $dispatch('toast', { type: 'error', message: @json(session('toast_error')) })
+                    @endif
+                    @if(session()->has('toast_warning'))
+                        $dispatch('toast', { type: 'warning', message: @json(session('toast_warning')) })
+                    @endif
+                    @if(session()->has('toast_info'))
+                        $dispatch('toast', { type: 'info', message: @json(session('toast_info')) })
+                    @endif
+                @endif
+            })
+        "
          x-cloak>
         <template x-for="toast in toasts" :key="toast.id">
             <div x-show="toast.visible"
@@ -366,34 +385,6 @@
             </div>
         </template>
     </div>
-
-    {{-- Convert Laravel session flash to toast --}}
-    @if(session()->has('toast_success') || session()->has('toast_error') || session()->has('toast_warning') || session()->has('toast_info'))
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                @if(session()->has('toast_success'))
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: { type: 'success', message: @json(session('toast_success')) }
-                    }));
-                @endif
-                @if(session()->has('toast_error'))
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: { type: 'error', message: @json(session('toast_error')) }
-                    }));
-                @endif
-                @if(session()->has('toast_warning'))
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: { type: 'warning', message: @json(session('toast_warning')) }
-                    }));
-                @endif
-                @if(session()->has('toast_info'))
-                    window.dispatchEvent(new CustomEvent('toast', {
-                        detail: { type: 'info', message: @json(session('toast_info')) }
-                    }));
-                @endif
-            });
-        </script>
-    @endif
 
     {{-- Toast Manager Alpine Component --}}
     <script>

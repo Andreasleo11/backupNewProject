@@ -314,134 +314,134 @@
                                             @endif
                                         </td>
 
-                                    {{-- APPROVAL ACTIONS / STATUS CELLS --}}
-                                    <td class="px-4 py-4 text-center align-middle">
-                                        <div class="flex flex-col items-center gap-2">
-                                            
-                                            {{-- Status Indicators (Dynamic based on Workflow) --}}
-                                            <div class="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                                                @php
-                                                    $steps = $approval?->steps->sortBy('sequence')->filter(fn($s) => !is_null($s->item_approver_type));
-                                                @endphp
+                                        {{-- APPROVAL ACTIONS / STATUS CELLS --}}
+                                        <td class="px-4 py-4 text-center align-middle">
+                                            <div class="flex flex-col items-center gap-2">
+                                                
+                                                {{-- Status Indicators (Dynamic based on Workflow) --}}
+                                                <div class="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                                                    @php
+                                                        $steps = $approval?->steps->sortBy('sequence')->filter(fn($s) => !is_null($s->item_approver_type));
+                                                    @endphp
 
-                                                @if($steps && $steps->isNotEmpty())
-                                                    @foreach($steps as $step)
-                                                        @php
-                                                            $type = $step->item_approver_type;
-                                                            $label = match($type) {
-                                                                'head' => 'Head',
-                                                                'gm' => 'GM',
-                                                                'verificator' => 'Verif',
-                                                                'director' => 'Dir',
-                                                                default => $type
-                                                            };
-                                                            $column = match($type) {
-                                                                'head' => 'is_approve_by_head',
-                                                                'gm' => 'is_approve_by_gm',
-                                                                'verificator' => 'is_approve_by_verificator',
-                                                                'director' => 'is_approve',
-                                                                default => null
-                                                            };
-                                                        @endphp
+                                                    @if($steps && $steps->isNotEmpty())
+                                                        @foreach($steps as $step)
+                                                            @php
+                                                                $type = $step->item_approver_type;
+                                                                $label = match($type) {
+                                                                    'head' => 'Head',
+                                                                    'gm' => 'GM',
+                                                                    'verificator' => 'Verif',
+                                                                    'director' => 'Dir',
+                                                                    default => $type
+                                                                };
+                                                                $column = match($type) {
+                                                                    'head' => 'is_approve_by_head',
+                                                                    'gm' => 'is_approve_by_gm',
+                                                                    'verificator' => 'is_approve_by_verificator',
+                                                                    'director' => 'is_approve',
+                                                                    default => null
+                                                                };
+                                                            @endphp
 
-                                                        @if($column)
-                                                            <div class="flex flex-col items-center gap-0.5" title="{{ $step->approver_label }}">
-                                                                <span class="text-[9px]">{{ $label }}</span>
-                                                                @if($detail->$column === 1)
-                                                                    <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                                @elseif($detail->$column === 0)
-                                                                    <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                                @else
-                                                                    <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                            @if($column)
+                                                                <div class="flex flex-col items-center gap-0.5" title="{{ $step->approver_label }}">
+                                                                    <span class="text-[9px]">{{ $label }}</span>
+                                                                    @if($detail->$column === 1)
+                                                                        <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                                    @elseif($detail->$column === 0)
+                                                                        <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                                    @else
+                                                                        <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                                    @endif
+                                                                </div>
+
+                                                                @if(!$loop->last)
+                                                                    <div class="h-px w-2 bg-slate-200 mt-3"></div>
                                                                 @endif
-                                                            </div>
-
-                                                            @if(!$loop->last)
-                                                                <div class="h-px w-2 bg-slate-200 mt-3"></div>
                                                             @endif
-                                                        @endif
-                                                    @endforeach
-                                                @else
-                                                    {{-- Fallback for legacy data (No Workflow) --}}
-                                                    {{-- HEAD --}}
-                                                    <div class="flex flex-col items-center gap-0.5" title="Department Head">
-                                                        <span class="text-[9px]">Head</span>
-                                                        @if($detail->is_approve_by_head === 1)
-                                                            <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                        @elseif($detail->is_approve_by_head === 0)
-                                                            <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                        @else
-                                                            <i class="bi bi-circle text-slate-300 text-base"></i>
-                                                        @endif
-                                                    </div>
-
-                                                    @if(isset($detail->is_approve_by_gm))
-                                                        <div class="h-px w-2 bg-slate-200 mt-3"></div>
-                                                        <div class="flex flex-col items-center gap-0.5" title="General Manager">
-                                                            <span class="text-[9px]">GM</span>
-                                                            @if($detail->is_approve_by_gm === 1)
+                                                        @endforeach
+                                                    @else
+                                                        {{-- Fallback for legacy data (No Workflow) --}}
+                                                        {{-- HEAD --}}
+                                                        <div class="flex flex-col items-center gap-0.5" title="Department Head">
+                                                            <span class="text-[9px]">Head</span>
+                                                            @if($detail->is_approve_by_head === 1)
                                                                 <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                            @elseif($detail->is_approve_by_gm === 0)
+                                                            @elseif($detail->is_approve_by_head === 0)
                                                                 <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
                                                             @else
                                                                 <i class="bi bi-circle text-slate-300 text-base"></i>
                                                             @endif
                                                         </div>
+
+                                                        @if(isset($detail->is_approve_by_gm))
+                                                            <div class="h-px w-2 bg-slate-200 mt-3"></div>
+                                                            <div class="flex flex-col items-center gap-0.5" title="General Manager">
+                                                                <span class="text-[9px]">GM</span>
+                                                                @if($detail->is_approve_by_gm === 1)
+                                                                    <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                                @elseif($detail->is_approve_by_gm === 0)
+                                                                    <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                                @else
+                                                                    <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+        
+                                                        <div class="h-px w-2 bg-slate-200 mt-3"></div>
+        
+                                                        {{-- VERIFICATOR --}}
+                                                        <div class="flex flex-col items-center gap-0.5" title="Verificator">
+                                                            <span class="text-[9px]">Verif</span>
+                                                            @if($detail->is_approve_by_verificator === 1)
+                                                                <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                            @elseif($detail->is_approve_by_verificator === 0)
+                                                                <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                            @else
+                                                                <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                            @endif
+                                                        </div>
+        
+                                                        <div class="h-px w-2 bg-slate-200 mt-3"></div>
+        
+                                                        {{-- DIRECTOR --}}
+                                                        <div class="flex flex-col items-center gap-0.5" title="Director">
+                                                            <span class="text-[9px]">Dir</span>
+                                                            @if($detail->is_approve === 1)
+                                                                <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
+                                                            @elseif($detail->is_approve === 0)
+                                                                <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
+                                                            @else
+                                                                <i class="bi bi-circle text-slate-300 text-base"></i>
+                                                            @endif
+                                                        </div>
+                                                        
                                                     @endif
-    
-                                                    <div class="h-px w-2 bg-slate-200 mt-3"></div>
-    
-                                                    {{-- VERIFICATOR --}}
-                                                    <div class="flex flex-col items-center gap-0.5" title="Verificator">
-                                                        <span class="text-[9px]">Verif</span>
-                                                        @if($detail->is_approve_by_verificator === 1)
-                                                            <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                        @elseif($detail->is_approve_by_verificator === 0)
-                                                            <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                        @else
-                                                            <i class="bi bi-circle text-slate-300 text-base"></i>
-                                                        @endif
-                                                    </div>
-    
-                                                    <div class="h-px w-2 bg-slate-200 mt-3"></div>
-    
-                                                    {{-- DIRECTOR --}}
-                                                    <div class="flex flex-col items-center gap-0.5" title="Director">
-                                                        <span class="text-[9px]">Dir</span>
-                                                        @if($detail->is_approve === 1)
-                                                            <i class="bi bi-check-circle-fill text-emerald-500 text-base"></i>
-                                                        @elseif($detail->is_approve === 0)
-                                                            <i class="bi bi-x-circle-fill text-rose-500 text-base"></i>
-                                                        @else
-                                                            <i class="bi bi-circle text-slate-300 text-base"></i>
-                                                        @endif
-                                                    </div>
-                                                    
-                                                @endif
-                                            </div>
-
-                                            {{-- ACTION BUTTONS --}}
-                                            @can('approve', $detail)
-                                                <div class="flex items-center gap-2 mt-1">
-                                                    <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}">
-                                                        @csrf
-                                                        <button type="submit"  onclick="return confirm('Approve {{ $detail->item_name }}?')" 
-                                                                class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Approve">
-                                                            <i class="bi bi-check-lg text-sm"></i>
-                                                        </button>
-                                                    </form>
-                                                    <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}">
-                                                        @csrf
-                                                        <button type="submit" onclick="return confirm('Reject {{ $detail->item_name }}?')" 
-                                                                class="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Reject">
-                                                            <i class="bi bi-x-lg text-sm"></i>
-                                                        </button>
-                                                    </form>
                                                 </div>
-                                            @endcan
 
-                                        </div>
-                                    </td>
+                                                {{-- ACTION BUTTONS --}}
+                                                @can('approve', $detail)
+                                                    <div class="flex items-center gap-2 mt-1">
+                                                        <form method="POST" action="{{ route('purchase-requests.items.approve', $detail) }}">
+                                                            @csrf
+                                                            <button type="submit"  onclick="return confirm('Approve {{ $detail->item_name }}?')" 
+                                                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Approve">
+                                                                <i class="bi bi-check-lg text-sm"></i>
+                                                            </button>
+                                                        </form>
+                                                        <form method="POST" action="{{ route('purchase-requests.items.reject', $detail) }}">
+                                                            @csrf
+                                                            <button type="submit" onclick="return confirm('Reject {{ $detail->item_name }}?')" 
+                                                                    class="flex h-7 w-7 items-center justify-center rounded-full bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Reject">
+                                                                <i class="bi bi-x-lg text-sm"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                @endcan
+
+                                            </div>
+                                        </td>
 
                                         {{-- Received Column --}}
                                         @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)

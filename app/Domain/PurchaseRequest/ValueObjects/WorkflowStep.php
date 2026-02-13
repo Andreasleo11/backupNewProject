@@ -20,35 +20,40 @@ final class WorkflowStep
     {
         return new self(1, 'Department Head Review', 'pr-dept-head');
     }
+    public static function gm(): self
+    {
+        return new self(2, 'GM Review', 'pr-gm');
+    }
 
     public static function verificator(): self
     {
-        return new self(2, 'Verificator Review', 'pr-verificator');
+        return new self(3, 'Verificator Review', 'pr-verificator');
     }
 
     public static function director(): self
     {
-        return new self(3, 'Director Approval', 'pr-director');
+        return new self(4, 'Director Approval', 'pr-director');
     }
 
     public static function accounting(): self
     {
-        return new self(4, 'Accounting Processing', 'pr-accounting');
+        return new self(5, 'Accounting Processing', 'pr-accounting');
     }
 
     public static function completed(): self
     {
-        return new self(5, 'Completed', null);
+        return new self(6, 'Completed', null);
     }
 
     public static function fromValue(int $value): self
     {
         return match ($value) {
             1 => self::deptHead(),
-            2 => self::verificator(),
-            3 => self::director(),
-            4 => self::accounting(),
-            5 => self::completed(),
+            2 => self::gm(),
+            3 => self::verificator(),
+            4 => self::director(),
+            5 => self::accounting(),
+            6 => self::completed(),
             default => throw new \DomainException("Invalid workflow step: {$value}"),
         };
     }
@@ -58,6 +63,7 @@ final class WorkflowStep
         // Handle variations in role slugs
         return match (true) {
             str_contains($roleSlug, 'dept-head') => self::deptHead(),
+            str_contains($roleSlug, 'gm') => self::gm(),
             str_contains($roleSlug, 'verificator') => self::verificator(),
             str_contains($roleSlug, 'director') => self::director(),
             str_contains($roleSlug, 'accounting') => self::accounting(),
@@ -87,8 +93,9 @@ final class WorkflowStep
     {
         return match ($this->value) {
             1 => 'head',
-            2 => 'verificator',
-            3 => 'director',
+            2 => 'gm',
+            3 => 'verificator',
+            4 => 'director',
             default => null,
         };
     }
@@ -98,7 +105,7 @@ final class WorkflowStep
      */
     public function requiresItemApproval(): bool
     {
-        return in_array($this->value, [1, 2, 3]);
+        return in_array($this->value, [1, 2, 3, 4]);
     }
 
     public function equals(self $other): bool

@@ -64,10 +64,10 @@ class ApprovalStep extends Model
         
         return match ($slug) {
             'pr-dept-head' => 'head',
+            'pr-gm' => 'gm',
+            'pr-purchaser' => 'purchaser',
             'pr-verificator' => 'verificator',
             'pr-director' => 'director',
-            'pr-purchaser' => 'purchaser',
-            'pr-gm-factory' => 'gm',
             default => null,
         };
     }
