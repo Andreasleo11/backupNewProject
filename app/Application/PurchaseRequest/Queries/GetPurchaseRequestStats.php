@@ -34,7 +34,7 @@ class GetPurchaseRequestStats
     private function getPendingMyApproval(): int
     {
         return PurchaseRequest::query()
-            ->where('workflow_status', 'IN_REVIEW')
+            ->inReview()  // Use new query scope
             ->whereHas('approvalRequest.steps', function ($q) {
                 $q->where('sequence', DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
                     ->where('approver_id', auth()->id())
@@ -48,9 +48,7 @@ class GetPurchaseRequestStats
      */
     private function getInReview(): int
     {
-        return PurchaseRequest::query()
-            ->where('workflow_status', 'IN_REVIEW')
-            ->count();
+        return PurchaseRequest::inReview()->count();  // Use query scope
     }
 
     /**
@@ -59,7 +57,7 @@ class GetPurchaseRequestStats
     private function getApprovedThisMonth(): int
     {
         return PurchaseRequest::query()
-            ->where('workflow_status', 'APPROVED')
+            ->workflowApproved()  // Use query scope
             ->whereYear('approved_at', now()->year)
             ->whereMonth('approved_at', now()->month)
             ->count();
@@ -71,7 +69,7 @@ class GetPurchaseRequestStats
     private function getTotalValuePending(): float
     {
         $total = PurchaseRequest::query()
-            ->where('workflow_status', 'IN_REVIEW')
+            ->inReview()  // Use query scope
             ->with('items')
             ->get()
             ->sum(function ($pr) {

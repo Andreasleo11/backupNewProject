@@ -42,31 +42,36 @@ class MonitorApprovalReliability extends Command
     {
         $startDate = now()->subDays($days);
 
-        $total = PurchaseRequest::where('created_at', '>=', $startDate)->count();
-        $approved = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->where('workflow_status', 'APPROVED')
-            ->count();
-        $rejected = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->where('workflow_status', 'REJECTED')
-            ->count();
-        $inReview = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->where('workflow_status', 'IN_REVIEW')
-            ->count();
-        $draft = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->whereIn('workflow_status', ['DRAFT', null])
-            ->count();
-        $canceled = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->where('workflow_status', 'CANCELED')
-            ->count();
+        $baseQuery = PurchaseRequest::where('created_at', '>=', $startDate);
+
+        $total = $baseQuery->count();
+        $approved = $baseQuery->whereHas('approvalRequest', fn($q) =>
+                $q->where('status', 'APPROVED')
+            )->count();
+        $rejected = $baseQuery->clone()->whereHas('approvalRequest', fn($q) =>
+                $q->where('status', 'REJECTED')
+            )->count();
+        $inReview = $baseQuery->clone()->whereHas('approvalRequest', fn($q) =>
+                $q->where('status', 'IN_REVIEW')
+            )->count();
+        // Assuming 'DRAFT' and null workflow_status means no approvalRequest or a specific status in approvalRequest
+        // For now, we'll count PRs without an approvalRequest or with a 'DRAFT' status if it exists in the related model.
+        // If 'DRAFT' is a status on the PurchaseRequest itself, this needs adjustment.
+        // For this change, we'll assume 'DRAFT' means no approval request has been initiated yet.
+        $draft = $baseQuery->clone()->doesntHave('approvalRequest')->count();
+        $canceled = $baseQuery->clone()->whereHas('approvalRequest', fn($q) =>
+                $q->where('status', 'CANCELED')
+            )->count();
 
         // Calculate average approval time
         $approvedPRs = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->where('workflow_status', 'APPROVED')
-            ->whereNotNull('approved_at')
+            ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED'))
+            ->with(['approvalRequest.steps' => fn($q) => $q->where('status', 'APPROVED')])
             ->get();
 
         $avgApprovalTime = $approvedPRs->avg(function ($pr) {
-            return $pr->created_at->diffInHours($pr->approved_at);
+            $approvedAt = $pr->approvalRequest->steps->max('acted_at');
+            return $approvedAt ? $pr->created_at->diffInHours($approvedAt) : null;
         });
 
         // Signature coverage
