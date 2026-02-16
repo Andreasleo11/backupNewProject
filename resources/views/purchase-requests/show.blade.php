@@ -4,10 +4,6 @@
 
 @section('content')
     @php
-        $user = auth()->user();
-
-        // Flags from controller
-        $canAutoApprove = $flags['canAutoApprove'] ?? false;
         $canApprove = $flags['canApprove'] ?? false;
         $canUpload = $flags['canUpload'] ?? false;
         $canEditPr = $flags['canEdit'] ?? false;
@@ -15,19 +11,15 @@
         $totalall = (float) ($totals['total'] ?? 0);
         $isThereAnyCurrencyDifference = (bool) ($totals['hasCurrencyDiff'] ?? false);
         $prevCurrency = $totals['currency'] ?? null;
-
-        // Alpine data slots
-        $slots = $autographSlots ?? [];
     @endphp
 
-    <div class="mx-auto max-w-7xl px-4 py-8"
-         x-data="prDetailPage(@js($slots), @js($canAutoApprove), @js($purchaseRequest->id), @js(csrf_token()))">
+    <div class="mx-auto max-w-7xl px-4 py-8">
 
         {{-- HEADER SECTION --}}
         <div class="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
             <div class="space-y-2">
                 {{-- Back Link --}}
-                <a href="{{ (auth()->user()->specification?->name === 'DIRECTOR' && auth()->user()->hasRole('director')) ? route('director.pr.index') : route('purchase-requests.index') }}"
+                <a href="{{ route('purchase-requests.index') }}"
                    class="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 transition-colors hover:text-indigo-600">
                     <i class="bi bi-arrow-left text-lg transition-transform group-hover:-translate-x-1"></i>
                     Back to List
@@ -248,7 +240,7 @@
                                     {{-- APPROVAL COLUMN (Always Visible) --}}
                                     <th class="px-4 py-3 text-center w-48">Approvals</th>
 
-                                    @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
+                                    @if ($purchaseRequest->status === 4 && auth()->user()->id === $purchaseRequest->createdBy->id)
                                          <th class="px-4 py-3 text-center">Received</th>
                                          <th class="px-4 py-3 text-center">Action</th>
                                     @endif
@@ -264,12 +256,12 @@
                                         $subtotal = $detail->quantity * $detail->price;
                                         
                                         // Logic for 'Dept Head Item Approve'
-                                        $showDeptHeadItemApprove = $user->department?->name === $purchaseRequest->from_department && $user->hasRole('HEAD');
-                                        if ($user->hasRole('HEAD') && $purchaseRequest->from_department === 'STORE') {
+                                        $showDeptHeadItemApprove = auth()->user()->department?->name === $purchaseRequest->from_department && auth()->user()->hasRole('HEAD');
+                                        if (auth()->user()->hasRole('HEAD') && $purchaseRequest->from_department === 'STORE') {
                                             $showDeptHeadItemApprove = true;
                                         } elseif (
                                             $purchaseRequest->from_department === 'PERSONALIA' &&
-                                            ($user->department?->name === 'PERSONALIA' && $user->hasRole('HEAD'))
+                                            (auth()->user()->department?->name === 'PERSONALIA' && auth()->user()->hasRole('HEAD'))
                                         ) {
                                             $showDeptHeadItemApprove = true;
                                         }
@@ -444,7 +436,7 @@
                                         </td>
 
                                         {{-- Received Column --}}
-                                        @if ($purchaseRequest->status === 4 && $user->id === $purchaseRequest->createdBy->id)
+                                        @if ($purchaseRequest->status === 4 && auth()->user()->id === $purchaseRequest->createdBy->id)
                                              <td class="px-4 py-4 text-center">
                                                 {{ $detail->received_quantity }} / {{ $detail->quantity }}
                                              </td>
@@ -762,19 +754,3 @@
         @endpush
     @endif
 @endsection
-
-@push('scripts')
-    {{-- Assuming app.js / alpine loaded in layout --}}
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('prDetailPage', (slots, canAutoApprove, prId, csrfToken) => ({
-                openUploadFiles: false,
-                canAutoApprove: canAutoApprove,
-                
-                init() {
-                    // console.log('PR Detail Page Initialized');
-                }
-            }));
-        });
-    </script>
-@endpush
