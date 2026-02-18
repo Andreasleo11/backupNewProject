@@ -1,14 +1,15 @@
 @extends('new.layouts.app')
 
-@section('title', $isEdit ? 'Edit Purchase Request' : 'Create Purchase Request')
+@php
+    $authUser = auth()->user();
+    $isEdit = isset($purchaseRequest);
+    $title = $isEdit ? 'Edit Requisition' : 'New Requisition';
+    $action = $isEdit ? route('purchase-requests.update', $purchaseRequest->id) : route('purchase-requests.store');
+@endphp
+
+@section('title', $title)
 
 @section('content')
-    @php
-        $authUser = auth()->user();
-        $isEdit = isset($purchaseRequest);
-        $title = $isEdit ? 'Edit Requisition' : 'New Requisition';
-        $action = $isEdit ? route('purchase-requests.update', $purchaseRequest->id) : route('purchase-requests.store');
-    @endphp
 
     <div class="mx-auto max-w-5xl px-4 py-8 lg:py-10" x-data="purchaseRequestForm(
         @js(old('items', $isEdit ? $purchaseRequest->itemDetail : [])),
@@ -61,6 +62,33 @@
                         </div>
                         <p class="mt-2 text-xs text-orange-600">
                             Please update the details below and resubmit. The approval process will restart from the beginning.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if($isEdit && $purchaseRequest->workflow_status === 'REJECTED')
+            <div class="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-x-circle-fill text-xl text-rose-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-rose-800">Previously Rejected</h3>
+                        <p class="mt-1 text-sm text-rose-700">
+                            This request was rejected by <strong>{{ $purchaseRequest->approvalRequest->steps->where('status', 'REJECTED')->last()?->actedUser?->name ?? 'Approver' }}</strong>.
+                        </p>
+                        @php
+                            $rejectionRemarks = $purchaseRequest->approvalRequest->steps->where('status', 'REJECTED')->last()?->remarks;
+                        @endphp
+                        @if($rejectionRemarks)
+                            <div class="mt-2 rounded-lg bg-white/60 p-3 text-sm font-medium text-rose-800 border border-rose-100">
+                                "{{ $rejectionRemarks }}"
+                            </div>
+                        @endif
+                        <p class="mt-2 text-xs text-rose-600">
+                            You may revise the details below and resubmit. The approval process will restart from Step 1.
                         </p>
                     </div>
                 </div>
