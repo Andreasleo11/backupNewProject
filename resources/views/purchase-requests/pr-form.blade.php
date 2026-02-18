@@ -1,6 +1,6 @@
 @extends('new.layouts.app')
 
-@section('title', 'Create Purchase Request')
+@section('title', $isEdit ? 'Edit Purchase Request' : 'Create Purchase Request')
 
 @section('content')
     @php
@@ -44,6 +44,28 @@
                 </div>
             </div>
         </div>
+
+        @if($isEdit && $purchaseRequest->workflow_status === 'RETURNED')
+            <div class="mb-6 rounded-xl border border-orange-200 bg-orange-50 p-4 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-exclamation-triangle-fill text-xl text-orange-500"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-orange-800">Returned for Revision</h3>
+                        <p class="mt-1 text-sm text-orange-700">
+                            This request was returned by <strong>{{ $purchaseRequest->approvalRequest->steps->where('status', 'RETURNED')->last()?->actedUser?->name ?? 'Approver' }}</strong>.
+                        </p>
+                        <div class="mt-2 rounded-lg bg-white/60 p-3 text-sm font-medium text-orange-800 border border-orange-100">
+                            "{{ $purchaseRequest->approvalRequest->steps->where('status', 'RETURNED')->last()?->return_reason ?? 'No reason provided.' }}"
+                        </div>
+                        <p class="mt-2 text-xs text-orange-600">
+                            Please update the details below and resubmit. The approval process will restart from the beginning.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <form action="{{ $action }}" method="POST" id="pr-form" class="space-y-6"
               @submit="if (!validateBeforeSubmit()) $event.preventDefault()">
@@ -378,16 +400,17 @@
                     if (!el) return;
                     if (el._ts) return; // already init
 
+                    // Determine the initial value from the Alpine data
+                    const initialValue = type === 'from' ? this.from_department : this.to_department;
+
                     const ts = new TomSelect(el, {
                         plugins: ['dropdown_input'],
-                        sortField: {
-                            field: 'text',
-                            direction: 'asc'
-                        },
+                        sortField: { field: 'text', direction: 'asc' },
                         dropdownParent: 'body',
-                        controlInput: null, // use default
+                        // Pre-select the value that was set server-side
+                        items: initialValue ? [initialValue] : [],
                     });
-                    
+
                     el._ts = ts;
 
                     ts.on('change', (value) => {
@@ -398,9 +421,11 @@
 
                 initItemTomSelect(el, index) {
                     if (!el) return;
-                    if (el._ts) return; 
+                    if (el._ts) return;
 
-                    const ts = new TomSelect(el, {
+                    const existingValue = this.items[index]?.item_name || '';
+
+                    const tsOptions = {
                         valueField: 'name',
                         labelField: 'name',
                         searchField: 'name',
@@ -408,9 +433,12 @@
                         create: true,
                         dropdownParent: 'body',
                         placeholder: 'Select or type item...',
+                        // Pre-populate with existing value so it shows on load
+                        options: existingValue ? [{ name: existingValue }] : [],
+                        items: existingValue ? [existingValue] : [],
                         load: (query, callback) => {
                             if (!query.length) return callback();
-                            fetch(`/purchase-requests/get-item-names?itemName=${encodeURIComponent(query)}`) // Verify route
+                            fetch(`/purchase-requests/get-item-names?itemName=${encodeURIComponent(query)}`)
                                 .then(res => res.json())
                                 .then(data => callback(data))
                                 .catch(() => callback());
@@ -423,8 +451,9 @@
                                 </div>`;
                             },
                         },
-                    });
+                    };
 
+                    const ts = new TomSelect(el, tsOptions);
                     el._ts = ts;
 
                     ts.on('change', (value) => {
@@ -444,7 +473,7 @@
                 },
 
                 get showLocalImport() {
-                    return this.from_department === 'MOULDING' && this.to_department === 'PURCHASING';
+                    return this.from_department === 'MOULDING' && this.to_department === 'Purchasing';
                 },
 
                 validateBeforeSubmit() {

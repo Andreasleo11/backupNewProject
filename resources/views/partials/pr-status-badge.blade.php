@@ -18,6 +18,12 @@
                 $label = 'IN REVIEW';
             }
             $cls = 'bg-amber-100 text-amber-900';
+        } elseif ($workflowStatus === 'RETURNED') {
+            $label = 'RETURNED';
+            $cls = 'bg-orange-100 text-orange-900 border border-orange-200';
+            $tooltip = isset($pr->approvalRequest->steps) 
+                ? 'Returned by: ' . ($pr->approvalRequest->steps->where('status', 'RETURNED')->last()?->actedUser?->name ?? 'Approver')
+                : 'Returned for Revision';
         } elseif ($workflowStatus === 'APPROVED') {
             $label = 'APPROVED';
             $cls = 'bg-emerald-600 text-white';

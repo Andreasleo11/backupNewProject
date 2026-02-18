@@ -33,13 +33,63 @@ final class ApprovalEngine implements Approvals
         return $this->toInfo($req);
     }
 
+    public function reject(Approvable $approvable, int $by, ?string $remarks = null): void
+    {
+        $req = $this->mustGetInReview($approvable);
+
+        DB::transaction(function () use ($req, $by, $remarks) {
+            $step = $this->mustGetCurrentStep($req);
+            $this->guardActor($step, $by);
+            $step->update(['status' => 'REJECTED', 'acted_by' => $by, 'acted_at' => now(), 'remarks' => $remarks]);
+
+            $from = $req->status;
+            $req->update(['status' => 'REJECTED']);
+            $this->log($req, $by, $from, 'REJECTED', $remarks);
+            $this->notifyRejection($req);
+        });
+    }
+
+    public function return(Approvable $approvable, int $by, string $reason): void
+    {
+        $req = $this->mustGetInReview($approvable);
+
+        DB::transaction(function () use ($req, $by, $reason) {
+            $step = $this->mustGetCurrentStep($req);
+            $this->guardActor($step, $by);
+
+            // Mark current step as RETURNED
+            $step->update([
+                'status'        => 'RETURNED',
+                'acted_by'      => $by,
+                'acted_at'      => now(),
+                'return_reason' => $reason,
+            ]);
+
+            $from = $req->status;
+            $req->update(['status' => 'RETURNED']);
+            $this->log($req, $by, $from, 'RETURNED', $reason);
+            // $this->notifyReturnToCreator($req, $reason); // Implement notification later if needed
+        });
+    }
+
     public function submit(Approvable $approvable, int $by, array $ctx = []): ApprovalInfo
     {
         $req = DB::transaction(function () use ($approvable, $by, $ctx) {
             /** @var ApprovalRequest $req */
             $req = $approvable->approvalRequest()->firstOrNew([]);
-            if ($req->exists && $req->status !== 'DRAFT') {
+            
+            // Allow resubmission from RETURNED state
+            $allowedStatuses = ['DRAFT', 'RETURNED'];
+            if ($req->exists && !in_array($req->status, $allowedStatuses)) {
                 throw new \DomainException('Already submitted.');
+            }
+
+            // On resubmit: wipe old steps, reset item approvals
+            if ($req->exists && $req->status === 'RETURNED') {
+                $req->steps()->delete();
+                if (method_exists($approvable, 'resetItemApprovals')) {
+                    $approvable->resetItemApprovals();
+                }
             }
 
             $modelType = get_class($approvable);
@@ -115,22 +165,6 @@ final class ApprovalEngine implements Approvals
                 $this->log($req, $by, $from, 'APPROVED', $remarks);
                 $this->notifyFinalApproval($req);
             }
-        });
-    }
-
-    public function reject(Approvable $approvable, int $by, ?string $remarks = null): void
-    {
-        $req = $this->mustGetInReview($approvable);
-
-        DB::transaction(function () use ($req, $by, $remarks) {
-            $step = $this->mustGetCurrentStep($req);
-            $this->guardActor($step, $by);
-            $step->update(['status' => 'REJECTED', 'acted_by' => $by, 'acted_at' => now(), 'remarks' => $remarks]);
-
-            $from = $req->status;
-            $req->update(['status' => 'REJECTED']);
-            $this->log($req, $by, $from, 'REJECTED', $remarks);
-            $this->notifyRejection($req);
         });
     }
 

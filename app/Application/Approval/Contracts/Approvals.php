@@ -28,4 +28,9 @@ interface Approvals
     public function currentRequest(Approvable $approvable): ?ApprovalInfo;
 
     public function canAct(Approvable $approvable, int $userId): bool;
+
+    /**
+     * Return the approvable to the creator for revision.
+     */
+    public function return(Approvable $approvable, int $byUserId, string $reason): void;
 }

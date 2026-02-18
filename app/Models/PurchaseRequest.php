@@ -293,12 +293,25 @@ class PurchaseRequest extends Model implements Approvable
     }
 
     /**
+     * Reset item-level approvals when PR is returned for revision.
+     */
+    public function resetItemApprovals(): void
+    {
+        $this->detail()->update([
+            'is_approve_by_head' => null,
+            'is_approve_by_gm' => null,
+            'is_approve_by_verificator' => null,
+            'is_approve' => null,
+        ]);
+    }
+
+    /**
      * Get workflow status from approval request.
      * This replaces the workflow_status column.
      *
      * @return string|null
      */
-    public function getWorkflowStatusAttribute(): ?string
+ public function getWorkflowStatusAttribute(): ?string
     {
         // If cancelled, return CANCELED
         if ((int) $this->is_cancel === 1) {

@@ -558,6 +558,11 @@
                                     class="w-full rounded-xl border border-rose-200 bg-white py-2.5 text-sm font-bold text-rose-600 transition-all hover:bg-rose-50 hover:border-rose-300">
                                 Reject Request
                             </button>
+
+                            <button type="button" @click="$dispatch('open-return-modal')"
+                                    class="w-full rounded-xl border border-orange-200 bg-white py-2.5 text-sm font-bold text-orange-600 transition-all hover:bg-orange-50 hover:border-orange-300">
+                                Return for Revision
+                            </button>
                         </div>
                     </div>
                 @endif
@@ -741,6 +746,7 @@
         @push('modals')
             @include('partials.pr-approve-modal', ['pr' => $purchaseRequest])
             @include('partials.pr-reject-modal', ['pr' => $purchaseRequest])
+            @include('partials.pr-return-modal', ['pr' => $purchaseRequest])
         @endpush
     @endif
 

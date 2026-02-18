@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
+use App\Application\PurchaseRequest\DTOs\ReturnPurchaseRequestDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\Services\MasterPrItemService;
 use App\Application\PurchaseRequest\Services\PurchaseRequestItemFilter;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
+use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest as ReturnPR;
 use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Requests\ApprovePurchaseRequest;
@@ -30,6 +32,7 @@ class PurchaseRequestController extends Controller
         private Approvals $approvals,
         private PurchaseRequestItemFilter $itemFilter,
         private MasterPrItemService $masterPrService,
+        private ReturnPR $returnUseCase,
     ) {}
 
     public function index(
@@ -99,33 +102,39 @@ class PurchaseRequestController extends Controller
     {
         $items = MasterDataPr::get();
         $departments = Department::all();
-        return view('purchase-requests.create', compact('items', 'departments'));
+        return view('purchase-requests.pr-form', compact('items', 'departments'));
     }
 
     public function edit(int $id)
     {
-        $purchaseRequest = PurchaseRequest::with('itemDetail')->findOrFail($id);
-        
-        // Authorization check 
-        // (Assuming standard policy: only creator can edit draft/rejected)
-        if (auth()->id() !== $purchaseRequest->created_by) {
-            abort(403, 'Unauthorized action.');
+        $purchaseRequest = PurchaseRequest::with(['itemDetail', 'approvalRequest.steps.actedUser'])->findOrFail($id);
+
+        // Only the creator can edit
+        if (auth()->id() !== (int) $purchaseRequest->user_id_create) {
+            abort(403, 'You are not authorized to edit this request.');
         }
 
-        if (!in_array($purchaseRequest->status, ['draft', 0, 4])) {
-             // Status 4 = rejected (usually editable for re-submission)
-             // 0 = draft
-             // 'draft' string
-             // Adjust based on your specific enum/status logic
+        // Determine editable states using workflow_status (modern) with legacy fallback
+        $workflowStatus = $purchaseRequest->workflow_status; // computed attribute
+        $legacyStatus   = $purchaseRequest->status;
+
+        $editableWorkflowStatuses = ['DRAFT', 'RETURNED'];
+        $editableLegacyStatuses   = [0, 'draft', 8]; // 0 = draft, 8 = draft (legacy)
+
+        $isEditable = in_array($workflowStatus, $editableWorkflowStatuses)
+            || in_array($legacyStatus, $editableLegacyStatuses);
+
+        if (! $isEditable) {
+            abort(403, 'This request cannot be edited in its current state (' . $workflowStatus . ').');
         }
 
-        $items = MasterDataPr::get();
+        $items       = MasterDataPr::get();
         $departments = Department::all();
 
-        return view('purchase-requests.create', [
+        return view('purchase-requests.pr-form', [
             'purchaseRequest' => $purchaseRequest,
-            'items' => $items,
-            'departments' => $departments,
+            'items'           => $items,
+            'departments'     => $departments,
         ]);
     }
 
@@ -259,8 +268,6 @@ class PurchaseRequestController extends Controller
                 ->with(['error' => 'Failed to delete purchase request']);
         }
     }
-
-
 
     public function exportToPdf($id)
     {
@@ -397,6 +404,30 @@ class PurchaseRequestController extends Controller
         } catch (\Exception $e) {
             \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
             return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
+        }
+    }
+
+    public function returnForRevision(Request $request, PurchaseRequest $purchaseRequest)
+    {
+        $request->validate(['reason' => 'required|string|max:500']);
+
+        try {
+            // Use same gate as approve/reject for now
+            // $this->authorize('approve', $purchaseRequest);
+
+            $this->returnUseCase->handle(new ReturnPurchaseRequestDTO(
+                purchaseRequestId: (int) $purchaseRequest->id,
+                actorUserId: (int) auth()->id(),
+                reason: $request->input('reason'),
+            ));
+
+            return redirect()
+                ->back()
+                ->with(['success' => 'PR returned to creator for revision.']);
+        } catch (\DomainException $e) {
+            return redirect()
+                ->back()
+                ->with(['error' => $e->getMessage()]);
         }
     }
 }
