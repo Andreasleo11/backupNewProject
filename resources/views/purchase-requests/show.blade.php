@@ -34,11 +34,11 @@
                     {{-- Status Badge --}}
                     @include('partials.pr-status-badge', ['pr' => $purchaseRequest])
 
-                    @if($purchaseRequest->status === 'draft' || $purchaseRequest->status === 0)
+                    <!-- @if($purchaseRequest->status === 'draft' || $purchaseRequest->status === 0)
                          <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
                             <i class="bi bi-pencil-square"></i> Draft
                         </span>
-                    @endif
+                    @endif -->
                 </div>
 
                 {{-- Metadata Strip --}}
@@ -88,7 +88,7 @@
                     </a>
                 @endif
                 
-                {{-- If it's pure draft, show delete --}}
+                <!-- {{-- If it's pure draft, show delete --}}
                 @if(($purchaseRequest->status === 'draft' || $purchaseRequest->status === 0) && auth()->id() === $purchaseRequest->created_by)
                     <form action="{{ route('purchase-requests.destroy', $purchaseRequest->id) }}" method="POST" onsubmit="return confirm('Are you sure? This cannot be undone.');">
                         @csrf
@@ -97,7 +97,7 @@
                             <i class="bi bi-trash"></i> Delete
                         </button>
                     </form>
-                @endif
+                @endif -->
             </div>
         </div>
 

@@ -13,16 +13,7 @@ class UpdatePurchaseRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $pr = \App\Models\PurchaseRequest::find($this->route('id'));
-
-        if (! $pr) {
-            return false;
-        }
-
-        // Only the creator can update their own PR
-        // And only if it's in draft status (status 8 or 0)
-        return $pr->user_id_create === auth()->id()
-            && in_array($pr->status, [0, 8], true);
+        return true;
     }
 
     /**
