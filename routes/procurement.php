@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
     Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
     Route::post('purchase-requests/{purchaseRequest}/return', [PurchaseRequestController::class, 'returnForRevision'])->name('purchase-requests.return');
+    Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->name('purchase-requests.sign-and-submit');
     Route::post('purchase-requests/items/{item}/approve', [DetailPurchaseRequestController::class, 'approve'])->middleware('can:approve,item')->name('purchase-requests.items.approve');
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->middleware('can:reject,item')->name('purchase-requests.items.reject');
     // Route::post('purchase-requests/approve-selected', [PurchaseRequestController::class, 'approveSelected'])->name('purchase_requests.approve_selected');

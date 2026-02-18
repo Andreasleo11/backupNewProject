@@ -7,7 +7,8 @@
         $canApprove = $flags['canApprove'] ?? false;
         $canUpload = $flags['canUpload'] ?? false;
         $canEditPr = $flags['canEdit'] ?? false;
-
+        $canSignAndSubmit = $flags['canSignAndSubmit'] ?? false;
+        $hasDefaultSig = $flags['hasDefaultSignature'] ?? false;
         $totalall = (float) ($totals['total'] ?? 0);
         $isThereAnyCurrencyDifference = (bool) ($totals['hasCurrencyDiff'] ?? false);
         $prevCurrency = $totals['currency'] ?? null;
@@ -86,6 +87,15 @@
                         <i class="bi bi-pencil-square text-lg text-slate-400 group-hover:text-indigo-500"></i>
                         Edit Details
                     </a>
+                @endif
+
+                @if ($canSignAndSubmit)
+                    <button type="button"
+                            @click="$dispatch('open-sign-submit-modal')"
+                            class="group inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-0.5">
+                        <i class="bi bi-pen text-lg"></i>
+                        Sign & Submit
+                    </button>
                 @endif
                 
                 <!-- {{-- If it's pure draft, show delete --}}
@@ -747,6 +757,17 @@
             @include('partials.pr-approve-modal', ['pr' => $purchaseRequest])
             @include('partials.pr-reject-modal', ['pr' => $purchaseRequest])
             @include('partials.pr-return-modal', ['pr' => $purchaseRequest])
+        @endpush
+    @endif
+
+    @if ($canSignAndSubmit)
+        @push('modals')
+            @include('partials.pr-sign-submit-modal', [
+                'hasDefaultSignature' => $hasDefaultSig,
+                'signaturePreviewUrl' => $signaturePreviewUrl ?? null,
+                'submitUrl'           => route('purchase-requests.sign-and-submit', $purchaseRequest->id),
+                'formId'              => null,
+            ])
         @endpush
     @endif
 

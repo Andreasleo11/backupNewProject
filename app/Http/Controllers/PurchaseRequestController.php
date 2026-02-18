@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Application\Approval\Contracts\Approvals;
+use App\Application\PurchaseRequest\DTOs\AddSignatureDTO;
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
 use App\Application\PurchaseRequest\DTOs\ReturnPurchaseRequestDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\Services\MasterPrItemService;
 use App\Application\PurchaseRequest\Services\PurchaseRequestItemFilter;
+use App\Application\PurchaseRequest\UseCases\AddSignature;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
-use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest as ReturnPR;
+use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest;
+use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
 use App\DataTables\PurchaseRequestsDataTable;
 use App\Exports\PurchaseRequestWithDetailsExport;
 use App\Http\Requests\ApprovePurchaseRequest;
@@ -32,7 +35,8 @@ class PurchaseRequestController extends Controller
         private Approvals $approvals,
         private PurchaseRequestItemFilter $itemFilter,
         private MasterPrItemService $masterPrService,
-        private ReturnPR $returnUseCase,
+        private ReturnPurchaseRequest $returnUseCase,
+        private GetDefaultActiveUserSignature $getDefaultSignature,
     ) {}
 
     public function index(
@@ -102,7 +106,14 @@ class PurchaseRequestController extends Controller
     {
         $items = MasterDataPr::get();
         $departments = Department::all();
-        return view('purchase-requests.pr-form', compact('items', 'departments'));
+        $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
+
+        return view('purchase-requests.pr-form', [
+            'items'                => $items,
+            'departments'          => $departments,
+            'hasDefaultSignature'  => $defaultSig !== null,
+            'signaturePreviewUrl'  => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+        ]);
     }
 
     public function edit(int $id)
@@ -130,24 +141,36 @@ class PurchaseRequestController extends Controller
 
         $items = MasterDataPr::get();
         $departments = Department::all();
+        $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
 
         return view('purchase-requests.pr-form', [
-            'purchaseRequest' => $purchaseRequest,
-            'items' => $items,
-            'departments' => $departments,
+            'purchaseRequest'      => $purchaseRequest,
+            'items'                => $items,
+            'departments'          => $departments,
+            'hasDefaultSignature'  => $defaultSig !== null,
+            'signaturePreviewUrl'  => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
         ]);
     }
 
     public function store(
         StorePurchaseRequest $request,
-        
-        \App\Domain\PurchaseRequest\Services\PriceSanitizer $priceSanitizer
+        \App\Domain\PurchaseRequest\Services\PriceSanitizer $priceSanitizer,
+        Approvals $approvals,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
     ) {
+        // Always create as draft — workflow is started explicitly via performSignAndSubmit
+        $request->merge(['is_draft' => true]);
         $dto = \App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO::fromValidated($request, $priceSanitizer);
+        $pr  = app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
 
-        app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
+        if ($request->input('submit_action') === 'sign_and_submit') {
+            $this->performSignAndSubmit($pr, auth()->id(), $approvals, $addSignature);
+            return redirect()->route('purchase-requests.show', $pr->id)
+                ->with('success', 'Purchase request submitted and signed successfully.');
+        }
 
-        return redirect()->route('purchase-requests.index')->with('success', 'Purchase request created successfully');
+        return redirect()->route('purchase-requests.show', $pr->id)
+            ->with('success', 'Purchase request saved as draft.');
     }
 
     public function show(int $id, GetPurchaseRequestDetail $query)
@@ -157,18 +180,26 @@ class PurchaseRequestController extends Controller
 
         $vm = $query->handle($id, $user);
 
-        return view('purchase-requests.show', [
-            'purchaseRequest' => $vm->purchaseRequest,
-            'user' => $user,
-            'userCreatedBy' => $vm->meta['userCreatedBy'],
-            'files' => $vm->files,
-            'filteredItemDetail' => $vm->filteredItemDetail,
-            'departments' => $vm->departments,
-            'fromDeptNo' => $vm->fromDeptNo,
-            'approval' => $vm->approval,
+        // Pass signature preview URL for the Sign & Submit modal on show page
+        $canSignAndSubmit = $vm->flags['canSignAndSubmit'] ?? false;
+        $signaturePreviewUrl = null;
+        if ($canSignAndSubmit && ($vm->flags['defaultSignaturePath'] ?? null)) {
+            $defaultSig = $this->getDefaultSignature->execute((int) $user->id);
+            $signaturePreviewUrl = $defaultSig ? route('signatures.show', $defaultSig->id) : null;
+        }
 
-            'flags' => $vm->flags,
-            'totals' => $vm->totals,
+        return view('purchase-requests.show', [
+            'purchaseRequest'     => $vm->purchaseRequest,
+            'user'                => $user,
+            'userCreatedBy'       => $vm->meta['userCreatedBy'],
+            'files'               => $vm->files,
+            'filteredItemDetail'  => $vm->filteredItemDetail,
+            'departments'         => $vm->departments,
+            'fromDeptNo'          => $vm->fromDeptNo,
+            'approval'            => $vm->approval,
+            'flags'               => $vm->flags,
+            'totals'              => $vm->totals,
+            'signaturePreviewUrl' => $signaturePreviewUrl,
         ]);
     }
 
@@ -240,9 +271,67 @@ class PurchaseRequestController extends Controller
         // Execute UseCase
         $useCase->handle($dto);
 
-        return redirect()
-            ->back()
-            ->with(['success' => 'Purchase request updated successfully!']);
+        if ($request->input('submit_action') === 'sign_and_submit') {
+            $pr = PurchaseRequest::findOrFail((int) $id);
+            $this->performSignAndSubmit(
+                $pr,
+                Auth::id(),
+                app(Approvals::class),
+                app(\App\Application\PurchaseRequest\UseCases\AddSignature::class)
+            );
+            return redirect()->route('purchase-requests.show', $id)
+                ->with('success', 'Purchase request updated, signed, and submitted.');
+        }
+
+        return redirect()->route('purchase-requests.show', $id)
+            ->with('success', 'Purchase request saved as draft.');
+    }
+
+    /**
+     * Sign & Submit from the show page (DRAFT PR, creator only).
+     */
+    public function signAndSubmit(
+        Request $request,
+        PurchaseRequest $purchaseRequest,
+        Approvals $approvals,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
+    ) {
+        // Only the creator can sign & submit their own DRAFT
+        if ((int) auth()->id() !== (int) $purchaseRequest->user_id_create) {
+            abort(403, 'Only the creator can sign and submit this request.');
+        }
+        if ($purchaseRequest->workflow_status !== 'DRAFT') {
+            abort(422, 'Only DRAFT requests can be submitted.');
+        }
+
+        $this->performSignAndSubmit($purchaseRequest, auth()->id(), $approvals, $addSignature);
+
+        return redirect()->route('purchase-requests.show', $purchaseRequest->id)
+            ->with('success', 'Purchase request signed and submitted for approval.');
+    }
+
+    /**
+     * Shared: save MAKER signature + start approval workflow.
+     */
+    private function performSignAndSubmit(
+        PurchaseRequest $pr,
+        int $userId,
+        Approvals $approvals,
+        \App\Application\PurchaseRequest\UseCases\AddSignature $addSignature,
+    ): void {
+        $defaultSig = $this->getDefaultSignature->execute($userId);
+        abort_unless($defaultSig !== null, 422, 'You must set up a signature before submitting.');
+
+        // Save MAKER signature (section 1)
+        $addSignature->handle(new AddSignatureDTO(
+            purchaseRequestId: $pr->id,
+            signedByUserId: $userId,
+            section: 1,
+            imagePath: $defaultSig->filePath,
+        ));
+
+        // Start approval workflow
+        $approvals->submit($pr, $userId);
     }
 
     public function destroy(

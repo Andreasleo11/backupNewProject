@@ -102,6 +102,23 @@
                 @method('PUT')
             @endif
 
+            {{-- VALIDATION ERROR SUMMARY --}}
+            @if($errors->any())
+                <div class="rounded-xl border border-rose-200 bg-rose-50 p-4">
+                    <div class="flex items-start gap-3">
+                        <i class="bi bi-exclamation-circle-fill text-rose-500 text-lg mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <p class="text-sm font-bold text-rose-800">Please fix the following errors:</p>
+                            <ul class="mt-2 space-y-1 text-sm text-rose-700 list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- MAIN FORM CONTAINER --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
@@ -114,24 +131,6 @@
                         </h3>
 
                         <div class="space-y-5">
-                            {{-- Draft --}}
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Save as Draft?</label>
-                                <div class="grid grid-cols-2 gap-3 p-1 bg-slate-100/50 rounded-xl border border-slate-200/50">
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="is_draft" value="1" class="peer sr-only" {{ old('is_draft', $isEdit ? $purchaseRequest->status === 'draft' || $purchaseRequest->status === 0 : '0') == '1' ? 'checked' : '' }}>
-                                        <div class="flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold text-slate-500 transition-all peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm">
-                                            <i class="bi bi-save"></i> Yes
-                                        </div>
-                                    </label>
-                                    <label class="cursor-pointer">
-                                        <input type="radio" name="is_draft" value="0" class="peer sr-only" {{ old('is_draft', $isEdit ? $purchaseRequest->status !== 'draft' && $purchaseRequest->status !== 0 : '0') == '0' ? 'checked' : '' }}>
-                                        <div class="flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold text-slate-500 transition-all peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm">
-                                            <i class="bi bi-send"></i> Submit
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
 
                             {{-- Branch --}}
                             <div class="space-y-2">
@@ -139,7 +138,7 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="cursor-pointer relative">
                                         <input type="radio" name="branch" value="JAKARTA" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch : 'JAKARTA') === 'JAKARTA' ? 'checked' : '' }}>
-                                        <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30">
+                                        <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30 @error('branch') border-rose-300 @enderror">
                                             <div class="text-2xl mb-1">🏢</div>
                                             <span class="block text-xs font-bold text-slate-700 peer-checked:text-blue-700">Jakarta</span>
                                         </div>
@@ -149,7 +148,7 @@
                                     </label>
                                     <label class="cursor-pointer relative">
                                         <input type="radio" name="branch" value="KARAWANG" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch : '') === 'KARAWANG' ? 'checked' : '' }}>
-                                        <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30">
+                                        <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30 @error('branch') border-rose-300 @enderror">
                                             <div class="text-2xl mb-1">🏭</div>
                                             <span class="block text-xs font-bold text-slate-700 peer-checked:text-blue-700">Karawang</span>
                                         </div>
@@ -158,6 +157,9 @@
                                         </div>
                                     </label>
                                 </div>
+                                @error('branch')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -173,7 +175,7 @@
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 ml-1">From Department</label>
                                 <div class="relative">
-                                    <select name="from_department" x-model="from_department" x-init="initSimpleTomSelect($el, 'from')" class="w-full" placeholder="Select Origin" required>
+                                    <select name="from_department" x-model="from_department" x-init="initSimpleTomSelect($el, 'from')" class="w-full @error('from_department') border-rose-400 @enderror" placeholder="Select Origin" required>
                                         <option value="">Select Department...</option>
                                         @foreach ($departments as $department)
                                             <option value="{{ $department->name }}" {{ old('from_department', $isEdit ? $purchaseRequest->from_department : $authUser->department?->name) === $department->name ? 'selected' : '' }}>
@@ -182,19 +184,25 @@
                                         @endforeach
                                     </select>
                                 </div>
+                                @error('from_department')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
 
                             {{-- To Dept --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 ml-1">To Department</label>
                                 <div class="relative">
-                                    <select name="to_department" x-model="to_department" x-init="initSimpleTomSelect($el, 'to')" class="w-full" placeholder="Select Target" required>
+                                    <select name="to_department" x-model="to_department" x-init="initSimpleTomSelect($el, 'to')" class="w-full @error('to_department') border-rose-400 @enderror" placeholder="Select Target" required>
                                         <option value="">Select Target...</option>
                                         @foreach (\App\Enums\ToDepartment::cases() as $dept)
                                             <option value="{{ $dept->value }}" {{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') === $dept->value ? 'selected' : '' }}>{{ $dept->label() }}</option>
                                         @endforeach
                                     </select>
                                 </div>
+                                @error('to_department')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
 
                             {{-- Import Toggle (Conditional) --}}
@@ -228,45 +236,65 @@
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Date of PR</label>
                                 <input type="date" name="date_of_pr" value="{{ old('date_of_pr', $isEdit ? $purchaseRequest->date_pr : '') }}" required
-                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
+                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all @error('date_of_pr') border-rose-400 bg-rose-50/30 @enderror">
+                                @error('date_of_pr')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
 
                             {{-- Date Required --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Date Required</label>
                                 <input type="date" name="date_of_required" value="{{ old('date_of_required', $isEdit ? $purchaseRequest->date_required : '') }}" required
-                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
+                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all @error('date_of_required') border-rose-400 bg-rose-50/30 @enderror">
+                                @error('date_of_required')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
 
                             {{-- Supplier --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Supplier</label>
                                 <input type="text" name="supplier" value="{{ old('supplier', $isEdit ? $purchaseRequest->supplier : '') }}" placeholder="Vendor Name" required
-                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
+                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all @error('supplier') border-rose-400 bg-rose-50/30 @enderror">
+                                @error('supplier')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
 
                             {{-- PIC --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Person In Charge</label>
                                 <input type="text" name="pic" value="{{ old('pic', $isEdit ? $purchaseRequest->pic : '') }}" placeholder="Contact Person" required
-                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
+                                       class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all @error('pic') border-rose-400 bg-rose-50/30 @enderror">
+                                @error('pic')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
                         {{-- Remark --}}
                         <div class="mt-6 space-y-1">
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Remarks / Notes</label>
-                            <textarea name="remark" rows="2" placeholder="Any additional details..." required
-                                      class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">{{ old('remark', $isEdit ? $purchaseRequest->remark : '') }}</textarea>
+                            <textarea name="remark" rows="2" placeholder="Any additional details..."
+                                      class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all @error('remark') border-rose-400 bg-rose-50/30 @enderror">{{ old('remark', $isEdit ? $purchaseRequest->remark : '') }}</textarea>
+                            @error('remark')
+                                <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
                     {{-- ITEMS REPEATER --}}
                     <div class="glass-card overflow-hidden">
                         <div class="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
-                            <h3 class="flex items-center gap-2 text-sm font-bold text-slate-800 uppercase tracking-widest">
-                                <i class="bi bi-box-seam text-indigo-500"></i> Request Items
-                            </h3>
+                            <div>
+                                <h3 class="flex items-center gap-2 text-sm font-bold text-slate-800 uppercase tracking-widest">
+                                    <i class="bi bi-box-seam text-indigo-500"></i> Request Items
+                                </h3>
+                                @error('items')
+                                    <p class="text-xs text-rose-600 mt-1"><i class="bi bi-exclamation-circle"></i> {{ $message }}</p>
+                                @enderror
+                            </div>
                             <button type="button" @click="addItem()"
                                     class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white shadow-lg shadow-slate-200 hover:bg-slate-800 hover:-translate-y-0.5 transition-all">
                                 <i class="bi bi-plus-lg"></i> Add Item
@@ -374,17 +402,38 @@
                             class="rounded-xl px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit"
-                            class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-1 hover:shadow-indigo-400">
-                        <span x-text="is_draft == '1' ? 'Save Draft' : '{{ $isEdit ? 'Update Request' : 'Submit Request' }}'">Submit Request</span>
-                        <i class="bi bi-arrow-right"></i>
-                    </button>
-                    <!-- Hidden input to bind alpine draft state to form submission if needed, 
-                         though we use radio buttons above. If logic simpler, can use hidden input. -->
+
+                    <div class="flex items-center gap-3">
+                        {{-- Save as Draft: just submit the form normally (submit_action stays empty = draft) --}}
+                        <button type="submit"
+                                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300">
+                            <i class="bi bi-floppy"></i>
+                            Save as Draft
+                        </button>
+
+                        {{-- Sign & Submit: opens confirmation modal --}}
+                        <button type="button"
+                                @click="$dispatch('open-sign-submit-modal')"
+                                class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-0.5">
+                            <i class="bi bi-pen"></i>
+                            Sign & Submit
+                        </button>
+                    </div>
+
+                    {{-- Hidden: set to 'sign_and_submit' by the modal before form submit --}}
+                    <input type="hidden" name="submit_action" id="submit_action_input" value="">
                 </div>
             </div>
         </form>
     </div>
+
+    {{-- Sign & Submit Modal --}}
+    @include('partials.pr-sign-submit-modal', [
+        'hasDefaultSignature' => $hasDefaultSignature ?? false,
+        'signaturePreviewUrl' => $signaturePreviewUrl ?? null,
+        'formId'              => 'pr-form',
+        'submitUrl'           => null,
+    ])
 @endsection
 
 @push('scripts')

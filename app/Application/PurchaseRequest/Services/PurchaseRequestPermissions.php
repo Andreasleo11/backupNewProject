@@ -3,12 +3,16 @@
 namespace App\Application\PurchaseRequest\Services;
 
 use App\Application\Approval\Contracts\Approvals;
+use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Models\PurchaseRequest;
 
 final class PurchaseRequestPermissions
 {
-    public function __construct(private readonly Approvals $approvals) {}
+    public function __construct(
+        private readonly Approvals $approvals,
+        private readonly GetDefaultActiveUserSignature $getDefaultSignature,
+    ) {}
 
     public function flags(User $user, PurchaseRequest $pr): array
     {
@@ -35,11 +39,24 @@ final class PurchaseRequestPermissions
             || $user->hasRole('pr-purchaser') // mapped from PURCHASER
             || $pr->from_department === 'MOULDING';
 
+        // 5. Sign & Submit: only the creator can sign & submit their own DRAFT
+        $isCreator = (int) $user->id === (int) $pr->user_id_create;
+        $isDraft   = $pr->workflow_status === 'DRAFT';
+        $canSignAndSubmit = $isCreator && $isDraft;
+
+        // 6. Has a saved default signature (needed to enable Sign & Submit)
+        $defaultSig = $canSignAndSubmit
+            ? $this->getDefaultSignature->execute((int) $user->id)
+            : null;
+
         return [
-            'canApprove' => $canApprove,
-            'canUpload' => $canUpload,
-            'canEdit' => $canEdit,
-            'canAutoApprove' => $canAutoApprove,
+            'canApprove'          => $canApprove,
+            'canUpload'           => $canUpload,
+            'canEdit'             => $canEdit,
+            'canAutoApprove'      => $canAutoApprove,
+            'canSignAndSubmit'    => $canSignAndSubmit,
+            'hasDefaultSignature' => $defaultSig !== null,
+            'defaultSignaturePath'=> $defaultSig?->filePath,
         ];
     }
 }

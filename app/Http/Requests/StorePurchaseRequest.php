@@ -44,7 +44,7 @@ class StorePurchaseRequest extends FormRequest
                 Rule::in(['factory', 'office'])
             ],
             'is_import' => 'nullable|boolean',
-            'is_draft' => 'required|boolean',
+            'is_draft' => 'nullable|boolean',
             'items' => 'required|array',
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|numeric',
