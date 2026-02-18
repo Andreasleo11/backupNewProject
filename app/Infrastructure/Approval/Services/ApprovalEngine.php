@@ -78,14 +78,14 @@ final class ApprovalEngine implements Approvals
             /** @var ApprovalRequest $req */
             $req = $approvable->approvalRequest()->firstOrNew([]);
             
-            // Allow resubmission from RETURNED state
-            $allowedStatuses = ['DRAFT', 'RETURNED'];
+            // Allow resubmission from RETURNED or REJECTED state
+            $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
             if ($req->exists && !in_array($req->status, $allowedStatuses)) {
                 throw new \DomainException('Already submitted.');
             }
 
-            // On resubmit: wipe old steps, reset item approvals
-            if ($req->exists && $req->status === 'RETURNED') {
+            // On resubmit from RETURNED or REJECTED: wipe old steps, reset item approvals
+            if ($req->exists && in_array($req->status, ['RETURNED', 'REJECTED'])) {
                 $req->steps()->delete();
                 if (method_exists($approvable, 'resetItemApprovals')) {
                     $approvable->resetItemApprovals();

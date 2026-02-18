@@ -116,10 +116,10 @@ class PurchaseRequestController extends Controller
 
         // Determine editable states using workflow_status (modern) with legacy fallback
         $workflowStatus = $purchaseRequest->workflow_status; // computed attribute
-        $legacyStatus   = $purchaseRequest->status;
+        $legacyStatus = $purchaseRequest->status;
 
-        $editableWorkflowStatuses = ['DRAFT', 'RETURNED'];
-        $editableLegacyStatuses   = [0, 'draft', 8]; // 0 = draft, 8 = draft (legacy)
+        $editableWorkflowStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
+        $editableLegacyStatuses = [0, 'draft', 8]; // 0 = draft, 8 = draft (legacy)
 
         $isEditable = in_array($workflowStatus, $editableWorkflowStatuses)
             || in_array($legacyStatus, $editableLegacyStatuses);
@@ -128,13 +128,13 @@ class PurchaseRequestController extends Controller
             abort(403, 'This request cannot be edited in its current state (' . $workflowStatus . ').');
         }
 
-        $items       = MasterDataPr::get();
+        $items = MasterDataPr::get();
         $departments = Department::all();
 
         return view('purchase-requests.pr-form', [
             'purchaseRequest' => $purchaseRequest,
-            'items'           => $items,
-            'departments'     => $departments,
+            'items' => $items,
+            'departments' => $departments,
         ]);
     }
 
