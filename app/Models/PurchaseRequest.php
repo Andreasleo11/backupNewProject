@@ -197,7 +197,7 @@ class PurchaseRequest extends Model implements Approvable
                         'step_code' => $step->approver_label ?? 'Approver',
                         'user' => $step->actedUser,
                         'name' => $step->approver_name ?? 'Waiting...',
-                        'image' => $step->signature_image_path,
+                        'image' => $step->signature_url,
                         'at' => $step->acted_at,
                         'status' => $uiStatus,
                         'is_current' => $this->approvalRequest->current_step == $step->sequence && $this->approvalRequest->status === 'IN_REVIEW',

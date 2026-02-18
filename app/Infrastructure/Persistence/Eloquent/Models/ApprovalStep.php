@@ -102,4 +102,18 @@ class ApprovalStep extends Model
         // but for now just return the name/type
         return $this->approver_snapshot_name ?? $this->approver_type;
     }
+
+    /**
+     * Get secure URL for signature image.
+     * Returns null if no signature exists.
+     * Uses the route which handles authorization and streams from private storage.
+     */
+    public function getSignatureUrlAttribute(): ?string
+    {
+        if (!$this->signature_image_path) {
+            return null;
+        }
+
+        return route('approval-steps.signature', ['step' => $this->id]);
+    }
 }

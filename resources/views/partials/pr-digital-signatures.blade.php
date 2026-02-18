@@ -48,9 +48,9 @@
                 @endif
 
                 {{-- Signature Image or Placeholder --}}
-                <div class="mb-3 flex h-16 w-full items-center justify-center overflow-hidden rounded-lg transition-opacity {{ $status === 'signed' ? 'bg-slate-50 opacity-90 mix-blend-multiply group-hover:opacity-100' : '' }}">
+                <div class="mb-3 flex h-24 w-full items-center justify-center overflow-hidden rounded-lg transition-opacity {{ $status === 'signed' ? 'bg-slate-50 opacity-90 mix-blend-multiply group-hover:opacity-100' : '' }}">
                     @if ($status === 'signed' && $signature['image'])
-                        <img src="{{ asset('storage/' . $signature['image']) }}" alt="Signature" class="max-h-full max-w-full object-contain">
+                        <img src="{{ $signature['image'] }}" alt="Signature" class="max-w-full h-auto max-h-20 object-contain mix-blend-darken">
                     @elseif ($status === 'rejected')
                         <i class="bi bi-x-circle text-3xl text-red-300"></i>
                     @else
