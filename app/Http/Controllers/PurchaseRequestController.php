@@ -102,6 +102,33 @@ class PurchaseRequestController extends Controller
         return view('purchase-requests.create', compact('items', 'departments'));
     }
 
+    public function edit(int $id)
+    {
+        $purchaseRequest = PurchaseRequest::with('itemDetail')->findOrFail($id);
+        
+        // Authorization check 
+        // (Assuming standard policy: only creator can edit draft/rejected)
+        if (auth()->id() !== $purchaseRequest->created_by) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!in_array($purchaseRequest->status, ['draft', 0, 4])) {
+             // Status 4 = rejected (usually editable for re-submission)
+             // 0 = draft
+             // 'draft' string
+             // Adjust based on your specific enum/status logic
+        }
+
+        $items = MasterDataPr::get();
+        $departments = Department::all();
+
+        return view('purchase-requests.create', [
+            'purchaseRequest' => $purchaseRequest,
+            'items' => $items,
+            'departments' => $departments,
+        ]);
+    }
+
     public function store(
         StorePurchaseRequest $request,
         

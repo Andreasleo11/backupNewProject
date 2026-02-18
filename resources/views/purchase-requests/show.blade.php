@@ -81,15 +81,11 @@
                 @endif
 
                 @if ($canEditPr)
-                    <button type="button" data-bs-target="#edit-purchase-request-modal-{{ $purchaseRequest->id }}" data-bs-toggle="modal"
+                    <a href="{{ route('purchase-requests.edit', $purchaseRequest->id) }}"
                             class="group inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:text-indigo-600">
                         <i class="bi bi-pencil-square text-lg text-slate-400 group-hover:text-indigo-500"></i>
                         Edit Details
-                    </button>
-                    @include('partials.edit-purchase-request-modal', [
-                        'pr' => $purchaseRequest,
-                        'details' => $filteredItemDetail,
-                    ])
+                    </a>
                 @endif
                 
                 {{-- If it's pure draft, show delete --}}

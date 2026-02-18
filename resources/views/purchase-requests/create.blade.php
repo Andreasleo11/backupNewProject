@@ -5,27 +5,30 @@
 @section('content')
     @php
         $authUser = auth()->user();
+        $isEdit = isset($purchaseRequest);
+        $title = $isEdit ? 'Edit Requisition' : 'New Requisition';
+        $action = $isEdit ? route('purchase-requests.update', $purchaseRequest->id) : route('purchase-requests.store');
     @endphp
 
     <div class="mx-auto max-w-5xl px-4 py-8 lg:py-10" x-data="purchaseRequestForm(
-        @js(old('items', [])),
-        '{{ old('from_department', $authUser->department?->name) }}',
-        '{{ old('to_department') }}'
+        @js(old('items', $isEdit ? $purchaseRequest->itemDetail : [])),
+        '{{ old('from_department', $isEdit ? $purchaseRequest->from_department : $authUser->department?->name) }}',
+        '{{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') }}'
     )" x-init="init()">
         
         {{-- TOP BAR --}}
         <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
             <div class="space-y-1">
-                <a href="{{ route('purchase-requests.index') }}"
+                <a href="{{ $isEdit ? route('purchase-requests.show', $purchaseRequest->id) : route('purchase-requests.index') }}"
                     class="group inline-flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">
                     <i class="bi bi-arrow-left text-lg transition-transform group-hover:-translate-x-1"></i>
-                    Back to List
+                    {{ $isEdit ? 'Back to Detail' : 'Back to List' }}
                 </a>
                 <h1 class="text-3xl font-black tracking-tight text-slate-800">
-                    New <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Requisition</span>
+                    {{ $isEdit ? 'Edit' : 'New' }} <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Requisition</span>
                 </h1>
                 <p class="text-sm font-medium text-slate-500">
-                    Fill in the details below to initiate a new procurement workflow.
+                    {{ $isEdit ? 'Update the details below to modify your request.' : 'Fill in the details below to initiate a new procurement workflow.' }}
                 </p>
             </div>
 
@@ -42,9 +45,12 @@
             </div>
         </div>
 
-        <form action="{{ route('purchase-requests.store') }}" method="POST" id="pr-form" class="space-y-6"
+        <form action="{{ $action }}" method="POST" id="pr-form" class="space-y-6"
               @submit="if (!validateBeforeSubmit()) $event.preventDefault()">
             @csrf
+            @if($isEdit)
+                @method('PUT')
+            @endif
 
             {{-- MAIN FORM CONTAINER --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -63,13 +69,13 @@
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Save as Draft?</label>
                                 <div class="grid grid-cols-2 gap-3 p-1 bg-slate-100/50 rounded-xl border border-slate-200/50">
                                     <label class="cursor-pointer">
-                                        <input type="radio" name="is_draft" value="1" class="peer sr-only" {{ old('is_draft') == '1' ? 'checked' : '' }}>
+                                        <input type="radio" name="is_draft" value="1" class="peer sr-only" {{ old('is_draft', $isEdit ? $purchaseRequest->status === 'draft' || $purchaseRequest->status === 0 : '0') == '1' ? 'checked' : '' }}>
                                         <div class="flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold text-slate-500 transition-all peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm">
                                             <i class="bi bi-save"></i> Yes
                                         </div>
                                     </label>
                                     <label class="cursor-pointer">
-                                        <input type="radio" name="is_draft" value="0" class="peer sr-only" {{ old('is_draft', '0') == '0' ? 'checked' : '' }}>
+                                        <input type="radio" name="is_draft" value="0" class="peer sr-only" {{ old('is_draft', $isEdit ? $purchaseRequest->status !== 'draft' && $purchaseRequest->status !== 0 : '0') == '0' ? 'checked' : '' }}>
                                         <div class="flex items-center justify-center gap-2 rounded-lg py-2.5 text-xs font-bold text-slate-500 transition-all peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm">
                                             <i class="bi bi-send"></i> Submit
                                         </div>
@@ -82,7 +88,7 @@
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Branch</label>
                                 <div class="grid grid-cols-2 gap-3">
                                     <label class="cursor-pointer relative">
-                                        <input type="radio" name="branch" value="JAKARTA" class="peer sr-only" {{ old('branch', 'JAKARTA') === 'JAKARTA' ? 'checked' : '' }}>
+                                        <input type="radio" name="branch" value="JAKARTA" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch : 'JAKARTA') === 'JAKARTA' ? 'checked' : '' }}>
                                         <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30">
                                             <div class="text-2xl mb-1">🏢</div>
                                             <span class="block text-xs font-bold text-slate-700 peer-checked:text-blue-700">Jakarta</span>
@@ -92,7 +98,7 @@
                                         </div>
                                     </label>
                                     <label class="cursor-pointer relative">
-                                        <input type="radio" name="branch" value="KARAWANG" class="peer sr-only" {{ old('branch') === 'KARAWANG' ? 'checked' : '' }}>
+                                        <input type="radio" name="branch" value="KARAWANG" class="peer sr-only" {{ old('branch', $isEdit ? $purchaseRequest->branch : '') === 'KARAWANG' ? 'checked' : '' }}>
                                         <div class="h-full rounded-xl border-2 border-slate-100 bg-white p-3 text-center transition-all hover:border-slate-200 peer-checked:border-blue-500 peer-checked:bg-blue-50/30">
                                             <div class="text-2xl mb-1">🏭</div>
                                             <span class="block text-xs font-bold text-slate-700 peer-checked:text-blue-700">Karawang</span>
@@ -120,7 +126,7 @@
                                     <select name="from_department" x-model="from_department" x-init="initSimpleTomSelect($el, 'from')" class="w-full" placeholder="Select Origin" required>
                                         <option value="">Select Department...</option>
                                         @foreach ($departments as $department)
-                                            <option value="{{ $department->name }}" {{ old('from_department', $authUser->department?->name) === $department->name ? 'selected' : '' }}>
+                                            <option value="{{ $department->name }}" {{ old('from_department', $isEdit ? $purchaseRequest->from_department : $authUser->department?->name) === $department->name ? 'selected' : '' }}>
                                                 {{ $department->name }}
                                             </option>
                                         @endforeach
@@ -135,7 +141,7 @@
                                     <select name="to_department" x-model="to_department" x-init="initSimpleTomSelect($el, 'to')" class="w-full" placeholder="Select Target" required>
                                         <option value="">Select Target...</option>
                                         @foreach (\App\Enums\ToDepartment::cases() as $dept)
-                                            <option value="{{ $dept->value }}">{{ $dept->label() }}</option>
+                                            <option value="{{ $dept->value }}" {{ old('to_department', $isEdit ? $purchaseRequest->to_department : '') === $dept->value ? 'selected' : '' }}>{{ $dept->label() }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -149,11 +155,11 @@
                                 </div>
                                 <div class="flex gap-2 p-1 bg-slate-100/50 rounded-lg">
                                     <label class="flex-1 cursor-pointer text-center">
-                                        <input type="radio" name="is_import" value="false" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import') !== 'true')>
+                                        <input type="radio" name="is_import" value="false" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import', $isEdit ? ($purchaseRequest->is_import === 0 ? 'false' : 'true') : 'false') !== 'true')>
                                         <span class="block rounded-md py-1.5 text-xs font-bold text-slate-500 peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm transition-all">Local</span>
                                     </label>
                                     <label class="flex-1 cursor-pointer text-center">
-                                        <input type="radio" name="is_import" value="true" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import') === 'true')>
+                                        <input type="radio" name="is_import" value="true" class="peer sr-only" :disabled="!showLocalImport" @checked(old('is_import', $isEdit ? ($purchaseRequest->is_import === 1 ? 'true' : 'false') : 'false') === 'true')>
                                         <span class="block rounded-md py-1.5 text-xs font-bold text-slate-500 peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm transition-all">Import</span>
                                     </label>
                                 </div>
@@ -171,28 +177,28 @@
                             {{-- Date PR --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Date of PR</label>
-                                <input type="date" name="date_of_pr" value="{{ old('date_of_pr') }}" required
+                                <input type="date" name="date_of_pr" value="{{ old('date_of_pr', $isEdit ? $purchaseRequest->date_pr : '') }}" required
                                        class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
                             </div>
 
                             {{-- Date Required --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Date Required</label>
-                                <input type="date" name="date_of_required" value="{{ old('date_of_required') }}" required
+                                <input type="date" name="date_of_required" value="{{ old('date_of_required', $isEdit ? $purchaseRequest->date_required : '') }}" required
                                        class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
                             </div>
 
                             {{-- Supplier --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Supplier</label>
-                                <input type="text" name="supplier" value="{{ old('supplier') }}" placeholder="Vendor Name" required
+                                <input type="text" name="supplier" value="{{ old('supplier', $isEdit ? $purchaseRequest->supplier : '') }}" placeholder="Vendor Name" required
                                        class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
                             </div>
 
                             {{-- PIC --}}
                             <div class="space-y-1">
                                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Person In Charge</label>
-                                <input type="text" name="pic" value="{{ old('pic') }}" placeholder="Contact Person" required
+                                <input type="text" name="pic" value="{{ old('pic', $isEdit ? $purchaseRequest->pic : '') }}" placeholder="Contact Person" required
                                        class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-2.5 text-sm font-semibold text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">
                             </div>
                         </div>
@@ -201,7 +207,7 @@
                         <div class="mt-6 space-y-1">
                             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide ml-1">Remarks / Notes</label>
                             <textarea name="remark" rows="2" placeholder="Any additional details..." required
-                                      class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">{{ old('remark') }}</textarea>
+                                      class="w-full rounded-xl border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-indigo-500 focus:bg-white transition-all">{{ old('remark', $isEdit ? $purchaseRequest->remark : '') }}</textarea>
                         </div>
                     </div>
 
@@ -320,7 +326,7 @@
                     </button>
                     <button type="submit"
                             class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:-translate-y-1 hover:shadow-indigo-400">
-                        <span x-text="is_draft == '1' ? 'Save Draft' : 'Submit Request'">Submit Request</span>
+                        <span x-text="is_draft == '1' ? 'Save Draft' : '{{ $isEdit ? 'Update Request' : 'Submit Request' }}'">Submit Request</span>
                         <i class="bi bi-arrow-right"></i>
                     </button>
                     <!-- Hidden input to bind alpine draft state to form submission if needed, 
