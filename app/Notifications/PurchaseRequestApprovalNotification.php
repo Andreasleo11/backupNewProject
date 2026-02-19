@@ -4,12 +4,17 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PurchaseRequestApprovalNotification extends Notification
+class PurchaseRequestApprovalNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    /**
+     * Dispatch the notification only after the DB transaction commits.
+     * This prevents race conditions when called from within ApprovalEngine transactions.
+     */
+    public bool $afterCommit = true;
 
     /**
      * Create a new notification instance.

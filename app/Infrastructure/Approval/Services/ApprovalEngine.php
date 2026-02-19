@@ -10,6 +10,8 @@ use App\Domain\Approval\Contracts\RuleResolver;
 use App\Domain\Signature\Repositories\UserSignatureRepository;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
+use App\Notifications\PurchaseRequestApprovedNotification;
+use App\Notifications\PurchaseRequestRejectedNotification;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
@@ -297,12 +299,30 @@ final class ApprovalEngine implements Approvals
 
     private function notifyFinalApproval(ApprovalRequest $req): void
     {
-        /* ... */
+        $pr = $req->approvable;
+
+        if (! $pr || ! ($creator = $pr->createdBy)) {
+            return;
+        }
+
+        $creator->notify(new PurchaseRequestApprovedNotification($pr));
     }
 
     private function notifyRejection(ApprovalRequest $req): void
     {
-        /* ... */
+        $pr = $req->approvable;
+
+        if (! $pr || ! ($creator = $pr->createdBy)) {
+            return;
+        }
+
+        // Pull remarks from the step that was just rejected.
+        $remarks = $req->steps()
+            ->where('status', 'REJECTED')
+            ->orderByDesc('acted_at')
+            ->value('remarks');
+
+        $creator->notify(new PurchaseRequestRejectedNotification($pr, $remarks));
     }
 
     private function attachSignatureSnapshotToStep(ApprovalStep $step, int $by, ?string $remarks): void

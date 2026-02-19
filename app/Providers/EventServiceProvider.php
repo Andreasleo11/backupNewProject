@@ -19,12 +19,6 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [SendEmailVerificationNotification::class],
         NotificationSent::class => [BroadcastNotificationPushed::class],
-        // \App\Events\PurchaseRequestCreated::class => [
-        //     \App\Infrastructure\Listeners\SendPurchaseRequestCreatedNotification::class,
-        // ],
-        // \App\Events\PurchaseRequestStatusUpdated::class => [
-        //     \App\Infrastructure\Listeners\SendPurchaseRequestStatusUpdatedNotification::class,
-        // ],
     ];
 
     /**

@@ -27,7 +27,6 @@ class PurchaseRequestCreated extends Notification implements ShouldQueue
 
     /**
      * Get the notification's delivery channels.
-     *`1`1
      *
      * @return array<int, string>
      */
