@@ -37,6 +37,7 @@ class PurchaseRequestController extends Controller
         private MasterPrItemService $masterPrService,
         private ReturnPurchaseRequest $returnUseCase,
         private GetDefaultActiveUserSignature $getDefaultSignature,
+        private \App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder $contextBuilder,
     ) {}
 
     public function index(
@@ -330,8 +331,18 @@ class PurchaseRequestController extends Controller
             imagePath: $defaultSig->filePath,
         ));
 
-        // Start approval workflow
-        $approvals->submit($pr, $userId);
+        // Build approval context from the PR model (required by the rule resolver to match templates)
+        $pr->loadMissing('items');
+        $ctx = $this->contextBuilder->build(
+            fromDepartment: $pr->from_department,
+            toDepartment:   $pr->to_department->value,
+            branch:         $pr->branch->value,
+            isOffice:       $pr->type === 'office',
+            items:          $pr->items->toArray(),
+        );
+
+        // Start approval workflow with context
+        $approvals->submit($pr, $userId, $ctx);
     }
 
     public function destroy(
