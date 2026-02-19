@@ -59,9 +59,9 @@ final class ApprovalEngine implements Approvals
 
             // Mark current step as RETURNED
             $step->update([
-                'status'        => 'RETURNED',
-                'acted_by'      => $by,
-                'acted_at'      => now(),
+                'status' => 'RETURNED',
+                'acted_by' => $by,
+                'acted_at' => now(),
                 'return_reason' => $reason,
             ]);
 
@@ -77,10 +77,10 @@ final class ApprovalEngine implements Approvals
         $req = DB::transaction(function () use ($approvable, $by, $ctx) {
             /** @var ApprovalRequest $req */
             $req = $approvable->approvalRequest()->firstOrNew([]);
-            
+
             // Allow resubmission from RETURNED or REJECTED state
             $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
-            if ($req->exists && !in_array($req->status, $allowedStatuses)) {
+            if ($req->exists && ! in_array($req->status, $allowedStatuses)) {
                 throw new \DomainException('Already submitted.');
             }
 

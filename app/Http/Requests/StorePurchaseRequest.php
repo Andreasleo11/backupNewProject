@@ -41,7 +41,7 @@ class StorePurchaseRequest extends FormRequest
             'type' => [
                 'nullable',
                 'string',
-                Rule::in(['factory', 'office'])
+                Rule::in(['factory', 'office']),
             ],
             'is_import' => 'nullable|boolean',
             'is_draft' => 'nullable|boolean',

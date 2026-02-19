@@ -38,9 +38,9 @@ class PurchaseRequestPolicy
                 // but sometimes standard requesters only see their own.
                 // For now, let's assume 'pr.view' with department check allows department visibility
                 // OR we can make a stricter 'pr.view-dept' if needed.
-                // Based on previous rules: Requesters usually only see their own? 
+                // Based on previous rules: Requesters usually only see their own?
                 // Let's assume 'pr.view' is basic access.
-                return true; 
+                return true;
             }
         }
 
@@ -64,7 +64,7 @@ class PurchaseRequestPolicy
             // Standard edit rule: Only draft (status 1)
             if ($pr->status === 1) {
                 // Must be creator or have specific permission
-                return $user->id === $pr->user_id_create; 
+                return $user->id === $pr->user_id_create;
             }
         }
 
@@ -82,9 +82,10 @@ class PurchaseRequestPolicy
     public function delete(User $user, PurchaseRequest $pr): bool
     {
         if ($user->can('pr.delete')) {
-             // Only draft
-             return $pr->status === 1 && $user->id === $pr->user_id_create;
+            // Only draft
+            return $pr->status === 1 && $user->id === $pr->user_id_create;
         }
+
         return false;
     }
 
@@ -98,6 +99,7 @@ class PurchaseRequestPolicy
         if ($user->can('pr.cancel')) {
             return $user->id === $pr->user_id_create || $user->hasRole('pr-purchaser');
         }
+
         return false;
     }
 
@@ -106,7 +108,7 @@ class PurchaseRequestPolicy
      */
     public function approve(User $user, PurchaseRequest $pr): bool
     {
-        // This is usually handled by the workflow engine service, 
+        // This is usually handled by the workflow engine service,
         // but we can wrap the permission check here.
         return $user->can('approval.approve');
     }

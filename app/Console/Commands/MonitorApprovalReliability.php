@@ -45,32 +45,37 @@ class MonitorApprovalReliability extends Command
         $baseQuery = PurchaseRequest::where('created_at', '>=', $startDate);
 
         $total = $baseQuery->count();
-        $approved = $baseQuery->whereHas('approvalRequest', fn($q) =>
-                $q->where('status', 'APPROVED')
-            )->count();
-        $rejected = $baseQuery->clone()->whereHas('approvalRequest', fn($q) =>
-                $q->where('status', 'REJECTED')
-            )->count();
-        $inReview = $baseQuery->clone()->whereHas('approvalRequest', fn($q) =>
-                $q->where('status', 'IN_REVIEW')
-            )->count();
+        $approved = $baseQuery->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'APPROVED')
+        )->count();
+        $rejected = $baseQuery->clone()->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'REJECTED')
+        )->count();
+        $inReview = $baseQuery->clone()->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'IN_REVIEW')
+        )->count();
         // Assuming 'DRAFT' and null workflow_status means no approvalRequest or a specific status in approvalRequest
         // For now, we'll count PRs without an approvalRequest or with a 'DRAFT' status if it exists in the related model.
         // If 'DRAFT' is a status on the PurchaseRequest itself, this needs adjustment.
         // For this change, we'll assume 'DRAFT' means no approval request has been initiated yet.
         $draft = $baseQuery->clone()->doesntHave('approvalRequest')->count();
-        $canceled = $baseQuery->clone()->whereHas('approvalRequest', fn($q) =>
-                $q->where('status', 'CANCELED')
-            )->count();
+        $canceled = $baseQuery->clone()->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'CANCELED')
+        )->count();
 
         // Calculate average approval time
         $approvedPRs = PurchaseRequest::where('created_at', '>=', $startDate)
-            ->whereHas('approvalRequest', fn($q) => $q->where('status', 'APPROVED'))
-            ->with(['approvalRequest.steps' => fn($q) => $q->where('status', 'APPROVED')])
+            ->whereHas('approvalRequest', fn ($q) => $q->where('status', 'APPROVED'))
+            ->with(['approvalRequest.steps' => fn ($q) => $q->where('status', 'APPROVED')])
             ->get();
 
         $avgApprovalTime = $approvedPRs->avg(function ($pr) {
             $approvedAt = $pr->approvalRequest->steps->max('acted_at');
+
             return $approvedAt ? $pr->created_at->diffInHours($approvedAt) : null;
         });
 

@@ -44,7 +44,7 @@ class FileController extends Controller
 
         return redirect()->back()->with(['success' => 'Files successfully uploaded!']);
     }
-    
+
     public function getFiles(Request $request)
     {
         $year = $request->input('year');

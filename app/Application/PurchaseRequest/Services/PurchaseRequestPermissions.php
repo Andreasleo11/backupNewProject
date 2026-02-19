@@ -20,7 +20,7 @@ final class PurchaseRequestPermissions
         $canApprove = false;
         if ($pr->approvalRequest) {
             // Must support workflow logic AND have permission
-            $canApprove = $this->approvals->canAct($pr, (int) $user->id) 
+            $canApprove = $this->approvals->canAct($pr, (int) $user->id)
                           && $user->can('approval.approve');
         }
 
@@ -41,7 +41,7 @@ final class PurchaseRequestPermissions
 
         // 5. Sign & Submit: only the creator can sign & submit their own DRAFT
         $isCreator = (int) $user->id === (int) $pr->user_id_create;
-        $isDraft   = $pr->workflow_status === 'DRAFT';
+        $isDraft = $pr->workflow_status === 'DRAFT';
         $canSignAndSubmit = $isCreator && $isDraft;
 
         // 6. Has a saved default signature (needed to enable Sign & Submit)
@@ -50,13 +50,13 @@ final class PurchaseRequestPermissions
             : null;
 
         return [
-            'canApprove'          => $canApprove,
-            'canUpload'           => $canUpload,
-            'canEdit'             => $canEdit,
-            'canAutoApprove'      => $canAutoApprove,
-            'canSignAndSubmit'    => $canSignAndSubmit,
+            'canApprove' => $canApprove,
+            'canUpload' => $canUpload,
+            'canEdit' => $canEdit,
+            'canAutoApprove' => $canAutoApprove,
+            'canSignAndSubmit' => $canSignAndSubmit,
             'hasDefaultSignature' => $defaultSig !== null,
-            'defaultSignaturePath'=> $defaultSig?->filePath,
+            'defaultSignaturePath' => $defaultSig?->filePath,
         ];
     }
 }

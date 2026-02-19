@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
-use App\Infrastructure\Persistence\Eloquent\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 class RefactoredPrPermissionsSeeder extends Seeder
 {
@@ -43,28 +43,28 @@ class RefactoredPrPermissionsSeeder extends Seeder
         // 2. Define Roles & Assign Permissions
         $rolesSetup = [
             'requester' => [
-                'pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print'
+                'pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print',
             ],
             'pr-dept-head' => [
                 'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print',
-                'approval.approve', 'approval.reject', 'approval.approve-items'
+                'approval.approve', 'approval.reject', 'approval.approve-items',
             ],
             'pr-verificator' => [
                 'pr.view', 'pr.view-all', 'pr.print',
-                'approval.approve', 'approval.reject', 'approval.approve-items'
+                'approval.approve', 'approval.reject', 'approval.approve-items',
             ],
             'pr-gm' => [
                 'pr.view', 'pr.view-all', 'pr.print',
-                'approval.approve', 'approval.reject', 'approval.approve-items'
+                'approval.approve', 'approval.reject', 'approval.approve-items',
             ],
             'pr-director' => [
                 'pr.view', 'pr.view-all', 'pr.print',
-                'approval.approve', 'approval.reject', 'approval.approve-items'
+                'approval.approve', 'approval.reject', 'approval.approve-items',
             ],
             'pr-purchaser' => [
                 'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print',
                 // Purchasers usually process, maybe not approve in the same sense, but let's give basic approve for now if they are part of flow
-                'approval.approve' 
+                'approval.approve',
             ],
         ];
 
@@ -79,7 +79,7 @@ class RefactoredPrPermissionsSeeder extends Seeder
         $this->createTestUser('pr-verificator', 'Verificator User', 'verificator@example.com', 'pr-verificator');
         $this->createTestUser('pr-gm', 'GM User', 'gm@example.com', 'pr-gm');
         $this->createTestUser('pr-director', 'Director User', 'director@example.com', 'pr-director');
-        
+
         // Specific Purchasers for Filtering Test
         $this->createTestUser('pr-purchaser', 'Purchaser IT', 'purchaser_it@example.com', 'pr-purchaser', 'COMPUTER');
         $this->createTestUser('pr-purchaser', 'Purchaser Maintenance', 'purchaser_main@example.com', 'pr-purchaser', 'MAINTENANCE');
@@ -103,7 +103,7 @@ class RefactoredPrPermissionsSeeder extends Seeder
 
         // Assign role
         $user->assignRole($roleSlug);
-        
+
         // Assign Department if provided
         if ($deptName) {
             $dept = \App\Models\Department::where('name', $deptName)->first();

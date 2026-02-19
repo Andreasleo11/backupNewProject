@@ -15,14 +15,14 @@ return new class extends Migration
             // Drop foreign keys first if they exist
             // Check if column exists first to act as a proxy for the constraint
             if (Schema::hasColumn('users', 'role_id')) {
-                 try {
+                try {
                     $table->dropForeign(['role_id']);
-                 } catch (\Exception $e) {
+                } catch (\Exception $e) {
                     // Ignore if FK doesn't exist
-                 }
-                 $table->dropColumn(['role_id']);
+                }
+                $table->dropColumn(['role_id']);
             }
-            
+
             if (Schema::hasColumn('users', 'specification_id')) {
                 $table->dropColumn(['specification_id']);
             }

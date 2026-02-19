@@ -26,7 +26,6 @@ beforeEach(function () {
         'department_id' => $this->fromDept->id,
     ]);
 
-
 });
 
 test('it can create a purchase request successfully', function () {

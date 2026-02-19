@@ -58,7 +58,7 @@ class RoleIndex extends Component
 
     public function updatedShowModal($value)
     {
-        if(! $value){
+        if (! $value) {
             $this->reset('name', 'selectedPermissions', 'editingRoleId', 'modalMode');
             $this->resetValidation();
         }

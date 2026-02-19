@@ -3,7 +3,6 @@
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Models\Department;
-use App\Models\Specification;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,7 +21,7 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Create a new factory instance for the model.
-     * 
+     *
      * Required because this model is in Infrastructure namespace
      * instead of the default App\Models namespace.
      */
@@ -35,7 +34,7 @@ class User extends Authenticatable implements FilamentUser
 
     protected $fillable = [
         'name',
-        'email', 
+        'email',
         'password',
         'employee_id',
     ];
@@ -67,8 +66,6 @@ class User extends Authenticatable implements FilamentUser
 
         return $this->employee ? $this->employee->department : null;
     }
-
-
 
     /**
      * Determine if the user can access the Filament admin panel.

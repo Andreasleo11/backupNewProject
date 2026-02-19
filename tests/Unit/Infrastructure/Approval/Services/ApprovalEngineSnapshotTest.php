@@ -4,7 +4,6 @@ namespace Tests\Unit\Infrastructure\Approval\Services;
 
 use App\Infrastructure\Approval\Services\ApprovalEngine;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
-use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use App\Infrastructure\Persistence\Eloquent\Models\RuleTemplate;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use App\Infrastructure\Persistence\Eloquent\Models\UserSignature;
@@ -47,18 +46,18 @@ class ApprovalEngineSnapshotTest extends TestCase
             'signature_file' => 'sig.png',
             'is_active' => true,
             'is_default' => 1,
-            'sha256' => 'hash'
+            'sha256' => 'hash',
         ]);
 
         // Setup Request & Step
         $pr = PurchaseRequest::factory()->create();
         $tpl = RuleTemplate::create(['name' => 'Tpl', 'model_type' => PurchaseRequest::class, 'is_active' => 1]);
-        
-        $req = new ApprovalRequest();
+
+        $req = new ApprovalRequest;
         $req->fill([
             'status' => 'IN_REVIEW',
             'current_step' => 1,
-            'rule_template_id' => $tpl->id
+            'rule_template_id' => $tpl->id,
         ]);
         $req->approvable()->associate($pr);
         $req->save();
@@ -69,7 +68,7 @@ class ApprovalEngineSnapshotTest extends TestCase
             'approver_id' => $role->id,
             'approver_snapshot_name' => null, // Initial state
             'approver_snapshot_role_slug' => 'director',
-            'status' => 'PENDING'
+            'status' => 'PENDING',
         ]);
 
         // Act

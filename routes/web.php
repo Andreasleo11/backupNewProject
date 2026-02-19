@@ -57,7 +57,6 @@ Route::get('purchase-requests/items/{id}/reject', function () {
     abort(405, 'Please use POST method for item rejection');
 })->name('purchase-requests.items.reject.deprecated');
 
-
 Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
 Route::delete('files/{id}', [FileController::class, 'destroy'])->name('file.destroy');
 

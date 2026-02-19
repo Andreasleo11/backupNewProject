@@ -18,13 +18,13 @@ class CheckUserRole
         $user = auth()->user();
 
         // Check if the user's role matches the provided role
-        if (!$user) {
+        if (! $user) {
             return redirect('/home');
         }
 
         foreach ($roles as $role) {
             // Check numeric role_id (legacy) or attribute
-            if (isset($user->role_id) && is_numeric($role) && (int)$user->role_id === (int)$role) {
+            if (isset($user->role_id) && is_numeric($role) && (int) $user->role_id === (int) $role) {
                 return $next($request);
             }
             // Check string role name (Spatie)

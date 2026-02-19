@@ -217,7 +217,7 @@ class UserIndex extends Component
 
     public function updatedShowModal($value)
     {
-        if(! $value){
+        if (! $value) {
             $this->reset('name', 'email', 'password', 'password_confirmation', 'employeeId', 'active', 'selectedRoles', 'employeeSearch', 'employeeOptions', 'selectedEmployeeLabel');
             $this->resetValidation();
         }
@@ -226,7 +226,7 @@ class UserIndex extends Component
 
     public function updatedShowPasswordModal($value)
     {
-        if(! $value) {
+        if (! $value) {
             $this->reset('newPassword', 'newPassword_confirmation');
             $this->resetValidation();
         }

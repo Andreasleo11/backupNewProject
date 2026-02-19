@@ -61,7 +61,7 @@ class ApprovalStep extends Model
             $role = \Spatie\Permission\Models\Role::find($this->approver_id);
             $slug = $role?->name;
         }
-        
+
         return match ($slug) {
             'pr-dept-head' => 'head',
             'pr-gm' => 'gm',
@@ -98,7 +98,7 @@ class ApprovalStep extends Model
             return $this->approver_snapshot_label;
         }
 
-        // Use the mapping logic from ApprovalEngine for fallback if needed, 
+        // Use the mapping logic from ApprovalEngine for fallback if needed,
         // but for now just return the name/type
         return $this->approver_snapshot_name ?? $this->approver_type;
     }
@@ -110,7 +110,7 @@ class ApprovalStep extends Model
      */
     public function getSignatureUrlAttribute(): ?string
     {
-        if (!$this->signature_image_path) {
+        if (! $this->signature_image_path) {
             return null;
         }
 

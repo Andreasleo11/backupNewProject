@@ -9,7 +9,6 @@ use App\Application\PurchaseRequest\DTOs\ReturnPurchaseRequestDTO;
 use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\Services\MasterPrItemService;
 use App\Application\PurchaseRequest\Services\PurchaseRequestItemFilter;
-use App\Application\PurchaseRequest\UseCases\AddSignature;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest;
@@ -110,10 +109,10 @@ class PurchaseRequestController extends Controller
         $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
 
         return view('purchase-requests.pr-form', [
-            'items'                => $items,
-            'departments'          => $departments,
-            'hasDefaultSignature'  => $defaultSig !== null,
-            'signaturePreviewUrl'  => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+            'items' => $items,
+            'departments' => $departments,
+            'hasDefaultSignature' => $defaultSig !== null,
+            'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
         ]);
     }
 
@@ -145,11 +144,11 @@ class PurchaseRequestController extends Controller
         $defaultSig = $this->getDefaultSignature->execute((int) auth()->id());
 
         return view('purchase-requests.pr-form', [
-            'purchaseRequest'      => $purchaseRequest,
-            'items'                => $items,
-            'departments'          => $departments,
-            'hasDefaultSignature'  => $defaultSig !== null,
-            'signaturePreviewUrl'  => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
+            'purchaseRequest' => $purchaseRequest,
+            'items' => $items,
+            'departments' => $departments,
+            'hasDefaultSignature' => $defaultSig !== null,
+            'signaturePreviewUrl' => $defaultSig ? route('signatures.show', $defaultSig->id) : null,
         ]);
     }
 
@@ -162,10 +161,11 @@ class PurchaseRequestController extends Controller
         // Always create as draft — workflow is started explicitly via performSignAndSubmit
         $request->merge(['is_draft' => true]);
         $dto = \App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO::fromValidated($request, $priceSanitizer);
-        $pr  = app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
+        $pr = app(\App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest::class)->handle($dto);
 
         if ($request->input('submit_action') === 'sign_and_submit') {
             $this->performSignAndSubmit($pr, auth()->id(), $approvals, $addSignature);
+
             return redirect()->route('purchase-requests.show', $pr->id)
                 ->with('success', 'Purchase request submitted and signed successfully.');
         }
@@ -190,16 +190,16 @@ class PurchaseRequestController extends Controller
         }
 
         return view('purchase-requests.show', [
-            'purchaseRequest'     => $vm->purchaseRequest,
-            'user'                => $user,
-            'userCreatedBy'       => $vm->meta['userCreatedBy'],
-            'files'               => $vm->files,
-            'filteredItemDetail'  => $vm->filteredItemDetail,
-            'departments'         => $vm->departments,
-            'fromDeptNo'          => $vm->fromDeptNo,
-            'approval'            => $vm->approval,
-            'flags'               => $vm->flags,
-            'totals'              => $vm->totals,
+            'purchaseRequest' => $vm->purchaseRequest,
+            'user' => $user,
+            'userCreatedBy' => $vm->meta['userCreatedBy'],
+            'files' => $vm->files,
+            'filteredItemDetail' => $vm->filteredItemDetail,
+            'departments' => $vm->departments,
+            'fromDeptNo' => $vm->fromDeptNo,
+            'approval' => $vm->approval,
+            'flags' => $vm->flags,
+            'totals' => $vm->totals,
             'signaturePreviewUrl' => $signaturePreviewUrl,
         ]);
     }
@@ -280,6 +280,7 @@ class PurchaseRequestController extends Controller
                 app(Approvals::class),
                 app(\App\Application\PurchaseRequest\UseCases\AddSignature::class)
             );
+
             return redirect()->route('purchase-requests.show', $id)
                 ->with('success', 'Purchase request updated, signed, and submitted.');
         }
@@ -335,10 +336,10 @@ class PurchaseRequestController extends Controller
         $pr->loadMissing('items');
         $ctx = $this->contextBuilder->build(
             fromDepartment: $pr->from_department,
-            toDepartment:   $pr->to_department->value,
-            branch:         $pr->branch->value,
-            isOffice:       $pr->type === 'office',
-            items:          $pr->items->toArray(),
+            toDepartment: $pr->to_department->value,
+            branch: $pr->branch->value,
+            isOffice: $pr->type === 'office',
+            items: $pr->items->toArray(),
         );
 
         // Start approval workflow with context
@@ -363,6 +364,7 @@ class PurchaseRequestController extends Controller
             abort(403, $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Deletion failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
+
             return redirect()
                 ->back()
                 ->with(['error' => 'Failed to delete purchase request']);
@@ -426,6 +428,7 @@ class PurchaseRequestController extends Controller
             abort(403, $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Cancellation failed', ['pr_id' => $id, 'error' => $e->getMessage()]);
+
             return redirect()->back()->with('error', 'Failed to cancel purchase request');
         }
     }
@@ -468,6 +471,7 @@ class PurchaseRequestController extends Controller
             "purchase requests for $authDepartment .xlsx",
         );
     }
+
     public function approve(ApprovePurchaseRequest $request, PurchaseRequest $purchaseRequest, ApprovePR $useCase)
     {
         try {
@@ -480,13 +484,15 @@ class PurchaseRequestController extends Controller
             return back()->with('toast_success', 'Purchase Request approved successfully!');
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return back()->with('error', $e->getMessage())->setStatusCode(403);
-        } catch (\DomainException | \RuntimeException $e) {
+        } catch (\DomainException|\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Approval failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+
             return back()->with('error', 'Failed to approve purchase request')->setStatusCode(500);
         }
     }
+
     public function reject(RejectPurchaseRequest $request, PurchaseRequest $purchaseRequest, RejectPR $useCase)
     {
         try {
@@ -499,10 +505,11 @@ class PurchaseRequestController extends Controller
             return back()->with('toast_success', 'Purchase Request rejected.');
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return back()->with('error', $e->getMessage())->setStatusCode(403);
-        } catch (\DomainException | \RuntimeException $e) {
+        } catch (\DomainException|\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             \Log::error('Rejection failed', ['pr_id' => $purchaseRequest->id, 'error' => $e->getMessage()]);
+
             return back()->with('error', 'Failed to reject purchase request')->setStatusCode(500);
         }
     }

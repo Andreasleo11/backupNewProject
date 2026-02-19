@@ -27,7 +27,7 @@ final class ReturnPurchaseRequest
         $this->repo->loadForApprovalContext($pr);
 
         $this->approvals->return($pr, $dto->actorUserId, $dto->reason);
-        
+
         // Reload fresh state
         $this->repo->loadForApprovalContext($pr);
     }

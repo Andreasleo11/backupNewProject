@@ -26,7 +26,6 @@ beforeEach(function () {
         'branch' => 'JAKARTA',
     ]);
 
-
 });
 
 test('it can update a draft purchase request', function () {

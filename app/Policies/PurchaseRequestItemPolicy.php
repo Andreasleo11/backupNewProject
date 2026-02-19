@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Application\Approval\Contracts\Approvals;
-use App\Models\DetailPurchaseRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
+use App\Models\DetailPurchaseRequest;
 
 /**
  * Policy for item-level approval authorization.
- * 
+ *
  * **Simplified Logic:**
  * - Delegates to ApprovalEngine::canAct() to check PR-level authorization
  * - If user can approve the PR, they can approve/reject items
@@ -46,19 +46,19 @@ class PurchaseRequestItemPolicy
     {
         $pr = $item->purchaseRequest;
 
-        if (!$pr || $pr->is_cancel) {
+        if (! $pr || $pr->is_cancel) {
             return false;
         }
 
         // Delegate to ApprovalEngine - if user can approve PR, they can act on items
-        if (!$this->approvals->canAct($pr, $user->id)) {
+        if (! $this->approvals->canAct($pr, $user->id)) {
             return false;
         }
 
         // Get current workflow step
         $approval = $pr->approvalRequest;
-        
-        if (!$approval || $approval->status !== 'IN_REVIEW') {
+
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
             return false;
         }
 
@@ -67,13 +67,13 @@ class PurchaseRequestItemPolicy
             ->first();
 
         // Check if this step supports item approval
-        if (!$currentStep || !$currentStep->item_approver_type) {
+        if (! $currentStep || ! $currentStep->item_approver_type) {
             return false;
         }
 
         // Check if item hasn't been reviewed yet
         $column = $this->getApprovalColumn($currentStep->item_approver_type);
-        
+
         return is_null($item->$column);
     }
 

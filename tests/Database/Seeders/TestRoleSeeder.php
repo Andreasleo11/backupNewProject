@@ -7,7 +7,7 @@ use Spatie\Permission\Models\Role;
 
 /**
  * Test Role Seeder
- * 
+ *
  * Creates consistent role IDs for testing approval workflows.
  * Using high IDs (100+) to avoid conflicts with production data.
  */

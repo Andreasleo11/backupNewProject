@@ -2,7 +2,6 @@
 
 use App\Infrastructure\Persistence\Eloquent\Models\User;
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
@@ -16,7 +15,7 @@ return new class extends Migration
         // 1. Ensure all target roles exist
         $roles = [
             'super-admin', 'staff', 'user',
-            'INSPECTOR', 'LEADER', 'STAFF', 'DIRECTOR', 'ADMIN', 'HEAD', 'PURCHASER', 'VERIFICATOR', 'DESIGN', 'SUPERVISOR'
+            'INSPECTOR', 'LEADER', 'STAFF', 'DIRECTOR', 'ADMIN', 'HEAD', 'PURCHASER', 'VERIFICATOR', 'DESIGN', 'SUPERVISOR',
         ];
 
         foreach ($roles as $roleName) {
@@ -28,14 +27,14 @@ return new class extends Migration
         if (Schema::hasColumn('users', 'role_id')) {
             $usersWithLegacyRole = User::whereNotNull('role_id')->get();
             foreach ($usersWithLegacyRole as $user) {
-                $roleName = match ((int)$user->role_id) {
+                $roleName = match ((int) $user->role_id) {
                     1 => 'super-admin',
                     2 => 'staff',
                     3 => 'user',
                     default => null
                 };
 
-                if ($roleName && !$user->hasRole($roleName)) {
+                if ($roleName && ! $user->hasRole($roleName)) {
                     $user->assignRole($roleName);
                 }
             }
@@ -45,7 +44,7 @@ return new class extends Migration
         if (Schema::hasColumn('users', 'specification_id')) {
             $usersWithSpec = User::whereNotNull('specification_id')->get();
             foreach ($usersWithSpec as $user) {
-                $specRole = match ((int)$user->specification_id) {
+                $specRole = match ((int) $user->specification_id) {
                     2 => 'INSPECTOR',
                     3 => 'LEADER',
                     4 => 'STAFF',
@@ -59,7 +58,7 @@ return new class extends Migration
                     default => null
                 };
 
-                if ($specRole && !$user->hasRole($specRole)) {
+                if ($specRole && ! $user->hasRole($specRole)) {
                     $user->assignRole($specRole);
                 }
             }

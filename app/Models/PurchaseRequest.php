@@ -28,10 +28,10 @@ class PurchaseRequest extends Model implements Approvable
 
         // 2. Get Item Logs
         $itemIds = $this->items()->pluck('id');
-        
+
         $itemLogs = \Spatie\Activitylog\Models\Activity::where('subject_type', \App\Models\DetailPurchaseRequest::class)
             ->whereIn('subject_id', $itemIds)
-            ->with('causer') 
+            ->with('causer')
             ->get();
 
         // 3. Get File Logs (New)
@@ -116,7 +116,7 @@ class PurchaseRequest extends Model implements Approvable
                 ->map(function ($step) {
                     return [
                         'step_code' => $step->approver_label ?? 'Approver', // Use accessor with fallback
-                        'user' => $step->actedUser, 
+                        'user' => $step->actedUser,
                         'name' => $step->approver_name ?? 'Unknown', // Use accessor with fallback
                         'image' => $step->signature_image_path,
                         'at' => $step->acted_at,
@@ -142,11 +142,11 @@ class PurchaseRequest extends Model implements Approvable
         for ($i = 1; $i <= 7; $i++) {
             $col = "autograph_{$i}";
             $userCol = "autograph_user_{$i}";
-            
-            if (!empty($this->$col)) {
+
+            if (! empty($this->$col)) {
                 $userData = $this->$userCol;
                 $userName = is_string($userData) ? $userData : 'Unknown';
-                
+
                 $legacy[] = [
                     'step_code' => "SLOT_{$i}",
                     'user' => null,
@@ -161,7 +161,7 @@ class PurchaseRequest extends Model implements Approvable
 
         // Unique by step_code/name to avoid duplicates if systems overlap
         return $signatures->unique(function ($item) {
-            return $item['step_code'] . $item['name']; 
+            return $item['step_code'] . $item['name'];
         })->values()->toArray();
     }
 
@@ -176,11 +176,11 @@ class PurchaseRequest extends Model implements Approvable
         if ($this->approvalRequest) {
             $approvalSteps = $this->approvalRequest->steps()
                 ->orderBy('sequence')
-                ->with('actedUser') 
+                ->with('actedUser')
                 ->get()
                 ->map(function ($step) {
                     $status = strtoupper($step->status);
-                    
+
                     // Determine status for UI
                     $uiStatus = match ($status) {
                         'APPROVED' => 'signed',
@@ -204,7 +204,7 @@ class PurchaseRequest extends Model implements Approvable
                         'source' => 'approval_system',
                     ];
                 });
-            
+
             if ($approvalSteps->isNotEmpty()) {
                 return $approvalSteps->toArray();
             }
@@ -214,16 +214,16 @@ class PurchaseRequest extends Model implements Approvable
         for ($i = 1; $i <= 7; $i++) {
             $col = "autograph_{$i}";
             $userCol = "autograph_user_{$i}";
-            
+
             $labels = [
                 1 => 'Created By', 2 => 'Checked By', 3 => 'Known By', 4 => 'Approved By',
-                5 => 'Approved By', 6 => 'Approved By', 7 => 'Approved By'
+                5 => 'Approved By', 6 => 'Approved By', 7 => 'Approved By',
             ];
-            
-            if (!empty($this->$col)) {
+
+            if (! empty($this->$col)) {
                 $userData = $this->$userCol;
                 $userName = is_string($userData) ? $userData : 'Unknown';
-                
+
                 $steps->push([
                     'step_code' => $labels[$i] ?? "Approver {$i}",
                     'user' => null,
@@ -235,10 +235,10 @@ class PurchaseRequest extends Model implements Approvable
                     'source' => 'legacy',
                 ]);
             } else {
-                 // Only show empty slots if we don't have a modern workflow
-                 // AND it's likely a legacy request (or we just show empty slots for strict legacy compat)
-                 // meaningful labels for legacy slots
-                 $steps->push([
+                // Only show empty slots if we don't have a modern workflow
+                // AND it's likely a legacy request (or we just show empty slots for strict legacy compat)
+                // meaningful labels for legacy slots
+                $steps->push([
                     'step_code' => $labels[$i] ?? "Approver {$i}",
                     'user' => null,
                     'name' => 'Waiting...',
@@ -308,10 +308,8 @@ class PurchaseRequest extends Model implements Approvable
     /**
      * Get workflow status from approval request.
      * This replaces the workflow_status column.
-     *
-     * @return string|null
      */
- public function getWorkflowStatusAttribute(): ?string
+    public function getWorkflowStatusAttribute(): ?string
     {
         // If cancelled, return CANCELED
         if ((int) $this->is_cancel === 1) {
@@ -325,14 +323,12 @@ class PurchaseRequest extends Model implements Approvable
     /**
      * Get current workflow step (approver label).
      * This replaces the workflow_step column.
-     *
-     * @return string|null
      */
     public function getWorkflowStepAttribute(): ?string
     {
         $approval = $this->approvalRequest;
-        
-        if (!$approval || $approval->status !== 'IN_REVIEW') {
+
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
             return null;
         }
 
@@ -345,8 +341,6 @@ class PurchaseRequest extends Model implements Approvable
 
     /**
      * Get current approver name (alias for workflow_step).
-     *
-     * @return string|null
      */
     public function getCurrentApproverAttribute(): ?string
     {
@@ -358,8 +352,9 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function scopeInReview(Builder $query): Builder
     {
-        return $query->whereHas('approvalRequest', fn($q) => 
-            $q->where('status', 'IN_REVIEW')
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'IN_REVIEW')
         );
     }
 
@@ -368,8 +363,9 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function scopeWorkflowApproved(Builder $query): Builder
     {
-        return $query->whereHas('approvalRequest', fn($q) => 
-            $q->where('status', 'APPROVED')
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'APPROVED')
         );
     }
 
@@ -378,8 +374,9 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function scopeWorkflowRejected(Builder $query): Builder
     {
-        return $query->whereHas('approvalRequest', fn($q) => 
-            $q->where('status', 'REJECTED')
+        return $query->whereHas(
+            'approvalRequest',
+            fn ($q) => $q->where('status', 'REJECTED')
         );
     }
 
@@ -391,4 +388,3 @@ class PurchaseRequest extends Model implements Approvable
         return $query->where('is_cancel', 1);
     }
 }
-

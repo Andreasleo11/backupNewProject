@@ -10,7 +10,7 @@ use App\Models\DetailPurchaseRequest;
 
 /**
  * Use Case: Approve a purchase request item.
- * 
+ *
  * **Simplified Authorization:**
  * - Uses ApprovalEngine::canAct() to check if user can approve the PR
  * - If yes, user can approve individual items
@@ -28,7 +28,7 @@ final class ApproveItem
         $pr = $item->purchaseRequest;
         $user = $dto->actorUser;
 
-        if (!$pr) {
+        if (! $pr) {
             throw new \DomainException('Item does not belong to a Purchase Request.');
         }
 
@@ -37,14 +37,14 @@ final class ApproveItem
         }
 
         // Authorization: Use ApprovalEngine to check if user can act on PR
-        if (!$this->approvals->canAct($pr, $user->id)) {
+        if (! $this->approvals->canAct($pr, $user->id)) {
             throw new \DomainException('You are not authorized to approve this item.');
         }
 
         // Get current workflow step to determine which column to update
         $approval = $pr->approvalRequest;
-        
-        if (!$approval || $approval->status !== 'IN_REVIEW') {
+
+        if (! $approval || $approval->status !== 'IN_REVIEW') {
             throw new \DomainException('PR is not in review status.');
         }
 
@@ -52,14 +52,14 @@ final class ApproveItem
             ->where('sequence', $approval->current_step)
             ->first();
 
-        if (!$currentStep || !$currentStep->item_approver_type) {
+        if (! $currentStep || ! $currentStep->item_approver_type) {
             throw new \DomainException('This workflow step does not support item approval.');
         }
 
         // Check if item is still pending (not already approved/rejected)
         $column = $this->getApprovalColumn($currentStep->item_approver_type);
-        
-        if (!is_null($item->$column)) {
+
+        if (! is_null($item->$column)) {
             throw new \DomainException('This item has already been reviewed.');
         }
 

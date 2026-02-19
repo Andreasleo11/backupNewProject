@@ -7,7 +7,7 @@ use App\Domain\Signature\ValueObjects\SignatureKind;
 
 /**
  * Signature Test Helper
- * 
+ *
  * Helper functions for creating user signatures in tests.
  */
 class SignatureTestHelper

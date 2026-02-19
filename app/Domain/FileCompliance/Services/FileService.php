@@ -31,13 +31,13 @@ final class FileService
             ]);
 
             // Explicitly log creation if not handled by trait auto-logging (or to add custom message)
-            // Since trait is there, it might log 'created' automatically. 
+            // Since trait is there, it might log 'created' automatically.
             // But usually we want more info or just rely on standard 'created'.
             // If we want "uploaded file X", we can do:
             activity()
-               ->performedOn($fileModel)
-               ->causedBy(auth()->user())
-               ->log('uploaded file: ' . $file->getClientOriginalName());
+                ->performedOn($fileModel)
+                ->causedBy(auth()->user())
+                ->log('uploaded file: ' . $file->getClientOriginalName());
 
             $uploadedFileNames[] = $file->getClientOriginalName();
             $uploadedCount++;

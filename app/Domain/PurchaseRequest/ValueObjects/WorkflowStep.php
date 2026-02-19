@@ -6,13 +6,13 @@ namespace App\Domain\PurchaseRequest\ValueObjects;
 
 /**
  * Value Object representing a Purchase Request workflow step.
- * 
+ *
  * **Purpose:**
  * - Provides type-safe workflow step representation
  * - Maps role slugs to approver types for item-level approvals
  * - Encapsulates business rules about workflow progression
  * - Single source of truth for step identifiers
- * 
+ *
  * **Use Cases:**
  * - Determining which database column to update for item approvals
  * - Checking if a step requires item-level review
@@ -22,12 +22,17 @@ final class WorkflowStep
 {
     // Step identifiers (constants eliminate magic numbers)
     private const DEPT_HEAD = 1;
+
     private const GM = 2;
+
     private const VERIFICATOR = 3;
+
     private const DIRECTOR = 4;
+
     private const ACCOUNTING = 5;
+
     private const COMPLETED = 6;
-    
+
     // Steps that require item-level approval
     private const ITEM_APPROVAL_STEPS = [
         self::DEPT_HEAD,
@@ -46,7 +51,7 @@ final class WorkflowStep
     {
         return new self(self::DEPT_HEAD, 'Department Head Review', 'pr-dept-head');
     }
-    
+
     public static function gm(): self
     {
         return new self(self::GM, 'GM Review', 'pr-gm');
@@ -116,7 +121,7 @@ final class WorkflowStep
     /**
      * Get the approver type for item-level approvals.
      * This maps to the database column prefix (e.g., 'head' => 'is_approve_by_head').
-     * 
+     *
      * @return string|null The approver type, or null if this step doesn't approve items
      */
     public function approverType(): ?string
@@ -132,22 +137,22 @@ final class WorkflowStep
 
     /**
      * Check if this step requires item-level approval.
-     * 
+     *
      * **Item Approval Policy:**
      * - Purchaser and Accounting can approve PRs directly without reviewing items
      * - All other roles (Head, GM, Verificator, Director) must review items
-     * 
+     *
      * @return bool True if this step requires item approvals before PR approval
      */
     public function requiresItemApproval(): bool
     {
         // Roles that can skip item approval
         $skipItemApproval = ['pr-purchaser'];
-        
+
         if (in_array($this->roleSlug, $skipItemApproval)) {
             return false;
         }
-        
+
         // All other configured steps require item approval
         return in_array($this->value, self::ITEM_APPROVAL_STEPS);
     }
