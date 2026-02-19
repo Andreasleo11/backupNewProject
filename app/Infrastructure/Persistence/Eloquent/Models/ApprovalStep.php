@@ -32,6 +32,7 @@ class ApprovalStep extends Model
         'acted_by',
         'acted_at',
         'remarks',
+        'return_reason',
         'user_signature_id',
         'signature_image_path',
         'signature_sha256',

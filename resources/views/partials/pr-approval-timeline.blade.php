@@ -30,6 +30,7 @@
                     // Colors
                     $dotColor = match(true) {
                         $isCompleted => 'bg-emerald-500 ring-emerald-100',
+                        $isCurrent && $approval->status == 'RETURNED' => 'bg-orange-500 ring-orange-100', // Returned
                         $isCurrent => 'bg-white border-2 border-indigo-600 ring-indigo-50',
                         $approval->status == 'REJECTED' && $isCurrent => 'bg-rose-500 ring-rose-100', // If rejected at this step
                         default => 'bg-slate-200 ring-slate-50',
@@ -37,6 +38,7 @@
                     
                     $icon = match(true) {
                         $isCompleted => '<i class="bi bi-check text-white text-xs"></i>',
+                        $isCurrent && $approval->status == 'RETURNED' => '<i class="bi bi-arrow-return-left text-white text-xs"></i>',
                         $isCurrent => '<div class="h-2 w-2 rounded-full bg-indigo-600"></div>',
                         default => '',
                     };
@@ -68,19 +70,32 @@
                                     {{ \Carbon\Carbon::parse($step->acted_at)->format('d M Y, H:i') }}
                                 </span>
                             @elseif($isCurrent)
-                                <div class="mt-2 flex items-center gap-1.5">
-                                    <span class="relative flex h-2 w-2">
-                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                      <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                @if($approval->status == 'RETURNED')
+                                    <span class="mt-1 text-[10px] font-bold text-orange-600">
+                                        Returned for Revision
                                     </span>
-                                    <span class="text-[10px] font-medium text-indigo-500">Awaiting Action</span>
-                                </div>
+                                @else
+                                    <div class="mt-2 flex items-center gap-1.5">
+                                        <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                        </span>
+                                        <span class="text-[10px] font-medium text-indigo-500">Awaiting Action</span>
+                                    </div>
+                                @endif
                             @endif
                             
                             {{-- Specific comments if any --}}
                             @if($step->remarks)
                                 <div class="mt-2 rounded-lg bg-slate-50 p-2 text-[10px] italic text-slate-600 border border-slate-100">
                                     "{{ $step->remarks }}"
+                                </div>
+                            @endif
+
+                            {{-- Return Reason --}}
+                            @if($step->return_reason)
+                                <div class="mt-2 rounded-lg bg-orange-50 p-2 text-[10px] text-orange-800 border border-orange-100">
+                                    <span class="font-bold">Reason:</span> "{{ $step->return_reason }}"
                                 </div>
                             @endif
                         </div>
@@ -106,6 +121,16 @@
                 </div>
                 <div class="pt-1">
                     <p class="text-xs font-bold text-rose-700">Request Rejected</p>
+                </div>
+             </div>
+        @elseif($approval->status == 'RETURNED')
+             <div class="relative flex gap-4 mt-8">
+                 <div class="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-500 ring-4 ring-orange-100">
+                    <i class="bi bi-arrow-return-left text-white text-xs"></i>
+                </div>
+                <div class="pt-1">
+                    <p class="text-xs font-bold text-orange-700">Returned for Revision</p>
+                    <p class="text-[10px] text-slate-500">Please check comments and resubmit.</p>
                 </div>
              </div>
         @endif

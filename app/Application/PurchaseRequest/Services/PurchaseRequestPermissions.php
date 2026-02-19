@@ -39,10 +39,10 @@ final class PurchaseRequestPermissions
             || $user->hasRole('pr-purchaser') // mapped from PURCHASER
             || $pr->from_department === 'MOULDING';
 
-        // 5. Sign & Submit: only the creator can sign & submit their own DRAFT
+        // 5. Sign & Submit: only the creator can sign & submit their own DRAFT, RETURNED, or REJECTED PR
         $isCreator = (int) $user->id === (int) $pr->user_id_create;
-        $isDraft = $pr->workflow_status === 'DRAFT';
-        $canSignAndSubmit = $isCreator && $isDraft;
+        $allowedStatuses = ['DRAFT', 'RETURNED', 'REJECTED'];
+        $canSignAndSubmit = $isCreator && in_array($pr->workflow_status, $allowedStatuses);
 
         // 6. Has a saved default signature (needed to enable Sign & Submit)
         $defaultSig = $canSignAndSubmit

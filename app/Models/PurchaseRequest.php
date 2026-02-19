@@ -297,7 +297,7 @@ class PurchaseRequest extends Model implements Approvable
      */
     public function resetItemApprovals(): void
     {
-        $this->detail()->update([
+        $this->itemDetail()->update([
             'is_approve_by_head' => null,
             'is_approve_by_gm' => null,
             'is_approve_by_verificator' => null,

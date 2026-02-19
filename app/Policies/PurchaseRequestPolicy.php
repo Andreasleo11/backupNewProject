@@ -61,10 +61,19 @@ class PurchaseRequestPolicy
     public function update(User $user, PurchaseRequest $pr): bool
     {
         if ($user->can('pr.edit')) {
-            // Standard edit rule: Only draft (status 1)
-            if ($pr->status === 1) {
-                // Must be creator or have specific permission
+            // Standard edit rule: DRAFT, RETURNED, or REJECTED
+            // We check workflow_status for modern flow, fall back to status for legacy if needed
+            $allowed = ['DRAFT', 'RETURNED', 'REJECTED'];
+            $status = $pr->workflow_status ?? 'DRAFT';
+            
+            if (in_array($status, $allowed)) {
+                // Must be creator
                 return $user->id === $pr->user_id_create;
+            }
+            
+            // Legacy fallback (status 1 = draft)
+            if ($pr->status === 1) {
+                 return $user->id === $pr->user_id_create;
             }
         }
 
