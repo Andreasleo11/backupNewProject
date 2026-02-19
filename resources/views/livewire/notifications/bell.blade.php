@@ -2,7 +2,7 @@
     {{-- Bell button --}}
     <button type="button"
             @click="open = !open"
-            class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all duration-300">
+            class="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all duration-300 active:scale-95">
 
         {{-- Bell icon --}}
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
@@ -14,7 +14,8 @@
         {{-- Unread badge --}}
         @if ($unreadCount > 0)
             <span class="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full
-                         bg-rose-500 px-1 text-[9px] font-black text-white ring-2 ring-white animate-bounce">
+                         bg-gradient-to-r from-rose-500 to-pink-600 shadow-lg shadow-rose-500/40
+                         px-1 text-[9px] font-black text-white ring-2 ring-white animate-pulse">
                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
             </span>
         @endif
@@ -28,8 +29,8 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-         class="absolute right-0 mt-3 w-80 rounded-2xl bg-white/95 backdrop-blur-xl
-                border border-slate-200/60 shadow-2xl shadow-blue-900/10 p-2 z-[60]">
+         class="absolute right-0 mt-3 w-80 rounded-2xl bg-white/90 backdrop-blur-xl
+                border border-slate-200/60 shadow-2xl shadow-blue-900/10 p-2 z-[60] ring-1 ring-black/5">
 
         {{-- Header --}}
         <div class="flex items-center justify-between px-3 py-3 border-b border-slate-100 mb-1">
@@ -65,18 +66,12 @@
             <ul class="max-h-96 overflow-y-auto custom-scrollbar space-y-0.5">
                 @foreach ($notifications as $n)
                     @php
-                        // Category → dot color + icon bg tones
-                        $dotColor = match($n['category']) {
-                            'success' => 'bg-emerald-500',
-                            'danger'  => 'bg-rose-500',
-                            'warning' => 'bg-amber-500',
-                            default   => 'bg-blue-500',
-                        };
-                        $dotGlow = match($n['category']) {
-                            'success' => 'shadow-[0_0_8px_rgba(16,185,129,0.6)]',
-                            'danger'  => 'shadow-[0_0_8px_rgba(239,68,68,0.6)]',
-                            'warning' => 'shadow-[0_0_8px_rgba(245,158,11,0.6)]',
-                            default   => 'shadow-[0_0_8px_rgba(99,102,241,0.6)]',
+                        // Category → gradient icon container
+                        $iconBg = match($n['category']) {
+                            'success' => 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-200',
+                            'danger'  => 'bg-gradient-to-br from-rose-500 to-pink-600 shadow-rose-200',
+                            'warning' => 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-200',
+                            default   => 'bg-gradient-to-br from-blue-500 to-violet-600 shadow-blue-200',
                         };
                     @endphp
 
@@ -90,22 +85,29 @@
                                     });
                                     open = false;
                                 "
-                                class="group flex w-full items-start gap-3 p-3 text-left rounded-xl transition-all duration-200
-                                       {{ $n['is_unread'] ? 'bg-blue-50/50 hover:bg-blue-50' : 'hover:bg-slate-50' }}">
+                                class="group flex w-full items-start gap-3 p-2.5 text-left rounded-xl transition-all duration-200
+                                       {{ $n['is_unread'] ? 'bg-blue-50/60 hover:bg-blue-50' : 'hover:bg-slate-50' }}">
 
-                            {{-- Category dot --}}
-                            <div class="relative shrink-0 mt-1.5">
-                                <div class="h-2 w-2 rounded-full transition-all duration-300
-                                            {{ $n['is_unread'] ? $dotColor . ' ' . $dotGlow . ' animate-pulse' : 'bg-slate-300' }}">
+                            {{-- Category icon container --}}
+                            <div class="relative shrink-0 mt-0.5">
+                                <div class="h-8 w-8 rounded-lg flex items-center justify-center text-white shadow-lg {{ $iconBg }}">
+                                    <i class="{{ $n['icon'] }} text-xs"></i>
                                 </div>
+                                {{-- Small Unread Pulse Dot (absolute on top of icon) --}}
+                                @if($n['is_unread'])
+                                    <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 ring-2 ring-white"></span>
+                                    </span>
+                                @endif
                             </div>
 
-                            <div class="flex-1 min-w-0">
-                                <div class="text-[11px] font-bold text-slate-800 leading-tight group-hover:text-blue-950 truncate">
+                            <div class="flex-1 min-w-0 pt-0.5">
+                                <div class="text-[11px] font-bold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors truncate">
                                     {{ $n['title'] }}
                                 </div>
                                 @if (!empty($n['message']))
-                                    <p class="mt-0.5 text-[11px] text-slate-500 line-clamp-2 leading-normal">
+                                    <p class="mt-0.5 text-[11px] text-slate-500 line-clamp-2 leading-normal group-hover:text-slate-600">
                                         {{ $n['message'] }}
                                     </p>
                                 @endif
