@@ -37,6 +37,9 @@ class PurchaseRequestApprovedNotification extends Notification implements Should
             'title'      => 'Purchase Request Approved',
             'message'    => "Purchase Request #{$this->purchaseRequest->pr_no} has been fully approved.",
             'action_url' => route('purchase-requests.show', $this->purchaseRequest->id),
+            'icon'       => 'bx bx-check-circle',
+            'category'   => 'success',
+            // domain extras
             'pr_id'      => $this->purchaseRequest->id,
         ];
     }
