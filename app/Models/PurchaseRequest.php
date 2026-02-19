@@ -44,8 +44,19 @@ class PurchaseRequest extends Model implements Approvable
             ->with('causer')
             ->get();
 
-        // 4. Merge & Sort desc
-        return $prLogs->concat($itemLogs)->concat($fileLogs)->sortByDesc('created_at');
+        // 4. Get Approval Actions
+        $approvalActions = collect();
+        if ($this->approvalRequest) {
+            $approvalActions = $this->approvalRequest->actions()
+                ->with('causer')
+                ->get();
+        }
+
+        // 5. Merge & Sort desc
+        return $prLogs->concat($itemLogs)
+                      ->concat($fileLogs)
+                      ->concat($approvalActions)
+                      ->sortByDesc('created_at');
     }
 
     public function getActivitylogOptions(): LogOptions
