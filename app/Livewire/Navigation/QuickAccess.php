@@ -53,6 +53,17 @@ class QuickAccess extends Component
         $this->dispatch('pin-state-changed', routeName: $routeName, pinned: false);
     }
 
+    /**
+     * Remove a tracked (non-pinned) item by deleting its visit record.
+     */
+    #[On('nav-remove-visit')]
+    public function removeVisit(string $routeName): void
+    {
+        UserPageVisit::where('user_id', Auth::id())
+            ->where('route_name', $routeName)
+            ->delete();
+    }
+
     public function render()
     {
         $items = NavigationService::getQuickAccessItems(Auth::user());
