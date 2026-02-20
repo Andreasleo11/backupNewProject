@@ -4,6 +4,7 @@ use App\Http\Controllers\SuperAdminHomeController;
 use App\Livewire\Admin\Approvals\RuleManager;
 use Illuminate\Support\Facades\Route;
 
+
 Route::middleware(['auth', 'role:super-admin'])->group(function () {
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
     Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
@@ -18,7 +19,7 @@ Route::middleware(['auth', 'role:super-admin'])->group(function () {
             Route::view('/employees', 'admin.employees.index')->name('employees.index');
 
             Route::get('/approval-rules', RuleManager::class)->name('approval-rules.index');
-            Route::get('/nav-visibility', \App\Livewire\Admin\NavVisibilityManager::class)->name('nav-visibility.index');
+
         });
     });
 });
