@@ -127,4 +127,12 @@ class PurchaseRequestPolicy
     {
         return $user->can('pr.upload-files');
     }
+
+    /**
+     * Determine if user can perform batch approval/rejection.
+     */
+    public function batchApprove(User $user): bool
+    {
+        return $user->can('pr.batch-approve');
+    }
 }

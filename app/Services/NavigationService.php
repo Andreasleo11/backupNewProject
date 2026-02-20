@@ -207,9 +207,9 @@ class NavigationService
                 'children' => [
                     [
                         'label' => 'Purchase Requests',
-                        'route' => auth()->check() && auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
+                        'route' => 'purchase-requests.index',
                         'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
+                        'active' => request()->routeIs('purchase-requests.*'),
                         'permission' => 'pr.view-any',
                     ],
                     [

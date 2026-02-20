@@ -56,6 +56,14 @@ Route::middleware('auth')->group(function () {
     // Route::post('purchase-requests/reject-selected', [PurchaseRequestController::class, 'rejectSelected'])->name('purchase_requests.reject_selected');
     Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
 
+    // Batch approve / reject — requires 'pr.batch-approve' permission (director-level only)
+    Route::put('purchase-requests/batch-approve', [PurchaseRequestController::class, 'batchApprove'])
+        ->middleware('can:pr.batch-approve')
+        ->name('purchase-requests.batch-approve');
+    Route::put('purchase-requests/batch-reject', [PurchaseRequestController::class, 'batchReject'])
+        ->middleware('can:pr.batch-approve')
+        ->name('purchase-requests.batch-reject');
+
     // Purchase Request Details
     Route::get('/purchaseRequestsDetail/{id}', [DetailPurchaseRequestController::class, 'detailpr'])->name('pr.detail');
     Route::get('/purchaseRequestsDetailDirector/{id}', [DirectorPurchaseRequestController::class, 'detailpr'])->name('director.pr.detail');
@@ -68,7 +76,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/accounting/pr/reject', [AccountingPurchaseRequestController::class, 'reject'])->name('accounting.pr.reject');
     Route::post('/accounting/pr/approval/all', [AccountingPurchaseRequestController::class, 'approvalAll'])->name('accounting.pr.approve.all');
     Route::get('/accounting/pr/index', [AccountingPurchaseRequestController::class, 'index'])->name('accounting.purchase-request');
-    Route::get('/director/pr', [DirectorPurchaseRequestController::class, 'index'])->name('director.pr.index');
 
     // Purchase Orders
     Route::get('purchaseOrders', [PurchaseOrderController::class, 'index'])->name('po.index');

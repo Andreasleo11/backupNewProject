@@ -10,6 +10,8 @@ use App\Application\PurchaseRequest\Queries\GetPurchaseRequestDetail;
 use App\Application\PurchaseRequest\Services\MasterPrItemService;
 use App\Application\PurchaseRequest\Services\PurchaseRequestItemFilter;
 use App\Application\PurchaseRequest\UseCases\ApprovePurchaseRequest as ApprovePR;
+use App\Application\PurchaseRequest\UseCases\BatchApprovePurchaseRequests;
+use App\Application\PurchaseRequest\UseCases\BatchRejectPurchaseRequests;
 use App\Application\PurchaseRequest\UseCases\RejectPurchaseRequest as RejectPR;
 use App\Application\PurchaseRequest\UseCases\ReturnPurchaseRequest;
 use App\Application\Signature\UseCases\GetDefaultActiveUserSignature;
@@ -36,6 +38,8 @@ class PurchaseRequestController extends Controller
         private MasterPrItemService $masterPrService,
         private ReturnPurchaseRequest $returnUseCase,
         private GetDefaultActiveUserSignature $getDefaultSignature,
+        private BatchApprovePurchaseRequests $batchApproveUseCase,
+        private BatchRejectPurchaseRequests $batchRejectUseCase,
         private \App\Domain\PurchaseRequest\Services\PurchaseRequestApprovalContextBuilder $contextBuilder,
     ) {}
 
@@ -99,7 +103,10 @@ class PurchaseRequestController extends Controller
         // Get stats for dashboard
         $stats = $statsQuery->execute();
 
-        return $dataTable->render('purchase-requests.index', compact('stats'));
+        // Determine if the user can batch-approve/reject PRs (separate from individual pr.approve)
+        $canBatchApprove = Auth::user()->can('pr.batch-approve');
+
+        return $dataTable->render('purchase-requests.index', compact('stats', 'canBatchApprove'));
     }
 
     public function create()
@@ -520,9 +527,6 @@ class PurchaseRequestController extends Controller
         $request->validate(['reason' => 'required|string|max:500']);
 
         try {
-            // Use same gate as approve/reject for now
-            // $this->authorize('approve', $purchaseRequest);
-
             $this->returnUseCase->handle(new ReturnPurchaseRequestDTO(
                 purchaseRequestId: (int) $purchaseRequest->id,
                 actorUserId: (int) auth()->id(),
@@ -537,5 +541,58 @@ class PurchaseRequestController extends Controller
                 ->back()
                 ->with(['error' => $e->getMessage()]);
         }
+    }
+
+    /**
+     * Batch approve multiple PRs at once.
+     * Requires 'pr.batch-approve' permission — separate from individual 'pr.approve'.
+     */
+    public function batchApprove(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('batch-approve', PurchaseRequest::class);
+
+        $ids = $request->input('ids', []);
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $result = $this->batchApproveUseCase->handle($ids, $userId);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'approved' => $result['approved'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
+        ]);
+    }
+
+    /**
+     * Batch reject multiple PRs at once.
+     * Requires 'pr.batch-approve' permission — separate from individual 'pr.approve'.
+     */
+    public function batchReject(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('batch-approve', PurchaseRequest::class);
+
+        $ids = $request->input('ids', []);
+        $rejectionReason = $request->input('rejection_reason', '');
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+        }
+
+        $result = $this->batchRejectUseCase->handle($ids, $userId, $rejectionReason);
+
+        return response()->json([
+            'success' => $result['success'],
+            'message' => $result['message'],
+            'rejected' => $result['rejected'],
+            'failed' => $result['failed'],
+            'errors' => $result['errors'],
+        ]);
     }
 }

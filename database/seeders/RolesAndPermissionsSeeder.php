@@ -58,6 +58,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'pr.cancel',
             'pr.submit',
             'pr.approve',
+            'pr.batch-approve',  // bulk approve/reject multiple PRs at once (director-level)
 
             // Approval engine
             'approval.view-log',
@@ -126,24 +127,24 @@ class RolesAndPermissionsSeeder extends Seeder
             ],
 
             'pr-director' => [
-                'pr.view-any', 'pr.approve', 'approval.view-log',
+                'pr.view-any', 'pr.approve', 'pr.batch-approve',
             ],
 
             'pr-admin' => [
-                'pr.view-any', 'approval.manage-rules', 'approval.view-log',
+                'pr.view-any', 'pr.batch-approve', 'approval.manage-rules', 'approval.view-log',
             ],
 
             // === Company management ===
             'director' => [
-                'pr.view-any', 'pr.approve', 'approval.view-log',
+                'pr.view-any', 'pr.approve', 'pr.batch-approve', 'approval.view-log',
             ],
 
             'general-manager-jakarta' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve', 'approval.view-log',
+                'pr.view-dept', 'pr.view-any', 'pr.approve', 'pr.batch-approve', 'approval.view-log',
             ],
 
             'general-manager-karawang' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve', 'approval.view-log',
+                'pr.view-dept', 'pr.view-any', 'pr.approve', 'pr.batch-approve', 'approval.view-log',
             ],
 
             'head-management' => [

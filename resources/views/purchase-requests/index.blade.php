@@ -23,21 +23,63 @@
                     <span>Export</span>
                 </a>
 
-                {{-- Create PR (Role Check) --}}
-                @if (Auth::user()->specification?->name !== 'DIRECTOR' && !Auth::user()->hasRole('director'))
+            {{-- Create PR button — shown to users who can create PRs --}}
+                @can('pr.create')
                     <a href="{{ route('purchase-requests.create') }}"
                        class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:-translate-y-0.5">
                         <i class="bi bi-plus-lg text-lg"></i>
                         <span>New Request</span>
                     </a>
-                @endif
+                @endcan
             </div>
         </div>
 
         {{-- STATS DASHBOARD --}}
         @include('partials.pr-stats-cards', ['stats' => $stats])
 
-        {{-- DATATABLE CARD --}}
+        {{-- BATCH ACTIONS — only visible to users with pr.batch-approve permission --}}
+        @if($canBatchApprove)
+            <div class="glass-card p-4 flex flex-wrap items-center gap-3" id="batch-action-bar">
+                <span class="text-sm font-medium text-slate-600">
+                    <i class="bi bi-check2-square me-1"></i>
+                    Director Actions:
+                </span>
+
+                {{-- Approve Selected --}}
+                <button id="batch-approve-btn"
+                        data-url="{{ route('purchase-requests.batch-approve') }}"
+                        class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5">
+                    <i class="bi bi-check-lg"></i>
+                    Approve Selected
+                </button>
+
+                {{-- Reject Selected --}}
+                <button id="batch-reject-btn"
+                        data-url="{{ route('purchase-requests.batch-reject') }}"
+                        class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition-all hover:-translate-y-0.5">
+                    <i class="bi bi-x-lg"></i>
+                    Reject Selected
+                </button>
+
+                <span class="text-xs text-slate-400 ml-auto" id="batch-selection-count">No items selected</span>
+
+                {{-- Reject reason input (hidden until reject clicked) --}}
+                <div id="batch-reject-reason-wrapper" class="hidden w-full mt-2 flex items-center gap-3">
+                    <input type="text" id="batch-reject-reason"
+                           placeholder="Rejection reason (required)"
+                           class="flex-1 rounded-xl border border-rose-200 bg-rose-50/50 px-4 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-400">
+                    <button id="batch-reject-confirm-btn"
+                            class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 transition-all">
+                        Confirm Reject
+                    </button>
+                    <button id="batch-reject-cancel-btn"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-all">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        @endif
+
         <div class="glass-card overflow-hidden p-1">
             <div class="rounded-xl bg-white/50 p-4">
                 {{-- Tips/Info --}}
@@ -121,5 +163,186 @@
 @push('scripts')
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{ $dataTable->scripts() }}
+
+    @if($canBatchApprove)
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Helper function to get checked IDs
+            const getSelectedIds = () => {
+                const checkboxes = document.querySelectorAll('tbody input.pr-checkbox:checked');
+                return Array.from(checkboxes).map(cb => cb.value);
+            };
+
+            // Update selection count text
+            const updateSelectionCount = () => {
+                const count = document.querySelectorAll('tbody input.pr-checkbox:checked').length;
+                const countLabel = document.getElementById('batch-selection-count');
+                const btnApprove = document.getElementById('batch-approve-btn');
+                const btnReject = document.getElementById('batch-reject-btn');
+
+                if(count > 0) {
+                    countLabel.textContent = `${count} item${count > 1 ? 's' : ''} selected`;
+                    countLabel.classList.remove('text-slate-400');
+                    countLabel.classList.add('text-indigo-600', 'font-semibold');
+                    btnApprove.disabled = false;
+                    btnReject.disabled = false;
+                    btnApprove.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnReject.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    countLabel.textContent = 'No items selected';
+                    countLabel.classList.remove('text-indigo-600', 'font-semibold');
+                    countLabel.classList.add('text-slate-400');
+                    btnApprove.disabled = true;
+                    btnReject.disabled = true;
+                    btnApprove.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnReject.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            };
+
+            // Use event delegation for checkboxes, as DataTable redraws them
+            document.querySelector('.premium-datatable-wrapper').addEventListener('change', function(e) {
+                if(e.target.classList.contains('pr-checkbox')) {
+                    updateSelectionCount();
+                }
+                
+                // Handle "Check All" if it exists
+                if(e.target.id === 'check-all-prs') {
+                    const isChecked = e.target.checked;
+                    document.querySelectorAll('tbody input.pr-checkbox').forEach(cb => {
+                        cb.checked = isChecked;
+                    });
+                    updateSelectionCount();
+                }
+            });
+
+            // Handle DataTable draw events to reset selection UI
+            window.LaravelDataTables["purchaserequests-table"].on('draw', function() {
+                updateSelectionCount();
+                const checkAll = document.getElementById('check-all-prs');
+                if(checkAll) checkAll.checked = false;
+            });
+
+            // Initial UI state setup
+            updateSelectionCount();
+
+            // Setup bulk Action Request function
+            const performBulkAction = (url, data, successCallback) => {
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait while we process your request.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        if (successCallback) successCallback();
+                        window.LaravelDataTables["purchaserequests-table"].ajax.reload(null, false);
+                        updateSelectionCount();
+                    } else {
+                        throw new Error(data.message || 'An error occurred during processing.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Action failed:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: error.message || 'Something went wrong!',
+                    });
+                });
+            };
+
+            // ====== Approve Selected ======
+            document.getElementById('batch-approve-btn').addEventListener('click', function() {
+                const ids = getSelectedIds();
+                if(ids.length === 0) return;
+
+                Swal.fire({
+                    title: 'Approve Selected?',
+                    text: `You are about to approve ${ids.length} purchase request(s).`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#059669', // emerald-600
+                    cancelButtonColor: '#64748b',  // slate-500
+                    confirmButtonText: 'Yes, approve them'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        performBulkAction(this.dataset.url, { ids: ids });
+                    }
+                });
+            });
+
+            // ====== Reject Selected UI logic ======
+            const wrapper = document.getElementById('batch-reject-reason-wrapper');
+            const rejectBtn = document.getElementById('batch-reject-btn');
+            const approveBtn = document.getElementById('batch-approve-btn');
+            const confirmRejectBtn = document.getElementById('batch-reject-confirm-btn');
+            const cancelRejectBtn = document.getElementById('batch-reject-cancel-btn');
+            const reasonInput = document.getElementById('batch-reject-reason');
+
+            rejectBtn.addEventListener('click', function() {
+                if(getSelectedIds().length === 0) return;
+                
+                // Show inline reason input
+                wrapper.classList.remove('hidden');
+                rejectBtn.classList.add('hidden');
+                approveBtn.classList.add('hidden');
+                reasonInput.focus();
+            });
+
+            cancelRejectBtn.addEventListener('click', function() {
+                wrapper.classList.add('hidden');
+                rejectBtn.classList.remove('hidden');
+                approveBtn.classList.remove('hidden');
+                reasonInput.value = ''; // clear
+            });
+
+            confirmRejectBtn.addEventListener('click', function() {
+                const ids = getSelectedIds();
+                const reason = reasonInput.value.trim();
+
+                if(ids.length === 0) return;
+                if(!reason) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Reason Required',
+                        text: 'Please provide a reason for rejecting the selected requests.'
+                    });
+                    reasonInput.focus();
+                    return;
+                }
+
+                performBulkAction(rejectBtn.dataset.url, {
+                    ids: ids,
+                    rejection_reason: reason
+                }, () => {
+                    // Success callback
+                    cancelRejectBtn.click(); // Hide reason input
+                });
+            });
+        });
+    </script>
+    @endif
 @endpush
