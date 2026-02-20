@@ -225,6 +225,7 @@
                         flyoutTimer: null,
                         myIdx: 'gr-{{ $loop->index }}'
                     }"
+                    x-init="if (open) $nextTick(() => $el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }))"
                     :class="sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }} ? 'flex flex-col items-center' : ''"
                     @mouseenter="
                         if (!{{ $isMobile ? 'true' : 'false' }}) {

@@ -698,28 +698,17 @@ class NavigationService
     }
 
     /**
-     * Apply smart defaults for collapsible sections
+     * Auto-expand groups that contain the currently active page.
+     * All other groups default to collapsed.
      */
     private static function applySmartDefaults(array $menu, $user): array
     {
-        $userRoles = $user->getRoleNames()->toArray();
-
         foreach ($menu as &$item) {
-            if ($item['type'] === 'group') {
-                // Auto-expand based on user role
-                $autoExpandRoles = [
-                    'Administration' => ['admin', 'super-admin'],
-                    'Procurement' => ['procurement', 'manager'],
-                    'Finance & Accounting' => ['finance', 'accounting', 'manager'],
-                    'Operations' => ['operations', 'logistics', 'manager'],
-                    'Performance & Evaluation' => ['hr', 'manager'],
-                ];
+            if ($item['type'] === 'group' && isset($item['children'])) {
+                $hasActiveChild = collect($item['children'])
+                    ->contains(fn($child) => $child['active'] ?? false);
 
-                if (isset($autoExpandRoles[$item['label']])) {
-                    $item['defaultOpen'] = ! empty(array_intersect($userRoles, $autoExpandRoles[$item['label']]));
-                } else {
-                    $item['defaultOpen'] = false; // Default collapsed
-                }
+                $item['defaultOpen'] = $hasActiveChild;
             }
         }
 
