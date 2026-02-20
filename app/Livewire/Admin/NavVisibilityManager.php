@@ -151,26 +151,63 @@ class NavVisibilityManager extends Component
 
     // ── Render ───────────────────────────────────────────────────────────
 
+    // ── Search ──────────────────────────────────────────────────────────
+    public string $menuSearch = '';
+
     public function getAllMenuItems(): array
     {
-        // Flatten NavigationService menu into route→label pairs for display
-        $user = auth()->user();
-        // Use the raw (pre-filtered) full menu for super-admin to see all items
-        $nav  = \App\Services\NavigationService::getPersonalizedMenu();
+        // 1. Get base menu
+        $nav = \App\Services\NavigationService::getPersonalizedMenu();
 
+        // 2. Flatten into displayable items
         $items = [];
         foreach ($nav as $item) {
+            // Single items
             if (($item['type'] ?? '') === 'single' && isset($item['route'])) {
-                $items[] = ['route' => $item['route'], 'label' => $item['label'], 'group' => null];
+                $items[] = [
+                    'route' => $item['route'],
+                    'label' => $item['label'],
+                    'group' => 'General', // Default group for top-level singles
+                    'icon'  => $item['icon'] ?? 'circle',
+                ];
             }
+            // Groups
             if (($item['type'] ?? '') === 'group') {
                 foreach ($item['children'] ?? [] as $child) {
-                    $items[] = ['route' => $child['route'], 'label' => $child['label'], 'group' => $item['label']];
+                    if (isset($child['route'])) {
+                        $items[] = [
+                            'route' => $child['route'],
+                            'label' => $child['label'],
+                            'group' => $item['label'],
+                            'icon'  => $child['icon'] ?? 'circle',
+                        ];
+                    }
                 }
             }
         }
 
-        return $items;
+        $collection = collect($items);
+
+        // 3. Apply Search
+        if ($this->menuSearch) {
+            $term = strtolower($this->menuSearch);
+            $collection = $collection->filter(fn($i) => 
+                str_contains(strtolower($i['label']), $term) || 
+                str_contains(strtolower($i['route']), $term) ||
+                str_contains(strtolower($i['group']), $term)
+            );
+        }
+
+        // 4. Attach Assignment Counts
+        // Fetch counts for all routes in one query
+        $counts = NavMenuAssignment::selectRaw('route_name, count(*) as count')
+            ->groupBy('route_name')
+            ->pluck('count', 'route_name');
+
+        return $collection->map(function ($item) use ($counts) {
+            $item['assignment_count'] = $counts[$item['route']] ?? 0;
+            return $item;
+        })->values()->toArray();
     }
 
     public function render()
