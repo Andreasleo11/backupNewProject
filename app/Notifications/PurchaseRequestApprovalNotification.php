@@ -42,14 +42,14 @@ class PurchaseRequestApprovalNotification extends Notification implements Should
     public function toArray(object $notifiable): array
     {
         return [
-            'title'      => 'Purchase Request — Action Required',
-            'message'    => "Purchase Request #{$this->purchaseRequest->pr_no} is awaiting your approval (Step {$this->step->sequence}).",
+            'title' => 'Purchase Request — Action Required',
+            'message' => "Purchase Request #{$this->purchaseRequest->pr_no} is awaiting your approval (Step {$this->step->sequence}).",
             'action_url' => route('purchase-requests.show', $this->purchaseRequest->id),
-            'icon'       => 'bx bx-bell-ring',
-            'category'   => 'info',
+            'icon' => 'bx bx-bell-ring',
+            'category' => 'info',
             // domain extras (surfaced in meta / modal)
-            'pr_id'          => $this->purchaseRequest->id,
-            'step_sequence'  => $this->step->sequence,
+            'pr_id' => $this->purchaseRequest->id,
+            'step_sequence' => $this->step->sequence,
         ];
     }
 }

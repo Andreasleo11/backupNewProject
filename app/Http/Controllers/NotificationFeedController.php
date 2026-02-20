@@ -34,12 +34,12 @@ class NotificationFeedController extends Controller
             ->get()
             ->map(function ($n) {
                 return [
-                    'id'         => $n->id,
-                    'type'       => class_basename($n->type),
-                    'title'      => data_get($n->data, 'title', 'Notification'),
-                    'body'       => data_get($n->data, 'message', data_get($n->data, 'body', '')),
-                    'url'        => data_get($n->data, 'action_url', data_get($n->data, 'url', null)),
-                    'read_at'    => optional($n->read_at)->toIso8601String(),
+                    'id' => $n->id,
+                    'type' => class_basename($n->type),
+                    'title' => data_get($n->data, 'title', 'Notification'),
+                    'body' => data_get($n->data, 'message', data_get($n->data, 'body', '')),
+                    'url' => data_get($n->data, 'action_url', data_get($n->data, 'url', null)),
+                    'read_at' => optional($n->read_at)->toIso8601String(),
                     'created_at' => $n->created_at->toIso8601String(),
                 ];
             });
@@ -71,4 +71,3 @@ class NotificationFeedController extends Controller
         return response()->json(['ok' => true]);
     }
 }
-

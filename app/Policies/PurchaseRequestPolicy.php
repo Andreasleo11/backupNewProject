@@ -65,15 +65,15 @@ class PurchaseRequestPolicy
             // We check workflow_status for modern flow, fall back to status for legacy if needed
             $allowed = ['DRAFT', 'RETURNED', 'REJECTED'];
             $status = $pr->workflow_status ?? 'DRAFT';
-            
+
             if (in_array($status, $allowed)) {
                 // Must be creator
                 return $user->id === $pr->user_id_create;
             }
-            
+
             // Legacy fallback (status 1 = draft)
             if ($pr->status === 1) {
-                 return $user->id === $pr->user_id_create;
+                return $user->id === $pr->user_id_create;
             }
         }
 

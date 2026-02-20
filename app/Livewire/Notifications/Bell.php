@@ -3,7 +3,6 @@
 namespace App\Livewire\Notifications;
 
 use Illuminate\Notifications\DatabaseNotification;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -110,20 +109,20 @@ class Bell extends Component
 
         $icon = $this->firstFilled($data, ['icon']) ?? match ($category) {
             'success' => 'bx bx-check-circle',
-            'danger'  => 'bx bx-x-circle',
+            'danger' => 'bx bx-x-circle',
             'warning' => 'bx bx-error',
-            default   => 'bx bx-bell',
+            default => 'bx bx-bell',
         };
 
         return [
-            'id'        => $n->id,
-            'title'     => $title,
-            'message'   => $message,
-            'url'       => $url,
-            'icon'      => $icon,
-            'category'  => $category,
+            'id' => $n->id,
+            'title' => $title,
+            'message' => $message,
+            'url' => $url,
+            'icon' => $icon,
+            'category' => $category,
             'is_unread' => is_null($n->read_at),
-            'created_at'=> $n->created_at,
+            'created_at' => $n->created_at,
         ];
     }
 

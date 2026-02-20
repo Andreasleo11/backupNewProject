@@ -17,6 +17,7 @@ class ApprovalAction extends Model
     public function getDescriptionAttribute(): string
     {
         $desc = "changed status from {$this->from_status} to {$this->to_status}";
+
         return $desc;
     }
 
@@ -26,6 +27,7 @@ class ApprovalAction extends Model
         if ($this->remarks) {
             $attrs['remarks'] = $this->remarks;
         }
+
         return collect(['attributes' => $attrs]);
     }
 }

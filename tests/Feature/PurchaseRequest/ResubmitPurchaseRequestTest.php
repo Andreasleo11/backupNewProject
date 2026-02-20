@@ -73,7 +73,7 @@ test('creator can resubmit rejected pr', function () {
             'branch' => 'JAKARTA',
             'type' => 'office',
         ]);
-    
+
     // Create items for the PR (needed for approval rule matching)
     \App\Models\DetailPurchaseRequest::factory()->create([
         'purchase_request_id' => $pr->id,
@@ -89,7 +89,7 @@ test('creator can resubmit rejected pr', function () {
     $response->assertSessionHas('success');
 
     $pr->refresh();
-    
+
     // Should be IN_REVIEW now
     expect($pr->workflow_status)->toBe('IN_REVIEW');
     // And should have a new approval request (or reset one)
@@ -107,7 +107,7 @@ test('non-creator cannot resubmit rejected pr', function () {
     $this->actingAs($otherUser);
 
     $response = $this->post(route('purchase-requests.sign-and-submit', $pr));
-    
+
     // Should be forbidden
     expect($response->status())->toBe(403);
 });
@@ -142,12 +142,12 @@ test('creator can edit rejected pr before resubmitting', function () {
                 'price' => 100,
                 'currency' => 'IDR',
                 'purpose' => 'Test',
-            ]
-        ]
+            ],
+        ],
     ]);
 
     $response->assertRedirect(); // Redirects to show page usually
-    
+
     $pr->refresh();
     expect($pr->remark)->toBe('Fixed Remark');
     expect($pr->workflow_status)->toBe('IN_REVIEW');
@@ -159,13 +159,13 @@ test('creator can resubmit returned pr', function () {
             'user_id_create' => $this->user->id,
             'workflow_status' => 'RETURNED',
             'status' => 3, // Assuming 3 is returned/revision
-             // Required fields for context builder
+            // Required fields for context builder
             'from_department' => 'Computer',
             'to_department' => 'Purchasing',
             'branch' => 'JAKARTA',
             'type' => 'office',
         ]);
-        
+
     // Create items
     \App\Models\DetailPurchaseRequest::factory()->create([
         'purchase_request_id' => $pr->id,

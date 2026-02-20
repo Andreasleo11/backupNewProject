@@ -242,8 +242,8 @@ final class ApprovalEngine implements Approvals
         // Load PR relationship for department check (assuming 'approvable' is PurchaseRequest)
         // Since ApprovalRequest is polymorphic, we need to get the approvable.
         // Or assume $req is loaded with approvable.
-        $pr = $req->approvable; 
-        
+        $pr = $req->approvable;
+
         // Safety check: if approvable isn't loaded or isn't a PR, we might skip scoping.
         $prDeptName = $pr instanceof \App\Models\PurchaseRequest ? $pr->from_department : null;
 
@@ -252,37 +252,36 @@ final class ApprovalEngine implements Approvals
 
             if ($step->approver_type === 'user') {
                 $user = \App\Infrastructure\Persistence\Eloquent\Models\User::find($step->approver_id);
-                if ($user) $usersToNotify->push($user);
+                if ($user) {
+                    $usersToNotify->push($user);
+                }
             } else {
                 // Role-based
                 $roleUsers = $this->userRoles->getUsersWithRole((int) $step->approver_id);
-                
+
                 // Scoping Logic
                 $roleSlug = $step->approver_snapshot_role_slug;
 
                 if ($roleSlug === 'pr-dept-head' && $prDeptName) {
-                    $roleUsers->load('department'); 
+                    $roleUsers->load('department');
                     $usersToNotify = $roleUsers->filter(function ($u) use ($prDeptName) {
                         return $u->department && $u->department->name === $prDeptName;
                     });
-                }
-                elseif ($roleSlug === 'pr-gm' && $pr->branch) {
+                } elseif ($roleSlug === 'pr-gm' && $pr->branch) {
                     $roleUsers->load('employee');
                     $usersToNotify = $roleUsers->filter(function ($u) use ($pr) {
                         return $u->employee && $u->employee->branch === $pr->branch->value;
                     });
-                }
-                elseif ($roleSlug === 'pr-purchaser' && $pr->to_department) {
+                } elseif ($roleSlug === 'pr-purchaser' && $pr->to_department) {
                     $roleUsers->load('roles');
                     // Check for specific sub-role capability: pr-purchaser-{dept_slug}
                     // e.g. pr-purchaser-maintenance, pr-purchaser-computer
                     $targetRole = 'pr-purchaser-' . \Illuminate\Support\Str::slug($pr->to_department->label());
-                    
+
                     $usersToNotify = $roleUsers->filter(function ($u) use ($targetRole) {
                         return $u->hasRole($targetRole);
                     });
-                }
-                else {
+                } else {
                     // Global roles (Director, Verificator) or fallback - Notify all
                     $usersToNotify = $roleUsers;
                 }
@@ -290,7 +289,7 @@ final class ApprovalEngine implements Approvals
 
             if ($usersToNotify->isNotEmpty()) {
                 \Illuminate\Support\Facades\Notification::send(
-                    $usersToNotify, 
+                    $usersToNotify,
                     new \App\Notifications\PurchaseRequestApprovalNotification($pr, $step)
                 );
             }

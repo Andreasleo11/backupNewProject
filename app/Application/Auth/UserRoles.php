@@ -11,6 +11,7 @@ interface UserRoles
 
     /**
      * Get all users having the given role ID.
+     *
      * @return \Illuminate\Support\Collection<int, \App\Infrastructure\Persistence\Eloquent\Models\User>
      */
     public function getUsersWithRole(int $roleId): \Illuminate\Support\Collection;

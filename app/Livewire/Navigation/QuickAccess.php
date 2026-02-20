@@ -22,12 +22,15 @@ class QuickAccess extends Component
         $userId = Auth::id();
 
         // Validate route exists
-        if (! \Route::has($routeName)) return;
+        if (! \Route::has($routeName)) {
+            return;
+        }
 
         $count = UserPinnedRoute::where('user_id', $userId)->count();
 
         if ($count >= 3) {
             $this->dispatch('toast', type: 'warning', message: 'Maximum 3 pinned items allowed.');
+
             return;
         }
 
@@ -69,7 +72,7 @@ class QuickAccess extends Component
         $items = NavigationService::getQuickAccessItems(Auth::user());
 
         return view('livewire.navigation.quick-access', [
-            'items'    => $items,
+            'items' => $items,
             'isMobile' => $this->isMobile,
         ]);
     }

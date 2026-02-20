@@ -20,7 +20,7 @@ class NavPinController extends Controller
             'route_name' => ['required', 'string', 'max:120'],
         ]);
 
-        $userId    = Auth::id();
+        $userId = Auth::id();
         $routeName = $request->input('route_name');
 
         // Validate the route actually exists
@@ -46,9 +46,9 @@ class NavPinController extends Controller
         }
 
         UserPinnedRoute::create([
-            'user_id'    => $userId,
+            'user_id' => $userId,
             'route_name' => $routeName,
-            'pinned_at'  => now(),
+            'pinned_at' => now(),
         ]);
 
         return response()->json(['pinned' => true, 'count' => $currentCount + 1]);

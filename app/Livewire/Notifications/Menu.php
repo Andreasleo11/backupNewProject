@@ -74,15 +74,15 @@ final class Menu extends Component
 
         $this->selectedId = $n->id;
         $this->selected = [
-            'title'      => $p['title'],
-            'body'       => $p['body'],
-            'url'        => $p['url'] ?? null,
-            'type'       => $p['type'],
-            'icon'       => $p['icon'],
-            'category'   => $p['category'],
+            'title' => $p['title'],
+            'body' => $p['body'],
+            'url' => $p['url'] ?? null,
+            'type' => $p['type'],
+            'icon' => $p['icon'],
+            'category' => $p['category'],
             'created_at' => optional($p['created_at'])->toDateTimeString(),
-            'read_at'    => optional($p['read_at'])->toDateTimeString(),
-            'meta'       => $p['meta'],
+            'read_at' => optional($p['read_at'])->toDateTimeString(),
+            'meta' => $p['meta'],
         ];
 
         // Close dropdown before opening the modal (feels snappier)
@@ -164,9 +164,9 @@ final class Menu extends Component
         // 5) Icon — notification class can override; otherwise we pick a sensible default by category
         $icon = $this->firstFilled($data, ['icon']) ?? match ($category) {
             'success' => 'bx bx-check-circle',
-            'danger'  => 'bx bx-x-circle',
+            'danger' => 'bx bx-x-circle',
             'warning' => 'bx bx-error',
-            default   => 'bx bx-bell',
+            default => 'bx bx-bell',
         };
 
         // 6) Meta — everything that isn't part of the standard contract
@@ -188,18 +188,18 @@ final class Menu extends Component
         }
 
         return [
-            'id'         => $n->id,
-            'title'      => $title,
-            'body'       => $message ?: null,
-            'url'        => $url,
-            'icon'       => $icon,
-            'category'   => $category,
-            'meta'       => $meta,
+            'id' => $n->id,
+            'title' => $title,
+            'body' => $message ?: null,
+            'url' => $url,
+            'icon' => $icon,
+            'category' => $category,
+            'meta' => $meta,
             'metaBriefs' => $metaBriefs,
             'created_at' => $n->created_at,
-            'read_at'    => $n->read_at,
-            'type'       => class_basename($n->type),
-            'is_unread'  => is_null($n->read_at),
+            'read_at' => $n->read_at,
+            'type' => class_basename($n->type),
+            'is_unread' => is_null($n->read_at),
         ];
     }
 

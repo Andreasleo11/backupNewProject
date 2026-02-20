@@ -41,14 +41,14 @@ class PurchaseRequestRejectedNotification extends Notification implements Should
         }
 
         return [
-            'title'      => 'Purchase Request Rejected',
-            'message'    => $message,
+            'title' => 'Purchase Request Rejected',
+            'message' => $message,
             'action_url' => route('purchase-requests.show', $this->purchaseRequest->id),
-            'icon'       => 'bx bx-x-circle',
-            'category'   => 'danger',
+            'icon' => 'bx bx-x-circle',
+            'category' => 'danger',
             // domain extras
-            'pr_id'      => $this->purchaseRequest->id,
-            'remarks'    => $this->remarks,
+            'pr_id' => $this->purchaseRequest->id,
+            'remarks' => $this->remarks,
         ];
     }
 }

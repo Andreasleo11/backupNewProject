@@ -206,39 +206,39 @@ class NavigationService
                 'priority' => 85,
                 'children' => [
                     [
-                        'label'      => 'Purchase Requests',
-                        'route'      => auth()->check() && auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
-                        'icon'       => 'clipboard-document-list',
-                        'active'     => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
+                        'label' => 'Purchase Requests',
+                        'route' => auth()->check() && auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
+                        'icon' => 'clipboard-document-list',
+                        'active' => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
                         'permission' => 'pr.view-any',
                     ],
                     [
-                        'label'      => 'Purchase Orders',
-                        'route'      => 'po.dashboard',
-                        'icon'       => 'clipboard-document-check',
-                        'active'     => request()->routeIs('po.dashboard'),
+                        'label' => 'Purchase Orders',
+                        'route' => 'po.dashboard',
+                        'icon' => 'clipboard-document-check',
+                        'active' => request()->routeIs('po.dashboard'),
                         'permission' => 'po.view-any',
                     ],
                     [
-                        'label'  => 'Forecast Prediction',
-                        'route'  => 'purchasing_home',
-                        'icon'   => 'chart-bar',
+                        'label' => 'Forecast Prediction',
+                        'route' => 'purchasing_home',
+                        'icon' => 'chart-bar',
                         'active' => request()->routeIs('purchasing_home'),
-                        'roles'  => ['admin', 'super-admin', 'procurement', 'manager'],
+                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
-                        'label'  => 'Supplier Evaluation',
-                        'route'  => 'purchasing.evaluationsupplier.index',
-                        'icon'   => 'check-circle',
+                        'label' => 'Supplier Evaluation',
+                        'route' => 'purchasing.evaluationsupplier.index',
+                        'icon' => 'check-circle',
                         'active' => request()->routeIs('purchasing.evaluationsupplier.*'),
-                        'roles'  => ['admin', 'super-admin', 'procurement', 'manager'],
+                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
-                        'label'  => 'Forecast Customer Master',
-                        'route'  => 'fc.index',
-                        'icon'   => 'user-group',
+                        'label' => 'Forecast Customer Master',
+                        'route' => 'fc.index',
+                        'icon' => 'user-group',
                         'active' => request()->routeIs('fc.index'),
-                        'roles'  => ['admin', 'super-admin', 'procurement', 'sales'],
+                        'roles' => ['admin', 'super-admin', 'procurement', 'sales'],
                     ],
                 ],
             ],
@@ -491,9 +491,11 @@ class NavigationService
                         if (isset($child['route'])) {
                             $child['active'] = request()->routeIs($child['route']);
                         }
+
                         return $child;
                     })->toArray();
                 }
+
                 return $item;
             })->toArray();
         }
@@ -506,6 +508,7 @@ class NavigationService
             if (isset($item['roles'])) {
                 return $user->hasAnyRole($item['roles']);
             }
+
             return false;
         };
 
@@ -513,10 +516,11 @@ class NavigationService
         $menu = collect($menu)->map(function ($item) use ($canSee) {
             if ($item['type'] === 'group' && isset($item['children'])) {
                 $item['children'] = collect($item['children'])
-                    ->filter(fn($child) => $canSee($child))
+                    ->filter(fn ($child) => $canSee($child))
                     ->values()
                     ->toArray();
             }
+
             return $item;
         })->toArray();
 
@@ -528,11 +532,10 @@ class NavigationService
             if ($item['type'] === 'group') {
                 return ! empty($item['children']);
             }
+
             return $canSee($item);
         })->values()->toArray();
     }
-
-
 
     /**
      * Public entry point for the QuickAccess Livewire component.
@@ -541,6 +544,7 @@ class NavigationService
     public static function getQuickAccessItems($user): array
     {
         $menu = self::applyRoleBasedFiltering(self::getBaseMenuStructure(), $user);
+
         return self::buildQuickAccessItems($menu, $user);
     }
 
@@ -552,9 +556,9 @@ class NavigationService
         $quickItems = self::buildQuickAccessItems($menu, $user);
 
         array_unshift($menu, [
-            'type'  => 'quick-access',
+            'type' => 'quick-access',
             'label' => 'Quick Access',
-            'icon'  => 'star',
+            'icon' => 'star',
             'items' => $quickItems,
         ]);
 
@@ -567,7 +571,7 @@ class NavigationService
      */
     private static function buildQuickAccessItems(array $menu, $user): array
     {
-        $userId    = $user->id;
+        $userId = $user->id;
         $userRoles = $user->getRoleNames()->toArray();
 
         $allowedRoutes = self::buildAllowedRouteMap($menu, $userRoles, $user);
@@ -582,9 +586,9 @@ class NavigationService
         $quickItems = [];
         foreach ($pinnedRoutes as $routeName) {
             if (isset($allowedRoutes[$routeName])) {
-                $item           = $allowedRoutes[$routeName];
+                $item = $allowedRoutes[$routeName];
                 $item['pinned'] = true;
-                $quickItems[]   = $item;
+                $quickItems[] = $item;
             }
         }
         $pinnedRouteNames = array_column($quickItems, 'route');
@@ -596,13 +600,19 @@ class NavigationService
             ->get();
 
         foreach ($topVisits as $visit) {
-            if (count($quickItems) >= 5) break;
-            if (in_array($visit->route_name, $pinnedRouteNames)) continue;
-            if (! isset($allowedRoutes[$visit->route_name])) continue;
+            if (count($quickItems) >= 5) {
+                break;
+            }
+            if (in_array($visit->route_name, $pinnedRouteNames)) {
+                continue;
+            }
+            if (! isset($allowedRoutes[$visit->route_name])) {
+                continue;
+            }
 
-            $item           = $allowedRoutes[$visit->route_name];
+            $item = $allowedRoutes[$visit->route_name];
             $item['pinned'] = false;
-            $quickItems[]   = $item;
+            $quickItems[] = $item;
         }
 
         return $quickItems;
@@ -619,20 +629,22 @@ class NavigationService
         foreach ($menu as $item) {
             if ($item['type'] === 'single' && isset($item['route'])) {
                 $map[$item['route']] = [
-                    'label'  => $item['label'],
-                    'route'  => $item['route'],
-                    'icon'   => $item['icon'] ?? 'circle',
+                    'label' => $item['label'],
+                    'route' => $item['route'],
+                    'icon' => $item['icon'] ?? 'circle',
                     'active' => request()->routeIs($item['route']),
                 ];
             }
 
             if ($item['type'] === 'group' && isset($item['children'])) {
                 foreach ($item['children'] as $child) {
-                    if (! isset($child['route'])) continue;
+                    if (! isset($child['route'])) {
+                        continue;
+                    }
                     $map[$child['route']] = [
-                        'label'  => $child['label'],
-                        'route'  => $child['route'],
-                        'icon'   => $child['icon'] ?? 'circle',
+                        'label' => $child['label'],
+                        'route' => $child['route'],
+                        'icon' => $child['icon'] ?? 'circle',
                         'active' => request()->routeIs($child['route']),
                     ];
                 }
@@ -641,7 +653,6 @@ class NavigationService
 
         return $map;
     }
-
 
     /**
      * Auto-expand groups that contain the currently active page.
@@ -652,7 +663,7 @@ class NavigationService
         foreach ($menu as &$item) {
             if ($item['type'] === 'group' && isset($item['children'])) {
                 $hasActiveChild = collect($item['children'])
-                    ->contains(fn($child) => $child['active'] ?? false);
+                    ->contains(fn ($child) => $child['active'] ?? false);
 
                 $item['defaultOpen'] = $hasActiveChild;
             }

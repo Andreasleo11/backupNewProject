@@ -54,9 +54,9 @@ class PurchaseRequest extends Model implements Approvable
 
         // 5. Merge & Sort desc
         return $prLogs->concat($itemLogs)
-                      ->concat($fileLogs)
-                      ->concat($approvalActions)
-                      ->sortByDesc('created_at');
+            ->concat($fileLogs)
+            ->concat($approvalActions)
+            ->sortByDesc('created_at');
     }
 
     public function getActivitylogOptions(): LogOptions

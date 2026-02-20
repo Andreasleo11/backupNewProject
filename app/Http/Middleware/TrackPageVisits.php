@@ -78,18 +78,18 @@ class TrackPageVisits
         try {
             UserPageVisit::upsert(
                 [
-                    'user_id'         => $userId,
-                    'route_name'      => $routeName,
-                    'visit_count'     => 1,
+                    'user_id' => $userId,
+                    'route_name' => $routeName,
+                    'visit_count' => 1,
                     'last_visited_at' => now(),
-                    'created_at'      => now(),
-                    'updated_at'      => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ],
                 ['user_id', 'route_name'],
                 [
-                    'visit_count'     => DB::raw('visit_count + 1'),
+                    'visit_count' => DB::raw('visit_count + 1'),
                     'last_visited_at' => now(),
-                    'updated_at'      => now(),
+                    'updated_at' => now(),
                 ]
             );
         } catch (\Throwable) {
