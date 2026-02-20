@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NavPinController;
 use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Auth\ChangePasswordPage;
 use App\Livewire\Departments\Overview as DepartmentsOverview;
@@ -29,6 +30,12 @@ Auth::routes();
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
     Route::get('/account/security', ChangePasswordPage::class)->name('account.security');
+
+    // Quick Access Pin/Unpin API
+    Route::prefix('nav')->name('nav.')->group(function () {
+        Route::post('/pin', [NavPinController::class, 'pin'])->name('pin');
+        Route::delete('/pin', [NavPinController::class, 'unpin'])->name('unpin');
+    });
 });
 
 // not decide where to put this route
@@ -105,6 +112,12 @@ require __DIR__ . '/departments.php';
 
 // Master Data Management
 require __DIR__ . '/master-data.php';
+
+// Legacy & Utility Routes
+require __DIR__ . '/legacy.php';
+
+// Admin Routes (already modularized)
+require __DIR__ . '/admin.php';
 
 // Legacy & Utility Routes
 require __DIR__ . '/legacy.php';

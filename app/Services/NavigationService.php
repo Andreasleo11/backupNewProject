@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\UserPageVisit;
+use App\Models\UserPinnedRoute;
 use Illuminate\Support\Facades\Auth;
 
 class NavigationService
@@ -529,62 +531,170 @@ class NavigationService
     }
 
     /**
-     * Add Quick Access section based on user role and common actions
+     * Public entry point for the QuickAccess Livewire component.
+     * Returns the scored + pinned items array for the given user.
+     */
+    public static function getQuickAccessItems($user): array
+    {
+        $menu = self::applyRoleBasedFiltering(self::getBaseMenuStructure(), $user);
+        return self::buildQuickAccessItems($menu, $user);
+    }
+
+    /**
+     * Add Quick Access section based on pins + visit activity, with role-based cold-start fallback.
      */
     private static function addQuickAccessSection(array $menu, $user): array
     {
-        $userRoles = $user->getRoleNames()->toArray();
-        $quickAccessItems = [];
+        $quickItems = self::buildQuickAccessItems($menu, $user);
 
-        // Base quick access for all users
-        $quickAccessItems[] = [
-            'label' => 'Dashboard',
-            'route' => 'home',
-            'icon' => 'home',
-            'active' => request()->routeIs('home'),
-        ];
-
-        // Role-specific quick access items
-        if (in_array('super-admin', $userRoles)) {
-            $quickAccessItems = array_merge($quickAccessItems, [
-                ['label' => 'User Management', 'route' => 'admin.users.index', 'icon' => 'user-group', 'active' => request()->routeIs('admin.users.index')],
-                ['label' => 'System Overview', 'route' => 'admin.access-overview.index', 'icon' => 'shield', 'active' => request()->routeIs('admin.access-overview.index')],
-            ]);
-        } elseif (in_array('manager', $userRoles)) {
-            $quickAccessItems = array_merge($quickAccessItems, [
-                ['label' => 'Team Overview', 'route' => 'admin.employees.index', 'icon' => 'users', 'active' => request()->routeIs('admin.employees.index')],
-                ['label' => 'Purchase Requests', 'route' => 'purchase-requests.index', 'icon' => 'clipboard-document-list', 'active' => request()->routeIs('purchase-requests.index')],
-                ['label' => 'Daily Reports', 'route' => 'daily-reports.index', 'icon' => 'clipboard-document-list', 'active' => request()->routeIs('daily-reports.index')],
-            ]);
-        } elseif (in_array('procurement', $userRoles)) {
-            $quickAccessItems = array_merge($quickAccessItems, [
-                ['label' => 'Purchase Requests', 'route' => 'purchase-requests.index', 'icon' => 'clipboard-document-list', 'active' => request()->routeIs('purchase-requests.index')],
-                ['label' => 'Purchase Orders', 'route' => 'po.dashboard', 'icon' => 'clipboard-document-check', 'active' => request()->routeIs('po.dashboard')],
-                ['label' => 'Supplier Evaluation', 'route' => 'purchasing.evaluationsupplier.index', 'icon' => 'check-circle', 'active' => request()->routeIs('purchasing.evaluationsupplier.index')],
-            ]);
-        } elseif (in_array('hr', $userRoles)) {
-            $quickAccessItems = array_merge($quickAccessItems, [
-                ['label' => 'Employee Training', 'route' => 'employee_trainings.index', 'icon' => 'academic-cap', 'active' => request()->routeIs('employee_trainings.index')],
-                ['label' => 'Performance Reviews', 'route' => 'discipline.index', 'icon' => 'clipboard-document-list', 'active' => request()->routeIs('discipline.index')],
-                ['label' => 'Important Documents', 'route' => 'hrd.importantDocs.index', 'icon' => 'folder', 'active' => request()->routeIs('hrd.importantDocs.index')],
-            ]);
-        } elseif (in_array('operations', $userRoles)) {
-            $quickAccessItems = array_merge($quickAccessItems, [
-                ['label' => 'Daily Reports', 'route' => 'daily-reports.index', 'icon' => 'clipboard-document-list', 'active' => request()->routeIs('daily-reports.index')],
-                ['label' => 'Inventory', 'route' => 'masterinventory.index', 'icon' => 'clipboard-document-list', 'active' => request()->routeIs('masterinventory.index')],
-                ['label' => 'Quality Reports', 'route' => 'qaqc.report.index', 'icon' => 'clipboard-document-check', 'active' => request()->routeIs('qaqc.report.index')],
-            ]);
-        }
-
-        // Add Quick Access section at the beginning
         array_unshift($menu, [
-            'type' => 'quick-access',
+            'type'  => 'quick-access',
             'label' => 'Quick Access',
-            'icon' => 'star',
-            'items' => $quickAccessItems,
+            'icon'  => 'star',
+            'items' => $quickItems,
         ]);
 
         return $menu;
+    }
+
+    /**
+     * Build the scored+pinned Quick Access items list. Shared by both the full menu pipeline
+     * and the standalone Livewire QuickAccess component.
+     */
+    private static function buildQuickAccessItems(array $menu, $user): array
+    {
+        $userId    = $user->id;
+        $userRoles = $user->getRoleNames()->toArray();
+
+        $allowedRoutes = self::buildAllowedRouteMap($menu, $userRoles, $user);
+
+        // ── 1. Pinned items (max 3, always first) ───────────────────────────
+        $pinnedRoutes = UserPinnedRoute::where('user_id', $userId)
+            ->orderBy('pinned_at', 'desc')
+            ->limit(3)
+            ->pluck('route_name')
+            ->toArray();
+
+        $quickItems = [];
+        foreach ($pinnedRoutes as $routeName) {
+            if (isset($allowedRoutes[$routeName])) {
+                $item           = $allowedRoutes[$routeName];
+                $item['pinned'] = true;
+                $quickItems[]   = $item;
+            }
+        }
+        $pinnedRouteNames = array_column($quickItems, 'route');
+
+        // ── 2. Activity-scored items (fill up to 5 total) ───────────────────
+        $totalVisits  = UserPageVisit::where('user_id', $userId)->sum('visit_count');
+        $useColdStart = $totalVisits < 3;
+
+        if (! $useColdStart) {
+            $topVisits = UserPageVisit::where('user_id', $userId)
+                ->orderByRaw('(visit_count * 2) + (10 / (DATEDIFF(NOW(), last_visited_at) + 1)) DESC')
+                ->limit(10)
+                ->get();
+
+            foreach ($topVisits as $visit) {
+                if (count($quickItems) >= 5) break;
+                if (in_array($visit->route_name, $pinnedRouteNames)) continue;
+                if (! isset($allowedRoutes[$visit->route_name])) continue;
+
+                $item           = $allowedRoutes[$visit->route_name];
+                $item['pinned'] = false;
+                $quickItems[]   = $item;
+            }
+        }
+
+        // ── 3. Cold-start / gap fill with role-based defaults ───────────────
+        if ($useColdStart || count($quickItems) < 3) {
+            $defaults = self::getRoleBasedDefaults($userRoles, $user);
+            foreach ($defaults as $default) {
+                if (count($quickItems) >= 5) break;
+                $alreadyIn = collect($quickItems)->contains('route', $default['route']);
+                if (! $alreadyIn && isset($allowedRoutes[$default['route']])) {
+                    $default['pinned'] = false;
+                    $quickItems[]      = $default;
+                }
+            }
+        }
+
+        return $quickItems;
+    }
+
+    /**
+     * Build a flat map of [route_name => item_array] for all routes accessible to this user.
+     * The $menu has already been role-filtered by applyRoleBasedFiltering() before this runs.
+     */
+    private static function buildAllowedRouteMap(array $menu, array $userRoles, $user): array
+    {
+        $map = [];
+
+        foreach ($menu as $item) {
+            if ($item['type'] === 'single' && isset($item['route'])) {
+                $map[$item['route']] = [
+                    'label'  => $item['label'],
+                    'route'  => $item['route'],
+                    'icon'   => $item['icon'] ?? 'circle',
+                    'active' => request()->routeIs($item['route']),
+                ];
+            }
+
+            if ($item['type'] === 'group' && isset($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    if (! isset($child['route'])) continue;
+                    $map[$child['route']] = [
+                        'label'  => $child['label'],
+                        'route'  => $child['route'],
+                        'icon'   => $child['icon'] ?? 'circle',
+                        'active' => request()->routeIs($child['route']),
+                    ];
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Role-based default quick access items (cold-start fallback).
+     */
+    private static function getRoleBasedDefaults(array $userRoles, $user): array
+    {
+        $defaults = [
+            ['label' => 'Dashboard', 'route' => 'home', 'icon' => 'home', 'active' => request()->routeIs('home')],
+        ];
+
+        if (in_array('super-admin', $userRoles)) {
+            $defaults = array_merge($defaults, [
+                ['label' => 'User Management',  'route' => 'admin.users.index',            'icon' => 'user-group',            'active' => request()->routeIs('admin.users.index')],
+                ['label' => 'System Overview',  'route' => 'admin.access-overview.index',  'icon' => 'shield',                'active' => request()->routeIs('admin.access-overview.index')],
+            ]);
+        } elseif (in_array('manager', $userRoles)) {
+            $defaults = array_merge($defaults, [
+                ['label' => 'Purchase Requests', 'route' => 'purchase-requests.index', 'icon' => 'clipboard-document-list',  'active' => request()->routeIs('purchase-requests.index')],
+                ['label' => 'Daily Reports',     'route' => 'daily-reports.index',     'icon' => 'clipboard-document-list',  'active' => request()->routeIs('daily-reports.index')],
+            ]);
+        } elseif (in_array('procurement', $userRoles)) {
+            $defaults = array_merge($defaults, [
+                ['label' => 'Purchase Requests',  'route' => 'purchase-requests.index',              'icon' => 'clipboard-document-list',  'active' => request()->routeIs('purchase-requests.index')],
+                ['label' => 'Purchase Orders',    'route' => 'po.dashboard',                         'icon' => 'clipboard-document-check', 'active' => request()->routeIs('po.dashboard')],
+                ['label' => 'Supplier Evaluation','route' => 'purchasing.evaluationsupplier.index',  'icon' => 'check-circle',             'active' => request()->routeIs('purchasing.evaluationsupplier.index')],
+            ]);
+        } elseif (in_array('hr', $userRoles)) {
+            $defaults = array_merge($defaults, [
+                ['label' => 'Performance Reviews', 'route' => 'discipline.index',         'icon' => 'clipboard-document-list', 'active' => request()->routeIs('discipline.index')],
+                ['label' => 'Important Documents', 'route' => 'hrd.importantDocs.index',  'icon' => 'folder',                  'active' => request()->routeIs('hrd.importantDocs.index')],
+            ]);
+        } elseif (in_array('operations', $userRoles)) {
+            $defaults = array_merge($defaults, [
+                ['label' => 'Daily Reports', 'route' => 'daily-reports.index',   'icon' => 'clipboard-document-list',  'active' => request()->routeIs('daily-reports.index')],
+                ['label' => 'Inventory',     'route' => 'masterinventory.index', 'icon' => 'clipboard-document-list',  'active' => request()->routeIs('masterinventory.index')],
+                ['label' => 'QA Reports',    'route' => 'qaqc.report.index',     'icon' => 'clipboard-document-check', 'active' => request()->routeIs('qaqc.report.index')],
+            ]);
+        }
+
+        return $defaults;
     }
 
     /**
