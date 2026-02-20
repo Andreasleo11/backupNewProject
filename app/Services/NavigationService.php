@@ -2,9 +2,13 @@
 
 namespace App\Services;
 
+use App\Models\NavMenuAssignment;
+use App\Models\NavUserGroup;
 use App\Models\UserPageVisit;
 use App\Models\UserPinnedRoute;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class NavigationService
 {
@@ -106,6 +110,13 @@ class NavigationService
                         'icon' => 'users',
                         'active' => request()->routeIs('admin.employees.*'),
                         'roles' => ['super-admin'],
+                    ],
+                    [
+                        'label'  => 'Nav Visibility',
+                        'route'  => 'admin.nav-visibility.index',
+                        'icon'   => 'eye',
+                        'active' => request()->routeIs('admin.nav-visibility.*'),
+                        'roles'  => ['super-admin'],
                     ],
                 ],
             ],
@@ -465,17 +476,79 @@ class NavigationService
     }
 
     /**
-     * Apply role-based filtering to menu
+     * Load the set of route_names the user is explicitly assigned to via nav_menu_assignments.
+     * Returns null when the user has no assignments at all (fall back to hardcoded roles).
+     * Returns an empty array if assignments exist but none match (route is locked out).
+     *
+     * We query once and cache the result on the user object for the request lifetime.
+     */
+    private static function loadAssignedRoutes($user): array
+    {
+        // Cache per-request on the user instance
+        if (isset($user->_navAssignedRoutes)) {
+            return $user->_navAssignedRoutes;
+        }
+
+        $userRoleIds       = $user->roles()->pluck('id')->toArray();
+        $userPermissionIds = $user->permissions()->pluck('id')->toArray();
+        $userGroupIds      = NavUserGroup::whereHas('users', fn($q) => $q->where('user_id', $user->id))
+            ->pluck('id')->toArray();
+
+        $assignments = NavMenuAssignment::query()
+            ->where(function ($q) use ($user, $userRoleIds, $userPermissionIds, $userGroupIds) {
+                $q->where(function ($q) use ($user) {
+                        $q->where('subject_type', (new \App\Models\User)->getMorphClass())
+                          ->where('subject_id', $user->id);
+                    })
+                  ->orWhere(function ($q) use ($userRoleIds) {
+                        $q->where('subject_type', (new Role)->getMorphClass())
+                          ->whereIn('subject_id', $userRoleIds);
+                    })
+                  ->orWhere(function ($q) use ($userPermissionIds) {
+                        $q->where('subject_type', (new Permission)->getMorphClass())
+                          ->whereIn('subject_id', $userPermissionIds);
+                    })
+                  ->orWhere(function ($q) use ($userGroupIds) {
+                        $q->where('subject_type', (new NavUserGroup)->getMorphClass())
+                          ->whereIn('subject_id', $userGroupIds);
+                    });
+            })
+            ->pluck('route_name')
+            ->unique()
+            ->toArray();
+
+        $user->_navAssignedRoutes = $assignments;
+        return $assignments;
+    }
+
+    /**
+     * Load the complete set of route_names that have ANY assignment in the DB.
+     * Used to determine whether a route is "managed" (has DB entries) or falls back to hardcoded roles.
+     */
+    private static function loadManagedRoutes(): array
+    {
+        static $managed = null;
+        if ($managed === null) {
+            $managed = NavMenuAssignment::query()
+                ->distinct()
+                ->pluck('route_name')
+                ->toArray();
+        }
+        return $managed;
+    }
+
+    /**
+     * Apply role-based filtering to menu.
+     * For routes that have entries in nav_menu_assignments, DB assignments take precedence.
+     * For routes with no DB entries, the hardcoded roles[] array is used (backward-compatible).
+     * Super-admin always sees everything.
      */
     private static function applyRoleBasedFiltering(array $menu, $user): array
     {
         $userRoles = $user->getRoleNames()->toArray();
 
-        // SUPER-ADMIN FALLBACK: If user has super-admin role, show all items
-        $isSuperUser = $user->hasRole('super-admin');
-
-        if ($isSuperUser) {
-            // Super users get all menu items, just ensure they have 'active' states
+        // Super-admin: bypass all checks
+        if ($user->hasRole('super-admin')) {
             return collect($menu)->map(function ($item) {
                 if ($item['type'] === 'single' && isset($item['route'])) {
                     $item['active'] = request()->routeIs($item['route']);
@@ -485,50 +558,52 @@ class NavigationService
                         if (isset($child['route'])) {
                             $child['active'] = request()->routeIs($child['route']);
                         }
-
                         return $child;
                     })->toArray();
                 }
-
                 return $item;
             })->toArray();
         }
 
-        // Add 'all' role for items available to everyone
-        $userRoles[] = 'all';
+        $userRoles[]    = 'all';
+        $assignedRoutes = self::loadAssignedRoutes($user); // routes this user is explicitly granted
+        $managedRoutes  = self::loadManagedRoutes();       // routes that have ANY DB assignment
 
-        return collect($menu)->filter(function ($item) use ($userRoles) {
-            // Keep dividers
+
+        return collect($menu)->filter(function ($item) use ($userRoles, $assignedRoutes, $managedRoutes) {
             if ($item['type'] === 'divider') {
                 return true;
             }
 
-            // Check if user has required roles for this item
-            if (isset($item['roles'])) {
-                $hasAccess = ! empty(array_intersect($userRoles, $item['roles']));
-
-                return $hasAccess;
-            }
-
-            // Check children roles for groups
-            if (isset($item['children'])) {
-                $item['children'] = collect($item['children'])->filter(function ($child) use ($userRoles) {
+            if ($item['type'] === 'group' && isset($item['children'])) {
+                $item['children'] = collect($item['children'])->filter(function ($child) use ($userRoles, $assignedRoutes, $managedRoutes) {
+                    $route = $child['route'] ?? null;
+                    if ($route && in_array($route, $managedRoutes)) {
+                        return in_array($route, $assignedRoutes);
+                    }
+                    // Fallback: hardcoded roles
                     if (isset($child['roles'])) {
                         return ! empty(array_intersect($userRoles, $child['roles']));
                     }
-
-                    // If child has no roles set, deny access (stricter security)
                     return false;
                 })->toArray();
 
-                // Hide group if no children are accessible
                 return ! empty($item['children']);
             }
 
-            // Default: deny access for items without explicit roles
+            // Single item
+            $route = $item['route'] ?? null;
+            if ($route && in_array($route, $managedRoutes)) {
+                return in_array($route, $assignedRoutes);
+            }
+            // Fallback: hardcoded roles
+            if (isset($item['roles'])) {
+                return ! empty(array_intersect($userRoles, $item['roles']));
+            }
             return false;
         })->toArray();
     }
+
 
     /**
      * Public entry point for the QuickAccess Livewire component.
@@ -586,37 +661,19 @@ class NavigationService
         $pinnedRouteNames = array_column($quickItems, 'route');
 
         // ── 2. Activity-scored items (fill up to 5 total) ───────────────────
-        $totalVisits  = UserPageVisit::where('user_id', $userId)->sum('visit_count');
-        $useColdStart = $totalVisits < 3;
+        $topVisits = UserPageVisit::where('user_id', $userId)
+            ->orderByRaw('(visit_count * 2) + (10 / (DATEDIFF(NOW(), last_visited_at) + 1)) DESC')
+            ->limit(10)
+            ->get();
 
-        if (! $useColdStart) {
-            $topVisits = UserPageVisit::where('user_id', $userId)
-                ->orderByRaw('(visit_count * 2) + (10 / (DATEDIFF(NOW(), last_visited_at) + 1)) DESC')
-                ->limit(10)
-                ->get();
+        foreach ($topVisits as $visit) {
+            if (count($quickItems) >= 5) break;
+            if (in_array($visit->route_name, $pinnedRouteNames)) continue;
+            if (! isset($allowedRoutes[$visit->route_name])) continue;
 
-            foreach ($topVisits as $visit) {
-                if (count($quickItems) >= 5) break;
-                if (in_array($visit->route_name, $pinnedRouteNames)) continue;
-                if (! isset($allowedRoutes[$visit->route_name])) continue;
-
-                $item           = $allowedRoutes[$visit->route_name];
-                $item['pinned'] = false;
-                $quickItems[]   = $item;
-            }
-        }
-
-        // ── 3. Cold-start / gap fill with role-based defaults ───────────────
-        if ($useColdStart || count($quickItems) < 3) {
-            $defaults = self::getRoleBasedDefaults($userRoles, $user);
-            foreach ($defaults as $default) {
-                if (count($quickItems) >= 5) break;
-                $alreadyIn = collect($quickItems)->contains('route', $default['route']);
-                if (! $alreadyIn && isset($allowedRoutes[$default['route']])) {
-                    $default['pinned'] = false;
-                    $quickItems[]      = $default;
-                }
-            }
+            $item           = $allowedRoutes[$visit->route_name];
+            $item['pinned'] = false;
+            $quickItems[]   = $item;
         }
 
         return $quickItems;
@@ -656,46 +713,6 @@ class NavigationService
         return $map;
     }
 
-    /**
-     * Role-based default quick access items (cold-start fallback).
-     */
-    private static function getRoleBasedDefaults(array $userRoles, $user): array
-    {
-        $defaults = [
-            ['label' => 'Dashboard', 'route' => 'home', 'icon' => 'home', 'active' => request()->routeIs('home')],
-        ];
-
-        if (in_array('super-admin', $userRoles)) {
-            $defaults = array_merge($defaults, [
-                ['label' => 'User Management',  'route' => 'admin.users.index',            'icon' => 'user-group',            'active' => request()->routeIs('admin.users.index')],
-                ['label' => 'System Overview',  'route' => 'admin.access-overview.index',  'icon' => 'shield',                'active' => request()->routeIs('admin.access-overview.index')],
-            ]);
-        } elseif (in_array('manager', $userRoles)) {
-            $defaults = array_merge($defaults, [
-                ['label' => 'Purchase Requests', 'route' => 'purchase-requests.index', 'icon' => 'clipboard-document-list',  'active' => request()->routeIs('purchase-requests.index')],
-                ['label' => 'Daily Reports',     'route' => 'daily-reports.index',     'icon' => 'clipboard-document-list',  'active' => request()->routeIs('daily-reports.index')],
-            ]);
-        } elseif (in_array('procurement', $userRoles)) {
-            $defaults = array_merge($defaults, [
-                ['label' => 'Purchase Requests',  'route' => 'purchase-requests.index',              'icon' => 'clipboard-document-list',  'active' => request()->routeIs('purchase-requests.index')],
-                ['label' => 'Purchase Orders',    'route' => 'po.dashboard',                         'icon' => 'clipboard-document-check', 'active' => request()->routeIs('po.dashboard')],
-                ['label' => 'Supplier Evaluation','route' => 'purchasing.evaluationsupplier.index',  'icon' => 'check-circle',             'active' => request()->routeIs('purchasing.evaluationsupplier.index')],
-            ]);
-        } elseif (in_array('hr', $userRoles)) {
-            $defaults = array_merge($defaults, [
-                ['label' => 'Performance Reviews', 'route' => 'discipline.index',         'icon' => 'clipboard-document-list', 'active' => request()->routeIs('discipline.index')],
-                ['label' => 'Important Documents', 'route' => 'hrd.importantDocs.index',  'icon' => 'folder',                  'active' => request()->routeIs('hrd.importantDocs.index')],
-            ]);
-        } elseif (in_array('operations', $userRoles)) {
-            $defaults = array_merge($defaults, [
-                ['label' => 'Daily Reports', 'route' => 'daily-reports.index',   'icon' => 'clipboard-document-list',  'active' => request()->routeIs('daily-reports.index')],
-                ['label' => 'Inventory',     'route' => 'masterinventory.index', 'icon' => 'clipboard-document-list',  'active' => request()->routeIs('masterinventory.index')],
-                ['label' => 'QA Reports',    'route' => 'qaqc.report.index',     'icon' => 'clipboard-document-check', 'active' => request()->routeIs('qaqc.report.index')],
-            ]);
-        }
-
-        return $defaults;
-    }
 
     /**
      * Auto-expand groups that contain the currently active page.
