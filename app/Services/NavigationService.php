@@ -202,43 +202,43 @@ class NavigationService
                 'type' => 'group',
                 'label' => 'Procurement',
                 'icon' => 'shopping-cart',
-                'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
+                'permission' => 'pr.view-any',
                 'priority' => 85,
                 'children' => [
                     [
-                        'label' => 'Purchase Requests',
-                        'route' => auth()->check() && auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
+                        'label'      => 'Purchase Requests',
+                        'route'      => auth()->check() && auth()->user()->hasRole('top-management') ? 'director.pr.index' : 'purchase-requests.index',
+                        'icon'       => 'clipboard-document-list',
+                        'active'     => request()->routeIs('director.pr.index') || request()->routeIs('purchase-requests.*'),
+                        'permission' => 'pr.view-any',
                     ],
                     [
-                        'label' => 'Purchase Orders',
-                        'route' => 'po.dashboard',
-                        'icon' => 'clipboard-document-check',
-                        'active' => request()->routeIs('po.dashboard'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
+                        'label'      => 'Purchase Orders',
+                        'route'      => 'po.dashboard',
+                        'icon'       => 'clipboard-document-check',
+                        'active'     => request()->routeIs('po.dashboard'),
+                        'permission' => 'po.view-any',
                     ],
                     [
-                        'label' => 'Forecast Prediction',
-                        'route' => 'purchasing_home',
-                        'icon' => 'chart-bar',
+                        'label'  => 'Forecast Prediction',
+                        'route'  => 'purchasing_home',
+                        'icon'   => 'chart-bar',
                         'active' => request()->routeIs('purchasing_home'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
+                        'roles'  => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
-                        'label' => 'Supplier Evaluation',
-                        'route' => 'purchasing.evaluationsupplier.index',
-                        'icon' => 'check-circle',
+                        'label'  => 'Supplier Evaluation',
+                        'route'  => 'purchasing.evaluationsupplier.index',
+                        'icon'   => 'check-circle',
                         'active' => request()->routeIs('purchasing.evaluationsupplier.*'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'manager'],
+                        'roles'  => ['admin', 'super-admin', 'procurement', 'manager'],
                     ],
                     [
-                        'label' => 'Forecast Customer Master',
-                        'route' => 'fc.index',
-                        'icon' => 'user-group',
+                        'label'  => 'Forecast Customer Master',
+                        'route'  => 'fc.index',
+                        'icon'   => 'user-group',
                         'active' => request()->routeIs('fc.index'),
-                        'roles' => ['admin', 'super-admin', 'procurement', 'sales'],
+                        'roles'  => ['admin', 'super-admin', 'procurement', 'sales'],
                     ],
                 ],
             ],
@@ -465,16 +465,22 @@ class NavigationService
     }
 
     /**
-     * Apply visibility filtering to the menu using Spatie permissions.
+     * Apply visibility filtering to the menu.
      *
-     * Each menu item requires a permission "nav.{route}" to be visible.
-     * super-admin bypasses all checks.
-     * Per-user overrides: grant nav.{route} permission directly to a user.
-     * Role-based access: assign nav.{route} permission to a role.
+     * Priority order per item:
+     *   1. 'permission' key → $user->can($item['permission'])
+     *      Use this when a Spatie permission already guards the route —
+     *      the same permission controls nav visibility and route access.
+     *   2. 'roles' key     → $user->hasAnyRole($item['roles'])
+     *      Legacy fallback for sections not yet migrated to proper permissions.
+     *   3. Neither         → hidden (super-admin always sees via bypass below).
+     *
+     * Migration path: replace 'roles' with 'permission' on a menu item once its
+     * route is guarded by that Spatie permission.
      */
     private static function applyRoleBasedFiltering(array $menu, $user): array
     {
-        // Super-admin sees everything (Gate::before returns true for them)
+        // Super-admin sees everything
         if ($user->hasRole('super-admin')) {
             return collect($menu)->map(function ($item) {
                 if ($item['type'] === 'single' && isset($item['route'])) {
@@ -492,23 +498,29 @@ class NavigationService
             })->toArray();
         }
 
-        // Check visibility via Spatie permission "nav.{route}"
-        // Spatie caches permissions in-memory for the request — no extra DB hit
-        $canSee = fn(?string $route): bool =>
-            $route !== null && $user->can('nav.' . $route);
+        // Resolve visibility: 'permission' beats 'roles'
+        $canSee = function (array $item) use ($user): bool {
+            if (isset($item['permission'])) {
+                return $user->can($item['permission']);
+            }
+            if (isset($item['roles'])) {
+                return $user->hasAnyRole($item['roles']);
+            }
+            return false;
+        };
 
-        // Step 1: map — filter children inside groups (must use map to propagate mutations)
+        // Step 1: map — filter group children (map propagates mutations; bare filter does not)
         $menu = collect($menu)->map(function ($item) use ($canSee) {
             if ($item['type'] === 'group' && isset($item['children'])) {
                 $item['children'] = collect($item['children'])
-                    ->filter(fn($child) => $canSee($child['route'] ?? null))
+                    ->filter(fn($child) => $canSee($child))
                     ->values()
                     ->toArray();
             }
             return $item;
         })->toArray();
 
-        // Step 2: filter — remove invisible top-level items / empty groups
+        // Step 2: filter — drop invisible top-level items and now-empty groups
         return collect($menu)->filter(function ($item) use ($canSee) {
             if ($item['type'] === 'divider') {
                 return true;
@@ -516,9 +528,10 @@ class NavigationService
             if ($item['type'] === 'group') {
                 return ! empty($item['children']);
             }
-            return $canSee($item['route'] ?? null);
+            return $canSee($item);
         })->values()->toArray();
     }
+
 
 
     /**
