@@ -137,8 +137,11 @@
                     $label = $item['label'];
                     $isActive = $item['active'] ?? false;
                 @endphp
-                <li class="relative group/nav-item" x-data="{ hover: false, flyoutTop: 0 }"
-                    @mouseenter="hover = true; flyoutTop = $el.getBoundingClientRect().top" @mouseleave="hover = false"
+                <li class="relative group/nav-item"
+                    x-data="{ hover: false, flyoutTop: 0, myIdx: 'si-{{ $loop->index }}' }"
+                    @mouseenter="hover = true; flyoutTop = $el.getBoundingClientRect().top; $dispatch('sbflyout', { idx: myIdx })"
+                    @mouseleave="hover = false"
+                    x-on:sbflyout.window="if ($event.detail.idx !== myIdx) hover = false"
                     role="none">
                     <a href="{{ route($item['route']) }}"
                         class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300
@@ -189,7 +192,6 @@
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 translate-x-[-10px]"
                              x-transition:enter-end="opacity-100 translate-x-0"
-                             x-transition:leave="transition ease-in duration-150"
                              x-cloak
                              class="fixed z-[90] ml-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-blue-100/50 px-5 py-4 shadow-2xl shadow-blue-900/10 min-w-[200px]"
                              :style="{
@@ -216,20 +218,23 @@
                     $anyActive = collect($children)->contains(fn($c) => $c['active'] ?? false);
                     $defaultOpen = $item['defaultOpen'] ?? $anyActive;
                 @endphp
-                <li class="relative"
+                <li class="relative overflow-hidden"
                     x-data="{
                         hover: false,
                         open: {{ $defaultOpen ? 'true' : 'false' }},
                         flyoutOpen: false,
                         flyoutTop: 0,
-                        flyoutTimer: null
+                        flyoutTimer: null,
+                        myIdx: 'gr-{{ $loop->index }}'
                     }"
+                    :class="sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }} ? 'flex flex-col items-center' : ''"
                     @mouseenter="
                         if (!{{ $isMobile ? 'true' : 'false' }}) {
                             clearTimeout(flyoutTimer);
                             hover = true;
                             flyoutOpen = true;
                             flyoutTop = $el.getBoundingClientRect().top;
+                            $dispatch('sbflyout', { idx: myIdx });
                         }
                     "
                     @mouseleave="
@@ -238,6 +243,7 @@
                             flyoutTimer = setTimeout(() => { flyoutOpen = false }, 150);
                         }
                     "
+                    x-on:sbflyout.window="if ($event.detail.idx !== myIdx) { clearTimeout(flyoutTimer); flyoutOpen = false; hover = false; }"
                     role="none"
                 >
                     {{-- Group Header --}}
@@ -248,7 +254,7 @@
                                {{ $anyActive ? 'text-blue-950 bg-blue-50/30' : 'text-slate-600 hover:bg-slate-50' }}"
                         :class="{
                             'justify-between': !sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }},
-                            'justify-center px-0 mx-2 w-auto': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
+                            'justify-center px-0': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
                         }"
                         role="menuitem"
                         :aria-expanded="open">
@@ -281,7 +287,7 @@
                         x-transition:leave="transition-all duration-200 ease-in"
                         x-transition:leave-start="opacity-100 translate-y-0 max-h-[800px]"
                         x-transition:leave-end="opacity-0 -translate-y-2 max-h-0"
-                        class="mt-1 space-y-1 ml-7.5 pl-4 border-l border-slate-200/60 overflow-hidden"
+                        class="mt-1 space-y-1 ml-[1.875rem] pl-4 border-l border-slate-200/60 overflow-hidden"
                         role="menu">
                         @foreach ($children as $child)
                             @php
@@ -309,7 +315,6 @@
                              x-transition:enter="transition ease-out duration-200"
                              x-transition:enter-start="opacity-0 scale-95 translate-x-[-10px]"
                              x-transition:enter-end="opacity-100 scale-100 translate-x-0"
-                             x-transition:leave="transition ease-in duration-150"
                              x-cloak
                              class="fixed z-[90] w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-blue-100/50 p-2 shadow-2xl shadow-blue-900/15"
                              :style="{
