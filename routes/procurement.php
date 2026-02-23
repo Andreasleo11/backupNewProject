@@ -44,8 +44,10 @@ Route::middleware('auth')->group(function () {
     Route::get('purchase-requests/{id}/edit', [PurchaseRequestController::class, 'edit'])->name('purchase-requests.edit');
     Route::put('purchase-requests/{id}', [PurchaseRequestController::class, 'update'])->name('purchase-requests.update');
     Route::put('purchase-requests/cancel/{id}', [PurchaseRequestController::class, 'cancel'])->name('purchase-requests.cancel');
+    Route::post('/purchaseRequestsInsert', [PurchaseRequestController::class, 'store'])->name('purchaserequest.insert');
     Route::delete('purchase-requests/{id}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
     Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
+    Route::get('/purchase-requests/{id}/quick-view', [PurchaseRequestController::class, 'quickView'])->name('purchase-requests.quick-view');
     Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
     Route::post('purchase-requests/{purchaseRequest}/reject', [PurchaseRequestController::class, 'reject'])->name('purchase-requests.reject');
     Route::post('purchase-requests/{purchaseRequest}/return', [PurchaseRequestController::class, 'returnForRevision'])->name('purchase-requests.return');

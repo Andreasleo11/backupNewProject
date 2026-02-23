@@ -89,7 +89,34 @@
                 </div>
 
                 <div class="premium-datatable-wrapper">
-                    {{ $dataTable->table() }}
+                    {{ $dataTable->table(['class' => 'table table-hover table-striped w-100 dt-responsive nowrap']) }}
+                </div>
+            </div>
+        </div>
+
+        {{-- QUICK VIEW MODAL --}}
+        <div class="modal fade" id="prQuickViewModal" tabindex="-1" aria-labelledby="prQuickViewModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden">
+                    <div class="modal-header bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 px-5 py-4">
+                        <h5 class="modal-title font-semibold text-slate-800 flex items-center gap-2" id="prQuickViewModalLabel">
+                            <i class="bi bi-file-earmark-text text-indigo-600"></i>
+                            Purchase Request Detail
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0 bg-slate-50 relative min-h-[300px]" id="prQuickViewContent">
+                        {{-- Content loaded by AJAX --}}
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/80 z-10" id="prQuickViewLoader">
+                            <div class="spinner-border text-indigo-600" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white border-t border-slate-100 px-5 py-3 rounded-b-xl">
+                        <a href="#" id="prQuickViewDetailBtn" class="btn btn-primary rounded-lg text-sm px-4">Full Details &rarr;</a>
+                        <button type="button" class="btn btn-secondary rounded-lg text-sm px-4" data-bs-dismiss="modal">Close</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -345,4 +372,61 @@
         });
     </script>
     @endif
+
+    {{-- QUICK VIEW LOGIC --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableWrapper = document.querySelector('.premium-datatable-wrapper');
+            if(!tableWrapper) return;
+
+            let quickViewModal = null;
+            if(document.getElementById('prQuickViewModal')) {
+                quickViewModal = new bootstrap.Modal(document.getElementById('prQuickViewModal'));
+            }
+
+            tableWrapper.addEventListener('click', function(e) {
+                // Find nearest button with class quick-view-btn
+                const btn = e.target.closest('.quick-view-btn');
+                if(!btn) return;
+
+                const prId = btn.getAttribute('data-id');
+                if(!prId || !quickViewModal) return;
+
+                // Show modal & loader
+                const contentDiv = document.getElementById('prQuickViewContent');
+                const loaderDiv = document.getElementById('prQuickViewLoader');
+                const detailBtn = document.getElementById('prQuickViewDetailBtn');
+                
+                detailBtn.href = `/purchase-requests/${prId}`;
+                quickViewModal.show();
+                
+                // Clear old content and show loader
+                Array.from(contentDiv.children).forEach(child => {
+                    if(child.id !== 'prQuickViewLoader') child.remove();
+                });
+                loaderDiv.classList.remove('hidden');
+
+                // Fetch HTML
+                fetch(`/purchase-requests/${prId}/quick-view`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => {
+                    if(!res.ok) throw new Error('Failed to load detail');
+                    return res.text();
+                })
+                .then(html => {
+                    // Hide loader and insert HTML
+                    loaderDiv.classList.add('hidden');
+                    const wrapper = document.createElement('div');
+                    wrapper.innerHTML = html;
+                    contentDiv.appendChild(wrapper);
+                })
+                .catch(err => {
+                    console.error(err);
+                    loaderDiv.classList.add('hidden');
+                    contentDiv.innerHTML = `<div class="p-6 text-center text-rose-500"><i class="bi bi-exclamation-triangle text-3xl mb-2 block"></i><p>Could not load the purchase request details.</p></div>`;
+                });
+            });
+        });
+    </script>
 @endpush

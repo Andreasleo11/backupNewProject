@@ -211,6 +211,22 @@ class PurchaseRequestController extends Controller
         ]);
     }
 
+    /**
+     * Render a partial view containing key details of a PR for quick inspection.
+     */
+    public function quickView(int $id, GetPurchaseRequestDetail $query)
+    {
+        /** @var \App\Infrastructure\Persistence\Eloquent\Models\User $user */
+        $user = auth()->user();
+        $vm = $query->handle($id, $user);
+
+        return view('purchase-requests.partials.quick-view-content', [
+            'pr' => $vm->purchaseRequest,
+            'filteredItemDetail' => $vm->filteredItemDetail,
+            'totals' => $vm->totals,
+        ]);
+    }
+
     public function saveSignaturePath(
         SaveSignatureRequest $request,
         $prId,

@@ -7,6 +7,9 @@
             PDF</span>
     </a>
 @else
+    <button type="button" class="my-1 btn btn-info text-white quick-view-btn" data-id="{{ $pr->id }}">
+        <i class='bx bx-search-alt'></i> Quick View
+    </button>
     <a href="{{ route('purchase-requests.show', ['id' => $pr->id]) }}" class="my-1 btn btn-secondary">
         <i class='bx bx-info-circle'></i> Detail
     </a>
