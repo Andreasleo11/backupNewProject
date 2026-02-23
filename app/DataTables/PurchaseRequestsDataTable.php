@@ -139,6 +139,37 @@ class PurchaseRequestsDataTable extends DataTable
             $query->where('to_department', $dept);
         }
 
+        // Apply URL Top-Card Filters
+        if (request()->filled('filter')) {
+            $filter = request('filter');
+
+            if ($filter === 'my_approval') {
+                $userId = auth()->id();
+                $roleIds = auth()->user()->roles->pluck('id')->toArray();
+
+                $query->inReview()
+                    ->whereHas('approvalRequest.steps', function ($q) use ($userId, $roleIds) {
+                        $q->where('sequence', \Illuminate\Support\Facades\DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
+                            ->whereNull('acted_at')
+                            ->where(function ($q2) use ($userId, $roleIds) {
+                                $q2->where(function ($u) use ($userId) {
+                                    $u->where('approver_type', 'user')
+                                        ->where('approver_id', $userId);
+                                })->orWhere(function ($r) use ($roleIds) {
+                                    $r->where('approver_type', 'role')
+                                        ->whereIn('approver_id', $roleIds);
+                                });
+                            });
+                    });
+            } elseif ($filter === 'in_review') {
+                $query->inReview();
+            } elseif ($filter === 'approved_month') {
+                $query->workflowApproved()
+                    ->whereYear('purchase_requests.updated_at', now()->year)
+                    ->whereMonth('purchase_requests.updated_at', now()->month);
+            }
+        }
+
         return $this->queryScoper->scopeForUser(auth()->user(), $query);
     }
 

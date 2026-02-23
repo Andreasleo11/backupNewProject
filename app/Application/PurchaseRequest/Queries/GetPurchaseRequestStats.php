@@ -29,16 +29,31 @@ class GetPurchaseRequestStats
     }
 
     /**
-     * Get count of PRs pending current user's approval
+     * Get count of PRs pending current user's approval (checking both User ID and Role IDs)
      */
     private function getPendingMyApproval(): int
     {
+        $userId = auth()->id();
+        $roleIds = auth()->user()->roles->pluck('id')->toArray();
+
         return PurchaseRequest::query()
             ->inReview()  // Use new query scope
-            ->whereHas('approvalRequest.steps', function ($q) {
+            ->whereHas('approvalRequest.steps', function ($q) use ($userId, $roleIds) {
+                // Match the current step sequence
                 $q->where('sequence', DB::raw('(SELECT current_step FROM approval_requests WHERE id = approval_steps.approval_request_id)'))
-                    ->where('approver_id', auth()->id())
-                    ->whereNull('acted_at');
+                    ->whereNull('acted_at')
+                    ->where(function ($query) use ($userId, $roleIds) {
+                        // Check if assigned strictly to the User
+                        $query->where(function ($u) use ($userId) {
+                            $u->where('approver_type', 'user')
+                                ->where('approver_id', $userId);
+                        })
+                        // Or assigned to a Role the User currently has
+                            ->orWhere(function ($r) use ($roleIds) {
+                                $r->where('approver_type', 'role')
+                                    ->whereIn('approver_id', $roleIds);
+                            });
+                    });
             })
             ->count();
     }
@@ -58,27 +73,41 @@ class GetPurchaseRequestStats
     {
         return PurchaseRequest::query()
             ->workflowApproved()  // Use query scope
-            ->whereYear('approved_at', now()->year)
-            ->whereMonth('approved_at', now()->month)
+            ->whereYear('updated_at', now()->year)
+            ->whereMonth('updated_at', now()->month)
             ->count();
     }
 
     /**
-     * Get total value of pending PRs (rough estimate)
+     * Get total value of pending PRs grouped by currency
      */
-    private function getTotalValuePending(): float
+    private function getTotalValuePending(): array
     {
-        $total = PurchaseRequest::query()
+        $totals = [];
+
+        $prs = PurchaseRequest::query()
             ->inReview()  // Use query scope
             ->with('items')
-            ->get()
-            ->sum(function ($pr) {
-                return $pr->items->sum(function ($item) {
-                    return ($item->quantity ?? 0) * ($item->unit_price ?? 0);
-                });
-            });
+            ->get();
 
-        return round($total, 2);
+        foreach ($prs as $pr) {
+            foreach ($pr->items as $item) {
+                $currency = strtoupper($item->currency ?? 'IDR');
+                $value = ($item->quantity ?? 0) * ($item->price ?? 0);
+
+                if (! isset($totals[$currency])) {
+                    $totals[$currency] = 0.0;
+                }
+                $totals[$currency] += $value;
+            }
+        }
+
+        // Ensure 0 is returned if nothing exists
+        if (empty($totals)) {
+            return ['IDR' => 0];
+        }
+
+        return $totals;
     }
 
     /**

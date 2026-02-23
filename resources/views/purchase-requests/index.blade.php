@@ -82,6 +82,30 @@
 
         <div class="glass-card overflow-hidden p-1">
             <div class="rounded-xl bg-white/50 p-4">
+                {{-- ACTIVE URL FILTER INDICATOR --}}
+                @if(request()->filled('filter'))
+                    <div class="mb-5 rounded-xl bg-indigo-50/80 border border-indigo-100 p-3 flex items-center justify-between shadow-sm backdrop-blur-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                                <i class="bx bx-filter-alt text-lg"></i>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Active View</span>
+                                <span class="text-sm text-indigo-900 font-semibold">
+                                    @if(request('filter') === 'my_approval') Pending My Approval
+                                    @elseif(request('filter') === 'in_review') In Review
+                                    @elseif(request('filter') === 'approved_month') Approved This Month
+                                    @else Custom Saved Filter
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        <a href="{{ route('purchase-requests.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-200 transition-all hover:shadow-sm">
+                            <i class="bx bx-x text-sm"></i> Clear Filter
+                        </a>
+                    </div>
+                @endif
+
                 {{-- CUSTOM DATA FILTERS --}}
                 <div class="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
                     <div class="flex flex-col sm:flex-row items-center gap-4">

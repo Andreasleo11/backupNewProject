@@ -77,9 +77,11 @@
         <div class="relative z-10 flex items-start justify-between">
             <div class="flex-1">
                 <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Est. Value Pending</p>
-                <p class="mt-2 text-2xl font-black text-slate-800 group-hover:text-indigo-700 transition-colors truncate">
-                    ${{ number_format($stats['total_value_pending'], 0) }}
-                </p>
+                <div class="mt-2 text-xl font-black text-slate-800 group-hover:text-indigo-700 transition-colors">
+                    @foreach($stats['total_value_pending'] ?? ['IDR' => 0] as $currency => $amount)
+                        <div class="truncate">{{ $currency }} {{ number_format($amount, 0) }}</div>
+                    @endforeach
+                </div>
                 <p class="mt-1 text-[11px] font-medium text-slate-500">
                     Total pipeline value
                 </p>
