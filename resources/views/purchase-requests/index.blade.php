@@ -82,10 +82,40 @@
 
         <div class="glass-card overflow-hidden p-1">
             <div class="rounded-xl bg-white/50 p-4">
-                {{-- Tips/Info --}}
-                <div class="mb-4 flex items-center gap-2 rounded-lg bg-blue-50/50 px-3 py-2 text-xs text-blue-700 border border-blue-100">
-                    <i class="bi bi-info-circle-fill"></i>
-                    <span><strong>Pro Tip:</strong> Use the <strong>Search Panes</strong> button above the table to filter by multiple criteria instantly.</span>
+                {{-- CUSTOM DATA FILTERS --}}
+                <div class="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
+                    <div class="flex flex-col sm:flex-row items-center gap-4">
+                        <div class="flex items-center gap-2 text-slate-500 font-medium">
+                            <i class="bi bi-funnel"></i> Filters:
+                        </div>
+                        
+                        <div class="w-full sm:w-64">
+                            <label for="filter-status" class="sr-only">Status</label>
+                            <select id="filter-status" class="form-select text-sm border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">All Statuses</option>
+                                <option value="DRAFT">Draft</option>
+                                <option value="IN_REVIEW">In Review</option>
+                                <option value="APPROVED">Approved</option>
+                                <option value="REJECTED">Rejected</option>
+                                <option value="CANCELED">Canceled</option>
+                            </select>
+                        </div>
+
+                        <div class="w-full sm:w-64">
+                            <label for="filter-department" class="sr-only">Target Department</label>
+                            <select id="filter-department" class="form-select text-sm border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <option value="">All Target Departments</option>
+                                <option value="PURCHASING">Purchasing</option>
+                                <option value="PERSONALIA">Personalia / HRD</option>
+                                <option value="MAINTENANCE">Maintenance</option>
+                                <option value="COMPUTER">Computer / IT</option>
+                            </select>
+                        </div>
+                        
+                        <button id="btn-reset-filters" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors ml-auto sm:ml-0 font-medium">
+                            Reset
+                        </button>
+                    </div>
                 </div>
 
                 <div class="premium-datatable-wrapper">
@@ -122,13 +152,7 @@
         </div>
     </div>
 
-    {{-- Search Panes CSS --}}
-    <link rel="stylesheet" href="https://cdn.datatables.net/searchpanes/2.1.1/css/searchPanes.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    {{-- Search Panes JS --}}
-    <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/dataTables.searchPanes.min.js"></script>
-    <script type="module" src="https://cdn.datatables.net/searchpanes/2.3.3/js/searchPanes.bootstrap5.min.js"></script>
 
     <style>
         /* Custom DataTable Styling Overrides */
@@ -158,14 +182,18 @@
         }
         table.dataTable thead th {
             border-bottom: 1px solid #e2e8f0 !important;
-            background-color: #f8fafc;
-            color: #475569;
-            font-weight: 600;
-            text-transform: uppercase;
             font-size: 0.75rem;
+            text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
+            color: #64748b;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+        table.dataTable tbody td {
+            font-size: 0.875rem; /* text-sm */
+            padding-top: 0.5rem; /* Reduced padding for compact look */
+            padding-bottom: 0.5rem;
+            vertical-align: middle;
         }
         .page-item.active .page-link {
             background-color: #4f46e5 !important;
@@ -193,184 +221,218 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{ $dataTable->scripts() }}
 
-    @if($canBatchApprove)
+    {{-- CUSTOM FILTERS LOGIC --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Helper function to get checked IDs
-            const getSelectedIds = () => {
-                const checkboxes = document.querySelectorAll('tbody input.pr-checkbox:checked');
-                return Array.from(checkboxes).map(cb => cb.value);
-            };
+            // DataTables exposes its instance globally via Laravel DataTables (usually window.LaravelDataTables['purchaserequests-table'])
+            const tableId = 'purchaserequests-table';
+            
+            // Wait for DataTable to initialize
+            setTimeout(() => {
+                if(window.LaravelDataTables && window.LaravelDataTables[tableId]) {
+                    const dt = window.LaravelDataTables[tableId];
 
-            // Update selection count text
-            const updateSelectionCount = () => {
-                const count = document.querySelectorAll('tbody input.pr-checkbox:checked').length;
-                const countLabel = document.getElementById('batch-selection-count');
-                const btnApprove = document.getElementById('batch-approve-btn');
-                const btnReject = document.getElementById('batch-reject-btn');
-
-                if(count > 0) {
-                    countLabel.textContent = `${count} item${count > 1 ? 's' : ''} selected`;
-                    countLabel.classList.remove('text-slate-400');
-                    countLabel.classList.add('text-indigo-600', 'font-semibold');
-                    btnApprove.disabled = false;
-                    btnReject.disabled = false;
-                    btnApprove.classList.remove('opacity-50', 'cursor-not-allowed');
-                    btnReject.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    countLabel.textContent = 'No items selected';
-                    countLabel.classList.remove('text-indigo-600', 'font-semibold');
-                    countLabel.classList.add('text-slate-400');
-                    btnApprove.disabled = true;
-                    btnReject.disabled = true;
-                    btnApprove.classList.add('opacity-50', 'cursor-not-allowed');
-                    btnReject.classList.add('opacity-50', 'cursor-not-allowed');
-                }
-            };
-
-            // Use event delegation for checkboxes, as DataTable redraws them
-            document.querySelector('.premium-datatable-wrapper').addEventListener('change', function(e) {
-                if(e.target.classList.contains('pr-checkbox')) {
-                    updateSelectionCount();
-                }
-                
-                // Handle "Check All" if it exists
-                if(e.target.id === 'check-all-prs') {
-                    const isChecked = e.target.checked;
-                    document.querySelectorAll('tbody input.pr-checkbox').forEach(cb => {
-                        cb.checked = isChecked;
+                    // Bind filter changes to reload table
+                    $('#filter-status, #filter-department').on('change', function() {
+                        dt.ajax.reload();
                     });
-                    updateSelectionCount();
-                }
-            });
 
-            // Handle DataTable draw events to reset selection UI
-            window.LaravelDataTables["purchaserequests-table"].on('draw', function() {
-                updateSelectionCount();
-                const checkAll = document.getElementById('check-all-prs');
-                if(checkAll) checkAll.checked = false;
-            });
-
-            // Initial UI state setup
-            updateSelectionCount();
-
-            // Setup bulk Action Request function
-            const performBulkAction = (url, data, successCallback) => {
-                Swal.fire({
-                    title: 'Processing...',
-                    text: 'Please wait while we process your request.',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: data.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        if (successCallback) successCallback();
-                        window.LaravelDataTables["purchaserequests-table"].ajax.reload(null, false);
-                        updateSelectionCount();
-                    } else {
-                        throw new Error(data.message || 'An error occurred during processing.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Action failed:', error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops...',
-                        text: error.message || 'Something went wrong!',
+                    // Reset button
+                    $('#btn-reset-filters').on('click', function(e) {
+                        e.preventDefault();
+                        $('#filter-status').val('');
+                        $('#filter-department').val('');
+                        dt.ajax.reload();
                     });
-                });
-            };
 
-            // ====== Approve Selected ======
-            document.getElementById('batch-approve-btn').addEventListener('click', function() {
-                const ids = getSelectedIds();
-                if(ids.length === 0) return;
-
-                Swal.fire({
-                    title: 'Approve Selected?',
-                    text: `You are about to approve ${ids.length} purchase request(s).`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#059669', // emerald-600
-                    cancelButtonColor: '#64748b',  // slate-500
-                    confirmButtonText: 'Yes, approve them'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        performBulkAction(this.dataset.url, { ids: ids });
-                    }
-                });
-            });
-
-            // ====== Reject Selected UI logic ======
-            const wrapper = document.getElementById('batch-reject-reason-wrapper');
-            const rejectBtn = document.getElementById('batch-reject-btn');
-            const approveBtn = document.getElementById('batch-approve-btn');
-            const confirmRejectBtn = document.getElementById('batch-reject-confirm-btn');
-            const cancelRejectBtn = document.getElementById('batch-reject-cancel-btn');
-            const reasonInput = document.getElementById('batch-reject-reason');
-
-            rejectBtn.addEventListener('click', function() {
-                if(getSelectedIds().length === 0) return;
-                
-                // Show inline reason input
-                wrapper.classList.remove('hidden');
-                rejectBtn.classList.add('hidden');
-                approveBtn.classList.add('hidden');
-                reasonInput.focus();
-            });
-
-            cancelRejectBtn.addEventListener('click', function() {
-                wrapper.classList.add('hidden');
-                rejectBtn.classList.remove('hidden');
-                approveBtn.classList.remove('hidden');
-                reasonInput.value = ''; // clear
-            });
-
-            confirmRejectBtn.addEventListener('click', function() {
-                const ids = getSelectedIds();
-                const reason = reasonInput.value.trim();
-
-                if(ids.length === 0) return;
-                if(!reason) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Reason Required',
-                        text: 'Please provide a reason for rejecting the selected requests.'
+                    // Intercept AJAX request to append our custom filter values
+                    dt.on('preXhr.dt', function ( e, settings, data ) {
+                        data.custom_status = $('#filter-status').val();
+                        data.custom_department = $('#filter-department').val();
                     });
-                    reasonInput.focus();
-                    return;
                 }
-
-                performBulkAction(rejectBtn.dataset.url, {
-                    ids: ids,
-                    rejection_reason: reason
-                }, () => {
-                    // Success callback
-                    cancelRejectBtn.click(); // Hide reason input
-                });
-            });
+            }, 500);
         });
     </script>
+
+    @if($canBatchApprove)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Helper function to get checked IDs
+                const getSelectedIds = () => {
+                    const checkboxes = document.querySelectorAll('tbody input.pr-checkbox:checked');
+                    return Array.from(checkboxes).map(cb => cb.value);
+                };
+
+                // Update selection count text
+                const updateSelectionCount = () => {
+                    const count = document.querySelectorAll('tbody input.pr-checkbox:checked').length;
+                    const countLabel = document.getElementById('batch-selection-count');
+                    const btnApprove = document.getElementById('batch-approve-btn');
+                    const btnReject = document.getElementById('batch-reject-btn');
+
+                    if(count > 0) {
+                        countLabel.textContent = `${count} item${count > 1 ? 's' : ''} selected`;
+                        countLabel.classList.remove('text-slate-400');
+                        countLabel.classList.add('text-indigo-600', 'font-semibold');
+                        btnApprove.disabled = false;
+                        btnReject.disabled = false;
+                        btnApprove.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btnReject.classList.remove('opacity-50', 'cursor-not-allowed');
+                    } else {
+                        countLabel.textContent = 'No items selected';
+                        countLabel.classList.remove('text-indigo-600', 'font-semibold');
+                        countLabel.classList.add('text-slate-400');
+                        btnApprove.disabled = true;
+                        btnReject.disabled = true;
+                        btnApprove.classList.add('opacity-50', 'cursor-not-allowed');
+                        btnReject.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                };
+
+                // Use event delegation for checkboxes, as DataTable redraws them
+                document.querySelector('.premium-datatable-wrapper').addEventListener('change', function(e) {
+                    if(e.target.classList.contains('pr-checkbox')) {
+                        updateSelectionCount();
+                    }
+                    
+                    // Handle "Check All" if it exists
+                    if(e.target.id === 'check-all-prs') {
+                        const isChecked = e.target.checked;
+                        document.querySelectorAll('tbody input.pr-checkbox').forEach(cb => {
+                            cb.checked = isChecked;
+                        });
+                        updateSelectionCount();
+                    }
+                });
+
+                // Handle DataTable draw events to reset selection UI
+                window.LaravelDataTables["purchaserequests-table"].on('draw', function() {
+                    updateSelectionCount();
+                    const checkAll = document.getElementById('check-all-prs');
+                    if(checkAll) checkAll.checked = false;
+                });
+
+                // Initial UI state setup
+                updateSelectionCount();
+
+                // Setup bulk Action Request function
+                const performBulkAction = (url, data, successCallback) => {
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait while we process your request.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(data),
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: data.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            if (successCallback) successCallback();
+                            window.LaravelDataTables["purchaserequests-table"].ajax.reload(null, false);
+                            updateSelectionCount();
+                        } else {
+                            throw new Error(data.message || 'An error occurred during processing.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Action failed:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: error.message || 'Something went wrong!',
+                        });
+                    });
+                };
+
+                // ====== Approve Selected ======
+                document.getElementById('batch-approve-btn').addEventListener('click', function() {
+                    const ids = getSelectedIds();
+                    if(ids.length === 0) return;
+
+                    Swal.fire({
+                        title: 'Approve Selected?',
+                        text: `You are about to approve ${ids.length} purchase request(s).`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#059669', // emerald-600
+                        cancelButtonColor: '#64748b',  // slate-500
+                        confirmButtonText: 'Yes, approve them'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            performBulkAction(this.dataset.url, { ids: ids });
+                        }
+                    });
+                });
+
+                // ====== Reject Selected UI logic ======
+                const wrapper = document.getElementById('batch-reject-reason-wrapper');
+                const rejectBtn = document.getElementById('batch-reject-btn');
+                const approveBtn = document.getElementById('batch-approve-btn');
+                const confirmRejectBtn = document.getElementById('batch-reject-confirm-btn');
+                const cancelRejectBtn = document.getElementById('batch-reject-cancel-btn');
+                const reasonInput = document.getElementById('batch-reject-reason');
+
+                rejectBtn.addEventListener('click', function() {
+                    if(getSelectedIds().length === 0) return;
+                    
+                    // Show inline reason input
+                    wrapper.classList.remove('hidden');
+                    rejectBtn.classList.add('hidden');
+                    approveBtn.classList.add('hidden');
+                    reasonInput.focus();
+                });
+
+                cancelRejectBtn.addEventListener('click', function() {
+                    wrapper.classList.add('hidden');
+                    rejectBtn.classList.remove('hidden');
+                    approveBtn.classList.remove('hidden');
+                    reasonInput.value = ''; // clear
+                });
+
+                confirmRejectBtn.addEventListener('click', function() {
+                    const ids = getSelectedIds();
+                    const reason = reasonInput.value.trim();
+
+                    if(ids.length === 0) return;
+                    if(!reason) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Reason Required',
+                            text: 'Please provide a reason for rejecting the selected requests.'
+                        });
+                        reasonInput.focus();
+                        return;
+                    }
+
+                    performBulkAction(rejectBtn.dataset.url, {
+                        ids: ids,
+                        rejection_reason: reason
+                    }, () => {
+                        // Success callback
+                        cancelRejectBtn.click(); // Hide reason input
+                    });
+                });
+            });
+        </script>
     @endif
 
     {{-- QUICK VIEW LOGIC --}}
