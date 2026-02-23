@@ -200,32 +200,34 @@
             </div>
         </div>
 
-        {{-- QUICK VIEW MODAL --}}
-        <div class="modal fade" id="prQuickViewModal" tabindex="-1" aria-labelledby="prQuickViewModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden">
-                    <div class="modal-header bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 px-5 py-4">
-                        <h5 class="modal-title font-semibold text-slate-800 flex items-center gap-2" id="prQuickViewModalLabel">
-                            <i class="bi bi-file-earmark-text text-indigo-600"></i>
-                            Purchase Request Detail
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-0 bg-slate-50 relative min-h-[300px]" id="prQuickViewContent">
-                        {{-- Content loaded by AJAX --}}
-                        <div class="absolute inset-0 flex items-center justify-center bg-white/80 z-10" id="prQuickViewLoader">
-                            <div class="spinner-border text-indigo-600" role="status">
-                                <span class="visually-hidden">Loading...</span>
+        @push('modals')
+            {{-- QUICK VIEW MODAL --}}
+            <div class="modal fade" id="prQuickViewModal" tabindex="-1" aria-labelledby="prQuickViewModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden">
+                        <div class="modal-header bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 px-5 py-4">
+                            <h5 class="modal-title font-semibold text-slate-800 flex items-center gap-2" id="prQuickViewModalLabel">
+                                <i class="bi bi-file-earmark-text text-indigo-600"></i>
+                                Purchase Request Detail
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-0 bg-slate-50 relative min-h-[300px]" id="prQuickViewContent">
+                            {{-- Content loaded by AJAX --}}
+                            <div class="absolute inset-0 flex items-center justify-center bg-white/80 z-10" id="prQuickViewLoader">
+                                <div class="spinner-border text-indigo-600" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="modal-footer bg-white border-t border-slate-100 px-5 py-3 rounded-b-xl">
-                        <a href="#" id="prQuickViewDetailBtn" class="btn btn-primary rounded-lg text-sm px-4">Full Details &rarr;</a>
-                        <button type="button" class="btn btn-secondary rounded-lg text-sm px-4" data-bs-dismiss="modal">Close</button>
+                        <div class="modal-footer bg-white border-t border-slate-100 px-5 py-3 rounded-b-xl">
+                            <a href="#" id="prQuickViewDetailBtn" class="btn btn-primary rounded-lg text-sm px-4">Full Details &rarr;</a>
+                            <button type="button" class="btn btn-secondary rounded-lg text-sm px-4" data-bs-dismiss="modal">Close</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endpush
     </div>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">

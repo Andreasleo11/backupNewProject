@@ -62,8 +62,8 @@
                                 <span class="text-xs text-slate-500">{{ $item->uom }}</span>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-right">
-                                <div class="text-xs text-slate-500">{{ $item->currency }} {{ number_format($item->price, 2) }}</div>
-                                <div class="text-sm font-medium text-slate-900">{{ number_format($item->price * $item->quantity, 2) }}</div>
+                                <div class="text-xs text-slate-500">{{ $item->currency }} {{ number_format((float) $item->price, 2) }}</div>
+                                <div class="text-sm font-medium text-slate-900">{{ number_format((float) $item->price * (float) $item->quantity, 2) }}</div>
                             </td>
                         </tr>
                     @empty
@@ -81,7 +81,7 @@
                 @foreach($totals as $currency => $amount)
                     <div class="bg-indigo-50 border border-indigo-100 rounded px-3 py-1.5 text-right">
                         <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block leading-none mb-0.5">Total {{ $currency }}</span>
-                        <span class="text-sm font-bold text-indigo-700 leading-none">{{ number_format($amount, 2) }}</span>
+                        <span class="text-sm font-bold text-indigo-700 leading-none">{{ number_format((float) $amount, 2) }}</span>
                     </div>
                 @endforeach
             </div>
