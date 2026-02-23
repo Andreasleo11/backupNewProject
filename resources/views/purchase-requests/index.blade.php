@@ -3,30 +3,70 @@
 @section('title', 'Purchase Requisition List')
 
 @section('content')
+    <style>
+        /* Premium Datatable Overrides */
+        .premium-datatable-wrapper .dataTable thead th {
+            border-bottom: 2px solid #e2e8f0 !important;
+            color: #475569 !important;
+            font-size: 0.75rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            background-color: transparent !important;
+        }
+        .premium-datatable-wrapper .dataTable tbody tr {
+            transition: all 0.2s ease;
+        }
+        .premium-datatable-wrapper .dataTable tbody tr:hover {
+            background-color: #f8fafc !important;
+            transform: scale(1.001);
+        }
+        .premium-datatable-wrapper .dataTable td {
+            vertical-align: middle !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            padding: 1rem 0.75rem !important;
+        }
+        .premium-datatable-wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #4f46e5 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        }
+        .premium-datatable-wrapper .dataTables_wrapper .dataTables_info {
+            color: #64748b !important;
+            font-size: 0.875rem !important;
+            font-weight: 500 !important;
+        }
+    </style>
+
     <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6">
         {{-- HEADER CARD --}}
-        <div class="glass-card flex flex-wrap items-center justify-between gap-4 p-5">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-800">
+        <div class="glass-card relative overflow-hidden flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100/20 pointer-events-none"></div>
+            
+            <div class="relative z-10">
+                <h1 class="text-3xl font-black tracking-tight text-slate-800">
                     Purchase Requisition
                 </h1>
-                <p class="mt-1 text-sm text-slate-500">
-                    Manage and track all procurement requests in one place.
+                <p class="mt-1.5 text-sm font-medium text-slate-500">
+                    Manage and track all procurement requests in one place
                 </p>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="relative z-10 flex flex-wrap items-center gap-3">
                 {{-- Export button --}}
                 <a href="{{ route('purchase-requests.export-excel') }}"
-                   class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm transition-all hover:bg-emerald-100 hover:shadow-md hover:-translate-y-0.5">
+                   class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm border border-emerald-100 transition-all hover:bg-emerald-50 hover:shadow-emerald-100 hover:-translate-y-0.5">
                     <i class="bi bi-file-earmark-excel text-lg"></i>
                     <span>Export</span>
                 </a>
 
-            {{-- Create PR button — shown to users who can create PRs --}}
+                {{-- Create PR button --}}
                 @can('pr.create')
                     <a href="{{ route('purchase-requests.create') }}"
-                       class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:-translate-y-0.5">
+                       class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:from-indigo-500 hover:to-violet-500 hover:-translate-y-0.5">
                         <i class="bi bi-plus-lg text-lg"></i>
                         <span>New Request</span>
                     </a>
@@ -37,61 +77,68 @@
         {{-- STATS DASHBOARD --}}
         @include('partials.pr-stats-cards', ['stats' => $stats])
 
-        {{-- BATCH ACTIONS — only visible to users with pr.batch-approve permission --}}
+        {{-- BATCH ACTIONS --}}
         @if($canBatchApprove)
-            <div class="glass-card p-4 flex flex-wrap items-center gap-3" id="batch-action-bar">
-                <span class="text-sm font-medium text-slate-600">
-                    <i class="bi bi-check2-square me-1"></i>
-                    Director Actions:
+            <div class="glass-card p-4 flex flex-wrap items-center gap-3 backdrop-blur-md bg-white/70" id="batch-action-bar">
+                <span class="text-sm font-bold text-slate-600 uppercase tracking-wider flex items-center gap-2">
+                    <div class="h-6 w-1 bg-indigo-500 rounded-full"></div>
+                    Director Actions
                 </span>
+
+                <div class="h-6 w-px bg-slate-200 mx-2"></div>
 
                 {{-- Approve Selected --}}
                 <button id="batch-approve-btn"
                         data-url="{{ route('purchase-requests.batch-approve') }}"
-                        class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5">
-                    <i class="bi bi-check-lg"></i>
+                        class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group">
+                    <i class="bi bi-check-lg group-hover:scale-110 transition-transform"></i>
                     Approve Selected
                 </button>
 
                 {{-- Reject Selected --}}
                 <button id="batch-reject-btn"
                         data-url="{{ route('purchase-requests.batch-reject') }}"
-                        class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 transition-all hover:-translate-y-0.5">
-                    <i class="bi bi-x-lg"></i>
+                        class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100 hover:border-rose-300 transition-all hover:-translate-y-0.5 group">
+                    <i class="bi bi-x-lg group-hover:scale-110 transition-transform"></i>
                     Reject Selected
                 </button>
 
-                <span class="text-xs text-slate-400 ml-auto" id="batch-selection-count">No items selected</span>
+                <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1 rounded-full ml-auto" id="batch-selection-count">No items selected</span>
 
-                {{-- Reject reason input (hidden until reject clicked) --}}
-                <div id="batch-reject-reason-wrapper" class="hidden w-full mt-2 flex items-center gap-3">
-                    <input type="text" id="batch-reject-reason"
-                           placeholder="Rejection reason (required)"
-                           class="flex-1 rounded-xl border border-rose-200 bg-rose-50/50 px-4 py-2 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-400">
+                {{-- Reject reason input --}}
+                <div id="batch-reject-reason-wrapper" class="hidden w-full mt-3 flex items-center gap-3 animate-fade-in">
+                    <div class="relative flex-1">
+                        <i class="bi bi-pencil-square absolute left-3 top-1/2 -translate-y-1/2 text-rose-400"></i>
+                        <input type="text" id="batch-reject-reason"
+                               placeholder="Please provide a rejection reason (required)"
+                               class="w-full rounded-xl border border-rose-200 bg-rose-50/50 pl-10 pr-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all placeholder-rose-300">
+                    </div>
                     <button id="batch-reject-confirm-btn"
-                            class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 transition-all">
-                        Confirm Reject
+                            class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-rose-200 hover:bg-rose-700 transition-all hover:-translate-y-0.5">
+                        Confirm
                     </button>
                     <button id="batch-reject-cancel-btn"
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-all">
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all hover:-translate-y-0.5">
                         Cancel
                     </button>
                 </div>
             </div>
         @endif
 
-        <div class="glass-card overflow-hidden p-1">
-            <div class="rounded-xl bg-white/50 p-4">
+        <div class="glass-card overflow-hidden p-1 shadow-sm border border-slate-200/60 relative">
+            <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/30 -z-10"></div>
+            
+            <div class="rounded-xl p-4">
                 {{-- ACTIVE URL FILTER INDICATOR --}}
                 @if(request()->filled('filter'))
-                    <div class="mb-5 rounded-xl bg-indigo-50/80 border border-indigo-100 p-3 flex items-center justify-between shadow-sm backdrop-blur-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
-                                <i class="bx bx-filter-alt text-lg"></i>
+                    <div class="mb-5 rounded-2xl bg-indigo-50/80 border border-indigo-100 p-3.5 flex items-center justify-between shadow-sm backdrop-blur-sm animate-fade-in">
+                        <div class="flex items-center gap-3.5">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 shadow-inner">
+                                <i class="bx bx-filter-alt text-xl"></i>
                             </div>
                             <div class="flex flex-col">
-                                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Active View</span>
-                                <span class="text-sm text-indigo-900 font-semibold">
+                                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Active View</span>
+                                <span class="text-sm text-indigo-950 font-bold">
                                     @if(request('filter') === 'my_approval') Pending My Approval
                                     @elseif(request('filter') === 'in_review') In Review
                                     @elseif(request('filter') === 'approved_month') Approved This Month
@@ -100,46 +147,51 @@
                                 </span>
                             </div>
                         </div>
-                        <a href="{{ route('purchase-requests.index') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-200 transition-all hover:shadow-sm">
-                            <i class="bx bx-x text-sm"></i> Clear Filter
+                        <a href="{{ route('purchase-requests.index') }}" class="group inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 bg-white hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-xl border border-indigo-200 transition-all hover:shadow-md shadow-sm">
+                            <i class="bx bx-x text-sm group-hover:rotate-90 transition-transform"></i> Clear Filter
                         </a>
                     </div>
                 @endif
 
                 {{-- CUSTOM DATA FILTERS --}}
-                <div class="mb-5 bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-sm">
-                    <div class="flex flex-col sm:flex-row items-center gap-4">
-                        <div class="flex items-center gap-2 text-slate-500 font-medium">
-                            <i class="bi bi-funnel"></i> Filters:
-                        </div>
-                        
-                        <div class="w-full sm:w-64">
-                            <label for="filter-status" class="sr-only">Status</label>
-                            <select id="filter-status" class="form-select text-sm border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">All Statuses</option>
-                                <option value="DRAFT">Draft</option>
-                                <option value="IN_REVIEW">In Review</option>
-                                <option value="APPROVED">Approved</option>
-                                <option value="REJECTED">Rejected</option>
-                                <option value="CANCELED">Canceled</option>
-                            </select>
-                        </div>
-
-                        <div class="w-full sm:w-64">
-                            <label for="filter-department" class="sr-only">Target Department</label>
-                            <select id="filter-department" class="form-select text-sm border-slate-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">All Target Departments</option>
-                                <option value="PURCHASING">Purchasing</option>
-                                <option value="PERSONALIA">Personalia / HRD</option>
-                                <option value="MAINTENANCE">Maintenance</option>
-                                <option value="COMPUTER">Computer / IT</option>
-                            </select>
-                        </div>
-                        
-                        <button id="btn-reset-filters" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors ml-auto sm:ml-0 font-medium">
-                            Reset
-                        </button>
+                <div class="mb-6 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center gap-4 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-transparent pointer-events-none"></div>
+                    
+                    <div class="relative flex items-center gap-2 text-slate-800 font-bold text-sm uppercase tracking-wider">
+                        <div class="h-5 w-1 bg-slate-300 rounded-full"></div>
+                        <i class="bi bi-funnel text-slate-400"></i> Filters
                     </div>
+                    
+                    <div class="h-6 w-px bg-slate-100 mx-2 hidden sm:block"></div>
+                    
+                    <div class="w-full sm:w-56 relative z-10 group">
+                        <label for="filter-status" class="sr-only">Status</label>
+                        <i class="bx bx-loader-circle absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
+                        <select id="filter-status" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                            <option value="">All Statuses</option>
+                            <option value="DRAFT">Draft</option>
+                            <option value="IN_REVIEW">In Review</option>
+                            <option value="APPROVED">Approved</option>
+                            <option value="REJECTED">Rejected</option>
+                            <option value="CANCELED">Canceled</option>
+                        </select>
+                    </div>
+
+                    <div class="w-full sm:w-64 relative z-10 group">
+                        <label for="filter-department" class="sr-only">Target Department</label>
+                        <i class="bx bx-buildings absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
+                        <select id="filter-department" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                            <option value="">All Target Departments</option>
+                            <option value="PURCHASING">Purchasing</option>
+                            <option value="PERSONALIA">Personalia / HRD</option>
+                            <option value="MAINTENANCE">Maintenance</option>
+                            <option value="COMPUTER">Computer / IT</option>
+                        </select>
+                    </div>
+                    
+                    <button id="btn-reset-filters" class="relative z-10 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors ml-auto sm:ml-0 flex items-center gap-1 bg-slate-50 hover:bg-indigo-50 px-3 py-2 rounded-lg border border-transparent hover:border-indigo-100">
+                        <i class="bx bx-reset"></i> Reset
+                    </button>
                 </div>
 
                 <div class="premium-datatable-wrapper">
