@@ -11,7 +11,8 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 uses(DatabaseTruncation::class);
 
 beforeEach(function () {
-    (new \Database\Seeders\RefactoredPrPermissionsSeeder)->run();
+    $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+    $this->seed(\Database\Seeders\PrTestUserSeeder::class);
     (new \Database\Seeders\PrApprovalRulesSeeder)->run();
 
     $this->fromDept = Department::factory()->create(['name' => 'Computer', 'is_office' => true]);

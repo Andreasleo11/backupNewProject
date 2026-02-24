@@ -8,7 +8,8 @@ use Illuminate\Foundation\Testing\DatabaseTruncation;
 uses(DatabaseTruncation::class);
 
 beforeEach(function () {
-    $this->seed(\Database\Seeders\RefactoredPrPermissionsSeeder::class);
+    $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+    $this->seed(\Database\Seeders\PrTestUserSeeder::class);
     $this->seed(\Database\Seeders\PrApprovalRulesSeeder::class);
 
     // Create test user with department

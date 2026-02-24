@@ -10,7 +10,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('debug pr creation', function () {
-    $this->seed(\Database\Seeders\RefactoredPrPermissionsSeeder::class);
+    $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+    $this->seed(\Database\Seeders\PrTestUserSeeder::class);
     $this->seed(\Database\Seeders\PrApprovalRulesSeeder::class);
 
     $fromDept = Department::factory()->create(['name' => 'Computer', 'is_office' => true]);

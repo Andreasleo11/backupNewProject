@@ -14,7 +14,8 @@ abstract class TestCase extends BaseTestCase
 
         // Seed approval system for Purchase Request tests
         if ($this->shouldSeedApprovalSystem()) {
-            $this->seed(\Database\Seeders\RefactoredPrPermissionsSeeder::class);
+            $this->seed(\Database\Seeders\RolesAndPermissionsSeeder::class);
+            $this->seed(\Database\Seeders\PrTestUserSeeder::class);
             $this->seed(\Database\Seeders\PrApprovalRulesSeeder::class);
         }
     }

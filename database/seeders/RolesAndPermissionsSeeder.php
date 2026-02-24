@@ -50,19 +50,22 @@ class RolesAndPermissionsSeeder extends Seeder
             'employee.update',
 
             // Purchase Request (PR)
-            'pr.view-own',
-            'pr.view-dept',
-            'pr.view-any',
+            'pr.view',
+            'pr.view-all',
             'pr.create',
-            'pr.update',
+            'pr.edit',
+            'pr.delete',
             'pr.cancel',
-            'pr.submit',
-            'pr.approve',
+            'pr.upload-files',
+            'pr.print',
             'pr.batch-approve',  // bulk approve/reject multiple PRs at once (director-level)
 
             // Approval engine
             'approval.view-log',
             'approval.manage-rules',   // RuleTemplate / RuleStepTemplate CRUD
+            'approval.approve',
+            'approval.reject',
+            'approval.approve-items',
         ];
 
         foreach ($permissions as $permName) {
@@ -85,126 +88,43 @@ class RolesAndPermissionsSeeder extends Seeder
             // === System / technical ===
             'super-admin' => ['*'],
 
-            'it-admin' => [
-                'user.view-any', 'user.view', 'user.create', 'user.update', 'user.delete', 'user.change-password',
-                'role.view-any', 'role.create', 'role.update', 'role.delete', 'permission.view-any',
-                'department.view-any', 'department.create', 'department.update', 'department.delete',
-                'employee.view-any', 'employee.view', 'employee.update',
-                'approval.manage-rules', 'approval.view-log',
-            ],
-
-            'auditor' => [
-                'user.view-any', 'user.view',
-                'department.view-any',
-                'employee.view-any', 'employee.view',
-                'pr.view-any',
-                'approval.view-log',
-            ],
-
-            // === Generic PR approval roles (used by approval engine) ===
-            'pr-maker' => [
-                'pr.view-own', 'pr.create', 'pr.update', 'pr.submit', 'pr.cancel',
+            // === Dynamic PR approval roles (used by approval engine) ===
+            'requester' => [
+                'pr.view', 'pr.create', 'pr.edit', 'pr.delete', 'pr.cancel', 'pr.upload-files', 'pr.print',
             ],
 
             'pr-dept-head' => [
-                'pr.view-dept', 'pr.view-own', 'pr.approve',
-            ],
-
-            'pr-head-design' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve',
-            ],
-
-            'pr-gm' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve',
-            ],
-
-            'pr-purchaser' => [
-                'pr.view-dept', 'pr.view-any', 'pr.create', 'pr.update', 'pr.submit', 'pr.cancel', 'pr.approve',
+                'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print',
+                'approval.approve', 'approval.reject', 'approval.approve-items',
             ],
 
             'pr-verificator' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve',
+                'pr.view', 'pr.view-all', 'pr.print',
+                'approval.approve', 'approval.reject', 'approval.approve-items',
+            ],
+
+            'pr-gm' => [
+                'pr.view', 'pr.view-all', 'pr.print',
+                'approval.approve', 'approval.reject', 'approval.approve-items',
             ],
 
             'pr-director' => [
-                'pr.view-any', 'pr.approve', 'pr.batch-approve',
+                'pr.view', 'pr.view-all', 'pr.print',
+                'approval.approve', 'approval.reject', 'approval.approve-items', 'pr.batch-approve',
             ],
 
+            'pr-purchaser' => [
+                'pr.view', 'pr.view-all', 'pr.create', 'pr.edit', 'pr.cancel', 'pr.upload-files', 'pr.print',
+                'approval.approve',
+            ],
+            
             'pr-admin' => [
-                'pr.view-any', 'pr.batch-approve', 'approval.manage-rules', 'approval.view-log',
+                'pr.view-all', 'pr.batch-approve', 'approval.manage-rules', 'approval.view-log',
             ],
 
-            // === Company management ===
+            // === Company management (Legacy / General Roles) ===
             'director' => [
-                'pr.view-any', 'pr.approve', 'pr.batch-approve', 'approval.view-log',
-            ],
-
-            'general-manager-jakarta' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve', 'pr.batch-approve', 'approval.view-log',
-            ],
-
-            'general-manager-karawang' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve', 'pr.batch-approve', 'approval.view-log',
-            ],
-
-            'head-management' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'management-staff' => [
-                'pr.view-own', 'pr.create', 'pr.update', 'pr.submit', 'pr.cancel',
-            ],
-
-            'head-purchasing' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'staff-purchasing' => [
-                'pr.view-dept', 'pr.create', 'pr.update', 'pr.submit', 'pr.cancel',
-            ],
-
-            'head-accounting' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'staff-accounting' => [
-                'pr.view-dept', 'pr.view-own',
-            ],
-
-            'head-production' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'staff-production' => [
-                'pr.view-own', 'pr.create', 'pr.update', 'pr.submit', 'pr.cancel',
-            ],
-
-            'head-qa' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'staff-qa' => [
-                'pr.view-dept', 'pr.view-own',
-            ],
-
-            'head-qc' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'staff-qc' => [
-                'pr.view-dept', 'pr.view-own',
-            ],
-
-            'head-warehouse' => [
-                'pr.view-dept', 'pr.approve',
-            ],
-            'staff-warehouse' => [
-                'pr.view-dept', 'pr.view-own',
-            ],
-
-            // === Old workflow-specific PR approvers ===
-            'pr-approver-level-1' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve',
-            ],
-            'pr-approver-level-2' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve',
-            ],
-            'pr-approver-level-3' => [
-                'pr.view-dept', 'pr.view-any', 'pr.approve',
+                'pr.view-all', 'approval.approve', 'approval.reject', 'approval.approve-items', 'pr.batch-approve', 'approval.view-log',
             ],
         ];
 
