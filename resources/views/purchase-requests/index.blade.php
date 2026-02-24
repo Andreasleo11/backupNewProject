@@ -41,7 +41,7 @@
         }
     </style>
 
-    <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6">
+    <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6" x-data="prIndex()">
         {{-- HEADER CARD --}}
         <div class="glass-card relative overflow-hidden flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
             <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100/20 pointer-events-none"></div>
