@@ -3,43 +3,91 @@
 @section('title', 'Purchase Requisition List')
 
 @section('content')
+@push('head')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
         /* Premium Datatable Overrides */
+        .premium-datatable-wrapper .dataTable {
+            border-collapse: separate;
+            border-spacing: 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
         .premium-datatable-wrapper .dataTable thead th {
             border-bottom: 2px solid #e2e8f0 !important;
             color: #475569 !important;
             font-size: 0.75rem !important;
             text-transform: uppercase !important;
             letter-spacing: 0.05em !important;
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
+            padding: 1rem 0.75rem !important;
             background-color: transparent !important;
         }
         .premium-datatable-wrapper .dataTable tbody tr {
             transition: all 0.2s ease;
         }
-        .premium-datatable-wrapper .dataTable tbody tr:hover {
-            background-color: #f8fafc !important;
-            transform: scale(1.001);
+        .premium-datatable-wrapper .dataTable.table-striped > tbody > tr.odd > * {
+            box-shadow: none !important;
+            background-color: rgba(248, 250, 252, 0.4); 
+        }
+        .premium-datatable-wrapper .dataTable tbody tr:hover > * {
+            background-color: rgba(241, 245, 249, 0.8) !important;
         }
         .premium-datatable-wrapper .dataTable td {
             vertical-align: middle !important;
             border-bottom: 1px solid #f1f5f9 !important;
-            padding: 1rem 0.75rem !important;
+            padding: 0.85rem 0.75rem !important;
+            font-size: 0.875rem;
         }
-        .premium-datatable-wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-            background: #4f46e5 !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 0.5rem !important;
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        
+        /* DataTables Controls */
+        .premium-datatable-wrapper .dataTables_length select,
+        .premium-datatable-wrapper .dataTables_filter input {
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            padding: 0.35rem 0.75rem;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.875rem;
         }
-        .premium-datatable-wrapper .dataTables_wrapper .dataTables_info {
+        .premium-datatable-wrapper .dataTables_length select:focus,
+        .premium-datatable-wrapper .dataTables_filter input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+        }
+        .premium-datatable-wrapper .dataTables_info {
             color: #64748b !important;
             font-size: 0.875rem !important;
             font-weight: 500 !important;
         }
+        
+        /* Pagination Styling */
+        .premium-datatable-wrapper .page-link {
+            border-radius: 0.5rem;
+            margin: 0 2px;
+            color: #64748b;
+            border: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .premium-datatable-wrapper .page-item.active .page-link {
+            background-color: #4f46e5 !important;
+            color: white !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        }
+        .premium-datatable-wrapper .page-item:not(.active) .page-link:hover {
+            background-color: #f1f5f9;
+            color: #4f46e5;
+        }
+        
+        /* Buttons Collection */
+        div.dt-button-collection {
+            border-radius: 1rem !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 0.5rem !important;
+        }
     </style>
+@endpush
 
     <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6" x-data="prIndex()">
         {{-- HEADER CARD --}}
@@ -310,72 +358,11 @@
         @endpush
     </div>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
-    <style>
-        /* Custom DataTable Styling Overrides */
-        .dataTables_wrapper .dataTables_length select {
-            border-radius: 0.5rem;
-            border-color: #e2e8f0;
-            padding-top: 0.35rem;
-            padding-bottom: 0.35rem;
-        }
-        .dataTables_wrapper .dataTables_filter input {
-            border-radius: 0.5rem;
-            border-color: #e2e8f0;
-            padding-top: 0.35rem;
-            padding-bottom: 0.35rem;
-        }
-        table.dataTable.table-striped > tbody > tr.odd > * {
-            box-shadow: none !important; /* Remove bootstrap striped shadow */
-            background-color: rgba(248, 250, 252, 0.5); /* Very light slate */
-        }
-        table.dataTable.table-striped > tbody > tr:hover > * {
-            background-color: rgba(241, 245, 249, 0.8) !important; /* Slate-100 on hover */
-        }
-        table.dataTable {
-            border-collapse: separate;
-            border-spacing: 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        table.dataTable thead th {
-            border-bottom: 1px solid #e2e8f0 !important;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #64748b;
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem;
-        }
-        table.dataTable tbody td {
-            font-size: 0.875rem; /* text-sm */
-            padding-top: 0.5rem; /* Reduced padding for compact look */
-            padding-bottom: 0.5rem;
-            vertical-align: middle;
-        }
-        .page-item.active .page-link {
-            background-color: #4f46e5 !important;
-            border-color: #4f46e5 !important;
-            border-radius: 0.5rem;
-        }
-        .page-link {
-            border-radius: 0.5rem;
-            margin: 0 2px;
-            color: #64748b;
-            border: none;
-        }
-        div.dt-button-collection {
-            border-radius: 1rem !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
-            border: 1px solid #e2e8f0 !important;
-            padding: 0.5rem !important;
-        }
-    </style>
 @endsection
 
 @push('scripts')
-    {{-- Chart.js --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{ $dataTable->scripts() }}
 
