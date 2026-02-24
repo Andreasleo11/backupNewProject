@@ -16,13 +16,34 @@
             $icon = 'bx-x-circle';
             $tooltip = 'Cancel Reason: ' . ($pr->description ?? '-');
         } elseif ($workflowStatus === 'IN_REVIEW') {
-            if ($pr->workflow_step) {
-                $label = 'PENDING: ' . strtoupper($pr->workflow_step);
+            $cls = 'bg-blue-50 text-blue-700 border-blue-200';
+            $icon = 'bx-time-five';
+            
+            if (isset($pr->approvalRequest->steps) && $pr->approvalRequest->steps->isNotEmpty()) {
+                $steps = $pr->approvalRequest->steps->sortBy('sequence');
+                $currentSeq = $pr->approvalRequest->current_step;
+                
+                $dots = [];
+                foreach ($steps as $step) {
+                    $name = $step->role_name ?? 'Approver';
+                    $name = str_replace(['pr-', 'depthead'], ['', 'Dept Head'], $name);
+                    $name = ucwords(str_replace('-', ' ', $name));
+                    
+                    if ($step->status === 'APPROVED') {
+                        $dots[] = '<div class="h-1.5 w-1.5 rounded-full bg-emerald-500" title="'.$name.': Approved"></div>';
+                    } elseif ($step->sequence === $currentSeq) {
+                        $dots[] = '<div class="relative flex h-2 w-2 items-center justify-center" title="'.$name.': Pending"><div class="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></div><div class="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500"></div></div>';
+                    } elseif ($step->status === 'REJECTED') {
+                        $dots[] = '<div class="h-1.5 w-1.5 rounded-full bg-rose-500" title="'.$name.': Rejected"></div>';
+                    } else {
+                        $dots[] = '<div class="h-1.5 w-1.5 rounded-full bg-slate-300" title="'.$name.': Waiting"></div>';
+                    }
+                }
+                $microProgress = '<div class="flex items-center gap-1.5 border-l border-blue-200/60 pl-2 ml-1 relative top-[0.5px]">'.implode('', $dots).'</div>';
+                $label = 'IN REVIEW' . $microProgress;
             } else {
                 $label = 'IN REVIEW';
             }
-            $cls = 'bg-blue-50 text-blue-700 border-blue-200';
-            $icon = 'bx-time-five';
         } elseif ($workflowStatus === 'RETURNED') {
             $label = 'RETURNED';
             $cls = 'bg-orange-50 text-orange-700 border-orange-200';
@@ -99,27 +120,17 @@
 
 @if($label)
     <div class="flex items-center gap-2">
-        <span class="{{ $baseClasses }} {{ $cls }}" @if($tooltip) data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $tooltip }}" @endif>
+        <span class="{{ $baseClasses }} {{ $cls }}" @if($tooltip) title="{{ $tooltip }}" @endif>
             @if($icon)
                 <i class='bx {{ $icon }} text-sm'></i>
             @endif
-            {{ $label }}
+            {!! $label !!}
         </span>
         
         @if($tooltip)
-            <span class="text-slate-300 hover:text-indigo-500 transition-colors cursor-help" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $tooltip }}">
+            <span class="text-slate-300 hover:text-indigo-500 transition-colors cursor-help" title="{{ $tooltip }}">
                 <i class='bx bx-info-circle text-lg'></i>
             </span>
         @endif
     </div>
 @endif
-
-{{-- Initialize tooltips specifically for badges if drawn inside DT fragments --}}
-<script>
-    if (typeof bootstrap !== 'undefined') {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-    }
-</script>

@@ -139,6 +139,15 @@ class PurchaseRequestsDataTable extends DataTable
             $query->where('to_department', $dept);
         }
 
+        if (request()->filled('custom_date')) {
+            $dates = explode(' to ', request('custom_date'));
+            if (count($dates) === 2) {
+                $query->whereBetween('date_pr', [trim($dates[0]), trim($dates[1])]);
+            } elseif (count($dates) === 1) {
+                $query->whereDate('date_pr', trim($dates[0]));
+            }
+        }
+
         // Apply URL Top-Card Filters
         if (request()->filled('filter')) {
             $filter = request('filter');

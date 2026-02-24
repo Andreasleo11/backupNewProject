@@ -224,6 +224,7 @@ class PurchaseRequestController extends Controller
             'pr' => $vm->purchaseRequest,
             'filteredItemDetail' => $vm->filteredItemDetail,
             'totals' => $vm->totals,
+            'flags' => $vm->flags,
         ]);
     }
 

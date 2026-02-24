@@ -1,6 +1,8 @@
 @extends('new.layouts.app')
 
 @section('title', 'Purchase Requisition List')
+@section('page-title', 'Purchase Requests Overview')
+@section('page-subtitle', 'Centralized tracking and workflow management for all departmental requisitions.')
 
 @section('content')
 @push('head')
@@ -91,34 +93,40 @@
 
     <div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6" x-data="prIndex()">
         {{-- HEADER CARD --}}
-        <div class="glass-card relative overflow-hidden flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
-            <div class="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100/20 pointer-events-none"></div>
-            
-            <div class="relative z-10">
-                <h1 class="text-3xl font-black tracking-tight text-slate-800">
-                    Purchase Requisition
-                </h1>
-                <p class="mt-1.5 text-sm font-medium text-slate-500">
-                    Manage and track all procurement requests in one place
-                </p>
-            </div>
+        <div class="glass-card mb-6 overflow-hidden pt-8 pb-6 px-6 relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/5 to-purple-600/5 pointer-events-none"></div>
+            <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-4 border-l-4 border-indigo-600 pl-4">
+                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                        <i class='bx bx-receipt text-2xl'></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-black tracking-tight text-slate-800">
+                            Purchase Requests Overview
+                        </h1>
+                        <p class="text-sm font-medium text-slate-500 mt-0.5">
+                            Centralized tracking and workflow management for all departmental requisitions.
+                        </p>
+                    </div>
+                </div>
 
-            <div class="relative z-10 flex flex-wrap items-center gap-3">
-                {{-- Export button --}}
-                <a href="{{ route('purchase-requests.export-excel') }}"
-                   class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm border border-emerald-100 transition-all hover:bg-emerald-50 hover:shadow-emerald-100 hover:-translate-y-0.5">
-                    <i class="bi bi-file-earmark-excel text-lg"></i>
-                    <span>Export</span>
-                </a>
-
-                {{-- Create PR button --}}
-                @can('pr.create')
-                    <a href="{{ route('purchase-requests.create') }}"
-                       class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:from-indigo-500 hover:to-violet-500 hover:-translate-y-0.5">
-                        <i class="bi bi-plus-lg text-lg"></i>
-                        <span>New Request</span>
+                <div class="relative z-10 flex flex-wrap items-center gap-3">
+                    {{-- Export button --}}
+                    <a href="{{ route('purchase-requests.export-excel') }}"
+                    class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm border border-emerald-100 transition-all hover:bg-emerald-50 hover:shadow-emerald-100 hover:-translate-y-0.5">
+                        <i class="bi bi-file-earmark-excel text-lg"></i>
+                        <span>Export</span>
                     </a>
-                @endcan
+
+                    {{-- Create PR button --}}
+                    @can('pr.create')
+                        <a href="{{ route('purchase-requests.create') }}"
+                        class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-indigo-300 hover:from-indigo-500 hover:to-violet-500 hover:-translate-y-0.5">
+                            <i class="bi bi-plus-lg text-lg"></i>
+                            <span>New Request</span>
+                        </a>
+                    @endcan
+                </div>
             </div>
         </div>
 
@@ -235,6 +243,15 @@
                             <option value="MAINTENANCE">Maintenance</option>
                             <option value="COMPUTER">Computer / IT</option>
                         </select>
+                    </div>
+
+                    <div class="w-full sm:w-56 relative z-10 group" x-ref="datepickerContainer">
+                        <label for="filter-date" class="sr-only">Date Range</label>
+                        <i class="bx bx-calendar absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors pointer-events-none"></i>
+                        <input type="text" id="filter-date" x-ref="datePickerInput" placeholder="Filter Period..." class="w-full form-input text-sm border-slate-200 rounded-xl shadow-sm pl-9 pr-8 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                        <button type="button" x-show="filters.date" @click="clearDate()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors">
+                            <i class="bx bx-x text-lg"></i>
+                        </button>
                     </div>
                     
                     <button id="btn-reset-filters" @click="resetFilters()" class="relative z-10 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors ml-auto sm:ml-0 flex items-center gap-1 bg-slate-50 hover:bg-indigo-50 px-3 py-2 rounded-lg border border-transparent hover:border-indigo-100">
@@ -373,7 +390,8 @@
                 tableId: 'purchaserequests-table',
                 filters: {
                     status: '',
-                    department: ''
+                    department: '',
+                    date: ''
                 },
                 selectedIds: [],
                 showRejectReason: false,
@@ -390,7 +408,23 @@
                             dt.on('preXhr.dt', (e, settings, data) => {
                                 data.custom_status = this.filters.status;
                                 data.custom_department = this.filters.department;
+                                data.custom_date = this.filters.date;
                             });
+
+                            // Initialize Flatpickr if available
+                            if (typeof window.flatpickr !== 'undefined') {
+                                this.fp = window.flatpickr(this.$refs.datePickerInput, {
+                                    mode: "range",
+                                    dateFormat: "Y-m-d",
+                                    onChange: (selectedDates, dateStr, instance) => {
+                                        this.filters.date = dateStr;
+                                        // Usually wait til both dates are selected for range
+                                        if (selectedDates.length === 2 || selectedDates.length === 1 && instance.config.mode !== 'range') {
+                                             this.reloadTable();
+                                        }
+                                    }
+                                });
+                            }
 
                             // Clear selection upon redraw
                             dt.on('draw', () => {
@@ -434,6 +468,14 @@
                 resetFilters() {
                     this.filters.status = '';
                     this.filters.department = '';
+                    this.clearDate();
+                },
+                
+                clearDate() {
+                    this.filters.date = '';
+                    if (this.fp) {
+                        this.fp.clear();
+                    }
                     this.reloadTable();
                 },
 
