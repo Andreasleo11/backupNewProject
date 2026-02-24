@@ -167,7 +167,7 @@
                     <div class="w-full sm:w-56 relative z-10 group">
                         <label for="filter-status" class="sr-only">Status</label>
                         <i class="bx bx-loader-circle absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
-                        <select id="filter-status" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                        <select id="filter-status" x-model="filters.status" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
                             <option value="">All Statuses</option>
                             <option value="DRAFT">Draft</option>
                             <option value="IN_REVIEW">In Review</option>
@@ -180,7 +180,7 @@
                     <div class="w-full sm:w-64 relative z-10 group">
                         <label for="filter-department" class="sr-only">Target Department</label>
                         <i class="bx bx-buildings absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
-                        <select id="filter-department" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                        <select id="filter-department" x-model="filters.department" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
                             <option value="">All Target Departments</option>
                             <option value="PURCHASING">Purchasing</option>
                             <option value="PERSONALIA">Personalia / HRD</option>
@@ -189,7 +189,7 @@
                         </select>
                     </div>
                     
-                    <button id="btn-reset-filters" class="relative z-10 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors ml-auto sm:ml-0 flex items-center gap-1 bg-slate-50 hover:bg-indigo-50 px-3 py-2 rounded-lg border border-transparent hover:border-indigo-100">
+                    <button id="btn-reset-filters" @click="resetFilters()" class="relative z-10 text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors ml-auto sm:ml-0 flex items-center gap-1 bg-slate-50 hover:bg-indigo-50 px-3 py-2 rounded-lg border border-transparent hover:border-indigo-100">
                         <i class="bx bx-reset"></i> Reset
                     </button>
                 </div>
@@ -201,29 +201,102 @@
         </div>
 
         @push('modals')
-            {{-- QUICK VIEW MODAL --}}
-            <div class="modal fade" id="prQuickViewModal" tabindex="-1" aria-labelledby="prQuickViewModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content border-0 shadow-lg rounded-xl overflow-hidden">
-                        <div class="modal-header bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 px-5 py-4">
-                            <h5 class="modal-title font-semibold text-slate-800 flex items-center gap-2" id="prQuickViewModalLabel">
-                                <i class="bi bi-file-earmark-text text-indigo-600"></i>
-                                Purchase Request Detail
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body p-0 bg-slate-50 relative min-h-[300px]" id="prQuickViewContent">
-                            {{-- Content loaded by AJAX --}}
-                            <div class="absolute inset-0 flex items-center justify-center bg-white/80 z-10" id="prQuickViewLoader">
-                                <div class="spinner-border text-indigo-600" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
+            {{-- QUICK VIEW MODAL (Alpine Headless) --}}
+            <div x-data="{ 
+                    show: false, 
+                    id: null,
+                    isLoading: false,
+                    htmlContent: '',
+                    open(e) {
+                        this.id = e.detail.id;
+                        this.show = true;
+                        this.isLoading = true;
+                        this.htmlContent = '';
+                        
+                        fetch(`/purchase-requests/${this.id}/quick-view`, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                        })
+                        .then(res => {
+                            if(!res.ok) throw new Error('Failed to load detail');
+                            return res.text();
+                        })
+                        .then(html => {
+                            this.htmlContent = html;
+                            this.isLoading = false;
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            this.htmlContent = `<div class='p-6 text-center text-rose-500'><i class='bi bi-exclamation-triangle text-3xl mb-2 block'></i><p>Could not load the purchase request details.</p></div>`;
+                            this.isLoading = false;
+                        });
+                    }
+                }" 
+                @open-quick-view-modal.window="open($event)"
+                @keydown.escape.window="show = false"
+                x-show="show" 
+                class="relative z-[100]" 
+                aria-labelledby="prQuickViewModalLabel" 
+                role="dialog" 
+                aria-modal="true"
+                x-cloak>
+                
+                {{-- Backdrop --}}
+                <div x-show="show" 
+                     x-transition:enter="ease-out duration-300"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-100"
+                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave-start="opacity-100"
+                     x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"></div>
+                     
+                <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                        <div x-show="show"
+                             @click.away="show = false"
+                             x-transition:enter="ease-out duration-300"
+                             x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave="ease-in duration-200"
+                             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                             x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                             class="relative transform flex flex-col max-h-[90vh] overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 w-full max-w-4xl border border-slate-100">
+                            
+                            {{-- Header --}}
+                            <div class="bg-gradient-to-r from-indigo-50 to-white border-b border-indigo-100 px-5 py-4 flex items-center justify-between shrink-0">
+                                <h5 class="font-bold text-slate-800 flex items-center gap-2">
+                                    <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600">
+                                        <i class="bx bx-search-alt text-lg"></i>
+                                    </div>
+                                    Purchase Request Detail
+                                </h5>
+                                <button type="button" @click="show = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                    <i class="bx bx-x text-2xl"></i>
+                                </button>
                             </div>
-                        </div>
-                        <div class="modal-footer bg-white border-t border-slate-100 px-5 py-3 rounded-b-xl">
-                            <a href="#" id="prQuickViewDetailBtn" class="btn btn-primary rounded-lg text-sm px-4">Full Details &rarr;</a>
-                            <button type="button" class="btn btn-secondary rounded-lg text-sm px-4" data-bs-dismiss="modal">Close</button>
-                        </div>
+                            
+                            {{-- Body (Scrollable) --}}
+                            <div class="p-0 bg-slate-50 relative min-h-[300px] overflow-y-auto flex-1 custom-scrollbar">
+                                {{-- Loader Overlay --}}
+                                <div x-show="isLoading" 
+                                     x-transition
+                                     class="absolute inset-0 flex items-center justify-center bg-white/80 z-10 backdrop-blur-sm">
+                                    <div class="spinner-border text-indigo-600" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                                
+                                {{-- Injected AJAX Content --}}
+                                <div x-html="htmlContent"></div>
+                            </div>
+                            
+                            {{-- Footer --}}
+                            <div class="bg-white border-t border-slate-100 px-5 py-3 rounded-b-2xl flex items-center justify-end gap-2 shrink-0">
+                                <button type="button" @click="show = false" class="bg-slate-100 text-slate-600 hover:bg-slate-200 border-0 rounded-lg text-sm px-4 py-2 font-medium transition-colors">Close</button>
+                                <a :href="`/purchase-requests/${id}`" class="bg-indigo-600 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-200 text-white border-0 rounded-lg text-sm px-4 py-2 font-medium transition-all flex items-center gap-1.5 cursor-pointer">
+                                    Full Details <i class="bx bx-right-arrow-alt"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -305,110 +378,124 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     {{ $dataTable->scripts() }}
 
-    {{-- CUSTOM FILTERS LOGIC --}}
+    {{-- ALPINE COMPONENT LOGIC --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // DataTables exposes its instance globally via Laravel DataTables (usually window.LaravelDataTables['purchaserequests-table'])
-            const tableId = 'purchaserequests-table';
-            
-            // Wait for DataTable to initialize
-            setTimeout(() => {
-                if(window.LaravelDataTables && window.LaravelDataTables[tableId]) {
-                    const dt = window.LaravelDataTables[tableId];
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('prIndex', () => ({
+                tableId: 'purchaserequests-table',
+                filters: {
+                    status: '',
+                    department: ''
+                },
+                selectedIds: [],
+                showRejectReason: false,
+                rejectionReason: '',
 
-                    // Bind filter changes to reload table
-                    $('#filter-status, #filter-department').on('change', function() {
-                        dt.ajax.reload();
-                    });
+                init() {
+                    // Start intercepting Datatables data
+                    const waitInterval = setInterval(() => {
+                        if(window.LaravelDataTables && window.LaravelDataTables[this.tableId]) {
+                            clearInterval(waitInterval);
+                            const dt = window.LaravelDataTables[this.tableId];
 
-                    // Reset button
-                    $('#btn-reset-filters').on('click', function(e) {
-                        e.preventDefault();
-                        $('#filter-status').val('');
-                        $('#filter-department').val('');
-                        dt.ajax.reload();
-                    });
+                            // Intercept XHR parameters
+                            dt.on('preXhr.dt', (e, settings, data) => {
+                                data.custom_status = this.filters.status;
+                                data.custom_department = this.filters.department;
+                            });
 
-                    // Intercept AJAX request to append our custom filter values
-                    dt.on('preXhr.dt', function ( e, settings, data ) {
-                        data.custom_status = $('#filter-status').val();
-                        data.custom_department = $('#filter-department').val();
-                    });
-                }
-            }, 500);
-        });
-    </script>
+                            // Clear selection upon redraw
+                            dt.on('draw', () => {
+                                this.selectedIds = [];
+                                const checkAll = document.getElementById('check-all-prs');
+                                if(checkAll) checkAll.checked = false;
+                            });
 
-    @if($canBatchApprove)
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Helper function to get checked IDs
-                const getSelectedIds = () => {
+                            // Listen for row-level checkbox clicks via delegated handler using Alpine's $el
+                            this.$el.addEventListener('change', (e) => {
+                                if(e.target.classList.contains('pr-checkbox')) {
+                                    this.syncSelection();
+                                }
+                                
+                                if(e.target.id === 'check-all-prs') {
+                                    const isChecked = e.target.checked;
+                                    document.querySelectorAll('tbody input.pr-checkbox').forEach(cb => {
+                                        cb.checked = isChecked;
+                                    });
+                                    this.syncSelection();
+                                }
+                            });
+                        }
+                    }, 500);
+                },
+
+                syncSelection() {
                     const checkboxes = document.querySelectorAll('tbody input.pr-checkbox:checked');
-                    return Array.from(checkboxes).map(cb => cb.value);
-                };
-
-                // Update selection count text
-                const updateSelectionCount = () => {
-                    const count = document.querySelectorAll('tbody input.pr-checkbox:checked').length;
-                    const countLabel = document.getElementById('batch-selection-count');
-                    const btnApprove = document.getElementById('batch-approve-btn');
-                    const btnReject = document.getElementById('batch-reject-btn');
-
-                    if(count > 0) {
-                        countLabel.textContent = `${count} item${count > 1 ? 's' : ''} selected`;
-                        countLabel.classList.remove('text-slate-400');
-                        countLabel.classList.add('text-indigo-600', 'font-semibold');
-                        btnApprove.disabled = false;
-                        btnReject.disabled = false;
-                        btnApprove.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnReject.classList.remove('opacity-50', 'cursor-not-allowed');
-                    } else {
-                        countLabel.textContent = 'No items selected';
-                        countLabel.classList.remove('text-indigo-600', 'font-semibold');
-                        countLabel.classList.add('text-slate-400');
-                        btnApprove.disabled = true;
-                        btnReject.disabled = true;
-                        btnApprove.classList.add('opacity-50', 'cursor-not-allowed');
-                        btnReject.classList.add('opacity-50', 'cursor-not-allowed');
+                    this.selectedIds = Array.from(checkboxes).map(cb => cb.value);
+                    if(this.selectedIds.length === 0) {
+                        this.cancelReject();
                     }
-                };
+                },
 
-                // Use event delegation for checkboxes, as DataTable redraws them
-                document.querySelector('.premium-datatable-wrapper').addEventListener('change', function(e) {
-                    if(e.target.classList.contains('pr-checkbox')) {
-                        updateSelectionCount();
+                reloadTable() {
+                    if(window.LaravelDataTables && window.LaravelDataTables[this.tableId]) {
+                        window.LaravelDataTables[this.tableId].ajax.reload(null, false);
                     }
+                },
+
+                resetFilters() {
+                    this.filters.status = '';
+                    this.filters.department = '';
+                    this.reloadTable();
+                },
+
+                cancelReject() {
+                    this.showRejectReason = false;
+                    this.rejectionReason = '';
+                },
+
+                confirmBatchApprove(url) {
+                    if(this.selectedIds.length === 0) return;
+
+                    Swal.fire({
+                        title: 'Approve Selected?',
+                        text: `You are about to approve ${this.selectedIds.length} purchase request(s).`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#059669', // emerald-600
+                        cancelButtonColor: '#64748b',  // slate-500
+                        confirmButtonText: 'Yes, approve them'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.performBulkAction(url, { ids: this.selectedIds });
+                        }
+                    });
+                },
+
+                confirmBatchReject(url) {
+                    if(this.selectedIds.length === 0) return;
                     
-                    // Handle "Check All" if it exists
-                    if(e.target.id === 'check-all-prs') {
-                        const isChecked = e.target.checked;
-                        document.querySelectorAll('tbody input.pr-checkbox').forEach(cb => {
-                            cb.checked = isChecked;
+                    const reason = this.rejectionReason.trim();
+                    if(!reason) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Reason Required',
+                            text: 'Please provide a reason for rejecting the selected requests.'
                         });
-                        updateSelectionCount();
+                        return;
                     }
-                });
 
-                // Handle DataTable draw events to reset selection UI
-                window.LaravelDataTables["purchaserequests-table"].on('draw', function() {
-                    updateSelectionCount();
-                    const checkAll = document.getElementById('check-all-prs');
-                    if(checkAll) checkAll.checked = false;
-                });
+                    this.performBulkAction(url, { ids: this.selectedIds, rejection_reason: reason }, () => {
+                        this.cancelReject();
+                    });
+                },
 
-                // Initial UI state setup
-                updateSelectionCount();
-
-                // Setup bulk Action Request function
-                const performBulkAction = (url, data, successCallback) => {
+                performBulkAction(url, data, successCb) {
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait while we process your request.',
                         allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
+                        didOpen: () => Swal.showLoading()
                     });
 
                     fetch(url, {
@@ -420,208 +507,23 @@
                         },
                         body: JSON.stringify(data),
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: data.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                            if (successCallback) successCallback();
-                            window.LaravelDataTables["purchaserequests-table"].ajax.reload(null, false);
-                            updateSelectionCount();
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            Swal.fire({ icon: 'success', title: 'Success!', text: res.message, timer: 2000, showConfirmButton: false });
+                            if(successCb) successCb();
+                            this.selectedIds = [];
+                            this.reloadTable();
                         } else {
-                            throw new Error(data.message || 'An error occurred during processing.');
+                            throw new Error(res.message || 'An error occurred during processing.');
                         }
                     })
-                    .catch(error => {
-                        console.error('Action failed:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: error.message || 'Something went wrong!',
-                        });
+                    .catch(err => {
+                        console.error('Action failed:', err);
+                        Swal.fire({ icon: 'error', title: 'Oops...', text: err.message || 'Something went wrong!' });
                     });
-                };
-
-                // ====== Approve Selected ======
-                document.getElementById('batch-approve-btn').addEventListener('click', function() {
-                    const ids = getSelectedIds();
-                    if(ids.length === 0) return;
-
-                    Swal.fire({
-                        title: 'Approve Selected?',
-                        text: `You are about to approve ${ids.length} purchase request(s).`,
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#059669', // emerald-600
-                        cancelButtonColor: '#64748b',  // slate-500
-                        confirmButtonText: 'Yes, approve them'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            performBulkAction(this.dataset.url, { ids: ids });
-                        }
-                    });
-                });
-
-                // ====== Reject Selected UI logic ======
-                const wrapper = document.getElementById('batch-reject-reason-wrapper');
-                const rejectBtn = document.getElementById('batch-reject-btn');
-                const approveBtn = document.getElementById('batch-approve-btn');
-                const confirmRejectBtn = document.getElementById('batch-reject-confirm-btn');
-                const cancelRejectBtn = document.getElementById('batch-reject-cancel-btn');
-                const reasonInput = document.getElementById('batch-reject-reason');
-
-                rejectBtn.addEventListener('click', function() {
-                    if(getSelectedIds().length === 0) return;
-                    
-                    // Show inline reason input
-                    wrapper.classList.remove('hidden');
-                    rejectBtn.classList.add('hidden');
-                    approveBtn.classList.add('hidden');
-                    reasonInput.focus();
-                });
-
-                cancelRejectBtn.addEventListener('click', function() {
-                    wrapper.classList.add('hidden');
-                    rejectBtn.classList.remove('hidden');
-                    approveBtn.classList.remove('hidden');
-                    reasonInput.value = ''; // clear
-                });
-
-                confirmRejectBtn.addEventListener('click', function() {
-                    const ids = getSelectedIds();
-                    const reason = reasonInput.value.trim();
-
-                    if(ids.length === 0) return;
-                    if(!reason) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Reason Required',
-                            text: 'Please provide a reason for rejecting the selected requests.'
-                        });
-                        reasonInput.focus();
-                        return;
-                    }
-
-                    performBulkAction(rejectBtn.dataset.url, {
-                        ids: ids,
-                        rejection_reason: reason
-                    }, () => {
-                        // Success callback
-                        cancelRejectBtn.click(); // Hide reason input
-                    });
-                });
-            });
-        </script>
-    @endif
-
-    {{-- QUICK VIEW LOGIC --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const tableWrapper = document.querySelector('.premium-datatable-wrapper');
-            if(!tableWrapper) return;
-
-            let quickViewModal = null;
-            let deleteModal = null;
-            let cancelModal = null;
-            let editPoModal = null;
-            
-            if(document.getElementById('prQuickViewModal')) {
-                quickViewModal = new bootstrap.Modal(document.getElementById('prQuickViewModal'));
-            }
-            if(document.getElementById('delete-pr-modal')) {
-                deleteModal = new bootstrap.Modal(document.getElementById('delete-pr-modal'));
-            }
-            if(document.getElementById('cancel-confirmation-modal')) {
-                cancelModal = new bootstrap.Modal(document.getElementById('cancel-confirmation-modal'));
-            }
-            if(document.getElementById('edit-purchase-request-po-number')) {
-                editPoModal = new bootstrap.Modal(document.getElementById('edit-purchase-request-po-number'));
-            }
-
-            tableWrapper.addEventListener('click', function(e) {
-                // Shared Delete Action
-                const deleteBtn = e.target.closest('.btn-delete-pr');
-                if (deleteBtn && deleteModal) {
-                    const id = deleteBtn.getAttribute('data-id');
-                    const doc = deleteBtn.getAttribute('data-doc');
-                    document.getElementById('delete-doc-num').textContent = doc;
-                    document.getElementById('delete-pr-form').action = `/purchase-requests/${id}`;
-                    deleteModal.show();
-                    return;
                 }
-
-                // Shared Cancel Action
-                const cancelBtn = e.target.closest('.btn-cancel-pr');
-                if (cancelBtn && cancelModal) {
-                    const id = cancelBtn.getAttribute('data-id');
-                    const doc = cancelBtn.getAttribute('data-doc');
-                    document.getElementById('cancel-doc-num').textContent = doc;
-                    document.getElementById('cancel-description').value = '';
-                    document.getElementById('cancel-pr-form').action = `/purchase-requests/${id}/cancel`;
-                    cancelModal.show();
-                    return;
-                }
-
-                // Shared Edit PO Action
-                const poBtn = e.target.closest('.btn-edit-po');
-                if (poBtn && editPoModal) {
-                    const id = poBtn.getAttribute('data-id');
-                    const doc = poBtn.getAttribute('data-doc');
-                    const po = poBtn.getAttribute('data-po') || '';
-                    document.getElementById('edit-po-doc-num').textContent = doc;
-                    document.getElementById('po_number_input').value = po;
-                    document.getElementById('edit-po-form').action = `/purchase-requests/${id}/po-number`;
-                    editPoModal.show();
-                    return;
-                }
-
-                // Find nearest button with class quick-view-btn
-                const btn = e.target.closest('.quick-view-btn');
-                if(!btn) return;
-
-                const prId = btn.getAttribute('data-id');
-                if(!prId || !quickViewModal) return;
-
-                // Show modal & loader
-                const contentDiv = document.getElementById('prQuickViewContent');
-                const loaderDiv = document.getElementById('prQuickViewLoader');
-                const detailBtn = document.getElementById('prQuickViewDetailBtn');
-                
-                detailBtn.href = `/purchase-requests/${prId}`;
-                quickViewModal.show();
-                
-                // Clear old content and show loader
-                Array.from(contentDiv.children).forEach(child => {
-                    if(child.id !== 'prQuickViewLoader') child.remove();
-                });
-                loaderDiv.classList.remove('hidden');
-
-                // Fetch HTML
-                fetch(`/purchase-requests/${prId}/quick-view`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(res => {
-                    if(!res.ok) throw new Error('Failed to load detail');
-                    return res.text();
-                })
-                .then(html => {
-                    // Hide loader and insert HTML
-                    loaderDiv.classList.add('hidden');
-                    const wrapper = document.createElement('div');
-                    wrapper.innerHTML = html;
-                    contentDiv.appendChild(wrapper);
-                })
-                .catch(err => {
-                    console.error(err);
-                    loaderDiv.classList.add('hidden');
-                    contentDiv.innerHTML = `<div class="p-6 text-center text-rose-500"><i class="bi bi-exclamation-triangle text-3xl mb-2 block"></i><p>Could not load the purchase request details.</p></div>`;
-                });
-            });
+            }));
         });
     </script>
 @endpush

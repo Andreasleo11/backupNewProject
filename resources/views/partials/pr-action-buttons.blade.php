@@ -16,8 +16,8 @@
     @else
         {{-- Quick View Button --}}
         <button type="button" 
-                class="quick-view-btn group flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 border border-sky-100 text-sky-600 hover:bg-sky-500 hover:border-sky-600 hover:text-white transition-all shadow-sm" 
-                data-id="{{ $pr->id }}"
+                @click="$dispatch('open-quick-view-modal', { id: {{ $pr->id }} })"
+                class="group flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 border border-sky-100 text-sky-600 hover:bg-sky-500 hover:border-sky-600 hover:text-white transition-all shadow-sm" 
                 data-bs-toggle="tooltip" data-bs-placement="top" title="Quick View">
             <i class='bx bx-search-alt text-lg'></i>
         </button>
@@ -31,8 +31,9 @@
 
         {{-- Delete Feature (Super Admin) --}}
         @if (auth()->user()->hasRole('super-admin'))
-            <button type="button" class="btn-delete-pr group flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:border-rose-600 hover:text-white transition-all shadow-sm" 
-                    data-id="{{ $pr->id }}" data-doc="{{ $pr->doc_num }}"
+            <button type="button" 
+                    @click="$dispatch('open-delete-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' })"
+                    class="group flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:border-rose-600 hover:text-white transition-all shadow-sm" 
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Delete PR">
                 <i class='bx bx-trash-alt text-lg'></i>
             </button>
@@ -40,8 +41,9 @@
 
         {{-- Cancel Feature --}}
         @if (($user->id === $pr->user_id_create && $pr->status === 1) || ($user->department?->name === 'COMPUTER' && $user->is_head && $pr->status === 4) || auth()->user()->hasRole('super-admin'))
-            <button type="button" class="btn-cancel-pr group flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 border border-orange-100 text-orange-500 hover:bg-orange-500 hover:border-orange-600 hover:text-white transition-all shadow-sm"
-                    data-id="{{ $pr->id }}" data-doc="{{ $pr->doc_num }}"
+            <button type="button" 
+                    @click="$dispatch('open-cancel-pr-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}' })"
+                    class="group flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 border border-orange-100 text-orange-500 hover:bg-orange-500 hover:border-orange-600 hover:text-white transition-all shadow-sm"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel PR">
                 <i class='bx bx-x-circle text-lg'></i>
             </button>
@@ -65,8 +67,9 @@
                 @if ($pr->status === 4 && $user->specification->name === 'PURCHASER')
                 <li><hr class="dropdown-divider my-1 border-slate-100"></li>
                 <li>
-                    <button type="button" class="btn-edit-po dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors font-medium w-full text-left"
-                            data-id="{{ $pr->id }}" data-doc="{{ $pr->doc_num }}" data-po="{{ $pr->po_number }}">
+                    <button type="button" 
+                            @click="$dispatch('open-edit-po-modal', { id: {{ $pr->id }}, doc: '{{ $pr->doc_num }}', po: '{{ $pr->po_number }}' })"
+                            class="dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors font-medium w-full text-left">
                         <i class='bx bx-edit text-lg'></i> Edit PO Number
                     </button>
                 </li>
