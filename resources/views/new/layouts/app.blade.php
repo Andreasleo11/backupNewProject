@@ -21,19 +21,7 @@
     {{-- Boxicons CDN --}}
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
-    {{-- Tailwind CDN --}}
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui'],
-                    },
-                },
-            },
-        }
-    </script>
+
 
     <style>
         [x-cloak] { display: none !important; }
@@ -75,7 +63,7 @@
         }
     </style>
 
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/sass/app.scss', 'resources/js/app.js'])
 
     {{-- Livewire styles --}}
     @livewireStyles
