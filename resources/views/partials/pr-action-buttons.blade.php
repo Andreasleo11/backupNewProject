@@ -31,9 +31,8 @@
 
         {{-- Delete Feature (Super Admin) --}}
         @if (auth()->user()->hasRole('super-admin'))
-            @include('partials.delete-pr-modal', ['id' => $pr->id, 'doc_num' => $pr->doc_num])
-            <button class="group flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:border-rose-600 hover:text-white transition-all shadow-sm" 
-                    data-bs-toggle="modal" data-bs-target="#delete-pr-modal-{{ $pr->id }}"
+            <button type="button" class="btn-delete-pr group flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:border-rose-600 hover:text-white transition-all shadow-sm" 
+                    data-id="{{ $pr->id }}" data-doc="{{ $pr->doc_num }}"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Delete PR">
                 <i class='bx bx-trash-alt text-lg'></i>
             </button>
@@ -41,15 +40,12 @@
 
         {{-- Cancel Feature --}}
         @if (($user->id === $pr->user_id_create && $pr->status === 1) || ($user->department?->name === 'COMPUTER' && $user->is_head && $pr->status === 4) || auth()->user()->hasRole('super-admin'))
-            <button data-bs-target="#cancel-confirmation-modal-{{ $pr->id }}" data-bs-toggle="modal"
-                    class="group flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 border border-orange-100 text-orange-500 hover:bg-orange-500 hover:border-orange-600 hover:text-white transition-all shadow-sm"
+            <button type="button" class="btn-cancel-pr group flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 border border-orange-100 text-orange-500 hover:bg-orange-500 hover:border-orange-600 hover:text-white transition-all shadow-sm"
+                    data-id="{{ $pr->id }}" data-doc="{{ $pr->doc_num }}"
                     data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel PR">
                 <i class='bx bx-x-circle text-lg'></i>
             </button>
         @endif
-
-        @include('partials.cancel-pr-confirmation-modal')
-        @include('partials.edit-purchase-request-po-number-modal', ['pr' => $pr])
 
         {{-- More Actions Dropdown --}}
         <div class="dropdown">
@@ -69,8 +65,8 @@
                 @if ($pr->status === 4 && $user->specification->name === 'PURCHASER')
                 <li><hr class="dropdown-divider my-1 border-slate-100"></li>
                 <li>
-                    <button data-bs-target="#edit-purchase-request-po-number-{{ $pr->id }}" data-bs-toggle="modal"
-                            class="dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors font-medium w-full text-left">
+                    <button type="button" class="btn-edit-po dropdown-item flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 hover:text-indigo-800 transition-colors font-medium w-full text-left"
+                            data-id="{{ $pr->id }}" data-doc="{{ $pr->doc_num }}" data-po="{{ $pr->po_number }}">
                         <i class='bx bx-edit text-lg'></i> Edit PO Number
                     </button>
                 </li>
@@ -83,7 +79,7 @@
 {{-- Initialize tooltips --}}
 <script>
     if (typeof bootstrap !== 'undefined') {
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });

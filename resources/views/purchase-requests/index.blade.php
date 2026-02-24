@@ -224,9 +224,15 @@
                             <a href="#" id="prQuickViewDetailBtn" class="btn btn-primary rounded-lg text-sm px-4">Full Details &rarr;</a>
                             <button type="button" class="btn btn-secondary rounded-lg text-sm px-4" data-bs-dismiss="modal">Close</button>
                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Shared Action Modals --}}
+            @include('partials.delete-pr-modal')
+            @include('partials.cancel-pr-confirmation-modal')
+            @include('partials.edit-purchase-request-po-number-modal')
         @endpush
     </div>
 
@@ -520,11 +526,60 @@
             if(!tableWrapper) return;
 
             let quickViewModal = null;
+            let deleteModal = null;
+            let cancelModal = null;
+            let editPoModal = null;
+            
             if(document.getElementById('prQuickViewModal')) {
                 quickViewModal = new bootstrap.Modal(document.getElementById('prQuickViewModal'));
             }
+            if(document.getElementById('delete-pr-modal')) {
+                deleteModal = new bootstrap.Modal(document.getElementById('delete-pr-modal'));
+            }
+            if(document.getElementById('cancel-confirmation-modal')) {
+                cancelModal = new bootstrap.Modal(document.getElementById('cancel-confirmation-modal'));
+            }
+            if(document.getElementById('edit-purchase-request-po-number')) {
+                editPoModal = new bootstrap.Modal(document.getElementById('edit-purchase-request-po-number'));
+            }
 
             tableWrapper.addEventListener('click', function(e) {
+                // Shared Delete Action
+                const deleteBtn = e.target.closest('.btn-delete-pr');
+                if (deleteBtn && deleteModal) {
+                    const id = deleteBtn.getAttribute('data-id');
+                    const doc = deleteBtn.getAttribute('data-doc');
+                    document.getElementById('delete-doc-num').textContent = doc;
+                    document.getElementById('delete-pr-form').action = `/purchase-requests/${id}`;
+                    deleteModal.show();
+                    return;
+                }
+
+                // Shared Cancel Action
+                const cancelBtn = e.target.closest('.btn-cancel-pr');
+                if (cancelBtn && cancelModal) {
+                    const id = cancelBtn.getAttribute('data-id');
+                    const doc = cancelBtn.getAttribute('data-doc');
+                    document.getElementById('cancel-doc-num').textContent = doc;
+                    document.getElementById('cancel-description').value = '';
+                    document.getElementById('cancel-pr-form').action = `/purchase-requests/${id}/cancel`;
+                    cancelModal.show();
+                    return;
+                }
+
+                // Shared Edit PO Action
+                const poBtn = e.target.closest('.btn-edit-po');
+                if (poBtn && editPoModal) {
+                    const id = poBtn.getAttribute('data-id');
+                    const doc = poBtn.getAttribute('data-doc');
+                    const po = poBtn.getAttribute('data-po') || '';
+                    document.getElementById('edit-po-doc-num').textContent = doc;
+                    document.getElementById('po_number_input').value = po;
+                    document.getElementById('edit-po-form').action = `/purchase-requests/${id}/po-number`;
+                    editPoModal.show();
+                    return;
+                }
+
                 // Find nearest button with class quick-view-btn
                 const btn = e.target.closest('.quick-view-btn');
                 if(!btn) return;
