@@ -26,6 +26,9 @@ class PurchaseRequestsDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
+            ->addColumn('checkbox', function ($pr) {
+                return '<input type="checkbox" class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 pr-checkbox cursor-pointer mx-auto block" value="' . $pr->id . '">';
+            })
             ->addColumn('action', 'purchaserequests.action')
             ->editColumn('status', function ($pr) {
                 return view('partials.pr-status-badge', ['pr' => $pr])->render();
@@ -74,7 +77,7 @@ class PurchaseRequestsDataTable extends DataTable
 
                 return "<div class='text-sm'><span class='text-slate-600'>{$from}</span> <i class='bi bi-arrow-right text-indigo-400 mx-1'></i> <span class='text-slate-800 font-medium'>{$to}</span></div>";
             })
-            ->rawColumns(['action', 'status', 'workflow_status', 'document', 'routing'])
+            ->rawColumns(['checkbox', 'action', 'status', 'workflow_status', 'document', 'routing'])
             ->setRowId('id');
     }
 
@@ -207,6 +210,14 @@ class PurchaseRequestsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
+            Column::make('checkbox')
+                ->title('<input type="checkbox" id="check-all-prs" class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer mx-auto block">')
+                ->searchable(false)
+                ->orderable(false)
+                ->exportable(false)
+                ->printable(false)
+                ->width('40px')
+                ->addClass('text-center align-middle'),
             Column::make('id')->visible(false),
             Column::computed('document')
                 ->title('Document')

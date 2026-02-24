@@ -145,7 +145,8 @@
 
                 {{-- Approve Selected --}}
                 <button id="batch-approve-btn"
-                        data-url="{{ route('purchase-requests.batch-approve') }}"
+                        x-show="selectedIds.length > 0" x-cloak
+                        @click="confirmBatchApprove('{{ route('purchase-requests.batch-approve') }}')"
                         class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group">
                     <i class="bi bi-check-lg group-hover:scale-110 transition-transform"></i>
                     Approve Selected
@@ -153,27 +154,32 @@
 
                 {{-- Reject Selected --}}
                 <button id="batch-reject-btn"
-                        data-url="{{ route('purchase-requests.batch-reject') }}"
+                        x-show="selectedIds.length > 0 && !showRejectReason" x-cloak
+                        @click="showRejectReason = true"
                         class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100 hover:border-rose-300 transition-all hover:-translate-y-0.5 group">
                     <i class="bi bi-x-lg group-hover:scale-110 transition-transform"></i>
                     Reject Selected
                 </button>
 
-                <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1 rounded-full ml-auto" id="batch-selection-count">No items selected</span>
+                <span class="text-xs font-bold text-slate-500 bg-slate-100/80 px-3 py-1.5 border border-slate-200 rounded-full ml-auto" 
+                      x-text="selectedIds.length === 0 ? 'No items selected' : selectedIds.length + ' item(s) selected'">
+                </span>
 
                 {{-- Reject reason input --}}
-                <div id="batch-reject-reason-wrapper" class="hidden w-full mt-3 flex items-center gap-3 animate-fade-in">
+                <div id="batch-reject-reason-wrapper" x-show="showRejectReason" x-cloak class="w-full mt-3 flex items-center gap-3 animate-fade-in">
                     <div class="relative flex-1">
                         <i class="bi bi-pencil-square absolute left-3 top-1/2 -translate-y-1/2 text-rose-400"></i>
-                        <input type="text" id="batch-reject-reason"
+                        <input type="text" id="batch-reject-reason" x-model="rejectionReason"
                                placeholder="Please provide a rejection reason (required)"
                                class="w-full rounded-xl border border-rose-200 bg-rose-50/50 pl-10 pr-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all placeholder-rose-300">
                     </div>
                     <button id="batch-reject-confirm-btn"
+                            @click="confirmBatchReject('{{ route('purchase-requests.batch-reject') }}')"
                             class="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-rose-200 hover:bg-rose-700 transition-all hover:-translate-y-0.5">
                         Confirm
                     </button>
                     <button id="batch-reject-cancel-btn"
+                            @click="cancelReject()"
                             class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all hover:-translate-y-0.5">
                         Cancel
                     </button>
