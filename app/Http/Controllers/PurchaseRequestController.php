@@ -28,6 +28,7 @@ use App\Models\PurchaseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PurchaseRequestController extends Controller
@@ -580,6 +581,7 @@ class PurchaseRequestController extends Controller
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
+            'batch_id' => $result['batch_id'] ?? null,
             'approved' => $result['approved'],
             'failed' => $result['failed'],
             'errors' => $result['errors'],
@@ -607,9 +609,40 @@ class PurchaseRequestController extends Controller
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
+            'batch_id' => $result['batch_id'] ?? null,
             'rejected' => $result['rejected'],
             'failed' => $result['failed'],
             'errors' => $result['errors'],
         ]);
+    }
+
+    /**
+     * Poll the status of specific job batches.
+     * Used by the frontend Alpine component to render progress bars.
+     */
+    public function batchStatus(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('batch-approve', PurchaseRequest::class);
+        
+        $ids = $request->input('ids', []);
+        $statuses = [];
+
+        foreach ((array) $ids as $id) {
+            $batch = Bus::findBatch($id);
+            if ($batch) {
+                $statuses[] = [
+                    'id' => $batch->id,
+                    'name' => $batch->name,
+                    'totalJobs' => $batch->totalJobs,
+                    'pendingJobs' => $batch->pendingJobs,
+                    'failedJobs' => $batch->failedJobs,
+                    'progress' => $batch->progress(),
+                    'finished' => $batch->finished(),
+                    'canceled' => $batch->canceled(),
+                ];
+            }
+        }
+
+        return response()->json(['success' => true, 'batches' => $statuses]);
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\PurchaseRequest\UseCases;
 
 use App\Application\PurchaseRequest\DTOs\ApprovalActionDTO;
+use App\Jobs\ProcessPurchaseRequestApproval;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -14,13 +16,9 @@ use Illuminate\Support\Facades\Log;
  */
 final class BatchApprovePurchaseRequests
 {
-    public function __construct(
-        private readonly ApprovePurchaseRequest $approvePrUseCase
-    ) {}
-
     /**
      * @param array<int> $purchaseRequestIds
-     * @return array{success: bool, message: string, approved: int, failed: int, errors: array<string>}
+     * @return array{success: bool, message: string, batch_id: string|null, approved: int, failed: int, errors: array<string>}
      */
     public function handle(array $purchaseRequestIds, int $actorUserId, ?string $remarks = null): array
     {
@@ -28,63 +26,29 @@ final class BatchApprovePurchaseRequests
             return [
                 'success' => false,
                 'message' => 'No purchase requests selected for approval.',
+                'batch_id' => null,
                 'approved' => 0,
                 'failed' => 0,
                 'errors' => [],
             ];
         }
 
-        $approved = 0;
-        $failed = 0;
-        $errors = [];
-
+        $jobs = [];
         foreach ($purchaseRequestIds as $prId) {
-            try {
-                DB::beginTransaction();
-
-                $dto = new ApprovalActionDTO(
-                    purchaseRequestId: $prId,
-                    actorUserId: $actorUserId,
-                    remarks: $remarks
-                );
-
-                $this->approvePrUseCase->handle($dto);
-
-                DB::commit();
-                $approved++;
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                $failed++;
-                $errors[] = "PR #{$prId}: {$e->getMessage()}";
-
-                Log::error('Batch approval failed for PR', [
-                    'pr_id' => $prId,
-                    'actor_user_id' => $actorUserId,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-            }
+            $jobs[] = new ProcessPurchaseRequestApproval($prId, $actorUserId, $remarks);
         }
+
+        $batch = Bus::batch($jobs)
+            ->name('Batch PR Approval')
+            ->dispatch();
 
         return [
-            'success' => $approved > 0,
-            'message' => $this->buildResultMessage($approved, $failed),
-            'approved' => $approved,
-            'failed' => $failed,
-            'errors' => $errors,
+            'success' => true,
+            'message' => 'Batch approval started in the background.',
+            'batch_id' => $batch->id,
+            'approved' => 0,
+            'failed' => 0,
+            'errors' => [],
         ];
-    }
-
-    private function buildResultMessage(int $approved, int $failed): string
-    {
-        if ($failed === 0) {
-            return "Successfully approved {$approved} purchase request(s).";
-        }
-
-        if ($approved === 0) {
-            return "Failed to approve all {$failed} purchase request(s).";
-        }
-
-        return "Approved {$approved} purchase request(s), {$failed} failed.";
     }
 }

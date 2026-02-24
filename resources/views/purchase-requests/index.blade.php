@@ -187,6 +187,36 @@
             </div>
         @endif
 
+        {{-- BATCH PROGRESS DASHBOARD --}}
+        <template x-if="activeBatches.length > 0">
+            <div class="mt-4 space-y-3">
+                <template x-for="batch in activeBatches" :key="batch.id">
+                    <div class="glass-card p-4 bg-white/80 border border-indigo-100 rounded-xl relative overflow-hidden animate-fade-in shadow-sm">
+                        <!-- Background Progress Fill -->
+                        <div class="absolute left-0 top-0 bottom-0 bg-indigo-50/50 transition-all duration-500 ease-out z-0" 
+                             :style="`width: ${batch.progress}%`"></div>
+                             
+                        <div class="relative z-10 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="bg-indigo-100 text-indigo-600 w-8 h-8 rounded-full flex items-center justify-center shadow-inner">
+                                    <i class="bx bx-loader-alt animate-spin text-lg"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-700">Processing Background Task</h4>
+                                    <p class="text-xs text-slate-500 mt-0.5">
+                                        <span x-text="batch.totalJobs - batch.pendingJobs"></span> of <span x-text="batch.totalJobs"></span> requests completed
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-lg font-bold text-indigo-600" x-text="`${Math.round(batch.progress)}%`"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
         <div class="glass-card overflow-hidden p-1 shadow-sm border border-slate-200/60 relative">
             <div class="absolute inset-0 bg-gradient-to-b from-white to-slate-50/30 -z-10"></div>
             
@@ -265,8 +295,8 @@
                     </button>
                 </div>
 
-                <div class="premium-datatable-wrapper">
-                    {{ $dataTable->table(['class' => 'table table-hover table-striped w-100 dt-responsive nowrap']) }}
+                <div class="premium-datatable-wrapper overflow-x-auto custom-scrollbar pb-4 block w-full">
+                    {{ $dataTable->table(['class' => 'table table-hover table-striped w-full nowrap']) }}
                 </div>
             </div>
         </div>
@@ -402,6 +432,8 @@
                 selectedIds: [],
                 showRejectReason: false,
                 rejectionReason: '',
+                activeBatches: [],
+                pollingInterval: null,
 
                 init() {
                     // Start intercepting Datatables data
@@ -469,6 +501,62 @@
                     if(window.LaravelDataTables && window.LaravelDataTables[this.tableId]) {
                         window.LaravelDataTables[this.tableId].ajax.reload(null, false);
                     }
+                },
+
+                startBatchPolling() {
+                    if (this.pollingInterval) return;
+                    
+                    this.pollingInterval = setInterval(() => {
+                        const batchIds = this.activeBatches.map(b => b.id);
+                        if (batchIds.length === 0) {
+                            clearInterval(this.pollingInterval);
+                            this.pollingInterval = null;
+                            return;
+                        }
+
+                        const params = new URLSearchParams();
+                        batchIds.forEach(id => params.append('ids[]', id));
+
+                        fetch(`{{ route('purchase-requests.batch-status') }}?${params.toString()}`, {
+                            headers: { 'Accept': 'application/json' }
+                        })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.success && res.batches) {
+                                // Find newly finished ones to know if we need to reload table
+                                const previouslyRunning = this.activeBatches.length;
+                                this.activeBatches = res.batches;
+                                
+                                const currentlyRunning = this.activeBatches.filter(b => !b.finished && !b.canceled).length;
+                                
+                                if (currentlyRunning < previouslyRunning) {
+                                    // A batch finished
+                                    this.reloadTable();
+                                }
+                                
+                                // Keep only the running/incomplete batches
+                                this.activeBatches = this.activeBatches.filter(b => !b.finished && !b.canceled);
+                                
+                                // Stop polling if none left
+                                if (this.activeBatches.length === 0) {
+                                    clearInterval(this.pollingInterval);
+                                    this.pollingInterval = null;
+                                    Swal.fire({
+                                        title: 'Batch Complete',
+                                        text: 'Your background tasks have finished processing.',
+                                        icon: 'success',
+                                        toast: true,
+                                        position: 'top-end',
+                                        timer: 4000,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Polling error', err);
+                        });
+                    }, 2000);
                 },
 
                 resetFilters() {
@@ -546,10 +634,21 @@
                     .then(r => r.json())
                     .then(res => {
                         if (res.success) {
-                            Swal.fire({ icon: 'success', title: 'Success!', text: res.message, timer: 2000, showConfirmButton: false });
+                            Swal.fire({ icon: 'success', title: 'Task Queued!', text: res.message, timer: 2000, showConfirmButton: false });
                             if(successCb) successCb();
                             this.selectedIds = [];
-                            this.reloadTable();
+                            
+                            if (res.batch_id) {
+                                this.activeBatches.push({ 
+                                    id: res.batch_id, 
+                                    progress: 0, 
+                                    totalJobs: this.selectedIds.length || '...', 
+                                    pendingJobs: this.selectedIds.length || '...' 
+                                });
+                                this.startBatchPolling();
+                            } else {
+                                this.reloadTable();
+                            }
                         } else {
                             throw new Error(res.message || 'An error occurred during processing.');
                         }

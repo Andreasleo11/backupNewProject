@@ -54,8 +54,6 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->name('purchase-requests.sign-and-submit');
     Route::post('purchase-requests/items/{item}/approve', [DetailPurchaseRequestController::class, 'approve'])->middleware('can:approve,item')->name('purchase-requests.items.approve');
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->middleware('can:reject,item')->name('purchase-requests.items.reject');
-    // Route::post('purchase-requests/approve-selected', [PurchaseRequestController::class, 'approveSelected'])->name('purchase_requests.approve_selected');
-    // Route::post('purchase-requests/reject-selected', [PurchaseRequestController::class, 'rejectSelected'])->name('purchase_requests.reject_selected');
     Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
 
     // Batch approve / reject — requires 'pr.batch-approve' permission (director-level only)
@@ -65,15 +63,14 @@ Route::middleware('auth')->group(function () {
     Route::put('purchase-requests/batch-reject', [PurchaseRequestController::class, 'batchReject'])
         ->middleware('can:pr.batch-approve')
         ->name('purchase-requests.batch-reject');
+    Route::get('purchase-requests/batch-status', [PurchaseRequestController::class, 'batchStatus'])
+        ->middleware('can:pr.batch-approve')
+        ->name('purchase-requests.batch-status');
 
     // Purchase Request Details
     Route::get('/purchaseRequestsDetail/{id}', [DetailPurchaseRequestController::class, 'detailpr'])->name('pr.detail');
-    Route::get('/purchaseRequestsDetailDirector/{id}', [DirectorPurchaseRequestController::class, 'detailpr'])->name('director.pr.detail');
     Route::post('pr/markasreceived/', [DetailPurchaseRequestController::class, 'receivedItem'])->name('pr.receive.item');
     Route::post('/pr/markasreceivedall', [DetailPurchaseRequestController::class, 'receivedAll'])->name('pr.receive.all');
-    Route::post('/director/pr/approval', [DirectorPurchaseRequestController::class, 'approval'])->name('director.pr.approve');
-    Route::post('/director/pr/approval/all', [DirectorPurchaseRequestController::class, 'approvalAll'])->name('director.pr.approve.all');
-    Route::post('/director/pr/reject', [DirectorPurchaseRequestController::class, 'reject'])->name('director.pr.reject');
     Route::post('/accounting/pr/approval', [AccountingPurchaseRequestController::class, 'approval'])->name('accounting.pr.approve');
     Route::post('/accounting/pr/reject', [AccountingPurchaseRequestController::class, 'reject'])->name('accounting.pr.reject');
     Route::post('/accounting/pr/approval/all', [AccountingPurchaseRequestController::class, 'approvalAll'])->name('accounting.pr.approve.all');
