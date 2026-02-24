@@ -222,8 +222,8 @@
                     
                     <div class="w-full sm:w-56 relative z-10 group">
                         <label for="filter-status" class="sr-only">Status</label>
-                        <i class="bx bx-loader-circle absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
-                        <select id="filter-status" x-model="filters.status" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                        <i class="bx bx-loader-circle absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors text-lg pointer-events-none"></i>
+                        <select id="filter-status" x-model="filters.status" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm !pl-10 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
                             <option value="">All Statuses</option>
                             <option value="DRAFT">Draft</option>
                             <option value="IN_REVIEW">In Review</option>
@@ -235,8 +235,8 @@
 
                     <div class="w-full sm:w-64 relative z-10 group">
                         <label for="filter-department" class="sr-only">Target Department</label>
-                        <i class="bx bx-buildings absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors"></i>
-                        <select id="filter-department" x-model="filters.department" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm pl-9 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                        <i class="bx bx-buildings absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors text-lg pointer-events-none"></i>
+                        <select id="filter-department" x-model="filters.department" @change="reloadTable()" class="w-full form-select text-sm border-slate-200 rounded-xl shadow-sm !pl-10 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
                             <option value="">All Target Departments</option>
                             <option value="PURCHASING">Purchasing</option>
                             <option value="PERSONALIA">Personalia / HRD</option>
@@ -247,8 +247,8 @@
 
                     <div class="w-full sm:w-56 relative z-10 group" x-ref="datepickerContainer">
                         <label for="filter-date" class="sr-only">Date Range</label>
-                        <i class="bx bx-calendar absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors pointer-events-none"></i>
-                        <input type="text" id="filter-date" x-ref="datePickerInput" placeholder="Filter Period..." class="w-full form-input text-sm border-slate-200 rounded-xl shadow-sm pl-9 pr-8 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
+                        <i class="bx bx-calendar absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-400 transition-colors text-lg pointer-events-none"></i>
+                        <input type="text" id="filter-date" x-ref="datePickerInput" placeholder="Filter Period..." class="w-full form-input text-sm border-slate-200 rounded-xl shadow-sm !pl-10 pr-8 py-2.5 focus:border-indigo-500 focus:ring-indigo-500 bg-slate-50 hover:bg-white transition-colors cursor-pointer font-medium text-slate-700">
                         <button type="button" x-show="filters.date" @click="clearDate()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-rose-500 transition-colors">
                             <i class="bx bx-x text-lg"></i>
                         </button>
