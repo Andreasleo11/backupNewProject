@@ -111,14 +111,16 @@
                x-transition:leave-start="translate-x-0"
                x-transition:leave-end="-translate-x-full">
             {{-- Header --}}
-            <div class="flex items-center justify-between h-16 px-5 border-b border-slate-100">
+            <div class="flex items-center justify-between h-16 px-5 border-b border-slate-100/60">
                 <a href="{{ url('/') }}" class="flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 shadow-lg shadow-blue-200">
-                        <img class="h-6 w-6 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 shadow-lg shadow-blue-200 shrink-0">
+                        <img class="h-5 w-5 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
                     </div>
-                    <span class="text-base font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
-                        {{ config('app.name') }}
-                    </span>
+                    <div class="flex flex-col justify-center">
+                        <span class="text-[15px] font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700 leading-none">
+                            {{ config('app.name') }}
+                        </span>
+                    </div>
                 </a>
                 <button type="button"
                     class="flex h-9 w-9 items-center justify-center rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
@@ -129,18 +131,18 @@
                 </button>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scrollbar">
+            <div class="flex-1 flex flex-col min-h-0">
                 @include('new.layouts.partials.sidebar-nav', ['isMobile' => true])
             </div>
 
-            <div class="border-t border-slate-100 p-5 bg-slate-50/50">
+            <div class="border-t border-slate-100/60 p-5 bg-slate-50/50">
                 <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center text-white font-bold shadow-md">
-                        {{ strtoupper(auth()->user()->name[0] ?? 'U') }}
+                    <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200">
+                        {{ strtoupper(mb_substr(auth()->user()->name ?? 'U', 0, 2)) }}
                     </div>
-                    <div class="min-w-0 flex-1">
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Authenticated as</p>
-                        <p class="text-sm font-bold text-slate-800 truncate">{{ auth()->user()->name ?? 'User' }}</p>
+                    <div class="flex-1 flex flex-col justify-center min-w-0 pr-2">
+                        <p class="text-[13px] font-bold text-slate-800 truncate leading-none pt-[1px]">{{ auth()->user()->name ?? 'User' }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1 leading-none">Authenticated</p>
                     </div>
                 </div>
             </div>
@@ -149,28 +151,29 @@
 
     <div class="min-h-screen flex">
         {{-- Desktop sidebar --}}
-        <aside class="hidden md:flex flex-col border-r border-slate-200/60 bg-white/80 backdrop-blur-xl transition-all duration-500 ease-in-out sticky top-0 h-screen z-50"
-            :class="sidebarCollapsed ? 'w-20' : 'w-72'">
+        <aside class="hidden md:flex flex-col border-r border-slate-200/60 bg-white/80 backdrop-blur-xl transition-all duration-500 ease-in-out sticky top-0 h-screen z-50 overflow-hidden"
+            :class="sidebarCollapsed ? 'w-[5rem]' : 'w-72'">
             {{-- Header --}}
-            <div class="flex items-center justify-between h-16 px-4 border-b border-slate-100">
+            <div class="flex items-center h-16 border-b border-slate-100"
+                 :class="sidebarCollapsed ? 'justify-center px-0' : 'justify-between px-5'">
                 @php
                     $appName = config('app.name');
                     $words = preg_split('/\s+/', trim($appName));
                     $appAcronym = '';
                     foreach ($words as $word) { $appAcronym .= mb_substr($word, 0, 1); }
                 @endphp
-                <a href="{{ url('/') }}" class="flex items-center gap-3.5 group" :class="sidebarCollapsed ? 'mx-auto' : ''">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 shadow-lg shadow-blue-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <a href="{{ url('/') }}" class="flex items-center gap-3.5 group">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 shadow-lg shadow-blue-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shrink-0">
                         <img class="h-6 w-6 brightness-0 invert" src="{{ asset('image/Asset 1.svg') }}" alt="logo">
                     </div>
-                    <div x-show="!sidebarCollapsed" x-cloak class="transition-opacity duration-300">
+                    <div x-show="!sidebarCollapsed" x-cloak class="transition-opacity duration-300 flex flex-col justify-center">
                         <span class="text-base font-extrabold tracking-tight text-slate-900 block leading-none">{{ $appName }}</span>
-                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-0.5 block leading-none">{{ strtoupper($appAcronym) }} SYSTEM</span>
+                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-1 block leading-none">{{ strtoupper($appAcronym) }} SYSTEM</span>
                     </div>
                 </a>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scrollbar">
+            <div class="flex-1 flex flex-col min-h-0">
                 @include('new.layouts.partials.sidebar-nav')
             </div>
 
@@ -199,14 +202,14 @@
                         </svg>
                     </button>
 
-                    <div class="hidden sm:block">
-                        <nav class="flex text-xs space-x-2 text-slate-400 font-medium uppercase tracking-wider">
-                            <span class="hover:text-blue-600 transition-colors">Main System</span>
+                    <div class="hidden sm:flex flex-col justify-center">
+                        <nav class="flex items-center text-xs space-x-2 text-slate-400 font-bold uppercase tracking-wider">
+                            <span class="hover:text-blue-600 transition-colors cursor-pointer">Main System</span>
                             <span>/</span>
-                            <span class="text-slate-900 font-bold whitespace-nowrap">@yield('page-title', 'Overview')</span>
+                            <span class="text-slate-900 whitespace-nowrap">@yield('page-title', 'Overview')</span>
                         </nav>
                         @hasSection('page-subtitle')
-                            <p class="text-[11px] text-slate-500 font-medium truncate max-w-[300px] mt-0.5">@yield('page-subtitle')</p>
+                            <p class="text-[11px] text-slate-500 font-medium truncate max-w-[300px] mt-0.5 leading-tight">@yield('page-subtitle')</p>
                         @endif
                     </div>
                 </div>
@@ -226,13 +229,13 @@
 
                 <div class="flex items-center gap-4">
                     {{-- Status Pills --}}
-                    <div class="hidden lg:flex items-center gap-2">
+                    <div class="hidden lg:flex items-center gap-3">
                         <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100/80 border border-slate-200/50">
-                            <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <div class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse mt-2"></div>
                             <span class="text-[10px] font-bold text-slate-700 uppercase tracking-widest">{{ $currentBranch }}</span>
                         </div>
                         <div class="px-3 py-1.5 rounded-full bg-gradient-to-r {{ $envColorClasses }} text-white shadow-md">
-                            <span class="text-[10px] font-black uppercase tracking-widest">{{ $envLabel }}</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest block pt-[1px]">{{ $envLabel }}</span>
                         </div>
                     </div>
 
@@ -246,9 +249,9 @@
                                 <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 via-blue-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-100 group-hover:scale-105 transition-all">
                                     {{ strtoupper(mb_substr($initials, 0, 2)) }}
                                 </div>
-                                <div class="hidden sm:block text-left pr-2">
-                                    <p class="text-sm font-bold text-slate-900 leading-tight">{{ $user->name ?? 'User' }}</p>
-                                    <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-tighter">{{ $user->email ?? '' }}</p>
+                                <div class="hidden sm:block text-left pr-1.5">
+                                    <div class="text-[13px] font-bold text-slate-900 leading-tight">{{ $user->name ?? 'User' }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{{ $user->email ?? '' }}</div>
                                 </div>
                                 <svg class="hidden sm:block h-4 w-4 text-slate-400 transition-transform duration-300" :class="userMenuOpen ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

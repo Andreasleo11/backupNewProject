@@ -13,9 +13,9 @@
 
         {{-- Unread badge --}}
         @if ($unreadCount > 0)
-            <span class="absolute -top-1 -right-1 flex h-4 min-w-[1rem] items-center justify-center rounded-full
+            <span class="absolute -top-[5px] -right-[5px] flex h-[18px] min-w-[18px] items-center justify-center rounded-full
                          bg-gradient-to-r from-rose-500 to-pink-600 shadow-lg shadow-rose-500/40
-                         px-1 text-[9px] font-black text-white ring-2 ring-white animate-pulse">
+                         px-1 text-[9px] font-black text-white ring-[2.5px] ring-white animate-pulse">
                 {{ $unreadCount > 9 ? '9+' : $unreadCount }}
             </span>
         @endif
@@ -29,8 +29,8 @@
          x-transition:leave="transition ease-in duration-150"
          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
          x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-         class="absolute right-0 mt-3 w-80 rounded-2xl bg-white/90 backdrop-blur-xl
-                border border-slate-200/60 shadow-2xl shadow-blue-900/10 p-2 z-[60] ring-1 ring-black/5">
+         class="absolute right-[-60px] sm:right-0 mt-3 w-[calc(100vw-48px)] sm:w-80 rounded-2xl bg-white/90 backdrop-blur-xl
+                border border-slate-200/60 shadow-2xl shadow-blue-900/10 p-2 z-[60] ring-1 ring-black/5 origin-top sm:origin-top-right">
 
         {{-- Header --}}
         <div class="flex items-center justify-between px-3 py-3 border-b border-slate-100 mb-1">

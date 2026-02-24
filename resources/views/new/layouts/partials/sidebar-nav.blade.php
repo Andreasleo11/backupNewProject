@@ -35,7 +35,7 @@
     $nav = NavigationService::getPersonalizedMenu();
 @endphp
 
-<nav class="flex-1 overflow-y-auto custom-scrollbar px-2 py-2" role="navigation" aria-label="Main system navigation">
+<nav class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar px-3 py-3 w-full" role="navigation" aria-label="Main system navigation">
     {{-- High-Priority Search Results (Visible only when searching) --}}
     <div x-show="q.length > 0" class="mb-6 space-y-1.5 px-2">
         @php
@@ -70,7 +70,7 @@
         <div class="h-[1px] w-full bg-slate-100 my-4"></div>
     </div>
 
-    <ul class="space-y-1.5" role="menubar" x-show="q.length === 0">
+    <div class="space-y-1.5" role="menubar" x-show="q.length === 0">
         @foreach ($nav as $item)
             @if ($item['type'] === 'quick-access')
                 {{-- Quick Access is now a reactive Livewire component --}}
@@ -107,20 +107,20 @@
                     $label = $item['label'];
                     $isActive = $item['active'] ?? false;
                 @endphp
-                <li class="relative group/nav-item"
-                    x-data="{ hover: false, flyoutTop: 0, myIdx: 'si-{{ $loop->index }}', pinned: false, pinLoading: false }"
-                    @mouseenter="hover = true; flyoutTop = $el.getBoundingClientRect().top; $dispatch('sbflyout', { idx: myIdx })"
-                    @mouseleave="hover = false"
-                    x-on:sbflyout.window="if ($event.detail.idx !== myIdx) hover = false"
+                <div class="relative group/nav-item"
+                    x-data="{ hover: false, flyoutTop: 0, myIdx: 'si-{{ $loop->index }}', pinned: false, pinLoading: false, flyoutTimer: null }"
+                    @mouseenter="if (!{{ $isMobile ? 'true' : 'false' }}) { clearTimeout(flyoutTimer); flyoutTimer = setTimeout(() => { hover = true; flyoutTop = $el.getBoundingClientRect().top; $dispatch('sbflyout', { idx: myIdx }); $nextTick(() => { const el = document.getElementById('flyout-' + myIdx); if (el) { const rect = el.getBoundingClientRect(); if (rect.bottom > window.innerHeight - 20) { flyoutTop = Math.max(20, window.innerHeight - rect.height - 20); } } }); }, 125); }"
+                    @mouseleave="if (!{{ $isMobile ? 'true' : 'false' }}) { clearTimeout(flyoutTimer); hover = false; }"
+                    x-on:sbflyout.window="if ($event.detail.idx !== myIdx) { clearTimeout(flyoutTimer); hover = false; }"
                     role="none">
                     <a href="{{ route($item['route']) }}"
                         class="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-300
                                hover:bg-blue-50/50 hover:text-blue-950 focus:outline-none focus:ring-2 focus:ring-blue-500/20 active:scale-[0.98]
                                {{ $isActive
-                                  ? 'bg-white shadow-lg shadow-blue-100/50 border border-blue-100 text-blue-700 font-semibold mb-0.5'
-                                  : 'text-slate-600 font-medium' }}"
+                                  ? 'bg-white shadow-lg shadow-blue-100/50 border border-blue-100 text-blue-700 font-bold mb-0.5'
+                                  : 'text-slate-600 font-semibold' }}"
                         :class="{
-                            'justify-center px-0 mx-2': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
+                            'justify-center px-0': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
                             'justify-start': !sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }},
                         }"
                         role="menuitem"
@@ -131,19 +131,18 @@
                             <span
                                 class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300
                                      {{ $isActive 
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-200/50' 
                                         : 'bg-slate-100/80 text-slate-500 group-hover/nav-item:bg-blue-100 group-hover/nav-item:text-blue-600' }}">
                                 @include('new.layouts.partials.nav-icon', ['name' => $item['icon']])
                             </span>
                             @if($isActive)
                                 <span class="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5">
-                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500 ring-[2.5px] ring-white shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>
                                 </span>
                             @endif
                         </div>
 
-                        <span class="truncate text-sm tracking-tight flex-1" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
+                        <span class="truncate text-[13px] tracking-tight flex-1 pt-0.5" x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}">
                             {{ $item['label'] }}
                         </span>
 
@@ -191,6 +190,7 @@
                              x-transition:enter-start="opacity-0 translate-x-[-10px]"
                              x-transition:enter-end="opacity-100 translate-x-0"
                              x-cloak
+                             :id="'flyout-' + myIdx"
                              class="fixed z-[90] ml-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-blue-100/50 px-5 py-4 shadow-2xl shadow-blue-900/10 min-w-[200px]"
                              :style="{
                                  top: (flyoutTop) + 'px',
@@ -208,7 +208,7 @@
                         </div>
                     </template>
                     @endif
-                </li>
+                </div>
             @elseif ($item['type'] === 'group')
                 @php
                     $groupLabel = $item['label'];
@@ -216,7 +216,7 @@
                     $anyActive = collect($children)->contains(fn($c) => $c['active'] ?? false);
                     $defaultOpen = $item['defaultOpen'] ?? $anyActive;
                 @endphp
-                <li class="relative overflow-hidden"
+                <div class="relative overflow-hidden"
                     x-data="{
                         hover: false,
                         open: {{ $defaultOpen ? 'true' : 'false' }},
@@ -230,16 +230,27 @@
                     @mouseenter="
                         if (!{{ $isMobile ? 'true' : 'false' }}) {
                             clearTimeout(flyoutTimer);
-                            hover = true;
-                            flyoutOpen = true;
-                            flyoutTop = $el.getBoundingClientRect().top;
-                            $dispatch('sbflyout', { idx: myIdx });
+                            flyoutTimer = setTimeout(() => {
+                                hover = true;
+                                flyoutOpen = true;
+                                flyoutTop = $el.getBoundingClientRect().top;
+                                $dispatch('sbflyout', { idx: myIdx });
+                                $nextTick(() => {
+                                    const el = document.getElementById('flyout-' + myIdx);
+                                    if (el) {
+                                        const rect = el.getBoundingClientRect();
+                                        if (rect.bottom > window.innerHeight - 20) {
+                                            flyoutTop = Math.max(20, window.innerHeight - rect.height - 20);
+                                        }
+                                    }
+                                });
+                            }, 125);
                         }
                     "
                     @mouseleave="
                         if (!{{ $isMobile ? 'true' : 'false' }}) {
-                            hover = false;
-                            flyoutTimer = setTimeout(() => { flyoutOpen = false }, 150);
+                            clearTimeout(flyoutTimer);
+                            flyoutTimer = setTimeout(() => { flyoutOpen = false; hover = false; }, 150);
                         }
                     "
                     x-on:sbflyout.window="if ($event.detail.idx !== myIdx) { clearTimeout(flyoutTimer); flyoutOpen = false; hover = false; }"
@@ -247,10 +258,10 @@
                 >
                     {{-- Group Header --}}
                     <button type="button" @click="open = !open"
-                        class="group flex w-full items-center rounded-xl px-3 py-2.5 text-sm font-semibold
-                               transition-all duration-300 active:scale-[0.98]
-                               focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                               {{ $anyActive ? 'text-blue-950 bg-blue-50/30' : 'text-slate-600 hover:bg-slate-50' }}"
+                        class="group flex w-full items-center rounded-xl px-3 py-2.5 text-[13px] font-bold
+                                transition-all duration-300 active:scale-[0.98]
+                                focus:outline-none focus:ring-2 focus:ring-blue-500/20 outline-none
+                                {{ $anyActive ? 'text-blue-950 bg-blue-50/60 shadow-sm border border-blue-100/50' : 'text-slate-600 hover:bg-slate-50' }}"
                         :class="{
                             'justify-between': !sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }},
                             'justify-center px-0': sidebarCollapsed && !{{ $isMobile ? 'true' : 'false' }},
@@ -261,11 +272,11 @@
                             <span
                                 class="flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300 shrink-0
                                      {{ $anyActive 
-                                        ? 'bg-gradient-to-br from-blue-500 to-violet-600 text-white shadow-md shadow-blue-150' 
+                                        ? 'bg-gradient-to-br from-blue-500 to-violet-600 text-white shadow-md shadow-blue-500/20' 
                                         : 'bg-slate-100/80 text-slate-500 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm' }}">
                                 @include('new.layouts.partials.nav-icon', ['name' => $item['icon']])
                             </span>
-                            <span x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}" class="font-bold tracking-tight text-sm">{{ $groupLabel }}</span>
+                            <span x-show="!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }}" class="tracking-tight pt-0.5 flex-1 text-left">{{ $groupLabel }}</span>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg"
                             :class="open ? 'rotate-90 text-blue-600' : 'text-slate-300'"
@@ -279,59 +290,63 @@
                     </button>
 
                     {{-- Submenu --}}
-                    <ul x-show="open && (!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }})"
-                        x-transition:enter="transition-all duration-300 ease-out"
-                        x-transition:enter-start="opacity-0 -translate-y-2 max-h-0"
-                        x-transition:enter-end="opacity-100 translate-y-0 max-h-[800px]"
-                        x-transition:leave="transition-all duration-200 ease-in"
-                        x-transition:leave-start="opacity-100 translate-y-0 max-h-[800px]"
-                        x-transition:leave-end="opacity-0 -translate-y-2 max-h-0"
-                        class="mt-1 space-y-1 ml-[1.875rem] pl-4 border-l border-slate-200/60"
-                        role="menu">
-                        @foreach ($children as $child)
-                            @php
-                                $childLabel = $child['label'];
-                                $childActive = $child['active'] ?? false;
-                            @endphp
-                            <li role="none" class="relative group/child"
-                                x-data="{ pinned: false, pinLoading: false }">
-                                <a href="{{ route($child['route']) }}"
-                                    class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all duration-300
-                                          hover:bg-blue-50/50 hover:translate-x-1
-                                          {{ $childActive ? 'text-blue-700 font-bold' : 'text-slate-500 font-medium hover:text-slate-900' }}"
-                                    role="menuitem">
-                                    <div class="w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300
-                                               {{ $childActive ? 'bg-blue-500 scale-125 shadow-[0_0_8px_rgba(99,102,241,0.6)]' : 'bg-slate-300 group-hover/child:bg-blue-400' }}"></div>
-                                    <span class="truncate tracking-tight flex-1">{{ $child['label'] }}</span>
-                                </a>
-                                {{-- ⭐ Pin Button --}}
-                                <button :class="{ '!opacity-100': pinned }"
-                                        :disabled="pinLoading"
-                                        @click.prevent="
-                                            pinLoading = true;
-                                            if (pinned) {
-                                                $dispatch('nav-unpin', { routeName: '{{ $child['route'] }}' });
-                                            } else {
-                                                $dispatch('nav-pin', { routeName: '{{ $child['route'] }}' });
-                                            }
-                                            setTimeout(() => pinLoading = false, 600);
-                                        "
-                                        x-on:pin-state-changed.window="
-                                            if ($event.detail.routeName === '{{ $child['route'] }}') pinned = $event.detail.pinned;
-                                        "
-                                        class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg
-                                               transition-all duration-200 hover:bg-amber-50
-                                               opacity-0 group-hover/child:!opacity-20">
-                                    <svg class="h-3 w-3 transition-colors duration-200"
-                                         :class="pinned ? 'text-amber-500 fill-amber-400' : 'text-slate-400 hover:text-amber-400'"
-                                         viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                              d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                                    </svg>
-                                </button>
-                            </li>
-                        @endforeach
-                    </ul>
+                    <div x-show="(!sidebarCollapsed || {{ $isMobile ? 'true' : 'false' }})"
+                        class="grid transition-all duration-300 ease-in-out"
+                        :class="open ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 mt-0'">
+                        <div class="overflow-hidden relative">
+                            {{-- Vertical Accent Line matching parent icon center --}}
+                            <div class="absolute left-[30px] top-0 bottom-2 w-[2px] bg-slate-100/80 rounded-full z-0"></div>
+                            
+                            <div class="space-y-0.5 relative z-10" role="menu">
+                                @foreach ($children as $child)
+                                    @php
+                                        $childLabel = $child['label'];
+                                        $childActive = $child['active'] ?? false;
+                                    @endphp
+                                    <div role="none" class="relative group/child"
+                                        x-data="{ pinned: false, pinLoading: false }">
+                                        <a href="{{ route($child['route']) }}"
+                                            class="flex items-center w-full rounded-xl py-2 text-[13px] transition-all duration-300 relative
+                                                  hover:bg-blue-50/50 hover:translate-x-1
+                                                  {{ $childActive ? 'text-blue-700 font-bold bg-blue-50/30' : 'text-slate-500 font-bold hover:text-slate-900' }}"
+                                            role="menuitem">
+                                            
+                                            <div class="w-[60px] flex justify-center shrink-0">
+                                                <div class="w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300
+                                                           {{ $childActive ? 'bg-blue-500 scale-125 shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'bg-slate-300 group-hover/child:bg-blue-400 group-hover/child:scale-110' }}"></div>
+                                            </div>
+                                            <span class="truncate tracking-tight flex-1 pt-0.5 pr-3">{{ $child['label'] }}</span>
+                                        </a>
+                                        {{-- ⭐ Pin Button --}}
+                                        <button :class="{ '!opacity-100': pinned }"
+                                                :disabled="pinLoading"
+                                                @click.prevent="
+                                                    pinLoading = true;
+                                                    if (pinned) {
+                                                        $dispatch('nav-unpin', { routeName: '{{ $child['route'] }}' });
+                                                    } else {
+                                                        $dispatch('nav-pin', { routeName: '{{ $child['route'] }}' });
+                                                    }
+                                                    setTimeout(() => pinLoading = false, 600);
+                                                "
+                                                x-on:pin-state-changed.window="
+                                                    if ($event.detail.routeName === '{{ $child['route'] }}') pinned = $event.detail.pinned;
+                                                "
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg
+                                                       transition-all duration-200 hover:bg-amber-50
+                                                       opacity-0 group-hover/child:!opacity-20">
+                                            <svg class="h-3 w-3 transition-colors duration-200"
+                                                 :class="pinned ? 'text-amber-500 fill-amber-400' : 'text-slate-400 hover:text-amber-400'"
+                                                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
 
                     {{-- Glassmorphic Collapsed Group Flyout --}}
                     @if(!$isMobile)
@@ -341,7 +356,8 @@
                              x-transition:enter-start="opacity-0 scale-95 translate-x-[-10px]"
                              x-transition:enter-end="opacity-100 scale-100 translate-x-0"
                              x-cloak
-                             class="fixed z-[90] w-64 rounded-2xl bg-white/95 backdrop-blur-xl border border-blue-100/50 p-2 shadow-2xl shadow-blue-900/15"
+                             :id="'flyout-' + myIdx"
+                             class="fixed z-[90] w-64 max-h-[85vh] flex flex-col rounded-2xl bg-white/95 backdrop-blur-xl border border-blue-100/50 p-2 shadow-2xl shadow-blue-900/15"
                              :style="{
                                  top: (flyoutTop) + 'px',
                                  left: '5.5rem',
@@ -356,7 +372,7 @@
                                 </div>
                             </div>
                             
-                            <ul class="p-1 space-y-1">
+                            <ul class="p-1 space-y-1 overflow-y-auto custom-scrollbar flex-1">
                                 @foreach ($children as $child)
                                     @php
                                         $childActive = $child['active'] ?? false;
@@ -379,10 +395,10 @@
                         </div>
                     </template>
                     @endif
-                </li>
+                </div>
             @endif
         @endforeach
-    </ul>
+    </div>
 </nav>
 
 <style>
