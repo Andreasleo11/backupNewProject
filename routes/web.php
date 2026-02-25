@@ -115,12 +115,3 @@ require __DIR__ . '/master-data.php';
 
 // Legacy & Utility Routes
 require __DIR__ . '/legacy.php';
-
-// Admin Routes (already modularized)
-require __DIR__ . '/admin.php';
-
-// Legacy & Utility Routes
-require __DIR__ . '/legacy.php';
-
-// Admin Routes (already modularized)
-require __DIR__ . '/admin.php';

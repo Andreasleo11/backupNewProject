@@ -40,4 +40,8 @@ Route::middleware('auth')->group(function () {
 
     // Sync Progress (utility)
     Route::get('/sync-progress/{job}/{tab}', [SyncProgressController::class, 'getProgress'])->name('sync.progress');
+
+    Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
+    Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
+    Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
 });
