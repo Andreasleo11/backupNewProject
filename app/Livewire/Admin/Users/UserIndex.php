@@ -118,6 +118,8 @@ class UserIndex extends Component
 
     public function toggleStatus(int $userId, ToggleUserStatus $toggleUserStatus): void
     {
+        $this->authorize('user.update');
+
         $toggleUserStatus->execute($userId);
         $this->dispatch('flash', type: 'success', message: 'User status updated.');
         $this->resetPage();
@@ -171,6 +173,8 @@ class UserIndex extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('user.create');
+
         $this->resetForm();
         $this->editingId = null;
         $this->showModal = true;
@@ -178,6 +182,8 @@ class UserIndex extends Component
 
     public function openEditModal(int $userId, UserRepository $users, EmployeeRepository $employees): void
     {
+        $this->authorize('user.update');
+
         $this->resetForm();
 
         $user = $users->findById($userId);
@@ -209,6 +215,8 @@ class UserIndex extends Component
 
     public function openPasswordModal(int $userId): void
     {
+        $this->authorize('user.update');
+
         $this->passwordUserId = $userId;
         $this->newPassword = '';
         $this->newPassword_confirmation = '';
@@ -236,6 +244,12 @@ class UserIndex extends Component
     {
         $this->validate();
 
+        if (is_null($this->editingId)) {
+            $this->authorize('user.create');
+        } else {
+            $this->authorize('user.update');
+        }
+
         $password = is_null($this->editingId) ? $this->password : null;
 
         $dto = new UserData(name: $this->name, email: $this->email, password: $password, roles: $this->selectedRoles, active: $this->active, employeeId: $this->employeeId);
@@ -255,6 +269,8 @@ class UserIndex extends Component
 
     public function savePassword(ChangeUserPassword $changeUserPassword): void
     {
+        $this->authorize('user.update');
+        
         $this->validate($this->passwordRules());
         if (! $this->passwordUserId) {
             $this->dispatch('flash', type: 'error', message: 'User not found.');

@@ -62,7 +62,7 @@ class NavigationService
                 'type' => 'group',
                 'label' => 'Administration',
                 'icon' => 'cog-6-tooth',
-                'roles' => ['super-admin'],
+                // Removed group-level roles to allow partial access (if a user has any child permission, they'll see the group)
                 'priority' => 90,
                 'children' => [
                     [
@@ -70,42 +70,42 @@ class NavigationService
                         'route' => 'admin.access-overview.index',
                         'icon' => 'shield',
                         'active' => request()->routeIs('admin.access-overview.index'),
-                        'roles' => ['super-admin'],
+                        'permission' => 'role.view-any', // Auditors or whoever manages roles
                     ],
                     [
                         'label' => 'Users',
                         'route' => 'admin.users.index',
                         'icon' => 'user-group',
                         'active' => request()->routeIs('admin.users.index'),
-                        'roles' => ['super-admin'],
+                        'permission' => 'user.view-any',
                     ],
                     [
                         'label' => 'Roles',
                         'route' => 'admin.roles.index',
                         'icon' => 'key',
                         'active' => request()->routeIs('admin.roles.index'),
-                        'roles' => ['super-admin'],
+                        'permission' => 'role.view-any',
                     ],
                     [
                         'label' => 'Approval Rules',
                         'route' => 'admin.approval-rules.index',
                         'icon' => 'clipboard-document-check',
                         'active' => request()->routeIs('admin.approval-rules.index'),
-                        'roles' => ['super-admin'],
+                        'permission' => 'approval.manage-rules',
                     ],
                     [
                         'label' => 'Departments',
                         'route' => 'admin.departments.index',
                         'icon' => 'building',
                         'active' => request()->routeIs('admin.departments.*'),
-                        'roles' => ['super-admin'],
+                        'permission' => 'department.view-any',
                     ],
                     [
                         'label' => 'Employees',
                         'route' => 'admin.employees.index',
                         'icon' => 'users',
                         'active' => request()->routeIs('admin.employees.*'),
-                        'roles' => ['super-admin'],
+                        'permission' => 'employee.view-any',
                     ],
                 ],
             ],

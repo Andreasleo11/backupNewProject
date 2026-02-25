@@ -76,6 +76,8 @@ class DepartmentIndex extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('department.create');
+
         $this->resetForm();
         $this->editingId = null;
         $this->showModal = true;
@@ -83,6 +85,8 @@ class DepartmentIndex extends Component
 
     public function openEditModal(int $id, DepartmentRepository $departments): void
     {
+        $this->authorize('department.update');
+
         $this->resetForm();
         $department = $departments->findById($id);
 
@@ -106,6 +110,13 @@ class DepartmentIndex extends Component
     public function save(CreateDepartment $createDepartment, UpdateDepartment $updateDepartment): void
     {
         $this->validate();
+
+        if (is_null($this->editingId)) {
+            $this->authorize('department.create');
+        } else {
+            $this->authorize('department.update');
+        }
+
         $dto = new DepartmentData(
             id: $this->editingId,
             deptNo: $this->dept_no,
@@ -131,6 +142,8 @@ class DepartmentIndex extends Component
 
     public function toggleStatus(int $id, ToggleDepartmentStatus $toggleDepartmentStatus): void
     {
+        $this->authorize('department.update');
+
         $toggleDepartmentStatus->execute($id);
         session()->flash('success', 'Department status updated.');
         $this->resetPage();

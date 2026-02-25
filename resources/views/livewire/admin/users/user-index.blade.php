@@ -10,13 +10,15 @@
             </p>
         </div>
         <div>
-            <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                New User
-            </button>
+            @can('user.create')
+                <button wire:click="openCreateModal"
+                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    New User
+                </button>
+            @endcan
         </div>
     </div>
 
@@ -118,31 +120,33 @@
                 </div>
 
                 {{-- Card Actions --}}
-                <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
-                    <div class="flex items-center justify-between gap-2">
-                        <button wire:click="toggleStatus({{ $user->id }})"
-                            class="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                            {{ $user->active ? 'Suspend Access' : 'Restore Access' }}
-                        </button>
-                        
-                        <div class="flex items-center gap-2">
-                            <button wire:click="openPasswordModal({{ $user->id }})"
-                                class="rounded-lg p-2 text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-all"
-                                title="Change Password">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                                </svg>
+                @can('user.update')
+                    <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4">
+                        <div class="flex items-center justify-between gap-2">
+                            <button wire:click="toggleStatus({{ $user->id }})"
+                                class="text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors">
+                                {{ $user->active ? 'Suspend Access' : 'Restore Access' }}
                             </button>
-                            <button wire:click="openEditModal({{ $user->id }})"
-                                class="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
-                                title="Edit User">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
+                            
+                            <div class="flex items-center gap-2">
+                                <button wire:click="openPasswordModal({{ $user->id }})"
+                                    class="rounded-lg p-2 text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-all"
+                                    title="Change Password">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                </button>
+                                <button wire:click="openEditModal({{ $user->id }})"
+                                    class="rounded-lg p-2 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                    title="Edit User">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endcan
             </div>
         @empty
             <div class="col-span-full py-12 text-center">

@@ -39,6 +39,8 @@ class RoleIndex extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('role.create');
+
         $this->reset(['editingRoleId', 'name', 'selectedPermissions']);
         $this->modalMode = 'create';
         $this->showModal = true;
@@ -46,6 +48,8 @@ class RoleIndex extends Component
 
     public function openEditModal(int $roleId): void
     {
+        $this->authorize('role.update');
+
         $role = Role::with('permissions')->findOrFail($roleId);
 
         $this->editingRoleId = $role->id;
@@ -66,6 +70,12 @@ class RoleIndex extends Component
 
     public function save(): void
     {
+        if ($this->modalMode === 'create') {
+            $this->authorize('role.create');
+        } else {
+            $this->authorize('role.update');
+        }
+
         $this->validate([
             'name' => [
                 'required',
@@ -96,6 +106,8 @@ class RoleIndex extends Component
 
     public function confirmDelete(int $roleId): void
     {
+        $this->authorize('role.delete');
+
         $role = Role::findOrFail($roleId);
 
         if ($role->name === 'super-admin') {

@@ -10,13 +10,15 @@
             </p>
         </div>
         <div>
-            <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                </svg>
-                New Role
-            </button>
+            @can('role.create')
+                <button wire:click="openCreateModal"
+                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-500 hover:scale-105 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    New Role
+                </button>
+            @endcan
         </div>
     </div>
 
@@ -83,15 +85,19 @@
                 {{-- Card Actions --}}
                 <div class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex items-center justify-end gap-3">
                      @if (!in_array($role->name, ['super-admin', 'admin']))
-                        <button wire:click="confirmDelete({{ $role->id }})"
-                            class="text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors">
-                            Delete
-                        </button>
+                        @can('role.delete')
+                            <button wire:click="confirmDelete({{ $role->id }})"
+                                class="text-sm font-medium text-rose-600 hover:text-rose-700 transition-colors">
+                                Delete
+                            </button>
+                        @endcan
                     @endif
-                    <button wire:click="openEditModal({{ $role->id }})"
-                        class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all">
-                        Configure
-                    </button>
+                    @can('role.update')
+                        <button wire:click="openEditModal({{ $role->id }})"
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-300 hover:bg-slate-50 transition-all">
+                            Configure
+                        </button>
+                    @endcan
                 </div>
             </div>
         @empty
