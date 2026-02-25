@@ -17,7 +17,7 @@
         </div>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('signatures.capture') }}"
+            <a href="{{ route('signatures.capture', $return_to ? ['return_to' => $return_to] : []) }}"
                 class="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 {{-- pencil icon --}}
                 <svg class="-ml-0.5 mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">

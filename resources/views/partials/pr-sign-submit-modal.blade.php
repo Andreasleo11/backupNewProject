@@ -89,11 +89,22 @@
                                 You need to save a digital signature before you can sign and submit a request.
                             </p>
                         </div>
-                        <a href="{{ route('signatures.manage') }}"
-                           class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-all">
-                            <i class="bi bi-pen"></i>
-                            Set Up Signature
-                        </a>
+                        @if(isset($submitUrl))
+                            <a href="{{ route('signatures.manage', ['return_to' => request()->url()]) }}"
+                               class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-all">
+                                <i class="bi bi-pen"></i>
+                                Set Up Signature
+                            </a>
+                        @else
+                            <button type="button" @click="
+                                document.getElementById('submit_action_input').value = 'save_and_setup_signature';
+                                document.getElementById('{{ $formId }}').submit();
+                            "
+                               class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 transition-all">
+                                <i class="bi bi-pen"></i>
+                                Save & Set Up Signature
+                            </button>
+                        @endif
                         <p class="text-xs text-slate-400">You can still <button type="button" @click="open = false" class="text-indigo-600 hover:underline">save as draft</button> without a signature.</p>
                     </div>
                 @endif

@@ -10,9 +10,13 @@ use App\Domain\Signature\ValueObjects\SignatureKind;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 
 final class CaptureSignature extends Component
 {
+    #[Url]
+    public ?string $return_to = null;
+
     public string $label = 'Primary';
 
     public ?string $pngDataUrl = null; // data:image/png;base64,...
@@ -62,6 +66,10 @@ final class CaptureSignature extends Component
         $useCase->handle($dto);
 
         $this->dispatch('toast', message: 'Signature captured.');
+
+        if ($this->return_to) {
+            return redirect()->to($this->return_to);
+        }
 
         return redirect()->route('signatures.manage');
     }

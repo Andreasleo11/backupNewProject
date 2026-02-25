@@ -8,9 +8,13 @@ use App\Application\Signature\UseCases\RevokeSignature;
 use App\Application\Signature\UseCases\SetDefaultSignature;
 use App\Domain\Signature\Repositories\UserSignatureRepository;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 
 final class ManageSignatures extends Component
 {
+    #[Url]
+    public ?string $return_to = null;
+
     /** @var array<int, array> */
     public array $items = [];
 
