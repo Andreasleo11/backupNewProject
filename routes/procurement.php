@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::put('purchase-requests/cancel/{id}', [PurchaseRequestController::class, 'cancel'])->name('purchase-requests.cancel');
     Route::post('/purchaseRequestsInsert', [PurchaseRequestController::class, 'store'])->name('purchaserequest.insert');
     Route::delete('purchase-requests/{id}', [PurchaseRequestController::class, 'destroy'])->name('purchase-requests.destroy');
+    Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
     Route::get('purchase-requests/{id}', [PurchaseRequestController::class, 'show'])->name('purchase-requests.show');
     Route::get('/purchase-requests/{id}/quick-view', [PurchaseRequestController::class, 'quickView'])->name('purchase-requests.quick-view');
     Route::post('purchase-requests/{purchaseRequest}/approve', [PurchaseRequestController::class, 'approve'])->name('purchase-requests.approve');
@@ -54,7 +55,6 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-requests/{purchaseRequest}/sign-and-submit', [PurchaseRequestController::class, 'signAndSubmit'])->name('purchase-requests.sign-and-submit');
     Route::post('purchase-requests/items/{item}/approve', [DetailPurchaseRequestController::class, 'approve'])->middleware('can:approve,item')->name('purchase-requests.items.approve');
     Route::post('purchase-requests/items/{item}/reject', [DetailPurchaseRequestController::class, 'reject'])->middleware('can:reject,item')->name('purchase-requests.items.reject');
-    Route::get('purchase-requests/export-excel', [PurchaseRequestController::class, 'exportExcel'])->name('purchase-requests.export-excel');
 
     // Batch approve / reject — requires 'pr.batch-approve' permission (director-level only)
     Route::put('purchase-requests/batch-approve', [PurchaseRequestController::class, 'batchApprove'])
