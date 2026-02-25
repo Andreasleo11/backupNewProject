@@ -34,6 +34,10 @@ final class ApprovePurchaseRequest
             $approverType = $this->itemValidator->getApproverTypeFromStep($currentStep);
 
             if ($approverType) {
+                // Auto-approve any pending items so the user doesn't have to manually review them
+                $this->itemValidator->autoApprovePendingItems($pr, $approverType);
+                $pr->load('itemDetail'); // Reload to reflect auto-approved state
+
                 // Validate that all items have been reviewed
                 $validation = $this->itemValidator->validateForPrApproval($pr, $approverType);
 

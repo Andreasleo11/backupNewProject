@@ -75,6 +75,26 @@ class PurchaseRequestItemValidationService
     }
 
     /**
+     * Automatically approve all pending items for the specified approver type.
+     */
+    public function autoApprovePendingItems(PurchaseRequest $pr, string $approverType): void
+    {
+        $items = $pr->itemDetail;
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $column = $this->getApprovalColumn($approverType);
+
+        foreach ($items as $item) {
+            if (is_null($item->$column)) {
+                $item->update([$column => true]);
+            }
+        }
+    }
+
+    /**
      * Check if the user can review items at the current workflow step.
      */
     public function canReviewItems(User $user, PurchaseRequest $pr): bool

@@ -76,14 +76,22 @@
         </div>
         
         {{-- Totals --}}
-        @if(count($totals) > 0)
+        @if(isset($totals['total']) && $totals['total'] > 0)
             <div class="mt-3 flex flex-wrap gap-2 justify-end">
-                @foreach($totals as $currency => $amount)
-                    <div class="bg-indigo-50 border border-indigo-100 rounded px-3 py-1.5 text-right">
-                        <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block leading-none mb-0.5">Total {{ $currency }}</span>
-                        <span class="text-sm font-bold text-indigo-700 leading-none">{{ number_format((float) $amount, 2) }}</span>
-                    </div>
-                @endforeach
+                <div class="bg-indigo-50 border border-indigo-100 rounded px-3 py-1.5 text-right">
+                    <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block leading-none mb-0.5">Approved Total {{ $totals['currency'] ?? '' }}</span>
+                    <span class="text-sm font-bold text-indigo-700 leading-none">{{ number_format((float) $totals['total'], 2) }}</span>
+                    @if(isset($totals['hasCurrencyDiff']) && $totals['hasCurrencyDiff'])
+                        <span class="mt-1 block text-[9px] font-bold text-amber-600 uppercase tracking-widest">*Mixed Currencies</span>
+                    @endif
+                </div>
+            </div>
+        @else
+            <div class="mt-3 flex flex-wrap gap-2 justify-end">
+                <div class="bg-slate-50 border border-slate-200 rounded px-3 py-1.5 text-right opacity-80">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block leading-none mb-0.5" title="Amount is zero because no items have been approved yet.">Approved Total {{ $filteredItemDetail->first()?->currency ?? '' }}</span>
+                    <span class="text-sm font-bold text-slate-700 leading-none">0.00</span>
+                </div>
             </div>
         @endif
     </div>
@@ -101,12 +109,40 @@
     @endphp
 
     @if($canApprove)
-        <div class="mt-6 pt-5 border-t border-slate-200 flex flex-wrap items-center justify-end gap-3 bg-slate-50/50 -mx-5 -mb-5 p-5 rounded-b-xl">
+        <div x-data class="mt-6 pt-5 border-t border-slate-200 flex flex-wrap items-center justify-end gap-3 bg-slate-50/50 -mx-5 -mb-5 p-5 rounded-b-xl">
             <form method="POST" action="{{ route('purchase-requests.reject', $pr->id) }}" id="qv-reject-form-{{ $pr->id }}">
                 @csrf
                 <input type="hidden" name="remarks" id="qv-reject-remarks-{{ $pr->id }}">
                 <button type="button" 
-                        onclick="promptQvReject({{ $pr->id }})"
+                        @click="
+                            Swal.fire({
+                                title: 'Reject Request',
+                                input: 'textarea',
+                                inputLabel: 'Rejection Reason (Required)',
+                                inputPlaceholder: 'Provide clear remarks detailing why this is rejected...',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#e11d48',
+                                cancelButtonColor: '#64748b',
+                                confirmButtonText: 'Submit Rejection',
+                                customClass: {
+                                    popup: 'rounded-2xl',
+                                    confirmButton: 'rounded-xl px-4 py-2 font-bold',
+                                    cancelButton: 'rounded-xl px-4 py-2 font-bold',
+                                    input: 'rounded-xl border-slate-300 focus:border-rose-500 focus:ring focus:ring-rose-200'
+                                },
+                                inputValidator: (value) => {
+                                    if (!value || value.trim().length < 5) {
+                                        return 'A valid reason (min 5 chars) is mandatory.';
+                                    }
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    document.getElementById('qv-reject-remarks-{{ $pr->id }}').value = result.value;
+                                    document.getElementById('qv-reject-form-{{ $pr->id }}').submit();
+                                }
+                            });
+                        "
                         class="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-5 py-2.5 text-sm font-bold text-rose-600 shadow-sm hover:bg-rose-50 hover:border-rose-300 transition-all">
                     <i class="bi bi-x-circle"></i> Reject
                 </button>
@@ -115,66 +151,30 @@
             <form method="POST" action="{{ route('purchase-requests.approve', $pr->id) }}" id="qv-approve-form-{{ $pr->id }}">
                 @csrf
                 <button type="button" 
-                        onclick="promptQvApprove({{ $pr->id }})"
+                        @click="
+                            Swal.fire({
+                                title: 'Approve Request?',
+                                text: 'This will securely approve the purchase request and advance the workflow.',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonColor: '#059669',
+                                cancelButtonColor: '#64748b',
+                                confirmButtonText: 'Yes, Approve',
+                                customClass: {
+                                    popup: 'rounded-2xl',
+                                    confirmButton: 'rounded-xl px-4 py-2 font-bold',
+                                    cancelButton: 'rounded-xl px-4 py-2 font-bold'
+                                }
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    document.getElementById('qv-approve-form-{{ $pr->id }}').submit();
+                                }
+                            });
+                        "
                         class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 transition-all hover:-translate-y-0.5">
                     <i class="bx bx-check-double text-lg"></i> Approve
                 </button>
             </form>
         </div>
-
-        <script>
-            function promptQvApprove(id) {
-                if (typeof Swal === 'undefined') return;
-                Swal.fire({
-                    title: 'Approve Request?',
-                    text: 'This will securely approve the purchase request and advance the workflow.',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#059669',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Yes, Approve',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-xl px-4 py-2 font-bold',
-                        cancelButton: 'rounded-xl px-4 py-2 font-bold'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('qv-approve-form-' + id).submit();
-                    }
-                });
-            }
-            
-            function promptQvReject(id) {
-                if (typeof Swal === 'undefined') return;
-                Swal.fire({
-                    title: 'Reject Request',
-                    input: 'textarea',
-                    inputLabel: 'Rejection Reason (Required)',
-                    inputPlaceholder: 'Provide clear remarks detailing why this is rejected...',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#e11d48',
-                    cancelButtonColor: '#64748b',
-                    confirmButtonText: 'Submit Rejection',
-                    customClass: {
-                        popup: 'rounded-2xl',
-                        confirmButton: 'rounded-xl px-4 py-2 font-bold',
-                        cancelButton: 'rounded-xl px-4 py-2 font-bold',
-                        input: 'rounded-xl border-slate-300 focus:border-rose-500 focus:ring focus:ring-rose-200'
-                    },
-                    inputValidator: (value) => {
-                        if (!value || value.trim().length < 5) {
-                            return 'A valid reason (min 5 chars) is mandatory.';
-                        }
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        document.getElementById('qv-reject-remarks-' + id).value = result.value;
-                        document.getElementById('qv-reject-form-' + id).submit();
-                    }
-                });
-            }
-        </script>
     @endif
 </div>
