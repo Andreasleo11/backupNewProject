@@ -13,7 +13,7 @@ class PurchaseRequestApprovalNotification extends Notification implements Should
     /**
      * Dispatch the notification only after the DB transaction commits.
      * This prevents race conditions when called from within ApprovalEngine transactions.
-    public $afterCommit = true;
+     */
 
     /**
      * Create a new notification instance.
