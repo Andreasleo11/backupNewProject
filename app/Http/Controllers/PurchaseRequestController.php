@@ -407,34 +407,37 @@ class PurchaseRequestController extends Controller
         }
     }
 
-    public function exportToPdf($id)
+    public function exportToPdf(int $id, GetPurchaseRequestDetail $query)
     {
         $user = Auth::user();
-        $purchaseRequest = PurchaseRequest::with('itemDetail', 'createdBy')->find($id);
-        $userCreatedBy = $purchaseRequest->createdBy;
+        
+        // Use the centralized view model to fetch the exact same data structure as the 'show' detail page
+        $vm = $query->handle($id, $user);
 
-        // Format quantities before filtering
-        $purchaseRequest->itemDetail->each(function ($detail) {
-            $detail->quantity = $this->masterPrService->formatDecimal($detail->quantity);
-        });
-
-        // Filter items based on user role using the service
-        $filteredItemDetail = $this->itemFilter->filterItemsForUser(
-            $user,
-            $purchaseRequest,
-            $purchaseRequest->itemDetail
-        );
+        // Map digital signatures for the PDF footer
+        $signatures = $vm->purchaseRequest->signatures->mapWithKeys(function ($sig) {
+            return [$sig->section => $sig->signature_path];
+        })->toArray();
 
         $pdf = Pdf::loadView(
             'pdf/pr-pdf',
-            compact('purchaseRequest', 'user', 'userCreatedBy', 'filteredItemDetail'),
+            [
+                'purchaseRequest' => $vm->purchaseRequest,
+                'user' => $user,
+                'userCreatedBy' => $vm->meta['userCreatedBy'],
+                'filteredItemDetail' => $vm->filteredItemDetail,
+                'totals' => $vm->totals,
+                'departments' => $vm->departments,
+                'approval' => $vm->approval,
+                'signatures' => $signatures,
+            ]
         )->setPaper('a4', 'landscape');
 
         return $pdf->download(
             'Purchase Request-' .
-                $purchaseRequest->id .
+                $vm->purchaseRequest->id .
                 ' (' .
-                $purchaseRequest->pr_no .
+                $vm->purchaseRequest->pr_no .
                 ')' .
                 '.pdf',
         );
