@@ -3,8 +3,6 @@
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
 use App\Models\Department;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes;
 
@@ -65,15 +63,5 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return $this->employee ? $this->employee->department : null;
-    }
-
-    /**
-     * Determine if the user can access the Filament admin panel.
-     * Uses Spatie Permission for efficient role checking.
-     */
-    public function canAccessPanel(Panel $panel): bool
-    {
-        // Allow access if user has any admin-related role or is super-admin
-        return $this->hasAnyRole(['super-admin', 'admin', 'manager']) || $this->hasPermission('access_admin');
     }
 }
