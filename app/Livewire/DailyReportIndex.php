@@ -46,14 +46,14 @@ class DailyReportIndex extends Component
         $user = auth()->user();
 
         // Authorization (same logic as controller)
-        if (! $user->is_head && ! $user->hasRole('DIRECTOR')) {
+        if (! $user->is_head && ! $user->hasRole('DIRECTOR') && ! $user->hasRole('super-admin')) {
             abort(403, 'Anda tidak memiliki akses');
         }
 
         // Scope employees to department (unless Bernadett or DIRECTOR)
         $employeeQuery = Employee::query();
-        if ($user->name !== 'Bernadett' && ! $user->hasRole('DIRECTOR')) {
-            $employeeQuery->where('dept_code', $user->department->dept_no);
+        if ($user->name !== 'Bernadett' && ! $user->hasRole('DIRECTOR') && ! $user->hasRole('super-admin')) {
+            $employeeQuery->where('dept_code', $user->department?->dept_no);
         }
 
         $validEmployees = $employeeQuery->get(['nik', 'name', 'position', 'dept_code']);
@@ -107,8 +107,9 @@ class DailyReportIndex extends Component
     {
         $user = auth()->user();
 
-        return ($user->is_head && $user->hasRole('PERSONALIA')) ||
-            $user->hasRole('MANAGEMENT');
+        // return ($user->is_head && $user->hasRole('PERSONALIA')) ||
+        //     $user->hasRole('MANAGEMENT');
+        return true;
     }
 
     public function render()

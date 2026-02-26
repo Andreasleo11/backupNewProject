@@ -26,7 +26,7 @@
                 </nav>
             </div>
 
-            @if (auth()->user()->department->name !== 'MANAGEMENT')
+            @if (auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin'))
                 <div class="flex justify-end">
                     <form action="{{ route('po.create') }}" method="post">
                         @csrf

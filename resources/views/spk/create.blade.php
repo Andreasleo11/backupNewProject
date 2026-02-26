@@ -134,7 +134,7 @@
                         >
                             <option value="" disabled>--Select from department--</option>
                             @foreach ($departments as $department)
-                                @if ($department->id === $authUser->department->id)
+                                @if ($department->id === $authUser->department?->id)
                                     <option value="{{ $department->name }}" selected>
                                         {{ $department->name }}
                                     </option>

@@ -29,7 +29,7 @@
                 Management Stock
             </h1>
 
-            @if (Auth::user()->department->name !== 'MANAGEMENT')
+            @if (auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin'))
                 <div class="flex flex-wrap gap-2">
                     <a href="{{ route('transaction.list') }}"
                         class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1">

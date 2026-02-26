@@ -14,7 +14,7 @@ class DisciplineAccessPolicy
      */
     public function viewAnyDiscipline(User $user): bool
     {
-        return $user->is_head === 1 || $this->isSpecialUser($user);
+        return $user->is_head === 1 || $this->isSpecialUser($user) || $user->hasRole('super-admin');
     }
 
     /**
@@ -22,7 +22,7 @@ class DisciplineAccessPolicy
      */
     public function viewAllDiscipline(User $user): bool
     {
-        return in_array($user->email, $this->getSpecialAccessEmails(), true);
+        return in_array($user->email, $this->getSpecialAccessEmails(), true) || $user->hasRole('super-admin');
     }
 
     /**
@@ -31,7 +31,7 @@ class DisciplineAccessPolicy
     public function viewYayasanDiscipline(User $user): bool
     {
         // Department heads and special users can view
-        return $user->is_head === 1 || $this->isSpecialUser($user);
+        return $user->is_head === 1 || $this->isSpecialUser($user) || $user->hasRole('super-admin');
     }
 
     /**

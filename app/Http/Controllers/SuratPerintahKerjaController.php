@@ -21,23 +21,23 @@ class SuratPerintahKerjaController extends Controller
 
         $reportsQuery = SuratPerintahKerja::with('fromDepartment', 'createdBy');
 
-        if ($authUser->department->name !== 'COMPUTER') {
+        if ($authUser->department?->name !== 'COMPUTER' && ! $authUser->hasRole('super-admin')) {
             if (
-                $authUser->department->name === 'PERSONALIA' ||
-                $authUser->department->name === 'MAINTENANCE'
+                $authUser->department?->name === 'PERSONALIA' ||
+                $authUser->department?->name === 'MAINTENANCE'
             ) {
                 // Show all records where to_department matches the user's department
                 $reportsQuery = SuratPerintahKerja::whereHas('fromDepartment', function (
                     $query,
                 ) use ($authUser) {
-                    $query->where('to_department', $authUser->department->name);
+                    $query->where('to_department', $authUser->department?->name);
                 });
             } else {
                 // For other departments, show records where fromDepartment or pelapor matches
                 $reportsQuery = SuratPerintahKerja::whereHas('fromDepartment', function (
                     $query,
                 ) use ($authUser) {
-                    $query->where('id', $authUser->department->id);
+                    $query->where('id', $authUser->department?->id);
                 })->orWhere('pelapor', $authUser->name);
             }
         }

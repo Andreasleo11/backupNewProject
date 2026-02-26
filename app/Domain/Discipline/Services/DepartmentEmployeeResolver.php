@@ -169,7 +169,7 @@ class DepartmentEmployeeResolver
         return in_array($user->email, [
             'ani_apriani@daijo.co.id',
             'bernadett@daijo.co.id',
-        ], true);
+        ], true) || $user->hasRole('super-admin');
     }
 
     /**

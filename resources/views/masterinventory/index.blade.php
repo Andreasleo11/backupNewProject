@@ -3,13 +3,11 @@
 @section('content')
     {{-- GLOBAL VARIABLE --}}
     @php
-        $authUser = auth()->user();
         $totalItems = $datas instanceof \Illuminate\Pagination\LengthAwarePaginator ? $datas->total() : $datas->count();
         $currentPage = $datas instanceof \Illuminate\Pagination\LengthAwarePaginator ? $datas->currentPage() : 1;
         $perPage = $datas instanceof \Illuminate\Pagination\LengthAwarePaginator ? $datas->perPage() : $totalItems;
 
-        $showCreateButton =
-            !$authUser->is_head && !$authUser->is_gm && $authUser->department->name !== 'MANAGEMENT';
+        $showCreateButton = !auth()->user()->is_head && !auth()->user()->is_gm && auth()->user()->department?->name !== 'MANAGEMENT' || auth()->user()->hasRole('super-admin');
     @endphp
     {{-- END GLOBAL VARIABLE --}}
 

@@ -3,7 +3,7 @@
 @section('content')
     @php
         $authUser = auth()->user();
-        $showCreateButton = $authUser->department->name !== 'MANAGEMENT';
+        $showCreateButton = $authUser->department?->name !== 'MANAGEMENT' || $authUser->hasRole('super-admin');
     @endphp
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-4">
