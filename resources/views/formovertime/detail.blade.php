@@ -54,6 +54,10 @@
                         <span>Export to Excel</span>
                     </a>
                 @endif
+
+                @if ($header->status === 'approved' && $authUser->hasRole('super-admin'))
+                    <a href="{{ route('overtime-forms.reapprove', $header->id) }}" class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50">Reapprove</a>
+                @endif
             </div>
         </div>
 

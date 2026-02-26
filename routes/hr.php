@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::post('formovertime/update/editindex/{id}', [FormOvertimeController::class, 'updateIndex'])->name('formovertime.updateIndex');
     Route::delete('formovertime/delete/{id}', [FormOvertimeController::class, 'deleteheader'])->name('formovertime.delete');
     Route::put('formovertime/cancel/{id}', [FormOvertimeController::class, 'cancel'])->name('formovertime.cancel');
+    Route::get('overtime-forms/{id}/reapprove', [FormOvertimeController::class, 'reapprove'])->name('overtime-forms.reapprove');
 
     // FormCuti
     Route::get('/formcuti/index', [FormCutiController::class, 'index'])->name('formcuti');

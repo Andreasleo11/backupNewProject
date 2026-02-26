@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EmployeeDashboardController;
+use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\SyncProgressController;
@@ -44,4 +45,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/change-email/page', [SuperAdminHomeController::class, 'updateEmailpage'])->name('changeemail.page');
     Route::post('/change-email', [SuperAdminHomeController::class, 'updateEmail'])->name('email.update');
     Route::get('/get-email-settings/{feature}', [SuperAdminHomeController::class, 'getEmailSettings']);
+
+    Route::get('/format-evaluation-year-allinperpanjangan', [
+        EvaluationDataController::class,
+        'evaluationformatrequestpageAllinPerpanjangan',
+    ])->name('format.evaluation.year.allinperpanjangan');
+    
+    Route::post('/getformatallinperpanjangan', [EvaluationDataController::class, 'getFormatYearallinPerpanjangan'])->name(
+        'get.format.allinperpanjangan',
+    );
 });

@@ -447,6 +447,8 @@ class Index extends Component
                         $q->where('dept_id', $user->department->id);
                         if ($user->department->name === 'LOGISTIC') {
                             $q->orWhere('name', 'STORE');
+                        }elseif($user->department->name === 'QC') {
+                            $q->orWhere('name', 'QA');
                         }
                     })
                     ->where('status', 'waiting-dept-head');
@@ -475,6 +477,7 @@ class Index extends Component
 
     private function scopeFilters($query)
     {
+        $query->whereYear('created_at', 2026);
         if ($this->startDate && $this->endDate) {
             $start = $this->startDate;
             $end = $this->endDate;

@@ -18,13 +18,29 @@
                     <label for="dept_id" class="block text-xs font-medium text-slate-700">
                         From Department <span class="text-rose-600">*</span>
                     </label>
-                    <select id="dept_id" wire:model.lazy="dept_id"
-                        class="mt-1 block w-full rounded-lg border text-sm border-slate-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 @error('dept_id') border-rose-500 focus:border-rose-500 focus:ring-rose-500 @enderror">
-                        <option value="">-- Select Department --</option>
-                        @foreach ($departments as $dept)
-                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                        @endforeach
-                    </select>
+                    @if(auth()->user()->name === 'popon')
+                        <select wire:model.live="dept_id" id="dept_id"
+                            class="form-select shadow-sm @error('dept_id') is-invalid @enderror">
+                            <option value="">-- Select Department --</option>
+                            @foreach ($departements as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <input type="text" 
+                            class="form-control bg-light fw-bold" 
+                            value="{{ auth()->user()->department->name }}" 
+                            readonly>
+
+                        <!-- Hidden field that actually gets submitted -->
+                        <input type="hidden" 
+                            name="from_department" 
+                            value="{{ auth()->user()->department->name }}">
+                        
+                        <div class="form-text text-muted">
+                            This is automatically set to your current department (cannot be changed)
+                        </div>
+                    @endif
                     @error('dept_id')
                         <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
                     @enderror

@@ -40,6 +40,11 @@ class HeaderFormOvertime extends Model
         return $this->hasMany(DetailFormOvertime::class, 'header_id', 'id');
     }
 
+    public function rejectedDetails()
+    {
+        return $this->hasMany(DetailFormOvertime::class, 'header_id', 'id')->where('status', 'Rejected');
+    }
+
     public function flow()
     {
         return $this->belongsTo(ApprovalFlow::class, 'approval_flow_id', 'id');

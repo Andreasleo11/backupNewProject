@@ -21,26 +21,52 @@ final class SupplierEvaluationService
     public function createEvaluation(array $data): array
     {
         $monthMapping = [
-            'January' => 1,
-            'February' => 2,
-            'March' => 3,
-            'April' => 4,
-            'May' => 5,
-            'June' => 6,
-            'July' => 7,
-            'August' => 8,
+            'January'   => 1,
+            'February'  => 2,
+            'March'     => 3,
+            'April'     => 4,
+            'May'       => 5,
+            'June'      => 6,
+            'July'      => 7,
+            'August'    => 8,
             'September' => 9,
-            'October' => 10,
-            'November' => 11,
-            'December' => 12,
+            'October'   => 10,
+            'November'  => 11,
+            'December'  => 12,
         ];
 
-        $supplierName = $data['supplier'];
-        $startMonthNum = $monthMapping[$data['start_month']];
-        $endMonthNum = $monthMapping[$data['end_month']];
+        // ── Validation (you can keep Laravel validator or do manual checks)
+        if (!isset($data['supplier'], $data['start_month'], $data['start_year'], $data['end_month'], $data['end_year'])) {
+            return [
+                'success' => false,
+                'message' => 'Missing required fields',
+            ];
+        }
+
+        // Parse supplier input: "Name - Code"
+        $supplierParts = array_map('trim', explode(' - ', $data['supplier']));
+
+        if (count($supplierParts) !== 2) {
+            return [
+                'success' => false,
+                'message' => 'Invalid supplier format. Expected: "Name - Code"',
+            ];
+        }
+
+        [$supplierName, $supplierCode] = $supplierParts;
+
+        $startMonthNum = $monthMapping[$data['start_month']] ?? null;
+        $endMonthNum   = $monthMapping[$data['end_month']]   ?? null;
+
+        if ($startMonthNum === null || $endMonthNum === null) {
+            return [
+                'success' => false,
+                'message' => 'Invalid month name',
+            ];
+        }
 
         $startDate = Carbon::create($data['start_year'], $startMonthNum, 1)->startOfMonth();
-        $endDate = Carbon::create($data['end_year'], $endMonthNum, 1)->endOfMonth();
+        $endDate   = Carbon::create($data['end_year'],   $endMonthNum,   1)->endOfMonth();
 
         if ($startDate->greaterThan($endDate)) {
             return [
@@ -49,32 +75,40 @@ final class SupplierEvaluationService
             ];
         }
 
-        $supplier = PurchasingListPo::where('supplier_name', $supplierName)->first();
+        // Find supplier by CODE (most reliable/unique identifier)
+        $supplier = PurchasingListPo::where('supplier_code', $supplierCode)->first();
 
-        if (! $supplier) {
+        if (!$supplier) {
             return [
                 'success' => false,
                 'message' => 'Supplier not found',
             ];
         }
 
+        // Optional: safety check that name roughly matches (prevents typos/mismatches)
+        if (strtolower(trim($supplier->supplier_name)) !== strtolower(trim($supplierName))) {
+            return [
+                'success' => false,
+                'message' => 'Supplier name does not match the provided code',
+            ];
+        }
+
         // Create header
         $header = PurchasingHeaderEvaluationSupplier::create([
-            'doc_num' => $this->generateDocNum(),
-            'vendor_code' => $supplier->supplier_code,
+            'doc_num'     => $this->generateDocNum(),
+            'vendor_code' => $supplier->supplier_code,   // ← from DB, more trustworthy
             'vendor_name' => $supplierName,
             'start_month' => $data['start_month'],
-            'year' => $data['start_year'],
-            'end_month' => $data['end_month'],
-            'year_end' => $data['end_year'],
-            'grade' => null,
-            'status' => null,
+            'year'        => $data['start_year'],
+            'end_month'   => $data['end_month'],
+            'year_end'    => $data['end_year'],
+            'grade'       => null,
+            'status'      => null,
         ]);
 
-        // Create monthly details
+        // Continue with monthly details + scoring (same as your Code 2)
         $this->createMonthlyDetails($header->id, $supplierName, $startDate, $endDate);
 
-        // Calculate all criteria scores
         $this->scoringService->calculateAllCriteria(
             $header->id,
             $supplierName,
@@ -86,7 +120,7 @@ final class SupplierEvaluationService
         return [
             'success' => true,
             'message' => 'Supplier evaluation created successfully',
-            'header' => $header,
+            'header'  => $header,
         ];
     }
 
@@ -139,20 +173,32 @@ final class SupplierEvaluationService
     {
         $supplierData = [];
 
-        $masters = PurchasingListPo::select('supplier_name', 'posting_date')
-            ->distinct()
-            ->get();
+        $masters = PurchasingListPo::select(
+            'supplier_code',
+            'supplier_name',
+            'posting_date'
+        )->get();
 
-        foreach ($masters->groupBy('supplier_name') as $supplier_name => $records) {
-            $years = [];
+        // Group by both supplier_code and supplier_name
+        $grouped = $masters->groupBy(['supplier_code', 'supplier_name']);
 
-            foreach ($records as $record) {
-                $year = Carbon::parse($record->posting_date)->format('Y');
-                $years[] = $year;
+        foreach ($grouped as $supplier_code => $byName) {
+            foreach ($byName as $supplier_name => $records) {
+                // Get unique years
+                $years = $records->map(function ($record) {
+                    return Carbon::parse($record->posting_date)->format('Y');
+                })->unique()->values()->toArray();
+
+                // Create the same key format as Code 1
+                $namePart = $supplier_name ?: 'Unknown';
+                $key = $namePart . ' - ' . $supplier_code;
+
+                $supplierData[$key] = $years;
             }
-
-            $supplierData[$supplier_name] = array_values(array_unique($years));
         }
+
+        // Sort keys case-insensitively (same as ksort with SORT_STRING | SORT_FLAG_CASE)
+        ksort($supplierData, SORT_STRING | SORT_FLAG_CASE);
 
         return $supplierData;
     }

@@ -296,38 +296,38 @@
                 <tbody>
                     <tr>
                         <td>1</td>
-                        <td>Kualitas barang mencakup 20%</td>
+                        <td>Kualitas barang mencakup 20 point</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td>2</td>
-                        <td>Ketepatan kuantitas barang mencakup 20%</td>
+                        <td>Ketepatan kuantitas barang mencakup 20 point</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td>3</td>
-                        <td>Ketepatan waktu pengiriman mencakup 20%</td>
+                        <td>Ketepatan waktu pengiriman mencakup 20 point</td>
                         <td>20</td>
                     </tr>
                     <tr>
                         <td>4</td>
-                        <td>Kerjasama dalam permintaan mendadak mencakup 10%</td>
+                        <td>Kerjasama dalam permintaan mendadak mencakup 10 point</td>
                         <td>10</td>
                     </tr>
                     <tr>
                         <td>5</td>
-                        <td>Respon klaim mencakup 10%</td>
+                        <td>Respon klaim mencakup 10 point</td>
                         <td>10</td>
                     </tr>
                     <tr>
                         <td>6</td>
-                        <td>Sertifikasi supplier mencakup 10%</td>
+                        <td>Sertifikasi supplier mencakup 10 point</td>
                         <td>10</td>
                     </tr>
                     <tr>
                         <td>7</td>
-                        <td>Menyebabkan Customer StopLine</td>
-                        <td>10</td>
+                        <td>Menyebabkan Customer StopLine 10 point</td>
+                        <td>10 </td>
                     <tr>
                         <td></td>
                         <td>TOTAL NILAI</td>
@@ -346,15 +346,15 @@
                 <tbody>
                     <tr>
                         <td>A</td>
-                        <td>Nilai 81% - 100&</td>
+                        <td>Nilai 81 - 100</td>
                     </tr>
                     <tr>
                         <td>B</td>
-                        <td>Nilai 61% - 80&</td>
+                        <td>Nilai 61 - 80</td>
                     </tr>
                     <tr>
                         <td>C</td>
-                        <td>Nilai <= 61%</td>
+                        <td>Nilai <= 61</td>
                     </tr>
                 </tbody>
             </table>
@@ -544,7 +544,7 @@
                 <div class="signature-box">
 
                 </div>
-                <p class="signature-name"><br>Brandon <br>Purchasing Staff</p>
+                <p class="signature-name"><br>Bayu S <br>Purchasing Staff</p>
             </div>
         </div>
         <div class="signature-section">
@@ -562,7 +562,7 @@
                 <div class="signature-box">
 
                 </div>
-                <p class="signature-name"><br>Korintani <br>Purchasing Dept Head</p>
+                <p class="signature-name"><br>KORINTANI <br>Purchasing Dept Head</p>
             </div>
         </div>
     </div>

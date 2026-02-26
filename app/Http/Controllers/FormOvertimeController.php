@@ -195,4 +195,20 @@ class FormOvertimeController extends Controller
 
         return back()->withErrors($result['message']);
     }
+
+    public function reapprove($id)
+    {
+        $header = HeaderFormOvertime::findOrFail($id);
+        $header->is_push = 0;
+        $header->save();
+
+        $header->rejectedDetails()->update([
+            'status' => null,
+            'reason' => null,
+        ]);
+
+        $this->pushAllDetailsToJPayroll($id);
+        
+        return redirect()->back()->with('success', 'Reapproved successfully !');
+    }
 }

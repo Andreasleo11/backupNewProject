@@ -24,7 +24,7 @@ class PurchasingSupplierEvaluationController extends Controller
     {
         $supplierData = $this->evaluationService->getSupplierData();
         $header = PurchasingHeaderEvaluationSupplier::get();
-
+        
         return view('purchasing.evaluationsupplier.supplier_selection', compact('supplierData', 'header'));
     }
 
@@ -41,12 +41,14 @@ class PurchasingSupplierEvaluationController extends Controller
         $result = $this->evaluationService->createEvaluation($validated);
 
         if (! $result['success']) {
-            return response()->json(['message' => $result['message']], 400);
+            $status = $result['message'] === 'Supplier not found' ? 404 : 400;
+
+            return response()->json(['message' => $result['message']], $status);
         }
 
         return redirect()
             ->route('purchasing.evaluationsupplier.index')
-            ->with('success', 'Header and details updated successfully.');
+            ->with('success', $result['message'] ?? 'Header and details updated successfully.');
     }
 
     public function details($id)
