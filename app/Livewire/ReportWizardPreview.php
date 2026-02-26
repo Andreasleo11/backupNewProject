@@ -107,7 +107,7 @@ class ReportWizardPreview extends Component
                 ];
                 // dd($mailData);
 
-                Mail::send(new QaqcMail($mailData));
+                // Mail::send(new QaqcMail($mailData));
             }
 
             return $report;

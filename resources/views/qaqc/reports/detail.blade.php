@@ -103,39 +103,37 @@
 
             <div class="flex flex-wrap items-center gap-2">
                 {{-- Send mail --}}
-                @if ($user->department->name === 'QC' && $user->specification->name === 'INSPECTOR')
-                    @if ($report->has_been_emailed)
-                        <button type="button"
-                            class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
-                                       px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
-                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                            @click="openSendMailConfirm = true">
-                            <i class="bx bx-envelope text-sm"></i>
-                            <span class="hidden sm:inline">Send mail</span>
-                        </button>
-                    @else
-                        <button type="button"
-                            class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
-                                       px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
-                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                            @click="openSendMail = true">
-                            <i class="bx bx-envelope text-sm"></i>
-                            <span class="hidden sm:inline">Send mail</span>
-                        </button>
-                    @endif
-                @endif
-
-                {{-- Upload files --}}
-                @if ($user->specification->name !== '-')
+                <!-- Should implement permission guard -->
+                @if ($report->has_been_emailed)
                     <button type="button"
+                        class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
+                                    px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
+                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                        @click="openSendMailConfirm = true">
+                        <i class="bx bx-envelope text-sm"></i>
+                        <span class="hidden sm:inline">Send mail</span>
+                    </button>
+                @else
+                    <button type="button"
+                        class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
+                                    px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
+                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                        @click="openSendMail = true">
+                        <i class="bx bx-envelope text-sm"></i>
+                        <span class="hidden sm:inline">Send mail</span>
+                    </button>
+                @endif
+                
+                {{-- Upload files --}}
+                <!-- Should implement permission guard -->
+                <button type="button"
                         class="inline-flex items-center gap-1 rounded-md border border-indigo-600 bg-white
                                    px-3 py-1.5 text-xs font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50
                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
                         @click="openUploadFiles = true">
                         <i class="bx bx-upload text-sm"></i>
                         <span class="hidden sm:inline">Upload</span>
-                    </button>
-                @endif
+                </button>
 
                 {{-- Adjust form --}}
                 <a href="{{ route('adjust.index', ['reports' => $report]) }}"
@@ -392,7 +390,7 @@
                         <div class="autograph-box" id="autographBox2"></div>
                         <div class="mt-2 autograph-name" id="autographuser2"></div>
 
-                        @if (Auth::check() && $currentUser->department->name == 'QC' && $currentUser->specification->name == 'LEADER')
+                        @if (Auth::check() && $currentUser->department?->name == 'QC' && $currentUser->specification?->name == 'LEADER')
                             <button id="btn2"
                                 class="mt-2 inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs
                                            font-semibold text-white shadow-sm hover:bg-indigo-700
@@ -410,8 +408,8 @@
                         <div class="mt-2 autograph-name" id="autographuser3"></div>
 
                         @if (Auth::check() &&
-                                ($currentUser->department->name == 'QC' || $currentUser->department->name == 'QA') &&
-                                $currentUser->specification->name == 'HEAD' &&
+                                ($currentUser->department?->name == 'QC' || $currentUser->department?->name == 'QA') &&
+                                $currentUser->specification?->name == 'HEAD' &&
                                 ($report->autograph_1 || $report->autograph_2) != null)
                             <button id="btn3"
                                 class="mt-2 inline-flex items-center rounded-md bg-indigo-600 px-3 py-1.5 text-xs
