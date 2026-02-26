@@ -50,7 +50,7 @@
                         <i class="bi bi-tools me-2 text-secondary"></i> Add Defect Form
                         </div>
                         @push('modals')
-                        @include('partials.add-defect-category-modal', ['id' => 1])
+                            @include('partials.add-defect-category-modal', ['id' => 1])
                         @endpush
                         <button type="button" data-bs-toggle="modal" data-bs-target="#add-defect-category-modal-1"
                             class="btn btn-outline-primary btn-sm">+
