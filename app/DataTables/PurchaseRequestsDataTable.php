@@ -134,6 +134,10 @@ class PurchaseRequestsDataTable extends DataTable
                         ->where(function ($query) {
                             $query
                                 ->whereNotNull("autograph_2")
+                                ->orWhere(function($query){
+                                    $query->where('autograph_2')
+                                        ->where('from_department', 'PLASTIC INJECTION');
+                                })
                                 ->where("branch", "JAKARTA")
                                 ->orWhere(function ($query) {
                                     $query->where("type", "factory")->where("branch", "KARAWANG");

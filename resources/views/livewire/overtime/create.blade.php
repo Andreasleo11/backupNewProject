@@ -10,6 +10,7 @@
             <div class="row g-4 mb-4">
                 <div class="col">
                     <label for="dept_id" class="form-label">From Department <span class="text-danger">*</span></label>
+                    @if(auth()->user()->name == 'popon')
                     <select wire:model.live="dept_id" id="dept_id"
                         class="form-select shadow-sm @error('dept_id') is-invalid @enderror">
                         <option value="">-- Select Department --</option>
@@ -17,6 +18,21 @@
                             <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                         @endforeach
                     </select>
+                    @else
+                    <input type="text" 
+                        class="form-control bg-light fw-bold" 
+                        value="{{ auth()->user()->department->name }}" 
+                        readonly>
+
+                    <!-- Hidden field that actually gets submitted -->
+                    <input type="hidden" 
+                        name="from_department" 
+                        value="{{ auth()->user()->department->name }}">
+                    
+                    <div class="form-text text-muted">
+                        This is automatically set to your current department (cannot be changed)
+                    </div>
+                    @endif
                     @error('dept_id')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror

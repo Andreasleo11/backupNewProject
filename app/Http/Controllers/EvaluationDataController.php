@@ -219,6 +219,22 @@ class EvaluationDataController extends Controller
         return view('setting.formatrequestmagang', compact('statuses', 'departments'));
     }
 
+    public function evaluationformatrequestpageAllinPerpanjangan()
+    {
+        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+            ->distinct()
+            ->pluck('status');
+
+        $departments = Department::whereHas('employees', function ($query) use ($statuses) {
+            $query->whereIn('status', $statuses);
+        })
+            ->select('dept_no', 'name')
+            ->distinct()
+            ->get();
+
+        return view('setting.formatrequestallinperpanjangan', compact('statuses', 'departments'));
+    }
+
     public function allEmployees(Request $request)
     {
         // Get the year input, default to the previous year if not provided
@@ -232,8 +248,9 @@ class EvaluationDataController extends Controller
             'department',
         ])->get();
 
+        $magang=null;
         // Pass employees and the selected year to the view
-        return view('test', compact('employees', 'year'));
+        return view('test', compact('employees', 'year','magang'));
     }
 
     public function getFormatYearallin(Request $request)
@@ -258,6 +275,7 @@ class EvaluationDataController extends Controller
             ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
             ->whereIn('status', $statuses) // Ensure employees also have the correct status
             ->where('Dept', $dept) // Filter by user-selected department
+            ->whereNull('end_date') // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view
@@ -318,5 +336,34 @@ class EvaluationDataController extends Controller
 
         // Pass employees and the selected year to the view
         return view('test', compact('employees', 'year', 'magang'));
+    }
+
+
+    public function getFormatYearallinPerpanjangan(Request $request)
+    {
+        $dept = $request->input('dept');
+        $year = $request->input('year');
+
+        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+            ->distinct()
+            ->pluck('status');
+        $magang = 0;
+        // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
+        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+
+        // Fetch employees who belong to the selected department and have the correct status
+        $employees = Employee::with([
+            'evaluationData' => function ($query) use ($year) {
+                $query->whereYear('Month', $year);
+            },
+            'department',
+        ])
+            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('status', $statuses) // Ensure employees also have the correct status
+            ->where('Dept', $dept) // Filter by user-selected department
+            ->get();
+
+        // Pass employees and the selected year to the view
+        return view('evaluasiPerpanjanganKaryawan', compact('employees', 'year', 'magang'));
     }
 }

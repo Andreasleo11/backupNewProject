@@ -178,11 +178,10 @@
                 <!-- <h2>Evaluasi Yayasan {{ now()->format('F Y') }}</h2> Add this line -->
                 <div class="employee-info">
                 @if ($magang == 1 || $magang === null)
-                    <h3 style="text-align: center;">Evaluasi Tahunan {{ $year }}</h3>
+                    <h3 style="text-align: center;">Evaluasi Perpanjangan</h3>
                 @else
-                    <h3 style="text-align: center;">Evaluasi Tahunan {{ $year }}</h3>
+                    <h3 style="text-align: center;">Evaluasi Perpanjangan</h3>
                 @endif
-
 
                     <div class="row">
                         <div class="col-md-4">
@@ -360,6 +359,13 @@
                                             style="border: 1px solid black; padding: 10px; width: 80px; text-align: center;">
                                             61-0 = E</div>
                                     </div>
+                                </td>
+                                <td colspan= "5">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan = "2">
+                                    Layak (1) Diperpanjang Atau Tidak (2)
                                 </td>
                                 <td colspan= "5">
                                 </td>

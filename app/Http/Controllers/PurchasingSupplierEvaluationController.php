@@ -31,22 +31,30 @@ class PurchasingSupplierEvaluationController extends Controller
 
         $supplierData = [];
 
-        $masters = PurchasingListPo::select('supplier_name', 'posting_date')->distinct()->get();
+        $masters = PurchasingListPo::select(
+    'supplier_code',
+    'supplier_name',
+    'posting_date'
+)->get();
 
-        // Group by supplier names
-        foreach ($masters->groupBy('supplier_name') as $supplier_name => $records) {
-            $years = [];
+$supplierData = [];
 
-            // Get distinct years from posting_date for each supplier
-            foreach ($records as $record) {
-                // Extract year from posting_date
-                $year = Carbon::parse($record->posting_date)->format('Y');
-                $years[] = $year;
-            }
+// Group by kombinasi supplier_code dan supplier_name
+$grouped = $masters->groupBy(['supplier_code', 'supplier_name']);
 
-            // Store distinct years in the array for each supplier, with re-indexing
-            $supplierData[$supplier_name] = array_values(array_unique($years));
-        }
+foreach ($grouped as $supplier_code => $byName) {
+    foreach ($byName as $supplier_name => $records) {
+        $years = $records->map(function($record) {
+            return Carbon::parse($record->posting_date)->format('Y');
+        })->unique()->values()->toArray();
+        
+        $key = ($supplier_name ?: 'Unknown') . ' - ' . $supplier_code;
+        $supplierData[$key] = $years;
+    }
+}
+
+ksort($supplierData, SORT_STRING | SORT_FLAG_CASE);
+
 
         return view(
             'purchasing.evaluationsupplier.supplier_selection',
@@ -81,7 +89,10 @@ class PurchasingSupplierEvaluationController extends Controller
         ]);
 
         // Extract the parameters from the request
-        $supplierName = $request->input('supplier');
+        [$supplierName, $supplierCode] = array_map(
+            'trim',
+            explode(' - ', $request->input('supplier'))
+        );
         $startMonthName = $request->input('start_month');
         $startYear = $request->input('start_year');
         $endMonthName = $request->input('end_month');
@@ -99,8 +110,8 @@ class PurchasingSupplierEvaluationController extends Controller
         }
 
         // Step 1: Find the supplier in PurchasingListPo to get the supplier_code (vendor_code)
-        $supplier = PurchasingListPo::where('supplier_name', $supplierName)->first();
-
+        $supplier = PurchasingListPo::where('supplier_code', $supplierCode)->first();
+        // dd($supplier);
         if (! $supplier) {
             return response()->json(['message' => 'Supplier not found'], 404);
         }
@@ -164,7 +175,7 @@ class PurchasingSupplierEvaluationController extends Controller
             ->get();
 
         if ($claims->isEmpty()) {
-            // Vendor not found, set kualitas_barang to 30 for all details
+            // Vendor not found, set kualitas_barang to 20 for all details
             foreach ($data->details as $detail) {
                 $detail->kualitas_barang = 20;
                 $detail->save();
@@ -196,26 +207,35 @@ class PurchasingSupplierEvaluationController extends Controller
                 if ($monthlyClaims->isEmpty()) {
                     $detail->kualitas_barang = 20; // No claims for this month
                 } else {
-                    // Calculate points based on can_use status
-                    $totalPoints = 0;
-                    $claimCount = $monthlyClaims->count();
+                    // // Calculate points based on can_use status
+                    // $totalPoints = 0;
+                    // $claimCount = $monthlyClaims->count();
+
+                    // foreach ($monthlyClaims as $claim) {
+                    //     if (is_null($claim->risk) || $claim->risk == '') {
+                    //         $totalPoints += 100; // risk is null or blank
+                    //     } elseif ($claim->risk == 'Low') {
+                    //         $totalPoints += 5; // risk is 'Low'
+                    //     } elseif ($claim->risk == 'High') {
+                    //         // risk is 'High'
+                    //         $detail->kualitas_barang = 0;
+                    //         $detail->save();
+                    //         break;
+                    //     }
+                    // }
+
+                    // // Calculate average and apply 30%
+                    // $averagePoints = 100 - $totalPoints;
+                    // $detail->kualitas_barang = ceil($averagePoints * 0.2); // Apply 30%
+
+                     $point = 20;
 
                     foreach ($monthlyClaims as $claim) {
-                        if (is_null($claim->risk) || $claim->risk == '') {
-                            $totalPoints += 100; // risk is null or blank
-                        } elseif ($claim->risk == 'Low') {
-                            $totalPoints += 5; // risk is 'Low'
-                        } elseif ($claim->risk == 'High') {
-                            // risk is 'High'
-                            $detail->kualitas_barang = 0;
-                            $detail->save();
-                            break;
-                        }
+                        $point -= 5;
                     }
 
-                    // Calculate average and apply 30%
-                    $averagePoints = 100 - $totalPoints;
-                    $detail->kualitas_barang = ceil($averagePoints * 0.2); // Apply 30%
+                    // Supaya tidak minus
+                    $detail->kualitas_barang = max($point, 0);
                 }
 
                 $detail->save(); // Save the updated detail
@@ -261,26 +281,38 @@ class PurchasingSupplierEvaluationController extends Controller
                 if ($monthlyClaims->isEmpty()) {
                     $detail->customer_stopline = 10; // No claims for this month
                 } else {
-                    // Calculate points based on can_use status
-                    $totalPoints = 0;
-                    $claimCount = $monthlyClaims->count();
+                    // // Calculate points based on can_use status
+                    // $totalPoints = 0;
+                    // $claimCount = $monthlyClaims->count();
 
+                    // foreach ($monthlyClaims as $claim) {
+                    //     if (is_null($claim->customer_stopline) || $claim->customer_stopline == '') {
+                    //         $totalPoints += 100; // risk is null or blank
+                    //     } elseif ($claim->customer_stopline == 'No') {
+                    //         $totalPoints += 100; // risk is 'Low'
+                    //     } elseif ($claim->customer_stopline == 'Yes') {
+                    //         // risk is 'High'
+                    //         $detail->customer_stopline = 0;
+                    //         $detail->save();
+                    //         break;
+                    //     }
+                    // }
+
+                    // // Calculate average and apply 30%
+                    // $averagePoints = $totalPoints / $claimCount;
+                    // $detail->customer_stopline = ceil($averagePoints * 0.1); // Apply 30%
+
+                     $stoplineYesCount = 0;
+    
                     foreach ($monthlyClaims as $claim) {
-                        if (is_null($claim->customer_stopline) || $claim->customer_stopline == '') {
-                            $totalPoints += 100; // risk is null or blank
-                        } elseif ($claim->customer_stopline == 'No') {
-                            $totalPoints += 100; // risk is 'Low'
-                        } elseif ($claim->customer_stopline == 'Yes') {
-                            // risk is 'High'
-                            $detail->customer_stopline = 0;
-                            $detail->save();
-                            break;
+                        if ($claim->customer_stopline == 'Yes') {
+                            $stoplineYesCount++;
                         }
+                        // Jika No, null, atau blank → tidak dihitung (tidak ada pengurangan)
                     }
-
-                    // Calculate average and apply 30%
-                    $averagePoints = $totalPoints / $claimCount;
-                    $detail->customer_stopline = ceil($averagePoints * 0.1); // Apply 30%
+                    
+                    // Kalkulasi point: mulai dari 10, kurangi 5 per stopline Yes
+                    $detail->customer_stopline = max(10 - ($stoplineYesCount * 5), 0);
                 }
 
                 $detail->save(); // Save the updated detail
@@ -329,12 +361,17 @@ class PurchasingSupplierEvaluationController extends Controller
                     // No data found for this month, set ketepatan_kuantitas_barang to 100 * 20% = 20
                     $detail->ketepatan_kuantitas_barang = 20;
                 } else {
-                    // Deduct 5 points for each data entry found for the month
-                    $deductions = $monthlyAccuracyGoods->count() * 5;
-                    $finalScore = max(0, 100 - $deductions); // Ensure score doesn't go below 0
+                    // // Deduct 5 points for each data entry found for the month
+                    // $deductions = $monthlyAccuracyGoods->count() * 5;
+                    // $finalScore = max(0, 100 - $deductions); // Ensure score doesn't go below 0
 
-                    // Apply 20% of the final score
-                    $detail->ketepatan_kuantitas_barang = ceil($finalScore * 0.2); // Round up
+                    // // Apply 20% of the final score
+                    // $detail->ketepatan_kuantitas_barang = ceil($finalScore * 0.2); // Round up
+
+                     $detail->ketepatan_kuantitas_barang = max(
+                        20 - ($monthlyAccuracyGoods->count() * 5),
+                        0
+                    );
                 }
 
                 $detail->save(); // Save the updated detail
@@ -382,34 +419,40 @@ class PurchasingSupplierEvaluationController extends Controller
                     // No data found for this month, set ketepatan_waktu_pengiriman to 100 * 20% = 20
                     $detail->ketepatan_waktu_pengiriman = 20;
                 } else {
-                    // Process each delivery for the month
-                    $totalScore = 0;
-                    $count = $monthlyDeliveries->count();
+                    // // Process each delivery for the month
+                    // $totalScore = 0;
+                    // $count = $monthlyDeliveries->count();
 
-                    foreach ($monthlyDeliveries as $delivery) {
-                        $daysDifference = Carbon::parse($delivery->actual_date)->diffInDays(
-                            Carbon::parse($delivery->request_date),
-                        );
+                    // foreach ($monthlyDeliveries as $delivery) {
+                    //     $daysDifference = Carbon::parse($delivery->actual_date)->diffInDays(
+                    //         Carbon::parse($delivery->request_date),
+                    //     );
 
-                        if ($daysDifference == 1) {
-                            $totalScore += 90;
-                        } elseif ($daysDifference == 2) {
-                            $totalScore += 80;
-                        } elseif ($daysDifference == 3) {
-                            $totalScore += 70;
-                        } else {
-                            $totalScore += 50;
-                        }
-                    }
+                    //     if ($daysDifference == 1) {
+                    //         $totalScore += 90;
+                    //     } elseif ($daysDifference == 2) {
+                    //         $totalScore += 80;
+                    //     } elseif ($daysDifference == 3) {
+                    //         $totalScore += 70;
+                    //     } else {
+                    //         $totalScore += 50;
+                    //     }
+                    // }
 
-                    // Calculate the average score for the month
-                    $averageScore = $totalScore / $count;
+                    // // Calculate the average score for the month
+                    // $averageScore = $totalScore / $count;
 
-                    // Apply 20% of the average score
-                    $finalScore = ceil($averageScore * 0.2); // Round up
+                    // // Apply 20% of the average score
+                    // $finalScore = ceil($averageScore * 0.2); // Round up
 
-                    // Update the detail with the final score
-                    $detail->ketepatan_waktu_pengiriman = $finalScore;
+                    // // Update the detail with the final score
+                    // $detail->ketepatan_waktu_pengiriman = $finalScore;
+
+
+                    $detail->ketepatan_waktu_pengiriman = max(
+                        20 - ($monthlyDeliveries->count() * 5),
+                        0
+                    );
                 }
 
                 $detail->save(); // Save the updated detail
@@ -455,34 +498,56 @@ class PurchasingSupplierEvaluationController extends Controller
                     // No data found for this month, set kerjasama_permintaan_mendadak to 10
                     $detail->kerjasama_permintaan_mendadak = 10;
                 } else {
-                    // Process each urgent request for the month
-                    $totalScore = 0;
+                    // // Process each urgent request for the month
+                    // $totalScore = 0;
+                    // $count = $monthlyRequests->count();
+
+                    // foreach ($monthlyRequests as $request) {
+                    //     // Convert the string dates to Carbon instances
+                    //     $requestDate = Carbon::parse($request->request_date);
+                    //     $incomingDate = Carbon::parse($request->incoming_date);
+
+                    //     if ($requestDate->eq($incomingDate)) {
+                    //         if ($request->special_price === 'No') {
+                    //             $totalScore += 100;
+                    //         } else {
+                    //             $totalScore += 80;
+                    //         }
+                    //     } else {
+                    //         $totalScore += 50;
+                    //     }
+                    // }
+
+                    // // Calculate the average score for the month
+                    // $averageScore = $totalScore / $count;
+
+                    // // Apply 10% of the average score
+                    // $finalScore = ceil($averageScore * 0.1); // Round up
+
+                    // // Update the detail with the final score
+                    // $detail->kerjasama_permintaan_mendadak = $finalScore;
+
+                    $totalPoint = 0;
                     $count = $monthlyRequests->count();
 
                     foreach ($monthlyRequests as $request) {
-                        // Convert the string dates to Carbon instances
-                        $requestDate = Carbon::parse($request->request_date);
+                        $requestDate  = Carbon::parse($request->request_date);
                         $incomingDate = Carbon::parse($request->incoming_date);
 
+                        // Cek apakah mendadak (tanggal sama)
                         if ($requestDate->eq($incomingDate)) {
                             if ($request->special_price === 'No') {
-                                $totalScore += 100;
+                                $totalPoint += 10; // mendadak + harga standar
                             } else {
-                                $totalScore += 80;
+                                $totalPoint += 5;  // mendadak + harga khusus
                             }
                         } else {
-                            $totalScore += 50;
+                            $totalPoint += 0;      // tidak mendadak
                         }
                     }
 
-                    // Calculate the average score for the month
-                    $averageScore = $totalScore / $count;
-
-                    // Apply 10% of the average score
-                    $finalScore = ceil($averageScore * 0.1); // Round up
-
-                    // Update the detail with the final score
-                    $detail->kerjasama_permintaan_mendadak = $finalScore;
+                    // Rata-rata bulanan
+                    $detail->kerjasama_permintaan_mendadak = ceil($totalPoint / $count);
                 }
 
                 $detail->save(); // Save the updated detail
@@ -532,39 +597,78 @@ class PurchasingSupplierEvaluationController extends Controller
                 return Carbon::parse($item->cpar_sent_date)->format('Y-m'); // Group by Year-Month
             });
 
-            foreach ($monthlyClaimResponses as $month => $responses) {
-                $totalScore = 0;
-                $count = 0;
+            // foreach ($monthlyClaimResponses as $month => $responses) {
+            //     $totalScore = 0;
+            //     $count = 0;
 
-                foreach ($responses as $response) {
+            //     foreach ($responses as $response) {
+            //         $sentDate = Carbon::parse($response->cpar_sent_date);
+            //         $responseDate = Carbon::parse($response->cpar_response_date);
+            //         $daysDifference = $responseDate->diffInDays($sentDate);
+
+            //         if ($response->close_status === 'Yes') {
+            //             if ($daysDifference <= 7) {
+            //                 $totalScore += 90;
+            //             } elseif ($daysDifference <= 14) {
+            //                 $totalScore += 80;
+            //             } else {
+            //                 $totalScore += 50;
+            //             }
+            //         } else {
+            //             $totalScore += 50;
+            //         }
+            //         $count++;
+            //     }
+
+            //     $averageScore = $count > 0 ? ($totalScore / $count) * 0.1 : 0;
+
+            //     PurchasingDetailEvaluationSupplier::where('header_id', $header->id)->update([
+            //         'respon_klaim' => 10,
+            //     ]);
+            //     // Update existing months with calculated scores
+            //     PurchasingDetailEvaluationSupplier::where('header_id', $header->id)
+            //         ->where('month', Carbon::parse($month)->format('F'))
+            //         ->update(['respon_klaim' => round($averageScore)]);
+            // }
+
+            foreach ($monthlyClaimResponses as $month => $responses) {
+            $totalPoint = 0;
+            $count = $responses->count();
+
+            foreach ($responses as $response) {
+
+                // Default 0 point
+                $point = 0;
+
+                // Hanya diproses jika klaim ditutup
+                if ($response->close_status === 'Yes') {
+
                     $sentDate = Carbon::parse($response->cpar_sent_date);
                     $responseDate = Carbon::parse($response->cpar_response_date);
                     $daysDifference = $responseDate->diffInDays($sentDate);
 
-                    if ($response->close_status === 'Yes') {
-                        if ($daysDifference <= 7) {
-                            $totalScore += 90;
-                        } elseif ($daysDifference <= 14) {
-                            $totalScore += 80;
-                        } else {
-                            $totalScore += 50;
-                        }
-                    } else {
-                        $totalScore += 50;
+                    if ($daysDifference >= 1 && $daysDifference <= 3) {
+                        $point = 10;
+                    } elseif ($daysDifference >= 4 && $daysDifference <= 5) {
+                        $point = 5;
                     }
-                    $count++;
+                    // > 5 hari tetap 0
                 }
 
-                $averageScore = $count > 0 ? ($totalScore / $count) * 0.1 : 0;
-
-                PurchasingDetailEvaluationSupplier::where('header_id', $header->id)->update([
-                    'respon_klaim' => 10,
-                ]);
-                // Update existing months with calculated scores
-                PurchasingDetailEvaluationSupplier::where('header_id', $header->id)
-                    ->where('month', Carbon::parse($month)->format('F'))
-                    ->update(['respon_klaim' => round($averageScore)]);
+                $totalPoint += $point;
             }
+
+            // Rata-rata per bulan (0–10)
+            $finalScore = $count > 0 ? ceil($totalPoint / $count) : 0;
+
+            // Update skor respon klaim per bulan
+            PurchasingDetailEvaluationSupplier::where('header_id', $header->id)
+                ->where('month', Carbon::parse($month)->format('F'))
+                ->update([
+                    'respon_klaim' => $finalScore
+                ]);
+            }
+
 
             // Check for months in claim responses not found in details and update them
             foreach ($monthlyClaimResponses as $month => $responses) {
@@ -590,23 +694,43 @@ class PurchasingSupplierEvaluationController extends Controller
                 'sertifikasi' => 0,
             ]);
         } else {
-            $sertifikasiScore = 5; // Default value if both documents are null
+            // $sertifikasiScore = 5; // Default value if both documents are null
+
+            // if (
+            //     $certificates->iatf_16949_doc !== null &&
+            //     trim($certificates->iatf_16949_doc) !== ''
+            // ) {
+            //     $sertifikasiScore = 10;
+            // } elseif (
+            //     $certificates->iso_9001_doc !== null &&
+            //     trim($certificates->iso_9001_doc) !== ''
+            // ) {
+            //     $sertifikasiScore = 8;
+            // } elseif (
+            //     $certificates->iso_14001_doc !== null &&
+            //     trim($certificates->iso_14001_doc) !== ''
+            // ) {
+            //     $sertifikasiScore = 8;
+            // }
+
+            $sertifikasiScore = 0; // Default: tidak punya sertifikasi apa pun
 
             if (
-                $certificates->iatf_16949_doc !== null &&
+                !is_null($certificates->iatf_16949_doc) &&
                 trim($certificates->iatf_16949_doc) !== ''
             ) {
                 $sertifikasiScore = 10;
             } elseif (
-                $certificates->iso_9001_doc !== null &&
-                trim($certificates->iso_9001_doc) !== ''
+                (
+                    !is_null($certificates->iso_9001_doc) &&
+                    trim($certificates->iso_9001_doc) !== ''
+                ) ||
+                (
+                    !is_null($certificates->iso_14001_doc) &&
+                    trim($certificates->iso_14001_doc) !== ''
+                )
             ) {
-                $sertifikasiScore = 8;
-            } elseif (
-                $certificates->iso_14001_doc !== null &&
-                trim($certificates->iso_14001_doc) !== ''
-            ) {
-                $sertifikasiScore = 8;
+                $sertifikasiScore = 5;
             }
 
             // Update all details in data with the calculated sertifikasi score
@@ -625,10 +749,13 @@ class PurchasingSupplierEvaluationController extends Controller
                 $detail->ketepatan_waktu_pengiriman +
                 $detail->kerjasama_permintaan_mendadak +
                 $detail->respon_klaim +
-                $detail->sertifikasi;
+                $detail->sertifikasi+
+                $detail->customer_stopline;
         });
 
+        // dd($totalSum);
         $count = $details->count();
+       
         $averageScore = $count > 0 ? $totalSum / $count : 0;
 
         // dd($averageScore);
