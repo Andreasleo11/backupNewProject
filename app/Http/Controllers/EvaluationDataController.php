@@ -28,48 +28,59 @@ class EvaluationDataController extends Controller
 
     public function update(Request $request)
     {
-        $uploadedFiles = $request->file('excel_files');
+        $request->validate([
+            'excel_files'   => 'required|array|min:1',
+            'excel_files.*' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
 
-        $excelFileName = $this->processExcelFile($uploadedFiles);
-        $this->importExcelFile($excelFileName);
+        try {
+            $uploadedFiles  = $request->file('excel_files');
+            $excelFileName  = $this->processExcelFile($uploadedFiles);
+            $this->importExcelFile($excelFileName);
 
-        return redirect()->back();
+            return redirect()->back()->with('success', 'Evaluation data imported successfully.');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
     }
 
-    public function processExcelFile($files)
+    private function processExcelFile($files)
     {
         $allData = [];
+
         foreach ($files as $file) {
-            // Read the XLS file
             $data = Excel::toArray([], $file);
-            // Remove the first row (header)
+
+            // Skip first 2 header rows
             array_shift($data[0]);
             array_shift($data[0]);
 
-            // Remove the first element from each row
+            // Remove the second column (index 1 — usually a redundant label)
             foreach ($data[0] as &$row) {
-                array_splice($row, 1, 1); // Remove the second element
+                array_splice($row, 1, 1);
             }
 
+            // Convert date column from d/m/Y to Y-m-d
             foreach ($data[0] as &$row) {
-                // Convert the date string to a DateTime object
-                $date = DateTime::createFromFormat('d/m/Y', $row[1]);
-                $row[1] = $date->format('Y-m-d');
+                $date    = \DateTime::createFromFormat('d/m/Y', $row[1]);
+                $row[1]  = $date ? $date->format('Y-m-d') : null;
             }
-            // Append data from this file to the allData array
+
             $allData = array_merge($allData, $data[0]);
         }
 
-        $excelFileName = 'EvaluationData.xlsx';
-        $excelFilePath = public_path($excelFileName);
+        // Unique filename per upload to avoid concurrent overwrites
+        $excelFileName = 'EvaluationData_' . uniqid() . '.xlsx';
 
-        Excel::store(new EvaluationDataExp($allData), 'public/Evaluation/' . $excelFileName);
+        Excel::store(
+            new EvaluationDataExp($allData),
+            'public/Evaluation/' . $excelFileName,
+        );
 
-        // $filePath = Storage::url($fileName);
         return $excelFileName;
     }
 
-    public function importExcelFile($excelFileName)
+    private function importExcelFile($excelFileName)
     {
         Excel::import(
             new EvaluationDataImport,
@@ -82,16 +93,23 @@ class EvaluationDataController extends Controller
 
     public function delete(Request $request)
     {
-        $selectedMonth = $request->input('filter_status');
-        $selectedYear = date('Y');
+        $request->validate([
+            'filter_month' => 'required|string|size:2',
+            'filter_year'  => 'required|digits:4|integer',
+        ]);
+
+        $selectedMonth = $request->input('filter_month');
+        $selectedYear  = $request->input('filter_year');
 
         $startDate = $selectedYear . '-' . $selectedMonth . '-01';
-        $endDate = date('Y-m-t', strtotime($startDate));
+        $endDate   = date('Y-m-t', strtotime($startDate));
 
-        EvaluationData::whereBetween('Month', [$startDate, $endDate])->delete();
+        $deleted = EvaluationData::whereBetween('Month', [$startDate, $endDate])->delete();
 
-        return redirect()->back()->with('success', 'Data for selected month has been deleted.');
-        // dd($request->all());
+        return redirect()->back()->with(
+            'success',
+            "Deleted {$deleted} evaluation records for {$selectedMonth}/{$selectedYear}."
+        );
     }
 
     public function weeklyIndex()
@@ -109,7 +127,7 @@ class EvaluationDataController extends Controller
         return redirect()->back();
     }
 
-    public function processExcelFileWeekly($files)
+    private function processExcelFileWeekly($files)
     {
         $allData = [];
         foreach ($files as $file) {
@@ -142,7 +160,7 @@ class EvaluationDataController extends Controller
         return $excelFileName;
     }
 
-    public function importExcelFileWeekly($excelFileName)
+    private function importExcelFileWeekly($excelFileName)
     {
         Excel::import(
             new EvaluationWeeklyDataImport,

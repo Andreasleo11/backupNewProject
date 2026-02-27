@@ -34,6 +34,7 @@ Route::middleware('auth')->group(function () {
     // ──────────────────────────────────────────────
     // Main listing for department heads (their own dept employees)
     Route::get('/discipline/index', [DisciplinePageController::class, 'index'])->name('discipline.index');
+    Route::put('/edit/discipline/{id}', [DisciplinePageController::class, 'update'])->name('editdiscipline');
 
     // Import attendance data from Excel
     Route::post('/import-file', [DisciplinePageController::class, 'import'])->name('discipline.import');
@@ -107,9 +108,9 @@ Route::middleware('auth')->group(function () {
     // ──────────────────────────────────────────────
     // Evaluation Data Upload (Settings/Data Management)
     // ──────────────────────────────────────────────
-    Route::get('/evaluationindex', [DisciplinePageController::class, 'settingIndexEvaluation'])->name('indexevaluation');
-    Route::post('/updateevaluation', [DisciplinePageController::class, 'updateEvaluation'])->name('UpdateEvaluation');
-    Route::post('/deleteevaluation', [DisciplinePageController::class, 'deleteEvaluation'])->name('DeleteEvaluation');
+    // Route::get('/evaluationindex', [DisciplinePageController::class, 'settingIndexEvaluation'])->name('indexevaluation');
+    // Route::post('/updateevaluation', [DisciplinePageController::class, 'updateEvaluation'])->name('UpdateEvaluation');
+    // Route::post('/deleteevaluation', [DisciplinePageController::class, 'deleteEvaluation'])->name('DeleteEvaluation');
     Route::get('/weeklyindex', [DisciplinePageController::class, 'settingIndexWeekly'])->name('weekly.index');
     Route::post('/updateweeklyeleration', [DisciplinePageController::class, 'updateWeeklyEvaluation'])->name('WeeklyUpdateEvaluation');
     Route::get('/indexdata', [DisciplinePageController::class, 'indexdata'])->name('indexdata');
@@ -135,5 +136,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/evaluation/index', [EvaluationDataController::class, 'index']);
     Route::post('/processevaluationdata', [EvaluationDataController::class, 'update'])->name('UpdateEvaluation');
-    Route::put('/edit/discipline/{id}', [DisciplinePageController::class, 'update'])->name('editdiscipline');
+    Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
+    
+    Route::get('/weekly-evaluation/index', [EvaluationDataController::class, 'weeklyIndex'])->name('weekly.evaluation.index');
+    Route::post('/weeklyprocessevaluationdata', [EvaluationDataController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
+    
 });
