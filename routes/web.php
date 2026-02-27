@@ -3,9 +3,7 @@
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NavPinController;
-use App\Livewire\Admin\RequirementUploads\Review as ReviewUploads;
 use App\Livewire\Auth\ChangePasswordPage;
-use App\Livewire\Departments\Overview as DepartmentsOverview;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -37,32 +35,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/pin', [NavPinController::class, 'unpin'])->name('unpin');
     });
 });
-
-// not decide where to put this route
-Route::get('/daily-reports/{employee_id}', [App\Http\Controllers\EmployeeDailyReportController::class, 'show'])->name('daily-reports.depthead.show');
-
-Route::get('/upload-daily-report', [App\Http\Controllers\EmployeeDailyReportController::class, 'showUploadForm'])->name('daily-report.form');
-Route::post('/daily-report/confirm-upload', [App\Http\Controllers\EmployeeDailyReportController::class, 'confirmUpload'])->name('daily-report.confirm-upload');
-Route::post('/upload-daily-report', [App\Http\Controllers\EmployeeDailyReportController::class, 'upload'])->name('daily-report.upload');
-
-Route::get('/format-evaluation-year-yayasan', [App\Http\Controllers\EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
-Route::get('/format-evaluation-year-allin', [App\Http\Controllers\EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
-Route::get('/format-evaluation-year-magang', [App\Http\Controllers\EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
-Route::get('/admin/requirement-uploads', ReviewUploads::class)->name('admin.requirement-uploads');
-Route::get('/departments/overview', DepartmentsOverview::class)->name('departments.overview');
-
-Route::put('purchase-requests/{id}/po-number', [App\Http\Controllers\PurchaseRequestController::class, 'updatePoNumber'])->name('purchase-requests.po-number.update');
-Route::get('purchase-requests/{id}/export-pdf', [App\Http\Controllers\PurchaseRequestController::class, 'exportToPdf'])->name('purchase-requests.export-pdf');
-
-// DEPRECATED: Old GET routes - kept temporarily for backward compatibility
-// TODO: Remove after frontend migration complete
-Route::get('purchase-requests/items/{id}/approve', function () {
-    abort(405, 'Please use POST method for item approval');
-})->name('purchase-requests.items.approve.deprecated');
-
-Route::get('purchase-requests/items/{id}/reject', function () {
-    abort(405, 'Please use POST method for item rejection');
-})->name('purchase-requests.items.reject.deprecated');
 
 Route::post('file/upload', [FileController::class, 'upload'])->name('file.upload');
 Route::delete('files/{id}', [FileController::class, 'destroy'])->name('file.destroy');
