@@ -7,12 +7,14 @@
         {{-- Action Buttons --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                @include('partials.info-discipline-page-modal')
+                @push('modals')
+                    @include('partials.info-discipline-page-modal')
+                @endpush
                 <button type="button" class="bg-slate-600 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium" data-bs-target="#info-discipline-page" data-bs-toggle="modal">
                     Info
                 </button>
 
-                @if ($user->department->name === 'PERSONALIA')
+                @if ($user->department?->name === 'PERSONALIA')
                     <a href="{{ route('alldiscipline.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium border border-blue-600">
                         List All Selain Yayasan
                     </a>
@@ -23,17 +25,21 @@
             </div>
 
             <div class="flex items-center gap-2">
-                @include('partials.upload-excel-file-discipline-modal')
+                @push('modals')
+                    @include('partials.upload-excel-file-discipline-modal')
+                @endpush
                 <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium btn-upload" data-bs-toggle="modal" data-bs-target="#upload-excel-file-discipline-modal">
                     Upload File Excel
                 </button>
 
-                @include('partials.lock-confirmation-modal', [
-                    'id' => 1,
-                    'route' => route('lock.data'),
-                    'title' => 'Lock Selected Month Data',
-                    'body' => 'Once the report is locked, it cannot be <b> modified </b> or <b> edited </b>. Are you sure want to lock all the selected month data?',
-                ])
+                @push('modals')
+                    @include('partials.lock-confirmation-modal', [
+                        'id' => 1,
+                        'route' => route('lock.data'),
+                        'title' => 'Lock Selected Month Data',
+                        'body' => 'Once the report is locked, it cannot be <b> modified </b> or <b> edited </b>. Are you sure want to lock all the selected month data?',
+                    ])
+                @endpush
                 <button class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium" id="lock-data-btn" data-bs-target="#lock-confirmation-modal-1" data-bs-toggle="modal">
                     <i class='bx bxs-lock'></i> Lock Data
                 </button>
@@ -92,11 +98,13 @@
         </div>
     </div>
 
-    @foreach ($employees as $employee)
-        @include('partials.edit-discipline-modal')
-    @endforeach
+    @push('modals')
+        @foreach ($employees as $employee)
+            @include('partials.edit-discipline-modal')
+        @endforeach
+    @endpush
 
-    @push('extraJs')
+    @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const statusFilterDropdown = document.getElementById('status-filter');

@@ -2,6 +2,8 @@
 
 namespace App\DataTables;
 
+use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
+use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
@@ -20,404 +22,82 @@ class DisciplineYayasanTableDataTable extends DataTable
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
+        $calculator = app(DisciplineScoreCalculatorService::class);
+
         return (new EloquentDataTable($query))
-            ->addColumn(
-                'totaldiscipline',
-                '@php
+            ->addColumn('totaldiscipline', function (EvaluationData $row) use ($calculator) {
+                // New scoring system: 9 criteria (A–E), penalties subtracted
+                $scores = [
+                    'kemampuan_kerja'   => $row->kemampuan_kerja,
+                    'kecerdasan_kerja'  => $row->kecerdasan_kerja,
+                    'qualitas_kerja'    => $row->qualitas_kerja,
+                    'disiplin_kerja'    => $row->disiplin_kerja,
+                    'kepatuhan_kerja'   => $row->kepatuhan_kerja,
+                    'lembur'            => $row->lembur,
+                    'efektifitas_kerja' => $row->efektifitas_kerja,
+                    'relawan'           => $row->relawan,
+                    'integritas'        => $row->integritas,
+                ];
 
-        $total = 0;
+                return $calculator->calculateTotal($scores, $row);
+            })
+            ->addColumn('grade', function (EvaluationData $row) {
+                return match (true) {
+                    $row->total >= 91 => 'A',
+                    $row->total >= 71 => 'B',
+                    $row->total >= 61 => 'C',
+                    default           => 'D',
+                };
+            })
+            ->addColumn('action', function (EvaluationData $row) {
+                $disabled = $row->is_lock ? 'disabled' : '';
 
-            if($kemampuan_kerja === "A")
-            {
-                $total += 17;
-            }
-            elseif($kemampuan_kerja === "B")
-            {
-                $total += 14;
-            }
-            elseif($kemampuan_kerja === "C")
-            {
-                $total += 11;
-            }
-            elseif($kemampuan_kerja === "D")
-            {
-                $total += 8;
-            }
-            elseif($kemampuan_kerja === "E")
-            {
-                $total += 0;
-            }
-            if($kecerdasan_kerja  === "A")
-            {
-                $total += 16;
-            }
-            elseif($kecerdasan_kerja === "B")
-            {
-                $total += 13;
-            }
-            elseif($kecerdasan_kerja === "C")
-            {
-                $total += 10;
-            }
-            elseif($kecerdasan_kerja === "D")
-            {
-                $total += 7;
-            }
-            elseif($kecerdasan_kerja === "E")
-            {
-                $total += 0;
-            }
-
-            if($qualitas_kerja  === "A")
-            {
-                $total += 11;
-            }
-            elseif($qualitas_kerja  === "B")
-            {
-                $total += 9;
-            }
-            elseif($qualitas_kerja  === "C")
-            {
-                $total += 7;
-            }
-            elseif($qualitas_kerja  === "D")
-            {
-                $total += 4;
-            }
-            elseif($qualitas_kerja  === "E")
-            {
-                $total += 0;
-            }
-
-            if($disiplin_kerja  === "A")
-            {
-                $total += 8;
-            }
-            elseif($disiplin_kerja  === "B")
-            {
-                $total += 6;
-            }
-            elseif($disiplin_kerja  === "C")
-            {
-                $total += 5;
-            }
-            elseif($disiplin_kerja  === "D")
-            {
-                $total += 3;
-            }
-            elseif($disiplin_kerja  === "E")
-            {
-                $total += 0;
-            }
-
-            if($kepatuhan_kerja  === "A")
-            {
-                $total += 10;
-            }
-            elseif($kepatuhan_kerja  === "B")
-            {
-                $total += 8;
-            }
-            elseif($kepatuhan_kerja  === "C")
-            {
-                $total += 6;
-            }
-            elseif($kepatuhan_kerja  === "D")
-            {
-                $total += 4;
-            }
-            elseif($kepatuhan_kerja  === "E")
-            {
-                $total += 0;
-            }
-
-            if($lembur  === "A")
-            {
-                $total += 10;
-            }
-            elseif($lembur  === "B")
-            {
-                $total += 8;
-            }
-            elseif($lembur  === "C")
-            {
-                $total += 6;
-            }
-            elseif($lembur  === "D")
-            {
-                $total += 4;
-            }
-            elseif($lembur  === "E")
-            {
-                $total += 0;
-            }
-
-            if($efektifitas_kerja   === "A")
-            {
-                $total += 10;
-            }
-            elseif($efektifitas_kerja   === "B")
-            {
-                $total += 8;
-            }
-            elseif($efektifitas_kerja   === "C")
-            {
-                $total += 6;
-            }
-            elseif($efektifitas_kerja   === "D")
-            {
-                $total += 4;
-            }
-            elseif($efektifitas_kerja   === "E")
-            {
-                $total += 0;
-            }
-
-
-                if($relawan === "A")
-            {
-                $total += 10;
-            }
-            elseif($relawan === "B")
-            {
-                $total += 8;
-            }
-            elseif($relawan === "C")
-            {
-                $total += 6;
-            }
-            elseif($relawan    === "D")
-            {
-                $total += 4;
-            }
-            elseif($relawan    === "E")
-            {
-                $total += 0;
-            }
-
-            if($integritas     === "A")
-            {
-                $total += 8;
-            }
-            elseif($integritas     === "B")
-            {
-                $total += 6;
-            }
-            elseif($integritas     === "C")
-            {
-                $total += 5;
-            }
-            elseif($integritas     === "D")
-            {
-                $total += 3;
-            }
-            elseif($integritas     === "E")
-            {
-                $total += 0;
-            }
-
-            $totalakhir = 0;
-            $totalakhir = $total;
-
-
-        @endphp {{ $totalakhir }}',
-            )
-
-            ->addColumn(
-                'grade',
-                '
-        @php
-
-            if($total >= 91)
-            {
-                $grade = "A";
-            }
-            elseif($total >=71 && $total <=90)
-            {
-                $grade = "B";
-            }
-            elseif($total >= 61 && $total <=70)
-            {
-                $grade = "C";
-            }
-            else
-            {
-                $grade = "D";
-            }
-        @endphp
-        {{ $grade }}',
-            )
-            ->addColumn(
-                'action',
-                '<button class="btn btn-primary edit-button"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#edit-discipline-yayasan-modal"
-                                            data-id="{{ $id }}"
-                                            {{ ($is_lock === 1) ? "disabled" : ""  }}>
-                                             <i class="bx bx-edit"></i>
-                                    </button>
-        ',
-            )
+                return '<button class="btn btn-primary edit-button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#edit-discipline-yayasan-modal"
+                    data-id="' . $row->id . '" '
+                    . $disabled . '>
+                    <i class="bx bx-edit"></i>
+                </button>';
+            })
             ->setRowId('id')
             ->setRowAttr([
-                'class' => function ($row) {
-                    // Directly accessing depthead
-                    if (isset($row->depthead) && $row->depthead !== null) {
-                        if ($row->depthead === 'rejected') {
-                            return 'table-danger';
-                        } else {
-                            if (isset($row->generalmanager) && $row->generalmanager !== null) {
-                                return 'table-primary';
-                            } else {
-                                return 'table-success';
-                            }
-                        }
+                'class' => function (EvaluationData $row) {
+                    if (empty($row->depthead)) {
+                        return ''; // Pending — no style
                     }
 
-                    return ''; // Default to no style if depthead is null
+                    if ($row->depthead === 'rejected') {
+                        return 'table-danger'; // Rejected
+                    }
+
+                    if (! empty($row->generalmanager)) {
+                        return 'table-primary'; // Fully approved (GM/HRD signed off)
+                    }
+
+                    return 'table-success'; // Dept head approved, awaiting GM
                 },
             ]);
     }
 
     /**
      * Get query source of dataTable.
+     *
+     * Delegates to DepartmentEmployeeResolver so that the Yayasan
+     * employee access rules live in ONE place (Domain layer), not here.
      */
     public function query(EvaluationData $model): QueryBuilder
     {
-        $userDepartment = Auth::user()->department->name;
+        $user     = Auth::user();
+        $resolver = app(DepartmentEmployeeResolver::class);
 
-        if ($userDepartment == 'MAINTENANCE MACHINE') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '351')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif (Auth::user()->is_gm) {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif (
-            Auth::user()->email === 'ani_apriani@daijo.co.id' ||
-            Auth::user()->email === 'bernadett@daijo.co.id'
-        ) {
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'PPIC') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '311')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'PLASTIC INJECTION') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '390')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'MOULDING') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '363')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'ASSEMBLY') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '362')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'SECOND PROCESS') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where(function ($query) {
-                            $query->where('dept_code', '361')->orWhere('dept_code', '362');
-                        })
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'MAINTENANCE') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '350')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'LOGISTIC') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where(function ($query) {
-                            $query->where('dept_code', '331')->orWhere('dept_code', '330');
-                        })
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'STORE') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
+        // resolveYayasanForUser() handles GM access, email-based access,
+        // and department-scoped access for dept heads
+        $employees   = $resolver->resolveYayasanForUser($user);
+        $employeeIds = $employees->pluck('NIK');
 
-                    if (Auth::user()->name === 'catur') {
-                        $query->where(function ($query) {
-                            $query->where('dept_code', '331')->orWhere('dept_code', '330');
-                        });
-                    } else {
-                        $query->where('dept_code', '330');
-                    }
-                })
-                ->newQuery();
-        } elseif (Auth::user()->email === 'raditya_qa@daijo.co.id') {
-            // Get data for department 341
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query
-                        ->where('dept_code', '341')
-                        ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-                })
-                ->newQuery();
-        } elseif ($userDepartment == 'QC' || $userDepartment == 'QA') {
-            // Get data for department 340
-            return $model::with('karyawan')
-                ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-
-                    if (auth()->user()->name === 'yuli') {
-                        $query->where(function ($query) {
-                            $query->where('dept_code', '340')->orWhere('dept_code', '341');
-                        });
-                    } else {
-                        $query->where('dept_code', '340');
-                    }
-                })
-                ->newQuery();
-        }
+        return EvaluationData::with('karyawan')
+            ->whereIn('NIK', $employeeIds);
     }
 
     /**

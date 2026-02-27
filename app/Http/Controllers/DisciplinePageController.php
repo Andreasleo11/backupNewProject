@@ -8,13 +8,31 @@ use App\DataTables\DisciplineTableDataTable;
 use App\DataTables\DisciplineYayasanTableDataTable;
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
+use App\Domain\Discipline\Services\DisciplineApprovalService;
+use App\Domain\Discipline\Services\DisciplineDataLockService;
 use App\Domain\Discipline\Services\DisciplineDataSyncService;
 use App\Domain\Discipline\Services\DisciplineDepartmentStatusService;
+use App\Domain\Discipline\Services\DisciplineExcelService;
+use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Models\EvaluationData;
 use App\Policies\DisciplineAccessPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * DisciplinePageController
+ *
+ * Handles all HTTP layer concerns for the Performance & Evaluation feature.
+ * Delegates ALL business logic to Domain services — no raw queries here.
+ *
+ * Route groups:
+ *   Regular employees  → index, approve_depthead, approve_gm, import
+ *   Yayasan employees  → indexyayasan, updateyayasan, lockdata, approve/reject buttons
+ *   Magang employees   → indexmagang, updatemagang, addlineMagang
+ *   All discipline     → allindex
+ *   Exports            → exportYayasan, exportYayasanFull, exportYayasanJpayroll, exportYayasanJpayrollFunction
+ *   AJAX               → fetchFilteredEmployees, fetchFilteredEmployeesGM, fetchFilteredYayasanEmployees, getDepartmentStatusYayasan
+ */
 class DisciplinePageController extends Controller
 {
     public function __construct(
@@ -22,26 +40,318 @@ class DisciplinePageController extends Controller
         private DisciplineAccessPolicy $policy
     ) {}
 
+    // ──────────────────────────────────────────────────────
+    // Regular Employee Discipline
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Show the regular discipline DataTable for the authenticated dept head.
+     * Route: GET /discipline/index  (discipline.index)
+     */
     public function index(DisciplineTableDataTable $dataTable)
     {
         $user = Auth::user();
 
-        // Check authorization using policy
         if (! $this->policy->viewAnyDiscipline($user)) {
             abort(403, 'Only Department Heads can access this');
         }
 
-        // Use resolver service to get employees based on user's role/department
         $employees = $this->resolver->resolveForUser($user);
 
         return $dataTable->render('setting.disciplineindex', compact('employees', 'user'));
     }
 
+    /**
+     * Dept head approves regular discipline for their department.
+     * Route: POST /discipline/adddepthead  (discipline.adddepthead)
+     */
+    public function approve_depthead(Request $request)
+    {
+        $approvalService = app(DisciplineApprovalService::class);
+
+        $deptNo = Auth::user()->department->dept_no;
+        $month  = $request->input('filter_month');
+        $year   = $request->input('filter_year');
+
+        $approvalService->approveDeptHead($deptNo, $month, $year, lockData: true);
+
+        return redirect()->back();
+    }
+
+    /**
+     * GM approves regular discipline data.
+     * Route: POST /discipline/addGm  (discipline.addGM)
+     */
+    public function approve_gm(Request $request)
+    {
+        $approvalService = app(DisciplineApprovalService::class);
+
+        $deptNo = $request->filter_dept;
+        $month  = $request->input('filter_month');
+
+        $approvalService->approveGeneralManager($deptNo, $month);
+
+        return redirect()->back();
+    }
+
+    /**
+     * Import regular employee attendance data from Excel.
+     * Route: POST /import-file  (discipline.import)
+     */
+    public function import(Request $request)
+    {
+        $excelService = app(DisciplineExcelService::class);
+
+        $excelService->importRegularData($request->file('excel_files'));
+
+        return redirect()->route('discipline.index')->with('success', 'Data imported successfully');
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Yayasan Employee Discipline
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Show the Yayasan discipline DataTable.
+     * Route: GET /discipline/yayasan/table  (yayasan.table)
+     */
+    public function indexyayasan(DisciplineYayasanTableDataTable $dataTable)
+    {
+        $user = Auth::user();
+
+        if (! $this->policy->viewYayasanDiscipline($user)) {
+            abort(403, 'Department does not have Yayasan employees');
+        }
+
+        try {
+            $employees = $this->resolver->resolveYayasanForUser($user);
+            $files = [];
+
+            return $dataTable->render('setting.disciplineyayasanindex', compact('employees', 'user', 'files'));
+        } catch (\Throwable $th) {
+            abort(403, 'Department does not have Yayasan employees');
+        }
+    }
+
+    /**
+     * Update a single Yayasan evaluation record's grade scores.
+     * Route: POST /discipline/yayasan/update/{id}  (discipline.yayasan.update)
+     */
+    public function updateyayasan(Request $request, $id)
+    {
+        $evaluationData = EvaluationData::findOrFail($id);
+        $pengawas       = Auth::user();
+
+        $evaluationData->update([
+            'kemampuan_kerja'  => $request->kemampuan_kerja,
+            'kecerdasan_kerja' => $request->kecerdasan_kerja,
+            'qualitas_kerja'   => $request->qualitas_kerja,
+            'disiplin_kerja'   => $request->disiplin_kerja,
+            'kepatuhan_kerja'  => $request->kepatuhan_kerja,
+            'lembur'           => $request->lembur,
+            'efektifitas_kerja'=> $request->efektifitas_kerja,
+            'relawan'          => $request->relawan,
+            'integritas'       => $request->integritas,
+        ]);
+
+        $scoreCalculator = app(DisciplineScoreCalculatorService::class);
+        $scores = $request->only($scoreCalculator->getScoredFields());
+        $total  = $scoreCalculator->calculateTotal($scores, $evaluationData);
+
+        $evaluationData->update([
+            'total'    => $total,
+            'pengawas' => $pengawas->name,
+        ]);
+
+        // Reset any prior rejections so it re-enters the approval flow
+        $approvalService = app(DisciplineApprovalService::class);
+        $approvalService->resetRejectedApprovals($evaluationData);
+
+        return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
+    }
+
+    /**
+     * Lock/freeze Yayasan data for a department+month so no edits can be made.
+     * Route: POST /discipline/yayasan/lock  (discipline.yayasan.lock)
+     * Route: POST /lock-data/discipline     (lock.data)
+     */
+    public function lockdata(Request $request)
+    {
+        $lockService = app(DisciplineDataLockService::class);
+
+        $deptNo = Auth::user()->department->dept_no;
+        $month  = $request->input('filter_month');
+
+        $lockService->lockByDepartmentAndMonth($deptNo, $month);
+
+        return redirect()->back();
+    }
+
+    /**
+     * Stub: Add a new line/row to the Yayasan evaluation table.
+     * Route: POST /discipline/yayasan/addline  (discipline.yayasan.addline)
+     *
+     * @todo Implement line creation logic when the business requirement is defined.
+     */
+    public function addlineYayasan(Request $request)
+    {
+        // Stub — not yet implemented
+        return redirect()->route('yayasan.table')->with('info', 'Add line feature coming soon');
+    }
+
+    /**
+     * Stub: Add a new line/row to the Magang evaluation table.
+     * Route: POST /discipline/magang/addline  (discipline.magang.addline)
+     *
+     * @todo Implement line creation logic when the business requirement is defined.
+     */
+    public function addlineMagang(Request $request)
+    {
+        // Stub — not yet implemented
+        return redirect()->route('magang.table')->with('info', 'Add line feature coming soon');
+    }
+
+    /**
+     * Dept head approves Yayasan evaluation records for their dept+month.
+     * Route: POST /discipline/yayasan/approvalDepthead  (approve.depthead.yayasan)
+     * Route: POST /discipline/magang/approval            (approve.data.depthead)
+     */
+    public function approve_depthead_button(Request $request)
+    {
+        $approvalService = app(DisciplineApprovalService::class);
+
+        $deptNo = Auth::user()->department->dept_no;
+        $month  = $request->input('filter_month');
+        $year   = $request->input('filter_year');
+
+        $approvalService->approveDeptHead($deptNo, $month, $year);
+
+        return redirect()->route('yayasan.table')->with('success', 'Approved by Dept Head');
+    }
+
+    /**
+     * Dept head rejects Yayasan evaluation records with a remark.
+     * Route: POST /discipline/yayasan/rejectDepthead  (reject.depthead.yayasan)
+     */
+    public function reject_depthead_button(Request $request)
+    {
+        $approvalService = app(DisciplineApprovalService::class);
+
+        $deptNo = Auth::user()->department->dept_no;
+        $month  = $request->input('filter_month');
+        $year   = $request->input('filter_year');
+        $remark = $request->input('remark');
+
+        $approvalService->rejectDeptHead($deptNo, $month, $year, $remark);
+
+        return redirect()->route('yayasan.table')->with('success', 'Rejected by Dept Head');
+    }
+
+    /**
+     * HRD rejects Yayasan evaluation records (resets both depthead + GM).
+     * Route: POST /discipline/yayasan/rejectHRD  (reject.hrd.yayasan)
+     */
+    public function reject_hrd_button(Request $request)
+    {
+        $approvalService = app(DisciplineApprovalService::class);
+
+        $deptNo = $request->input('filter_dept');
+        $month  = $request->input('filter_month');
+        $year   = $request->input('filter_year');
+        $remark = $request->input('remark');
+
+        $approvalService->rejectHRD($deptNo, $month, $year, $remark);
+
+        return redirect()->route('yayasan.table')->with('success', 'Rejected by HRD');
+    }
+
+    /**
+     * HRD (or GM) approves Yayasan evaluation records as general manager.
+     * Route: POST /discipline/yayasan/approvalHRD  (approve.hrd.yayasan)
+     */
+    public function approve_hrd_button(Request $request)
+    {
+        $approvalService = app(DisciplineApprovalService::class);
+
+        $deptNo = $request->input('filter_dept');
+        $month  = $request->input('filter_month');
+        $year   = $request->input('filter_year');
+
+        $approvalService->approveGeneralManager($deptNo, $month, $year);
+
+        return redirect()->route('yayasan.table')->with('success', 'Approved by HRD');
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Magang (Internship) Employee Discipline
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Show the Magang discipline DataTable.
+     * Route: GET /discipline/magang/table  (magang.table)
+     */
+    public function indexmagang(DisciplineMagangDataTable $dataTable)
+    {
+        $user = Auth::user();
+
+        if (! $this->policy->viewYayasanDiscipline($user)) {
+            abort(403, 'Department does not have Magang employees');
+        }
+
+        try {
+            $employees = $this->resolver->resolveMagangForUser($user);
+
+            return $dataTable->render('setting.disciplineMagangindex', compact('employees', 'user'));
+        } catch (\Throwable $th) {
+            abort(403, 'Department does not have Magang employees');
+        }
+    }
+
+    /**
+     * Update a single Magang evaluation record's grade scores.
+     * Route: POST /discipline/magang/update/{id}  (discipline.magang.update)
+     */
+    public function updatemagang(Request $request, $id)
+    {
+        $evaluationData = EvaluationData::findOrFail($id);
+        $pengawas       = Auth::user();
+
+        $evaluationData->update([
+            'kemampuan_kerja'  => $request->kemampuan_kerja,
+            'kecerdasan_kerja' => $request->kecerdasan_kerja,
+            'qualitas_kerja'   => $request->qualitas_kerja,
+            'disiplin_kerja'   => $request->disiplin_kerja,
+            'kepatuhan_kerja'  => $request->kepatuhan_kerja,
+            'lembur'           => $request->lembur,
+            'efektifitas_kerja'=> $request->efektifitas_kerja,
+            'relawan'          => $request->relawan,
+            'integritas'       => $request->integritas,
+        ]);
+
+        $scoreCalculator = app(DisciplineScoreCalculatorService::class);
+        $scores = $request->only($scoreCalculator->getScoredFields());
+        $total  = $scoreCalculator->calculateTotal($scores, $evaluationData->fresh());
+
+        $evaluationData->update([
+            'total'    => $total,
+            'pengawas' => $pengawas->name,
+        ]);
+
+        return redirect()->route('magang.table')->with('success', 'Data updated successfully');
+    }
+
+    // ──────────────────────────────────────────────────────
+    // All Discipline (HR / Super-Admin view)
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Show all discipline records across all departments.
+     * Route: GET /all/discipline  (alldiscipline.index)
+     */
     public function allindex(AllDisciplineTableDataTable $dataTable)
     {
         $user = Auth::user();
 
-        // Check authorization - only special users can view all discipline records
         if (! $this->policy->viewAllDiscipline($user)) {
             abort(403, 'Unauthorized access');
         }
@@ -51,274 +361,44 @@ class DisciplinePageController extends Controller
         return $dataTable->render('setting.alldisciplineindex', compact('employees'));
     }
 
-    public function yayasanallindex(DisciplineYayasanTableDataTable $dataTable)
-    {
-        $user = Auth::user();
+    // ──────────────────────────────────────────────────────
+    // AJAX Endpoints — Filtered Employee Lists
+    // ──────────────────────────────────────────────────────
 
-        // Check authorization
-        if (! $this->policy->viewAllDiscipline($user)) {
-            abort(403, 'Unauthorized access');
-        }
-
-        $repository = app(EvaluationDataRepositoryContract::class);
-        $employees = $repository->getAllYayasanEmployees();
-
-        return $dataTable->render('setting.allyayasandisciplineindex', compact('employees'));
-    }
-
-    public function setFilterValue(Request $request)
-    {
-        $filterMonth = $request->input('filterMonth');
-        $filterYear = $request->input('filterYear');
-
-        // Store both filter month and year in the session
-        session(['filterMonth' => $filterMonth, 'filterYear' => $filterYear]);
-
-        return response()->json([
-            'filterMonth' => $filterMonth,
-            'filterYear' => $filterYear,
-        ]);
-    }
-
-    public function getFilterValue()
-    {
-        $filterValue = session('filterValue');
-
-        return response()->json(['filterValue' => $filterValue]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $evaluationData = EvaluationData::find($id);
-
-        // Update the evaluation fields
-        $evaluationData->update([
-            'kerajinan_kerja' => $request->kerajinan_kerja,
-            'kerapian_kerja' => $request->kerapian_kerja,
-            'prestasi' => $request->prestasi,
-            'loyalitas' => $request->loyalitas,
-            'perilaku_kerja' => $request->perilaku_kerja,
-        ]);
-
-        // Calculate total score using service (OLD scoring system)
-        $scoreCalculator = app(\App\Domain\Discipline\Services\DisciplineScoreCalculatorService::class);
-        $scores = $request->only($scoreCalculator->getOldScoredFields());
-        $total = $scoreCalculator->calculateTotalOld($scores, $evaluationData);
-
-        // Update total score
-        $evaluationData->update(['total' => $total]);
-
-        return redirect()->route('discipline.index')->with('success', 'Line added successfully');
-    }
-
-    public function import(Request $request)
-    {
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
-
-        $uploadedFiles = $request->file('excel_files');
-        $excelService->importRegularData($uploadedFiles);
-
-        return redirect()->route('discipline.index')->with('success', 'Line added successfully');
-    }
-
-    public function exportYayasan(Request $request)
-    {
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
-
-        $selectedMonth = $request->input('filter_status');
-
-        return $excelService->exportYayasan($selectedMonth);
-    }
-
-    public function exportYayasanFull(Request $request)
-    {
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
-
-        $selectedMonth = $request->input('filter_status');
-
-        return $excelService->exportYayasanFull($selectedMonth);
-    }
-
-    public function indexyayasan(DisciplineYayasanTableDataTable $dataTable)
-    {
-        $user = Auth::user();
-
-        // Check authorization
-        if (! $this->policy->viewYayasanDiscipline($user)) {
-            abort(403, 'Department does not have Yayasan employees');
-        }
-
-        try {
-            // Use resolver service to get Yayasan employees based on user's role/department
-            $employees = $this->resolver->resolveYayasanForUser($user);
-            $files = [];
-
-            return $dataTable->render(
-                'setting.disciplineyayasanindex',
-                compact('employees', 'user', 'files')
-            );
-        } catch (\Throwable $th) {
-            abort(403, 'Department does not have Yayasan employees');
-        }
-    }
-
-    public function indexmagang(DisciplineMagangDataTable $dataTable)
-    {
-        $user = Auth::user();
-
-        // Check authorization
-        if (! $this->policy->viewYayasanDiscipline($user)) {
-            abort(403, 'Department does not have Magang employees');
-        }
-
-        try {
-            // Use resolver service to get Magang employees based on user's role/department
-            $employees = $this->resolver->resolveMagangForUser($user);
-
-            return $dataTable->render('setting.disciplineMagangindex', compact('employees', 'user'));
-        } catch (\Throwable $th) {
-            abort(403, 'Department does not have Magang employees');
-        }
-    }
-
-    public function updatemagang(Request $request, $id)
-    {
-        $evaluationData = EvaluationData::find($id);
-        $pengawas = Auth::user();
-
-        // Update the evaluation fields
-        $evaluationData->update([
-            'kemampuan_kerja' => $request->kemampuan_kerja,
-            'kecerdasan_kerja' => $request->kecerdasan_kerja,
-            'qualitas_kerja' => $request->qualitas_kerja,
-            'disiplin_kerja' => $request->disiplin_kerja,
-            'kepatuhan_kerja' => $request->kepatuhan_kerja,
-            'lembur' => $request->lembur,
-            'efektifitas_kerja' => $request->efektifitas_kerja,
-            'relawan' => $request->relawan,
-            'integritas' => $request->integritas,
-        ]);
-
-        // Calculate total score using service
-        $scoreCalculator = app(\App\Domain\Discipline\Services\DisciplineScoreCalculatorService::class);
-        $scores = $request->only($scoreCalculator->getScoredFields());
-        $total = $scoreCalculator->calculateTotal($scores, $evaluationData);
-
-        // Update total score and supervisor
-        $evaluationData->update([
-            'total' => $total,
-            'pengawas' => $pengawas->name,
-        ]);
-
-        return redirect()->route('magang.table')->with('success', 'Data updated successfully');
-    }
-
-    public function updateDept()
-    {
-        $syncService = app(DisciplineDataSyncService::class);
-        $syncService->syncDepartmentsUsingRelationships();
-
-        return redirect()->route('home')->with('success', 'Data updated successfully');
-    }
-
-    public function updateyayasan(Request $request, $id)
-    {
-        $evaluationData = EvaluationData::find($id);
-        $pengawas = Auth::user();
-
-        // Update the evaluation fields
-        $evaluationData->update([
-            'kemampuan_kerja' => $request->kemampuan_kerja,
-            'kecerdasan_kerja' => $request->kecerdasan_kerja,
-            'qualitas_kerja' => $request->qualitas_kerja,
-            'disiplin_kerja' => $request->disiplin_kerja,
-            'kepatuhan_kerja' => $request->kepatuhan_kerja,
-            'lembur' => $request->lembur,
-            'efektifitas_kerja' => $request->efektifitas_kerja,
-            'relawan' => $request->relawan,
-            'integritas' => $request->integritas,
-        ]);
-
-        // Calculate total score using service
-        $scoreCalculator = app(\App\Domain\Discipline\Services\DisciplineScoreCalculatorService::class);
-        $scores = $request->only($scoreCalculator->getScoredFields());
-        $total = $scoreCalculator->calculateTotal($scores, $evaluationData);
-
-        // Update total score and supervisor
-        $evaluationData->update([
-            'total' => $total,
-            'pengawas' => $pengawas->name,
-        ]);
-
-        // Reset approvals if previously rejected
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
-        $approvalService->resetRejectedApprovals($evaluationData);
-
-        return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
-    }
-
-    public function lockdata(Request $request)
-    {
-        $lockService = app(\App\Domain\Discipline\Services\DisciplineDataLockService::class);
-
-        $deptNo = Auth::user()->department->dept_no;
-        $month = $request->input('filter_month');
-
-        $lockService->lockByDepartmentAndMonth($deptNo, $month);
-
-        return redirect()->back();
-    }
-
-    public function approve_depthead(Request $request)
-    {
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
-
-        $deptNo = Auth::user()->department->dept_no;
-        $month = $request->input('filter_month');
-        $year = $request->input('filter_year');
-
-        $approvalService->approveDeptHead($deptNo, $month, $year, lockData: true);
-
-        return redirect()->back();
-    }
-
-    public function approve_gm(Request $request)
-    {
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
-
-        $deptNo = $request->filter_dept;
-        $month = $request->input('filter_month');
-
-        $approvalService->approveGeneralManager($deptNo, $month);
-
-        return redirect()->back();
-    }
-
+    /**
+     * Return JSON list of regular employees for a dept head filtered by month.
+     */
     public function fetchFilteredEmployees(Request $request)
     {
         $deptNo = Auth::user()->department->dept_no;
-        $month = $request->input('filter_month');
+        $month  = $request->input('filter_month');
 
         $employees = $this->resolver->fetchForDepartmentHead($deptNo, $month);
 
         return response()->json($employees);
     }
 
+    /**
+     * Return JSON list of Yayasan employees for GM filtered by dept+month.
+     */
     public function fetchFilteredEmployeesGM(Request $request)
     {
         $deptNo = $request->input('filter_dept');
-        $month = $request->input('filter_month');
+        $month  = $request->input('filter_month');
 
         $employees = $this->resolver->fetchForGeneralManager($deptNo, $month);
 
         return response()->json($employees);
     }
 
+    /**
+     * Return JSON list of Yayasan employees filtered by month+year (GM sees all, head sees their dept).
+     */
     public function fetchFilteredYayasanEmployees(Request $request)
     {
-        $month = $request->input('filter_month');
-        $year = $request->input('filter_year');
-        $isGM = Auth::user()->is_gm;
+        $month  = $request->input('filter_month');
+        $year   = $request->input('filter_year');
+        $isGM   = Auth::user()->is_gm;
         $deptNo = $isGM ? null : Auth::user()->department->dept_no;
 
         $employees = $this->resolver->fetchYayasanEmployees($month, $year, $isGM, $deptNo);
@@ -326,36 +406,107 @@ class DisciplinePageController extends Controller
         return response()->json($employees);
     }
 
-    public function unlockdata()
+    /**
+     * Return JSON department approval status for a given month+year (for export readiness).
+     * Route: GET /discipline/yayasan/status  (department.status.yayasan)
+     * Route: GET /exportyayasan/summary      (exportyayasan.summary)
+     */
+    public function getDepartmentStatusYayasan(Request $request)
     {
-        $lockService = app(\App\Domain\Discipline\Services\DisciplineDataLockService::class);
+        try {
+            $statusService = app(DisciplineDepartmentStatusService::class);
 
-        $datas = $lockService->getLockedData();
+            $month = $request->input('month') ?? $request->input('filter_month');
+            $year  = $request->input('year') ?? $request->input('filter_year');
 
-        return view('admin.unlockdata', compact('datas'));
+            $departmentStatus = $statusService->getDepartmentStatusForMonth($month, $year);
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => $departmentStatus,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
-    public function importyayasan(Request $request)
+    // ──────────────────────────────────────────────────────
+    // Export Routes
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Show the date/month input form before exporting Yayasan data to JPayroll.
+     * Route: GET /exportyayasantodateinput  (exportyayasan.dateinput)
+     */
+    public function dateExport()
     {
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
-
-        $uploadedFiles = $request->file('excel_files');
-        $excelService->importYayasanData($uploadedFiles);
-
-        return redirect()->route('yayasan.table')->with('success', 'Line added successfully');
+        return view('setting.inputDateExportYayasan');
     }
 
-    public function magangimport(Request $request)
+    /**
+     * Show the JPayroll export page listing per-department approval status.
+     * Route: GET /exportyayasan  (export.yayasan.jpayroll)
+     */
+    public function exportYayasanJpayroll(Request $request)
     {
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
+        $statusService = app(DisciplineDepartmentStatusService::class);
 
-        $uploadedFiles = $request->file('excel_files');
-        $excelService->importYayasanData($uploadedFiles);
+        $selectedMonth    = $request->input('month');
+        $currentYear      = $request->input('year');
+        $departmentStatus = $statusService->getJpayrollDepartmentStatus($selectedMonth, $currentYear);
 
-        return redirect()->route('magang.table')->with('success', 'Line added successfully');
+        return view('setting.exportYayasanJpayroll', compact('departmentStatus', 'selectedMonth', 'currentYear'));
     }
 
-    // function untuk update isi dept di Evaluation Data dari data employee master
+    /**
+     * Download the JPayroll Excel export file.
+     * Route: POST /exportyayasan/download  (exportyayasan.download)
+     */
+    public function exportYayasanJpayrollFunction(Request $request)
+    {
+        $excelService = app(DisciplineExcelService::class);
+
+        $selectedMonth = $request->input('filter_status');
+        $currentYear   = $request->input('year');
+
+        return $excelService->exportYayasanJpayrollFunction($selectedMonth, $currentYear);
+    }
+
+    /**
+     * Download a basic Yayasan export (grade categorized).
+     * Route: GET /firstimeexport/yayasan/discipline  (export.yayasan.first.time)
+     */
+    public function exportYayasan(Request $request)
+    {
+        $excelService  = app(DisciplineExcelService::class);
+        $selectedMonth = $request->input('filter_status');
+
+        return $excelService->exportYayasan($selectedMonth);
+    }
+
+    /**
+     * Download the full Yayasan export (all data, no categorization).
+     * Route: GET /export/yayasan-full/discipline  (export.yayasan.full)
+     */
+    public function exportYayasanFull(Request $request)
+    {
+        $excelService  = app(DisciplineExcelService::class);
+        $selectedMonth = $request->input('filter_status');
+
+        return $excelService->exportYayasanFull($selectedMonth);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Data Sync Utilities (Admin / HR use)
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Sync all department codes in evaluation_datas from the Employee master.
+     * Used after bulk employee department changes.
+     */
     public function updateDeptColumn()
     {
         $syncService = app(DisciplineDataSyncService::class);
@@ -363,125 +514,130 @@ class DisciplinePageController extends Controller
 
         return response()->json([
             'message' => 'Dept column updated successfully.',
-            'stats' => $result,
+            'stats'   => $result,
         ]);
     }
 
-    public function approve_depthead_button(Request $request)
+    /**
+     * Show the locked data management page (admin only).
+     */
+    public function unlockdata()
     {
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
+        $lockService = app(DisciplineDataLockService::class);
+        $datas = $lockService->getLockedData();
 
-        $deptNo = Auth::user()->department->dept_no;
-        $month = $request->input('filter_month');
-        $year = $request->input('filter_year');
-
-        $approvalService->approveDeptHead($deptNo, $month, $year);
-
-        return redirect()->route('yayasan.table')->with('success', 'Approved by depthead');
+        return view('admin.unlockdata', compact('datas'));
     }
 
-    public function reject_depthead_button(Request $request)
+    // ──────────────────────────────────────────────────────
+    // Import Routes (Excel upload for Yayasan/Magang data)
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Import Yayasan discipline data from Excel.
+     */
+    public function importyayasan(Request $request)
     {
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
+        $excelService = app(DisciplineExcelService::class);
+        $excelService->importYayasanData($request->file('excel_files'));
 
-        $deptNo = Auth::user()->department->dept_no;
-        $month = $request->input('filter_month');
-        $year = $request->input('filter_year');
-        $remark = $request->input('remark');
-
-        $approvalService->rejectDeptHead($deptNo, $month, $year, $remark);
-
-        return redirect()->route('yayasan.table')->with('success', 'Rejected by depthead');
+        return redirect()->route('yayasan.table')->with('success', 'Data imported successfully');
     }
 
-    public function reject_hrd_button(Request $request)
+    /**
+     * Import Magang discipline data from Excel.
+     */
+    public function magangimport(Request $request)
     {
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
+        $excelService = app(DisciplineExcelService::class);
+        $excelService->importYayasanData($request->file('excel_files'));
 
-        $deptNo = $request->input('filter_dept');
-        $month = $request->input('filter_month');
-        $year = $request->input('filter_year');
-        $remark = $request->input('remark');
-
-        $approvalService->rejectHRD($deptNo, $month, $year, $remark);
-
-        return redirect()->route('yayasan.table')->with('success', 'Rejected by HRD');
+        return redirect()->route('magang.table')->with('success', 'Data imported successfully');
     }
 
-    public function approve_hrd_button(Request $request)
-    {
-        $approvalService = app(\App\Domain\Discipline\Services\DisciplineApprovalService::class);
+    // ──────────────────────────────────────────────────────
+    // Evaluation Data API (AJAX / JSON)
+    // ──────────────────────────────────────────────────────
 
-        $deptNo = $request->input('filter_dept');
-        $month = $request->input('filter_month');
-        $year = $request->input('filter_year');
-
-        $approvalService->approveGeneralManager($deptNo, $month, $year);
-
-        return redirect()->route('yayasan.table')->with('success', 'Approved by HRD');
-    }
-
-    public function dateExport()
-    {
-        return view('setting.inputDateExportYayasan');
-    }
-
-    public function exportYayasanJpayroll(Request $request)
-    {
-        $statusService = app(DisciplineDepartmentStatusService::class);
-
-        $selectedMonth = $request->input('month');
-        $currentYear = $request->input('year');
-
-        $departmentStatus = $statusService->getJpayrollDepartmentStatus($selectedMonth, $currentYear);
-
-        return view(
-            'setting.exportYayasanJpayroll',
-            compact('departmentStatus', 'selectedMonth', 'currentYear'),
-        );
-    }
-
-    public function getDepartmentStatusYayasan(Request $request)
-    {
-        try {
-            $statusService = app(DisciplineDepartmentStatusService::class);
-
-            $selectedMonth = $request->input('month');
-            $currentYear = $request->input('year');
-
-            $departmentStatus = $statusService->getDepartmentStatusForMonth($selectedMonth, $currentYear);
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $departmentStatus,
-            ]);
-        } catch (\Throwable $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function exportYayasanJpayrollFunction(Request $request)
-    {
-        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
-
-        $selectedMonth = $request->input('filter_status');
-        $currentYear = $request->input('year');
-
-        return $excelService->exportYayasanJpayrollFunction($selectedMonth, $currentYear);
-    }
-
+    /**
+     * Return a single evaluation record with relationships loaded.
+     */
     public function getEvaluationData($id)
     {
-        $repository = app(EvaluationDataRepository::class);
-        $employee = $repository->findWithRelations($id);
+        $repository = app(EvaluationDataRepositoryContract::class);
+        $employee   = $repository->findWithRelations($id);
 
         if (! $employee) {
             return response()->json(['error' => 'Evaluation data not found'], 404);
         }
 
         return response()->json($employee);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Settings / Data Management Pages
+    // (these routes are not yet connected to full UI — placeholders)
+    // ──────────────────────────────────────────────────────
+
+    public function settingIndexEvaluation()
+    {
+        return view('setting.evaluationindex');
+    }
+
+    public function updateEvaluation(Request $request)
+    {
+        // Delegate to evaluation data controller or service when implemented
+        return redirect()->back()->with('info', 'Not yet implemented');
+    }
+
+    public function deleteEvaluation(Request $request)
+    {
+        return redirect()->back()->with('info', 'Not yet implemented');
+    }
+
+    public function settingIndexWeekly()
+    {
+        return view('setting.weeklyindex');
+    }
+
+    public function updateWeeklyEvaluation(Request $request)
+    {
+        return redirect()->back()->with('info', 'Not yet implemented');
+    }
+
+    public function indexdata()
+    {
+        return view('setting.indexdata');
+    }
+
+    public function updatedatastep1(Request $request)
+    {
+        return redirect()->back()->with('info', 'Not yet implemented');
+    }
+
+    public function disciplineindexstep2view()
+    {
+        return view('setting.step2disciplinedata');
+    }
+
+    public function formatrequestmagang()
+    {
+        return view('setting.formatrequestmagang');
+    }
+
+    public function formatrequestyayasan()
+    {
+        return view('setting.formatrequestyayasan');
+    }
+
+    public function formatrequestallin()
+    {
+        return view('setting.formatrequestallin');
+    }
+
+    public function getFormat(Request $request)
+    {
+        // Placeholder — returns a downloadable blank template
+        return redirect()->back()->with('info', 'Template download not yet implemented');
     }
 }

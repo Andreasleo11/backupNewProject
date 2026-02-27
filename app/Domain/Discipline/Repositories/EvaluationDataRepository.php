@@ -63,7 +63,7 @@ class EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($level) {
-                $query->where('employment_scheme', '!==', 'YAYASAN')
+                $query->where('employment_scheme', '!=', 'YAYASAN')
                     ->where('level', $level);
             })
             ->get();

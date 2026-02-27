@@ -63,12 +63,12 @@ class EvaluationDataDataTable extends DataTable
             Column::make('id'),
             Column::make('NIK'),
             Column::make('Name')
-                ->data('karyawan.Nama')
+                ->data('karyawan.name')
                 ->searchable(false)
                 ->addClass('align-middle')
                 ->orderable(false),
             Column::make('Department')
-                ->data('karyawan.Dept')
+                ->data('karyawan.dept_code')
                 ->searchable(false)
                 ->addClass('align-middle')
                 ->orderable(false),
