@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\EvaluationDataController;
+use App\Http\Controllers\EvaluationDataWeeklyController;
 use App\Http\Controllers\PEHomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -138,7 +139,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/processevaluationdata', [EvaluationDataController::class, 'update'])->name('UpdateEvaluation');
     Route::delete('/delete-evaluation', [EvaluationDataController::class, 'delete'])->name('DeleteEvaluation');
     
-    Route::get('/weekly-evaluation/index', [EvaluationDataController::class, 'weeklyIndex'])->name('weekly.evaluation.index');
-    Route::post('/weeklyprocessevaluationdata', [EvaluationDataController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
-    
+    Route::get('/weekly-evaluation/index', [EvaluationDataWeeklyController::class, 'weeklyIndex'])->name('weekly.evaluation.index');
+    Route::post('/weeklyprocessevaluationdata', [EvaluationDataWeeklyController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
 });
