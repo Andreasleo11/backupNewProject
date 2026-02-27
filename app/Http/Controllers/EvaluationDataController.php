@@ -175,7 +175,7 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageYayasan()
     {
-        $statuses = Employee::where('employment_type', 'YAYASAN')->distinct()->pluck('status');
+        $statuses = Employee::where('employment_type', 'YAYASAN')->distinct()->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) {
             $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
@@ -191,7 +191,7 @@ class EvaluationDataController extends Controller
     {
         $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
             $query->whereIn('employment_scheme', $statuses);
@@ -207,7 +207,7 @@ class EvaluationDataController extends Controller
     {
         $statuses = Employee::whereIn('employment_type', ['MAGANG'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
             $query->whereIn('employment_scheme', $statuses);
@@ -223,7 +223,7 @@ class EvaluationDataController extends Controller
     {
         $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
             $query->whereIn('employment_scheme', $statuses);
@@ -260,7 +260,7 @@ class EvaluationDataController extends Controller
 
         $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
         $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
@@ -289,7 +289,7 @@ class EvaluationDataController extends Controller
 
         $statuses = Employee::whereIn('employment_type', ['MAGANG'])
             ->distinct()
-            ->pluck('status', 'start_date');
+            ->pluck('employment_scheme', 'start_date');
         $magang = 1;
 
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
@@ -346,7 +346,7 @@ class EvaluationDataController extends Controller
 
         $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
-            ->pluck('status');
+            ->pluck('employment_scheme');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
         $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes

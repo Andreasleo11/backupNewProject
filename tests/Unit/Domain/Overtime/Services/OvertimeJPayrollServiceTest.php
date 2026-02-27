@@ -60,7 +60,7 @@ describe('OvertimeJPayrollService', function () {
         ]);
 
         $header = HeaderFormOvertime::factory()->create(['is_push' => 0]);
-        $employee = \App\Models\Employee::factory()->create([
+        $employee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::factory()->create([
             'NIK' => 'TEST001',
         ]);
 
