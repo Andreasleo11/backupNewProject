@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\EmployeeDataTable;
 use App\DataTables\EmployeeWithEvaluationDataTable;
 use App\Jobs\SyncEmployeesJob;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationDataWeekly;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -65,16 +65,16 @@ class EmployeeDashboardController extends Controller
 
         // Apply filters for Employees table
         if ($selectedBranch) {
-            $activeEmployeesQuery->where('Branch', $selectedBranch);
+            $activeEmployeesQuery->where('branch', $selectedBranch);
         }
         if ($selectedDepartment) {
-            $activeEmployeesQuery->where('Dept', $selectedDepartment);
+            $activeEmployeesQuery->where('dept_code', $selectedDepartment);
         }
         if ($selectedStatus) {
-            $activeEmployeesQuery->where('employee_status', $selectedStatus);
+            $activeEmployeesQuery->where('employment_type', $selectedStatus);
         }
         if ($selectedGender) {
-            $activeEmployeesQuery->where('Gender', $selectedGender);
+            $activeEmployeesQuery->where('gender', $selectedGender);
         }
 
         $activeEmployees = $activeEmployeesQuery->whereNull('end_date')->pluck('NIK')->toArray(); // Get filtered NIKs
@@ -316,7 +316,7 @@ class EmployeeDashboardController extends Controller
         // Get all unique statuses across employees
         $statuses = Employee::whereNull('end_date')
             ->distinct()
-            ->pluck('employee_status')
+            ->pluck('employment_type')
             ->toArray();
 
         // Fetch employee count grouped by department and status
@@ -345,7 +345,7 @@ class EmployeeDashboardController extends Controller
             }
 
             // Assign the count to the correct status column
-            $result[$deptName]['breakdown'][$department->employee_status] =
+            $result[$deptName]['breakdown'][$department->employment_type] =
                 (int) $department->count;
             $result[$deptName]['total_count'] += (int) $department->count;
         }

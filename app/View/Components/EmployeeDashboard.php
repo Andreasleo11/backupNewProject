@@ -2,7 +2,7 @@
 
 namespace App\View\Components;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationDataWeekly;
 use Carbon\Carbon;
 use Closure;
@@ -59,13 +59,13 @@ class EmployeeDashboard extends Component
     //     // Prepare chart data
     //     $this->chartData = $employees->map(function ($employee) {
     //         return [
-    //             'Branch' => $employee->Branch,
+    //             'Branch' => $employee->branch,
     //             'Dept' => [
     //                 'dept_no' => $employee->department->dept_no ?? null,
     //                 'name' => $employee->department->name ?? null,
     //             ],
-    //             'Status' => $employee->employee_status,
-    //             'Gender' => $employee->Gender,
+    //             'Status' => $employee->employment_type,
+    //             'Gender' => $employee->gender,
     //         ];
     //     });
 
@@ -82,7 +82,7 @@ class EmployeeDashboard extends Component
     //         ->groupBy('department_name')
     //         ->map(function ($group) {
     //             $breakdown = $group->mapWithKeys(
-    //                 fn ($item) => [$item->employee_status => $item->count],
+    //                 fn ($item) => [$item->employment_type => $item->count],
     //             );
 
     //             return [

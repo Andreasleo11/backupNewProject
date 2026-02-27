@@ -17,10 +17,10 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
         array $statuses = []
     ): Collection {
         $query = EvaluationData::whereHas('karyawan', function ($query) use ($deptNo, $statuses) {
-            $query->where('Dept', $deptNo);
+            $query->where('dept_code', $deptNo);
 
             if (! empty($statuses)) {
-                $query->whereIn('status', $statuses);
+                $query->whereIn('employment_scheme', $statuses);
             }
         })->whereMonth('Month', $month);
 
@@ -34,7 +34,7 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
     public function getYayasanByMonthAndYear(int $month, int $year): Collection
     {
         return EvaluationData::whereHas('karyawan', function ($query) {
-            $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
         })
             ->whereMonth('Month', $month)
             ->whereYear('Month', $year)
@@ -45,9 +45,9 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($codes) {
-                $query->whereIn('Dept', $codes)
-                    ->where('status', '!=', 'YAYASAN')
-                    ->where('level', 5);
+                $query->whereIn('dept_code', $codes)
+                    ->where('employment_scheme', '!=', 'YAYASAN')
+                    ->where('grade_level', 5);
             })
             ->get();
     }
@@ -56,8 +56,8 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
     {
         return EvaluationData::with('karyawan', 'department')
             ->whereHas('karyawan', function ($query) use ($codes) {
-                $query->whereIn('Dept', $codes)
-                    ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                $query->whereIn('dept_code', $codes)
+                    ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
             })
             ->get();
     }
@@ -66,8 +66,8 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($codes) {
-                $query->whereIn('Dept', $codes)
-                    ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                $query->whereIn('dept_code', $codes)
+                    ->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
             })
             ->get();
     }
@@ -76,8 +76,8 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) {
-                $query->where('status', '!==', 'YAYASAN')
-                    ->where('level', 5);
+                $query->where('employment_scheme', '!==', 'YAYASAN')
+                    ->where('grade_level', 5);
             })
             ->get();
     }
@@ -86,7 +86,7 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
             })
             ->get();
     }

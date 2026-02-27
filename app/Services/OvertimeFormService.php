@@ -178,7 +178,7 @@ class OvertimeFormService
             ->whereIn('NIK', $pairs->pluck(0))
             ->whereIn('overtime_date', $pairs->pluck(1))
             ->get(['NIK', 'overtime_date'])
-            ->map(fn ($d) => $d['NIK'] . '|' . $d['overtime_date'])
+            ->map(fn ($d) => $d['nik'] . '|' . $d['overtime_date'])
             ->all();
 
         $inserts = [];

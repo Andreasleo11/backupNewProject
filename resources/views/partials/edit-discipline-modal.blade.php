@@ -6,7 +6,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h4 class="modal-title">Discipline Point For <strong> {{ $employee->karyawan->Nama }}
+                    <h4 class="modal-title">Discipline Point For <strong> {{ $employee->karyawan->name }}
                         </strong>
                     </h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

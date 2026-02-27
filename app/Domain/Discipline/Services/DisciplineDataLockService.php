@@ -17,7 +17,7 @@ class DisciplineDataLockService
     public function lockByDepartmentAndMonth(string $deptNo, int $month): int
     {
         $employees = EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
-            $query->where('Dept', $deptNo);
+            $query->where('dept_code', $deptNo);
         })
             ->whereMonth('Month', $month)
             ->get();

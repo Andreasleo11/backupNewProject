@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EmployeeDailyReport;
 use App\Models\User;
 use App\Notifications\MissingDailyReportsNotification;
@@ -46,7 +46,7 @@ class NofifyMissingReports extends Command
                 continue;
             }
 
-            $employees = Employee::where('Dept', $headDept)->whereNull('end_date')->get();
+            $employees = Employee::where('dept_code', $headDept)->whereNull('end_date')->get();
 
             $missingReports = [];
 
@@ -61,7 +61,7 @@ class NofifyMissingReports extends Command
                     $expectedDates[] = $date->toDateString();
                 }
 
-                $submittedDates = EmployeeDailyReport::where('employee_id', $employee->NIK)
+                $submittedDates = EmployeeDailyReport::where('employee_id', $employee->nik)
                     ->whereDate('work_date', '<', $today)
                     ->pluck('work_date')
                     ->map(fn ($d) => Carbon::parse($d)->toDateString())

@@ -265,14 +265,14 @@ class DisciplineMagangDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '351')->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->where('dept_code', '351')->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif (Auth::user()->is_gm) {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif (
@@ -281,35 +281,35 @@ class DisciplineMagangDataTable extends DataTable
         ) {
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'PE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '500')->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->where('dept_code', '500')->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'PLASTIC INJECTION') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('dept', '390')->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->where('dept_code', '390')->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'MOULDING') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '363')->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->where('dept_code', '363')->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'ASSEMBLY') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '362')->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->where('dept_code', '362')->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'SECOND PROCESS') {
@@ -318,7 +318,7 @@ class DisciplineMagangDataTable extends DataTable
                 ->whereHas('karyawan', function ($query) {
                     $query
                         ->where(function ($query) {
-                            $query->whereIn('Dept', '361')->orWhere('Dept', '362');
+                            $query->whereIn('dept_code', '361')->orWhere('dept_code', '362');
                         })
                         ->where('status', ['MAGANG', 'MAGANG KARAWANG']);
                 })
@@ -327,7 +327,7 @@ class DisciplineMagangDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->where('Dept', '350')->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->where('dept_code', '350')->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'LOGISTIC') {
@@ -336,23 +336,23 @@ class DisciplineMagangDataTable extends DataTable
                 ->whereHas('karyawan', function ($query) {
                     $query
                         ->where(function ($query) {
-                            $query->where('Dept', '331')->orWhere('Dept', '330');
+                            $query->where('dept_code', '331')->orWhere('dept_code', '330');
                         })
-                        ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                        ->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
                 })
                 ->newQuery();
         } elseif ($userDepartment == 'STORE') {
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
 
                     if (Auth::user()->name === 'catur') {
                         $query->where(function ($query) {
-                            $query->where('Dept', '331')->orWhere('Dept', '330');
+                            $query->where('dept_code', '331')->orWhere('dept_code', '330');
                         });
                     } else {
-                        $query->where('Dept', '330');
+                        $query->where('dept_code', '330');
                     }
                 })
                 ->newQuery();
@@ -360,14 +360,14 @@ class DisciplineMagangDataTable extends DataTable
             // Get data for department 340
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
-                    $query->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                    $query->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
 
                     if (auth()->user()->name === 'yuli') {
                         $query->where(function ($query) {
-                            $query->where('Dept', '340')->orWhere('Dept', '341');
+                            $query->where('dept_code', '340')->orWhere('dept_code', '341');
                         });
                     } else {
-                        $query->where('Dept', '340');
+                        $query->where('dept_code', '340');
                     }
                 })
                 ->newQuery();

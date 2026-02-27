@@ -228,10 +228,10 @@
                                     {{ $employee->employee_name }}
                                 </td>
                                 <td class="px-3 py-2">
-                                    @if (!empty($employee->jabatan))
+                                    @if (!empty($employee->position))
                                         <span
                                             class="inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-2.5 py-0.5 text-[11px] font-medium text-sky-700">
-                                            {{ $employee->jabatan }}
+                                            {{ $employee->position }}
                                         </span>
                                     @else
                                         <span class="text-xs text-slate-400">-</span>

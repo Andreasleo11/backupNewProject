@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,7 +47,7 @@ class EvaluationData extends Model
 
     public function karyawan()
     {
-        return $this->belongsTo(Employee::class, 'nik', 'NIK');
+        return $this->belongsTo(Employee::class, 'NIK', 'nik');
     }
 
     public function department()

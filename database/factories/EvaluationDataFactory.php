@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

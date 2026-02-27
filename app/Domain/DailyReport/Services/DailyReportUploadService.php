@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\DailyReport\Services;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EmployeeDailyReport;
 use App\Models\EmployeeDailyReportLog;
 use Carbon\Carbon;
@@ -145,7 +145,7 @@ final class DailyReportUploadService
         $department = substr($normalizedId, 0, 3);
         $employeeId = substr($normalizedId, 3);
 
-        $employee = Employee::where('NIK', $employeeId)->first();
+        $employee = Employee::where('nik', $employeeId)->first();
 
         try {
             $submittedAt = is_numeric($record['Timestamp'])
@@ -161,8 +161,8 @@ final class DailyReportUploadService
 
         return [
             'employee_id' => $employeeId,
-            'employee_name' => $employee?->Nama ?? 'Unknown',
-            'department_id' => $employee?->Dept ?? 'Unknown',
+            'employee_name' => $employee?->name ?? 'Unknown',
+            'department_id' => $employee?->dept_code ?? 'Unknown',
             'submitted_at' => $submittedAt->format('Y-m-d H:i:s'),
             'work_date' => $workDate,
             'record' => $record,

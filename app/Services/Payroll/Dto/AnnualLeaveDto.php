@@ -11,7 +11,7 @@ final class AnnualLeaveDto
     public static function fromApi(array $r): self
     {
         return new self(
-            nik: (string) ($r['NIK'] ?? ''),
+            nik: (string) ($r['nik'] ?? ''),
             remain: isset($r['Remain']) ? (int) $r['Remain'] : null,
         );
     }

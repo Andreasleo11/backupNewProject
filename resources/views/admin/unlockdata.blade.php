@@ -19,8 +19,8 @@
             <tbody>
                 @foreach ($datas as $data)
                     <tr>
-                        <td>{{ $data->NIK }}</td>
-                        <td>{{ $data->karyawan->Nama }}</td>
+                        <td>{{ $data->nik }}</td>
+                        <td>{{ $data->karyawan->name }}</td>
                         <td>{{ \Carbon\Carbon::parse($data->Month)->format('F Y') }}</td>
                         <td>{{ $data->total }}</td>
                         <td>{{ $data->is_lock ? 'Locked' : 'Unlocked' }}</td>

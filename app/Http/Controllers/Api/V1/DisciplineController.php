@@ -30,7 +30,7 @@ final class DisciplineController extends Controller
 
         // Apply filters
         if ($request->filled('department')) {
-            $query->where('dept', $request->department);
+            $query->where('dept_code', $request->department);
         }
 
         if ($request->filled('month')) {

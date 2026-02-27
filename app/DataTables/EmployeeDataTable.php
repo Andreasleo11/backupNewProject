@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -41,7 +41,7 @@ class EmployeeDataTable extends DataTable
         $user = auth()->user();
 
         if ($user && $user->is_head && $user->department->name !== 'MANAGEMENT') {
-            $query->where('Dept', $user->department->dept_no);
+            $query->where('dept_code', $user->department->dept_no);
         }
 
         return $query;

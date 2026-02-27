@@ -3,7 +3,7 @@
 namespace App\Livewire\Overtime;
 
 use App\Models\Department;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Services\OvertimeFormService;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;

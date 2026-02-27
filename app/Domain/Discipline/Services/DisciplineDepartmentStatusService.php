@@ -28,7 +28,7 @@ class DisciplineDepartmentStatusService
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query
-                    ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                    ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
                     ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $month)
@@ -40,7 +40,7 @@ class DisciplineDepartmentStatusService
         $approvedData = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
                 $query
-                    ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                    ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
                     ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $month)

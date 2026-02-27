@@ -7,7 +7,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    {{-- <h5 class="modal-title">Lembar Penilaian Untuk {{$employee->karyawan->Nama}} {{$employee->NIK}} {{$employee->department->name}}</h5> --}}
+                    {{-- <h5 class="modal-title">Lembar Penilaian Untuk {{$employee->karyawan->name}} {{$employee->nik}} {{$employee->department->name}}</h5> --}}
                     <h5 class="modal-title" id="editModalLabel">Lembar Penilaian Untuk nama-nik-departemen
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

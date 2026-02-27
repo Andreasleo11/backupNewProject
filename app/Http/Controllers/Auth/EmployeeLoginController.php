@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,20 +25,20 @@ class EmployeeLoginController extends Controller
             'password' => 'required',
         ]);
 
-        $employee = Employee::where('NIK', $data['nik'])->first();
+        $employee = Employee::where('nik', $data['nik'])->first();
 
         if (! $employee) {
             return back()->withErrors(['nik' => 'NIK not found!']);
         }
 
-        $expectedPassword = $employee->NIK . $employee->date_birth->format('dmY');
+        $expectedPassword = $employee->nik . $employee->date_birth->format('dmY');
 
         if ($data['password'] !== $expectedPassword) {
             return back()->withErrors(['password' => 'Incorrect password.']);
         }
 
         Auth::guard('employee')->login($employee);
-        session()->put('logged_in_employee_nik', $employee->NIK);
+        session()->put('logged_in_employee_nik', $employee->nik);
 
         return redirect('/employees/home');
     }

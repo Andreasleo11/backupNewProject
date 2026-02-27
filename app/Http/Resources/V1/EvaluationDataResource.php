@@ -19,8 +19,8 @@ class EvaluationDataResource extends JsonResource
         return [
             'id' => $this->id,
             'employee' => [
-                'nik' => $this->NIK,
-                'name' => $this->karyawan?->Nama,
+                'nik' => $this->nik,
+                'name' => $this->karyawan?->name,
                 'status' => $this->karyawan?->status,
             ],
             'department' => [

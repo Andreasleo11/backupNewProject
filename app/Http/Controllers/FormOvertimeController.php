@@ -9,7 +9,7 @@ use App\Domain\Overtime\Services\OvertimeJPayrollService;
 use App\Domain\Overtime\Services\OvertimeSummaryService;
 use App\Models\Department;
 use App\Models\DetailFormOvertime;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\HeaderFormOvertime;
 use Illuminate\Http\Request;
 
@@ -93,7 +93,7 @@ class FormOvertimeController extends Controller
             foreach ($request->input('items') as $employeedata) {
                 DetailFormOvertime::create([
                     'header_id' => $id,
-                    'NIK' => $employeedata['NIK'],
+                    'NIK' => $employeedata['nik'],
                     'nama' => $employeedata['nama'],
                     'job_desc' => $employeedata['jobdesc'],
                     'start_date' => $employeedata['startdate'],

@@ -27,6 +27,6 @@ class DesciplineDataImport implements ToModel, WithUpserts
 
     public function uniqueBy()
     {
-        return ['NIK']; // Specify the column name(s) to check for duplicates
+        return ['nik']; // Specify the column name(s) to check for duplicates
     }
 }

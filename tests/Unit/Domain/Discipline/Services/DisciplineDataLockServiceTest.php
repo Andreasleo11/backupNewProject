@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\Discipline\Services\DisciplineDataLockService;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,7 +24,7 @@ describe('DisciplineDataLockService', function () {
             ]);
 
             $evaluationData = EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'Month' => '2026-01-15',
                 'is_lock' => false,
             ]);
@@ -46,13 +46,13 @@ describe('DisciplineDataLockService', function () {
             $emp2 = Employee::factory()->create(['Dept' => $department]);
 
             EvaluationData::factory()->create([
-                'nik' => $emp1->NIK,
+                'nik' => $emp1->nik,
                 'Month' => '2026-02-01',
                 'is_lock' => false,
             ]);
 
             EvaluationData::factory()->create([
-                'nik' => $emp2->NIK,
+                'nik' => $emp2->nik,
                 'Month' => '2026-02-15',
                 'is_lock' => false,
             ]);
@@ -75,13 +75,13 @@ describe('DisciplineDataLockService', function () {
             $emp2 = Employee::factory()->create(['Dept' => $otherDept]);
 
             $targetData = EvaluationData::factory()->create([
-                'nik' => $emp1->NIK,
+                'nik' => $emp1->nik,
                 'Month' => '2026-03-01',
                 'is_lock' => false,
             ]);
 
             $otherData = EvaluationData::factory()->create([
-                'nik' => $emp2->NIK,
+                'nik' => $emp2->nik,
                 'Month' => '2026-03-01',
                 'is_lock' => false,
             ]);
@@ -103,13 +103,13 @@ describe('DisciplineDataLockService', function () {
             $employee = Employee::factory()->create(['Dept' => $department]);
 
             $targetData = EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'Month' => '2026-04-15',
                 'is_lock' => false,
             ]);
 
             $otherData = EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'Month' => '2026-05-15',
                 'is_lock' => false,
             ]);
@@ -143,12 +143,12 @@ describe('DisciplineDataLockService', function () {
             $emp2 = Employee::factory()->create();
 
             EvaluationData::factory()->create([
-                'nik' => $emp1->NIK,
+                'nik' => $emp1->nik,
                 'is_lock' => true,
             ]);
 
             EvaluationData::factory()->create([
-                'nik' => $emp2->NIK,
+                'nik' => $emp2->nik,
                 'is_lock' => false,
             ]);
 
@@ -164,7 +164,7 @@ describe('DisciplineDataLockService', function () {
             // Arrange
             $employee = Employee::factory()->create();
             EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'is_lock' => false,
             ]);
 
@@ -179,7 +179,7 @@ describe('DisciplineDataLockService', function () {
             // Arrange
             $employee = Employee::factory()->create();
             EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'is_lock' => true,
             ]);
 
@@ -196,7 +196,7 @@ describe('DisciplineDataLockService', function () {
             // Arrange
             $employee = Employee::factory()->create();
             $evaluationData = EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'is_lock' => true,
             ]);
 
@@ -220,7 +220,7 @@ describe('DisciplineDataLockService', function () {
             // Arrange
             $employee = Employee::factory()->create();
             $evaluationData = EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'is_lock' => false,
             ]);
 
@@ -241,17 +241,17 @@ describe('DisciplineDataLockService', function () {
             $emp3 = Employee::factory()->create();
 
             $data1 = EvaluationData::factory()->create([
-                'nik' => $emp1->NIK,
+                'nik' => $emp1->nik,
                 'is_lock' => true,
             ]);
 
             $data2 = EvaluationData::factory()->create([
-                'nik' => $emp2->NIK,
+                'nik' => $emp2->nik,
                 'is_lock' => true,
             ]);
 
             $data3 = EvaluationData::factory()->create([
-                'nik' => $emp3->NIK,
+                'nik' => $emp3->nik,
                 'is_lock' => true,
             ]);
 

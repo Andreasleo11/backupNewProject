@@ -45,7 +45,7 @@ describe('OvertimeSummaryService', function () {
         $summary = $this->service->generateSummary('2026-01-15', '2026-01-16');
 
         expect($summary)->toHaveCount(1);
-        expect($summary->first()['NIK'])->toBe('EMP001');
+        expect($summary->first()['nik'])->toBe('EMP001');
         expect($summary->first()['nama'])->toBe('John Doe');
         expect($summary->first()['total_ot'])->toBe(7.0); // 4 + 3 hours
     });

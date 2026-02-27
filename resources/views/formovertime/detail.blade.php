@@ -335,7 +335,7 @@
                                     @endphp
                                     <tr class="text-center text-[11px] {{ $rowBg }} hover:bg-slate-50">
                                         <td class="px-2 py-2">{{ $loop->iteration }}</td>
-                                        <td class="px-2 py-2">{{ $data->NIK }}</td>
+                                        <td class="px-2 py-2">{{ $data->nik }}</td>
                                         <td class="px-3 py-2 text-left font-medium text-slate-800">{{ $data->name }}
                                         </td>
                                         <td class="px-2 py-2">
@@ -527,7 +527,7 @@
                                     <p class="text-sm font-semibold text-slate-900">
                                         {{ $data->name }}
                                     </p>
-                                    <p class="text-xs text-slate-500">{{ $data->NIK }}</p>
+                                    <p class="text-xs text-slate-500">{{ $data->nik }}</p>
                                 </div>
                                 <div class="text-right">
                                     <span

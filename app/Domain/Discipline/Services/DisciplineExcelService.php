@@ -119,7 +119,7 @@ class DisciplineExcelService
 
         foreach ($data as $row) {
             foreach ($existingRecords as $record) {
-                if ($record->NIK === $row[1] && $record->Month === $row[2]) {
+                if ($record->nik === $row[1] && $record->Month === $row[2]) {
                     $calculatedPoints = $record->Alpha * 10 + $record->Izin * 2 +
                                       $record->Sakit + $record->Telat * 0.5;
                     $totalPoints = $maxpoint - $calculatedPoints;
@@ -198,7 +198,7 @@ class DisciplineExcelService
 
         foreach ($data as $row) {
             foreach ($existingRecords as $record) {
-                if ($record->NIK === $row[0] && $record->Month === $row[1]) {
+                if ($record->nik === $row[0] && $record->Month === $row[1]) {
                     $calculatedPoints = $record->Alpha * 10 + $record->Izin * 2 +
                                       $record->Sakit + $record->Telat * 0.5;
 
@@ -263,7 +263,7 @@ class DisciplineExcelService
 
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
                     ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $month)
@@ -290,7 +290,7 @@ class DisciplineExcelService
 
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
                     ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $month)
@@ -314,7 +314,7 @@ class DisciplineExcelService
 
         $employees = EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($cutoffDate) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
                     ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $month)
@@ -336,7 +336,7 @@ class DisciplineExcelService
         $result = [];
 
         foreach ($employees as $data) {
-            $employeeId = $data->karyawan->NIK;
+            $employeeId = $data->karyawan->nik;
 
             if (! isset($result[$employeeId])) {
                 $result[$employeeId] = [

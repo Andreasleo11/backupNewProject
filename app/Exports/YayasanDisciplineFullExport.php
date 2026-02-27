@@ -64,9 +64,9 @@ class YayasanDisciplineFullExport implements FromCollection, WithCustomStartCell
 
         return [
             $row->id,
-            $row->karyawan->NIK ?? 'N/A',
+            $row->karyawan->nik ?? 'N/A',
             $row->dept,
-            $row->karyawan->Nama ?? 'N/A', // Assuming 'karyawan' relation has 'name'
+            $row->karyawan->name ?? 'N/A', // Assuming 'karyawan' relation has 'name'
             $row->karyawan->status ?? 'N/A',
             $row->karyawan->start_date ?? 'N/A',
             $row->Month,

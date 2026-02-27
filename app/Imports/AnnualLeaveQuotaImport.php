@@ -2,7 +2,7 @@
 
 namespace App\Imports;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithStartRow;
@@ -23,7 +23,7 @@ class AnnualLeaveQuotaImport implements ToModel, WithHeadingRow, WithStartRow
     public function model(array $row)
     {
         // Find employee by Employee ID (NIK)
-        $employee = Employee::where('NIK', $row[1])->first();
+        $employee = Employee::where('nik', $row[1])->first();
 
         if ($employee) {
             $employee->jatah_cuti_tahun = $row[3];

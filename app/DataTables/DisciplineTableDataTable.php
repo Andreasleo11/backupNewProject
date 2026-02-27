@@ -200,8 +200,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '600')
-                        ->where('NIK', '!=', '06060')
+                        ->where('dept_code', '600')
+                        ->where('nik', '!=', '06060')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -215,8 +215,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '351')
-                        ->where('NIK', '!=', '07180')
+                        ->where('dept_code', '351')
+                        ->where('nik', '!=', '07180')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -230,8 +230,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '311')
-                        ->where('NIK', '!=', '05932')
+                        ->where('dept_code', '311')
+                        ->where('nik', '!=', '05932')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -245,8 +245,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '500')
-                        ->where('NIK', '!=', '00015')
+                        ->where('dept_code', '500')
+                        ->where('nik', '!=', '00015')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -260,8 +260,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '390')
-                        ->where('NIK', '!=', '06054')
+                        ->where('dept_code', '390')
+                        ->where('nik', '!=', '06054')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -275,8 +275,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '363')
-                        ->where('NIK', '!=', '06361')
+                        ->where('dept_code', '363')
+                        ->where('nik', '!=', '06361')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -290,8 +290,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '362')
-                        ->where('NIK', '!=', '00238')
+                        ->where('dept_code', '362')
+                        ->where('nik', '!=', '00238')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -305,8 +305,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '361')
-                        ->where('NIK', '!=', '00021')
+                        ->where('dept_code', '361')
+                        ->where('nik', '!=', '00021')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -320,8 +320,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '350')
-                        ->where('NIK', '!=', '00299')
+                        ->where('dept_code', '350')
+                        ->where('nik', '!=', '00299')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -336,9 +336,9 @@ class DisciplineTableDataTable extends DataTable
                 ->whereHas('karyawan', function ($query) {
                     $query
                         ->where(function ($query) {
-                            $query->where('Dept', '331')->orWhere('Dept', '330');
+                            $query->where('dept_code', '331')->orWhere('dept_code', '330');
                         })
-                        ->where('NIK', '!=', '00179')
+                        ->where('nik', '!=', '00179')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -352,8 +352,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '330')
-                        ->where('NIK', '!=', '06974')
+                        ->where('dept_code', '330')
+                        ->where('nik', '!=', '06974')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -367,8 +367,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '320')
-                        ->where('NIK', '!=', '07119')
+                        ->where('dept_code', '320')
+                        ->where('nik', '!=', '07119')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -382,8 +382,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '310')
-                        ->where('NIK', '!=', '00001')
+                        ->where('dept_code', '310')
+                        ->where('nik', '!=', '00001')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -397,8 +397,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '310')
-                        ->where('NIK', '!=', '00001')
+                        ->where('dept_code', '310')
+                        ->where('nik', '!=', '00001')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -412,8 +412,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '200')
-                        ->where('NIK', '!=', '00145')
+                        ->where('dept_code', '200')
+                        ->where('nik', '!=', '00145')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -427,8 +427,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '100')
-                        ->where('NIK', '!=', '05994')
+                        ->where('dept_code', '100')
+                        ->where('nik', '!=', '05994')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -443,9 +443,9 @@ class DisciplineTableDataTable extends DataTable
                 ->whereHas('karyawan', function ($query) {
                     $query
                         ->where(function ($query) {
-                            $query->where('Dept', '340')->orWhere('Dept', '341');
+                            $query->where('dept_code', '340')->orWhere('dept_code', '341');
                         })
-                        ->where('NIK', '!=', '00033')
+                        ->where('nik', '!=', '00033')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -459,8 +459,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '340')
-                        ->where('NIK', '!=', '06960')
+                        ->where('dept_code', '340')
+                        ->where('nik', '!=', '06960')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',
@@ -474,8 +474,8 @@ class DisciplineTableDataTable extends DataTable
             return $model::with('karyawan')
                 ->whereHas('karyawan', function ($query) {
                     $query
-                        ->where('Dept', '341')
-                        ->where('NIK', '!=', '07000')
+                        ->where('dept_code', '341')
+                        ->where('nik', '!=', '07000')
                         ->whereNotIn('status', [
                             'YAYASAN',
                             'YAYASAN KARAWANG',

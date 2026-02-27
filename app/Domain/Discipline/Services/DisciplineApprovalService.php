@@ -135,8 +135,8 @@ class DisciplineApprovalService
         ?int $year = null
     ): Collection {
         $query = EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
-            $query->where('Dept', $deptNo)
-                ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            $query->where('dept_code', $deptNo)
+                ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
         })->whereMonth('Month', $month);
 
         if ($year) {

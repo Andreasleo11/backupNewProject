@@ -43,11 +43,11 @@ final class OvertimeSummaryService
             $totalMinutes = $start->diffInMinutes($end) - $item->break;
             $totalHours = $totalMinutes / 60;
 
-            $key = $item->NIK . '|' . $item->name;
+            $key = $item->nik . '|' . $item->name;
 
             if (! isset($grouped[$key])) {
                 $grouped[$key] = [
-                    'NIK' => $item->NIK,
+                    'NIK' => $item->nik,
                     'nama' => $item->name,
                     'start_date' => $item->start_date,
                     'end_date' => $item->end_date,

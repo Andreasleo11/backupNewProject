@@ -24,7 +24,7 @@ class Department extends Model
 
     public function employees()
     {
-        return $this->hasMany(Employee::class, 'Dept', 'dept_no');
+        return $this->hasMany(Employee::class, 'dept_code', 'dept_no');
     }
 
     public function requirementAssignments(): MorphMany

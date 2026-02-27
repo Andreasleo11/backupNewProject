@@ -8,7 +8,7 @@ use App\Exports\EvaluationDataWeeklyExp;
 use App\Imports\EvaluationDataImport;
 use App\Imports\EvaluationWeeklyDataImport;
 use App\Models\Department;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use DateTime;
 use Illuminate\Http\Request;
@@ -175,10 +175,10 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageYayasan()
     {
-        $statuses = Employee::where('employee_status', 'YAYASAN')->distinct()->pluck('status');
+        $statuses = Employee::where('employment_type', 'YAYASAN')->distinct()->pluck('status');
 
         $departments = Department::whereHas('employees', function ($query) {
-            $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -189,12 +189,12 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageAllin()
     {
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
             ->pluck('status');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
-            $query->whereIn('status', $statuses);
+            $query->whereIn('employment_scheme', $statuses);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -205,12 +205,12 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageMagang()
     {
-        $statuses = Employee::whereIn('employee_status', ['MAGANG'])
+        $statuses = Employee::whereIn('employment_type', ['MAGANG'])
             ->distinct()
             ->pluck('status');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
-            $query->whereIn('status', $statuses);
+            $query->whereIn('employment_scheme', $statuses);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -221,12 +221,12 @@ class EvaluationDataController extends Controller
 
     public function evaluationformatrequestpageAllinPerpanjangan()
     {
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
             ->pluck('status');
 
         $departments = Department::whereHas('employees', function ($query) use ($statuses) {
-            $query->whereIn('status', $statuses);
+            $query->whereIn('employment_scheme', $statuses);
         })
             ->select('dept_no', 'name')
             ->distinct()
@@ -258,12 +258,12 @@ class EvaluationDataController extends Controller
         $dept = $request->input('dept');
         $year = $request->input('year');
 
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
             ->pluck('status');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+        $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
 
         // Fetch employees who belong to the selected department and have the correct status
         $employees = Employee::with([
@@ -272,9 +272,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', $statuses) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', $statuses) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->whereNull('end_date') // Filter by user-selected department
             ->get();
 
@@ -287,13 +287,13 @@ class EvaluationDataController extends Controller
         $dept = $request->input('dept');
         $year = $request->input('year');
 
-        $statuses = Employee::whereIn('employee_status', ['MAGANG'])
+        $statuses = Employee::whereIn('employment_type', ['MAGANG'])
             ->distinct()
             ->pluck('status', 'start_date');
         $magang = 1;
 
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+        $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
 
         // Fetch employees who belong to the selected department and have the correct status
         $employees = Employee::with([
@@ -302,9 +302,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', $statuses) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', $statuses) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view
@@ -318,7 +318,7 @@ class EvaluationDataController extends Controller
         $year = $request->input('year');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])->pluck(
+        $allowedDepartments = Employee::whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])->pluck(
             'Dept',
         ); // Get department codes
 
@@ -329,9 +329,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view
@@ -344,12 +344,12 @@ class EvaluationDataController extends Controller
         $dept = $request->input('dept');
         $year = $request->input('year');
 
-        $statuses = Employee::whereIn('employee_status', ['KONTRAK', 'TETAP'])
+        $statuses = Employee::whereIn('employment_type', ['KONTRAK', 'TETAP'])
             ->distinct()
             ->pluck('status');
         $magang = 0;
         // Get department codes where status is 'YAYASAN' or 'YAYASAN KARAWANG'
-        $allowedDepartments = Employee::whereIn('status', $statuses)->pluck('Dept'); // Get department codes
+        $allowedDepartments = Employee::whereIn('employment_scheme', $statuses)->pluck('dept_code'); // Get department codes
 
         // Fetch employees who belong to the selected department and have the correct status
         $employees = Employee::with([
@@ -358,9 +358,9 @@ class EvaluationDataController extends Controller
             },
             'department',
         ])
-            ->whereIn('Dept', $allowedDepartments) // Ensure employees belong to the correct departments
-            ->whereIn('status', $statuses) // Ensure employees also have the correct status
-            ->where('Dept', $dept) // Filter by user-selected department
+            ->whereIn('dept_code', $allowedDepartments) // Ensure employees belong to the correct departments
+            ->whereIn('employment_scheme', $statuses) // Ensure employees also have the correct status
+            ->where('dept_code', $dept) // Filter by user-selected department
             ->get();
 
         // Pass employees and the selected year to the view

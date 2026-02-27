@@ -2,7 +2,7 @@
 
 namespace App\Domain\Discipline\Services;
 
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use App\Models\EvaluationDataWeekly;
 
@@ -19,10 +19,10 @@ class DisciplineDataSyncService
         $updatedCount = 0;
 
         foreach ($evaluationDataRecords as $evaluationData) {
-            $employee = Employee::where('NIK', $evaluationData->NIK)->first();
+            $employee = Employee::where('nik', $evaluationData->nik)->first();
 
-            if ($employee && $evaluationData->dept !== $employee->Dept) {
-                $evaluationData->dept = $employee->Dept;
+            if ($employee && $evaluationData->dept !== $employee->dept_code) {
+                $evaluationData->dept = $employee->dept_code;
                 $evaluationData->save();
                 $updatedCount++;
             }
@@ -42,8 +42,8 @@ class DisciplineDataSyncService
         $updatedCount = 0;
 
         foreach ($weeklyDataRecords as $weeklyData) {
-            if ($weeklyData->karyawan && $weeklyData->dept !== $weeklyData->karyawan->Dept) {
-                $weeklyData->dept = $weeklyData->karyawan->Dept;
+            if ($weeklyData->karyawan && $weeklyData->dept !== $weeklyData->karyawan->dept_code) {
+                $weeklyData->dept = $weeklyData->karyawan->dept_code;
                 $weeklyData->save();
                 $updatedCount++;
             }
@@ -65,16 +65,16 @@ class DisciplineDataSyncService
         $updatedCount = 0;
 
         foreach ($datas as $data) {
-            if ($data->karyawan && $data->dept !== $data->karyawan->Dept) {
-                $data->dept = $data->karyawan->Dept;
+            if ($data->karyawan && $data->dept !== $data->karyawan->dept_code) {
+                $data->dept = $data->karyawan->dept_code;
                 $data->save();
                 $updatedCount++;
             }
         }
 
         foreach ($weeklyDatas as $weeklyData) {
-            if ($weeklyData->karyawan && $weeklyData->dept !== $weeklyData->karyawan->Dept) {
-                $weeklyData->dept = $weeklyData->karyawan->Dept;
+            if ($weeklyData->karyawan && $weeklyData->dept !== $weeklyData->karyawan->dept_code) {
+                $weeklyData->dept = $weeklyData->karyawan->dept_code;
                 $weeklyData->save();
                 $updatedCount++;
             }

@@ -4,7 +4,7 @@ use App\Domain\Discipline\Services\DisciplineExcelService;
 use App\Exports\DesciplineDataExp;
 use App\Imports\DesciplineDataImport;
 use App\Imports\DesciplineYayasanDataImport;
-use App\Models\Employee;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -89,7 +89,7 @@ describe('DisciplineExcelService', function () {
             ]);
 
             $evaluationData = EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'Month' => '2026-01-15',
                 'total' => 85, // Grade A
                 'depthead' => 'John Doe',
@@ -114,7 +114,7 @@ describe('DisciplineExcelService', function () {
 
             // Grade A employee (total >= 80)
             EvaluationData::factory()->create([
-                'nik' => $emp1->NIK,
+                'nik' => $emp1->nik,
                 'Month' => '2026-01-15',
                 'total' => 85,
                 'depthead' => 'Manager',
@@ -123,7 +123,7 @@ describe('DisciplineExcelService', function () {
 
             // Grade B employee (total < 80)
             EvaluationData::factory()->create([
-                'nik' => $emp2->NIK,
+                'nik' => $emp2->nik,
                 'Month' => '2026-01-15',
                 'total' => 75,
                 'depthead' => 'Manager',
@@ -152,7 +152,7 @@ describe('DisciplineExcelService', function () {
             $employee = Employee::factory()->create(['status' => 'YAYASAN']);
 
             EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'Month' => '2026-02-15',
                 'total' => 90,
             ]);
@@ -178,7 +178,7 @@ describe('DisciplineExcelService', function () {
             $employee = Employee::factory()->create(['status' => 'YAYASAN']);
 
             EvaluationData::factory()->create([
-                'nik' => $employee->NIK,
+                'nik' => $employee->nik,
                 'Month' => '2026-03-15',
                 'total' => 88,
                 'depthead' => 'Dept Head',
@@ -204,7 +204,7 @@ describe('DisciplineExcelService', function () {
 
             // Approved by both
             EvaluationData::factory()->create([
-                'nik' => $emp1->NIK,
+                'nik' => $emp1->nik,
                 'Month' => '2026-04-15',
                 'total' => 85,
                 'depthead' => 'Manager',
@@ -213,7 +213,7 @@ describe('DisciplineExcelService', function () {
 
             // Not approved
             EvaluationData::factory()->create([
-                'nik' => $emp2->NIK,
+                'nik' => $emp2->nik,
                 'Month' => '2026-04-15',
                 'total' => 85,
                 'depthead' => null,
@@ -232,11 +232,11 @@ describe('DisciplineExcelService', function () {
             $employee = Employee::factory()->create();
             $data = collect([
                 EvaluationData::factory()->make([
-                    'nik' => $employee->NIK,
+                    'nik' => $employee->nik,
                     'total' => 95,
                 ]),
                 EvaluationData::factory()->make([
-                    'nik' => $employee->NIK,
+                    'nik' => $employee->nik,
                     'total' => 80,
                 ]),
             ]);
@@ -254,11 +254,11 @@ describe('DisciplineExcelService', function () {
             $employee = Employee::factory()->create();
             $data = collect([
                 EvaluationData::factory()->make([
-                    'nik' => $employee->NIK,
+                    'nik' => $employee->nik,
                     'total' => 79,
                 ]),
                 EvaluationData::factory()->make([
-                    'nik' => $employee->NIK,
+                    'nik' => $employee->nik,
                     'total' => 50,
                 ]),
             ]);
@@ -278,9 +278,9 @@ describe('DisciplineExcelService', function () {
             $emp3 = Employee::factory()->create();
 
             $data = collect([
-                EvaluationData::factory()->make(['nik' => $emp1->NIK, 'total' => 90]),
-                EvaluationData::factory()->make(['nik' => $emp2->NIK, 'total' => 70]),
-                EvaluationData::factory()->make(['nik' => $emp3->NIK, 'total' => 85]),
+                EvaluationData::factory()->make(['nik' => $emp1->nik, 'total' => 90]),
+                EvaluationData::factory()->make(['nik' => $emp2->nik, 'total' => 70]),
+                EvaluationData::factory()->make(['nik' => $emp3->nik, 'total' => 85]),
             ]);
 
             // Act

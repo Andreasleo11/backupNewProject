@@ -17,10 +17,10 @@ class EvaluationDataRepository
     ): Collection {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($codes, $excludeYayasan, $level) {
-                $query->whereIn('Dept', $codes);
+                $query->whereIn('dept_code', $codes);
 
                 if ($excludeYayasan) {
-                    $query->where('status', '!=', 'YAYASAN');
+                    $query->where('employment_scheme', '!=', 'YAYASAN');
                 }
 
                 if ($level !== null) {
@@ -37,8 +37,8 @@ class EvaluationDataRepository
     {
         return EvaluationData::with('karyawan', 'department')
             ->whereHas('karyawan', function ($query) use ($codes) {
-                $query->whereIn('Dept', $codes)
-                    ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                $query->whereIn('dept_code', $codes)
+                    ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
             })
             ->get();
     }
@@ -50,8 +50,8 @@ class EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($codes) {
-                $query->whereIn('Dept', $codes)
-                    ->whereIn('status', ['MAGANG', 'MAGANG KARAWANG']);
+                $query->whereIn('dept_code', $codes)
+                    ->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG']);
             })
             ->get();
     }
@@ -63,7 +63,7 @@ class EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($level) {
-                $query->where('status', '!==', 'YAYASAN')
+                $query->where('employment_scheme', '!==', 'YAYASAN')
                     ->where('level', $level);
             })
             ->get();
@@ -76,8 +76,8 @@ class EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) use ($codes, $cutoffDate) {
-                $query->whereIn('Dept', $codes)
-                    ->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG'])
+                $query->whereIn('dept_code', $codes)
+                    ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
                     ->where('start_date', '<', $cutoffDate);
             })
             ->whereMonth('month', $month)
@@ -94,10 +94,10 @@ class EvaluationDataRepository
         array $statuses = []
     ): Collection {
         $query = EvaluationData::whereHas('karyawan', function ($query) use ($deptNo, $statuses) {
-            $query->where('Dept', $deptNo);
+            $query->where('dept_code', $deptNo);
 
             if (! empty($statuses)) {
-                $query->whereIn('status', $statuses);
+                $query->whereIn('employment_scheme', $statuses);
             }
         })->whereMonth('Month', $month);
 
@@ -114,7 +114,7 @@ class EvaluationDataRepository
     public function getYayasanByMonthAndYear(int $month, int $year): Collection
     {
         return EvaluationData::whereHas('karyawan', function ($query) {
-            $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+            $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
         })
             ->whereMonth('Month', $month)
             ->whereYear('Month', $year)
@@ -128,7 +128,7 @@ class EvaluationDataRepository
     {
         return EvaluationData::with('karyawan')
             ->whereHas('karyawan', function ($query) {
-                $query->whereIn('status', ['YAYASAN', 'YAYASAN KARAWANG']);
+                $query->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
             })
             ->get();
     }
