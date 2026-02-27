@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\HeaderFormOvertime;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

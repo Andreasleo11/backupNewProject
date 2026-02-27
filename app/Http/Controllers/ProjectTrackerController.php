@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\ProjectHistory;
 use App\Models\ProjectMaster;
 use Illuminate\Http\Request;

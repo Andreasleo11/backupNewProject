@@ -30,11 +30,11 @@ class FixPurchaseRequestSeeder extends Seeder
             'PURCHASING',
             'PE',
         ];
-        \App\Models\Department::whereIn('name', $officeDepartments)->update([
+        \App\Infrastructure\Persistence\Eloquent\Models\Department::whereIn('name', $officeDepartments)->update([
             'is_office' => true,
         ]);
 
-        \App\Models\Department::whereNotIn('name', $officeDepartments)->update([
+        \App\Infrastructure\Persistence\Eloquent\Models\Department::whereNotIn('name', $officeDepartments)->update([
             'is_office' => false,
         ]);
     }
@@ -44,7 +44,7 @@ class FixPurchaseRequestSeeder extends Seeder
         $chunkSize = 100; // Adjust the chunk size as needed
 
         // Step 1: Retrieve office departments
-        $officeDepartments = \App\Models\Department::where('is_office', true)
+        $officeDepartments = \App\Infrastructure\Persistence\Eloquent\Models\Department::where('is_office', true)
             ->pluck('name')
             ->toArray();
 

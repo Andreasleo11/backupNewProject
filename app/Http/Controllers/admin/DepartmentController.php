@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\DataTables\DepartmentsDataTable;
 use App\Http\Controllers\Controller;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Http\Request;
 
 class DepartmentController extends Controller

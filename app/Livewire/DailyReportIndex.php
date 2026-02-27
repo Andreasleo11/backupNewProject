@@ -2,7 +2,7 @@
 
 namespace App\Livewire;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;

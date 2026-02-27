@@ -1,7 +1,7 @@
 <?php
 
 use App\Domain\MasterData\Services\StockManagementService;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\MasterStock;
 use App\Models\StockRequest;
 use App\Models\StockTransaction;

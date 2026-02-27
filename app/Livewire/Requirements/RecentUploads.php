@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Requirements;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\Requirement;
 use App\Models\RequirementUpload;
 use Livewire\Attributes\On;

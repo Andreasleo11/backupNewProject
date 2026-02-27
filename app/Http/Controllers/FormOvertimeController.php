@@ -7,7 +7,7 @@ use App\Domain\Overtime\Services\OvertimeExportService;
 use App\Domain\Overtime\Services\OvertimeImportService;
 use App\Domain\Overtime\Services\OvertimeJPayrollService;
 use App\Domain\Overtime\Services\OvertimeSummaryService;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\DetailFormOvertime;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\HeaderFormOvertime;

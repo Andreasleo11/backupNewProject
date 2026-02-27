@@ -3,7 +3,7 @@
 namespace App\Domain\Discipline\Services;
 
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\EvaluationData;
 use Carbon\Carbon;
 

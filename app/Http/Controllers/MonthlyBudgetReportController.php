@@ -6,7 +6,7 @@ use App\Domain\MonthlyBudget\Services\BudgetApprovalService;
 use App\Domain\MonthlyBudget\Services\BudgetExportService;
 use App\Domain\MonthlyBudget\Services\BudgetReportService;
 use App\Http\Requests\UpdateMonthlyBudgetReportRequest;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\MonthlyBudgetReport;
 use Illuminate\Http\Request;
 

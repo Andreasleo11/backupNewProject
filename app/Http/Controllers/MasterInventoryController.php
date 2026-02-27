@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Domain\Inventory\Services\InventoryExportService;
 use App\Domain\Inventory\Services\InventoryManagementService;
 use App\Domain\Inventory\Services\InventoryRepairService;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\DetailHardware;
 use App\Models\DetailSoftware;
 use App\Models\HardwareTypeInventory;

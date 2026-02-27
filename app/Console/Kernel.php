@@ -54,7 +54,7 @@ class Kernel extends ConsoleKernel
 
         // Hourly refresh all department snapshots (lightweight)
         $schedule->call(function () {
-            \App\Models\Department::query()->pluck('id')->each(function ($id) {
+            \App\Infrastructure\Persistence\Eloquent\Models\Department::query()->pluck('id')->each(function ($id) {
                 \App\Jobs\UpdateDepartmentComplianceSnapshot::dispatch($id, writeMonthly: true);
             });
         })->hourly();

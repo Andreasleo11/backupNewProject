@@ -1,7 +1,7 @@
 <?php
 
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

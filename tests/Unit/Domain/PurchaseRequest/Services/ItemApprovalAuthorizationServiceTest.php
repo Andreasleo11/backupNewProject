@@ -8,7 +8,7 @@ use App\Domain\PurchaseRequest\Services\ItemApprovalAuthorizationService;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalRequest;
 use App\Infrastructure\Persistence\Eloquent\Models\ApprovalStep;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\DetailPurchaseRequest;
 use App\Models\PurchaseRequest;
 use App\Models\Specification;

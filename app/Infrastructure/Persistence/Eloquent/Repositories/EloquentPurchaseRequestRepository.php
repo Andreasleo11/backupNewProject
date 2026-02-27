@@ -56,7 +56,7 @@ final class EloquentPurchaseRequestRepository implements PurchaseRequestReposito
 
     public function getOfficeDepartmentNames(): array
     {
-        return \App\Models\Department::where('is_office', true)
+        return \App\Infrastructure\Persistence\Eloquent\Models\Department::where('is_office', true)
             ->pluck('name')
             ->map(fn ($n) => strtoupper($n))
             ->toArray();

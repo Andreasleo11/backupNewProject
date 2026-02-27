@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSuratPerintahKerjaRequest;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\File;
 use App\Models\SuratPerintahKerja;
 use App\Models\User;

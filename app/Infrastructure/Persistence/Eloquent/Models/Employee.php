@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\EmployeeWarningLog;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

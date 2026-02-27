@@ -22,7 +22,7 @@ use App\Http\Requests\RejectPurchaseRequest;
 use App\Http\Requests\SaveSignatureRequest;
 use App\Http\Requests\StorePurchaseRequest;
 use App\Http\Requests\UpdatePurchaseRequest;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\MasterDataPr;
 use App\Models\PurchaseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;

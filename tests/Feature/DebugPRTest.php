@@ -3,7 +3,7 @@
 use App\Application\PurchaseRequest\DTOs\CreatePurchaseRequestDTO;
 use App\Application\PurchaseRequest\DTOs\PurchaseRequestItemDTO;
 use App\Application\PurchaseRequest\UseCases\CreatePurchaseRequest;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

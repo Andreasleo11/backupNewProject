@@ -2,7 +2,7 @@
 
 use App\Domain\Discipline\Repositories\EvaluationDataRepository;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;

@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Admin\RequirementUploads;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\RequirementUpload;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;

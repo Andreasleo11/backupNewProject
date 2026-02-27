@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\FormCuti;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

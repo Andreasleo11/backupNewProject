@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Overtime;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\HeaderFormOvertime;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;

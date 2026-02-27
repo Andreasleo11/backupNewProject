@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Departments;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\RequirementUpload;
 use App\Services\ComplianceService;
 use Carbon\Carbon;

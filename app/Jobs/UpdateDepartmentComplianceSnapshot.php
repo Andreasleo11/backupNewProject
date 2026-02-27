@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Models\DepartmentComplianceMonthly;
 use App\Models\DepartmentComplianceSnapshot;
 use App\Notifications\Compliance\DepartmentBelowThreshold;

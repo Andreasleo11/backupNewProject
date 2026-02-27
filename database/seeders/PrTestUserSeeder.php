@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Infrastructure\Persistence\Eloquent\Models\User;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;

@@ -7,7 +7,7 @@ use App\Exports\EvaluationDataExp;
 use App\Exports\EvaluationDataWeeklyExp;
 use App\Imports\EvaluationDataImport;
 use App\Imports\EvaluationWeeklyDataImport;
-use App\Models\Department;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use DateTime;
