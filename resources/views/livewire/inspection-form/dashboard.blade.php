@@ -120,11 +120,22 @@
     <div class="filter-bar">
         <div>
             <label>Date From</label>
-            <input type="date" class="form-control form-control-sm" wire:model.live="dateFrom" style="min-width:140px">
+            {{-- Use @change + $wire.set() instead of wire:model.live.
+                 Native date pickers fire 'change' on commit but 'input'
+                 is inconsistent — so wire:model.live would miss the event. --}}
+            <input type="date"
+                class="form-control form-control-sm"
+                :value="$wire.dateFrom"
+                @change="$wire.set('dateFrom', $event.target.value)"
+                style="min-width:140px">
         </div>
         <div>
             <label>Date To</label>
-            <input type="date" class="form-control form-control-sm" wire:model.live="dateTo" style="min-width:140px">
+            <input type="date"
+                class="form-control form-control-sm"
+                :value="$wire.dateTo"
+                @change="$wire.set('dateTo', $event.target.value)"
+                style="min-width:140px">
         </div>
         <div>
             <label>Customer</label>
@@ -194,7 +205,8 @@
         <div class="chart-col-8">
             <div class="panel">
                 <div class="panel-title">Inspections Over Time</div>
-                <div class="chart-wrap" style="height:220px">
+                {{-- wire:ignore keeps the canvas alive during Livewire re-renders --}}
+                <div class="chart-wrap" style="height:220px" wire:ignore>
                     <canvas id="chart-trend"></canvas>
                 </div>
             </div>
@@ -202,7 +214,7 @@
         <div class="chart-col-4">
             <div class="panel">
                 <div class="panel-title">Reports by Shift</div>
-                <div class="chart-wrap" style="height:220px;display:flex;align-items:center;justify-content:center">
+                <div class="chart-wrap" style="height:220px;display:flex;align-items:center;justify-content:center" wire:ignore>
                     <canvas id="chart-shift"></canvas>
                 </div>
             </div>
@@ -216,7 +228,7 @@
         <div class="chart-col-6">
             <div class="panel">
                 <div class="panel-title">Pass vs Reject (Daily)</div>
-                <div class="chart-wrap" style="height:220px">
+                <div class="chart-wrap" style="height:220px" wire:ignore>
                     <canvas id="chart-pass-reject"></canvas>
                 </div>
             </div>
@@ -224,7 +236,7 @@
         <div class="chart-col-6">
             <div class="panel">
                 <div class="panel-title">Top 10 Customers by Reports</div>
-                <div class="chart-wrap" style="height:220px">
+                <div class="chart-wrap" style="height:220px" wire:ignore>
                     <canvas id="chart-customers"></canvas>
                 </div>
             </div>
@@ -389,148 +401,176 @@
 
     {{-- ════════════════════════════════════════════════════════════════
          CHART.JS + initialisation
+         IMPORTANT: wire:ignore on this wrapper is critical.
+         Without it, Alpine Morph re-executes the script on every Livewire
+         re-render (because @json values inside change), resetting `registry`
+         to {} and breaking destroyChart() on subsequent filter changes.
+         With it: script runs once, registry persists, charts-ready event
+         updates charts cleanly via destroy → recreate.
     ═══════════════════════════════════════════════════════════════════ --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <script>
-    (function () {
-        // ── Shared palette ──────────────────────────────────────────────
-        var accent1 = '#4f8ef7';
-        var accent2 = '#34d399';
-        var accent3 = '#fb923c';
-        var accent4 = '#f472b6';
-        var accent5 = '#818cf8';
-        var red     = '#f87171';
-        var muted   = '#8b949e';
-        var gridColor = 'rgba(255,255,255,0.06)';
+    <div wire:ignore>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+        <script>
+        (function () {
+            // ── Palette ─────────────────────────────────────────────────────
+            var accent1   = '#4f8ef7';
+            var accent2   = '#34d399';
+            var accent3   = '#fb923c';
+            var accent5   = '#818cf8';
+            var red       = '#f87171';
+            var muted     = '#8b949e';
+            var gridColor = 'rgba(255,255,255,0.06)';
 
-        Chart.defaults.color = muted;
-        Chart.defaults.borderColor = gridColor;
-        Chart.defaults.font.family = '"Inter", "Segoe UI", sans-serif';
-        Chart.defaults.font.size   = 11;
+            // ── Chart instance registry (persists for the page lifetime) ────
+            var registry = {};
 
-        // ── Data injected from Livewire ─────────────────────────────────
-        var trendData   = @json($trendChart);
-        var shiftData   = @json($shiftChart);
-        var custData    = @json($customerChart);
-        var prData      = @json($passRejectChart);
+            function destroyChart(id) {
+                if (registry[id]) { registry[id].destroy(); delete registry[id]; }
+            }
 
-        // ── Helpers ─────────────────────────────────────────────────────
-        function qs(id){ return document.getElementById(id); }
+            function makeGrad(ctx, color) {
+                var g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.clientHeight || 220);
+                g.addColorStop(0, color + 'cc');
+                g.addColorStop(1, color + '11');
+                return g;
+            }
 
-        function makeGrad(ctx, colorA, colorB) {
-            var g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-            g.addColorStop(0,   colorA + 'cc');
-            g.addColorStop(1,   colorA + '11');
-            return g;
-        }
+            // ── initCharts(d) — called on mount AND on every charts-ready event
+            function initCharts(d) {
+                Chart.defaults.color       = muted;
+                Chart.defaults.borderColor = gridColor;
+                Chart.defaults.font.family = '"Inter","Segoe UI",sans-serif';
+                Chart.defaults.font.size   = 11;
 
-        // ── 1. Inspections over time (Line) ─────────────────────────────
-        (function(){
-            var el = qs('chart-trend'); if (!el) return;
-            var ctx = el.getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: trendData.labels || [],
-                    datasets: [{
-                        label: 'Inspections',
-                        data:  trendData.data || [],
-                        borderColor: accent1,
-                        backgroundColor: makeGrad(ctx, accent1, 'transparent'),
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: accent1,
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-                    scales: {
-                        x: { grid: { color: gridColor }, ticks: { maxTicksLimit: 10 } },
-                        y: { grid: { color: gridColor }, beginAtZero: true, ticks: { precision: 0 } }
-                    }
-                }
+                // 1. Inspections over time (Line)
+                (function () {
+                    var el = document.getElementById('chart-trend');
+                    if (!el) return;
+                    destroyChart('trend');
+                    var ctx = el.getContext('2d');
+                    registry['trend'] = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: d.trend.labels || [],
+                            datasets: [{
+                                label: 'Inspections',
+                                data: d.trend.data || [],
+                                borderColor: accent1,
+                                backgroundColor: makeGrad(ctx, accent1),
+                                fill: true, tension: 0.4,
+                                pointRadius: 3, pointHoverRadius: 6,
+                                pointBackgroundColor: accent1,
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                            scales: {
+                                x: { grid: { color: gridColor }, ticks: { maxTicksLimit: 10 } },
+                                y: { grid: { color: gridColor }, beginAtZero: true, ticks: { precision: 0 } }
+                            }
+                        }
+                    });
+                })();
+
+                // 2. Reports by shift (Doughnut)
+                (function () {
+                    var el = document.getElementById('chart-shift');
+                    if (!el) return;
+                    destroyChart('shift');
+                    registry['shift'] = new Chart(el.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: d.shift.labels || [],
+                            datasets: [{ data: d.shift.data || [], backgroundColor: [accent1, accent3, accent2], borderColor: '#1c2230', borderWidth: 3, hoverOffset: 6 }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false, cutout: '65%',
+                            plugins: {
+                                legend: { position: 'bottom', labels: { padding: 14, boxWidth: 12 } },
+                                tooltip: { callbacks: { label: function (c) { return ' ' + c.label + ': ' + c.parsed; } } }
+                            }
+                        }
+                    });
+                })();
+
+                // 3. Pass vs Reject stacked bar
+                (function () {
+                    var el = document.getElementById('chart-pass-reject');
+                    if (!el) return;
+                    destroyChart('passReject');
+                    registry['passReject'] = new Chart(el.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: d.passReject.labels || [],
+                            datasets: [
+                                { label: 'Pass',   data: d.passReject.pass   || [], backgroundColor: accent2 + 'cc', stack: 'qty', borderRadius: 3 },
+                                { label: 'Reject', data: d.passReject.reject || [], backgroundColor: red    + 'cc', stack: 'qty', borderRadius: 3 },
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 10 } }, tooltip: { mode: 'index' } },
+                            scales: {
+                                x: { stacked: true, grid: { color: gridColor }, ticks: { maxTicksLimit: 10 } },
+                                y: { stacked: true, grid: { color: gridColor }, beginAtZero: true, ticks: { precision: 0 } }
+                            }
+                        }
+                    });
+                })();
+
+                // 4. Top customers horizontal bar
+                (function () {
+                    var el = document.getElementById('chart-customers');
+                    if (!el) return;
+                    destroyChart('customers');
+                    registry['customers'] = new Chart(el.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: d.customer.labels || [],
+                            datasets: [{ label: 'Reports', data: d.customer.data || [], backgroundColor: accent5 + 'bb', hoverBackgroundColor: accent5, borderRadius: 4 }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return ' ' + c.parsed.x + ' reports'; } } } },
+                            scales: {
+                                x: { grid: { color: gridColor }, beginAtZero: true, ticks: { precision: 0 } },
+                                y: { grid: { color: gridColor } }
+                            }
+                        }
+                    });
+                })();
+            }
+
+            // ── Seed data baked in at initial page render ───────────────────
+            // (wire:ignore means this runs ONCE — correct)
+            var seedData = {
+                trend:      @json($trendChart),
+                shift:      @json($shiftChart),
+                customer:   @json($customerChart),
+                passReject: @json($passRejectChart),
+            };
+
+            // ── Init on page load (wait for Chart.js CDN to be ready) ───────
+            if (document.readyState === 'complete') {
+                initCharts(seedData);
+            } else {
+                window.addEventListener('load', function () { initCharts(seedData); });
+            }
+
+            // ── Re-draw on every filter change ──────────────────────────────
+            // Livewire v3 dispatch() fires a native browser CustomEvent.
+            // Named PHP params land on e.detail directly as an object
+            // { trend, shift, customer, passReject } — NOT wrapped in an array.
+            window.addEventListener('charts-ready', function (e) {
+                var p = Array.isArray(e.detail) ? e.detail[0] : e.detail;
+                if (!p) return;
+                initCharts(p);
             });
-        })();
 
-        // ── 2. Reports by shift (Doughnut) ──────────────────────────────
-        (function(){
-            var el = qs('chart-shift'); if (!el) return;
-            new Chart(el.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: shiftData.labels || [],
-                    datasets: [{
-                        data: shiftData.data || [],
-                        backgroundColor: [accent1, accent3, accent2],
-                        borderColor: '#1c2230',
-                        borderWidth: 3,
-                        hoverOffset: 6,
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { padding: 14, boxWidth: 12 } },
-                        tooltip: { callbacks: { label: function(c){ return ' ' + c.label + ': ' + c.parsed; } } }
-                    }
-                }
-            });
         })();
-
-        // ── 3. Pass vs Reject stacked bar ───────────────────────────────
-        (function(){
-            var el = qs('chart-pass-reject'); if (!el) return;
-            new Chart(el.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: prData.labels || [],
-                    datasets: [
-                        { label: 'Pass', data: prData.pass || [], backgroundColor: accent2 + 'cc', stack: 'qty', borderRadius: 3 },
-                        { label: 'Reject', data: prData.reject || [], backgroundColor: red + 'cc',    stack: 'qty', borderRadius: 3 },
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'top', labels: { boxWidth: 10, padding: 10 } }, tooltip: { mode: 'index' } },
-                    scales: {
-                        x: { stacked: true, grid: { color: gridColor }, ticks: { maxTicksLimit: 10 } },
-                        y: { stacked: true, grid: { color: gridColor }, beginAtZero: true, ticks: { precision: 0 } }
-                    }
-                }
-            });
-        })();
-
-        // ── 4. Top customers horizontal bar ─────────────────────────────
-        (function(){
-            var el = qs('chart-customers'); if (!el) return;
-            new Chart(el.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: custData.labels || [],
-                    datasets: [{
-                        label: 'Reports',
-                        data: custData.data || [],
-                        backgroundColor: accent5 + 'bb',
-                        hoverBackgroundColor: accent5,
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return ' ' + c.parsed.x + ' reports'; } } } },
-                    scales: {
-                        x: { grid: { color: gridColor }, beginAtZero: true, ticks: { precision: 0 } },
-                        y: { grid: { color: gridColor } }
-                    }
-                }
-            });
-        })();
-
-    })();
-    </script>
+        </script>
+    </div>
 </div>
+

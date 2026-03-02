@@ -45,7 +45,7 @@ class InspectionDashboard extends Component
 
     public function mount(): void
     {
-        // Default date range: current month
+        // Only apply defaults when no URL params have pre-set the filters
         if ($this->dateFrom === '') {
             $this->dateFrom = Carbon::now()->startOfMonth()->toDateString();
         }
@@ -59,6 +59,29 @@ class InspectionDashboard extends Component
             ->orderBy('customer')
             ->pluck('customer')
             ->toArray();
+
+        // ── Smart fallback ───────────────────────────────────────────────
+        // If the default date range has no data (e.g. early in the month,
+        // or data was entered for previous months only), automatically
+        // shift to the last 30 days of actual data so the dashboard always
+        // opens with something visible rather than a sea of zeros.
+        $hasData = InspectionReport::query()
+            ->whereDate('inspection_date', '>=', $this->dateFrom)
+            ->whereDate('inspection_date', '<=', $this->dateTo)
+            ->exists();
+
+        if (! $hasData) {
+            $latestDate = InspectionReport::query()
+                ->max('inspection_date');
+
+            if ($latestDate) {
+                $end             = Carbon::parse($latestDate);
+                $this->dateTo    = $end->toDateString();
+                $this->dateFrom  = $end->copy()->subDays(29)->toDateString();
+            }
+            // If there are no records at all, keep the current-month range
+            // and let the charts render empty — at least the UI is shown.
+        }
 
         $this->computeData();
         $this->ready = true;
@@ -115,6 +138,15 @@ class InspectionDashboard extends Component
         $this->computeTopProblemTypes();
         $this->computeLatestReports();
         $this->computeDimensionFailures();
+
+        // Broadcast fresh data to JS so Chart.js can update without a page reload.
+        // wire:ignore keeps the <canvas> elements alive; this event re-draws them.
+        $this->dispatch('charts-ready',
+            trend:      $this->trendChart,
+            shift:      $this->shiftChart,
+            customer:   $this->customerChart,
+            passReject: $this->passRejectChart,
+        );
     }
 
     private function computeKpi(): void
