@@ -10,48 +10,47 @@ class DisciplineAccessPolicy
     use HandlesAuthorization;
 
     /**
-     * Determine if the user can view any discipline records.
+     * Determine if the user can view any discipline records (their own dept).
      */
     public function viewAnyDiscipline(User $user): bool
     {
-        return $user->is_head === 1 || $this->isSpecialUser($user) || $user->hasRole('super-admin');
+        return $user->is_head === 1 || $this->isSuperAccessUser($user) || $user->hasRole('super-admin');
     }
 
     /**
-     * Determine if the user can view all discipline records (across all departments).
+     * Determine if the user can view ALL discipline records (cross-dept HR view).
      */
     public function viewAllDiscipline(User $user): bool
     {
-        return in_array($user->email, $this->getSpecialAccessEmails(), true) || $user->hasRole('super-admin');
+        return $this->isSuperAccessUser($user) || $user->hasRole('super-admin');
     }
 
     /**
-     * Determine if the user can view Yayasan discipline records.
+     * Determine if the user can view Yayasan or Magang discipline records.
+     * Same gate as viewAnyDiscipline — scoping happens in DepartmentEmployeeResolver.
      */
     public function viewYayasanDiscipline(User $user): bool
     {
-        // Department heads and special users can view
-        return $user->is_head === 1 || $this->isSpecialUser($user) || $user->hasRole('super-admin');
+        return $user->is_head === 1 || $this->isSuperAccessUser($user) || $user->hasRole('super-admin');
     }
 
     /**
-     * Determine if the user has special elevated access.
+     * Determine if the user is an HRD approver (final Yayasan approval step).
+     * Reads from config/discipline.php — no hardcoded emails.
      */
-    private function isSpecialUser(User $user): bool
+    public function isHrdApprover(User $user): bool
     {
-        // Special user ID 120 or users with special emails
-        return $user->id === 120 || $this->viewAllDiscipline($user);
+        return in_array($user->email, config('discipline.hrd_approvers', []), true);
     }
 
     /**
-     * Get the list of emails with special access privileges.
-     * This should ideally be moved to config in the future.
+     * Determine if the user has super access (cross-department HR visibility).
+     * Reads from config/discipline.php — no hardcoded emails or IDs.
      */
-    private function getSpecialAccessEmails(): array
+    public function isSuperAccessUser(User $user): bool
     {
-        return [
-            'ani_apriani@daijo.co.id',
-            'bernadett@daijo.co.id',
-        ];
+        return in_array($user->email, config('discipline.super_access_emails', []), true)
+            || in_array($user->id, config('discipline.special_access_ids', []), true);
     }
 }
+

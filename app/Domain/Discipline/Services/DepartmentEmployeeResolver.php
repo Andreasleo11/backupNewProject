@@ -15,26 +15,23 @@ class DepartmentEmployeeResolver
     ) {}
 
     /**
-     * Resolve employees for the given user based on their role and department.
+     * Resolve regular (non-Yayasan, non-Magang) employees for the given user.
      */
     public function resolveForUser(User $user): Collection
     {
-        // Special case: User ID 120 sees QC + QA
-        if ($user->id === 120) {
+        if ($this->isSpecialAccessId($user)) {
             return $this->repository->getByDepartmentCodes([
                 DepartmentCode::QC->value,
                 DepartmentCode::QA->value,
             ]);
         }
 
-        // Special users (HR managers) see Personalia department
-        if ($this->isSpecialAccessUser($user)) {
+        if ($this->isSuperAccessUser($user)) {
             return $this->repository->getByDepartmentCodes([
                 DepartmentCode::PERSONALIA->value,
             ]);
         }
 
-        // Department heads see their own department employees
         if ($user->is_head === 1) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
@@ -51,44 +48,37 @@ class DepartmentEmployeeResolver
     }
 
     /**
-     * Resolve Yayasan employees for the given user.
+     * Resolve Yayasan employees visible to the given user.
      */
     public function resolveYayasanForUser(User $user): Collection
     {
-        // Special case: QC/QA department heads
         if (in_array($user->department->name, ['QC', 'QA'], true)) {
-            $codes = $this->getQcQaCodes($user);
-
-            return $this->repository->getYayasanEmployees($codes);
+            return $this->repository->getYayasanEmployees($this->getQcQaCodes($user));
         }
 
-        // GM or special users see all Yayasan
-        if ($user->is_gm || $user->name === 'Bernadett') {
+        // GM or HRD approvers see all Yayasan
+        if ($user->is_gm || $this->isHrdApprover($user)) {
             return $this->repository->getYayasanEmployees(DepartmentCode::values());
         }
 
-        // Regular department heads see their department's Yayasan
         $code = DepartmentCode::fromDepartmentName($user->department->name);
 
         if (! $code) {
             throw new \DomainException("Unknown department: {$user->department->name}");
         }
 
-        $codes = $this->getDepartmentCodesForYayasan($code, $user);
-
-        return $this->repository->getYayasanEmployees($codes);
+        return $this->repository->getYayasanEmployees(
+            $this->getDepartmentCodesForType($code, $user)
+        );
     }
 
     /**
-     * Resolve Magang (internship) employees for the given user.
+     * Resolve Magang (internship) employees visible to the given user.
      */
     public function resolveMagangForUser(User $user): Collection
     {
-        // Similar logic to Yayasan but for MAGANG status
         if (in_array($user->department->name, ['QC', 'QA'], true)) {
-            $codes = $this->getQcQaCodes($user);
-
-            return $this->repository->getMagangEmployees($codes);
+            return $this->repository->getMagangEmployees($this->getQcQaCodes($user));
         }
 
         if ($user->is_gm) {
@@ -101,82 +91,87 @@ class DepartmentEmployeeResolver
             throw new \DomainException("Unknown department: {$user->department->name}");
         }
 
-        $codes = $this->getDepartmentCodesForMagang($code, $user);
-
-        return $this->repository->getMagangEmployees($codes);
+        return $this->repository->getMagangEmployees(
+            $this->getDepartmentCodesForType($code, $user)
+        );
     }
 
     /**
-     * Get department codes for the given department, handling special combinations.
+     * Get the department codes a user can manage for Yayasan or Magang.
+     * Reads combined_dept_heads from config — no hardcoded usernames.
+     */
+    private function getDepartmentCodesForType(DepartmentCode $code, User $user): array
+    {
+        $combined = config('discipline.combined_dept_heads', []);
+
+        // Check if this user has a custom multi-department mapping (values are dept codes)
+        if (isset($combined[$user->name])) {
+            return $combined[$user->name];
+        }
+
+        // Logistic heads also see Store by default
+        if ($code === DepartmentCode::LOGISTIC) {
+            return [DepartmentCode::LOGISTIC->value, DepartmentCode::STORE->value];
+        }
+
+        return [$code->value];
+    }
+
+    /**
+     * Get department codes for regular employees.
+     * Logistic heads see Logistic + Store.
      */
     private function getDepartmentCodes(DepartmentCode $code, User $user): array
     {
-        return match ($code) {
-            DepartmentCode::LOGISTIC => [
-                DepartmentCode::LOGISTIC->value,
-                DepartmentCode::STORE->value,
-            ],
-            default => [$code->value],
-        };
+        if ($code === DepartmentCode::LOGISTIC) {
+            return [DepartmentCode::LOGISTIC->value, DepartmentCode::STORE->value];
+        }
+
+        return [$code->value];
     }
 
     /**
-     * Get department codes for Yayasan employees.
-     */
-    private function getDepartmentCodesForYayasan(DepartmentCode $code, User $user): array
-    {
-        return match ($code) {
-            DepartmentCode::LOGISTIC => [
-                DepartmentCode::LOGISTIC->value,
-                DepartmentCode::STORE->value,
-            ],
-            DepartmentCode::SECOND_PROCESS => $user->name === 'popon'
-                ? [DepartmentCode::SECOND_PROCESS->value, DepartmentCode::ASSEMBLY->value]
-                : [DepartmentCode::SECOND_PROCESS->value],
-            DepartmentCode::STORE => $user->name === 'catur'
-                ? [DepartmentCode::STORE->value, DepartmentCode::LOGISTIC->value]
-                : [DepartmentCode::STORE->value],
-            default => [$code->value],
-        };
-    }
-
-    /**
-     * Get department codes for Magang employees.
-     */
-    private function getDepartmentCodesForMagang(DepartmentCode $code, User $user): array
-    {
-        // Same logic as Yayasan for now
-        return $this->getDepartmentCodesForYayasan($code, $user);
-    }
-
-    /**
-     * Get QC/QA department codes based on user.
+     * Get QC/QA codes for the user.
+     * 'yuli' sees both QC and QA — read from config/discipline.combined_dept_heads.
      */
     private function getQcQaCodes(User $user): array
     {
-        if ($user->name === 'yuli') {
-            return [DepartmentCode::QC->value, DepartmentCode::QA->value];
+        $combined = config('discipline.combined_dept_heads', []);
+
+        if (isset($combined[$user->name])) {
+            return $combined[$user->name];
         }
 
         return [DepartmentCode::QC->value];
     }
 
     /**
-     * Check if user has special access (HR managers).
+     * Check if the user is an HRD approver (reads from config).
      */
-    private function isSpecialAccessUser(User $user): bool
+    private function isHrdApprover(User $user): bool
     {
-        return in_array($user->email, [
-            'ani_apriani@daijo.co.id',
-            'bernadett@daijo.co.id',
-        ], true) || $user->hasRole('super-admin');
+        return in_array($user->email, config('discipline.hrd_approvers', []), true);
+    }
+
+    /**
+     * Check if user has a special hardcoded access ID (reads from config).
+     */
+    private function isSpecialAccessId(User $user): bool
+    {
+        return in_array($user->id, config('discipline.special_access_ids', []), true);
+    }
+
+    /**
+     * Check if user has super-access (HR manager cross-dept visibility).
+     */
+    private function isSuperAccessUser(User $user): bool
+    {
+        return in_array($user->email, config('discipline.super_access_emails', []), true)
+            || $user->hasRole('super-admin');
     }
 
     /**
      * Fetch filtered employees for department head based on department and month.
-     *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
      */
     public function fetchForDepartmentHead(string $deptNo, int $month): Collection
     {
@@ -184,10 +179,7 @@ class DepartmentEmployeeResolver
     }
 
     /**
-     * Fetch filtered employees for general manager (Yayasan only).
-     *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
+     * Fetch filtered Yayasan employees for GM based on dept+month.
      */
     public function fetchForGeneralManager(string $deptNo, int $month): Collection
     {
@@ -200,11 +192,6 @@ class DepartmentEmployeeResolver
 
     /**
      * Fetch Yayasan employees based on user's role and filters.
-     *
-     * @param int $month Month to filter
-     * @param int $year Year to filter
-     * @param bool $isGM Whether user is GM
-     * @param string|null $deptNo Department number (null for GM)
      */
     public function fetchYayasanEmployees(
         int $month,
@@ -228,3 +215,4 @@ class DepartmentEmployeeResolver
         );
     }
 }
+

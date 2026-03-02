@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Auth;
 class DisciplineApprovalService
 {
     /**
-     * Approve employees by department head.
+     * Approve evaluation records for a department by the department head.
+     * Works for all employee types (Regular, Yayasan, Magang).
      *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
-     * @param int $year Year to filter
-     * @param bool $lockData Whether to lock the data after approval
-     * @return int Number of employees approved
+     * @param string   $deptNo   Department code
+     * @param int      $month    Month number
+     * @param int      $year     Year
+     * @param bool     $lockData Whether to also lock the records (Regular flow)
+     * @return int Number of records approved
      */
     public function approveDeptHead(
         string $deptNo,
@@ -23,7 +24,7 @@ class DisciplineApprovalService
         int $year,
         bool $lockData = false
     ): int {
-        $employees = $this->getYayasanEmployeesByDept($deptNo, $month, $year);
+        $employees = $this->getEmployeesByDept($deptNo, $month, $year);
 
         foreach ($employees as $employee) {
             $employee->depthead = Auth::user()->name;
@@ -39,19 +40,19 @@ class DisciplineApprovalService
     }
 
     /**
-     * Approve employees by general manager/HRD.
+     * Approve evaluation records as General Manager (Magang flow).
      *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
-     * @param int|null $year Year to filter (optional)
-     * @return int Number of employees approved
+     * @param string   $deptNo Department code
+     * @param int      $month  Month number
+     * @param int|null $year   Year (optional)
+     * @return int Number of records approved
      */
     public function approveGeneralManager(
         string $deptNo,
         int $month,
         ?int $year = null
     ): int {
-        $employees = $this->getYayasanEmployeesByDept($deptNo, $month, $year);
+        $employees = $this->getEmployeesByDept($deptNo, $month, $year);
 
         foreach ($employees as $employee) {
             $employee->generalmanager = Auth::user()->name;
@@ -62,13 +63,30 @@ class DisciplineApprovalService
     }
 
     /**
-     * Reject employees by department head.
+     * Approve evaluation records as HRD (Yayasan final approval step).
+     * Semantically the same as GM approval but named clearly for the Yayasan flow.
      *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
-     * @param int $year Year to filter
-     * @param string|null $remark Rejection remark
-     * @return int Number of employees rejected
+     * @param string   $deptNo Department code
+     * @param int      $month  Month number
+     * @param int|null $year   Year (optional)
+     * @return int Number of records approved
+     */
+    public function approveHrd(
+        string $deptNo,
+        int $month,
+        ?int $year = null
+    ): int {
+        return $this->approveGeneralManager($deptNo, $month, $year);
+    }
+
+    /**
+     * Reject evaluation records as the department head.
+     *
+     * @param string      $deptNo Department code
+     * @param int         $month  Month number
+     * @param int         $year   Year
+     * @param string|null $remark Rejection note
+     * @return int Number of records rejected
      */
     public function rejectDeptHead(
         string $deptNo,
@@ -76,7 +94,7 @@ class DisciplineApprovalService
         int $year,
         ?string $remark = null
     ): int {
-        $employees = $this->getYayasanEmployeesByDept($deptNo, $month, $year);
+        $employees = $this->getEmployeesByDept($deptNo, $month, $year);
 
         foreach ($employees as $employee) {
             $employee->depthead = 'rejected';
@@ -92,13 +110,13 @@ class DisciplineApprovalService
     }
 
     /**
-     * Reject employees by HRD (rejects both depthead and GM).
+     * Reject evaluation records as HRD (resets both depthead and GM fields).
      *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
-     * @param int $year Year to filter
-     * @param string|null $remark Rejection remark
-     * @return int Number of employees rejected
+     * @param string      $deptNo Department code
+     * @param int         $month  Month number
+     * @param int         $year   Year
+     * @param string|null $remark Rejection note
+     * @return int Number of records rejected
      */
     public function rejectHRD(
         string $deptNo,
@@ -106,10 +124,10 @@ class DisciplineApprovalService
         int $year,
         ?string $remark = null
     ): int {
-        $employees = $this->getYayasanEmployeesByDept($deptNo, $month, $year);
+        $employees = $this->getEmployeesByDept($deptNo, $month, $year);
 
         foreach ($employees as $employee) {
-            $employee->depthead = 'rejected';
+            $employee->depthead     = 'rejected';
             $employee->generalmanager = 'rejected';
 
             if ($remark) {
@@ -123,35 +141,10 @@ class DisciplineApprovalService
     }
 
     /**
-     * Get Yayasan employees by department, month, and optional year.
+     * Reset approval fields so a previously-rejected record can re-enter the flow.
      *
-     * @param string $deptNo Department number
-     * @param int $month Month to filter
-     * @param int|null $year Year to filter (optional)
-     */
-    private function getYayasanEmployeesByDept(
-        string $deptNo,
-        int $month,
-        ?int $year = null
-    ): Collection {
-        $query = EvaluationData::whereHas('karyawan', function ($query) use ($deptNo) {
-            $query->where('dept_code', $deptNo)
-                ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG']);
-        })->whereMonth('Month', $month);
-
-        if ($year) {
-            $query->whereYear('Month', $year);
-        }
-
-        return $query->get();
-    }
-
-    /**
-     * Reset approvals for previously rejected evaluation data.
-     * This allows the record to be resubmitted for approval.
-     *
-     * @param EvaluationData $evaluationData The evaluation data to reset
-     * @return bool Whether approvals were reset
+     * @param EvaluationData $evaluationData The record to reset
+     * @return bool Whether a reset was performed
      */
     public function resetRejectedApprovals(EvaluationData $evaluationData): bool
     {
@@ -160,7 +153,7 @@ class DisciplineApprovalService
             $evaluationData->depthead === 'rejected'
         ) {
             $evaluationData->update([
-                'depthead' => null,
+                'depthead'       => null,
                 'generalmanager' => null,
             ]);
 
@@ -169,4 +162,28 @@ class DisciplineApprovalService
 
         return false;
     }
+
+    /**
+     * Get evaluation records by department + month (and optionally year).
+     * Type-neutral: does not filter by employment_scheme — works for all employee types.
+     *
+     * @param string   $deptNo Department code
+     * @param int      $month  Month number
+     * @param int|null $year   Year (optional)
+     */
+    private function getEmployeesByDept(
+        string $deptNo,
+        int $month,
+        ?int $year = null
+    ): Collection {
+        $query = EvaluationData::where('dept', $deptNo)
+            ->whereMonth('Month', $month);
+
+        if ($year) {
+            $query->whereYear('Month', $year);
+        }
+
+        return $query->get();
+    }
 }
+

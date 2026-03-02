@@ -139,35 +139,55 @@ class DisciplinePageController extends Controller
      */
     public function updateyayasan(Request $request, $id)
     {
+        $this->updateEvaluationRecord($request, $id);
+
+        return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
+    }
+
+    /**
+     * Update a single Magang evaluation record's grade scores.
+     * Route: POST /discipline/magang/update/{id}  (discipline.magang.update)
+     */
+    public function updatemagang(Request $request, $id)
+    {
+        $this->updateEvaluationRecord($request, $id);
+
+        return redirect()->route('magang.table')->with('success', 'Data updated successfully');
+    }
+
+    /**
+     * Shared update logic for Yayasan and Magang evaluation records.
+     * Saves grade scores, recalculates total, stamps pengawas, resets prior rejections.
+     */
+    private function updateEvaluationRecord(Request $request, int|string $id): void
+    {
         $evaluationData = EvaluationData::findOrFail($id);
         $pengawas       = Auth::user();
 
         $evaluationData->update([
-            'kemampuan_kerja'  => $request->kemampuan_kerja,
-            'kecerdasan_kerja' => $request->kecerdasan_kerja,
-            'qualitas_kerja'   => $request->qualitas_kerja,
-            'disiplin_kerja'   => $request->disiplin_kerja,
-            'kepatuhan_kerja'  => $request->kepatuhan_kerja,
-            'lembur'           => $request->lembur,
-            'efektifitas_kerja'=> $request->efektifitas_kerja,
-            'relawan'          => $request->relawan,
-            'integritas'       => $request->integritas,
+            'kemampuan_kerja'   => $request->kemampuan_kerja,
+            'kecerdasan_kerja'  => $request->kecerdasan_kerja,
+            'qualitas_kerja'    => $request->qualitas_kerja,
+            'disiplin_kerja'    => $request->disiplin_kerja,
+            'kepatuhan_kerja'   => $request->kepatuhan_kerja,
+            'lembur'            => $request->lembur,
+            'efektifitas_kerja' => $request->efektifitas_kerja,
+            'relawan'           => $request->relawan,
+            'integritas'        => $request->integritas,
         ]);
 
         $scoreCalculator = app(DisciplineScoreCalculatorService::class);
         $scores = $request->only($scoreCalculator->getScoredFields());
-        $total  = $scoreCalculator->calculateTotal($scores, $evaluationData);
+        $total  = $scoreCalculator->calculateTotal($scores, $evaluationData->fresh());
 
         $evaluationData->update([
             'total'    => $total,
             'pengawas' => $pengawas->name,
         ]);
 
-        // Reset any prior rejections so it re-enters the approval flow
+        // Reset any prior rejections so the record re-enters the approval flow
         $approvalService = app(DisciplineApprovalService::class);
         $approvalService->resetRejectedApprovals($evaluationData);
-
-        return redirect()->route('yayasan.table')->with('success', 'Data updated successfully');
     }
 
     /**
@@ -212,9 +232,11 @@ class DisciplinePageController extends Controller
     }
 
     /**
-     * Dept head approves Yayasan evaluation records for their dept+month.
+     * Dept head approves Yayasan or Magang evaluation records for their dept+month.
      * Route: POST /discipline/yayasan/approvalDepthead  (approve.depthead.yayasan)
      * Route: POST /discipline/magang/approval            (approve.data.depthead)
+     *
+     * The `redirect_to` hidden field in the form controls which table to return to.
      */
     public function approve_depthead_button(Request $request)
     {
@@ -226,7 +248,10 @@ class DisciplinePageController extends Controller
 
         $approvalService->approveDeptHead($deptNo, $month, $year);
 
-        return redirect()->route('yayasan.table')->with('success', 'Approved by Dept Head');
+        // Redirect back to the correct table based on which form submitted
+        $redirectTo = $request->input('redirect_to', 'yayasan.table');
+
+        return redirect()->route($redirectTo)->with('success', 'Approved by Dept Head');
     }
 
     /**
@@ -307,38 +332,6 @@ class DisciplinePageController extends Controller
         }
     }
 
-    /**
-     * Update a single Magang evaluation record's grade scores.
-     * Route: POST /discipline/magang/update/{id}  (discipline.magang.update)
-     */
-    public function updatemagang(Request $request, $id)
-    {
-        $evaluationData = EvaluationData::findOrFail($id);
-        $pengawas       = Auth::user();
-
-        $evaluationData->update([
-            'kemampuan_kerja'  => $request->kemampuan_kerja,
-            'kecerdasan_kerja' => $request->kecerdasan_kerja,
-            'qualitas_kerja'   => $request->qualitas_kerja,
-            'disiplin_kerja'   => $request->disiplin_kerja,
-            'kepatuhan_kerja'  => $request->kepatuhan_kerja,
-            'lembur'           => $request->lembur,
-            'efektifitas_kerja'=> $request->efektifitas_kerja,
-            'relawan'          => $request->relawan,
-            'integritas'       => $request->integritas,
-        ]);
-
-        $scoreCalculator = app(DisciplineScoreCalculatorService::class);
-        $scores = $request->only($scoreCalculator->getScoredFields());
-        $total  = $scoreCalculator->calculateTotal($scores, $evaluationData->fresh());
-
-        $evaluationData->update([
-            'total'    => $total,
-            'pengawas' => $pengawas->name,
-        ]);
-
-        return redirect()->route('magang.table')->with('success', 'Data updated successfully');
-    }
 
     // ──────────────────────────────────────────────────────
     // All Discipline (HR / Super-Admin view)
