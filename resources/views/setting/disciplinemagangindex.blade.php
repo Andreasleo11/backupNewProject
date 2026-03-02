@@ -11,15 +11,7 @@
             File
             Excel</button>
     @endif
-    @php
-        foreach ($employees as $employee) {
-            if ($employee->pengawas) {
-                $condition = 0;
-            } else {
-                $condition = 1;
-            }
-        }
-    @endphp
+
 
     @if (($user->is_head && !$user->is_gm) || $user->email === 'fery@daijo.co.id')
         <form method="POST" action="{{ route('approve.data.depthead') }}" id="lock-form">
@@ -71,7 +63,15 @@
             </select>
         </div>
         <div class="col-auto">
-            {{ date('Y') }}
+            <div class="form-label">Filter Tahun</div>
+        </div>
+        <div class="col-auto">
+            <select name="filter_year" id="year-filter" class="form-select">
+                @for ($year = 2020; $year <= date('Y'); $year++)
+                    <option value="{{ $year }}" @if ($year == date('Y')) selected @endif>
+                        {{ $year }}</option>
+                @endfor
+            </select>
         </div>
         <div class="col text-end" id="filtered-employees">
             <!-- Filtered employees will be displayed here -->
@@ -97,7 +97,15 @@
                     </select>
                 </div>
                 <div class="col-auto">
-                    {{ date('Y') }}
+                    <div class="form-label">Filter Tahun</div>
+                </div>
+                <div class="col-auto">
+                    <select name="filter_year_gm" id="year-filter-gm" class="form-select">
+                        @for ($year = 2020; $year <= date('Y'); $year++)
+                            <option value="{{ $year }}" @if ($year == date('Y')) selected @endif>
+                                {{ $year }}</option>
+                        @endfor
+                    </select>
                 </div>
                 <div class="col text-end" id="filtered-employees">
                     <!-- Filtered employees will be displayed here -->
@@ -113,34 +121,94 @@
             </div>
         </section>
 
-        @foreach ($employees as $employee)
-            @include('partials.edit-discipline-magang-modal')
-        @endforeach
+        <div class="container border rounded-2 p-3 mt-4">
+            <h4>Files</h4>
+            <div class="row" id="file-list">
+                <!-- Files will be loaded here dynamically -->
+            </div>
+        </div>
+
+        @include('partials.edit-discipline-magang-modal')
 
         {{ $dataTable->scripts() }}
 
         <script type="module">
             $(function() {
                 let selectedMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+                let selectedYear = new Date().getFullYear();
                 let realMonth = selectedMonth;
+                let realYear = selectedYear;
 
                 let dataTable = window.LaravelDataTables["disciplinemagang-table"];
-                if (realMonth) {
-                    $('#status-filter').val(realMonth);
-                    applyFilter(realMonth);
+                
+                if (localStorage.getItem('selectedMonth')) {
+                    realMonth = localStorage.getItem('selectedMonth');
                 }
 
+                $('#status-filter').val(realMonth);
+                $('#year-filter').val(realYear);
+                applyFilter(realMonth, realYear);
+
                 $('#status-filter').change(function() {
-                    let realMonth = $(this).val();
+                    realMonth = $(this).val();
                     console.log("Selected month:", realMonth);
                     localStorage.setItem('selectedMonth', realMonth);
-                    applyFilter(realMonth);
+                    applyFilter(realMonth, realYear);
                 });
 
-                function applyFilter(realMonth) {
+                $('#year-filter').change(function() {
+                    realYear = $(this).val();
+                    console.log("Selected year:", realYear);
+                    applyFilter(realMonth, realYear);
+                });
+
+                function applyFilter(realMonth, realYear) {
                     let formattedMonth = realMonth.padStart(2, '0');
-                    console.log("Formatted month:", formattedMonth);
-                    dataTable.column(6).search('-' + formattedMonth + '-', true, false).draw();
+                    let formattedYear = realYear.toString();
+                    console.log("Formatted filter:", formattedYear + "-" + formattedMonth);
+                    
+                    dataTable.column(6).search(formattedYear + '-' + formattedMonth + '-', true, false).draw();
+                    
+                    let dept = "{{ Auth::user()->department->dept_no ?? '' }}";
+                    loadFiles(formattedYear, formattedMonth, dept);
+                }
+
+                function loadFiles(year, month, dept) {
+                    $.ajax({
+                        url: "/get-files",
+                        type: "GET",
+                        data: {
+                            year: year,
+                            month: month,
+                            dept: dept
+                        },
+                        success: function(response) {
+                            $("#file-list").html("");
+
+                            if (response.files && response.files.length > 0) {
+                                response.files.forEach(file => {
+                                    let fileCard = `
+                                    <div class="col d-flex col-xl-3 col-md-4 my-2">
+                                        <a href="/storage/files/${file.name}" download="${file.name}">
+                                            <div class="card">
+                                                <div class="card-body btn btn-light" style="max-width: 250px">
+                                                    <div class="col d-flex align-items-center p-0 text-center" style="min-height:100px">
+                                                        <div class="text-secondary text-start fw-semibold" style="overflow: hidden; text-overflow: ellipsis; max-height: 4.5em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+                                                            ${file.name}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    `;
+                                    $("#file-list").append(fileCard);
+                                });
+                            } else {
+                                $("#file-list").html("<p>No Files Found</p>");
+                            }
+                        }
+                    });
                 }
             });
 
@@ -163,29 +231,6 @@
                 }
             });
 
-            function setFilterValue(filterValue) {
-                fetch('/set-filter-value', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        },
-                        body: JSON.stringify({
-                            filterValue: filterValue
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Filter value set in session:', data.filterValue);
-                    })
-                    .catch(error => {
-                        console.error('Error setting filter value:', error);
-                    });
-            }
 
-            document.getElementById('status-filter').addEventListener('change', function() {
-                var filterValue = this.value;
-                setFilterValue(filterValue);
-            });
         </script>
     @endsection

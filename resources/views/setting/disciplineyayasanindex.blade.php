@@ -19,37 +19,7 @@
             Excel</button>
     @endif
 
-    @php
-        foreach ($employees as $employee) {
-            if ($employee->pengawas) {
-                $condition = 0;
-            } else {
-                $condition = 1;
-            }
-        }
-    @endphp
 
-    @if (($user->is_head && !$user->is_gm) || $user->email === 'fery@daijo.co.id')
-        <!-- <form method="POST" action="{{ route('approve.data.depthead') }}" id="lock-form">
-                                    @csrf
-                                    <input type="hidden" name="filter_month" id="filter-month-input">
-                                    <input type="hidden" name="filter_year" id="filter-year-input"> Add this hidden input -->
-        <!-- If there are employees that are not locked, show the button -->
-        <!-- <button type="submit" class="btn btn-danger" id="approve-data-btn"><i class='bx bxs-lock'></i> Approve DeptHead
-                                    </button>
-                                </form> -->
-    @endif
-
-    @if ($user->is_gm)
-        <!-- <form method="POST" action="{{ route('approve.data.gm') }}" id="lock-form">
-                                    @csrf
-                                    <input type="hidden" name="filter_month" id="filter-month-input">
-                                    <input type="hidden" name="filter_dept" id="filter-dept-input"> -->
-        <!-- If there are employees that are not locked, show the button -->
-        <!-- <button type="submit" class="btn btn-danger" id="approve-gm-data-btn"><i class='bx bxs-lock'></i> Approve GM
-                                    </button>
-                                </form> -->
-    @endif
 
     <input type="hidden" name="filter_month" id="filter-month-input">
 
@@ -299,41 +269,58 @@
         <script type="module">
             $(document).on('click', '.edit-button', function() {
                 let employeeId = $(this).data('id');
+                
+                // Show loader, hide content
+                $('#edit-yayasan-modal-loader').show();
+                $('#edit-yayasan-modal-content').hide();
+                $('#edit-yayasan-modal-footer').hide();
+                
+                // Reset form
+                $('#edit-form')[0].reset();
+                $('#edit-form .form-control').removeClass('is-valid is-invalid');
+                $('#editModalLabel').text('Lembar Penilaian');
 
                 axios.get(`/evaluationDatas/${employeeId}`)
                     .then(response => {
                         let employee = response.data;
+                        let fullName = employee.karyawan?.Nama || employee.karyawan?.name || 'Unknown';
+                        let nik = employee.NIK || '';
+                        let deptName = employee.department?.name || '';
 
                         // Populate modal fields
-                        $('#editModalLabel').text(
-                            `Lembar Penilaian Untuk ${employee.karyawan.Nama} ${employee.NIK} ${employee.department.name}`
-                        );
+                        $('#editModalLabel').text(`Lembar Penilaian Untuk ${fullName}`);
 
                         // Populate form inputs
-                        $('#employee-alpha').val(employee.Alpha);
-                        $('#employee-telat').val(employee.Telat);
-                        $('#employee-izin').val(employee.Izin);
-                        $('#employee-sakit').val(employee.Sakit);
+                        $('#employee-alpha').text(employee.Alpha || 0);
+                        $('#employee-telat').text(employee.Telat || 0);
+                        $('#employee-izin').text(employee.Izin || 0);
+                        $('#employee-sakit').text(employee.Sakit || 0);
 
-                        $('#kemampuan_kerja').val(employee.kemampuan_kerja);
-                        $('#kecerdasan_kerja').val(employee.kecerdasan_kerja);
-                        $('#qualitas_kerja').val(employee.qualitas_kerja);
+                        $('#kemampuan_kerja').val(employee.kemampuan_kerja || 'C');
+                        $('#kecerdasan_kerja').val(employee.kecerdasan_kerja || 'C');
+                        $('#qualitas_kerja').val(employee.qualitas_kerja || 'C');
 
-                        $('#disiplin_kerja').val(employee.disiplin_kerja);
-                        $('#kepatuhan_kerja').val(employee.kepatuhan_kerja);
-                        $('#lembur').val(employee.lembur);
+                        $('#disiplin_kerja').val(employee.disiplin_kerja || 'C');
+                        $('#kepatuhan_kerja').val(employee.kepatuhan_kerja || 'C');
+                        $('#lembur').val(employee.lembur || 'C');
 
-                        $('#efektifitas_kerja').val(employee.efektifitas_kerja);
-                        $('#relawan').val(employee.relawan);
-                        $('#integritas').val(employee.integritas);
+                        $('#efektifitas_kerja').val(employee.efektifitas_kerja || 'C');
+                        $('#relawan').val(employee.relawan || 'C');
+                        $('#integritas').val(employee.integritas || 'C');
 
-            $('#edit-form').attr('action', `/edit/yayasandiscipline/${employeeId}`);
-          })
-          .catch(error => {
-            console.error("Error fetching employee data:", error);
-          });
-      });
-    </script>
+                        $('#edit-form').attr('action', `/discipline/yayasan/update/${employeeId}`);
+                        
+                        // Hide loader, show content
+                        $('#edit-yayasan-modal-loader').hide();
+                        $('#edit-yayasan-modal-content').show();
+                        $('#edit-yayasan-modal-footer').show();
+                    })
+                    .catch(error => {
+                        console.error("Error fetching employee data:", error);
+                        $('#edit-yayasan-modal-loader').html('<div class="alert alert-danger mx-3 mt-3">Failed to load data. Please try again.</div>');
+                    });
+            });
+        </script>
 
     <script>
       document.addEventListener('DOMContentLoaded', function() {

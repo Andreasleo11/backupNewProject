@@ -21,6 +21,9 @@ class EvaluationDataDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', 'evaluationdata.action')
+            ->editColumn('Month', function ($row) {
+                return $row->Month ? $row->Month->format('d/m/Y') : '-';
+            })
             ->setRowId('id');
     }
 
@@ -43,7 +46,6 @@ class EvaluationDataDataTable extends DataTable
             ->minifiedAjax()
             // ->dom('Bfrtip')
             ->orderBy(1)
-            ->selectStyleSingle()
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),

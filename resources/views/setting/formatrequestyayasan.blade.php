@@ -4,7 +4,7 @@
     <div class="container">
         <h3>Evaluation Format Request</h3>
 
-        <form action="{{ route('get.format') }}" method="POST">
+        <form action="{{ route('get.format.yayasan') }}" method="POST">
             @csrf
 
             <!-- Status Dropdown -->

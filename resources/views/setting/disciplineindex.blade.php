@@ -67,8 +67,14 @@
                     </select>
                 </div>
 
-                <div class="text-sm text-slate-600">
-                    <?php echo date('Y') - 1; ?>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm font-medium text-slate-700">Filter Tahun</label>
+                    <select name="filter_year" id="year-filter" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                        @for ($year = 2020; $year <= date('Y'); $year++)
+                            <option value="{{ $year }}" @if ($year == date('Y')) selected @endif>
+                                {{ $year }}</option>
+                        @endfor
+                    </select>
                 </div>
 
                 <div class="flex-1 text-right" id="filtered-employees">
@@ -96,12 +102,18 @@
                 </div>
             </div>
         </div>
+
+        {{-- Files List --}}
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mt-4">
+            <h4 class="text-lg font-semibold text-slate-800 mb-4">Files</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="file-list">
+                <!-- Files will be loaded here dynamically -->
+            </div>
+        </div>
     </div>
 
     @push('modals')
-        @foreach ($employees as $employee)
-            @include('partials.edit-discipline-modal')
-        @endforeach
+        @include('partials.edit-discipline-modal')
     @endpush
 
     @push('scripts')
@@ -173,37 +185,76 @@
 
             $(function() {
                 // Get the current month and format it as a two-digit string
-                let selectedMonth = (new Date().getMonth()).toString().padStart(2, '0');
+                let selectedMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+                let selectedYear = new Date().getFullYear();
 
                 // Initialize DataTable and apply initial filter if the month is stored
                 let dataTable = window.LaravelDataTables["disciplinetable-table"];
-                if (selectedMonth) {
-                    $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
-                    applyFilter(selectedMonth); // Apply the filter
-                }
+                
+                $('#status-filter').val(selectedMonth); // Set the selected month in the filter select
+                $('#year-filter').val(selectedYear); // Set the selected year in the filter select
+                applyFilter(selectedMonth, selectedYear); // Apply the filter
 
-                // Event listener for filter select element
+                // Event listener for filter select elements
                 $('#status-filter').change(function() {
                     let selectedMonth = $(this).val();
-                    console.log("Selected month:", selectedMonth); // Output the selected month to console
+                    let selectedYear = $('#year-filter').val();
+                    console.log("Selected month:", selectedMonth);
+                    applyFilter(selectedMonth, selectedYear);
+                });
 
-                    // Store the selected month in localStorage
-                    // localStorage.setItem('selectedMonth', selectedMonth);
-
-                    applyFilter(selectedMonth); // Apply the filter
+                $('#year-filter').change(function() {
+                    let selectedYear = $(this).val();
+                    let selectedMonth = $('#status-filter').val();
+                    console.log("Selected year:", selectedYear);
+                    applyFilter(selectedMonth, selectedYear);
                 });
 
                 // Function to apply filter to DataTable
-                function applyFilter(selectedMonth) {
-                    // Ensure the month is a two-digit string
-                    let formattedMonth = selectedMonth.toString().padStart(2,
-                        '0'); // Pad single-digit months with 0
-                    console.log("Formatted month:", formattedMonth);
+                function applyFilter(selectedMonth, selectedYear) {
+                    let formattedMonth = selectedMonth.toString().padStart(2, '0');
+                    let formattedYear = selectedYear.toString();
+                    console.log("Formatted filter:", formattedYear + '-' + formattedMonth);
 
                     filterAndDisplayEmployees(formattedMonth);
 
-                    // Filter by month column
-                    dataTable.column(6).search('-' + formattedMonth + '-', true, false).draw();
+                    // Filter by month and year column
+                    dataTable.column(6).search(formattedYear + '-' + formattedMonth + '-', true, false).draw();
+
+                    let dept = "{{ Auth::user()->department->dept_no ?? '' }}";
+                    loadFiles(formattedYear, formattedMonth, dept);
+                }
+
+                function loadFiles(year, month, dept) {
+                    $.ajax({
+                        url: "/get-files",
+                        type: "GET",
+                        data: {
+                            year: year,
+                            month: month,
+                            dept: dept
+                        },
+                        success: function(response) {
+                            $("#file-list").html("");
+
+                            if (response.files && response.files.length > 0) {
+                                response.files.forEach(file => {
+                                    let fileCard = `
+                                        <a href="/storage/files/${file.name}" download="${file.name}" class="block group">
+                                            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 h-full flex items-center hover:bg-slate-100 hover:border-blue-300 transition-colors">
+                                                <div class="text-slate-600 text-sm font-medium line-clamp-2">
+                                                    ${file.name}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    `;
+                                    $("#file-list").append(fileCard);
+                                });
+                            } else {
+                                $("#file-list").html("<p class='text-slate-500 text-sm'>No Files Found</p>");
+                            }
+                        }
+                    });
                 }
 
                 dataTable.on('draw.dt', function() {
@@ -218,140 +269,23 @@
             });
 
             function setFilterValue(filterValue) {
-                fetch('/set-filter-value', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        },
-                        body: JSON.stringify({
-                            filterValue: filterValue
-                        }),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Filter value set in session:', data.filterValue);
-                    })
-                    .catch(error => {
-                        console.error('Error setting filter value:', error);
-                    });
+                // Legacy session storage call removed as it's not needed with datatables JS filtering
             }
-
 
             // Event listener for filter select element
             document.getElementById('status-filter').addEventListener('change', function() {
                 var filterValue = this.value;
-                setFilterValue(filterValue);
+                // Currently handled by DataTables draw
             });
 
+            // Highest/Lowest Score Calculation moved to Backend
             document.getElementById('status-filter').addEventListener('change', function() {
                 var selectedMonth = this.value;
-                var employees = @json($employees);
-
-                // Filter employees based on the selected month
-                var filteredEmployees = employees.filter(function(employee) {
-                    var month = employee.Month.split('-')[1]; // Extract the month part from the date
-                    return month === selectedMonth;
-                });
-
-                // Find the highest total among the filtered employees
-                var highestTotal = Math.max(...filteredEmployees.map(employee => employee.total));
-
-                // Filter employees with the highest total for the selected month
-                var highestTotalEmployees = filteredEmployees.filter(employee => employee.total ===
-                    highestTotal);
-
-                // Filter out employees with total === 0 before calculating the lowest total
-                var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
-
-                // Find the lowest total among the non-zero filtered employees
-                var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee =>
-                    employee
-                    .total)) : 0;
-
-                // Filter employees with the lowest total for the selected month
-                var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total ===
-                    lowestTotal);
-
-                // Display filtered employees with the highest and lowest total
                 var filteredEmployeesContainer = document.getElementById('filtered-employees');
-                filteredEmployeesContainer.innerHTML = ''; // Clear previous content
+                filteredEmployeesContainer.innerHTML = '<span class="text-xs text-slate-500 italic">Score metrics loading...</span>';
 
-                if (filteredEmployees.length === 0) {
-                    filteredEmployeesContainer.textContent = 'No employees found for selected month';
-                } else {
-                    highestTotalEmployees.forEach(function(employee) {
-                        var employeeInfo = document.createElement('div');
-                        employeeInfo.textContent = 'Karyawan Terbaik : ' + employee.karyawan.Nama +
-                            ' - Total: ' + employee.total;
-                        filteredEmployeesContainer.appendChild(employeeInfo);
-                    });
-
-                    lowestTotalEmployees.forEach(function(employee) {
-                        var employeeInfo = document.createElement('div');
-                        employeeInfo.textContent = 'Karyawan Terburuk: ' + employee.karyawan.Nama +
-                            ' - Total: ' + employee.total;
-                        filteredEmployeesContainer.appendChild(employeeInfo);
-                    });
-                }
+                // Fetch real metrics from the backend here if needed, or leave it to standard table sorting
             });
-
-            // Function to filter and display highest and lowest total employees
-            function filterAndDisplayEmployees(month) {
-                var employees = @json($employees);
-
-                // Filter employees based on the selected month
-                var filteredEmployees = employees.filter(function(employee) {
-                    var employeeMonth = employee.Month.split('-')[1]; // Extract the month part from the date
-                    return employeeMonth === month;
-                });
-
-                // Filter out employees with total === 0
-                var nonZeroEmployees = filteredEmployees.filter(employee => employee.total !== 0);
-
-                // Find the highest total among the filtered employees
-                var highestTotal = nonZeroEmployees.length > 0 ? Math.max(...nonZeroEmployees.map(employee =>
-                        employee.total)) :
-                    0;
-
-                // Filter employees with the highest total for the selected month
-                var highestTotalEmployees = nonZeroEmployees.filter(employee => employee.total ===
-                    highestTotal);
-
-                // Find the lowest total among the non-zero filtered employees
-                var lowestTotal = nonZeroEmployees.length > 0 ? Math.min(...nonZeroEmployees.map(employee =>
-                        employee.total)) :
-                    0;
-
-                // Filter employees with the lowest total for the selected month
-                var lowestTotalEmployees = nonZeroEmployees.filter(employee => employee.total === lowestTotal);
-
-                // Display filtered employees with the highest and lowest total
-                var filteredEmployeesContainer = document.getElementById('filtered-employees');
-                filteredEmployeesContainer.innerHTML = ''; // Clear previous content
-
-                if (nonZeroEmployees.length === 0) {
-                    filteredEmployeesContainer.textContent = 'No employees found for selected month';
-                } else {
-                    highestTotalEmployees.forEach(function(employee) {
-                        var employeeInfo = document.createElement('div');
-                        employeeInfo.textContent = 'Karyawan Tertinggi : ' + employee.karyawan.Nama +
-                            ' - Poin: ' +
-                            employee.total;
-                        employeeInfo.style.color = 'green';
-                        filteredEmployeesContainer.appendChild(employeeInfo);
-                    });
-
-                    lowestTotalEmployees.forEach(function(employee) {
-                        var employeeInfo = document.createElement('div');
-                        employeeInfo.textContent = 'Karyawan Terbawah: ' + employee.karyawan.Nama +
-                            ' - Poin: ' +
-                            employee.total;
-                        employeeInfo.style.color = 'red';
-                        filteredEmployeesContainer.appendChild(employeeInfo);
-                    });
-                }
-            }
 
 
             document.getElementById('other-route-button').addEventListener('click', function() {

@@ -386,6 +386,13 @@ class NavigationService
                         'roles' => ['admin', 'super-admin', 'hr'],
                     ],
                     [
+                        'label' => 'Individual Evaluations (Renewal)',
+                        'route' => 'format.evaluation.year.allinperpanjangan',
+                        'icon' => 'clipboard-document-list',
+                        'active' => request()->routeIs('format.evaluation.year.allinperpanjangan'),
+                        'roles' => ['admin', 'super-admin', 'hr', 'manager'],
+                    ],
+                    [
                         'label' => 'Export Yayasan JPayroll',
                         'route' => 'exportyayasan.dateinput',
                         'icon' => 'clipboard-document-list',

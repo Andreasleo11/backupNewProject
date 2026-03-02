@@ -81,9 +81,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/export/yayasan-full/discipline', [DisciplinePageController::class, 'exportYayasanFull'])->name('export.yayasan.full');
 
     // Date input page → show department status for Jpayroll export
-    Route::get('/exportyayasantodateinput', [DisciplinePageController::class, 'dateExport'])->name('exportyayasan.dateinput');
+    Route::get('/exportyayasantodateinput', [DisciplinePageController::class, 'exportyayasantodateinput'])->name('exportyayasan.dateinput');
     // Show Jpayroll export page with dept status
-    Route::get('/exportyayasan', [DisciplinePageController::class, 'exportYayasanJpayroll'])->name('export.yayasan.jpayroll');
+    Route::get('/exportyayasan', [DisciplinePageController::class, 'exportyayasanjpayroll'])->name('export.yayasan.jpayroll');
     // Get department approval status (AJAX/JSON)
     Route::get('/exportyayasan/summary', [DisciplinePageController::class, 'getDepartmentStatusYayasan'])->name('exportyayasan.summary');
     // Execute the actual Jpayroll Excel download
@@ -141,4 +141,6 @@ Route::middleware('auth')->group(function () {
     
     Route::get('/weekly-evaluation/index', [EvaluationDataWeeklyController::class, 'weeklyIndex'])->name('weekly.evaluation.index');
     Route::post('/weeklyprocessevaluationdata', [EvaluationDataWeeklyController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
+
+    Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
 });

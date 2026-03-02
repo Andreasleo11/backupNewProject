@@ -8,21 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * EvaluationData — Monthly discipline evaluation record per employee.
- *
- * Supports TWO scoring systems depending on employment_scheme:
- *
- *  OLD system (KONTRAK / TETAP):
- *    Fields: kerajinan_kerja, kerapian_kerja, prestasi, loyalitas, perilaku_kerja
- *    Base score: 40 + scores(A–D) − attendance penalties
- *
- *  NEW system (YAYASAN / MAGANG):
- *    Fields: kemampuan_kerja, kecerdasan_kerja, qualitas_kerja, disiplin_kerja,
- *            kepatuhan_kerja, lembur, efektifitas_kerja, relawan, integritas
- *    Base score: 0 + scores(A–E) − attendance penalties
- *
- * Approval flow (Yayasan only):
- *   null → depthead (name|'rejected') → generalmanager (name|'rejected')
  *
  * @property int         $id
  * @property string      $NIK
