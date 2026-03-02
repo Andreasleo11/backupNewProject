@@ -109,6 +109,7 @@ use App\Livewire\Departments\Overview as DepartmentsOverview;
 use App\Livewire\DestinationForm;
 use App\Livewire\DestinationIndex;
 use App\Livewire\FileLibrary;
+use App\Livewire\InspectionDashboard;
 use App\Livewire\InspectionForm;
 use App\Livewire\InspectionIndex;
 use App\Livewire\InspectionShow;
@@ -2000,11 +2001,13 @@ Route::get('/auto-login', function(\Illuminate\Http\Request $request){
     Auth::login($user);
 });
 
-Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
-Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
-Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name(
-    'inspection-reports.show',
-);
+Route::middleware(['auth'])->group(function () {
+    // Dashboard must be declared before the {inspection_report} wildcard
+    Route::get('/inspection-reports/dashboard', InspectionDashboard::class)->name('inspection-reports.dashboard');
+    Route::get('/inspection-reports', InspectionIndex::class)->name('inspection-reports.index');
+    Route::get('/inspection-report/create', InspectionForm::class)->name('inspection-reports.create');
+    Route::get('/inspection-reports/{inspection_report}', InspectionShow::class)->name('inspection-reports.show');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/destinations', DestinationIndex::class)->name('destination.index');
