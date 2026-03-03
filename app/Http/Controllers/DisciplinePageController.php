@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\AllDisciplineTableDataTable;
-use App\DataTables\DisciplineMagangDataTable;
-use App\DataTables\DisciplineTableDataTable;
-use App\DataTables\DisciplineYayasanTableDataTable;
+use App\DataTables\DisciplineDataTable;
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
 use App\Domain\Discipline\Services\DisciplineApprovalService;
@@ -48,17 +46,17 @@ class DisciplinePageController extends Controller
      * Show the regular discipline DataTable for the authenticated dept head.
      * Route: GET /discipline/index  (discipline.index)
      */
-    public function index(DisciplineTableDataTable $dataTable)
+    public function index(DisciplineDataTable $dataTable)
     {
         $user = Auth::user();
 
-        if (! $this->policy->viewAnyDiscipline($user)) {
-            abort(403, 'Only Department Heads can access this');
-        }
+        // if (! $this->policy->viewAnyDiscipline($user)) {
+        //     abort(403, 'Only Department Heads can access this');
+        // }
 
         $employees = $this->resolver->resolveForUser($user);
 
-        return $dataTable->render('setting.disciplineindex', compact('employees', 'user'));
+        return $dataTable->forType('regular')->render('setting.disciplineindex', compact('employees', 'user'));
     }
 
     /**
@@ -115,19 +113,19 @@ class DisciplinePageController extends Controller
      * Show the Yayasan discipline DataTable.
      * Route: GET /discipline/yayasan/table  (yayasan.table)
      */
-    public function indexyayasan(DisciplineYayasanTableDataTable $dataTable)
+    public function indexyayasan(DisciplineDataTable $dataTable)
     {
         $user = Auth::user();
 
-        if (! $this->policy->viewYayasanDiscipline($user)) {
-            abort(403, 'Department does not have Yayasan employees');
-        }
+    // if (! $this->policy->viewYayasanDiscipline($user)) {
+        //     abort(403, 'Department does not have Yayasan employees');
+        // }
 
         try {
             $employees = $this->resolver->resolveYayasanForUser($user);
             $files = [];
 
-            return $dataTable->render('setting.disciplineyayasanindex', compact('employees', 'user', 'files'));
+            return $dataTable->forType('yayasan')->render('setting.disciplineyayasanindex', compact('employees', 'user', 'files'));
         } catch (\Throwable $th) {
             abort(403, 'Department does not have Yayasan employees');
         }
@@ -315,18 +313,18 @@ class DisciplinePageController extends Controller
      * Show the Magang discipline DataTable.
      * Route: GET /discipline/magang/table  (magang.table)
      */
-    public function indexmagang(DisciplineMagangDataTable $dataTable)
+    public function indexmagang(DisciplineDataTable $dataTable)
     {
         $user = Auth::user();
 
-        if (! $this->policy->viewYayasanDiscipline($user)) {
-            abort(403, 'Department does not have Magang employees');
-        }
+        // if (! $this->policy->viewYayasanDiscipline($user)) {
+        //     abort(403, 'Department does not have Magang employees');
+        // }
 
         try {
             $employees = $this->resolver->resolveMagangForUser($user);
 
-            return $dataTable->render('setting.disciplineMagangindex', compact('employees', 'user'));
+            return $dataTable->forType('magang')->render('setting.disciplineMagangindex', compact('employees', 'user'));
         } catch (\Throwable $th) {
             abort(403, 'Department does not have Magang employees');
         }

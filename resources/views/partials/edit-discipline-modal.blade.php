@@ -1,84 +1,119 @@
-<div class="modal fade" id="edit-discipline-modal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+{{--
+    Unified Discipline Edit Modal
+    ─────────────────────────────
+    One modal for Regular, Yayasan, and Magang evaluations.
+    Triggered by the 'edit-discipline-btn' buttons in DisciplineDataTable.
+
+    The button passes:
+      - data-id             → evaluation record ID (for AJAX fetch)
+      - data-update-url     → full PUT URL (route + id, pre-built in DataTable)
+
+    The JS below:
+      1. Listens for the modal trigger button click
+      2. Shows the loading spinner
+      3. Fetches /evaluation/{id} (getEvaluationData route)
+      4. Determines type from the response (employment_scheme)
+      5. Shows the correct set of fields, hides the other
+      6. Populates the form, sets the form action
+      7. Submits via AJAX on Save
+--}}
+<div class="modal fade" id="edit-discipline-modal" tabindex="-1" aria-labelledby="editDisciplineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form method="POST" id="edit-discipline-form" class="needs-validation">
+            <form method="POST" id="edit-discipline-form" class="needs-validation" novalidate>
                 @csrf
                 @method('PUT')
+
                 <div class="modal-header">
-                    <h4 class="modal-title">Discipline Point For <strong id="edit-employee-name"></strong></h4>
+                    <h5 class="modal-title" id="editDisciplineModalLabel">Lembar Penilaian</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <!-- Loading Spinner -->
-                <div id="edit-modal-loader" class="text-center py-5">
+
+                {{-- Loading Spinner --}}
+                <div id="discipline-modal-loader" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <p class="mt-2 text-muted">Fetching data...</p>
                 </div>
-                <!-- Form Content -->
-                <div class="modal-body" id="edit-modal-content" style="display: none;">
-                    <div class="form-group mb-3">
-                        <div class="row items-center">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="kerajinan_kerja" class="form-label mb-0">Kerajinan Kerja</label>
+
+                {{-- Modal Body --}}
+                <div class="modal-body" id="discipline-modal-content" style="display: none;">
+                    <div class="text-center mb-3">
+                        <h6 class="text-muted" id="discipline-modal-employee-name"></h6>
+                        <small class="badge bg-secondary" id="discipline-modal-type-badge"></small>
+                    </div>
+
+                    {{-- Absence summary (read-only) --}}
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered text-center table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Alpha</th><th>Telat</th><th>Izin</th><th>Sakit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="dm-alpha">0</td>
+                                    <td id="dm-telat">0</td>
+                                    <td id="dm-izin">0</td>
+                                    <td id="dm-sakit">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{-- NEW SYSTEM: 9 fields (Yayasan / Magang) --}}
+                    <div id="dm-new-fields" style="display: none;">
+                        <p class="text-muted small mb-3">Beri nilai dari A hingga E</p>
+                        <div class="row g-3">
+                            @foreach ([
+                                'kemampuan_kerja'   => 'Kemampuan Kerja',
+                                'kecerdasan_kerja'  => 'Kecerdasan Kerja',
+                                'qualitas_kerja'    => 'Kualitas Kerja',
+                                'disiplin_kerja'    => 'Disiplin Kerja',
+                                'kepatuhan_kerja'   => 'Kepatuhan Kerja',
+                                'lembur'            => 'Lembur',
+                                'efektifitas_kerja' => 'Efektifitas Kerja',
+                                'relawan'           => 'Ringan Tangan',
+                                'integritas'        => 'Integritas',
+                            ] as $field => $label)
+                            <div class="col-md-4">
+                                <label for="new_{{ $field }}" class="form-label">{{ $label }}</label>
+                                <input type="text" maxlength="1" name="{{ $field }}"
+                                    id="new_{{ $field }}"
+                                    class="form-control text-uppercase discipline-grade-input"
+                                    placeholder="A–E" pattern="[A-Ea-e]">
                             </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="kerajinan_kerja" class="form-control" id="kerajinan_kerja"
-                                    pattern="[A-E]" maxlength="1" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
+                            @endforeach
                         </div>
                     </div>
-                    <div class="form-group mb-3">
-                        <div class="row items-center">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="kerapian_kerja" class="form-label mb-0">Kerapian Kerja</label>
+
+                    {{-- OLD SYSTEM: 5 fields (Regular) --}}
+                    <div id="dm-old-fields" style="display: none;">
+                        <p class="text-muted small mb-3">Beri nilai dari A hingga E</p>
+                        <div class="row g-3">
+                            @foreach ([
+                                'kerajinan_kerja' => 'Kinerja Kerja',
+                                'kerapian_kerja'  => 'Kerapian',
+                                'prestasi'        => 'Prestasi',
+                                'loyalitas'       => 'Loyalitas',
+                                'perilaku_kerja'  => 'Etika & Kesopanan',
+                            ] as $field => $label)
+                            <div class="col-md-4">
+                                <label for="old_{{ $field }}" class="form-label">{{ $label }}</label>
+                                <input type="text" maxlength="1" name="{{ $field }}"
+                                    id="old_{{ $field }}"
+                                    class="form-control text-uppercase discipline-grade-input"
+                                    placeholder="A–E" pattern="[A-Ea-e]">
                             </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="kerapian_kerja" class="form-control" id="kerapian_kerja"
-                                    pattern="[A-E]" maxlength="1" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group mb-3">
-                        <div class="row items-center">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="loyalitas" class="form-label mb-0">Loyalitas</label>
-                            </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="loyalitas" class="form-control" id="loyalitas"
-                                    pattern="[A-E]" maxlength="1" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group mb-3">
-                        <div class="row items-center">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="perilaku_kerja" class="form-label mb-0">Perilaku Kerja</label>
-                            </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="perilaku_kerja" class="form-control" id="perilaku_kerja"
-                                    pattern="[A-E]" maxlength="1" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group mb-3">
-                        <div class="row items-center">
-                            <div class="col-sm-4 col-form-label">
-                                <label for="prestasi" class="form-label mb-0">Prestasi</label>
-                            </div>
-                            <div class="col-sm-8">
-                                <input type="text" name="prestasi" class="form-control" id="prestasi"
-                                    pattern="[A-E]" maxlength="1" required
-                                    oninput="this.value = this.value.toUpperCase()">
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" id="edit-modal-footer" style="display: none;">
+
+                <div class="modal-footer" id="discipline-modal-footer" style="display: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
@@ -87,88 +122,145 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('edit-discipline-modal');
-        const form = document.getElementById('edit-discipline-form');
-        const loader = document.getElementById('edit-modal-loader');
-        const content = document.getElementById('edit-modal-content');
-        const footer = document.getElementById('edit-modal-footer');
+(function () {
+    'use strict';
 
-        modal.addEventListener('show.bs.modal', function(event) {
-            const button = event.relatedTarget;
-            const id = button.getAttribute('data-id');
+    const modal        = document.getElementById('edit-discipline-modal');
+    const form         = document.getElementById('edit-discipline-form');
+    const loader       = document.getElementById('discipline-modal-loader');
+    const content      = document.getElementById('discipline-modal-content');
+    const footer       = document.getElementById('discipline-modal-footer');
+    const newFields    = document.getElementById('dm-new-fields');
+    const oldFields    = document.getElementById('dm-old-fields');
+    const nameBadge    = document.getElementById('discipline-modal-employee-name');
+    const typeBadge    = document.getElementById('discipline-modal-type-badge');
 
-            // Reset UI state
-            form.reset();
-            content.style.display = 'none';
-            footer.style.display = 'none';
-            loader.style.display = 'block';
-            document.getElementById('edit-employee-name').textContent = '';
+    // ── Grade input validation: force A–E uppercase ──────────
+    document.addEventListener('input', function (e) {
+        if (!e.target.classList.contains('discipline-grade-input')) return;
+        e.target.value = e.target.value.toUpperCase().replace(/[^A-E]/g, '');
+        const valid = /^[A-E]$/.test(e.target.value);
+        e.target.classList.toggle('is-valid', valid);
+        e.target.classList.toggle('is-invalid', !valid);
+    });
 
-            // This matches the format in routes: UpdateEvaluation but actually it's process evaluation data POST. wait no, there is no generic edit discipline. I'll need to look at web.php or performance.php 
-            // The route was 'editdiscipline' ... which normally is a PUT to something. Let's set it dynamically based on the fact that this is just Regular discipline. 
-            // Actually the current code uses `route('editdiscipline', $employee->id)`. 
-            form.action = `/discipline/yayasan/update/${id}`; // To fix later if it differs
+    // ── Trigger: any edit button in DataTable ────────────────
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.edit-discipline-btn');
+        if (!btn) return;
 
-            axios.get(`/evaluationDatas/${id}`)
-                .then(response => {
-                    const data = response.data;
+        const id        = btn.dataset.id;
+        const updateUrl = btn.dataset.updateUrl;
 
-                    document.getElementById('edit-employee-name').textContent = data.karyawan?.Nama || data.karyawan?.name || 'Unknown';
+        // Reset state
+        showLoader();
+        form.action = updateUrl;
+        form.classList.remove('was-validated');
 
-                    if(document.getElementById('kerajinan_kerja')) document.getElementById('kerajinan_kerja').value = data.kerajinan_kerja || 'C';
-                    if(document.getElementById('kerapian_kerja')) document.getElementById('kerapian_kerja').value = data.kerapian_kerja || 'C';
-                    if(document.getElementById('loyalitas')) document.getElementById('loyalitas').value = data.loyalitas || 'C';
-                    if(document.getElementById('perilaku_kerja')) document.getElementById('perilaku_kerja').value = data.perilaku_kerja || 'C';
-                    if(document.getElementById('prestasi')) document.getElementById('prestasi').value = data.prestasi || 'C';
+        // Fetch evaluation data via AJAX
+        axios.get('/api/evaluation/' + id)
+            .then(({ data }) => {
+                populateModal(data);
+                hideLoader();
+            })
+            .catch(() => {
+                content.innerHTML = '<div class="alert alert-danger">Failed to load data. Please try again.</div>';
+                hideLoader();
+            });
+    });
 
-                    loader.style.display = 'none';
-                    content.style.display = 'block';
-                    footer.style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error fetching data:', error);
-                    loader.innerHTML = '<div class="alert alert-danger">Failed to load data. Please try again.</div>';
-                });
-        });
+    // ── Form submission via AJAX ─────────────────────────────
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
 
-        const inputs = document.querySelectorAll('#edit-modal-content .form-control');
+        const inputs = form.querySelectorAll('.discipline-grade-input:not([style*="display: none"] *)');
+        let valid = true;
 
         inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                this.value = this.value.toUpperCase().replace(/[^A-E]/g, '');
-                
-                if (this.value && /^[A-E]$/.test(this.value)) {
-                    this.classList.remove('is-invalid');
-                    this.classList.add('is-valid');
-                } else {
-                    this.classList.remove('is-valid');
-                    this.classList.add('is-invalid');
-                }
-            });
+            if (!/^[A-E]$/.test(input.value)) {
+                input.classList.add('is-invalid');
+                valid = false;
+            }
         });
 
-        form.addEventListener('submit', function(event) {
-            let isValid = true;
-            inputs.forEach(input => {
-                if (!input.value || !/^[A-E]$/.test(input.value)) {
-                    isValid = false;
-                    input.classList.add('is-invalid');
-                }
-            });
-
-            if (!isValid || form.checkValidity() === false) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
+        if (!valid) {
             form.classList.add('was-validated');
+            return;
+        }
+
+        const data = new FormData(form);
+
+        axios.post(form.action, data, {
+            headers: { 'X-HTTP-Method-Override': 'PUT' }
+        }).then(() => {
+            bootstrap.Modal.getInstance(modal).hide();
+            // Reload the visible DataTable
+            document.querySelectorAll('table.dataTable').forEach(t => {
+                const dtInstance = $.fn.dataTable.Api ? new $.fn.dataTable.Api(t) : null;
+                if (dtInstance) dtInstance.ajax.reload(null, false);
+            });
+        }).catch(err => {
+            console.error('Save failed', err);
         });
     });
+
+    // ── Helpers ──────────────────────────────────────────────
+
+    function showLoader() {
+        loader.style.display  = '';
+        content.style.display = 'none';
+        footer.style.display  = 'none';
+    }
+
+    function hideLoader() {
+        loader.style.display  = 'none';
+        content.style.display = '';
+        footer.style.display  = '';
+    }
+
+    function populateModal(data) {
+        // Employee info
+        nameBadge.textContent = data.karyawan?.Nama ?? data.karyawan?.name ?? '—';
+
+        // Absence (read-only)
+        document.getElementById('dm-alpha').textContent = data.Alpha ?? 0;
+        document.getElementById('dm-telat').textContent = data.Telat ?? 0;
+        document.getElementById('dm-izin').textContent  = data.Izin  ?? 0;
+        document.getElementById('dm-sakit').textContent = data.Sakit ?? 0;
+
+        // Determine scoring type
+        const scheme = data.karyawan?.employment_scheme ?? '';
+        const isNew  = scheme.includes('YAYASAN') || scheme.includes('MAGANG');
+
+        typeBadge.textContent = isNew ? scheme : 'Regular';
+
+        if (isNew) {
+            newFields.style.display = '';
+            oldFields.style.display = 'none';
+            // Populate new-system fields
+            ['kemampuan_kerja','kecerdasan_kerja','qualitas_kerja','disiplin_kerja',
+             'kepatuhan_kerja','lembur','efektifitas_kerja','relawan','integritas']
+                .forEach(f => {
+                    const el = document.getElementById('new_' + f);
+                    if (el) el.value = data[f] ?? '';
+                });
+        } else {
+            newFields.style.display = 'none';
+            oldFields.style.display = '';
+            // Populate old-system fields
+            ['kerajinan_kerja','kerapian_kerja','prestasi','loyalitas','perilaku_kerja']
+                .forEach(f => {
+                    const el = document.getElementById('old_' + f);
+                    if (el) el.value = data[f] ?? '';
+                });
+        }
+    }
+})();
 </script>
 
 <style>
-    #edit-modal-content .is-valid,
-    #edit-modal-content .is-invalid {
-        border-width: 2px;
-    }
+#discipline-modal-content .is-valid,
+#discipline-modal-content .is-invalid {
+    border-width: 2px;
+}
 </style>

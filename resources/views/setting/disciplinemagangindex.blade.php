@@ -128,7 +128,7 @@
             </div>
         </div>
 
-        @include('partials.edit-discipline-magang-modal')
+        @include('partials.edit-discipline-modal')
 
         {{ $dataTable->scripts() }}
 

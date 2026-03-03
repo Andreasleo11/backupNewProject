@@ -140,4 +140,34 @@ class EvaluationData extends Model
     {
         return $this->depthead === 'rejected' || $this->generalmanager === 'rejected';
     }
+
+    // ──────────────────────────────────────────────
+    // Type Resolution
+    // ──────────────────────────────────────────────
+
+    /**
+     * Resolve the evaluation type from the related employee's employment_scheme.
+     * This is the single source of truth for type-branching logic.
+     *
+     * @return 'yayasan'|'magang'|'regular'
+     */
+    public function evaluationType(): string
+    {
+        $scheme = $this->karyawan?->employment_scheme ?? '';
+
+        return match (true) {
+            str_contains($scheme, 'YAYASAN') => 'yayasan',
+            str_contains($scheme, 'MAGANG')  => 'magang',
+            default                          => 'regular',
+        };
+    }
+
+    /**
+     * Whether this record uses the new 9-field scoring system (Yayasan / Magang).
+     * Returns false for Regular (old 5-field + base-40 attendance system).
+     */
+    public function useNewScoringSystem(): bool
+    {
+        return in_array($this->evaluationType(), ['yayasan', 'magang'], true);
+    }
 }
