@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Domain\Approval\Contracts\Approvable;
 use App\Enums\ToDepartment;
 use App\Infrastructure\Approval\Concerns\HasApproval;
+use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
