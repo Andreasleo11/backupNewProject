@@ -48,10 +48,14 @@
                             <p class="text-xs text-slate-500 m-0 mt-0.5">Berikan nilai performa karyawan</p>
                         </div>
                     </div>
-                    <button type="button" @click="closeModal()" class="text-slate-400 hover:text-slate-500 bg-slate-100 border-none hover:bg-slate-200 rounded-lg p-2 transition-colors">
-                        <i class="bx bx-x text-2xl"></i>
-                    </button>
-                </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="showGuide = !showGuide" :class="showGuide ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-500 hover:bg-indigo-100'" class="border-none rounded-lg p-2 transition-colors focus:outline-none">
+                            <i class="bx bx-info-circle text-2xl"></i>
+                        </button>
+                        <button type="button" @click="closeModal()" class="text-slate-400 hover:text-slate-500 bg-slate-100 border-none hover:bg-slate-200 rounded-lg p-2 transition-colors focus:outline-none">
+                            <i class="bx bx-x text-2xl"></i>
+                        </button>
+                    </div>
             </div>
 
             {{-- Body (Scrollable) --}}
@@ -98,6 +102,82 @@
                                 <div class="text-[10px] uppercase font-bold text-slate-400">Sakit</div>
                                 <div class="font-bold text-indigo-600" x-text="record.sakit">0</div>
                             </div>
+                        </div>
+                    </div>
+
+                    {{-- Grading Guide Popover (Collapsible) --}}
+                    <div x-show="showGuide" x-collapse style="display: none;" class="mb-6">
+                        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm text-sm text-indigo-900 flex flex-col gap-4">
+                            
+                            {{-- Unified Absence Header --}}
+                            <div>
+                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-time'></i> Penilaian Absensi (Otomatis)</h6>
+                                <p class="mb-0 text-indigo-700">Total Poin Kehadiran Maksimal: <strong class="text-indigo-900">40</strong></p>
+                                <ul class="list-disc pl-5 mt-1 space-y-0.5 text-indigo-700">
+                                    <li>1 Alpha = <strong>-10 Poin</strong></li>
+                                    <li>1 Izin = <strong>-2 Poin</strong></li>
+                                    <li>1 Sakit = <strong>-1 Poin</strong></li>
+                                    <li>1 Terlambat = <strong>-0.5 Poin</strong></li>
+                                </ul>
+                            </div>
+
+                            <hr class="border-indigo-200/50 my-1">
+
+                            {{-- NEW SYSTEM: Yayasan / Magang --}}
+                            <div x-show="record.isNewSystem" style="display: none;">
+                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai Alphabet (Sistem Baru)</h6>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
+                                        <p class="font-bold text-slate-700 mb-1">Kemampuan Kerja</p>
+                                        <p class="mb-0">A=17, B=14, C=11, D=8, E=0</p>
+                                    </div>
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
+                                        <p class="font-bold text-slate-700 mb-1">Kecerdasan Kerja</p>
+                                        <p class="mb-0">A=16, B=13, C=10, D=7, E=0</p>
+                                    </div>
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
+                                        <p class="font-bold text-slate-700 mb-1">Kualitas Kerja</p>
+                                        <p class="mb-0">A=11, B=9, C=7, D=4, E=0</p>
+                                    </div>
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
+                                        <p class="font-bold text-slate-700 mb-1">Disiplin Kerja & Integritas</p>
+                                        <p class="mb-0">A=8, B=6, C=5, D=3, E=0</p>
+                                    </div>
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs sm:col-span-2">
+                                        <p class="font-bold text-slate-700 mb-1">Kepatuhan, Lembur, Efektifitas & Relawan</p>
+                                        <p class="mb-0">A=10, B=8, C=6, D=4, E=0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- OLD SYSTEM: Regular --}}
+                            <div x-show="!record.isNewSystem" style="display: none;">
+                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-bar-chart-alt-2'></i> Kriteria Nilai Alphabet (Sistem Lama)</h6>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
+                                        <p class="font-bold text-slate-700 mb-1">Prestasi</p>
+                                        <p class="mb-0">A=20, B=15, C=10, D=5, E=0</p>
+                                    </div>
+                                    <div class="bg-white/60 p-3 rounded border border-indigo-100/50 text-xs">
+                                        <p class="font-bold text-slate-700 mb-1">Lainnya (Kerajinan, Kerapian, Loyalitas, Perilaku)</p>
+                                        <p class="mb-0">A=10, B=7.5, C=5, D=2.5, E=0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="border-indigo-200/50 my-1">
+                            
+                            {{-- Grade Target --}}
+                            <div>
+                                <h6 class="font-bold mb-2 text-indigo-800 flex items-center gap-2"><i class='bx bx-target-lock'></i> Target Grade Akhir</h6>
+                                <div class="flex flex-wrap gap-2 text-xs">
+                                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded font-semibold border border-green-200">A : 91 - 100</span>
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded font-semibold border border-blue-200">B : 71 - 90</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded font-semibold border border-yellow-200">C : 61 - 70</span>
+                                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded font-semibold border border-red-200">D : < 60</span>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -164,6 +244,7 @@ document.addEventListener('alpine:init', () => {
         isOpen: false,
         isLoading: false,
         isSubmitting: false,
+        showGuide: false,
         updateUrl: '',
         
         record: {

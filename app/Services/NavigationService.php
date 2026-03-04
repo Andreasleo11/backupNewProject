@@ -107,6 +107,20 @@ class NavigationService
                         'active' => request()->routeIs('admin.employees.*'),
                         'permission' => 'employee.view-any',
                     ],
+                    [
+                        'label' => 'P&E Data (Monthly)',
+                        'route' => 'admin.evaluation-data.index',
+                        'icon' => 'table-cells',
+                        'active' => request()->routeIs('admin.evaluation-data.*'),
+                        'roles' => ['super-admin', 'admin', 'hr'],
+                    ],
+                    [
+                        'label' => 'P&E Data (Weekly)',
+                        'route' => 'admin.evaluation-data-weekly.index',
+                        'icon' => 'table-cells',
+                        'active' => request()->routeIs('admin.evaluation-data-weekly.*'),
+                        'roles' => ['super-admin', 'admin', 'hr'],
+                    ],
                 ],
             ],
 
