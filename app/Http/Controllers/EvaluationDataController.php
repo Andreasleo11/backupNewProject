@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\DataTables\EvaluationDataDataTable;
 use App\Exports\EvaluationDataExp;
 use App\Imports\EvaluationDataImport;
+use App\Domain\Discipline\Services\DisciplineDepartmentStatusService;
+use App\Domain\Discipline\Services\DisciplineExcelService;
 use App\Infrastructure\Persistence\Eloquent\Models\Department;
 use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
@@ -16,120 +18,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationDataController extends Controller
 {
-    public function index(EvaluationDataDataTable $dataTable)
-    {
-        $datas = EvaluationData::with('karyawan')->get();
-
-        // dd($datas);
-        return $dataTable->render('setting.evaluationindex', compact('datas'));
-    }
-
-    public function update(Request $request)
-    {
-        $request->validate([
-            'excel_files'   => 'required|array|min:1',
-            'excel_files.*' => 'required|file|mimes:xlsx,xls,csv',
-        ]);
-
-        try {
-            $uploadedFiles  = $request->file('excel_files');
-            $excelFileName  = $this->processExcelFile($uploadedFiles);
-            $this->importExcelFile($excelFileName);
-
-            return redirect()->back()->with('success', 'Evaluation data imported successfully.');
-        } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
-        }
-    }
-
-    private function processExcelFile($files)
-    {
-        $allData = [];
-
-        foreach ($files as $file) {
-            $data = Excel::toArray([], $file);
-
-            // Skip first 2 header rows
-            array_shift($data[0]);
-            array_shift($data[0]);
-
-            // Remove the second column (index 1 — usually a redundant label)
-            foreach ($data[0] as &$row) {
-                array_splice($row, 1, 1);
-            }
-
-            // Convert date column from d/m/Y to Y-m-d
-            foreach ($data[0] as &$row) {
-                $date    = \DateTime::createFromFormat('d/m/Y', $row[1]);
-                $row[1]  = $date ? $date->format('Y-m-d') : null;
-            }
-
-            $allData = array_merge($allData, $data[0]);
-        }
-
-        // Unique filename per upload to avoid concurrent overwrites
-        $excelFileName = 'EvaluationData_' . uniqid() . '.xlsx';
-
-        Excel::store(
-            new EvaluationDataExp($allData),
-            'public/Evaluation/' . $excelFileName,
-        );
-
-        return $excelFileName;
-    }
-
-    private function importExcelFile($excelFileName)
-    {
-        Excel::import(
-            new EvaluationDataImport,
-            public_path('/storage/Evaluation/' . $excelFileName),
-        );
-
-        // If the import is successful, return a success message or any other response
-        return 'Excel file imported successfully.';
-    }
-
-    public function delete(Request $request)
-    {
-        $request->validate([
-            'filter_month' => 'required|string|size:2',
-            'filter_year'  => 'required|digits:4|integer',
-        ]);
-
-        $selectedMonth = $request->input('filter_month');
-        $selectedYear  = $request->input('filter_year');
-
-        $startDate = $selectedYear . '-' . $selectedMonth . '-01';
-        $endDate   = date('Y-m-t', strtotime($startDate));
-
-        $deleted = EvaluationData::whereBetween('Month', [$startDate, $endDate])->delete();
-
-        return redirect()->back()->with(
-            'success',
-            "Deleted {$deleted} evaluation records for {$selectedMonth}/{$selectedYear}."
-        );
-    }
-
-    public function singleEmployee(Request $request)
-    {
-        // Get the year input from the user, default to the current year if not provided
-        $year = $request->input('year', now()->year - 1);
-
-        // Fetch the user and filter the evaluation data by the selected year
-        $user = Employee::with(
-            [
-                'evaluationData' => function ($query) use ($year) {
-                    $query->whereYear('Month', $year); // Filter data by year
-                },
-            ],
-            'department',
-        )->first();
-        // dd($user);
-
-        // Pass the user and year to the view
-        return view('test', compact('user', 'year'));
-    }
-
     public function evaluationformatrequestpageYayasan()
     {
         $statuses = Employee::where('employment_type', 'YAYASAN')->distinct()->pluck('employment_scheme');
@@ -192,23 +80,7 @@ class EvaluationDataController extends Controller
         return view('setting.formatrequestallinperpanjangan', compact('statuses', 'departments'));
     }
 
-    public function allEmployees(Request $request)
-    {
-        // Get the year input, default to the previous year if not provided
-        $year = $request->input('year', now()->year - 1);
 
-        // Fetch all employees with their evaluation data filtered by the selected year
-        $employees = Employee::with([
-            'evaluationData' => function ($query) use ($year) {
-                $query->whereYear('Month', $year);
-            },
-            'department',
-        ])->get();
-
-        $magang=null;
-        // Pass employees and the selected year to the view
-        return view('test', compact('employees', 'year','magang'));
-    }
 
     public function getFormatYearallin(Request $request)
     {
@@ -322,5 +194,53 @@ class EvaluationDataController extends Controller
 
         // Pass employees and the selected year to the view
         return view('evaluasiPerpanjanganKaryawan', compact('employees', 'year', 'magang'));
+    }
+
+    public function getDepartmentStatusYayasan(Request $request)
+    {
+        try {
+            $statusService = app(DisciplineDepartmentStatusService::class);
+
+            $month = $request->input('month') ?? $request->input('filter_month');
+            $year  = $request->input('year') ?? $request->input('filter_year');
+
+            $departmentStatus = $statusService->getDepartmentStatusForMonth($month, $year);
+
+            return response()->json([
+                'status' => 'success',
+                'data'   => $departmentStatus,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function dateExport()
+    {
+        return view('setting.inputDateExportYayasan');
+    }
+
+    public function exportYayasanJpayroll(Request $request)
+    {
+        $statusService = app(DisciplineDepartmentStatusService::class);
+
+        $selectedMonth    = $request->input('month');
+        $currentYear      = $request->input('year');
+        $departmentStatus = $statusService->getJpayrollDepartmentStatus($selectedMonth, $currentYear);
+
+        return view('setting.exportYayasanJpayroll', compact('departmentStatus', 'selectedMonth', 'currentYear'));
+    }
+
+    public function exportYayasanJpayrollFunction(Request $request)
+    {
+        $excelService = app(DisciplineExcelService::class);
+
+        $selectedMonth = $request->input('filter_status');
+        $currentYear   = $request->input('year');
+
+        return $excelService->exportYayasanJpayrollFunction($selectedMonth, $currentYear);
     }
 }

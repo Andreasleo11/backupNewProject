@@ -224,14 +224,41 @@
         </div>
         <div class="offcanvas-body p-5 space-y-6">
             
-            {{-- Feature 1: Advanced Filters (Placeholder) --}}
+            {{-- Feature 1: Cetak Format (Legacy Restored) --}}
             <div>
                 <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="bx bx-filter-alt text-indigo-500"></i> Filter Tambahan
+                    <i class="bx bx-printer text-indigo-500"></i> Cetak Format Penilaian
                 </h6>
-                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 shadow-sm text-sm text-slate-600 text-center">
-                    <i class="bx bx-time text-2xl text-slate-400 mb-2 block"></i>
-                    Fitur rentang skor atau departemen tertentu akan hadir pada pembaruan mendatang.
+                <div class="space-y-2">
+                    <a href="{{ route('format.evaluation.year.allin') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
+                        <span>Format Regular (All In)</span>
+                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    </a>
+                    <a href="{{ route('format.evaluation.year.yayasan') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
+                        <span>Format Yayasan</span>
+                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    </a>
+                    <a href="{{ route('format.evaluation.year.magang') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
+                        <span>Format Magang</span>
+                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    </a>
+                    <a href="{{ route('format.evaluation.year.allinperpanjangan') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
+                        <span>Format Perpanjangan Kontrak</span>
+                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    </a>
+                </div>
+            </div>
+
+            {{-- Feature: Export Yayasan Data --}}
+            <div>
+                <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <i class="bx bx-buildings text-indigo-500"></i> Export Yayasan
+                </h6>
+                <div class="space-y-2">
+                    <a href="{{ route('exportyayasan.dateinput') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
+                        <span>Export ke JPayroll</span>
+                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                    </a>
                 </div>
             </div>
 

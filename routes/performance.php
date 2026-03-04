@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EvaluationController;
+use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\PEHomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,22 @@ Route::middleware('auth')->group(function () {
     // Parameterized period route (must come AFTER all literal /evaluation/... routes)
     Route::get('/evaluation/{month}/{year}', [EvaluationController::class, 'index'])->name('evaluation.period');
 
-    // (Legacy import routes removed out of scope)
+    // Form pages (GET — show filter form by dept/year)
+    Route::get('/format-evaluation-year-allin', [EvaluationDataController::class, 'evaluationformatrequestpageAllin'])->name('format.evaluation.year.allin');
+    Route::get('/format-evaluation-year-yayasan', [EvaluationDataController::class, 'evaluationformatrequestpageYayasan'])->name('format.evaluation.year.yayasan');
+    Route::get('/format-evaluation-year-magang', [EvaluationDataController::class, 'evaluationformatrequestpageMagang'])->name('format.evaluation.year.magang');
+    Route::get('/format-evaluation-year-allinperpanjangan', [EvaluationDataController::class, 'evaluationformatrequestpageAllinPerpanjangan'])->name('format.evaluation.year.allinperpanjangan');
+
+    // Result pages (POST — filtered by dept+year, renders the print/view)
+    Route::post('/getformat/allin', [EvaluationDataController::class, 'getFormatYearallin'])->name('get.format.allin');
+    Route::post('/getformat/yayasan', [EvaluationDataController::class, 'getFormatYearYayasan'])->name('get.format.yayasan');
+    Route::post('/getformat/magang', [EvaluationDataController::class, 'getFormatYearmagang'])->name('get.format.magang');
+    Route::post('/getformatallinperpanjangan', [EvaluationDataController::class, 'getFormatYearallinPerpanjangan'])->name('get.format.allinperpanjangan');
+
+    // Export Yayasan JPayroll
+    Route::get('/exportyayasantodateinput', [EvaluationDataController::class, 'dateExport'])->name('exportyayasan.dateinput');
+    Route::get('/exportyayasan/summary', [EvaluationDataController::class, 'getDepartmentStatusYayasan'])->name('exportyayasan.summary');
+    Route::get('/exportyayasan', [EvaluationDataController::class, 'exportYayasanJpayroll'])->name('export.yayasan.jpayroll');
+    Route::post('/exportyayasan/download', [EvaluationDataController::class, 'exportYayasanJpayrollFunction'])->name('exportyayasan.download');
 });
 
