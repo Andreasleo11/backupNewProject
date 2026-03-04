@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\EmployeeTrainingController;
-use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\FormCutiController;
 use App\Http\Controllers\FormKeluarController;
 use App\Http\Controllers\FormOvertimeController;
@@ -65,8 +64,5 @@ Route::middleware('auth')->group(function () {
     Route::resource('employee_trainings', EmployeeTrainingController::class);
     Route::patch('employee_trainings/{employee_training}/evaluate', [EmployeeTrainingController::class, 'evaluate'])->name('employee_trainings.evaluate');
 
-    // Evaluation Data
-    Route::get('/monthlyEvaluationReport', [EvaluationDataController::class, 'monthlyReport'])->name('monthlyEvaluationReport');
-    Route::post('/monthlyEvaluationReport/view', [EvaluationDataController::class, 'showDetails'])->name('showdetail');
-    Route::post('/monthlyEvaluationReport/table', [EvaluationDataController::class, 'showtable'])->name('showtable');
+    // (Legacy monthlyEvaluationReport routes removed)
 });

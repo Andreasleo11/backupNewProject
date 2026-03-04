@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\DisciplinePageController;
 use App\Http\Controllers\EmployeeDashboardController;
-use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\NotificationFeedController;
 use App\Http\Controllers\SuperAdminHomeController;
 use App\Http\Controllers\SyncProgressController;
