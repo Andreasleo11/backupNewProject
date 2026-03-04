@@ -98,12 +98,9 @@ class DisciplineDataTable extends DataTable
                 $modalId   = '#edit-discipline-modal';
                 $updateUrl = route('evaluation.grade', ['id' => $row->id]);
 
-                // Modern premium action button
-                return '<button class="btn btn-sm btn-light border-slate-200 text-indigo-600 shadow-sm edit-discipline-btn hover:bg-indigo-50 hover:border-indigo-200 transition-all rounded-lg"
-                    data-bs-toggle="modal"
-                    data-bs-target="' . $modalId . '"
-                    data-id="' . $row->id . '"
-                    data-update-url="' . $updateUrl . '"
+                // Modern premium action button (Alpine-friendly dispatch)
+                return '<button class="btn btn-sm btn-light border-slate-200 text-indigo-600 shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition-all rounded-lg"
+                    onclick="window.dispatchEvent(new CustomEvent(\'open-evaluate-modal\', { detail: { id: ' . $row->id . ', url: \'' . $updateUrl . '\' } }))"
                     title="Beri Nilai"
                     ' . $disabled . '>
                     <i class="bx bx-edit-alt"></i>
