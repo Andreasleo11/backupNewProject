@@ -4,7 +4,7 @@
 
 @section('content')
 
-<div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6" x-data="evaluationIndex()">
+<div class="mx-auto max-w-7xl px-3 py-6 sm:px-4 lg:px-0 space-y-6">
     {{-- ═══════════════════════════════════════════════════════════════
          HEADER — Period Selector & Title (Glass Card)
     ═══════════════════════════════════════════════════════════════ --}}
@@ -158,7 +158,7 @@
                 <div class="h-6 w-px bg-slate-200 mx-1"></div>
 
                 {{-- Advanced Toggle Button --}}
-                <button type="button" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5" data-bs-toggle="offcanvas" data-bs-target="#advancedOffcanvas">
+                <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-advanced-sidebar'))" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5" >
                     <i class="bx bx-slider-alt text-lg text-slate-500"></i>
                     <span>Tingkat Lanjut</span>
                 </button>
@@ -207,72 +207,125 @@
     @include('partials.edit-discipline-modal')
 
     {{-- ═══════════════════════════════════════════════════════════════
-        ADVANCED SIDEBAR (Offcanvas)
+        ADVANCED SIDEBAR (AlpineJS + Tailwind)
     ═══════════════════════════════════════════════════════════════ --}}
-    <div class="offcanvas offcanvas-end shadow-xl border-l border-slate-200" tabindex="-1" id="advancedOffcanvas" aria-labelledby="advancedOffcanvasLabel">
-        <div class="offcanvas-header border-b border-slate-100 bg-slate-50/50">
-            <div class="flex items-center gap-3">
-                <div class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
-                    <i class="bx bx-slider-alt text-xl"></i>
-                </div>
-                <div>
-                    <h5 class="offcanvas-title font-bold text-slate-800" id="advancedOffcanvasLabel">Tingkat Lanjut</h5>
-                    <p class="text-xs text-slate-500">Filter tambahan & fitur analitik</p>
-                </div>
-            </div>
-            <button type="button" class="btn-close text-reset bg-slate-200 hover:bg-slate-300 rounded-lg p-2" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body p-5 space-y-6">
-            
-            {{-- Feature 1: Cetak Format (Legacy Restored) --}}
-            <div>
-                <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="bx bx-printer text-indigo-500"></i> Cetak Format Penilaian
-                </h6>
-                <div class="space-y-2">
-                    <a href="{{ route('format.evaluation.year.allin') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
-                        <span>Format Regular (All In)</span>
-                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
-                    </a>
-                    <a href="{{ route('format.evaluation.year.yayasan') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
-                        <span>Format Yayasan</span>
-                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
-                    </a>
-                    <a href="{{ route('format.evaluation.year.magang') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
-                        <span>Format Magang</span>
-                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
-                    </a>
-                    <a href="{{ route('format.evaluation.year.allinperpanjangan') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
-                        <span>Format Perpanjangan Kontrak</span>
-                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
-                    </a>
-                </div>
-            </div>
+    <div x-data="{ advancedOpen: false }" 
+         @open-advanced-sidebar.window="advancedOpen = true"
+         x-init="$watch('advancedOpen', value => {
+            if (value) {
+                document.body.classList.add('overflow-hidden');
+            } else {
+                document.body.classList.remove('overflow-hidden');
+            }
+         })"
+         x-show="advancedOpen" 
+         style="display: none;"
+         class="relative z-[1050]" 
+         aria-labelledby="advancedFeaturesLabel" 
+         role="dialog" 
+         aria-modal="true"
+         x-cloak>
+         
+        {{-- Background Overlay --}}
+        <div x-show="advancedOpen" x-transition:enter="ease-in-out duration-500" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in-out duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity"></div>
 
-            {{-- Feature: Export Yayasan Data --}}
-            <div>
-                <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="bx bx-buildings text-indigo-500"></i> Export Yayasan
-                </h6>
-                <div class="space-y-2">
-                    <a href="{{ route('exportyayasan.dateinput') }}" class="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 transition-all text-sm text-slate-700 font-semibold group">
-                        <span>Export ke JPayroll</span>
-                        <i class="bx bx-chevron-right text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
-                    </a>
+        {{-- Slide-over Container --}}
+        <div class="fixed inset-0 overflow-hidden">
+            <div class="absolute inset-0 overflow-hidden">
+                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                    <div x-show="advancedOpen" x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full" class="pointer-events-auto w-screen max-w-md">
+                        <div class="flex h-full flex-col overflow-y-auto custom-scrollbar bg-white shadow-xl shadow-slate-900/20 border-l border-slate-200" @click.outside="advancedOpen = false">
+                            
+                            {{-- Header --}}
+                            <div class="px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between shrink-0">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-12 w-12 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                                        <i class="bx bx-slider-alt text-2xl"></i>
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <h2 class="text-lg font-bold text-slate-900" id="advancedFeaturesLabel">Tingkat Lanjut</h2>
+                                        <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-0.5">Filter & Export</p>
+                                    </div>
+                                </div>
+                                <div class="ml-3 flex h-7 items-center">
+                                    <button type="button" @click="advancedOpen = false" class="relative rounded-lg bg-white p-2 text-slate-400 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm border border-slate-200 transition-colors">
+                                        <span class="absolute -inset-2.5"></span>
+                                        <span class="sr-only">Close panel</span>
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {{-- Content --}}
+                            <div class="relative flex-1 px-6 py-6 space-y-8 bg-white">
+                
+                {{-- Feature 1: Cetak Format (Legacy Restored) --}}
+                                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-5 shadow-sm">
+                                        <h6 class="text-[13px] font-extrabold text-slate-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                                                <i class="bx bx-printer"></i>
+                                            </div>
+                                            Cetak Format Penilaian
+                                        </h6>
+                                        <div class="space-y-2.5">
+                                            <a href="{{ route('format.evaluation.year.allin') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                <span class="truncate pr-4">Format Regular (All In)</span>
+                                                <i class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                            </a>
+                                            <a href="{{ route('format.evaluation.year.yayasan') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                <span class="truncate pr-4">Format Yayasan</span>
+                                                <i class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                            </a>
+                                            <a href="{{ route('format.evaluation.year.magang') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                <span class="truncate pr-4">Format Magang</span>
+                                                <i class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                            </a>
+                                            <a href="{{ route('format.evaluation.year.allinperpanjangan') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-slate-200 bg-white shadow-sm hover:border-indigo-300 hover:bg-indigo-50 hover:shadow-md transition-all text-sm text-slate-700 font-semibold group flex-shrink-0">
+                                                <span class="truncate pr-4">Format Perpanjangan Kontrak</span>
+                                                <i class="bx bx-chevron-right text-lg text-slate-400 group-hover:text-indigo-600 group-hover:-translate-x-1 transition-all"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                        
+                                    {{-- Feature: Export Yayasan Data --}}
+                                    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                                        <div class="absolute -right-4 -top-4 text-indigo-100/50 transform rotate-12 pointer-events-none">
+                                            <i class="bx bx-buildings text-9xl"></i>
+                                        </div>
+                                        <h6 class="relative text-[13px] font-extrabold text-indigo-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                            <div class="p-1.5 bg-indigo-600 text-white rounded-lg shadow-sm font-black">
+                                                <i class="bx bxs-file-export"></i>
+                                            </div>
+                                            Export Yayasan
+                                        </h6>
+                                        <div class="relative space-y-2.5">
+                                            <a href="{{ route('exportyayasan.dateinput') }}" class="flex items-center justify-between px-4 py-3 rounded-xl border border-indigo-200 bg-white shadow-sm hover:border-indigo-500 hover:ring-2 hover:ring-indigo-500/20 hover:shadow-md transition-all text-sm text-slate-800 font-bold group">
+                                                <span>Export Data ke JPayroll</span>
+                                                <i class="bx bx-right-arrow-alt text-xl text-indigo-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                        
+                                    {{-- Feature 2: Analytics (Placeholder) --}}
+                                    <div>
+                                        <h6 class="text-[13px] font-extrabold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                            <i class="bx bx-bar-chart-alt-2 text-indigo-500 text-lg"></i> Distribusi Nilai
+                                        </h6>
+                                        <div class="px-5 py-6 rounded-2xl border border-slate-200/60 bg-slate-50 shadow-sm text-sm text-slate-500 text-center flex flex-col items-center gap-3">
+                                            <div class="h-12 w-12 rounded-full bg-slate-200/50 flex items-center justify-center">
+                                                <i class="bx bx-pie-chart-alt text-2xl text-slate-400"></i>
+                                            </div>
+                                            <span class="font-medium">Grafik performa dan distribusi departemen masih dalam tahap pengembangan.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {{-- Feature 2: Analytics (Placeholder) --}}
-            <div>
-                <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <i class="bx bx-bar-chart-alt-2 text-indigo-500"></i> Distribusi Nilai
-                </h6>
-                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 shadow-sm text-sm text-slate-600 text-center">
-                    <i class="bx bx-pie-chart-alt text-2xl text-slate-400 mb-2 block"></i>
-                    Grafik performa dan distribusi departemen masih dalam tahap pengembangan.
-                </div>
-            </div>
-
         </div>
     </div>
 @endpush

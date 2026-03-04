@@ -7,7 +7,7 @@
      x-show="isOpen" 
      @open-evaluate-modal.window="openModal($event.detail.id, $event.detail.url)"
      @keydown.escape.window="closeModal()"
-     class="fixed inset-0 z-[1050] flex items-center justify-center overflow-y-auto overflow-x-hidden p-4 sm:p-0"
+     class="fixed inset-0 z-[1050] flex items-center justify-center p-4 sm:p-6"
      style="display: none;"
      role="dialog"
      aria-modal="true">
@@ -31,12 +31,13 @@
          x-transition:leave="ease-in duration-200" 
          x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" 
          x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" 
-         class="relative w-full max-w-4xl transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all border border-slate-100">
+         style="max-height: calc(100dvh - 2.5rem);"
+         class="relative w-full max-w-4xl flex flex-col transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all border border-slate-100">
          
-        <form @submit.prevent="submitForm" class="flex flex-col max-h-[90vh]">
+        <form @submit.prevent="submitForm" class="flex flex-col h-full overflow-hidden w-full">
             
             {{-- Premium Header --}}
-            <div class="relative px-6 py-5 border-b border-slate-100 bg-slate-50/50 shrink-0">
+            <div class="relative px-6 py-5 border-b border-slate-100 bg-slate-50/50 flex-none">
                 <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
@@ -56,10 +57,11 @@
                             <i class="bx bx-x text-2xl"></i>
                         </button>
                     </div>
+                </div>
             </div>
 
             {{-- Body (Scrollable) --}}
-            <div class="p-6 overflow-y-auto custom-scrollbar">
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1">
                 
                 {{-- Loading Spinner --}}
                 <div x-show="isLoading" class="text-center py-10">
@@ -225,7 +227,7 @@
             </div>
 
             {{-- Footer --}}
-            <div x-show="!isLoading" class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 shrink-0" style="display: none;">
+            <div x-show="!isLoading" class="border-t border-slate-100 bg-slate-50/50 px-6 py-4 flex justify-end gap-3 flex-none" style="display: none;">
                 <button type="button" @click="closeModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm">Batal</button>
                 <button type="submit" :disabled="isSubmitting" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
                     <span x-show="isSubmitting" class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent mr-1"></span>
