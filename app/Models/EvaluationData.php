@@ -38,6 +38,20 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool|null   $is_lock
  * @property string|null $remark
  */
+/**
+ * EvaluationData
+ *
+ * One record = one employee's monthly evaluation.
+ *
+ * Scoring systems:
+ *   Regular (KONTRAK/TETAP) → old 5-field system: kerajinan, kerapian, prestasi, loyalitas, perilaku
+ *   Yayasan / Magang        → new 9-field system: kemampuan, kecerdasan, qualitas, disiplin,
+ *                             kepatuhan, lembur, efektifitas, relawan, integritas
+ *
+ * Approval lifecycle:
+ *   pending → graded → dept_approved → fully_approved
+ *                   ↘ rejected
+ */
 class EvaluationData extends Model
 {
     use HasFactory;
@@ -54,6 +68,10 @@ class EvaluationData extends Model
         'NIK',
         'dept',
         'Month',
+        // Type & status (new columns)
+        'evaluation_type',
+        'approval_status',
+        // Attendance
         'Alpha',
         'Telat',
         'Izin',
@@ -114,31 +132,59 @@ class EvaluationData extends Model
     }
 
     // ──────────────────────────────────────────────
-    // Helpers
+    // Status helpers (approval_status column)
     // ──────────────────────────────────────────────
 
-    /**
-     * Whether this record has been approved by the department head.
-     */
+    /** Awaiting grading by the supervisor (pengawas). */
+    public function isPending(): bool
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    /** Graded by supervisor, awaiting dept head approval. */
+    public function isGraded(): bool
+    {
+        return $this->approval_status === 'graded';
+    }
+
+    /** Approved by dept head, awaiting HRD/GM final approval. */
+    public function isDeptApproved(): bool
+    {
+        return $this->approval_status === 'dept_approved';
+    }
+
+    /** Fully approved by HRD/GM. Export is now available. */
+    public function isFullyApproved(): bool
+    {
+        return $this->approval_status === 'fully_approved';
+    }
+
+    /** Rejected at any stage. */
+    public function isRejected(): bool
+    {
+        return $this->approval_status === 'rejected';
+    }
+
+    /** Whether this record can be included in an export. */
+    public function canBeExported(): bool
+    {
+        return $this->isFullyApproved();
+    }
+
+    // ──────────────────────────────────────────────
+    // Legacy status helpers (backward compat)
+    // ──────────────────────────────────────────────
+
+    /** @deprecated Use isDeptApproved() or approval_status directly. */
     public function isApprovedByDeptHead(): bool
     {
         return ! empty($this->depthead) && $this->depthead !== 'rejected';
     }
 
-    /**
-     * Whether this record has been approved by the general manager / HRD.
-     */
+    /** @deprecated Use isFullyApproved() or approval_status directly. */
     public function isApprovedByGM(): bool
     {
         return ! empty($this->generalmanager) && $this->generalmanager !== 'rejected';
-    }
-
-    /**
-     * Whether this record has been rejected at any stage.
-     */
-    public function isRejected(): bool
-    {
-        return $this->depthead === 'rejected' || $this->generalmanager === 'rejected';
     }
 
     // ──────────────────────────────────────────────
@@ -146,13 +192,19 @@ class EvaluationData extends Model
     // ──────────────────────────────────────────────
 
     /**
-     * Resolve the evaluation type from the related employee's employment_scheme.
-     * This is the single source of truth for type-branching logic.
+     * Resolve the evaluation type — prefers the stored `evaluation_type` column
+     * (set by migration backfill) over the join-based derivation.
      *
      * @return 'yayasan'|'magang'|'regular'
      */
     public function evaluationType(): string
     {
+        // Use stored column when available (fast path — no join needed)
+        if (! empty($this->evaluation_type)) {
+            return $this->evaluation_type;
+        }
+
+        // Fallback: derive from karyawan relationship
         $scheme = $this->karyawan?->employment_scheme ?? '';
 
         return match (true) {
@@ -164,7 +216,6 @@ class EvaluationData extends Model
 
     /**
      * Whether this record uses the new 9-field scoring system (Yayasan / Magang).
-     * Returns false for Regular (old 5-field + base-40 attendance system).
      */
     public function useNewScoringSystem(): bool
     {

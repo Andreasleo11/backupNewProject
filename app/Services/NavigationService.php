@@ -344,25 +344,11 @@ class NavigationService
                 'priority' => 70,
                 'children' => [
                     [
-                        'label' => 'All Evaluations',
-                        'route' => 'discipline.index',
+                        'label' => 'Unified Evaluations',
+                        'route' => 'evaluation.index',
                         'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('discipline.*'),
+                        'active' => request()->routeIs('evaluation.*'),
                         'roles' => ['admin', 'super-admin', 'hr', 'manager'],
-                    ],
-                    [
-                        'label' => 'Yayasan Evaluations',
-                        'route' => 'yayasan.table',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('yayasan.table'),
-                        'roles' => ['admin', 'super-admin', 'hr'],
-                    ],
-                    [
-                        'label' => 'Internship Evaluations',
-                        'route' => 'magang.table',
-                        'icon' => 'clipboard-document-list',
-                        'active' => request()->routeIs('magang.table'),
-                        'roles' => ['admin', 'super-admin', 'hr'],
                     ],
                     [
                         'label' => 'Individual Evaluations (All IN)',

@@ -38,11 +38,29 @@ class DisciplineDataTable extends DataTable
     protected string $type = 'regular';
 
     /**
+     * Optional period filter (month + year).
+     * When set, the query is scoped to this specific month+year.
+     */
+    protected ?int $filterMonth = null;
+    protected ?int $filterYear  = null;
+
+    /**
      * Set which evaluation type this DataTable instance represents.
      */
     public function forType(string $type): static
     {
         $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Scope the DataTable query to a specific evaluation period.
+     */
+    public function forPeriod(int $month, int $year): static
+    {
+        $this->filterMonth = $month;
+        $this->filterYear  = $year;
 
         return $this;
     }
@@ -57,27 +75,54 @@ class DisciplineDataTable extends DataTable
 
         $dt = (new EloquentDataTable($query))
             ->addColumn('grade', function (EvaluationData $row) {
-                return match (true) {
+                // Determine grade
+                $grade = match (true) {
                     $row->total >= 91 => 'A',
                     $row->total >= 71 => 'B',
                     $row->total >= 61 => 'C',
                     default           => 'D',
                 };
+                
+                // Map to badge colour
+                $color = match ($grade) {
+                    'A' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                    'B' => 'bg-sky-100 text-sky-800 border-sky-200',
+                    'C' => 'bg-amber-100 text-amber-800 border-amber-200',
+                    default => 'bg-rose-100 text-rose-800 border-rose-200',
+                };
+
+                return '<span class="px-2.5 py-1 rounded-md text-xs font-bold border ' . $color . '">' . $grade . '</span>';
             })
             ->addColumn('action', function (EvaluationData $row) use ($type) {
                 $disabled  = $row->is_lock ? 'disabled' : '';
                 $modalId   = '#edit-discipline-modal';
-                $updateUrl = route($this->updateRoute(), ['id' => $row->id]);
+                $updateUrl = route('evaluation.grade', ['id' => $row->id]);
 
-                return '<button class="btn btn-primary edit-discipline-btn"
+                // Modern premium action button
+                return '<button class="btn btn-sm btn-light border-slate-200 text-indigo-600 shadow-sm edit-discipline-btn hover:bg-indigo-50 hover:border-indigo-200 transition-all rounded-lg"
                     data-bs-toggle="modal"
                     data-bs-target="' . $modalId . '"
                     data-id="' . $row->id . '"
                     data-update-url="' . $updateUrl . '"
+                    title="Beri Nilai"
                     ' . $disabled . '>
-                    <i class="bx bx-edit"></i>
+                    <i class="bx bx-edit-alt"></i>
                 </button>';
             })
+            ->addColumn('absence_summary', function (EvaluationData $row) {
+                $badges = [];
+                if ($row->Alpha > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $row->Alpha . '</span>';
+                if ($row->Telat > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $row->Telat . '</span>';
+                if ($row->Izin > 0)  $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $row->Izin . '</span>';
+                if ($row->Sakit > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $row->Sakit . '</span>';
+
+                if (empty($badges)) {
+                    return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
+                }
+                
+                return '<div class="flex flex-wrap gap-1 items-center justify-center text-xs">' . implode('', $badges) . '</div>';
+            })
+            ->rawColumns(['grade', 'absence_summary', 'action'])
             ->setRowId('id');
 
         // Regular: add old-system computed columns (split attendance + criteria)
@@ -120,16 +165,12 @@ class DisciplineDataTable extends DataTable
                 })
                 ->setRowAttr([
                     'class' => function (EvaluationData $row) {
-                        if (empty($row->depthead)) {
-                            return ''; // Pending — no highlight
-                        }
-                        if ($row->depthead === 'rejected') {
-                            return 'table-danger'; // Rejected
-                        }
-                        if (! empty($row->generalmanager)) {
-                            return 'table-primary'; // Fully approved
-                        }
-                        return 'table-success'; // DeptHead approved, awaiting GM/HRD
+                        return match ($row->approval_status) {
+                            'rejected'       => 'table-danger',
+                            'fully_approved' => 'table-primary',
+                            'dept_approved'  => 'table-success',
+                            default          => '',
+                        };
                     },
                 ]);
         }
@@ -146,29 +187,47 @@ class DisciplineDataTable extends DataTable
         $user     = Auth::user();
         $resolver = app(DepartmentEmployeeResolver::class);
 
-        $employees = match ($this->type) {
-            'yayasan' => $resolver->resolveYayasanForUser($user),
-            'magang'  => $resolver->resolveMagangForUser($user),
-            default   => $resolver->resolveForUser($user),
-        };
+        try {
+            $employees = match ($this->type) {
+                'yayasan' => $resolver->resolveYayasanForUser($user),
+                'magang'  => $resolver->resolveMagangForUser($user),
+                default   => $resolver->resolveForUser($user),
+            };
+        } catch (\Throwable) {
+            // User has no visible employees for this type
+            // (e.g. not a dept head, or department not in config).
+            // Return an empty result set so the DataTable renders empty instead of 500.
+            $employees = collect();
+        }
 
         /** @var \Illuminate\Database\Eloquent\Builder $query */
         $query = EvaluationData::with('karyawan')
-            ->whereIn('NIK', $employees->pluck('NIK'));
+            ->whereIn('NIK', $employees->pluck('NIK'))
+            ->where('evaluation_type', $this->type);
+
+        // Apply period filter when set (from EvaluationController)
+        if ($this->filterMonth) {
+            $query->whereMonth('Month', $this->filterMonth);
+        }
+        if ($this->filterYear) {
+            $query->whereYear('Month', $this->filterYear);
+        }
 
         return $query;
     }
 
-    /**
-     * Optional HTML builder configuration.
-     */
     public function html(): HtmlBuilder
     {
         return $this->builder()
             ->setTableId($this->tableId())
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(1)
+            ->orderBy(1, 'asc') // Sort by NIK default, although standard is order(1).
+            // Default sort: Total (which is column index index 5) Ascending
+            // So employees with 0 score (Pending) appear first.
+            // Note: DataTables order is 0-indexed. 
+            // id=0, NIK=1, Name=2, Dept=3, Status=4, Total=5
+            ->orderBy(5, 'asc') 
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),
@@ -198,6 +257,27 @@ class DisciplineDataTable extends DataTable
         return 'Discipline_' . ucfirst($this->type) . '_' . date('YmdHis');
     }
 
+    /**
+     * Return column definitions as a plain array suitable for JSON serialization.
+     * Used by the evaluation/index.blade.php view to pass column defs to DataTables JS.
+     */
+    public static function columnsForJs(string $type): array
+    {
+        $instance = (new static())->forType($type);
+
+        return array_map(function (Column $col) {
+            return [
+                'data'       => $col->data,
+                'name'       => $col->name,
+                'title'      => $col->title,
+                'orderable'  => $col->orderable ?? true,
+                'searchable' => $col->searchable ?? true,
+                'visible'    => $col->visible ?? true,
+                'className'  => $col->className ?? '',
+            ];
+        }, $instance->getColumns());
+    }
+
     // ──────────────────────────────────────────────────
     // Private helpers
     // ──────────────────────────────────────────────────
@@ -220,11 +300,7 @@ class DisciplineDataTable extends DataTable
      */
     private function updateRoute(): string
     {
-        return match ($this->type) {
-            'yayasan' => 'discipline.yayasan.update',
-            'magang'  => 'discipline.magang.update',
-            default   => 'editdiscipline',
-        };
+        return 'evaluation.grade';
     }
 
     /**
@@ -238,18 +314,11 @@ class DisciplineDataTable extends DataTable
             Column::make('Name')
                 ->data('karyawan.name')
                 ->searchable(false)
-                ->addClass('align-middle text-center')
+                ->addClass('align-middle font-semibold text-slate-800')
                 ->orderable(false),
             Column::make('Department')
                 ->data('karyawan.dept_code')
                 ->searchable(false)
-                ->addClass('align-middle text-center')
-                ->orderable(false),
-            Column::make('start_date')
-                ->title('Start Date')
-                ->data('karyawan.start_date')
-                ->searchable(false)
-                ->exportable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
             Column::make('status')
@@ -259,29 +328,15 @@ class DisciplineDataTable extends DataTable
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),
-            Column::make('Month')->addClass('align-middle text-center'),
-            Column::make('Alpha')->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Telat')->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Izin')->exportable(false)->addClass('align-middle text-center'),
-            Column::make('Sakit')->exportable(false)->addClass('align-middle text-center'),
-            Column::make('totalkehadiran')
-                ->title('Total Nilai Kehadiran')
-                ->searchable(false)
+            Column::computed('absence_summary')
+                ->title('Kehadiran')
                 ->exportable(false)
-                ->addClass('align-middle text-center text-bg-secondary')
-                ->orderable(false),
-            Column::make('kerajinan_kerja')->addClass('align-middle text-center')->title('Kinerja Kerja'),
-            Column::make('kerapian_kerja')->addClass('align-middle text-center')->title('Kerapian'),
-            Column::make('loyalitas')->addClass('align-middle text-center'),
-            Column::make('perilaku_kerja')->addClass('align-middle text-center')->title('Etika dan Kesopanan'),
-            Column::make('prestasi')->addClass('align-middle text-center'),
-            Column::make('totaldiscipline')
-                ->title('Total Nilai Kedisiplinan')
                 ->searchable(false)
+                ->addClass('align-middle text-center'),
+            Column::make('total')
+                ->title('Total Nilai')
                 ->exportable(false)
-                ->addClass('align-middle text-center text-bg-secondary')
-                ->orderable(false),
-            Column::make('total')->exportable(false)->addClass('align-middle text-center'),
+                ->addClass('align-middle text-center font-bold text-indigo-600'),
             Column::make('grade')
                 ->title('Grade')
                 ->searchable(false)
@@ -289,6 +344,7 @@ class DisciplineDataTable extends DataTable
                 ->addClass('align-middle text-center')
                 ->orderable(false),
             Column::computed('action')
+                ->title('Aksi')
                 ->exportable(false)
                 ->printable(false)
                 ->addClass('align-middle text-center'),
@@ -303,68 +359,45 @@ class DisciplineDataTable extends DataTable
     {
         return [
             Column::make('id')->visible(false)->exportable(true),
-            Column::make('NIK'),
+            Column::make('NIK')->addClass('align-middle text-center'),
             Column::make('Name')
                 ->data('karyawan.Nama')
                 ->searchable(false)
-                ->addClass('align-middle')
+                ->addClass('align-middle font-semibold text-slate-800')
                 ->orderable(false),
-            Column::make('dept')->addClass('align-middle'),
-            Column::make('start_date')
-                ->title('Start Date')
-                ->data('karyawan.start_date')
-                ->searchable(false)
-                ->addClass('align-middle')
-                ->orderable(false),
+            Column::make('dept')->title('Department')->addClass('align-middle text-center'),
             Column::make('status')
                 ->title('Status')
                 ->data('karyawan.status')
                 ->searchable(false)
-                ->addClass('align-middle')
+                ->addClass('align-middle text-center')
                 ->orderable(false),
-            Column::make('Month'),
-            Column::make('Alpha'),
-            Column::make('Telat'),
-            Column::make('Izin'),
-            Column::make('Sakit'),
-            Column::make('kemampuan_kerja'),
-            Column::make('kecerdasan_kerja'),
-            Column::make('qualitas_kerja')->title('Kualitas Kerja'),
-            Column::make('disiplin_kerja'),
-            Column::make('kepatuhan_kerja'),
-            Column::make('lembur'),
-            Column::make('efektifitas_kerja'),
-            Column::make('relawan')->title('Ringan Tangan'),
-            Column::make('integritas'),
-            Column::make('totaldiscipline')
-                ->title('Total Nilai Kedisiplinan')
-                ->searchable(false)
+            Column::computed('absence_summary')
+                ->title('Kehadiran')
                 ->exportable(false)
-                ->addClass('align-middle')
-                ->orderable(false),
-            Column::make('total')->exportable(false),
+                ->searchable(false)
+                ->addClass('align-middle text-center'),
+            Column::make('total')
+                ->title('Total Nilai')
+                ->exportable(false)
+                ->addClass('align-middle text-center font-bold text-indigo-600'),
             Column::make('grade')
                 ->title('Grade')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')
+                ->addClass('align-middle text-center border-x border-slate-100 bg-slate-50/50')
                 ->orderable(false),
             Column::make('pengawas')
                 ->title('Approved By')
                 ->searchable(false)
                 ->exportable(false)
-                ->addClass('align-middle')
+                ->addClass('align-middle text-center text-sm font-medium text-slate-600')
                 ->orderable(false),
             Column::computed('action')
+                ->title('Aksi')
                 ->exportable(false)
                 ->printable(false)
-                ->addClass('text-center align-middle'),
-            Column::make('remark')
-                ->title('Remark Reject')
-                ->searchable(false)
-                ->exportable(false)
-                ->addClass('align-middle')
-                ->orderable(false),
+                ->addClass('text-center align-middle border-l border-slate-100'),
         ];
     }
 }

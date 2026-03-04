@@ -18,55 +18,77 @@
       7. Submits via AJAX on Save
 --}}
 <div class="modal fade" id="edit-discipline-modal" tabindex="-1" aria-labelledby="editDisciplineModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-2xl overflow-hidden glass-card">
             <form method="POST" id="edit-discipline-form" class="needs-validation" novalidate>
                 @csrf
                 @method('PUT')
 
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editDisciplineModalLabel">Lembar Penilaian</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                {{-- Premium Header --}}
+                <div class="modal-header border-b border-slate-100 bg-slate-50/50 relative px-6 py-5">
+                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                    <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                            <i class="bx bx-edit text-xl"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-slate-800 m-0" id="editDisciplineModalLabel">Lembar Penilaian</h5>
+                            <p class="text-xs text-slate-500 m-0 mt-0.5">Berikan nilai performa karyawan</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close text-reset bg-slate-200 hover:bg-slate-300 rounded-lg p-2" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 {{-- Loading Spinner --}}
-                <div id="discipline-modal-loader" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
+                <div id="discipline-modal-loader" class="text-center py-10">
+                    <div class="spinner-border text-indigo-500" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-2 text-muted">Fetching data...</p>
+                    <p class="mt-3 text-sm text-slate-500 font-medium">Mengambil data...</p>
                 </div>
 
                 {{-- Modal Body --}}
-                <div class="modal-body" id="discipline-modal-content" style="display: none;">
-                    <div class="text-center mb-3">
-                        <h6 class="text-muted" id="discipline-modal-employee-name"></h6>
-                        <small class="badge bg-secondary" id="discipline-modal-type-badge"></small>
-                    </div>
-
-                    {{-- Absence summary (read-only) --}}
-                    <div class="table-responsive mb-4">
-                        <table class="table table-bordered text-center table-sm">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Alpha</th><th>Telat</th><th>Izin</th><th>Sakit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td id="dm-alpha">0</td>
-                                    <td id="dm-telat">0</td>
-                                    <td id="dm-izin">0</td>
-                                    <td id="dm-sakit">0</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <div class="modal-body p-6" id="discipline-modal-content" style="display: none;">
+                    
+                    {{-- Employee Summary Container --}}
+                    <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-lg shadow-sm">
+                                <i class="bx bx-user"></i>
+                            </div>
+                            <div>
+                                <h6 class="font-bold text-slate-800 m-0 text-lg" id="discipline-modal-employee-name"></h6>
+                                <span class="badge bg-indigo-100 text-indigo-700 border border-indigo-200 mt-1" id="discipline-modal-type-badge"></span>
+                            </div>
+                        </div>
+                        
+                        {{-- Absence Mini-Cards --}}
+                        <div class="flex items-center gap-2">
+                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
+                                <div class="text-[10px] uppercase font-bold text-slate-400">Alpha</div>
+                                <div class="font-bold text-rose-600" id="dm-alpha">0</div>
+                            </div>
+                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
+                                <div class="text-[10px] uppercase font-bold text-slate-400">Telat</div>
+                                <div class="font-bold text-amber-600" id="dm-telat">0</div>
+                            </div>
+                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
+                                <div class="text-[10px] uppercase font-bold text-slate-400">Izin</div>
+                                <div class="font-bold text-sky-600" id="dm-izin">0</div>
+                            </div>
+                            <div class="text-center px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm min-w-[60px]">
+                                <div class="text-[10px] uppercase font-bold text-slate-400">Sakit</div>
+                                <div class="font-bold text-indigo-600" id="dm-sakit">0</div>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- NEW SYSTEM: 9 fields (Yayasan / Magang) --}}
                     <div id="dm-new-fields" style="display: none;">
-                        <p class="text-muted small mb-3">Beri nilai dari A hingga E</p>
-                        <div class="row g-3">
+                        <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i class="bx bx-check-double text-indigo-500"></i> Kriteria Penilaian Dasar
+                        </h6>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             @foreach ([
                                 'kemampuan_kerja'   => 'Kemampuan Kerja',
                                 'kecerdasan_kerja'  => 'Kecerdasan Kerja',
@@ -78,12 +100,12 @@
                                 'relawan'           => 'Ringan Tangan',
                                 'integritas'        => 'Integritas',
                             ] as $field => $label)
-                            <div class="col-md-4">
-                                <label for="new_{{ $field }}" class="form-label">{{ $label }}</label>
+                            <div>
+                                <label for="new_{{ $field }}" class="form-label text-xs font-semibold text-slate-600">{{ $label }}</label>
                                 <input type="text" maxlength="1" name="{{ $field }}"
                                     id="new_{{ $field }}"
-                                    class="form-control text-uppercase discipline-grade-input"
-                                    placeholder="A–E" pattern="[A-Ea-e]">
+                                    class="form-control text-center font-bold text-indigo-700 text-lg uppercase discipline-grade-input focus:ring-2 focus:ring-indigo-500/20 py-2"
+                                    placeholder="A–E" pattern="[A-Ea-e]" autocomplete="off">
                             </div>
                             @endforeach
                         </div>
@@ -91,8 +113,10 @@
 
                     {{-- OLD SYSTEM: 5 fields (Regular) --}}
                     <div id="dm-old-fields" style="display: none;">
-                        <p class="text-muted small mb-3">Beri nilai dari A hingga E</p>
-                        <div class="row g-3">
+                        <h6 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <i class="bx bx-check-double text-indigo-500"></i> Kriteria Penilaian Khusus
+                        </h6>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border border-slate-100 rounded-xl p-4 bg-white shadow-sm">
                             @foreach ([
                                 'kerajinan_kerja' => 'Kinerja Kerja',
                                 'kerapian_kerja'  => 'Kerapian',
@@ -100,21 +124,23 @@
                                 'loyalitas'       => 'Loyalitas',
                                 'perilaku_kerja'  => 'Etika & Kesopanan',
                             ] as $field => $label)
-                            <div class="col-md-4">
-                                <label for="old_{{ $field }}" class="form-label">{{ $label }}</label>
+                            <div>
+                                <label for="old_{{ $field }}" class="form-label text-xs font-semibold text-slate-600">{{ $label }}</label>
                                 <input type="text" maxlength="1" name="{{ $field }}"
                                     id="old_{{ $field }}"
-                                    class="form-control text-uppercase discipline-grade-input"
-                                    placeholder="A–E" pattern="[A-Ea-e]">
+                                    class="form-control text-center font-bold text-indigo-700 text-lg uppercase discipline-grade-input focus:ring-2 focus:ring-indigo-500/20 py-2"
+                                    placeholder="A–E" pattern="[A-Ea-e]" autocomplete="off">
                             </div>
                             @endforeach
                         </div>
                     </div>
                 </div>
 
-                <div class="modal-footer" id="discipline-modal-footer" style="display: none;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="modal-footer border-t border-slate-100 bg-slate-50/50 px-6 py-4" id="discipline-modal-footer" style="display: none;">
+                    <button type="button" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all shadow-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 transition-all shadow-sm flex items-center gap-2">
+                        <i class="bx bx-save"></i> Simpan Nilai
+                    </button>
                 </div>
             </form>
         </div>
@@ -158,14 +184,24 @@
         form.classList.remove('was-validated');
 
         // Fetch evaluation data via AJAX
-        axios.get('/api/evaluation/' + id)
+        axios.get('/evaluation/' + id + '/data')
             .then(({ data }) => {
                 populateModal(data);
                 hideLoader();
             })
-            .catch(() => {
-                content.innerHTML = '<div class="alert alert-danger">Failed to load data. Please try again.</div>';
+            .catch((err) => {
                 hideLoader();
+                window.dispatchEvent(new CustomEvent('toast', {
+                    detail: {
+                        title: 'Gagal Memuat Data',
+                        message: 'Terjadi kesalahan saat mengambil evaluasi.',
+                        type: 'error'
+                    }
+                }));
+                // Fallback direct window object if Alpine listener missed it
+                if (window.toastManager) window.toastManager.show({ title: 'Gagal', message: 'Data evaluasi tidak ditemukan.', type: 'error'});
+
+                bootstrap.Modal.getInstance(modal).hide();
             });
     });
 
@@ -192,15 +228,39 @@
 
         axios.post(form.action, data, {
             headers: { 'X-HTTP-Method-Override': 'PUT' }
-        }).then(() => {
+        }).then(({ data }) => {
             bootstrap.Modal.getInstance(modal).hide();
-            // Reload the visible DataTable
-            document.querySelectorAll('table.dataTable').forEach(t => {
-                const dtInstance = $.fn.dataTable.Api ? new $.fn.dataTable.Api(t) : null;
-                if (dtInstance) dtInstance.ajax.reload(null, false);
-            });
+            
+            window.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    title: 'Berhasil',
+                    message: data.message || 'Nilai evaluasi berhasil disimpan.',
+                    type: 'success'
+                }
+            }));
+            // Fallback just in case
+            if (window.toastManager && !window.Alpine) window.toastManager.show({title: 'Berhasil', message: 'Tersimpan', type: 'success'});
+
+            // Reload the visible DataTable & update status chips defined in index.blade.php
+            if (typeof window.reloadEvaluationTables === 'function') {
+                window.reloadEvaluationTables();
+            } else {
+                document.querySelectorAll('table.dataTable').forEach(t => {
+                    const dtInstance = $.fn.dataTable.Api ? new $.fn.dataTable.Api(t) : null;
+                    if (dtInstance) dtInstance.ajax.reload(null, false);
+                });
+            }
         }).catch(err => {
             console.error('Save failed', err);
+            console.error('Save failed', err);
+            window.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    title: 'Gagal Menyimpan',
+                    message: 'Terjadi kesalahan saat menyimpan nilai. Silahkan coba lagi.',
+                    type: 'error'
+                }
+            }));
+            form.classList.remove('was-validated');
         });
     });
 
@@ -263,4 +323,5 @@
 #discipline-modal-content .is-invalid {
     border-width: 2px;
 }
+
 </style>

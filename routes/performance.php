@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DisciplinePageController;
+use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\EvaluationDataController;
 use App\Http\Controllers\EvaluationDataWeeklyController;
 use App\Http\Controllers\PEHomeController;
@@ -34,7 +35,7 @@ Route::middleware('auth')->group(function () {
     // Discipline — Regular Employees
     // ──────────────────────────────────────────────
     // Main listing for department heads (their own dept employees)
-    Route::get('/discipline/index', [DisciplinePageController::class, 'index'])->name('discipline.index');
+    // Route::get('/discipline/index', [DisciplinePageController::class, 'index'])->name('discipline.index');
     Route::put('/edit/discipline/{id}', [DisciplinePageController::class, 'update'])->name('editdiscipline');
 
     // Import attendance data from Excel
@@ -49,7 +50,7 @@ Route::middleware('auth')->group(function () {
     // ──────────────────────────────────────────────
     // Discipline — Yayasan Table
     // ──────────────────────────────────────────────
-    Route::get('/discipline/yayasan/table', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
+    // Route::get('/discipline/yayasan/table', [DisciplinePageController::class, 'indexyayasan'])->name('yayasan.table');
     Route::post('/discipline/yayasan/update/{id}', [DisciplinePageController::class, 'updateyayasan'])->name('discipline.yayasan.update');
     Route::post('/discipline/yayasan/lock', [DisciplinePageController::class, 'lockdata'])->name('discipline.yayasan.lock');
     Route::post('/discipline/yayasan/addline', [DisciplinePageController::class, 'addlineYayasan'])->name('discipline.yayasan.addline');
@@ -62,7 +63,7 @@ Route::middleware('auth')->group(function () {
     // ──────────────────────────────────────────────
     // Discipline — Magang (Internship) Table
     // ──────────────────────────────────────────────
-    Route::get('/discipline/magang/table', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
+    // Route::get('/discipline/magang/table', [DisciplinePageController::class, 'indexmagang'])->name('magang.table');
     Route::post('/discipline/magang/update/{id}', [DisciplinePageController::class, 'updatemagang'])->name('discipline.magang.update');
     Route::post('/discipline/magang/addline', [DisciplinePageController::class, 'addlineMagang'])->name('discipline.magang.addline');
     Route::post('/discipline/magang/approval', [DisciplinePageController::class, 'approve_depthead_button'])->name('approve.data.depthead');
@@ -71,7 +72,7 @@ Route::middleware('auth')->group(function () {
     // ──────────────────────────────────────────────
     // Discipline — All Employees (HR / Super-Admin view)
     // ──────────────────────────────────────────────
-    Route::get('/all/discipline', [DisciplinePageController::class, 'allindex'])->name('alldiscipline.index');
+    // Route::get('/all/discipline', [DisciplinePageController::class, 'allindex'])->name('alldiscipline.index');
 
     // ──────────────────────────────────────────────
     // Data Lock & Export (Yayasan)
@@ -143,4 +144,49 @@ Route::middleware('auth')->group(function () {
     Route::post('/weeklyprocessevaluationdata', [EvaluationDataWeeklyController::class, 'updateWeekly'])->name('WeeklyUpdateEvaluation');
 
     Route::get('/fetch/filtered/employees', [DisciplinePageController::class, 'fetchFilteredEmployees'])->name('fetch.filtered.employees');
+
+    // ──────────────────────────────────────────────
+    // Unified Evaluation Page (new rework)
+    // IMPORTANT: Specific literal routes MUST come before {month}/{year} wildcard.
+    // ──────────────────────────────────────────────
+
+    // Main page — defaults to current month
+    Route::get('/evaluation', [EvaluationController::class, 'index'])->name('evaluation.index');
+
+    // DataTable AJAX data per type tab (before {month}/{year} to avoid wildcard capture)
+    Route::get('/evaluation/data/regular', [EvaluationController::class, 'dataRegular'])->name('evaluation.data.regular');
+    Route::get('/evaluation/data/yayasan', [EvaluationController::class, 'dataYayasan'])->name('evaluation.data.yayasan');
+    Route::get('/evaluation/data/magang',  [EvaluationController::class, 'dataMagang'])->name('evaluation.data.magang');
+
+    // Status summary chips (AJAX — before {month}/{year})
+    Route::get('/evaluation/summary', [EvaluationController::class, 'summary'])->name('evaluation.summary');
+
+    // Export Excel
+    Route::get('/evaluation/export', [EvaluationController::class, 'export'])->name('evaluation.export');
+
+    // Batch approve (dept head — before {month}/{year})
+    Route::post('/evaluation/approve-dept', [EvaluationController::class, 'approveDept'])->name('evaluation.approve-dept');
+
+    // Final approve (HRD/GM — before {month}/{year})
+    Route::post('/evaluation/approve-hrd', [EvaluationController::class, 'approveHrd'])->name('evaluation.approve-hrd');
+
+    // Single record fetch for grade modal
+    Route::get('/evaluation/{id}/data', [EvaluationController::class, 'show'])->name('evaluation.show');
+
+    // Grade a single record (grader role)
+    Route::put('/evaluation/{id}/grade', [EvaluationController::class, 'grade'])->name('evaluation.grade');
+
+    // Reject a single record
+    Route::post('/evaluation/{id}/reject', [EvaluationController::class, 'reject'])->name('evaluation.reject');
+
+    // Parameterized period route (must come AFTER all literal /evaluation/... routes)
+    Route::get('/evaluation/{month}/{year}', [EvaluationController::class, 'index'])->name('evaluation.period');
+
+    Route::post('/updateyayasandata', [DisciplinePageController::class, 'importyayasan'])->name(
+        'yayasan.import',
+    );
+    Route::post('/updatemagangdata', [DisciplinePageController::class, 'magangimport'])->name(
+        'magang.import',
+    );
 });
+
