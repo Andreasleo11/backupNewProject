@@ -358,14 +358,14 @@ class DisciplineDataTable extends DataTable
             Column::make('id')->visible(false)->exportable(true),
             Column::make('NIK')->addClass('align-middle text-center'),
             Column::make('Name')
-                ->data('karyawan.Nama')
+                ->data('karyawan.name')
                 ->searchable(false)
                 ->addClass('align-middle font-semibold text-slate-800')
                 ->orderable(false),
-            Column::make('dept')->title('Department')->addClass('align-middle text-center'),
+            Column::make('dept')->title('Department')->data('karyawan.dept_code')->addClass('align-middle text-center'),
             Column::make('status')
                 ->title('Status')
-                ->data('karyawan.status')
+                ->data('karyawan.employment_scheme')
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),

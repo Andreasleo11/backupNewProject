@@ -24,7 +24,7 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
-            ->addColumn('karyawan.Nama', function (EvaluationDataWeekly $record) {
+            ->addColumn('karyawan.name', function (EvaluationDataWeekly $record) {
                 return $record->karyawan->Nama ?? $record->karyawan->name ?? '<span class="text-slate-400 italic">Terhapus/Kosong</span>';
             })
             ->editColumn('Month', function (EvaluationDataWeekly $record) {
@@ -47,7 +47,7 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
                     </button>
                 ';
             })
-            ->rawColumns(['karyawan.Nama', 'action']);
+            ->rawColumns(['karyawan.name', 'action']);
     }
 
     /**
@@ -106,7 +106,7 @@ class EvaluationDataWeeklyManagementDataTable extends DataTable
             Column::make('DT_RowIndex')->title('No')->searchable(false)->orderable(false)->width(50)->addClass('text-center text-slate-500 font-medium'),
             Column::make('Month')->title('Tanggal')->addClass('text-slate-700 font-medium'),
             Column::make('NIK')->title('NIK')->addClass('text-slate-600 font-medium'),
-            Column::make('karyawan.Nama')->title('Nama')->name('karyawan.Nama')->addClass('text-slate-800 font-semibold'),
+            Column::make('karyawan.name')->title('Nama')->name('karyawan.name')->addClass('text-slate-800 font-semibold'),
             Column::make('dept')->title('Dept')->addClass('text-slate-600 uppercase text-xs font-bold'),
             Column::make('Alpha')->title('A')->searchable(false)->addClass('text-center font-bold text-rose-500'),
             Column::make('Telat')->title('T')->searchable(false)->addClass('text-center font-bold text-amber-500'),

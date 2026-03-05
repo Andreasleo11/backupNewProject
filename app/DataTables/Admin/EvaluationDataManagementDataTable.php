@@ -24,7 +24,7 @@ class EvaluationDataManagementDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addIndexColumn()
-            ->addColumn('karyawan.Nama', function (EvaluationData $record) {
+            ->addColumn('karyawan.name', function (EvaluationData $record) {
                 // Determine name based on relationship (assuming karyawan relationship exists)
                 return $record->karyawan->Nama ?? $record->karyawan->name ?? '<span class="text-slate-400 italic">Terhapus/Kosong</span>';
             })
@@ -48,7 +48,7 @@ class EvaluationDataManagementDataTable extends DataTable
                     </button>
                 ';
             })
-            ->rawColumns(['karyawan.Nama', 'status', 'action']);
+            ->rawColumns(['karyawan.name', 'status', 'action']);
     }
 
     /**
@@ -60,7 +60,7 @@ class EvaluationDataManagementDataTable extends DataTable
     public function query(EvaluationData $model): \Illuminate\Database\Eloquent\Builder
     {
         return $model->newQuery()
-            ->with(['karyawan', 'department']);
+            ->with(['karyawan']);
     }
 
     /**
@@ -107,7 +107,7 @@ class EvaluationDataManagementDataTable extends DataTable
             Column::make('DT_RowIndex')->title('No')->searchable(false)->orderable(false)->width(50)->addClass('text-center text-slate-500 font-medium'),
             Column::make('Month')->title('Periode')->addClass('text-slate-700 font-medium'),
             Column::make('NIK')->title('NIK')->addClass('text-slate-600 font-medium'),
-            Column::make('karyawan.Nama')->title('Nama')->name('karyawan.Nama')->addClass('text-slate-800 font-semibold'),
+            Column::make('karyawan.name')->title('Nama')->name('karyawan.name')->addClass('text-slate-800 font-semibold'),
             Column::make('dept')->title('Dept')->addClass('text-slate-600 uppercase text-xs font-bold'),
             Column::make('Alpha')->title('A')->searchable(false)->addClass('text-center font-bold text-rose-500'),
             Column::make('Telat')->title('T')->searchable(false)->addClass('text-center font-bold text-amber-500'),
