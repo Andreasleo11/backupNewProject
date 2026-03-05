@@ -157,6 +157,17 @@
 
                 <div class="h-6 w-px bg-slate-200 mx-1"></div>
 
+                {{-- Focus Mode Toggle Button --}}
+                <button type="button" onclick="
+                    const type = document.querySelector('.nav-tabs .nav-link.active').dataset.type;
+                    window.dispatchEvent(new CustomEvent('open-focus-mode', { 
+                        detail: { type: type, month: {{ $month }}, year: {{ $year }} }
+                    }));
+                " class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] border border-transparent transition-all hover:bg-indigo-700 hover:shadow-[0_6px_16px_rgba(79,70,229,0.4)] hover:-translate-y-0.5 group" >
+                    <i class="bx bx-scan text-lg group-hover:scale-110 transition-transform"></i>
+                    <span>Mode Fokus</span>
+                </button>
+
                 {{-- Advanced Toggle Button --}}
                 <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-advanced-sidebar'))" class="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm border border-slate-200 transition-all hover:bg-slate-200 hover:-translate-y-0.5" >
                     <i class="bx bx-slider-alt text-lg text-slate-500"></i>
@@ -328,6 +339,10 @@
             </div>
         </div>
     </div>
+    
+    {{-- Full-Screen Focus Mode Component --}}
+    @livewire('evaluation.focus-mode')
+
 @endpush
 
 @endsection
