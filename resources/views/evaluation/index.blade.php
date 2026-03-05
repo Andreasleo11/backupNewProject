@@ -32,8 +32,8 @@
                 
                 {{-- Month selector --}}
                 <div class="relative">
-                    <i class="bx bx-calendar absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400"></i>
-                    <select id="period-month" class="form-select form-select-sm border-0 bg-transparent py-1.5 pl-8 pr-6 text-sm font-semibold text-slate-700 focus:ring-0 cursor-pointer w-auto shadow-none">
+                    <i class="bx bx-calendar absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400 pointer-events-none"></i>
+                    <select id="period-month" style="padding-left: 2.25rem;" class="form-select form-select-sm border-0 bg-transparent py-1.5 pr-6 text-sm font-semibold text-slate-700 focus:ring-0 cursor-pointer w-auto shadow-none">
                         @foreach (range(1, 12) as $m)
                             <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
                                 {{ \Carbon\Carbon::createFromDate($year, $m, 1)->translatedFormat('F') }}
