@@ -24,11 +24,6 @@ interface EvaluationDataRepositoryContract
     ): Collection;
 
     /**
-     * Get Yayasan employees by month and year.
-     */
-    public function getYayasanByMonthAndYear(int $month, int $year): Collection;
-
-    /**
      * Get evaluation data by department codes.
      *
      * @param array $codes Array of department codes
@@ -58,6 +53,11 @@ interface EvaluationDataRepositoryContract
      * Get all Yayasan employees.
      */
     public function getAllYayasanEmployees(): Collection;
+
+    /**
+     * Get all Magang employees.
+     */
+    public function getAllMagangEmployees(): Collection;
 
     /**
      * Find evaluation data with relations loaded.

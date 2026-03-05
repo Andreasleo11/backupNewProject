@@ -88,19 +88,25 @@ class FocusMode extends Component
             return;
         }
 
+        // We extract NIKs to track employees instead of record IDs
+        $niks = $employees->pluck('nik')->filter()->values()->toArray();
+
         // Fetch their associated evaluation records for this period
-        $records = EvaluationData::with('karyawan.department')
-            ->whereIn('NIK', $employees->pluck('NIK'))
-            ->where('evaluation_type', $this->type)
+        $records = EvaluationData::query()
+            ->whereIn('NIK', $niks)
             ->whereMonth('Month', $this->month)
             ->whereYear('Month', $this->year)
             ->get();
 
-        // Separate ungraded (total == 0) from graded (total > 0), so ungraded are tackled first
-        $ungraded = $records->where('total', 0)->sortBy('karyawan.name')->pluck('id')->toArray();
-        $graded   = $records->where('total', '>', 0)->sortBy('karyawan.name')->pluck('id')->toArray();
+        $gradedNiks = $records->where('total', '>', 0)->pluck('NIK')->toArray();
+        $ungradedNiks = array_values(array_diff($niks, $gradedNiks));
 
-        $this->employeeIds = array_merge($ungraded, $graded);
+        // Sort both arrays by employee name
+        $nameSortMap = $employees->pluck('name', 'nik');
+        usort($ungradedNiks, fn($a, $b) => strcmp($nameSortMap[$a] ?? '', $nameSortMap[$b] ?? ''));
+        usort($gradedNiks, fn($a, $b) => strcmp($nameSortMap[$a] ?? '', $nameSortMap[$b] ?? ''));
+
+        $this->employeeIds = array_merge($ungradedNiks, $gradedNiks); // $employeeIds actually stores NIKs now
         $this->currentIndex = 0;
         
         $this->loadCurrentEmployeeData();
@@ -117,7 +123,8 @@ class FocusMode extends Component
             return;
         }
 
-        $record = EvaluationData::find($this->employeeIds[$this->currentIndex]);
+        $record = $this->getCurrentRecordProperty();
+        if (!$record) return;
 
         if ($this->isNewSystem) {
             foreach (array_keys($this->newFieldsConfig) as $field) {
@@ -169,7 +176,32 @@ class FocusMode extends Component
             return null;
         }
 
-        return EvaluationData::with('karyawan.department')->find($this->employeeIds[$this->currentIndex]);
+        $nik = $this->employeeIds[$this->currentIndex];
+        
+        $employee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::with('department')
+            ->where('nik', $nik)->first();
+            
+        if (!$employee) return null;
+
+        $record = EvaluationData::with('karyawan.department')
+            ->where('NIK', $nik)
+            ->whereMonth('Month', $this->month)
+            ->whereYear('Month', $this->year)
+            ->first();
+            
+        if (!$record) {
+            $record = new EvaluationData([
+                'NIK' => $nik,
+                'Month' => \Carbon\Carbon::create($this->year, $this->month, 1)->format('Y-m-d'),
+                'Alpha' => 0,
+                'Telat' => 0,
+                'Izin' => 0,
+                'Sakit' => 0,
+            ]);
+            $record->setRelation('karyawan', $employee);
+        }
+
+        return $record;
     }
 
     /**
@@ -196,24 +228,27 @@ class FocusMode extends Component
             $cleanForm[$field] = $val;
         }
 
-        // Apply grades
-        $record->update($cleanForm);
+        if (!$record->exists) {
+            $record->department_id = $record->karyawan->department->id ?? null;
+            $record->level = $record->karyawan->level ?? 5;
+            $record->evaluation_type = $this->type;
+        }
+
+        $record->fill($cleanForm);
 
         // Recalculate
         $scoreCalculator = app(DisciplineScoreCalculatorService::class);
         if ($this->isNewSystem) {
-            $total = $scoreCalculator->calculateTotal($cleanForm, $record->fresh());
+            $total = $scoreCalculator->calculateTotal($cleanForm, $record);
         } else {
-            // Old system takes base score + adds absence penalty, then calculateTotalOld subtracts 40
             $absentDeduction = ($record->Alpha * 10) + ($record->Izin * 2) + $record->Sakit + ($record->Telat * 0.5);
-            $criteriaScore = $scoreCalculator->calculateTotalOld($cleanForm, $record->fresh()) - 40;
+            $criteriaScore = $scoreCalculator->calculateTotalOld($cleanForm, $record) - 40;
             $total = max(0, 40 - $absentDeduction) + $criteriaScore;
         }
 
-        $record->update([
-            'total'    => $total,
-            'pengawas' => Auth::user()->name,
-        ]);
+        $record->total = $total;
+        $record->pengawas = Auth::user()->name;
+        $record->save();
 
         // Reset approval flags so it proceeds
         app(DisciplineApprovalService::class)->resetRejectedApprovals($record);

@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
 use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
@@ -74,16 +75,19 @@ class DisciplineDataTable extends DataTable
         $type       = $this->type;
 
         $dt = (new EloquentDataTable($query))
-            ->addColumn('grade', function (EvaluationData $row) {
-                // Determine grade
+            ->addColumn('grade', function (Employee $row) {
+                $evalData = $row->evaluationData->first();
+                if (! $evalData) {
+                    return '<span class="px-2.5 py-1 rounded-md text-xs font-bold border bg-slate-100 text-slate-500 border-slate-200">Pending</span>';
+                }
+
                 $grade = match (true) {
-                    $row->total >= 91 => 'A',
-                    $row->total >= 71 => 'B',
-                    $row->total >= 61 => 'C',
-                    default           => 'D',
+                    $evalData->total >= 91 => 'A',
+                    $evalData->total >= 71 => 'B',
+                    $evalData->total >= 61 => 'C',
+                    default                => 'D',
                 };
                 
-                // Map to badge colour
                 $color = match ($grade) {
                     'A' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
                     'B' => 'bg-sky-100 text-sky-800 border-sky-200',
@@ -93,25 +97,44 @@ class DisciplineDataTable extends DataTable
 
                 return '<span class="px-2.5 py-1 rounded-md text-xs font-bold border ' . $color . '">' . $grade . '</span>';
             })
-            ->addColumn('action', function (EvaluationData $row) use ($type) {
-                $disabled  = $row->is_lock ? 'disabled' : '';
-                $modalId   = '#edit-discipline-modal';
-                $updateUrl = route('evaluation.grade', ['id' => $row->id]);
+            ->addColumn('action', function (Employee $row) use ($type) {
+                // If the employee doesn't have an evaluation row yet, we still give them an action button
+                // Because they need to be graded. We pass the NIK instead of ID, or handle the lack of ID.
+                // The Modal/Controller will need to handle NIK+Month+Year for "creating" a grade.
+                $evalData = $row->evaluationData->first();
+                
+                $disabled  = $evalData?->is_lock ? 'disabled' : '';
+                // Modify update URL to use employee NIK so controller can updateOrCreate
+                $updateUrl = route('evaluation.grade.nik', [
+                    'nik' => $row->nik,
+                    'month' => $this->filterMonth ?: date('n'),
+                    'year' => $this->filterYear ?: date('Y')
+                ]);
+                
+                $fetchUrl = route('evaluation.show.nik', [
+                    'nik' => $row->nik,
+                    'month' => $this->filterMonth ?: date('n'),
+                    'year' => $this->filterYear ?: date('Y')
+                ]);
 
-                // Modern premium action button (Alpine-friendly dispatch)
                 return '<button class="btn btn-sm btn-light border-slate-200 text-indigo-600 shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition-all rounded-lg"
-                    onclick="window.dispatchEvent(new CustomEvent(\'open-evaluate-modal\', { detail: { id: ' . $row->id . ', url: \'' . $updateUrl . '\' } }))"
-                    title="Beri Nilai"
+                    onclick="window.dispatchEvent(new CustomEvent(\'open-evaluate-modal\', { detail: { fetchUrl: \'' . $fetchUrl . '\', updateUrl: \'' . $updateUrl . '\' } }))"
+                    title="' . ($evalData ? 'Edit Nilai' : 'Beri Nilai') . '"
                     ' . $disabled . '>
-                    <i class="bx bx-edit-alt"></i>
+                    <i class="bx ' . ($evalData ? 'bx-edit-alt' : 'bx-plus-circle') . '"></i>
                 </button>';
             })
-            ->addColumn('absence_summary', function (EvaluationData $row) {
+            ->addColumn('absence_summary', function (Employee $row) {
+                $evalData = $row->evaluationData->first();
+                if (! $evalData) {
+                    return '<span class="text-slate-400 italic text-xs">Belum dinilai</span>';
+                }
+
                 $badges = [];
-                if ($row->Alpha > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $row->Alpha . '</span>';
-                if ($row->Telat > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $row->Telat . '</span>';
-                if ($row->Izin > 0)  $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $row->Izin . '</span>';
-                if ($row->Sakit > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $row->Sakit . '</span>';
+                if ($evalData->Alpha > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700 font-bold border border-rose-200" title="Alpha">A: ' . $evalData->Alpha . '</span>';
+                if ($evalData->Telat > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold border border-amber-200" title="Telat">T: ' . $evalData->Telat . '</span>';
+                if ($evalData->Izin > 0)  $badges[] = '<span class="px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-bold border border-sky-200" title="Izin">I: ' . $evalData->Izin . '</span>';
+                if ($evalData->Sakit > 0) $badges[] = '<span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold border border-indigo-200" title="Sakit">S: ' . $evalData->Sakit . '</span>';
 
                 if (empty($badges)) {
                     return '<span class="text-emerald-600 font-semibold text-xs"><i class="bx bx-check-circle"></i> Sempurna</span>';
@@ -119,50 +142,68 @@ class DisciplineDataTable extends DataTable
                 
                 return '<div class="flex flex-wrap gap-1 items-center justify-center text-xs">' . implode('', $badges) . '</div>';
             })
+            ->addColumn('total', function (Employee $row) {
+                $evalData = $row->evaluationData->first();
+                return $evalData ? $evalData->total : 0;
+            })
             ->rawColumns(['grade', 'absence_summary', 'action'])
-            ->setRowId('id');
+            ->setRowId('nik');
 
         // Regular: add old-system computed columns (split attendance + criteria)
         if ($type === 'regular') {
-            $dt->addColumn('totalkehadiran', function (EvaluationData $row) {
-                    // Attendance score = 40 − (Alpha×10 + Izin×2 + Sakit + Telat×0.5)
-                    $deduction = ($row->Alpha * 10) + ($row->Izin * 2) + $row->Sakit + ($row->Telat * 0.5);
+            $dt->addColumn('totalkehadiran', function (Employee $row) {
+                    $evalData = $row->evaluationData->first();
+                    if (! $evalData) return 0;
+                    
+                    $deduction = ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5);
                     return max(0, 40 - $deduction);
                 })
-                ->addColumn('totaldiscipline', function (EvaluationData $row) use ($calculator) {
+                ->addColumn('totaldiscipline', function (Employee $row) use ($calculator) {
+                    $evalData = $row->evaluationData->first();
+                    if (! $evalData) return 0;
+
                     $scores = [
-                        'kerajinan_kerja' => $row->kerajinan_kerja,
-                        'kerapian_kerja'  => $row->kerapian_kerja,
-                        'prestasi'        => $row->prestasi,
-                        'loyalitas'       => $row->loyalitas,
-                        'perilaku_kerja'  => $row->perilaku_kerja,
+                        'kerajinan_kerja' => $evalData->kerajinan_kerja,
+                        'kerapian_kerja'  => $evalData->kerapian_kerja,
+                        'prestasi'        => $evalData->prestasi,
+                        'loyalitas'       => $evalData->loyalitas,
+                        'perilaku_kerja'  => $evalData->perilaku_kerja,
                     ];
-                    // Return old-system criteria score only (strip base-40 + add back penalty)
-                    return $calculator->calculateTotalOld($scores, $row) - 40 + (
-                        ($row->Alpha * 10) + ($row->Izin * 2) + $row->Sakit + ($row->Telat * 0.5)
+                    return $calculator->calculateTotalOld($scores, $evalData) - 40 + (
+                        ($evalData->Alpha * 10) + ($evalData->Izin * 2) + $evalData->Sakit + ($evalData->Telat * 0.5)
                     );
                 });
         }
 
         // Yayasan / Magang: new 9-field system + approval row colouring
         if (in_array($type, ['yayasan', 'magang'], true)) {
-            $dt->addColumn('totaldiscipline', function (EvaluationData $row) use ($calculator) {
+            $dt->addColumn('totaldiscipline', function (Employee $row) use ($calculator) {
+                    $evalData = $row->evaluationData->first();
+                    if (! $evalData) return 0;
+
                     $scores = [
-                        'kemampuan_kerja'   => $row->kemampuan_kerja,
-                        'kecerdasan_kerja'  => $row->kecerdasan_kerja,
-                        'qualitas_kerja'    => $row->qualitas_kerja,
-                        'disiplin_kerja'    => $row->disiplin_kerja,
-                        'kepatuhan_kerja'   => $row->kepatuhan_kerja,
-                        'lembur'            => $row->lembur,
-                        'efektifitas_kerja' => $row->efektifitas_kerja,
-                        'relawan'           => $row->relawan,
-                        'integritas'        => $row->integritas,
+                        'kemampuan_kerja'   => $evalData->kemampuan_kerja,
+                        'kecerdasan_kerja'  => $evalData->kecerdasan_kerja,
+                        'qualitas_kerja'    => $evalData->qualitas_kerja,
+                        'disiplin_kerja'    => $evalData->disiplin_kerja,
+                        'kepatuhan_kerja'   => $evalData->kepatuhan_kerja,
+                        'lembur'            => $evalData->lembur,
+                        'efektifitas_kerja' => $evalData->efektifitas_kerja,
+                        'relawan'           => $evalData->relawan,
+                        'integritas'        => $evalData->integritas,
                     ];
-                    return $calculator->calculateTotal($scores, $row);
+                    return $calculator->calculateTotal($scores, $evalData);
+                })
+                ->addColumn('pengawas', function (Employee $row) {
+                    $evalData = $row->evaluationData->first();
+                    return $evalData ? $evalData->pengawas : null;
                 })
                 ->setRowAttr([
-                    'class' => function (EvaluationData $row) {
-                        return match ($row->approval_status) {
+                    'class' => function (Employee $row) {
+                        $evalData = $row->evaluationData->first();
+                        if (! $evalData) return 'bg-slate-50/50';
+
+                        return match ($evalData->approval_status) {
                             'rejected'       => 'table-danger',
                             'fully_approved' => 'table-primary',
                             'dept_approved'  => 'table-success',
@@ -176,10 +217,11 @@ class DisciplineDataTable extends DataTable
     }
 
     /**
-     * Get query source — delegates to DepartmentEmployeeResolver so access
-     * rules live in the Domain layer, not here.
+     * Get query source — scopes to Employee master record, then correctly scopes
+     * the EvaluationData eager-load relationship so it only retrieves data FOR
+     * the selected month/year.
      */
-    public function query(EvaluationData $model): QueryBuilder
+    public function query(Employee $model): QueryBuilder
     {
         $user     = Auth::user();
         $resolver = app(DepartmentEmployeeResolver::class);
@@ -191,24 +233,25 @@ class DisciplineDataTable extends DataTable
                 default   => $resolver->resolveForUser($user),
             };
         } catch (\Throwable) {
-            // User has no visible employees for this type
-            // (e.g. not a dept head, or department not in config).
-            // Return an empty result set so the DataTable renders empty instead of 500.
             $employees = collect();
         }
 
-        /** @var \Illuminate\Database\Eloquent\Builder $query */
-        $query = EvaluationData::with('karyawan')
-            ->whereIn('NIK', $employees->pluck('NIK'))
-            ->where('evaluation_type', $this->type);
+        // We filter out deleted/invalid employees and grab only the NIKs
+        $niks = $employees->pluck('nik')->filter()->values();
 
-        // Apply period filter when set (from EvaluationController)
-        if ($this->filterMonth) {
-            $query->whereMonth('Month', $this->filterMonth);
-        }
-        if ($this->filterYear) {
-            $query->whereYear('Month', $this->filterYear);
-        }
+        // 1. Base query from Employee Model
+        /** @var \Illuminate\Database\Eloquent\Builder $query */
+        $query = $model->newQuery()->whereIn('nik', $niks);
+
+        // 2. Eager load the nested EvaluationData constraint for this EXACT month/year
+        $query->with(['evaluationData' => function ($q) {
+            if ($this->filterMonth) {
+                $q->whereMonth('Month', $this->filterMonth);
+            }
+            if ($this->filterYear) {
+                $q->whereYear('Month', $this->filterYear);
+            }
+        }]);
 
         return $query;
     }
@@ -219,12 +262,8 @@ class DisciplineDataTable extends DataTable
             ->setTableId($this->tableId())
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(1, 'asc') // Sort by NIK default, although standard is order(1).
-            // Default sort: Total (which is column index index 5) Ascending
-            // So employees with 0 score (Pending) appear first.
-            // Note: DataTables order is 0-indexed. 
-            // id=0, NIK=1, Name=2, Dept=3, Status=4, Total=5
-            ->orderBy(5, 'asc') 
+            ->orderBy(0, 'asc') // NIK default index 
+            ->orderBy(5, 'asc') // Total index 
             ->buttons([
                 Button::make('excel'),
                 Button::make('csv'),
@@ -306,21 +345,14 @@ class DisciplineDataTable extends DataTable
     private function regularColumns(): array
     {
         return [
-            Column::make('id')->visible(false),
-            Column::make('NIK')->title('NIK')->addClass('align-middle text-center'),
-            Column::make('Name')
-                ->data('karyawan.name')
-                ->searchable(false)
-                ->addClass('align-middle font-semibold text-slate-800')
-                ->orderable(false),
-            Column::make('Department')
-                ->data('karyawan.dept_code')
-                ->searchable(false)
-                ->addClass('align-middle text-center')
-                ->orderable(false),
-            Column::make('status')
-                ->title('Status')
-                ->data('karyawan.employment_scheme')
+            Column::make('nik')->title('NIK')->addClass('align-middle text-center'),
+            Column::make('name')
+                ->title('Name')
+                ->addClass('align-middle font-semibold text-slate-800'),
+            Column::make('dept_code')
+                ->title('Department')
+                ->addClass('align-middle text-center'),
+            Column::make('employment_scheme')
                 ->exportable(false)
                 ->searchable(false)
                 ->addClass('align-middle text-center')
@@ -355,17 +387,15 @@ class DisciplineDataTable extends DataTable
     private function newSystemColumns(): array
     {
         return [
-            Column::make('id')->visible(false)->exportable(true),
-            Column::make('NIK')->addClass('align-middle text-center'),
-            Column::make('Name')
-                ->data('karyawan.name')
-                ->searchable(false)
-                ->addClass('align-middle font-semibold text-slate-800')
-                ->orderable(false),
-            Column::make('dept')->title('Department')->data('karyawan.dept_code')->addClass('align-middle text-center'),
-            Column::make('status')
+            Column::make('nik')->title('NIK')->addClass('align-middle text-center'),
+            Column::make('name')
+                ->title('Name')
+                ->addClass('align-middle font-semibold text-slate-800'),
+            Column::make('dept_code')
+                ->title('Department')
+                ->addClass('align-middle text-center'),
+            Column::make('employment_scheme')
                 ->title('Status')
-                ->data('karyawan.employment_scheme')
                 ->searchable(false)
                 ->addClass('align-middle text-center')
                 ->orderable(false),

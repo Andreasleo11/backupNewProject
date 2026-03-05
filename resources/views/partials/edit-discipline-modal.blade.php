@@ -5,7 +5,7 @@
 --}}
 <div x-data="evaluationModal()" 
      x-show="isOpen" 
-     @open-evaluate-modal.window="openModal($event.detail.id, $event.detail.url)"
+     @open-evaluate-modal.window="openModal($event.detail.fetchUrl, $event.detail.updateUrl)"
      @keydown.escape.window="closeModal()"
      class="fixed inset-0 z-[1050] flex items-center justify-center p-4 sm:p-6"
      style="display: none;"
@@ -283,17 +283,17 @@ document.addEventListener('alpine:init', () => {
             'perilaku_kerja': 'Etika & Kesopanan'
         },
 
-        openModal(id, url) {
+        openModal(fetchUrl, updateUrl) {
             this.isOpen = true;
             this.isLoading = true;
-            this.updateUrl = url;
+            this.updateUrl = updateUrl;
             this.form = {};
             this.errors = {};
             
             // Lock body scroll
             document.body.style.overflow = 'hidden';
 
-            axios.get('/evaluation/' + id + '/data')
+            axios.get(fetchUrl)
                 .then(({ data }) => {
                     // Populate headers
                     this.record.name = data.karyawan?.Nama ?? data.karyawan?.name ?? '—';

@@ -6,10 +6,12 @@ use App\DataTables\DisciplineDataTable;
 use App\Domain\Discipline\Services\DepartmentEmployeeResolver;
 use App\Domain\Discipline\Services\DisciplineScoreCalculatorService;
 use App\Domain\Discipline\Services\EvaluationApprovalService;
+use App\Infrastructure\Persistence\Eloquent\Models\Employee;
 use App\Models\EvaluationData;
 use App\Policies\DisciplineAccessPolicy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 /**
  * EvaluationController
@@ -109,6 +111,38 @@ class EvaluationController extends Controller
     public function grade(Request $request, int $id)
     {
         $record = EvaluationData::with('karyawan')->findOrFail($id);
+        return $this->processGrading($request, $record);
+    }
+
+    /**
+     * Save/Create grades using NIK instead of ID.
+     * This supports "grading" employees who do not have an existing evaluation_datas row yet.
+     * Route: PUT /evaluation/grade-by-nik/{nik}/{month}/{year}
+     */
+    public function gradeByNik(Request $request, string $nik, int $month, int $year)
+    {
+        $employee = Employee::where('nik', $nik)->firstOrFail();
+        
+        $record = EvaluationData::firstOrNew([
+            'NIK' => $nik,
+            'Month' => Carbon::create($year, $month, 1)->format('Y-m-d'),
+        ]);
+
+        if (!$record->exists) {
+            // Need to populate relations and base values for a new record to pass validation
+            $record->pe_id = null; // Generated normally in some flow? It's nullable or default.
+            $record->department_id = $employee->department->id ?? null;
+            $record->level = $employee->level ?? 5; // Defaulting level
+            $record->setRelation('karyawan', $employee);
+        } else {
+            $record->load('karyawan');
+        }
+
+        return $this->processGrading($request, $record);
+    }
+
+    private function processGrading(Request $request, EvaluationData $record)
+    {
         $user   = Auth::user();
 
         $fields = $record->useNewScoringSystem()
@@ -201,12 +235,42 @@ class EvaluationController extends Controller
     // ──────────────────────────────────────────────────────
 
     /**
-     * Return a single evaluation record as JSON (for the edit/grade modal).
+     * Show data for a single record to populate the grade modal.
      * Route: GET /evaluation/{id}/data
      */
     public function show(int $id)
     {
         $record = EvaluationData::with('karyawan')->findOrFail($id);
+
+        return response()->json($record);
+    }
+
+    /**
+     * Fetch EvaluationData by NIK, or return a new unpersisted instance with default values.
+     * This makes the Frontend Modal "Employee-Centric" — it always succeeds and opens.
+     * Route: GET /evaluation/data-by-nik/{nik}/{month}/{year}
+     */
+    public function showByNik(string $nik, int $month, int $year)
+    {
+        $employee = Employee::where('nik', $nik)->firstOrFail();
+        $record = EvaluationData::with('karyawan')
+            ->where('NIK', $nik)
+            ->whereMonth('Month', $month)
+            ->whereYear('Month', $year)
+            ->first();
+
+        // If not found, return an empty template structure attached to the employee.
+        if (! $record) {
+            $record = new EvaluationData([
+                'NIK' => $nik,
+                'Month' => Carbon::create($year, $month, 1)->format('Y-m-d'),
+                'Alpha' => 0,
+                'Telat' => 0,
+                'Izin' => 0,
+                'Sakit' => 0,
+            ]);
+            $record->setRelation('karyawan', $employee); // Attach employee so JS can read employment_scheme/name
+        }
 
         return response()->json($record);
     }

@@ -19,6 +19,11 @@ class DepartmentEmployeeResolver
      */
     public function resolveForUser(User $user): Collection
     {
+        // Super Admins see all regular employees regardless of department
+        if ($this->isSuperAccessUser($user)) {
+            return $this->repository->getAllNonYayasan(); // Defaults to level 5
+        }
+
         if ($this->isSpecialAccessId($user)) {
             return $this->repository->getByDepartmentCodes([
                 DepartmentCode::QC->value,
@@ -26,13 +31,7 @@ class DepartmentEmployeeResolver
             ]);
         }
 
-        if ($this->isSuperAccessUser($user)) {
-            return $this->repository->getByDepartmentCodes([
-                DepartmentCode::PERSONALIA->value,
-            ]);
-        }
-
-        if ($user->is_head === 1) {
+        if ($user->department && $user->is_head === 1) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -52,24 +51,28 @@ class DepartmentEmployeeResolver
      */
     public function resolveYayasanForUser(User $user): Collection
     {
-        if (in_array($user->department->name, ['QC', 'QA'], true)) {
+        // GM, Super Admins, or HRD approvers see all Yayasan
+        if ($user->hasRole('super-admin') || $user->is_gm || $this->isHrdApprover($user)) {
+            return $this->repository->getAllYayasanEmployees();
+        }
+
+        if ($user->department && in_array($user->department->name, ['QC', 'QA'], true)) {
             return $this->repository->getYayasanEmployees($this->getQcQaCodes($user));
         }
 
-        // GM or HRD approvers see all Yayasan
-        if ($user->is_gm || $this->isHrdApprover($user)) {
-            return $this->repository->getYayasanEmployees(DepartmentCode::values());
+        if ($user->department) {
+            $code = DepartmentCode::fromDepartmentName($user->department->name);
+
+            if (! $code) {
+                throw new \DomainException("Unknown department: {$user->department->name}");
+            }
+
+            return $this->repository->getYayasanEmployees(
+                $this->getDepartmentCodesForType($code, $user)
+            );
         }
 
-        $code = DepartmentCode::fromDepartmentName($user->department->name);
-
-        if (! $code) {
-            throw new \DomainException("Unknown department: {$user->department->name}");
-        }
-
-        return $this->repository->getYayasanEmployees(
-            $this->getDepartmentCodesForType($code, $user)
-        );
+        return collect();
     }
 
     /**
@@ -77,23 +80,28 @@ class DepartmentEmployeeResolver
      */
     public function resolveMagangForUser(User $user): Collection
     {
-        if (in_array($user->department->name, ['QC', 'QA'], true)) {
+        // GM or Super Admins see all Magang
+        if ($user->hasRole('super-admin') || $user->is_gm) {
+            return $this->repository->getAllMagangEmployees();
+        }
+
+        if ($user->department && in_array($user->department->name, ['QC', 'QA'], true)) {
             return $this->repository->getMagangEmployees($this->getQcQaCodes($user));
         }
 
-        if ($user->is_gm) {
-            return $this->repository->getMagangEmployees(DepartmentCode::values());
+        if ($user->department) {
+            $code = DepartmentCode::fromDepartmentName($user->department->name);
+
+            if (! $code) {
+                throw new \DomainException("Unknown department: {$user->department->name}");
+            }
+
+            return $this->repository->getMagangEmployees(
+                $this->getDepartmentCodesForType($code, $user)
+            );
         }
 
-        $code = DepartmentCode::fromDepartmentName($user->department->name);
-
-        if (! $code) {
-            throw new \DomainException("Unknown department: {$user->department->name}");
-        }
-
-        return $this->repository->getMagangEmployees(
-            $this->getDepartmentCodesForType($code, $user)
-        );
+        return collect();
     }
 
     /**

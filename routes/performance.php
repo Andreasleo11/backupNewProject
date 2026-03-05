@@ -56,11 +56,17 @@ Route::middleware('auth')->group(function () {
     // Final approve (HRD/GM — before {month}/{year})
     Route::post('/evaluation/approve-hrd', [EvaluationController::class, 'approveHrd'])->name('evaluation.approve-hrd');
 
-    // Single record fetch for grade modal
+    // Single record fetch for grade modal (Legacy ID-based)
     Route::get('/evaluation/{id}/data', [EvaluationController::class, 'show'])->name('evaluation.show');
 
-    // Grade a single record (grader role)
+    // Single record fetch for grade modal (New NIK-based)
+    Route::get('/evaluation/data-by-nik/{nik}/{month}/{year}', [EvaluationController::class, 'showByNik'])->name('evaluation.show.nik');
+
+    // Grade a single record (Legacy ID-based)
     Route::put('/evaluation/{id}/grade', [EvaluationController::class, 'grade'])->name('evaluation.grade');
+
+    // Grade a single record (New NIK-based)
+    Route::put('/evaluation/grade-by-nik/{nik}/{month}/{year}', [EvaluationController::class, 'gradeByNik'])->name('evaluation.grade.nik');
 
     // Reject a single record
     Route::post('/evaluation/{id}/reject', [EvaluationController::class, 'reject'])->name('evaluation.reject');
