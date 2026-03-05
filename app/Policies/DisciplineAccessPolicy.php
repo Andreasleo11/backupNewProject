@@ -10,47 +10,69 @@ class DisciplineAccessPolicy
     use HandlesAuthorization;
 
     /**
-     * Determine if the user can view any discipline records (their own dept).
+     * Determine if the user can view the department's evaluation (Dept Head).
      */
-    public function viewAnyDiscipline(User $user): bool
+    public function viewDepartment(User $user): bool
     {
-        return $user->is_head === 1 || $this->isSuperAccessUser($user) || $user->hasRole('super-admin');
+        return $user->can('evaluation.view-department')
+            || $user->is_head === 1
+            || $this->isSuperAccessUser($user);
     }
 
     /**
-     * Determine if the user can view ALL discipline records (cross-dept HR view).
+     * Determine if the user can view ALL company evaluations (GM, HRD, Super Admin).
      */
-    public function viewAllDiscipline(User $user): bool
+    public function viewAny(User $user): bool
     {
-        return $this->isSuperAccessUser($user) || $user->hasRole('super-admin');
+        return $user->can('evaluation.view-any')
+            || $user->is_gm
+            || $this->isSuperAccessUser($user)
+            || $this->isHrdApprover($user);
     }
 
     /**
-     * Determine if the user can view Yayasan or Magang discipline records.
-     * Same gate as viewAnyDiscipline — scoping happens in DepartmentEmployeeResolver.
+     * Determine if the user can grade an evaluation.
      */
-    public function viewYayasanDiscipline(User $user): bool
+    public function grade(User $user): bool
     {
-        return $user->is_head === 1 || $this->isSuperAccessUser($user) || $user->hasRole('super-admin');
+        return $user->can('evaluation.grade')
+            || $user->is_head === 1;
     }
 
     /**
-     * Determine if the user is an HRD approver (final Yayasan approval step).
-     * Reads from config/discipline.php — no hardcoded emails.
+     * Determine if the user can approve department evaluations.
      */
-    public function isHrdApprover(User $user): bool
+    public function approveDepartment(User $user): bool
+    {
+        return $user->can('evaluation.approve-department')
+            || $user->is_head === 1;
+    }
+
+    /**
+     * Determine if the user has final approval authority (HRD, GM).
+     */
+    public function approveFinal(User $user): bool
+    {
+        return $user->can('evaluation.approve-final')
+            || $user->is_gm
+            || $this->isHrdApprover($user)
+            || $this->isSuperAccessUser($user);
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Legacy Config Checks (Preserved as unmigrated fallbacks)
+    // ──────────────────────────────────────────────────────
+
+    private function isHrdApprover(User $user): bool
     {
         return in_array($user->email, config('discipline.hrd_approvers', []), true);
     }
 
-    /**
-     * Determine if the user has super access (cross-department HR visibility).
-     * Reads from config/discipline.php — no hardcoded emails or IDs.
-     */
-    public function isSuperAccessUser(User $user): bool
+    private function isSuperAccessUser(User $user): bool
     {
         return in_array($user->email, config('discipline.super_access_emails', []), true)
-            || in_array($user->id, config('discipline.special_access_ids', []), true);
+            || in_array($user->id, config('discipline.special_access_ids', []), true)
+            || $user->hasRole('super-admin');
     }
 }
 

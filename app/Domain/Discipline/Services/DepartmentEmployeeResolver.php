@@ -5,13 +5,15 @@ namespace App\Domain\Discipline\Services;
 use App\Domain\Discipline\Repositories\EvaluationDataRepositoryContract;
 use App\Enums\DepartmentCode;
 use App\Infrastructure\Persistence\Eloquent\Models\User;
+use App\Policies\DisciplineAccessPolicy;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 
 class DepartmentEmployeeResolver
 {
     public function __construct(
-        public EvaluationDataRepositoryContract $repository
+        public EvaluationDataRepositoryContract $repository,
+        public DisciplineAccessPolicy           $policy
     ) {}
 
     /**
@@ -20,7 +22,7 @@ class DepartmentEmployeeResolver
     public function resolveForUser(User $user): Collection
     {
         // Super Admins see all regular employees regardless of department
-        if ($this->isSuperAccessUser($user)) {
+        if ($this->policy->viewAny($user)) {
             return $this->repository->getAllNonYayasan(); // Defaults to level 5
         }
 
@@ -31,7 +33,7 @@ class DepartmentEmployeeResolver
             ]);
         }
 
-        if ($user->department && $user->is_head === 1) {
+        if ($user->department && $this->policy->viewDepartment($user)) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -52,7 +54,7 @@ class DepartmentEmployeeResolver
     public function resolveYayasanForUser(User $user): Collection
     {
         // GM, Super Admins, or HRD approvers see all Yayasan
-        if ($user->hasRole('super-admin') || $user->is_gm || $this->isHrdApprover($user)) {
+        if ($this->policy->viewAny($user)) {
             return $this->repository->getAllYayasanEmployees();
         }
 
@@ -60,7 +62,7 @@ class DepartmentEmployeeResolver
             return $this->repository->getYayasanEmployees($this->getQcQaCodes($user));
         }
 
-        if ($user->department) {
+        if ($user->department && $this->policy->viewDepartment($user)) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -81,7 +83,7 @@ class DepartmentEmployeeResolver
     public function resolveMagangForUser(User $user): Collection
     {
         // GM or Super Admins see all Magang
-        if ($user->hasRole('super-admin') || $user->is_gm) {
+        if ($this->policy->viewAny($user)) {
             return $this->repository->getAllMagangEmployees();
         }
 
@@ -89,7 +91,7 @@ class DepartmentEmployeeResolver
             return $this->repository->getMagangEmployees($this->getQcQaCodes($user));
         }
 
-        if ($user->department) {
+        if ($user->department && $this->policy->viewDepartment($user)) {
             $code = DepartmentCode::fromDepartmentName($user->department->name);
 
             if (! $code) {
@@ -154,28 +156,11 @@ class DepartmentEmployeeResolver
     }
 
     /**
-     * Check if the user is an HRD approver (reads from config).
-     */
-    private function isHrdApprover(User $user): bool
-    {
-        return in_array($user->email, config('discipline.hrd_approvers', []), true);
-    }
-
-    /**
      * Check if user has a special hardcoded access ID (reads from config).
      */
     private function isSpecialAccessId(User $user): bool
     {
         return in_array($user->id, config('discipline.special_access_ids', []), true);
-    }
-
-    /**
-     * Check if user has super-access (HR manager cross-dept visibility).
-     */
-    private function isSuperAccessUser(User $user): bool
-    {
-        return in_array($user->email, config('discipline.super_access_emails', []), true)
-            || $user->hasRole('super-admin');
     }
 
     /**

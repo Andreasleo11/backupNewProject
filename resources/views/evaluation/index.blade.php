@@ -128,34 +128,48 @@
             <div class="flex flex-wrap items-center gap-2" id="batch-action-bar">
                 
                 {{-- Dept Head: Approve All Graded --}}
+                @if($canApproveDept)
                 <form method="POST" action="{{ route('evaluation.approve-dept') }}" class="m-0" id="approve-dept-form">
                     @csrf
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year"  value="{{ $year }}">
                     <input type="hidden" name="type"  id="approve-dept-type" value="">
-                    
-                    {{-- This button would ideally be hidden via policy/role if not dept head --}}
+
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-700 transition-all hover:-translate-y-0.5 group">
                         <i class="bx bx-check-double text-lg group-hover:scale-110 transition-transform"></i>
                         Approve Semua
                     </button>
                 </form>
+                @endif
 
                 {{-- HRD: Final Approve --}}
+                @if($canApproveFinal)
                 <form method="POST" action="{{ route('evaluation.approve-hrd') }}" class="m-0" id="approve-hrd-form">
                     @csrf
                     <input type="hidden" name="month" value="{{ $month }}">
                     <input type="hidden" name="year"  value="{{ $year }}">
                     <input type="hidden" name="type"  id="approve-hrd-type" value="">
-                    
-                    {{-- This button would ideally be hidden via policy/role if not HRD --}}
+
                     <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 transition-all hover:-translate-y-0.5 group">
                         <i class="bx bx-check-shield text-lg group-hover:scale-110 transition-transform"></i>
                         Final Approve
                     </button>
                 </form>
+                @endif
 
                 <div class="h-6 w-px bg-slate-200 mx-1"></div>
+
+                {{-- Bulk Import (Regular tab only) --}}
+                <div id="import-btn-wrapper">
+                    <button type="button"
+                        data-bs-toggle="modal" data-bs-target="#import-excel-modal"
+                        class="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 shadow-sm border border-amber-200 transition-all hover:bg-amber-100 hover:-translate-y-0.5 group">
+                        <i class="bx bx-cloud-upload text-lg group-hover:scale-110 transition-transform"></i>
+                        <span>Import Excel</span>
+                    </button>
+                    {{-- This divider is inside the wrapper so it hides together with the button on Yayasan/Magang tabs --}}
+                    <span class="inline-block h-6 w-px bg-slate-200 mx-1 align-middle"></span>
+                </div>
 
                 {{-- Focus Mode Toggle Button --}}
                 <button type="button" onclick="
@@ -319,16 +333,29 @@
                                         </div>
                                     </div>
                         
-                                    {{-- Feature 2: Analytics (Placeholder) --}}
+                                    {{-- Grade Distribution Tally --}}
                                     <div>
                                         <h6 class="text-[13px] font-extrabold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
                                             <i class="bx bx-bar-chart-alt-2 text-indigo-500 text-lg"></i> Distribusi Nilai
                                         </h6>
-                                        <div class="px-5 py-6 rounded-2xl border border-slate-200/60 bg-slate-50 shadow-sm text-sm text-slate-500 text-center flex flex-col items-center gap-3">
-                                            <div class="h-12 w-12 rounded-full bg-slate-200/50 flex items-center justify-center">
-                                                <i class="bx bx-pie-chart-alt text-2xl text-slate-400"></i>
+                                        @php
+                                            $total = $summary['total'] ?? 0;
+                                            $graded = ($summary['graded'] ?? 0) + ($summary['dept_approved'] ?? 0) + ($summary['fully_approved'] ?? 0);
+                                            $pending = $summary['pending'] ?? 0;
+                                            $rejected = $summary['rejected'] ?? 0;
+                                        @endphp
+                                        <div class="space-y-2">
+                                            @foreach([
+                                                ['label' => 'Sudah Dinilai',   'count' => $graded,   'color' => 'emerald'],
+                                                ['label' => 'Belum Dinilai',   'count' => $pending,  'color' => 'amber'],
+                                                ['label' => 'Ditolak',         'count' => $rejected, 'color' => 'rose'],
+                                                ['label' => 'Total Karyawan',  'count' => $total,    'color' => 'indigo'],
+                                            ] as $stat)
+                                            <div class="flex items-center justify-between px-4 py-2.5 rounded-xl bg-{{ $stat['color'] }}-50 border border-{{ $stat['color'] }}-100">
+                                                <span class="text-xs font-semibold text-{{ $stat['color'] }}-700">{{ $stat['label'] }}</span>
+                                                <span class="text-sm font-black text-{{ $stat['color'] }}-800">{{ $stat['count'] }}</span>
                                             </div>
-                                            <span class="font-medium">Grafik performa dan distribusi departemen masih dalam tahap pengembangan.</span>
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
@@ -348,6 +375,22 @@
 @endsection
 
 @push('scripts')
+{{-- Session flash → toast bridge (works with the Alpine toast manager in app.blade.php) --}}
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', () => window.dispatchEvent(new CustomEvent('toast', {
+        detail: { type: 'success', message: @js(session('success')) }
+    })));
+</script>
+@endif
+@if(session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', () => window.dispatchEvent(new CustomEvent('toast', {
+        detail: { type: 'error', message: @js(session('error')) }
+    })));
+</script>
+@endif
+
 <script type="module">
 (function () {
     'use strict';
@@ -522,6 +565,100 @@
         refreshSummary();
     };
 
+    // ── Show import button only on Regular tab ────────────────────────────────
+    const importWrapper = document.getElementById('import-btn-wrapper');
+    function syncImportButton() {
+        const activeType = document.querySelector('.nav-tabs .nav-link.active')?.dataset.type;
+        if (importWrapper) importWrapper.style.display = (activeType === 'regular') ? '' : 'none';
+    }
+    syncImportButton(); // run on load
+    document.querySelectorAll('.nav-tabs .nav-link').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', syncImportButton);
+    });
+
 })();
 </script>
+
+{{-- ═══════════════════════════════════════
+     BULK IMPORT EXCEL MODAL (Regular only)
+═══════════════════════════════════════ --}}
+<div class="modal fade" id="import-excel-modal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-2xl rounded-2xl overflow-hidden">
+
+            {{-- Header --}}
+            <div class="modal-header bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-xl bg-white/20 flex items-center justify-center">
+                        <i class="bx bx-cloud-upload text-xl"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title font-bold text-base" id="importModalLabel">Import Nilai — Regular</h5>
+                        <p class="text-xs text-white/80 m-0">Upload template Excel untuk input nilai massal</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"></button>
+            </div>
+
+            {{-- Body --}}
+            <form method="POST" action="{{ route('evaluation.import') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body px-6 py-5 space-y-4 bg-white">
+
+                    {{-- Info tip --}}
+                    <div class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex gap-3 items-start">
+                        <i class="bx bx-info-circle text-amber-500 text-lg mt-0.5 shrink-0"></i>
+                        <p class="text-xs text-amber-700 m-0">
+                            Upload file Excel sesuai template. Sistem akan otomatis membuat atau memperbarui nilai
+                            berdasarkan NIK karyawan untuk periode yang dipilih.
+                        </p>
+                    </div>
+
+                    {{-- Period --}}
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Bulan</label>
+                            <select name="month" class="form-select form-select-sm rounded-xl border-slate-200">
+                                @foreach (range(1, 12) as $m)
+                                    <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>
+                                        {{ \Carbon\Carbon::createFromDate($year, $m, 1)->translatedFormat('F') }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
+                            <select name="year" class="form-select form-select-sm rounded-xl border-slate-200">
+                                @for ($y = now()->year; $y >= now()->year - 3; $y--)
+                                    <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- File picker --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">File Excel (.xlsx / .xls)</label>
+                        <input type="file" name="excel_files[]" multiple accept=".xlsx,.xls"
+                            class="block w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 border border-slate-200 rounded-xl p-1">
+                        <p class="text-[11px] text-slate-400 mt-1">Bisa pilih lebih dari satu file sekaligus.</p>
+                    </div>
+
+                    @error('excel_files')
+                        <p class="text-xs text-rose-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Footer --}}
+                <div class="modal-footer bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-2">
+                    <button type="button" class="btn btn-sm btn-light rounded-xl px-4 border-slate-200" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-600 transition-all">
+                        <i class="bx bx-upload"></i>
+                        Upload &amp; Proses
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endpush

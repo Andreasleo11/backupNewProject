@@ -17,7 +17,8 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
         ?int $year = null,
         array $statuses = []
     ): Collection {
-        $query = Employee::where('dept_code', $deptNo);
+        $query = Employee::whereNull('end_date')
+            ->where('dept_code', $deptNo);
 
         if (! empty($statuses)) {
             $query->whereIn('employment_scheme', $statuses);
@@ -35,7 +36,8 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
 
     public function getByDepartmentCodes(array $codes): Collection
     {
-        return Employee::whereIn('dept_code', $codes)
+        return Employee::whereNull('end_date')
+            ->whereIn('dept_code', $codes)
             ->where('employment_scheme', '!=', 'YAYASAN')
             ->where('grade_level', 5)
             ->get();
@@ -43,7 +45,8 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
 
     public function getYayasanEmployees(array $codes): Collection
     {
-        return Employee::with('department')
+        return Employee::whereNull('end_date')
+            ->with('department')
             ->whereIn('dept_code', $codes)
             ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
             ->get();
@@ -51,27 +54,31 @@ final class EloquentEvaluationDataRepository implements EvaluationDataRepository
 
     public function getMagangEmployees(array $codes): Collection
     {
-        return Employee::whereIn('dept_code', $codes)
+        return Employee::whereNull('end_date')
+            ->whereIn('dept_code', $codes)
             ->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG'])
             ->get();
     }
 
     public function getAllNonYayasan(): Collection
     {
-        return Employee::where('employment_scheme', '!=', 'YAYASAN')
+        return Employee::whereNull('end_date')
+            ->where('employment_scheme', '!=', 'YAYASAN')
             ->where('grade_level', 5)
             ->get();
     }
 
     public function getAllYayasanEmployees(): Collection
     {
-        return Employee::whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
+        return Employee::whereNull('end_date')
+            ->whereIn('employment_scheme', ['YAYASAN', 'YAYASAN KARAWANG'])
             ->get();
     }
 
     public function getAllMagangEmployees(): Collection
     {
-        return Employee::whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG'])
+        return Employee::whereNull('end_date')
+            ->whereIn('employment_scheme', ['MAGANG', 'MAGANG KARAWANG'])
             ->get();
     }
 

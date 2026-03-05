@@ -72,6 +72,7 @@ class DisciplineDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         $calculator = app(DisciplineScoreCalculatorService::class);
+        $canGrade   = app(\App\Policies\DisciplineAccessPolicy::class)->grade(Auth::user());
         $type       = $this->type;
 
         $dt = (new EloquentDataTable($query))
@@ -97,32 +98,44 @@ class DisciplineDataTable extends DataTable
 
                 return '<span class="px-2.5 py-1 rounded-md text-xs font-bold border ' . $color . '">' . $grade . '</span>';
             })
-            ->addColumn('action', function (Employee $row) use ($type) {
-                // If the employee doesn't have an evaluation row yet, we still give them an action button
-                // Because they need to be graded. We pass the NIK instead of ID, or handle the lack of ID.
-                // The Modal/Controller will need to handle NIK+Month+Year for "creating" a grade.
+            ->addColumn('action', function (Employee $row) use ($type, $canGrade) {
+                if (! $canGrade) {
+                    return '<span class="text-xs text-slate-400 italic">No Access</span>';
+                }
+
                 $evalData = $row->evaluationData->first();
-                
-                $disabled  = $evalData?->is_lock ? 'disabled' : '';
-                // Modify update URL to use employee NIK so controller can updateOrCreate
+                $status   = $evalData?->approval_status;
+
+                // Derive lock from approval_status — no is_lock column needed
+                $isLocked = in_array($status, ['dept_approved', 'fully_approved']);
+
+                if ($isLocked) {
+                    return '<button disabled class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400 cursor-not-allowed" title="Locked: already approved">
+                        <i class="bx bx-lock-alt"></i> Locked
+                    </button>';
+                }
+
                 $updateUrl = route('evaluation.grade.nik', [
-                    'nik' => $row->nik,
+                    'nik'   => $row->nik,
                     'month' => $this->filterMonth ?: date('n'),
-                    'year' => $this->filterYear ?: date('Y')
-                ]);
-                
-                $fetchUrl = route('evaluation.show.nik', [
-                    'nik' => $row->nik,
-                    'month' => $this->filterMonth ?: date('n'),
-                    'year' => $this->filterYear ?: date('Y')
+                    'year'  => $this->filterYear  ?: date('Y'),
                 ]);
 
-                return '<button class="btn btn-sm btn-light border-slate-200 text-indigo-600 shadow-sm hover:bg-indigo-50 hover:border-indigo-200 transition-all rounded-lg"
-                    onclick="window.dispatchEvent(new CustomEvent(\'open-evaluate-modal\', { detail: { fetchUrl: \'' . $fetchUrl . '\', updateUrl: \'' . $updateUrl . '\' } }))"
-                    title="' . ($evalData ? 'Edit Nilai' : 'Beri Nilai') . '"
-                    ' . $disabled . '>
-                    <i class="bx ' . ($evalData ? 'bx-edit-alt' : 'bx-plus-circle') . '"></i>
-                </button>';
+                $fetchUrl = route('evaluation.show.nik', [
+                    'nik'   => $row->nik,
+                    'month' => $this->filterMonth ?: date('n'),
+                    'year'  => $this->filterYear  ?: date('Y'),
+                ]);
+
+                [$icon, $label, $style] = $evalData
+                    ? ['bx-edit-alt', 'Edit',   'text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100']
+                    : ['bx-plus-circle', 'Grade', 'text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100'];
+
+                $onclick = "window.dispatchEvent(new CustomEvent('open-evaluate-modal', { detail: { fetchUrl: '{$fetchUrl}', updateUrl: '{$updateUrl}' } }))";
+
+                return "<button onclick=\"{$onclick}\" class=\"inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition-colors {$style}\">
+                    <i class=\"bx {$icon}\"></i> {$label}
+                </button>";
             })
             ->addColumn('absence_summary', function (Employee $row) {
                 $evalData = $row->evaluationData->first();

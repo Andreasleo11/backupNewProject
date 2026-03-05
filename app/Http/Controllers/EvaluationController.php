@@ -44,20 +44,25 @@ class EvaluationController extends Controller
      */
     public function index(Request $request, ?int $month = null, ?int $year = null)
     {
+        $user = Auth::user();
+        
+        if (! $this->policy->viewDepartment($user) && ! $this->policy->viewAny($user)) {
+            abort(403, 'Unauthorized access to Evaluation module.');
+        }
+
         $month  ??= (int) now()->format('m');
         $year   ??= (int) now()->format('Y');
-        $user     = Auth::user();
         $deptNo   = $user->department?->dept_no;
 
         // Status summary for the header chips
         $summary = $this->approvalService->statusSummary($month, $year, $deptNo);
 
         // Can export? Only when all records for this dept+period are fully_approved
-        $canExport = $deptNo
-            ? $this->approvalService->canExport($month, $year, $deptNo)
-            : false;
+        $canExport       = $deptNo ? $this->approvalService->canExport($month, $year, $deptNo) : false;
+        $canApproveDept  = $this->policy->approveDepartment($user);
+        $canApproveFinal = $this->policy->approveFinal($user);
 
-        return view('evaluation.index', compact('month', 'year', 'user', 'summary', 'canExport'));
+        return view('evaluation.index', compact('month', 'year', 'user', 'summary', 'canExport', 'canApproveDept', 'canApproveFinal'));
     }
 
     // ──────────────────────────────────────────────────────
@@ -143,7 +148,11 @@ class EvaluationController extends Controller
 
     private function processGrading(Request $request, EvaluationData $record)
     {
-        $user   = Auth::user();
+        $user = Auth::user();
+
+        if (! $this->policy->grade($user)) {
+            abort(403, 'Unauthorized to grade evaluations.');
+        }
 
         $fields = $record->useNewScoringSystem()
             ? ['kemampuan_kerja','kecerdasan_kerja','qualitas_kerja','disiplin_kerja',
@@ -181,6 +190,11 @@ class EvaluationController extends Controller
     public function approveDept(Request $request)
     {
         $user    = Auth::user();
+
+        if (! $this->policy->approveDepartment($user)) {
+            abort(403, 'Unauthorized to batch approve department.');
+        }
+
         $deptNo  = $user->department->dept_no;
         $month   = $request->integer('month');
         $year    = $request->integer('year');
@@ -202,6 +216,11 @@ class EvaluationController extends Controller
     public function approveHrd(Request $request)
     {
         $user   = Auth::user();
+
+        if (! $this->policy->approveFinal($user)) {
+            abort(403, 'Unauthorized to issue final HRD approval.');
+        }
+
         $deptNo = $user->department->dept_no;
         $month  = $request->integer('month');
         $year   = $request->integer('year');
@@ -222,6 +241,11 @@ class EvaluationController extends Controller
      */
     public function reject(Request $request, int $id)
     {
+        $user = Auth::user();
+        if (! $this->policy->approveDepartment($user) && ! $this->policy->approveFinal($user)) {
+            abort(403, 'Unauthorized to reject evaluations.');
+        }
+
         $request->validate(['remark' => 'required|string|max:500']);
 
         $record = EvaluationData::findOrFail($id);
@@ -310,5 +334,39 @@ class EvaluationController extends Controller
         $type  = $request->query('type', 'regular');
 
         return $dataTable->forType($type)->forPeriod($month, $year)->excel();
+    }
+
+    // ──────────────────────────────────────────────────────
+    // Bulk Excel Import (Regular Employees)
+    // ──────────────────────────────────────────────────────
+
+    /**
+     * Bulk-import graded scores for regular employees from Excel.
+     * Graders with 100+ employees can fill in a template and upload here.
+     * Route: POST /evaluation/import
+     */
+    public function import(Request $request)
+    {
+        $user = Auth::user();
+
+        if (! $this->policy->grade($user)) {
+            abort(403, 'Unauthorized to import evaluations.');
+        }
+
+        $request->validate([
+            'excel_files'   => 'required|array|min:1',
+            'excel_files.*' => 'required|file|mimes:xlsx,xls',
+            'month'         => 'required|integer|between:1,12',
+            'year'          => 'required|integer|min:2000',
+        ]);
+
+        $excelService = app(\App\Domain\Discipline\Services\DisciplineExcelService::class);
+        $excelService->importRegularData(
+            $request->file('excel_files'),
+            $request->integer('month'),
+            $request->integer('year'),
+        );
+
+        return back()->with('success', 'Evaluation data imported successfully.');
     }
 }

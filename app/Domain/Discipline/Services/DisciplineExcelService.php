@@ -14,14 +14,14 @@ class DisciplineExcelService
     /**
      * Import regular employee discipline data from Excel files.
      */
-    public function importRegularData(array $files): string
+    public function importRegularData(array $files, int $month, int $year): string
     {
         $processedData = $this->processFiles($files, [2, 3]);
         $filename = 'DisciplineData.xlsx';
 
         Excel::store(new DesciplineDataExp($processedData), 'public/Evaluation/' . $filename);
 
-        $this->importRegularFromFile($filename);
+        $this->importRegularFromFile($filename, $month, $year);
 
         return 'Excel file imported successfully.';
     }
@@ -49,7 +49,7 @@ class DisciplineExcelService
         $allData = [];
 
         foreach ($files as $file) {
-            $data = Excel::toArray([], $file);
+            $data = Excel::toArray(new DesciplineDataImport, $file);
             array_shift($data[0]); // Remove header row
 
             foreach ($data[0] as &$row) {
@@ -73,7 +73,7 @@ class DisciplineExcelService
         $allData = [];
 
         foreach ($files as $file) {
-            $data = Excel::toArray([], $file);
+            $data = Excel::toArray(new DesciplineDataImport, $file);
             array_shift($data[0]); // Remove header
 
             foreach ($data[0] as &$row) {
@@ -89,69 +89,60 @@ class DisciplineExcelService
 
     /**
      * Import regular employee data from stored Excel file.
+     * Uses updateOrCreate so employees without existing records also get their row created.
      */
-    private function importRegularFromFile(string $filename): void
+    private function importRegularFromFile(string $filename, int $month, int $year): void
     {
         $import = new DesciplineDataImport;
-        $data = Excel::toArray($import, 'public/Evaluation/' . $filename)[0];
-
-        $uniqueNIKs = array_unique(array_column($data, 1));
-        $existingRecords = EvaluationData::whereIn('NIK', $uniqueNIKs)->get();
-
-        // Replace nulls with zeros
-        foreach ($data as &$dat) {
-            foreach ($dat as &$value) {
-                if ($value === null) {
-                    $value = 0;
-                }
-            }
-        }
-
-        $this->processRegularImport($data, $existingRecords);
-    }
-
-    /**
-     * Process regular employee import data and update database.
-     */
-    private function processRegularImport(array $data, $existingRecords): void
-    {
-        $maxpoint = 40;
+        $data   = Excel::toArray($import, 'public/Evaluation/' . $filename)[0];
+        $grader = Auth::user();
+        $monthDate = \Carbon\Carbon::create($year, $month, 1)->format('Y-m-d');
+        $maxpoint  = 40;
 
         foreach ($data as $row) {
-            foreach ($existingRecords as $record) {
-                if ($record->nik === $row[1] && $record->Month === $row[2]) {
-                    $calculatedPoints = $record->Alpha * 10 + $record->Izin * 2 +
-                                      $record->Sakit + $record->Telat * 0.5;
-                    $totalPoints = $maxpoint - $calculatedPoints;
+            // Replace nulls with zeros
+            $row = array_map(fn ($val) => $val ?? 0, $row);
 
-                    $total = 0;
+            $nik = $row[1];
 
-                    // Calculate scores for columns 3-7
-                    for ($k = 3; $k <= 7; $k++) {
-                        if ($k == 7) {
-                            // Prestasi column (special scoring)
-                            $total += match ($row[$k]) {
-                                'A' => 20, 'B' => 15, 'C' => 10, 'D' => 5, default => 0
-                            };
-                        } else {
-                            $total += match ($row[$k]) {
-                                'A' => 10, 'B' => 7.5, 'C' => 5, 'D' => 2.5, default => 0
-                            };
-                        }
-                    }
+            // Find the employee to get dept
+            $employee = \App\Infrastructure\Persistence\Eloquent\Models\Employee::where('nik', $nik)->first();
+            if (! $employee) continue;
 
-                    $total += $totalPoints;
+            // Calc attendance deductions
+            $existing = EvaluationData::where('NIK', $nik)->where('Month', $monthDate)->first();
+            $alpha = $existing?->Alpha ?? 0;
+            $izin  = $existing?->Izin  ?? 0;
+            $sakit = $existing?->Sakit ?? 0;
+            $telat = $existing?->Telat ?? 0;
 
-                    EvaluationData::where('id', $record->id)->update([
-                        'kerajinan_kerja' => $row[3],
-                        'kerapian_kerja' => $row[4],
-                        'loyalitas' => $row[5],
-                        'perilaku_kerja' => $row[6],
-                        'prestasi' => $row[7],
-                        'total' => $total,
-                    ]);
-                }
+            $attendanceDeductions = $alpha * 10 + $izin * 2 + $sakit + $telat * 0.5;
+            $attendancePoints     = max(0, $maxpoint - $attendanceDeductions);
+
+            $total = $attendancePoints;
+            $scoreMap = ['A' => 10, 'B' => 7.5, 'C' => 5, 'D' => 2.5];
+            $prestasiMap = ['A' => 20, 'B' => 15, 'C' => 10, 'D' => 5];
+
+            for ($k = 3; $k <= 7; $k++) {
+                $map   = ($k === 7) ? $prestasiMap : $scoreMap;
+                $total += $map[$row[$k]] ?? 0;
             }
+
+            EvaluationData::updateOrCreate(
+                ['NIK' => $nik, 'Month' => $monthDate],
+                [
+                    'kerajinan_kerja' => $row[3],
+                    'kerapian_kerja'  => $row[4],
+                    'loyalitas'       => $row[5],
+                    'perilaku_kerja'  => $row[6],
+                    'prestasi'        => $row[7],
+                    'total'           => $total,
+                    'pengawas'        => $grader->name,
+                    'dept'            => $employee->dept_code,
+                    'level'           => $employee->grade_level ?? 5,
+                    'approval_status' => 'graded',
+                ]
+            );
         }
     }
 

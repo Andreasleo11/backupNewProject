@@ -66,6 +66,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'approval.approve',
             'approval.reject',
             'approval.approve-items',
+
+            // Evaluation & Discipline
+            'evaluation.view-any',
+            'evaluation.view-department',
+            'evaluation.grade',
+            'evaluation.approve-department',
+            'evaluation.approve-final',
         ];
 
         foreach ($permissions as $permName) {
@@ -125,6 +132,23 @@ class RolesAndPermissionsSeeder extends Seeder
             // === Company management (Legacy / General Roles) ===
             'director' => [
                 'pr.view-all', 'approval.approve', 'approval.reject', 'approval.approve-items', 'pr.batch-approve', 'approval.view-log',
+            ],
+
+            // === Evaluation & HR ===
+            'department-head' => [
+                'evaluation.view-department',
+                'evaluation.grade',
+                'evaluation.approve-department',
+            ],
+
+            'hrd-manager' => [
+                'evaluation.view-any',
+                'evaluation.approve-final',
+            ],
+
+            'general-manager' => [
+                'evaluation.view-any',
+                'evaluation.approve-final',
             ],
         ];
 
